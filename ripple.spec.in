@@ -1,0 +1,120 @@
+# ripple.spec.in                                  -*- mode: rpm-spec -*-
+# Copyright (C) 2006-2014 by Jeff Gold.
+#
+# This program is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see
+# <http://www.gnu.org/licenses/>.
+#
+# ----------------------------------------------------------------------
+Name:      @PACKAGE@
+Version:   @VERSION@
+%{!?release: %define release 1}
+Release:   %{release}
+License:   GNU GPLv3+
+Group:     System Environment/Libraries
+Summary:   Common abstractions for software development.
+URL:       http://esclat.net/software/%{name}/
+Source0:   http://esclat.net/software/%{name}/%{name}-%{version}.tar.gz
+Packager:  @PACKAGE_BUGREPORT@
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
+
+%{!?CFLAGS: %define CFLAGS %([ -n "$CFLAGS" ] && echo $CFLAGS || \
+                             echo -g -Wall -Werror)}
+%{!?_smp_mflags: %define _smp_mflags -j1}
+%{!?with_python: %define with_python @HAVE_PYTHON@}
+%{!?with_java:   %define with_java   @HAVE_JAVA@}
+
+%description 
+Ripple is a collection of tools for simplifying programming.
+
+Install this package if necessary for others that depend on libripple.
+
+%prep
+%setup -q
+./configure --prefix=%{_prefix} --datadir=%{_datadir} \
+    --enable-python=$([ %{with_python} -eq 1 ] && echo yes || echo no) \
+    --enable-java=$([ %{with_java} -eq 1 ] && echo yes || echo no)
+
+%build
+make %{_smp_mflags} CFLAGS='%{CFLAGS}'
+
+%install
+rm -rf $RPM_BUILD_ROOT
+make %{_smp_mflags} install DESTDIR=$RPM_BUILD_ROOT
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%files
+%defattr(-,root,root,-)
+%doc %{_datadir}/doc/%{name}-%{version}/RIPPLE
+%doc %{_datadir}/doc/%{name}-%{version}/LICENSE
+%{_prefix}/lib/libripple.so.*
+
+%package devel
+Summary:  header files and static libraries for %{name}
+Group:    Development/Libraries
+Requires: %{name}
+
+%description devel
+Ripple is a collection of tools for simplifying programming.
+
+Install this package to develop programs or libraries that use ripple.
+
+%files devel
+%defattr(-,root,root,-)
+%{_prefix}/include/ripple/
+%{_prefix}/lib/libripple.la
+%{_prefix}/lib/libripple.a
+%{_prefix}/lib/libripple.so
+
+%if %{with_python}
+
+%package python
+Summary:   Python components for %{name}
+Group:     Development/Libraries
+BuildArch: noarch
+
+%description python
+Ripple is a collection of tools for simplifying programming.
+
+Install this package to use ripple Python modules.
+
+%files python
+%defattr(-,root,root,-)
+%{_prefix}/lib/python@PYTHON_VERSION@/*-packages/%{name}
+
+%endif
+
+%if %{with_java}
+
+%package java
+Summary:   Java components for %{name}
+Group:     Development/Libraries
+BuildArch: noarch
+
+%description java
+Ripple is a collection of tools for simplifying programming.
+
+Install this package to use ripple Java modules.
+
+%files java
+%defattr(-,root,root,-)
+%{_prefix}/lib/%{name}/%{name}-%{version}.jar
+%doc %{_datadir}/doc/%{name}-%{version}/javadoc
+
+%endif
+
+%changelog
+* Sun Jul  1 2007 Jeff Gold <jgold@esclat.net> - 0.0-1
+- Created specification for RPM based distributions.

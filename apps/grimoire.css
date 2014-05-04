@@ -1,0 +1,13 @@
+html, body { margin: 0; padding: 0; }
+.result { background: blue; }
+.tomebar {
+    border: 2px solid blue;
+    padding: 0 1em 0 1em;
+    margin: 0 1em 0 1em;
+    float: left;
+}
+.log { background: slategray; display: inline-block; }
+#battle canvas {
+    background: black; margin: 0; padding: 0;
+    width: 100%; height: 100%;
+}

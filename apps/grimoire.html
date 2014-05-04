@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="X-UA-Compatible" content="chrome=1">
+<link href="lib/bootstrap.min.css" rel="stylesheet" />
+<link href="lib/bootstrap-responsive.min.css" rel="stylesheet" />
+<link href="grimoire.css" rel="stylesheet" title="Default" />
+<title>Grimoire</title>
+
+<div class="navbar">
+  <div class="navbar-inner">
+    <a class="brand" href="#">Grimoire</a>
+    <ul class="nav">
+      <li class="active"><a href="#">Home</a></li>
+      <li><a href="#">Link</a></li>
+      <li><a href="#">Link</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="tabbable tabs-left">
+  <ul class="nav nav-tabs" id="myTab">
+    <li class="active"><a href="#home">Home</a></li>
+    <li><a href="#characters">Characters</a></li>
+    <li><a href="#races">Races</a></li>
+    <li><a href="#battle">Battle</a></li>
+    <li><a href="#settings">Settings</a></li>
+  </ul>
+
+  <div class="tab-content">
+    <div class="tab-pane active" id="home">
+      <div class="hero-unit">
+        <h2>Grimoire</h2>
+        <p>Character management system for role playing games.</p>
+        <p>
+          <a class="btn btn-primary btn-large">Help</a>
+        </p>
+      </div>
+    </div>
+
+    <div class="tab-pane" id="characters">
+      <p>Loading character data...</div>
+
+    <div class="tab-pane" id="races">
+      <p>Loading race data...</p>
+    </div>
+
+    <div class="tab-pane" id="battle">
+      <p>Loading battle data...</p>
+    </div>
+
+    <div class="tab-pane" id="settings">
+      <p>Some settings should go here</p>
+    </div>
+
+  </div>
+</div>
+
+<script src="lib/jquery.min.js"></script>
+<!--[if lt IE 9]><script>//<![CDATA[
+    jQuery(function($) {
+       $.getScript('http://ajax.googleapis.com/ajax/libs/' +
+                   'chrome-frame/1/CFInstall.min.js',
+                   function() { CFInstall.check(); }); });
+//]]></script><![endif]-->
+<script src="lib/bootstrap.min.js"></script>
+<script>
+    jQuery(function ($) { // Required to make Bootstrap tabs work
+        $('#myTab a').click(function (event) {
+            $(this).tab('show'); return false; });
+    })
+</script>
+<script src="ripple/context.js"></script>
+<script src="ripple/grid.js"></script>
+<script src="grimoire.js"></script>

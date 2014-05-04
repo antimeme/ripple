@@ -1,0 +1,68 @@
+#! /bin/sh
+# ripple.dpkg.in
+# Copyright (C) 2008-2013 by Jeff Gold.
+#
+# This program is free software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see
+# <http://www.gnu.org/licenses/>.
+#
+# ----------------------------------------------------------------------
+# Current problems reported by lintian:
+# - shlib-with-executable-bit usr/lib/libripple.so.0.0.0 0755
+# - no-shlibs-control-file usr/lib/libripple.so.0.0.0
+# - unstripped-binary-or-object ./usr/lib/libripple.so.0.0.0
+# - changelog-file-missing-in-native-package
+set -ex
+PACKAGE_BUGREPORT="@PACKAGE_BUGREPORT@"
+PACKAGE="@PACKAGE@"
+VERSION="@VERSION@"
+RELEASE="${RELEASE:+-$RELEASE}"
+prefix="@prefix@"
+datadir="@datadir@"
+datarootdir="@datarootdir@"
+ARCH=`dpkg-architecture -qDEB_HOST_ARCH`
+
+rm -rf ./dpkgbroot
+mkdir -p ./dpkgbroot
+make install DESTDIR=$PWD/dpkgbroot
+mv ./dpkgbroot$datadir/doc/$PACKAGE-$VERSION \
+   ./dpkgbroot$datadir/doc/$PACKAGE
+rm ./dpkgbroot$datadir/doc/$PACKAGE/LICENSE
+cat > ./dpkgbroot$datadir/doc/$PACKAGE/copyright <<EOF
+Ripple sources are available at http://esclat.net/software/ripple/
+This package is distributed under the terms of the GNU General Public
+License, version 3 or later.  See /usr/share/common-licenses/GPL-3
+for further details.
+EOF
+mkdir -p ./dpkgbroot/DEBIAN
+cat > ./dpkgbroot/DEBIAN/postinst <<EOF
+#! /bin/sh
+/sbin/ldconfig
+EOF
+cat > ./dpkgbroot/DEBIAN/prerm <<EOF
+#! /bin/sh
+EOF
+chmod +x ./dpkgbroot/DEBIAN/prerm ./dpkgbroot/DEBIAN/postinst
+cat > ./dpkgbroot/DEBIAN/control <<EOF
+Package:      $PACKAGE
+Version:      $VERSION
+Section:      libs
+Priority:     optional
+Architecture: $ARCH
+Maintainer:   $PACKAGE_BUGREPORT
+Description:  Common abstractions for software development.
+ Ripple is a collection of tools for simplifying programming.
+ Install this package if necessary for others that depend on libripple.
+EOF
+fakeroot dpkg -b ./dpkgbroot ${PACKAGE}_$VERSION${RELEASE}_$ARCH.deb
+rm -rf ./dpkgbroot

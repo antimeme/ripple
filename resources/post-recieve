@@ -1,0 +1,15 @@
+#! /bin/sh
+# A post-recieve hook for git that creates a directory under the
+# current user's Apache httpd web space which is automatically updated
+# after each commit.
+repo=`pwd | xargs basename | sed 's,.git$,,'`
+for dir in $HOME/public_html/$repo; do
+    mkdir -p $dir
+    GIT_WORK_TREE=$dir git checkout -f
+    [ -e $dir/deploy ] && $dir/deploy
+done
+for place in shared; do
+    if git remote | grep "^$place\$" >/dev/null; then
+        git push $place
+    fi
+done

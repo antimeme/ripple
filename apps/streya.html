@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<title>Streya</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="X-UA-Compatible" content="chrome=1">
+<link href="streya.css" rel="stylesheet" title="Default" />
+
+<canvas class="streya">
+  Streya is not able to work on this browser.  Perhaps it doesn't
+  support HTML Canvas or has JavaScript disabled?
+</canvas>
+
+<script src="lib/jquery.min.js"></script>
+<!--[if lt IE 9]><script>//<![CDATA[
+    jQuery(function($) {
+       $.getScript('http://ajax.googleapis.com/ajax/libs/' +
+                   'chrome-frame/1/CFInstall.min.js',
+                   function() { CFInstall.check(); }); });
+//]]></script><![endif]-->
+<script src="lib/jquery.hammer.min.js"></script>
+<script src="ripple/context.js"></script>
+<script src="ripple/grid.js"></script>
+<script src="ripple/astarsearch.js"></script>
+<script src="streya.js"></script>

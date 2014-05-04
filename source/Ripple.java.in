@@ -1,0 +1,408 @@
+// Ripple.java.in                                    -*- mode: java; -*-
+// Copyright (C) 2007-2013 by Jeff Gold
+//
+// This program is free software: you can redistribute it and/or
+// modify it under the terms of the GNU General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// ---------------------------------------------------------------------
+package net.esclat.ripple;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.io.ByteArrayOutputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.io.IOException;
+
+/** Entry point for the Ripple JAR.  When executed the first argument
+ *  is used to dispatch requests to other classes unless they match
+ *  an internally implemented routine. */
+public class Ripple {
+    /** Release version of the Ripple package as a printable string. */
+    public static final String VERSION = "@VERSION@";
+    public static final String APPS = "net.esclat.ripple";
+
+    /** Release version of the Ripple package as a decimal number. */
+    public static double getVersion()
+    {
+        String v = VERSION;
+        int point = v.indexOf('.');
+        if (point >= 0) {
+            point = v.indexOf('.', point + 1);
+            if (point >= 0)
+                v = v.substring(0, point);
+        }
+        try { return Double.valueOf(v); }
+        catch (NumberFormatException ex) { return 0.0; }
+    }
+
+    // -----------------------------------------------------------------
+
+    /** Convert a byte array to a hexidecimal string for display. */
+    public static String hex_encode(byte[] data)
+    {
+        final String hex = "0123456789abcdef";
+        StringBuffer out = new StringBuffer();
+        for (int i = 0; i < data.length; i++)
+            out.append(hex.charAt((data[i] >> 4) & 0xF)).
+                append(hex.charAt(data[i] & 0xF));
+        return out.toString();
+    }
+
+    /** Convert a hexidecimal string to a byte array.  Digits and
+     *  letters 'a' through 'f' are accepted.  White space and colon
+     *  characters are ignored.  Other characters result in an
+     *  IllegalArgumentException. */
+    public static byte[] hex_decode(String data)
+    {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte current = 0;
+        boolean low = false;
+        char[] data_array = data.toCharArray();
+        for (int i = 0; i < data_array.length; i++) {
+            char c = Character.toLowerCase(data_array[i]);
+            int value = 0;
+            if ((c >= '0') && (c <= '9'))      value = c - '0';
+            else if ((c >= 'a') && (c <= 'f')) value = c - 'a' + 10;
+            else if ((c == ':') || Character.isWhitespace(c))
+                continue;
+            else throw new IllegalArgumentException
+                     ("Unrecognized hexidecimal character '" + c + "'");
+
+            if (low) {
+                current = (byte)(current | value);
+                baos.write(current);
+            } else current = (byte)(value << 4);
+            low = !low;
+        }
+        return baos.toByteArray();
+    }
+
+    /** Convert a byte array to a Base64 string for display. */
+    public static String base64_encode(byte[] data)
+    {
+        final String b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+            "abcdefghijklmnopqrstuvwxyz" + "0123456789" + "+/";
+        StringBuilder out = new StringBuilder();
+        for (int pos = 0; pos < data.length; pos += 3) {
+            int aa = data[pos] & 0xFF;
+            int bb = (pos + 1 < data.length) ?
+                (data[pos + 1] & 0xFF) : 0;
+            int cc = (pos + 2 < data.length) ?
+                (data[pos + 2] & 0xFF) : 0;
+            out.append(b64.charAt(aa >> 2));
+            out.append(b64.charAt(((aa & 0x03) << 4) | (bb >> 4)));
+            out.append((pos + 1 < data.length) ?
+                       b64.charAt(((bb & 0x0F) << 2) |
+                                  ((cc >> 6) & 0x03)) : '=');
+            out.append((pos + 2 < data.length) ?
+                       b64.charAt(cc & 0x3F) : '=');
+        }
+        return out.toString();
+    }
+
+    /** Convert a Base64 encoded string to a byte array.  Alphanumeric
+     *  characters, plus and slash are valid.  White space is ignored.
+     *  Other characters result in an IllegalArgumentException.  No
+     *  characters other than white space or more '=' characters are
+     *  permitted after the first '=' character. */
+    public static byte[] base64_decode(String data) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] values = new byte[3];
+        boolean terminated = false;
+        int pos = 0;
+        for (char c : data.toCharArray()) {
+            if (Character.isWhitespace(c))
+                continue;
+            if (terminated) {
+                if (c == '=')
+                    continue;
+                else throw new IllegalArgumentException
+                         ("Invalid characters after termination mark");
+            } else if (c == '=') {
+                if (pos < 2)
+                    throw new IllegalArgumentException
+                        ("Padding with too few input characters");
+                pos--; // discards partially decoded padding byte
+                baos.write(values, 0, pos);
+                terminated = true;
+                continue;
+            }
+
+            int b = 0;
+            if ((c >= 'A') && (c <= 'Z'))      b = c - 'A';
+            else if ((c >= 'a') && (c <= 'z')) b = c - 'a' + 26;
+            else if ((c >= '0') && (c <= '9')) b = c - '0' + 26 + 26;
+            else if (c == '+')                 b = 62;
+            else if (c == '/')                 b = 63;
+            else throw new IllegalArgumentException
+                     ("Invalid Base64 character \'" + c + "\'.");
+
+            if (pos == 0)
+                values[0] = (byte)(0xFC & (b << 2));
+            else if (pos == 1) {
+                values[0] |= (byte)(0x0F & (b >> 4));
+                values[1] = (byte)(0xF0 & (b << 4));
+            } else if (pos == 2) {
+                values[1] |= (byte)(0x0F & (b >> 2));
+                values[2] = (byte)(0xC0 & (b << 6));
+            } else if (pos == 3)
+                values[2] |= (byte)(0x3F & b);
+            if (++pos == 4)
+                baos.write(values, pos = 0, values.length);
+        }
+        return baos.toByteArray();
+    }
+
+    // -----------------------------------------------------------------
+
+    /** Performs word wrapping to break up long lines. */
+    public static PrintStream wrap
+        (PrintStream o, String value,
+         int start, int indent, int limit) {
+        int written = 0;
+        while (written < value.length()) {
+            int clip = written;
+            if (value.length() - written > limit - start) {
+                int pos = written;
+                boolean inWord = false;
+                for (; pos < value.length(); pos++)
+                    if (Character.isWhitespace(value.charAt(pos))) {
+                        if ((pos > written + limit - start) &&
+                            (clip > written))
+                            break;
+                        if (inWord)
+                            clip = pos;
+                        inWord = false;
+                    } else inWord = true;
+                if (clip == written)
+                    clip = value.length();
+            } else clip = value.length();
+            start = indent;
+
+            o.println(value.substring(written, clip));
+            written = clip + 1;
+            if (written < value.length())
+                for (int i = 0; i < start; i++)
+                    o.print(" ");
+        }
+        return o;
+    }
+
+    /** Collect a password without echoing charactes if possible. */
+    public static char[] passwdPrompt(String prompt)
+    {
+        // Java 1.6 introduced a Console class that makes it easy to
+        // prompt for a pass phrase without echoing the characters
+        // back to the terminal.  Unfortunately earlier Java releases
+        // don't have this, so this code uses reflection to grab it
+        // if possible and fall back to echoing if necessary.
+        char[] result = null;
+        try {
+            Method m = System.class.getMethod
+                ("console", new Class[] {});
+            Object console = m.invoke(null, new Object[] {});
+            m = console.getClass().getMethod
+                ("readPassword", new Class[] {});
+
+            System.err.print(prompt);
+            System.err.flush();
+            result = (char[])m.invoke(console, new Object[] {});
+        } catch (NoSuchMethodException ex) {
+        } catch (IllegalAccessException ex) {
+        } catch (InvocationTargetException ex) {}
+
+        if (result == null) { // insecure fall back
+            System.err.print(prompt);
+            System.err.flush();
+            try {
+                BufferedReader in = new BufferedReader
+                    (new InputStreamReader(System.in));
+                String line = in.readLine();
+                if (line != null)
+                    result = line.toCharArray();
+            } catch (IOException ex) {}
+        }
+        return result;
+    }
+
+    /** Collects information about the current process.  This includes
+     *  the process identifier in most Java implementations, but
+     *  that's not guaranteed. */
+    public static String getRuntimeName()
+    {
+        String result = null;
+        try {
+            // Java 1.5 introduced the ManagementFactory class.
+            // Other features of Ripple require Java 1.5 so maybe
+            // this should be converted to a direct call?
+            Class<?> c = Class.forName
+                ("java.lang.management.ManagementFactory");
+            Method m = c.getMethod
+                ("getRuntimeMXBean", (Class<?>[])null);
+            Object o = m.invoke((Object)null, (Object[])null);
+            m = o.getClass().getMethod("getName", new Class[] {});
+            m.setAccessible(true);
+            result = m.invoke(o, (Object[])null).toString();
+        } catch (ClassNotFoundException ex) {}
+        catch (NoSuchMethodException ex) {}
+        catch (IllegalAccessException ex) {}
+        catch (InvocationTargetException ex) {}
+        return result;
+    }
+
+    /** Displays a single command with word wrapped usage message. */
+    private static void helpCommand
+        (PrintStream o, String command, String usage, int maxlen)
+    {
+        o.print("  ");
+        o.print(command);
+        for (int i = command.length(); i < maxlen; i++)
+            o.print(" ");
+        o.print(" - ");
+        wrap(o, usage, maxlen + 5, maxlen + 5, 72);
+    }
+
+    /** Prints a detailed usage message to the specified stream. */
+    public static int help(PrintStream o) throws Exception
+    {
+        // Unfortunately there seems to be no practical way to list
+        // the classes contained in a package, probably due to Java
+        // support for executing a collection of class files directly
+        // from a web server.  As a result only classes listed here
+        // are automatically documented.
+        Class<?>[] commands = new Class<?>[] {
+            net.esclat.ripple.Options.class,
+        };
+        String[][] internals = {
+            { "questions", "Display information about classes and " +
+              "system properties." },
+            { "hex-encode", "Convert argument strings to hex." },
+            { "hex-decode", "Display the contents of argument " +
+              "hex strings." },
+            { "base64-encode", "Convert argument strings to base64." },
+            { "base64-decode", "Display the contents of argument " +
+              "base64 strings." },
+        };
+
+        wrap(o, "A collection of abstractions for common programming " +
+             "tasks that Java doesn't provide.", 0, 0, 72);
+        o.println();
+        o.println("Commands:");
+        int maxlen = 0;
+        for (Class<?> command : commands)
+            if (command.getSimpleName().length() > maxlen)
+                maxlen = command.getSimpleName().length();
+        for (String[] internal : internals)
+            if (internal[0].length() > maxlen)
+                maxlen = internal[0].length();
+
+        for (String[] internal : internals)
+            helpCommand(o, internal[0], internal[1], maxlen);
+        for (Class<?> command : commands)
+            try {
+                Method m = command.getMethod("usageLine");
+                helpCommand(o, command.getSimpleName(),
+                            m.invoke(null).toString(), maxlen);
+            } catch (InvocationTargetException ex) {
+                ex.getCause().printStackTrace(o);
+            } catch (NoSuchMethodException ex) { /* undocumented */ }
+        return 0;
+    }
+
+    /** Entry point that dispatches requests to applications. */
+    public static void main(String[] args) throws Exception
+    {
+        int result = 1;
+        System.out.println("Ripple " + VERSION + " - Copyright (C) " +
+                           "2007-2014 by Jeff Gold.");
+        if (args.length == 0)
+            result = help(System.out);
+        else if ("questions".equals(args[0])) {
+            if (args.length > 1) {
+                for (int i = 1; i < args.length; i++) {
+                    String arg = args[i];
+                    System.out.print(arg);
+                    System.out.print(" => ");
+                    if (arg.startsWith("p:")) {
+                        String value =
+                            System.getProperty(arg.substring(2));
+                        System.out.println
+                            ((value != null) ?
+                             "\"" + value + "\"" : "null");
+                    } else if (arg.startsWith("c:")) {
+                        Class found = null;
+                        try {
+                            found = Class.forName(arg.substring(2));
+                        } catch (ClassNotFoundException cnfe) {}
+                        System.out.println
+                            ((found != null) ? found.getName() :
+                             "<missing>");
+                    } else System.out.println("<unknown request>");
+                }
+            } else {
+                wrap(System.out, "Specify one question per " +
+                     "command line argument using a prefix " +
+                     "character to indicate the question type.",
+                     0, 0, 72);
+                System.out.println();
+                System.out.println("p:<system-property> " +
+                                   "(example: p:java.home)");
+                System.out.println("c:<class-name>" +
+                                   "(example: c:java.lang.String)");
+            }
+        } else if ("hex-encode".equals(args[0]) ||
+                   "hex-decode".equals(args[0]) ||
+                   "base64-encode".equals(args[0]) ||
+                   "base64-decode".equals(args[0])) {
+            if (args.length > 1) {
+                for (int i = 1; i < args.length; i++)
+                    System.out.println
+                        (args[i] + " :: " +
+                         ("hex-encode".equals(args[0]) ?
+                          hex_encode(args[i].getBytes("utf-8")) :
+                          ("hex-decode".equals(args[0]) ?
+                           new String(hex_decode(args[i]), "utf-8") :
+                           ("base64-decode".equals(args[0]) ?
+                            new String(base64_decode(args[i]), "utf-8"):
+                            base64_encode(args[i].getBytes
+                                          ("utf-8"))))));
+            } else wrap(System.out, "Specify values to encode",
+                        0, 0, 72);
+        } else {
+            try {
+                // Should be: Arrays.copyOfRange(args, 1, args.length)
+                // But that requires Java 1.6 or later.
+                String[] subargs = new String[args.length - 1];
+                for (int i = 1; i < args.length; i++)
+                    subargs[i - 1] = args[i];
+
+                Class<?> c = Class.forName(APPS + "." + args[0]);
+                Method m = c.getMethod("main", args.getClass());
+                m.invoke(null, new Object[] { subargs });
+                result = 0;
+            } catch (InvocationTargetException ex) {
+                ex.getCause().printStackTrace(System.err);
+            } catch (ClassNotFoundException ex) {
+                System.err.println("No such command: " + args[0]);
+            } catch (NoSuchMethodException ex) {
+                System.err.println("Invalid command: " + args[0]);
+            } catch (IllegalAccessException ex) {
+                System.err.println("Private command: " + args[0]);
+            }
+        }
+        if (result != 0)
+            System.exit(result);
+    }
+}
