@@ -232,7 +232,7 @@
         })(mapgrid);
         drift(mapgrid.coordinate({row: 0, col: 0}));
 
-        var zoom = function(left, top, size, x, y, factor) {
+        var zooming, zoom = function(left, top, size, x, y, factor) {
             if (factor && factor > 0) {
                 if (size * factor > 40) {
                     mapgrid.offset((left - x) * factor + x,
@@ -269,6 +269,27 @@
                 drift(target);
                 reddie.move(target);
             }
+            return false;
+        });
+        self.on('mousemove touchmove', function(event) {
+            if (zooming) {
+                var targets = $.targets(event);
+                var factor;
+                if (zooming.diameter && targets.touches.length == 2) {
+                    var t0 = targets.touches[0];
+                    var t1 = targets.touches[1];
+                    var diameter = Math.sqrt(sqdist(t0, t1));
+                    factor = diameter / zooming.diameter;
+                }
+                if (factor && factor > 0)
+                    zoom(zooming.offset.left, zooming.offset.top,
+                         zooming.size,
+                         zooming.x, zooming.y, factor);
+            }
+            return false;
+        });
+        self.on('mouseleave mouseup touchend', function(event) {
+            zooming = undefined;
             return false;
         });
     };
