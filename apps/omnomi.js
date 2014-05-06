@@ -1,6 +1,12 @@
 (function(exports) {
     var trace = false;
 
+    // Calculate square distance
+    var sqdist = function(node1, node2) {
+        return ((node2.x - node1.x) * (node2.x - node1.x) +
+                (node2.y - node1.y) * (node2.y - node1.y));
+    };
+
     var create_character = function(grid, redraw, color, position) {
         var result = {current: position, previous: null,
                       path: [], progress: 1.0, rate: 1000,
