@@ -201,6 +201,7 @@
         var throb = function() {
             reddie.color = (reddie.color == 'red') ?
                 'orangered' : 'red';
+            redraw();
             setTimeout(throb, 900);
         };
         throb();
@@ -259,6 +260,7 @@
                  1 + 0.1 * event.deltaY);
         });
         self.on('mousedown touchstart', function(event) {
+            yellow.color = (yellow.color == 'yellow') ? 'black' : 'yellow';
             var targets = $.targets(event);
             if (event.which > 1) {
                 // Reserve right and middle clicks for browser menus
