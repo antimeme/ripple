@@ -265,13 +265,11 @@
                 }
                 redraw();
             } else {
+                target = mapgrid.position(targets);
+                drift(target);
+                reddie.move(target);
             }
             return false;
-        });
-        self.on('click', function(event) {
-            target = mapgrid.position($.targets(event));
-            drift(target);
-            reddie.move(target);
         });
     };
 })(typeof exports === 'undefined'? this['omnomi'] = {}: exports);
