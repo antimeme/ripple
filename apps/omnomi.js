@@ -277,7 +277,8 @@
                         diameter: Math.sqrt(sqdist(t0, t1)),
                         x: (t0.x + t1.x) / 2, y: (t0.y + t1.y) / 2,
                         size: mapgrid.size(), offset: mapgrid.offset()};
-                    yellow.color = (yellow.color == 'yellow') ? 'black' : 'yellow';
+                    yellow.color = (yellow.color == 'yellow') ?
+                        'black' : 'yellow';
                 }
                 redraw();
             } else {
