@@ -3,7 +3,8 @@
 
     var create_character = function(grid, redraw, color, position) {
         var result = {current: position, previous: null,
-                      path: [], progress: 1.0, rate: 1000, grid: grid};
+                      path: [], progress: 1.0, rate: 1000,
+                      color: color};
         result.move = (function() {
             var start = null, stop = null;
             var update_id = 0, update = function() {
@@ -84,7 +85,7 @@
             ctx.moveTo(x, y);
             ctx.arc(x, y, grid.size() / 2,
                     0, 2 * Math.PI);
-            ctx.fillStyle = color;
+            ctx.fillStyle = this.color;
             ctx.fill();
 
             if (trace && this.path) {
@@ -197,6 +198,13 @@
         };
         yellow_follow();
         
+        var throb = function() {
+            reddie.color = (reddie.color == 'red') ?
+                'orangered' : 'red';
+            setTimeout(throb, 900);
+        };
+        throb();
+
         // Gradually move target grid cell to center of screen
         var drift = (function(grid){
             var start, stop;
