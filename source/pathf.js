@@ -100,16 +100,16 @@
         //                  important when nodes might have more than
         //                  one JSON representation
         if (!stringify)
-            stringify = function(node) { JSON.stringify(node); };
+            stringify = function(node) { return JSON.stringify(node); };
+        if (!costfn) costfn = function(node, prev) { return 1; };
+        if (!heuristic) // Degrade to Dijkstra's algorithm if necessary
+            heuristic = function(node, cost, goal) { return cost; };
+
         if (!goals || !goals.length)
             return null; // No path without at least one goal
         var goalset = {};
         for (var i in goals)
             goalset[stringify(goals[i])] = goals[i];
-
-        if (!costfn) costfn = function(node, prev) { return 1; };
-        if (!heuristic) // Degrade to Dijkstra's algorithm if necessary
-            heuristic = function(node, cost, goal) { return cost; };
 
         function mknode(value, prev) {
             var node_cost = (prev) ? prev.cost + costfn(
@@ -117,7 +117,8 @@
             return {value: value, prev: prev, repr: stringify(value),
                     cost: node_cost, hcost: Math.min.apply(
                         null, jQuery.map(goals, function(g) {
-                            return heuristic(value, node_cost, g); })) };
+                            return heuristic(
+                                value, node_cost, g); })) };
         }
 
         var openset = {}, closedset = {};
@@ -133,6 +134,9 @@
 
             if (current.repr in goalset) { // a path has been found
                 var result = [];
+                var poo = "";
+                for (key in goalset)
+                    poo += key + ", ";
                 while (current.prev) {
                     result.unshift(current.value);
                     current = current.prev;
