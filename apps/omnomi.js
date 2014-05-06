@@ -260,7 +260,6 @@
                  1 + 0.1 * event.deltaY);
         });
         self.on('mousedown touchstart', function(event) {
-            yellow.color = (yellow.color == 'yellow') ? 'black' : 'yellow';
             var targets = $.targets(event);
             if (event.which > 1) {
                 // Reserve right and middle clicks for browser menus
@@ -272,6 +271,7 @@
                         diameter: Math.sqrt(sqdist(t0, t1)),
                         x: (t0.x + t1.x) / 2, y: (t0.y + t1.y) / 2,
                         size: mapgrid.size(), offset: mapgrid.offset()};
+                    yellow.color = (yellow.color == 'yellow') ? 'black' : 'yellow';
                 }
                 redraw();
             } else {
