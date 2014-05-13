@@ -1,91 +1,112 @@
 (function(exports) {
     var trace = false;
 
+    var map = (function() {
+        var result = {};
+
+        return result;
+    })();
+
     // Calculate square distance
     var sqdist = function(node1, node2) {
         return ((node2.x - node1.x) * (node2.x - node1.x) +
                 (node2.y - node1.y) * (node2.y - node1.y));
     };
 
-    var create_character = function(grid, redraw, color, position) {
-        var result = {current: position, previous: null,
-                      path: [], progress: 1.0, rate: 1000,
-                      color: color};
-        result.move = (function() {
-            var start = null, stop = null;
-            var update_id = 0, update = function() {
-                var now = new Date().getTime();
-                if (!start) {
-                    start = now;
-                    stop = start + result.rate;
-                    result.previous = result.current;
-                    if (result.path.length)
-                        result.current = grid.coordinate(
-                            result.path.shift());
-                }
-                result.progress = (now - start) / (stop - start);
-                while (result.progress >= 1.0 &&
-                       result.path.length > 0) {
-                    result.progress -= 1.0;
-                    start += result.rate;
-                    stop += result.rate;
-                    result.previous = result.current;
-                    result.current = grid.coordinate(
-                        result.path.shift());
-                }
-                if (result.progress < 1.0 || result.path.length) {
-                    update_id = requestAnimationFrame(update);
-                } else {
-                    start = stop = null;
-                    update_id = 0;
-                }
-                redraw();
-            };
-            return function () {
-                var targets = [];
-                for (var i in arguments)
-                    targets.push({row: arguments[i].row,
-                                  col: arguments[i].col});
+    var create_character = function(grid, config) {
+        // A character has a current position, which is really the
+        // grid cell that it's in the process of entering.  When
+        // progress is less than 1.0 there must be a valid grid
+        // cell represented by the previous position.
+        //
+        // The internal start and stop variables represent the
+        // time at which the character began entering the current
+        // cell and the time when that step will be complete.
+        var result = {current: {row: (config && config.row) ?
+                                config.row : 0,
+                                col: (config && config.col) ?
+                                config.col : 0},
+                      previous: null, path: [], progress: 1.0,
+                      rate: ((config && config.rate) ?
+                             config.rate : 1000),
+                      color: ((config && config.color) ?
+                              config.color : 'blue')};
+        var start = null, stop = null;
 
-                var newpath = pathf.astarsearch(
-                    result.current, targets,
-                    function(node) {
-                        var neighbors = grid.neighbors(node);
-                        var result = [];
-                        for (var i in neighbors) {
-                            var seed = ripple.pair(neighbors[i].row,
-                                                   neighbors[i].col);
-                            if ((seed % 5) != 2)
-                                result.push(neighbors[i]);
-                        }
-                        return result;
-                    },
-                    function(node, cost, goal) {
-                        return Math.sqrt((goal.row - node.row) *
-                                         (goal.row - node.row) +
-                                         (goal.col - node.col) *
-                                         (goal.col - node.col));
-                    },
-                    null, 15, function(node) {
-                        return node.row + ", " + node.col;
-                    })
-                if (newpath) {                    
-                    result.path = newpath;
-                    if (!update_id)
-                        update_id = requestAnimationFrame(update);
+        result.update = function(now) {
+            if (this.progress < 1.0 || this.path) {
+                if (!start) {
+                    start = new Date().getTime();
+                    stop = start + this.rate;
                 }
-            };
-        })();
+                this.progress = (now - start) / (stop - start);
+                while (this.progress >= 1.0 &&
+                       this.path.length > 0) {
+                    this.progress -= 1.0;
+                    start += this.rate;
+                    stop += this.rate;
+                    this.previous = this.current;
+                    this.current = grid.coordinate(
+                        this.path.shift());
+                }
+                if (this.progress >= 1.0 && !this.path.length) {
+                    this.progress = 1.0;
+                    this.previous = start = stop = null;
+                }
+            }
+            return this;
+        };
+
+        result.move = function () {
+            var self = this;
+
+            // We have to sanitize goals because if they contain
+            // members other than row and column they won't
+            // necessarily match and the path finding will fail.
+            var goals = [];
+            for (var i in arguments)
+                goals.push({row: arguments[i].row,
+                              col: arguments[i].col});
+
+            var newpath = pathf.astarsearch(
+                self.current, goals,
+                function(node) {
+                    var neighbors = grid.neighbors(node);
+                    var result = [];
+                    for (var i in neighbors) {
+                        var seed = ripple.pair(neighbors[i].row,
+                                               neighbors[i].col);
+                        if ((seed % 5) != 2)
+                            result.push(neighbors[i]);
+                    }
+                    return result;
+                },
+                function(node, cost, goal) {
+                    return Math.sqrt((goal.row - node.row) *
+                                     (goal.row - node.row) +
+                                     (goal.col - node.col) *
+                                     (goal.col - node.col));
+                },
+                null, 15, function(node) {
+                    return node.row + ", " + node.col;
+                })
+            if (newpath)
+                this.path = newpath;
+            return this;
+        };
+
+        result.active = function(ctx) { return !!start; };
+
         result.draw = function(ctx) {
             var dest = grid.coordinate(result.current);
-            var src  = result.previous ?
-                grid.coordinate(result.previous) : null;
+            var src  = this.previous ?
+                grid.coordinate(this.previous) : null;
             var x, y;
             if (src) {
                 x = src.x + (dest.x - src.x) *
-                    Math.min(result.progress, 1.0);
+                    Math.min(this.progress, 1.0);
                 y = src.y + (dest.y - src.y) *
-                    Math.min(result.progress, 1.0);
+                    Math.min(this.progress, 1.0);
             } else { x = dest.x; y = dest.y };
             ctx.beginPath();
             ctx.moveTo(x, y);
@@ -103,7 +124,9 @@
                 ctx.strokeStyle = color;
                 ctx.stroke();
             }
+            return this;
         };
+
         return result;
     };
 
@@ -111,12 +134,22 @@
         var self = $(object);
         var viewport = $(window);
         var mapgrid = grid.create(
-            {type: window.params['gridtype'] || 'hex'});
-        var reddie, yellow;
+            {type: window.params['gridtype'] || 'hex', size: 33});
+        var actors = [];
         var target;
 
+        var throttle = null;
+        var counter = 0;
+
         var draw_id = 0;
-        var draw = function() {
+        var draw = function(now) {
+            if (throttle && now < throttle + 1000) {
+                if (++counter > 50) {
+                    console.log("Throttling " + now + " :: " + throttle);
+                    return;
+                }
+            } else { throttle = now; counter = 0; }
+
             if (self[0].getContext) {
                 var ctx = self[0].getContext('2d');
                 var width = self.width(), height = self.height();
@@ -151,8 +184,9 @@
                     ctx.fill();
                 });
 
-                yellow.draw(ctx);
-                reddie.draw(ctx);
+                var now = new Date().getTime();
+                for (var index in actors)
+                    actors[index].update(now).draw(ctx);
 
                 // Highlight the targetted grid cell
                 if (target) {
@@ -177,7 +211,18 @@
 
                 ctx.restore();
             }
-            draw_id = 0;
+
+            var active = false;
+            for (var index in actors)
+                if (actors[index].active())
+                    active = true;
+
+            // Seems like a simple call to requestAnimationFrame
+            // should work here, but it causes at least Firefox to
+            // chew up lots of CPU cycles.  The indirection seems
+            // to fix the problem for some reason.
+            draw_id = active ? requestAnimationFrame(
+                function () { requestAnimationFrame(draw); }) : 0;
         };
         var redraw = function() {
             if (!draw_id)
@@ -193,10 +238,9 @@
         viewport.resize(resize);
         resize();
 
-        reddie = create_character(mapgrid, redraw, 'red',
-                                  {row: 0, col: 0});
-        yellow = create_character(mapgrid, redraw, 'yellow',
-                                  {row: 3, col: 3});
+        actors.push(reddie = create_character(mapgrid, {color: 'red'}));
+        actors.push(yellow = create_character(mapgrid, {
+            color: 'yellow', row: 3, col: 3, rate: 1250}));
         var yellow_follow = function() {
             yellow.move.apply(yellow, mapgrid.neighbors
                               (reddie.current));
@@ -249,7 +293,7 @@
 
         var zooming, zoom = function(left, top, size, x, y, factor) {
             if (factor && factor > 0) {
-                if (size * factor > 40) {
+                if (size * factor > 33) {
                     mapgrid.offset((left - x) * factor + x,
                                    (top - y)  * factor + y);
                     mapgrid.size(size * factor);
@@ -277,14 +321,15 @@
                         diameter: Math.sqrt(sqdist(t0, t1)),
                         x: (t0.x + t1.x) / 2, y: (t0.y + t1.y) / 2,
                         size: mapgrid.size(), offset: mapgrid.offset()};
-                    yellow.color = (yellow.color == 'yellow') ?
-                        'black' : 'yellow';
+                    // yellow.color = (yellow.color == 'yellow') ?
+                    //     'black' : 'yellow';
                 }
                 redraw();
             } else {
                 target = mapgrid.position(targets);
                 drift(target);
                 reddie.move(target);
+                redraw();
             }
             return false;
         });

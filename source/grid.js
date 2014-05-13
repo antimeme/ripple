@@ -530,82 +530,6 @@
         return result;
     };
 
-    // A simple framework for using a full canvas grid.
-    exports.graphics = function(object, window, grid, draw) {
-        var self = $(object);
-        var viewport = $(window);
-        var draw_id = 0;
-        var draw_fn = function() {
-            if (self[0].getContext) {
-                var ctx = self[0].getContext('2d');
-                var width = self.width(), height = self.height();
-                ctx.save();
-                ctx.clearRect(0, 0, width, height);
-                draw(ctx, grid);
-                ctx.restore();
-            }
-            draw_id = 0;
-        };
-        var redraw = function() {
-            if (!draw_id)
-                draw_id = requestAnimationFrame(draw_fn);
-        };
-        var resize = function(event) {
-            self.height(viewport.height());
-            self.width(viewport.width());
-            self.attr("width", self.innerWidth())
-            self.attr("height", self.innerHeight());
-            redraw();
-        };
-        viewport.resize(resize);
-        resize();
-
-        var zoom = function(left, top, size, x, y, factor) {
-            if (factor && factor > 0) {
-                if (size * factor > 50) {
-                    mapgrid.offset((left - x) * factor + x,
-                                   (top - y)  * factor + y);
-                    mapgrid.size(size * factor);
-                }
-                redraw();
-            }
-        };
-
-        self.on('mousewheel', function(event) {
-            var offset = mapgrid.offset();
-            var x = self.width() / 2;
-            var y = self.height() / 2;
-            zoom(offset.left, offset.top, mapgrid.size(), x, y,
-                 1 + 0.1 * event.deltaY);
-        });
-        self.on('mousedown touchstart', function(event) {
-            var targets = $.targets(event);
-            if (event.which > 1) {
-                // Reserve right and middle clicks for browser menus
-            } else if (targets.touches.length > 1) {
-                if (targets.touches.length == 2) {
-                    var t0 = targets.touches[0];
-                    var t1 = targets.touches[1];
-                    zooming = {
-                        diameter: Math.sqrt(sqdist(t0, t1)),
-                        x: (t0.x + t1.x) / 2, y: (t0.y + t1.y) / 2,
-                        size: mapgrid.size(), offset: mapgrid.offset()};
-                }
-                redraw();
-            } else {
-                var tap = $.targets(event);
-                target = mapgrid.coordinate(mapgrid.position(tap));
-                redraw();
-            }
-            return false;
-        });
-        self.on('click', function(event) {
-            var tap = $.targets(event);
-            target = mapgrid.coordinate(mapgrid.position(tap));
-            redraw();
-        });
-    }
-
     exports.test = function(index, object) {
         var self = $(object);
         var viewport = $(window);
@@ -806,7 +730,6 @@
                 else this.stop();
             };
         })();
-
 
         // Populate menu with available grid types
         var menu = $('<ul class="menu"></ul>').hide();
