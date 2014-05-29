@@ -1,12 +1,6 @@
 (function(exports) {
     var trace = false;
 
-    var map = (function() {
-        var result = {};
-
-        return result;
-    })();
-
     // Calculate square distance
     var sqdist = function(node1, node2) {
         return ((node2.x - node1.x) * (node2.x - node1.x) +
@@ -22,18 +16,24 @@
         // The internal start and stop variables represent the
         // time at which the character began entering the current
         // cell and the time when that step will be complete.
-        var result = {current: {row: (config && config.row) ?
-                                config.row : 0,
-                                col: (config && config.col) ?
-                                config.col : 0},
-                      previous: null, path: [], progress: 1.0,
-                      rate: ((config && config.rate) ?
-                             config.rate : 1000),
-                      color: ((config && config.color) ?
-                              config.color : 'blue')};
+        var self = {current: {row: (config && config.row) ?
+                              config.row : 0,
+                              col: (config && config.col) ?
+                              config.col : 0},
+                    previous: null, path: [], progress: 1.0,
+                    rate: ((config && config.rate) ?
+                           config.rate : 1000),
+                    color: ((config && config.color) ?
+                            config.color : 'blue')};
         var start = null, stop = null;
+        var advance = function() {
+            self.progress -= 1.0;
+            self.previous = self.current;
+            self.current = grid.coordinate(
+                self.path.shift());
+        }
 
-        result.update = function(now) {
+        self.update = function(now) {
             if (this.progress < 1.0 || this.path) {
                 if (!start) {
                     start = new Date().getTime();
@@ -42,12 +42,9 @@
                 this.progress = (now - start) / (stop - start);
                 while (this.progress >= 1.0 &&
                        this.path.length > 0) {
-                    this.progress -= 1.0;
                     start += this.rate;
                     stop += this.rate;
-                    this.previous = this.current;
-                    this.current = grid.coordinate(
-                        this.path.shift());
+                    advance();
                 }
                 if (this.progress >= 1.0 && !this.path.length) {
                     this.progress = 1.0;
@@ -57,9 +54,7 @@
             return this;
         };
 
-        result.move = function () {
-            var self = this;
-
+        self.move = function () {
             // We have to sanitize goals because if they contain
             // members other than row and column they won't
             // necessarily match and the path finding will fail.
@@ -70,44 +65,43 @@
 
             var newpath = pathf.astarsearch(
                 self.current, goals,
-                function(node) {
-                    var neighbors = grid.neighbors(node);
-                    var result = [];
-                    for (var i in neighbors) {
-                        var seed = ripple.pair(neighbors[i].row,
-                                               neighbors[i].col);
+                function neighbors(node) {
+                    var gneigh = grid.neighbors(node);
+                    var self = [];
+                    for (var i in gneigh) {
+                        var seed = ripple.pair(gneigh[i].row,
+                                               gneigh[i].col);
                         if ((seed % 5) != 2)
-                            result.push(neighbors[i]);
+                            self.push(gneigh[i]);
                     }
-                    return result;
+                    return self;
                 },
-                function(node, cost, goal) {
-                    return Math.sqrt((goal.row - node.row) *
-                                     (goal.row - node.row) +
-                                     (goal.col - node.col) *
-                                     (goal.col - node.col));
+                function heuristic(node, cost, goal) {
+                    return (Math.abs(goal.row - node.row) +
+                            Math.abs(goal.col - node.col));
                 },
-                null, 15, function(node) {
+                null, 15, function stringify(node) {
                     return node.row + ", " + node.col;
                 })
-            if (newpath)
+            if (newpath && newpath.length > 0) {
                 this.path = newpath;
-            return this;
+                if (this.progress >= 1.0)
+                    advance();
+            }
+            return self;
         };
 
-        result.active = function(ctx) { return !!start; };
+        self.active = function(ctx)
+        { return self.progress < 1.0 || self.path.length; };
 
-        result.draw = function(ctx) {
-            var dest = grid.coordinate(result.current);
+        self.draw = function(ctx) {
+            var dest = grid.coordinate(self.current);
             var src  = this.previous ?
-                grid.coordinate(this.previous) : null;
-            var x, y;
-            if (src) {
-                x = src.x + (dest.x - src.x) *
-                    Math.min(this.progress, 1.0);
-                y = src.y + (dest.y - src.y) *
-                    Math.min(this.progress, 1.0);
-            } else { x = dest.x; y = dest.y };
+                grid.coordinate(this.previous) : dest;
+            var x = src.x + (dest.x - src.x) *
+                Math.min(this.progress, 1.0);
+            var y = src.y + (dest.y - src.y) *
+                Math.min(this.progress, 1.0);
             ctx.beginPath();
             ctx.moveTo(x, y);
             ctx.arc(x, y, grid.size() / 2,
@@ -115,7 +109,7 @@
             ctx.fillStyle = this.color;
             ctx.fill();
 
-            if (trace && this.path) {
+            if (trace && this.path.length > 0) {
                 ctx.moveTo(x, y);
                 for (var i in this.path) {
                     var node = grid.coordinate(this.path[i]);
@@ -127,7 +121,7 @@
             return this;
         };
 
-        return result;
+        return self;
     };
 
     exports.go = function(index, object) {
@@ -202,7 +196,7 @@
                     } else {
                         ctx.moveTo(selected.x, selected.y);
                         ctx.arc(selected.x, selected.y,
-                                grid.size() / 2, 0, 2 * Math.PI);
+                                mapgrid.size() / 2, 0, 2 * Math.PI);
                     }
                     ctx.lineWidth = '5';
                     ctx.strokeStyle = 'black';
@@ -252,7 +246,7 @@
             reddie.color = (reddie.color == 'red') ?
                 'orangered' : 'red';
             redraw();
-            setTimeout(throb, 900);
+            setTimeout(throb, 2000);
         };
         throb();
 
