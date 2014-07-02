@@ -257,9 +257,6 @@ public class Options {
         }
     }
 
-    public void parseConfig(InputStreamReader stream) throws IOException
-    { parseConfig(new BufferedReader(stream)); }
-
     public void parseConfig(InputStream stream) throws IOException
     { parseConfig(new BufferedReader(new InputStreamReader(stream))); }
 

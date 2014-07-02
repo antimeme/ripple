@@ -200,7 +200,9 @@ public class Ripple {
         return o;
     }
 
-    /** Collect a password without echoing charactes if possible. */
+    /**
+     * Collect a password from the command line.  If possible this
+     * method will avoid echoing characters. */
     public static char[] passwdPrompt(String prompt)
     {
         // Java 1.6 introduced a Console class that makes it easy to
@@ -284,6 +286,7 @@ public class Ripple {
         // are automatically documented.
         Class<?>[] commands = new Class<?>[] {
             net.esclat.ripple.Options.class,
+            net.esclat.ripple.Juju.class,
         };
         String[][] internals = {
             { "questions", "Display information about classes and " +
