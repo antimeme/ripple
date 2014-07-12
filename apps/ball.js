@@ -11,12 +11,14 @@
         parent.on('resize', resize);
         $(window).on('resize', resize);
 
+
         var bounce = function() {
             var sound = $('#swish')[0];
             sound.pause();
             sound.currentTime = 0;
             sound.play();
         }
+        self.on('click', bounce);
 
         var margin = 20;
         var ball;
