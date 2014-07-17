@@ -95,7 +95,7 @@ class@PACKAGE@java.stamp: $(am__java_sources)
 	echo timestamp > $@
 
 javadoc: $(dist_@PACKAGE@java_JAVA)
-	javadoc -public -d javadoc $^ 
+	javadoc -docencoding utf-8 -public -d javadoc $^
 	@touch $@
 
 install-dist_@PACKAGE@javaJAVA: javadoc
