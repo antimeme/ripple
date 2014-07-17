@@ -28,16 +28,12 @@ lib_LTLIBRARIES          = lib@PACKAGE@.la
 lib@PACKAGE@_la_LDFLAGS  = -version-info $(LIBVERSION)
 lib@PACKAGE@_la_CPPFLAGS = -I$(srcdir)/include
 lib@PACKAGE@_la_SOURCES  = \
-	source/stream.c \
 	source/context.c \
+	source/stream.c \
 	source/option.c \
-	source/random.c
-pkginclude_HEADERS       = \
-	include/ripple/tree.h \
-	include/ripple/stream.h \
-	include/ripple/context.h \
-	include/ripple/option.h \
-	include/ripple/random.h
+	source/random.c \
+	source/juju.c
+pkginclude_HEADERS = include/ripple/*.h
 
 check_PROGRAMS = check-@PACKAGE@
 check_@PACKAGE@_CPPFLAGS = -I$(srcdir)/include
@@ -45,10 +41,11 @@ check_@PACKAGE@_LDADD    = lib@PACKAGE@.la
 check_@PACKAGE@_SOURCES  = \
 	source/check-@PACKAGE@.c \
 	source/check-tree.c \
-	source/check-stream.c \
 	source/check-context.c \
+	source/check-stream.c \
 	source/check-option.c \
-	source/check-random.c
+	source/check-random.c \
+	source/check-juju.c
 
 ## Python ==============================================================
 if HAVE_PYTHON
