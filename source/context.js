@@ -79,7 +79,7 @@
     if (typeof jQuery !== 'undefined') {
 
         // Process full screen events independent of browser vendor
-        $.requestFullscreen = function(elem) {
+        jQuery.requestFullscreen = function(elem) {
             var req = elem.requestFullscreen || elem.requestFullScreen;
             var names = ["RequestFullscreen", "RequestFullScreen"];
             for (var i = 0; !req && i < vendors.length; ++i)
@@ -88,7 +88,7 @@
             console.log("rfs", elem, req);
             if (req) req.apply(elem);
         };
-        $.exitFullscreen = function() {
+        jQuery.exitFullscreen = function() {
             var efs = document.exitFullscreen ||
                 document.exitFullScreen;
             var names = ["ExitFullscreen", "ExitFullScreen",
@@ -99,7 +99,7 @@
             console.log("efs");
             if (efs) efs.apply(document);
         };
-        $.toggleFullscreen = function(elem) {
+        jQuery.toggleFullscreen = function(elem) {
             var fse = document.fullscreenElement ||
                 document.fullScreenElement;
             var names = ["FullscreenElement", "FullScreenElement"];
@@ -107,8 +107,8 @@
                 for (var n = i; !fse && n < names.length; ++n)
                     fse = document[vendors[i] + names[n]];
             console.log(fse);
-            return fse ? $.exitFullscreen() :
-                $.requestFullscreen(elem);
+            return fse ? jQuery.exitFullscreen() :
+                jQuery.requestFullscreen(elem);
         };
 
         // Normalize positions in mouse and touch events
