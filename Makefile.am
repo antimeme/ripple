@@ -66,16 +66,22 @@ if HAVE_JAVA
 JAVAROOT = $(top_builddir)/classes-@PACKAGE@
 JAVAC    = ${JAVA_HOME:+$JAVA_HOME/bin/}javac
 JAR      = ${JAVA_HOME:+$JAVA_HOME/bin/}jar
+JAVA     = ${JAVA_HOME:+$JAVA_HOME/bin/}java
 javadir = $(datadir)/@PACKAGE@
 dist_@PACKAGE@java_JAVA = $(srcdir)/source/*.java
 dist_@PACKAGE@java_DATA = @PACKAGE@-@VERSION@.jar
 @PACKAGE@javadir = $(libdir)/@PACKAGE@
 
 @PACKAGE@-@VERSION@.jar: $(srcdir)/META-INF/MANIFEST.MF \
+			 $(JAVAROOT)/.commands \
 	                 class@PACKAGE@java.stamp javadoc
 	$(JAR) cvfm $@ $(srcdir)/META-INF/MANIFEST.MF \
 	    -C $(top_builddir) javadoc -C $(JAVAROOT) .
 	chmod +x $@
+
+$(JAVAROOT)/.commands: class@PACKAGE@java.stamp
+	ls $(JAVAROOT)/net/esclat/ripple | \
+	    sed -n 's/^\([A-Za-z]*\).class/\1/p' > $@
 
 class@PACKAGE@java.stamp: $(am__java_sources)
 	mkdir -p $(JAVAROOT)
@@ -100,10 +106,16 @@ install-dist_@PACKAGE@javaJAVA: javadoc
 	cp -R $^ $(DESTDIR)$(docdir)
 
 clean-@PACKAGE@javaJAVA:
-	-rm -rf class@PACKAGE@java.stamp javadoc \
+	-rm -rf class@PACKAGE@java.stamp javadoc jartest.sh \
 	    $(top_builddir)/classes-@PACKAGE@ @PACKAGE@-@VERSION@.jar
 
-endif HAVE_JAVA
-# :FIXME: run some Java tests
+jartest.sh:
+	echo '#!/bin/sh' > $@
+	echo $(JAVA) -jar @PACKAGE@-@VERSION@.jar test >> $@
+	chmod +x $@
 
-TESTS = $(check_PROGRAMS) $(tests_python) $(tests_java)
+tests_java = jartest.sh
+
+endif HAVE_JAVA
+
+TESTS = $(check_PROGRAMS) $(tests_java) $(tests_python)
