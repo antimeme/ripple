@@ -138,7 +138,6 @@ public class Octahedron extends Applet {
                      offy + (size + height) / 2);
     }
 
-    public static void main(String[] args) {
-        Standalone.app(new Octahedron(), null, null, args);
-    }
+    public static void main(String[] args) throws Exception
+    { Standalone.app(new Octahedron(), args).joinQuit(0); }
 }

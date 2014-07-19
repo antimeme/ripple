@@ -63,42 +63,35 @@ endif
 # in the way enough to make it inconvenient to avoid... for now.
 # See /usr/share/automake-${AM_VERSION}/am/java.am for details.
 if HAVE_JAVA
-JAVAROOT = $(top_builddir)/classes-@PACKAGE@
-JAVAC    = ${JAVA_HOME:+$JAVA_HOME/bin/}javac
-JAR      = ${JAVA_HOME:+$JAVA_HOME/bin/}jar
-JAVA     = ${JAVA_HOME:+$JAVA_HOME/bin/}java
-javadir = $(datadir)/@PACKAGE@
-dist_@PACKAGE@java_JAVA = $(srcdir)/source/*.java
-dist_@PACKAGE@java_DATA = @PACKAGE@-@VERSION@.jar
 @PACKAGE@javadir = $(libdir)/@PACKAGE@
+JAVAROOT = $(top_builddir)/classes
+JAVADOC  = ${JAVA_HOME:+$JAVA_HOME/bin/}javadoc
+JAVAC    = ${JAVA_HOME:+$JAVA_HOME/bin/}javac
+JAVA     = ${JAVA_HOME:+$JAVA_HOME/bin/}java
+JAR      = ${JAVA_HOME:+$JAVA_HOME/bin/}jar
+javadir = $(datadir)/@PACKAGE@
+dist_@PACKAGE@java_JAVA = $(srcdir)/source/*.java source/Ripple.java
+dist_@PACKAGE@java_DATA = @PACKAGE@-@VERSION@.jar
 
 @PACKAGE@-@VERSION@.jar: $(srcdir)/META-INF/MANIFEST.MF \
-			 $(JAVAROOT)/.commands \
-	                 class@PACKAGE@java.stamp javadoc
+			 class@PACKAGE@java.stamp \
+			 $(JAVAROOT)/.commands javadoc
 	$(JAR) cvfm $@ $(srcdir)/META-INF/MANIFEST.MF \
 	    -C $(top_builddir) javadoc -C $(JAVAROOT) .
 	chmod +x $@
 
 $(JAVAROOT)/.commands: class@PACKAGE@java.stamp
-	ls $(JAVAROOT)/net/esclat/ripple | \
-	    sed -n 's/^\([A-Za-z]*\).class/\1/p' > $@
+	find $(JAVAROOT) -name \*.class | \
+	    sed -n 's,.*/\([A-Za-z][A-Za-z0-9_]*\).class,\1,p' > $@
 
-class@PACKAGE@java.stamp: $(am__java_sources)
-	mkdir -p $(JAVAROOT)
-	@list1='$?'; list2=; if test -n "$$list1"; then \
-	  for p in $$list1; do \
-	    if test -f $$p; then d=; else d="$(srcdir)/"; fi; \
-	    list2="$$list2 $$d$$p"; \
-	  done; \
-	  echo '$(CLASSPATH_ENV) $(JAVAC) -d $(JAVAROOT) \
-	        $(AM_JAVACFLAGS) $(JAVACFLAGS) '"$$list2"; \
-	  $(CLASSPATH_ENV) $(JAVAC) -d $(JAVAROOT) \
-	        $(AM_JAVACFLAGS) $(JAVACFLAGS) $$list2; \
-	else :; fi
+class@PACKAGE@java.stamp: $(dist_@PACKAGE@java_JAVA)
+	$(MKDIR_P) $(JAVAROOT)
+	$(CLASSPATH_ENV) $(JAVAC) -d $(JAVAROOT) \
+	    $(AM_JAVACFLAGS) $(JAVACFLAGS) $?
 	echo timestamp > $@
 
 javadoc: $(dist_@PACKAGE@java_JAVA)
-	javadoc -docencoding utf-8 -public -d javadoc $^
+	$(JAVADOC) -docencoding utf-8 -public -d javadoc $^
 	@touch $@
 
 install-dist_@PACKAGE@javaJAVA: javadoc
@@ -107,7 +100,7 @@ install-dist_@PACKAGE@javaJAVA: javadoc
 
 clean-@PACKAGE@javaJAVA:
 	-rm -rf class@PACKAGE@java.stamp javadoc jartest.sh \
-	    $(top_builddir)/classes-@PACKAGE@ @PACKAGE@-@VERSION@.jar
+	    $(top_builddir)/classes @PACKAGE@-@VERSION@.jar
 
 jartest.sh:
 	echo '#!/bin/sh' > $@

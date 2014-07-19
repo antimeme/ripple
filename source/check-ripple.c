@@ -92,8 +92,8 @@ perform(struct test *test, struct results *results)
       results->failures[results->n_failures].result = result;
       ++results->n_failures;
     }
-    printf(">>> FAILURE %s\n", test->name);
-  } else printf(">>> SUCCESS %s\n", test->name);
+    printf(">>> FAIL %s\n", test->name);
+  } else printf(">>> PASS %s\n", test->name);
   ++results->total;
 }
 

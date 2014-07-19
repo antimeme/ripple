@@ -459,7 +459,7 @@ public class Ripple {
     /** Entry point that dispatches requests to applications. */
     public static void main(String[] args) throws Throwable
     {
-        int result = 1;
+        int result = 0;
         System.out.println("Ripple " + VERSION + " - Copyright (C) " +
                            "2007-2014 by Jeff Gold.");
         if (args.length == 0)
@@ -517,8 +517,7 @@ public class Ripple {
             // Perform automated tests on some or all modules
             List<String> failures = new LinkedList<String>();
             int tests = 0;
-            boolean success;
-            result = 0;
+            int skips = 0;
             if (args.length > 1) {
                 // Perform tests specified by command line arguments
                 for (String command: args) {
@@ -527,17 +526,16 @@ public class Ripple {
                         Class<?> c = Class.forName
                             (APPS + "." + command);
                         Method m = c.getMethod("test");
-                        System.out.println("--- TEST: " + command);
-                        success = false;
-                        try {
-                            success = (boolean)m.invoke(null);
-                        } catch (InvocationTargetException ex) {
-                            ex.getCause().printStackTrace(System.err);
-                        }
+                        System.out.println(">>> BEGIN: " + command);
+                        boolean success = false;
+                        try { success = (boolean)m.invoke(null); }
+                        catch (InvocationTargetException ex)
+                        { ex.getCause().printStackTrace(System.err); }
+
                         if (!success)
                             failures.add(command);
                         System.out.println
-                            ("--- " + (success ? "PASS" : "FAIL") +
+                            (">>> " + (success ? "PASS" : "FAIL") +
                              ": " + command);
                     } catch (ClassNotFoundException ex) {
                         System.err.println("No such test: " + command);
@@ -549,38 +547,36 @@ public class Ripple {
                 // Perform all automated tests available.
                 // Any command missing a test is silently ignored.
                 for (String command: getCommands()) {
+                    ++tests;
                     try {
                         Class<?> c = Class.forName
                             (APPS + "." + command);
                         Method m = c.getMethod("test");
-                        System.out.println("--- TEST: " + command);
-                        success = false;
-                        try {
-                            success = (boolean)m.invoke(null);
-                        } catch (InvocationTargetException ex) {
-                            ex.getCause().printStackTrace(System.err);
-                        }
+                        System.out.println(">>> BEGIN: " + command);
+                        boolean success = false;
+                        try { success = (boolean)m.invoke(null); }
+                        catch (InvocationTargetException ex)
+                        { ex.getCause().printStackTrace(System.err); }
                         if (!success)
                             failures.add(command);
                         System.out.println
-                            ("--- " + (success ? "PASS" : "FAIL") +
+                            (">>> " + (success ? "PASS" : "FAIL") +
                              ": " + command);
-                        ++tests;
                     } catch (ClassNotFoundException ex) {
                         System.err.println("No such test: " + command);
-                    } catch (NoSuchMethodException ex) {}
+                    } catch (NoSuchMethodException ex) { ++skips; }
                 }
             }
 
+            System.out.println
+                ("RESULTS: " + tests + " total " +
+                 failures.size() + " errors " +
+                 skips + " skipped");
             if (failures.size() > 0) {
                 for (String failure: failures)
                     System.out.println("  FAILED: " + failure);
-                System.out.println
-                    ("FAILURE: " + (tests - failures.size()) +
-                     "/" + tests);
-                System.exit(1);
-            } else System.out.println
-                       ("SUCCESS: " + tests + "/" + tests);
+                result = 1;
+            }
         } else {
             // Correct string case if possible
             String command = args[0].toLowerCase();

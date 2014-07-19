@@ -804,9 +804,6 @@ public class Options {
         String  name   = opts.add
             (new String("name", 'n', null, "something to refer " +
                         "to something by."));
-        String  nombre = opts.add
-            (new String("nombre", 'm', null,
-                        "es el mismo de \"name\"."));
 
         class Address extends Group {
             public java.lang.String street = null;
@@ -827,7 +824,6 @@ public class Options {
         System.out.println("active  = " + active);
         System.out.println("count   = " + count);
         System.out.println("name    = " + name);
-        System.out.println("nombre  = " + nombre);
         System.out.println("street  = " + a.street);
         System.out.println("zipcode = " + a.zipcode);
 
