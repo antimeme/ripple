@@ -257,9 +257,6 @@ public class Options {
         }
     }
 
-    public void parseConfig(InputStreamReader stream) throws IOException
-    { parseConfig(new BufferedReader(stream)); }
-
     public void parseConfig(InputStream stream) throws IOException
     { parseConfig(new BufferedReader(new InputStreamReader(stream))); }
 
@@ -289,8 +286,8 @@ public class Options {
                     for (int i = opt.length(); i < maxlen; i++)
                         stream.print(" ");
                     stream.print(" - ");
-                    Ripple.wrap(stream, opt_help,
-                                maxlen + 3, maxlen + 3, 72);
+                    Ripple.wrap
+                        (stream, maxlen + 3, maxlen + 3, 72, opt_help);
                 }
             }
     }

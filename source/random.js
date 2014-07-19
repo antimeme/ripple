@@ -18,7 +18,7 @@
 // ---------------------------------------------------------------------
 // Mersenne Twister implementation.  For algorithm details:
 //     http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
-(function () {
+(function (exports) {
     const RRAND_N = 624;
     const RRAND_M = 397;
     const RRAND_MATRIX_A   = 0x9908B0DF;
@@ -39,21 +39,7 @@
         return (((high << 16) + (al * bl)) & 0xffffffff) >>> 0;
     }
 
-    function random(seed) {
-        var mti = 0;
-        this.mt = new Array();
-        this.mt[mti] = seed & RRAND_MAXIMUM;
-        for (mti = 1; mti < RRAND_N; mti++) {
-            this.mt[mti] = multiply_uint32(
-                RRAND_TAOCP2P106,
-                (this.mt[mti - 1] ^
-                 (this.mt[mti - 1] >>> 30))) + mti;
-            this.mt[mti] = ((this.mt[mti] & RRAND_MAXIMUM) >>> 0);
-        }
-        this.mti = mti;
-        return this;
-    }
-    random.prototype.int32 = function () {
+    var int32 = function () {
         var current;
         var mag01 = [ 0, RRAND_MATRIX_A ];
         if (this.mti >= RRAND_N) {
@@ -87,13 +73,27 @@
         return current;
     }
 
-    this.random = random;
-})();
+    exports.random = function(seed) {
+        var self = {int32: int32};
+        var mti = 0;
+        self.mt = new Array();
+        self.mt[mti] = seed & RRAND_MAXIMUM;
+        for (mti = 1; mti < RRAND_N; mti++) {
+            self.mt[mti] = multiply_uint32(
+                RRAND_TAOCP2P106,
+                (self.mt[mti - 1] ^
+                 (self.mt[mti - 1] >>> 30))) + mti;
+            self.mt[mti] = ((self.mt[mti] & RRAND_MAXIMUM) >>> 0);
+        }
+        self.mti = mti;
+        return self;
+    }
 
-// module unit tests
+})(typeof exports === 'undefined'? this['random'] = {}: exports);
+
 if ((typeof require !== 'undefined') && (require.main === module)) {
     var result = 0;
-    var r = new random(5489);
+    var r = exports.random(5489);
 
     var check_state = [
         0x00001571, 0x4d98ee96, 0xaf25f095, 0xafd9ba96, 0x6fcbd068,

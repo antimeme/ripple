@@ -1,14 +1,35 @@
+// pathf.js
+// Copyright (C) 2014 by Jeff Gold.
+//
+// This program is free software: you can redistribute it and/or
+// modify it under the terms of the GNU General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see
+// <http://www.gnu.org/licenses/>.
+//
+// ---------------------------------------------------------------------
+// Path finding routines
 (function(exports) {
 
-    var Heap = function(contents, compare) {
+    var Heap = function(compare) {
         // This is a priority queue implementation.  The smallest
         // element (defined by the optional compare function) can be
         // fetched in O(log(n)) time.  An element can be added in
         // O(log(n)) time.
-        this.compare = compare ||  function(a, b) {
-            return a == b ? 0 : a > b ? 1 : -1;
-        };
-        this.contents = contents || new Array();
+        this.compare = compare || function(a, b)
+        { return a == b ? 0 : a > b ? 1 : -1; };
+
+        this.contents = new Array();
+        for (var i = 1; i < arguments.length; i++)
+            contents.push(arguments[i]);
 
         var fixup = function(heap, i) {
             var parent = Math.ceil(i / 2) - 1;
@@ -49,7 +70,7 @@
 	        fixdown(this, i);
         };
 
-        if (this.contents)
+        if (this.contents.length > 0)
 	    this.heapify();
 
         this.size = function() { return this.contents.length; };
@@ -80,58 +101,58 @@
         //
         // @param start search begins from this node
         // @param goals list of goals at which the path can terminate
-        // @param neighbors accepts a node and returns a list of others
-        //                  which can be reached from it
-        // @param heuristic must return an admissable estimate of the
-        //                  cost given a node, the cost to reach that
-        //                  node and a goal node.  Leaving this
-        //                  parameter undefined reduces this search to
-        //                  Dijkstra's algorithm.
-        // @param costfn given a two adjacent nodes returns the cost
-        //               to travel from the first to the second.
-        //               Leaving this parameter undefined results in a
-        //               cost of one for all transitions, which may be
-        //               reasonable.
-        // @param limit maximum cost for an acceptable path.  Leaving
-        //              this parameter undefined means a path will be
-        //              found if one exists.
-        // @param stringify convert a node to a string which must
-        //                  uniquely identify nodes -- this is
-        //                  important when nodes might have more than
-        //                  one JSON representation
+        // @param neighbors(node) returns a list of nodes which can
+        //        be reached from the argument node
+        // @param heuristic(node, cost, goal) returns an admissable
+        //        estimate of the cost to reach given node, the cost
+        //        to reach that node and a goal node.  Leaving this
+        //        parameter undefined reduces this search to
+        //        Dijkstra's algorithm.
+        // @param costfn(node, prev) returns the cost of traveling
+        //        from prev to node (default always returns one so all
+        //        steps are equivalent)
+        // @param limit ignore paths that cost more than this value
+        //        (when undefined a path will be found if one exists)
+        // @param stringify returns a string which uniquely identifies
+        //        a node (defaults to JSON.stringify)
         if (!stringify)
-            stringify = function(node) { JSON.stringify(node); };
+            stringify = function(node) { return JSON.stringify(node); };
+        if (!costfn) costfn = function(node, prev) { return 1; };
+        if (!heuristic) // Degrade to Dijkstra's algorithm if necessary
+            heuristic = function(node, cost, goal) { return cost; };
+
+        // Construct a goal set
         if (!goals || !goals.length)
             return null; // No path without at least one goal
         var goalset = {};
         for (var i in goals)
             goalset[stringify(goals[i])] = goals[i];
 
-        if (!costfn) costfn = function(node, prev) { return 1; };
-        if (!heuristic) // Degrade to Dijkstra's algorithm if necessary
-            heuristic = function(node, cost, goal) { return cost; };
-
         function mknode(value, prev) {
-            var node_cost = (prev) ? prev.cost + costfn(
-                prev.value, value) : 0;
+            var cost = prev ? prev.cost + costfn(prev.value, value) : 0;
+            var hcost = null;
+            for (g in goalset) {
+                var h = heuristic(value, cost, goalset[g]);
+                if (hcost == null || h < hcost)
+                    hcost = h;
+            }
             return {value: value, prev: prev, repr: stringify(value),
-                    cost: node_cost, hcost: Math.min.apply(
-                        null, jQuery.map(goals, function(g) {
-                            return heuristic(value, node_cost, g); })) };
+                    cost: cost, hcost: hcost };
         }
 
-        var openset = {}, closedset = {};
-        var openheap = new Heap(null, function(a, b) {
+        var reachable = {}, explored = {};
+        var openheap = new Heap(function(a, b) {
             return a.hcost == b.hcost ? 0 : a.hcost > b.hcost ? 1 : -1;
         });
         var start_node = openheap.push(mknode(start));
-        openset[start_node.repr] = start_node;
+        reachable[start_node.repr] = start_node;
 
-        while (openheap.size()) {
+        while (openheap.size() > 0) {
+            // Choose a node to explore
             var current = openheap.pop();
-            delete openset[current.repr];
 
-            if (current.repr in goalset) { // a path has been found
+            // Build a path a goal has been reached
+            if (current.repr in goalset) {
                 var result = [];
                 while (current.prev) {
                     result.unshift(current.value);
@@ -140,21 +161,27 @@
                 return result;
             }
 
-            closedset[current.repr] = current.cost;
+            // Mark this node as explored
+            delete reachable[current.repr];
+            explored[current.repr] = current.cost;
+
+            // Consider nodes reachable from here
             var neighborhood = neighbors(current.value);
             for (var i in neighborhood) {
                 var neighbor = mknode(neighborhood[i], current);
                 if (limit && neighbor.cost > limit)
-                    continue;
-                if (neighbor.repr in closedset &&
-                    closedset[neighbor.repr] <= neighbor.cost)
-                    continue;
-                if ((neighbor.repr in openset) && 
-                    openset[neighbor.repr].cost <= neighbor.cost)
-                    continue;
-                openset[neighbor.repr] = openheap.push(neighbor);
+                    continue; // too expensive to consider
+                if (neighbor.repr in explored &&
+                    explored[neighbor.repr] <= neighbor.cost)
+                    continue; // already found a cheaper path
+                if ((neighbor.repr in reachable) && 
+                    reachable[neighbor.repr].cost <= neighbor.cost)
+                    continue; // about to consider a cheaper path
+                reachable[neighbor.repr] = openheap.push(neighbor);
             }
         }
+
+        // Ran out of nodes to consider without finding a path
         return null;
     }
 

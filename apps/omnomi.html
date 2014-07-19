@@ -4,21 +4,13 @@
 <meta name="viewport" content="initial-scale=1, maximum-scale=1" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta http-equiv="X-UA-Compatible" content="chrome=1">
-<title>Grid Test</title>
+<title>Omnomi</title>
 <style>
     html, body
     { padding: 0; margin: 0; overflow: hidden; position: relative; }
     canvas { background: white; color: #336; }
-    .menu {
-      position: absolute; padding: 0.5em;
-      background: #333; color: white;
-      border: 2px solid white; border-radius: 5px;
-      list-style-type: none; list-style-position: outside;
-    }
-    .menu a { text-decoration: none; color: white; }
-    .menu li { padding: 0.5em; border-radius: 5px; }
-    .menu li:hover { background: #55e; }
 </style>
+<canvas id="target"></canvas>
 
 <script src="lib/jquery.min.js"></script>
 <script src="lib/jquery.mousewheel.js"></script>
@@ -31,6 +23,8 @@
 <script src="ripple/context.js"></script>
 <script src="ripple/ripple.js"></script>
 <script src="ripple/grid.js"></script>
+<script src="ripple/pathf.js"></script>
+<script src="omnomi.js"></script>
 <script>//<![CDATA[
-jQuery(function($) { grid.test($, $('body')); });
+jQuery(function($) { $('canvas#target').each(omnomi.go); });
 //]]></script>

@@ -18,7 +18,7 @@
 EXTRA_DIST = bootstrap META-INF/MANIFEST.MF @PACKAGE@.spec
 
 docdir        = $(datadir)/doc/@PACKAGE@-@VERSION@
-dist_doc_DATA = RIPPLE LICENSE
+dist_doc_DATA = README LICENSE
 
 uninstall-local:
 	rm -rf $(DESTDIR)$(docdir)
@@ -28,16 +28,12 @@ lib_LTLIBRARIES          = lib@PACKAGE@.la
 lib@PACKAGE@_la_LDFLAGS  = -version-info $(LIBVERSION)
 lib@PACKAGE@_la_CPPFLAGS = -I$(srcdir)/include
 lib@PACKAGE@_la_SOURCES  = \
-	source/stream.c \
 	source/context.c \
+	source/stream.c \
 	source/option.c \
-	source/random.c
-pkginclude_HEADERS       = \
-	include/ripple/tree.h \
-	include/ripple/stream.h \
-	include/ripple/context.h \
-	include/ripple/option.h \
-	include/ripple/random.h
+	source/random.c \
+	source/juju.c
+pkginclude_HEADERS = include/ripple/*.h
 
 check_PROGRAMS = check-@PACKAGE@
 check_@PACKAGE@_CPPFLAGS = -I$(srcdir)/include
@@ -45,10 +41,11 @@ check_@PACKAGE@_LDADD    = lib@PACKAGE@.la
 check_@PACKAGE@_SOURCES  = \
 	source/check-@PACKAGE@.c \
 	source/check-tree.c \
-	source/check-stream.c \
 	source/check-context.c \
+	source/check-stream.c \
 	source/check-option.c \
-	source/check-random.c
+	source/check-random.c \
+	source/check-juju.c
 
 ## Python ==============================================================
 if HAVE_PYTHON
@@ -69,16 +66,22 @@ if HAVE_JAVA
 JAVAROOT = $(top_builddir)/classes-@PACKAGE@
 JAVAC    = ${JAVA_HOME:+$JAVA_HOME/bin/}javac
 JAR      = ${JAVA_HOME:+$JAVA_HOME/bin/}jar
+JAVA     = ${JAVA_HOME:+$JAVA_HOME/bin/}java
 javadir = $(datadir)/@PACKAGE@
 dist_@PACKAGE@java_JAVA = $(srcdir)/source/*.java
 dist_@PACKAGE@java_DATA = @PACKAGE@-@VERSION@.jar
 @PACKAGE@javadir = $(libdir)/@PACKAGE@
 
 @PACKAGE@-@VERSION@.jar: $(srcdir)/META-INF/MANIFEST.MF \
+			 $(JAVAROOT)/.commands \
 	                 class@PACKAGE@java.stamp javadoc
 	$(JAR) cvfm $@ $(srcdir)/META-INF/MANIFEST.MF \
 	    -C $(top_builddir) javadoc -C $(JAVAROOT) .
 	chmod +x $@
+
+$(JAVAROOT)/.commands: class@PACKAGE@java.stamp
+	ls $(JAVAROOT)/net/esclat/ripple | \
+	    sed -n 's/^\([A-Za-z]*\).class/\1/p' > $@
 
 class@PACKAGE@java.stamp: $(am__java_sources)
 	mkdir -p $(JAVAROOT)
@@ -95,7 +98,7 @@ class@PACKAGE@java.stamp: $(am__java_sources)
 	echo timestamp > $@
 
 javadoc: $(dist_@PACKAGE@java_JAVA)
-	javadoc -public -d javadoc $^ 
+	javadoc -docencoding utf-8 -public -d javadoc $^
 	@touch $@
 
 install-dist_@PACKAGE@javaJAVA: javadoc
@@ -103,10 +106,16 @@ install-dist_@PACKAGE@javaJAVA: javadoc
 	cp -R $^ $(DESTDIR)$(docdir)
 
 clean-@PACKAGE@javaJAVA:
-	-rm -rf class@PACKAGE@java.stamp javadoc \
+	-rm -rf class@PACKAGE@java.stamp javadoc jartest.sh \
 	    $(top_builddir)/classes-@PACKAGE@ @PACKAGE@-@VERSION@.jar
 
-endif HAVE_JAVA
-# :FIXME: run some Java tests
+jartest.sh:
+	echo '#!/bin/sh' > $@
+	echo $(JAVA) -jar @PACKAGE@-@VERSION@.jar test >> $@
+	chmod +x $@
 
-TESTS = $(check_PROGRAMS) $(tests_python) $(tests_java)
+tests_java = jartest.sh
+
+endif HAVE_JAVA
+
+TESTS = $(check_PROGRAMS) $(tests_java) $(tests_python)
