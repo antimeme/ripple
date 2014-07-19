@@ -330,6 +330,7 @@ public class Juju {
                 if (!Character.isWhitespace(current))
                     throw new ParseException
                         (line, column, "Extraneous characters");
+                break;
             default:
                 throw new ParseException
                     (0, column, "Unknown state: " + state);
