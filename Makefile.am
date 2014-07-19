@@ -18,7 +18,7 @@
 EXTRA_DIST = bootstrap META-INF/MANIFEST.MF @PACKAGE@.spec
 
 docdir        = $(datadir)/doc/@PACKAGE@-@VERSION@
-dist_doc_DATA = README LICENSE
+dist_doc_DATA = README.md LICENSE
 
 uninstall-local:
 	rm -rf $(DESTDIR)$(docdir)
