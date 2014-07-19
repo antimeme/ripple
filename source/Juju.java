@@ -524,10 +524,10 @@ public class Juju {
      * @param step Number of spaces to add at each indentation level
      * @return String containing JSON data */
     public static String formatJSON(Object o, int indent, int step)
-        throws IOException
     {
         StringWriter out = new StringWriter();
-        formatJSON(o, indent, step, out);
+        try { formatJSON(o, indent, step, out); }
+        catch (IOException ex) { throw new RuntimeException(ex); }
         return out.toString();
     }
 
@@ -542,7 +542,6 @@ public class Juju {
      *        white space will be added)
      * @return String containing JSON data */
     public static String formatJSON(Object o, int indent)
-        throws IOException
     { return formatJSON(o, indent, 4); }
 
     /**
@@ -553,17 +552,16 @@ public class Juju {
      *        java.lang.String}, {@link java.lang.Boolean} or some
      *        numeric type
      * @return String containing JSON data */
-    public static String formatJSON(Object o) throws IOException
-    { return formatJSON(o, 0); }
+    public static String formatJSON(Object o)
+    { return formatJSON(o, -1); }
 
 
     /** <p>Finds a subset of an object</p>
      *
      *  <pre>
      *  Object o = Juju.parseJSON("{\"a\": {\"b\": {\"c\": 7}}}");
-     *  System.out.println(Juju.lookup(o, "a.b.c")); // 7
-     *  </pre>
-     **/
+     *  System.out.println(Juju.lookupJSON(o, "a.b.c")); // 7
+     *  </pre> */
     public static Object lookupJSON(Object o, String key)
     {
         Deque<Object> stack = new LinkedList<Object>();
@@ -666,7 +664,7 @@ public class Juju {
             case STRING:
                 if (current == '"') {
                     state = ParseState.ARRAY_DONE;
-                    stack.push(value);
+                    stack.push(value.toString());
                     value = new StringBuilder();
                 } else if (current == '\\')
                     state = ParseState.ESCAPE;
@@ -724,10 +722,20 @@ public class Juju {
         Object result = o;
         while (stack.size() > 0) {
             Object index = stack.removeLast();
-            if (index instanceof String)
+            if (index instanceof String) {
+                if (!(result instanceof Map))
+                    throw new ParseException
+                        (0, column, "Given field \"" + index +
+                         "\" for non-object: " + formatJSON(result));
                 result = ((Map<String, Object>)result).get
                     ((String)index);
-            else result = ((List<Object>)result).get((int)index);
+            } else {
+                if (!(result instanceof List))
+                    throw new ParseException
+                        (0, column, "Given index " + index +
+                         " for non-list: " + formatJSON(result));
+                result = ((List<Object>)result).get((int)index);
+            }
         }
         return result;
     }
@@ -802,9 +810,9 @@ public class Juju {
        </pre>
      */
     public static void main(String[] args) throws Exception {
+        Object o = Juju.parseJSON(System.in);
+        show(o);
         for (String arg : args)
-            show(Juju.parseJSON(arg));
-        if (args.length == 0)
-            show(Juju.parseJSON(System.in));
+            show(Juju.lookupJSON(o, arg));
     }
 }
