@@ -1,4 +1,6 @@
 {
+    "schema": {
+    },
     "skills": {
         "Repair": {"cost": 5},
         "Engineering": {"cost": 5},
@@ -11,8 +13,8 @@
         "Marksman": {"cost": 5},
         "Pistol": {"parent": "Marksman", "cost": 5},
         "Rifle": {"parent": "Marksman", "cost": 5}
-    ],
-    "components": [
+    },
+    "components": {
         "Structure": {},
         "Bulkhead": {"boundary": true},
         "Door": {"boundary": true},
@@ -38,11 +40,11 @@
         "Fabrication": {"external": true},
         "Workspace": {},
         "Laboratory": {}
-    ],
-    "gear": [
+    },
+    "gear": {
         "Repair Parts": {"storage": "Cargo"},
         "Escape Pod": {"storage": "Escape"},
         "Boarding Shuttle": {"storage": "Landing"},
         "Shuttle": {"storage": "Landing"}
-    ]
+    }
 }
