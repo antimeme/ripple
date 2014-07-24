@@ -33,6 +33,35 @@
 
     if (typeof window !== 'undefined') {
 
+        // Based on Douglas Crockford's talk The Metamorphosis of Ajax
+        if (typeof window.getElementsByClassName === 'undefined') {
+            var walkDOM = function(node, fn) {
+                fn(node);
+                node = node.firstChild;
+                while (node) {
+                    walkDOM(node, fn);
+                    node = node.nextSibling;
+                }
+            };
+
+            window.getElementsByClassName = function(className) {
+                var result = [];
+                walkDOM(document.body, function(node) {
+                    var a, i, c = node.className;
+                    if (c) {
+                        a = c.split(' ');
+                        for (i = 0; i < a.length; ++i) {
+                            if (a[i] === className) {
+                                result.push(node);
+                                break;
+                            }
+                        }
+                    }
+                });
+                return result;
+            }
+        }
+
         // Support animation even in older browsers which are missing
         // requestAnimationFrame or have a vendor prefixed version.
         // Adapted from Erik Möller's blog post (http://goo.gl/qVfYlu).
