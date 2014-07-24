@@ -18,6 +18,8 @@
 // ---------------------------------------------------------------------
 // Lightweight polyfill and utility features for web apps.
 (function() {
+    "use strict";
+
     // ECMAScript 5 introduces some useful functions which are missing
     // in earlier versions.  Fallbacks provide.
     if (typeof Object.create === 'undefined')

@@ -18,6 +18,7 @@
 // ---------------------------------------------------------------------
 // Path finding routines
 (function(exports) {
+    "use strict";
 
     var Heap = function(compare) {
         // This is a priority queue implementation.  The smallest

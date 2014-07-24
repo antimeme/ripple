@@ -19,15 +19,16 @@
 // Mersenne Twister implementation.  For algorithm details:
 //     http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
 (function (exports) {
-    const RRAND_N = 624;
-    const RRAND_M = 397;
-    const RRAND_MATRIX_A   = 0x9908B0DF;
-    const RRAND_UPPER_MASK = 0x80000000;
-    const RRAND_LOWER_MASK = 0x7FFFFFFF;
-    const RRAND_MAXIMUM    = 0xFFFFFFFF;
-    const RRAND_TAOCP2P106 = 1812433253;
-    const RRAND_TEMPER_B   = 0x9D2C5680;
-    const RRAND_TEMPER_C   = 0xEFC60000;
+    "use strict";
+    var RRAND_N = 624;
+    var RRAND_M = 397;
+    var RRAND_MATRIX_A   = 0x9908B0DF;
+    var RRAND_UPPER_MASK = 0x80000000;
+    var RRAND_LOWER_MASK = 0x7FFFFFFF;
+    var RRAND_MAXIMUM    = 0xFFFFFFFF;
+    var RRAND_TAOCP2P106 = 1812433253;
+    var RRAND_TEMPER_B   = 0x9D2C5680;
+    var RRAND_TEMPER_C   = 0xEFC60000;
 
     // Performs a 32-bit multiplication modulo 2^32, approximating the
     // unsigned type in C.  Javascript integers are stored as floating
