@@ -65,13 +65,14 @@
                                     mag01[current & 1]) >>> 0;
             this.mti = 0;
         }
-        current = this.mt[this.mti++];
+        current = this.mt[this.mti];
+        ++this.mti;
         current = (current ^ (current >>> 11)) >>> 0;
         current = (current ^ (current << 7)  & RRAND_TEMPER_B) >>> 0;
         current = (current ^ (current << 15) & RRAND_TEMPER_C) >>> 0;
         current = (current ^ (current >>> 18)) >>> 0;
         return current;
-    }
+    };
 
     exports.random = function(seed) {
         var self = {int32: int32};
@@ -87,19 +88,20 @@
         }
         self.mti = mti;
         return self;
-    }
+    };
 
 })(typeof exports === 'undefined'? this['random'] = {}: exports);
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
     var result = 0;
     var r = exports.random(5489);
+    var i;
 
     var check_state = [
         0x00001571, 0x4d98ee96, 0xaf25f095, 0xafd9ba96, 0x6fcbd068,
-        0x2cd06a72, 0x384f0100, 0x85b46507, 0x295e8801, 0x0d1b316e,
+        0x2cd06a72, 0x384f0100, 0x85b46507, 0x295e8801, 0x0d1b316e
     ];
-    for (var i = 0; i < check_state.length; i++) {
+    for (i = 0; i < check_state.length; i++) {
         console.log("r.mt[" + i + "] = " + r.mt[i].toString(16) +
                     (r.mt[i] === check_state[i] ?
                      "" : " (expected " +
@@ -110,9 +112,9 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
 
     var check_uint32 = [
         0xd091bb5c, 0x22ae9ef6, 0xe7e1faee, 0xd5c31f79, 0x2082352c,
-        0xf807b7df, 0xe9d30005, 0x3895afe1, 0xa1e24bba, 0x4ee4092b,
+        0xf807b7df, 0xe9d30005, 0x3895afe1, 0xa1e24bba, 0x4ee4092b
     ];
-    for (var i = 0; i < check_uint32.length; i++) {
+    for (i = 0; i < check_uint32.length; i++) {
         var value = r.int32();
         console.log("random: " + value.toString(16) +
                     (value === check_uint32[i] ?

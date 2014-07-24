@@ -22,7 +22,7 @@
     // in earlier versions.  Fallbacks provide.
     if (typeof Object.create === 'undefined')
         Object.create = function(parent) {
-            var Intermediate = function() {}
+            var Intermediate = function() {};
             Intermediate.prototype = parent;
             return new Intermediate(); };
     if (typeof Array.prototype.forEach === 'undefined')
@@ -59,7 +59,7 @@
                     }
                 });
                 return result;
-            }
+            };
         }
 
         // Support animation even in older browsers which are missing
@@ -92,7 +92,7 @@
         // Create a dictionary of query string parameters
         if (typeof window.params === 'undefined') {
             window.params = (function(a) {
-                if (a == "") return {};
+                if (a) return {};
                 var result = {};
                 for (var i = 0; i < a.length; ++i) {
                     var p = a[i].split('=');
@@ -111,9 +111,10 @@
         jQuery.requestFullscreen = function(elem) {
             var req = elem.requestFullscreen || elem.requestFullScreen;
             var names = ["RequestFullscreen", "RequestFullScreen"];
-            for (var i = 0; !req && i < vendors.length; ++i)
+            for (var i = 0; !req && i < vendors.length; ++i) {
                 for (var n = i; !req && n < names.length; ++n)
                     req = elem[vendors[i] + names[n]];
+            }
             console.log("rfs", elem, req);
             if (req) req.apply(elem);
         };
@@ -122,9 +123,10 @@
                 document.exitFullScreen;
             var names = ["ExitFullscreen", "ExitFullScreen",
                          "CancelFullScreen"];
-            for (var i = 0; !efs && i < vendors.length; ++i)
+            for (var i = 0; !efs && i < vendors.length; ++i) {
                 for (var n = i; !efs && n < names.length; ++n)
                     efs = document[vendors[i] + names[n]];
+            }
             console.log("efs");
             if (efs) efs.apply(document);
         };
@@ -132,9 +134,10 @@
             var fse = document.fullscreenElement ||
                 document.fullScreenElement;
             var names = ["FullscreenElement", "FullScreenElement"];
-            for (var i = 0; !fse && i < vendors.length; ++i)
+            for (var i = 0; !fse && i < vendors.length; ++i) {
                 for (var n = i; !fse && n < names.length; ++n)
                     fse = document[vendors[i] + names[n]];
+            }
             console.log(fse);
             return fse ? jQuery.exitFullscreen() :
                 jQuery.requestFullscreen(elem);
@@ -161,6 +164,6 @@
                 result.touches = [{x: result.x, y: result.y}];
             }
             return result;
-        }
+        };
     }
 }());

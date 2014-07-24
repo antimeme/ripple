@@ -52,6 +52,7 @@
 // is expected to already have correct x and y coordinates there's no
 // need to perform adjustments there either.
 (function(exports) {
+    "use strict";
     var _sqrt2 = Math.sqrt(2);
     var _sqrt3 = Math.sqrt(3);
 
@@ -191,9 +192,10 @@
                                    y: 1 - this._size});
         var end = this.position({x: width + this._size - 1,
                                  y: height + this._size - 1});
-        for (col = start.col; col <= end.col + 1; col++)
+        for (col = start.col; col <= end.col + 1; col++) {
             for (row = start.row; row <= end.row + 1; row++)
                 fn(this.coordinate({row: row, col: col}));
+        }
         return this;
     };
 
@@ -263,7 +265,7 @@
     // parameter to the constuctor is the length of a triangle edge.
     var TriangleGrid = function(options) {
         this.size(options && options.size ? options.size : 125);
-    }
+    };
     TriangleGrid.prototype = Object.create(BaseGrid.prototype);
 
     TriangleGrid.prototype._update = function() {
@@ -282,7 +284,7 @@
         return {x: node.col * this._size / 2,
                 y: (node.row * this.rowh) + offset,
                 row: node.row, col: node.col};
-    }
+    };
 
     TriangleGrid.prototype._position = function(node) {
         // Return a node with the row and column of the hexagon in
@@ -332,7 +334,7 @@
     var RTriangleGrid = function(options) {
         this.size((options && options.size) ? options.size : 100);
         this.regular = (options && options.regular);
-    }
+    };
     RTriangleGrid.prototype = Object.create(BaseGrid.prototype);
 
     RTriangleGrid.prototype._coordinate = function(node) {
@@ -349,7 +351,7 @@
             halfsize + fifth * x_sign;
         var y = node.row * this._size + halfsize + fifth * y_sign;
         return {row: node.row, col: node.col, x: x, y: y};
-    }
+    };
 
     RTriangleGrid.prototype._position = function(node) {
         // Return a node with the row and column of the cell which
@@ -436,7 +438,7 @@
             this.row   = "col";
             this.col   = "row";
         }
-    }
+    };
     HexGrid.prototype = Object.create(BaseGrid.prototype);
 
     HexGrid.prototype._update = function() {
@@ -453,7 +455,7 @@
                               Math.abs((node[this.row] + 1) % 2));
         result[this.beta] = node[this.row] * this._size * 3 / 2;
         return result;
-    }
+    };
 
     HexGrid.prototype._position = function(node) {
         // Return a node with the row and column of the hexagon in
@@ -463,7 +465,7 @@
         var row = Math.floor((node[this.beta] + halfsize) /
                               (3 * halfsize));
         var beta_band = (node[this.beta] + halfsize) / halfsize;
-        if ((Math.floor(beta_band) + 1) % 3 == 0) {
+        if (!((Math.floor(beta_band) + 1) % 3)) {
             var alpha_band = node[this.alpha] * 2 / this.hexw;
             if ((Math.floor(alpha_band) + Math.floor(beta_band)) % 2) {
                 if ((beta_band - Math.ceil(beta_band)) +
@@ -600,10 +602,9 @@
                 if (combined)
                     grid.map(width, height, function(node) {
                         ctx.fillStyle = color;
-                        ctx.fillText(ripple.pair
-                                     (parseInt(node.row),
-                                      parseInt(node.col)),
-                                     node.x, node.y);
+                        ctx.fillText(
+                            ripple.pair(node.row, node.col),
+                            node.x, node.y);
                     });
                 else if (numbers)
                     grid.map(width, height, function(node) {
@@ -618,10 +619,12 @@
                     // since the last draw call.
                     selected = grid.coordinate(selected);
                     var points = grid.points(selected);
+                    var last;
+                    var index;
 
                     ctx.beginPath();
                     if (points.length) {
-                        var last = points[points.length - 1];
+                        last = points[points.length - 1];
                         ctx.moveTo(last.x, last.y);
                         for (i in points)
                             ctx.lineTo(points[i].x, points[i].y);
@@ -636,16 +639,19 @@
                     var neighbors = grid.neighbors(
                         selected, {coordinates: true, points: true});
                     ctx.beginPath();
-                    for (var i in neighbors) {
-                        var points = grid.points(neighbors[i]);
+                    for (index in neighbors) {
+                        points = grid.points(neighbors[index]);
                         if (points.length) {
-                            var last = points[points.length - 1];
+                            last = points[points.length - 1];
                             ctx.moveTo(last.x, last.y);
                             for (i in points)
-                                ctx.lineTo(points[i].x, points[i].y);
+                                ctx.lineTo(points[index].x,
+                                           points[index].y);
                         } else {
-                            ctx.moveTo(neighbors[i].x, neighbors[i].y);
-                            ctx.arc(neighbors[i].x, neighbors[i].y,
+                            ctx.moveTo(neighbors[index].x,
+                                       neighbors[index].y);
+                            ctx.arc(neighbors[index].x,
+                                    neighbors[index].y,
                                     grid.size() / 2, 0, 2 * Math.PI);
                         }
                     }
@@ -653,8 +659,8 @@
                     ctx.fill();
 
                     ctx.beginPath();
-                    for (var i in neighbors) {
-                        var points = neighbors[i].points;
+                    for (index in neighbors) {
+                        points = neighbors[i].points;
                         if (points.length > 1) {
                             var vector = {x: points[1].x - points[0].x,
                                           y: points[1].y - points[0].y};
@@ -702,7 +708,7 @@
             // width attributes which determine how many pixels are
             // part of the canvas itself.  Keeping the two in sync
             // is essential to avoid ugly stretching effects.
-            self.attr("width", self.innerWidth())
+            self.attr("width", self.innerWidth());
             self.attr("height", self.innerHeight());
 
             console.log(lineWidth);
@@ -719,7 +725,7 @@
             var id, current, start, stop, limit = 60000;
             var choose = function(size) {
                 return Math.floor(size * Math.random());
-            }
+            };
 
             this.start = function() {
                 var now = new Date().getTime();
@@ -734,7 +740,7 @@
                        if (now - current > limit)
                            current = now - limit;
                        start = {left: offset.left, top: offset.top,
-                                time: current}
+                                time: current};
                        stop = {left: offset.left + magnitude *
                                      Math.cos(angle),
                                top:  offset.top  + magnitude *
@@ -870,6 +876,7 @@
             menu.hide();
             if (event.which > 1) {
                 // Reserve right and middle clicks for browser menus
+                return true;
             } else if (targets.touches.length > 1) {
                 tap = targets;
                 if (targets.touches.length == 2) {
