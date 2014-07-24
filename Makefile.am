@@ -52,16 +52,20 @@ if HAVE_PYTHON
 tests_python = source/random.py source/match.py
 pkgpython_PYTHON = source/__init__.py $(tests_python)
 
-# :FIXME: figure out why egg doesn't work with pip
-#         Python packaging hates me!  And him!  And her!  And you too!
 dist/@PACKAGE@-@VERSION@-py@PYTHON_VERSION@.egg: $(pkgpython_PYTHON)
-	$(PYTHON) $(srcdir)/source/__init__.py bdist_egg
+	$(PYTHON) source/__init__.py bdist_egg
+
+# :TODO: make this part of "make dist" somehow...
+egg: dist/@PACKAGE@-@VERSION@-py@PYTHON_VERSION@.egg
+
 endif
 
 ## Java ================================================================
 # Automake support for Java is limited and almost useless, but it gets
 # in the way enough to make it inconvenient to avoid... for now.
 # See /usr/share/automake-${AM_VERSION}/am/java.am for details.
+# Possible improvement:
+#   http://www.freesoftwaremagazine.com/articles/autotools_example
 if HAVE_JAVA
 @PACKAGE@javadir = $(libdir)/@PACKAGE@
 JAVAROOT = $(top_builddir)/classes
