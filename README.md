@@ -13,19 +13,26 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-### Ripple
+## Ripple
 
 Ripple is a collection of tools for simplifying programming.  This
 file documentats the structure of this repository and is intended for
 experienced software developers.
 
-GNU autotools are used to assemble a C shared library.  Header files
-are kept in `include/ripple` and source files in the `source`
-directory.  If you've checked ripple out of a source repository (such
-as git) execute `./bootstrap` to begin.  If you've downloaded this
-package as a tar file run `./configure` instead.  Either way, the next
-step is to run `make` to build compiled components.  To make the
-library available system wide use `sudo make install`.
+GNU autotools are used to assemble a C shared library as well as a
+Java JAR file suitable for use either as a library or direct execution
+using the `-jar` option.  Source source files for both C and Java are
+kept in the `source` directory.  C header files are kept in the
+`include/ripple` directory.  The `apps` directory contains web
+applications and associated resources.
+
+### Build
+
+If you've checked ripple out of a source repository (such as git)
+execute `./bootstrap` to begin.  If you've downloaded this package as
+a tar file run `./configure` instead.  Either way, the next step is to
+run `make` to build compiled components.  To make the library
+available system wide use `sudo make install`.
 
 Ripple can be assembled into an RPM package for distributions which
 support that.  A `ripple.spec` file is included in the tar file so
