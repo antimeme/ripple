@@ -1,6 +1,5 @@
 {
-    "schema": {
-    },
+    "schema": { "version": "0.0.1" },
     "skills": {
         "Repair": {"cost": 5},
         "Engineering": {"cost": 5},
