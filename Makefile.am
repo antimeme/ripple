@@ -68,7 +68,7 @@ endif
 #   http://www.freesoftwaremagazine.com/articles/autotools_example
 if HAVE_JAVA
 @PACKAGE@javadir = $(libdir)/@PACKAGE@
-JAVAROOT = $(top_builddir)/classes
+JAVAROOT = $(top_builddir)/.classes
 JAVADOC  = ${JAVA_HOME:+$JAVA_HOME/bin/}javadoc
 JAVAC    = ${JAVA_HOME:+$JAVA_HOME/bin/}javac
 JAVA     = ${JAVA_HOME:+$JAVA_HOME/bin/}java
@@ -104,7 +104,7 @@ install-dist_@PACKAGE@javaJAVA: javadoc
 
 clean-@PACKAGE@javaJAVA:
 	-rm -rf class@PACKAGE@java.stamp javadoc jartest.sh \
-	    $(top_builddir)/classes @PACKAGE@-@VERSION@.jar
+	    $(JAVAROOT) @PACKAGE@-@VERSION@.jar
 
 jartest.sh:
 	echo '#!/bin/sh' > $@

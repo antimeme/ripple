@@ -7,6 +7,7 @@
 *.trs
 .deps/
 .libs/
+.classes/
 aclocal.m4
 autom4te.cache/
 config.guess
