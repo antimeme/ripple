@@ -192,6 +192,7 @@
                                    y: 1 - this._size});
         var end = this.position({x: width + this._size - 1,
                                  y: height + this._size - 1});
+        var row, col;
         for (col = start.col; col <= end.col + 1; col++) {
             for (row = start.row; row <= end.row + 1; row++)
                 fn(this.coordinate({row: row, col: col}));
@@ -573,6 +574,9 @@
 
         var draw_id = 0;
         var draw = function() {
+            var neighbors, vector, radius;
+            var points, last, index;
+
             if (self[0].getContext) {
                 var ctx = self[0].getContext('2d');
                 var width = self.width(), height = self.height();
@@ -587,12 +591,13 @@
                 ctx.textAlign = 'center';
                 ctx.font = 'bold ' + 12 + 'pt sans-serif';
                 grid.map(width, height, function(node) {
-                    var points = grid.points(node);
+                    var index, points = grid.points(node);
                     if (points.length) {
                         var last = points[points.length - 1];
                         ctx.moveTo(last.x, last.y);
-                        for (i in points)
-                            ctx.lineTo(points[i].x, points[i].y);
+                        for (index in points)
+                            ctx.lineTo(points[index].x,
+                                       points[index].y);
                     }
                 });
                 ctx.fillStyle = self.css('background-color');
@@ -618,16 +623,15 @@
                     // updated in case the grid offsets have moved
                     // since the last draw call.
                     selected = grid.coordinate(selected);
-                    var points = grid.points(selected);
-                    var last;
-                    var index;
+                    points = grid.points(selected);
 
                     ctx.beginPath();
                     if (points.length) {
                         last = points[points.length - 1];
                         ctx.moveTo(last.x, last.y);
-                        for (i in points)
-                            ctx.lineTo(points[i].x, points[i].y);
+                        for (index in points)
+                            ctx.lineTo(points[index].x,
+                                       points[index].y);
                     } else {
                         ctx.moveTo(selected.x, selected.y);
                         ctx.arc(selected.x, selected.y,
@@ -636,7 +640,7 @@
                     ctx.fillStyle = colorSelected;
                     ctx.fill();
 
-                    var neighbors = grid.neighbors(
+                    neighbors = grid.neighbors(
                         selected, {coordinates: true, points: true});
                     ctx.beginPath();
                     for (index in neighbors) {
@@ -644,7 +648,7 @@
                         if (points.length) {
                             last = points[points.length - 1];
                             ctx.moveTo(last.x, last.y);
-                            for (i in points)
+                            for (index in points)
                                 ctx.lineTo(points[index].x,
                                            points[index].y);
                         } else {
@@ -660,16 +664,16 @@
 
                     ctx.beginPath();
                     for (index in neighbors) {
-                        points = neighbors[i].points;
+                        points = neighbors[index].points;
                         if (points.length > 1) {
-                            var vector = {x: points[1].x - points[0].x,
+                            vector = {x: points[1].x - points[0].x,
                                           y: points[1].y - points[0].y};
                             ctx.moveTo(points[0].x + 0.25 * vector.x,
                                        points[0].y + 0.25 * vector.y);
                             ctx.lineTo(points[0].x + 0.75 * vector.x,
                                        points[0].y + 0.75 * vector.y);
                         } else {
-                            var radius = lineWidth * 5;
+                            radius = lineWidth * 5;
                             ctx.moveTo(points[0].x + radius,
                                        points[0].y);
                             ctx.arc(points[0].x, points[0].y,
@@ -711,7 +715,6 @@
             self.attr("width", self.innerWidth());
             self.attr("height", self.innerHeight());
 
-            console.log(lineWidth);
             zooming = drag = undefined;
             redraw();
         };

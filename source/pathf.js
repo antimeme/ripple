@@ -132,9 +132,9 @@
 
         function mknode(value, prev) {
             var cost = prev ? prev.cost + costfn(prev.value, value) : 0;
-            var hcost = null;
+            var g, h, hcost = null;
             for (g in goalset) {
-                var h = heuristic(value, cost, goalset[g]);
+                h = heuristic(value, cost, goalset[g]);
                 if (!hcost || h < hcost)
                     hcost = h;
             }
