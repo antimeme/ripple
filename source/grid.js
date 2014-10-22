@@ -56,6 +56,15 @@
     var _sqrt2 = Math.sqrt(2);
     var _sqrt3 = Math.sqrt(3);
 
+    var magnitude = function() {
+        var index;
+        var result = 0;
+        for (index = 0; index < arguments.length; ++index)
+            if (arguments[index])
+                result += arguments[index] * arguments[index];
+        return Math.sqrt(result);
+    }
+
     // BaseGrid serves a base class for other grids.  Although it
     // thinks like a SquareGrid for the most part, it returns an empty
     // list of points for each cell.
@@ -157,9 +166,7 @@
                         y: (node2.y - node1.y) / 2};
         var rotated = {x: (node1.y - node2.y) / 2,
                        y: (node2.x - node1.x) / 2};
-        var factor = this._size /
-            (2 * Math.sqrt((rotated.x * rotated.x) +
-                           (rotated.y * rotated.y)));
+        var factor = this._size / (2 * magnitude(rotated.x, rotated.y));
         var scaled = {x: rotated.x * factor, y: rotated.y * factor};
         return [{x: node1.x + midpoint.x + scaled.x,
                  y: node1.y + midpoint.y + scaled.y},
@@ -954,4 +961,5 @@
     exports.types = types;
     exports.canonical = canonical;
     exports.create = create;
+    exports.magnitude = magnitude;
 })(typeof exports === 'undefined'? this['grid'] = {}: exports);
