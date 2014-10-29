@@ -95,10 +95,35 @@
                 return this;
             },
             draw: function(ctx) {
-                ctx.beginPath();
-                ctx.strokeStyle = 'white';
                 ctx.lineWidth = 5;
                 ctx.lineCap = 'square';
+
+                // Create turf
+                ctx.beginPath();
+                ctx.fillStyle = 'green';
+                ctx.moveTo.apply(ctx, field.coord(0, 0));
+                ctx.lineTo.apply(ctx, field.coord(1, 0));
+                ctx.lineTo.apply(ctx, field.coord(1, 1));
+                ctx.lineTo.apply(ctx, field.coord(0, 1));
+                ctx.lineTo.apply(ctx, field.coord(0, 0));
+                ctx.fill();
+
+                // Mark red goal
+                ctx.beginPath();
+                ctx.strokeStyle = 'red';
+                ctx.moveTo.apply(ctx, field.coord(0, 0.20));
+                ctx.lineTo.apply(ctx, field.coord(0, 0.80));
+                ctx.stroke();
+
+                // Mark blue goal
+                ctx.beginPath();
+                ctx.strokeStyle = 'blue';
+                ctx.moveTo.apply(ctx, field.coord(1, 0.20));
+                ctx.lineTo.apply(ctx, field.coord(1, 0.80));
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.strokeStyle = 'white';
 
                 // Center Line
                 ctx.arc.apply(ctx, field.coord(
@@ -109,8 +134,12 @@
                 // Bounding Line
                 ctx.moveTo.apply(ctx, field.coord(0, 0));
                 ctx.lineTo.apply(ctx, field.coord(1, 0));
+                ctx.lineTo.apply(ctx, field.coord(1, 0.2));
+                ctx.moveTo.apply(ctx, field.coord(1, 0.8));
                 ctx.lineTo.apply(ctx, field.coord(1, 1));
                 ctx.lineTo.apply(ctx, field.coord(0, 1));
+                ctx.lineTo.apply(ctx, field.coord(0, 0.8));
+                ctx.moveTo.apply(ctx, field.coord(0, 0.2));
                 ctx.lineTo.apply(ctx, field.coord(0, 0));
 
                 // Near Goal Box
