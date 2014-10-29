@@ -3,7 +3,7 @@
     var nplayers = Math.max(2, Math.min(
         parseInt(window.params['nplayers'], 10) || 4, 12));
     var pfactor = Math.max(10, parseInt(
-        window.params['pfactor'], 10) || 25);
+        window.params['pfactor'], 10) || (4 * nplayers));
     var activate = parseInt(window.params['activate'], 10) || 600;
     var margin = Math.max(3, parseFloat(
         window.params['margin']) || 20);
