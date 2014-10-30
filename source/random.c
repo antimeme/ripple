@@ -78,3 +78,14 @@ ripple_random_uint32(struct ripple_random *rrand)
   current ^= current >> 18;
   return current;
 }
+
+double
+ripple_random_double(struct ripple_random *rrand)
+{
+  union {
+    unsigned int i;
+    float f;
+  } convert;
+  convert.i = ripple_random_uint32(rrand) & 0x007fffff | 0x3f800000;
+  return convert.f - 1.0;
+}
