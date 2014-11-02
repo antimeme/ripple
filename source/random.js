@@ -31,8 +31,9 @@
     var RRAND_TEMPER_C   = 0xEFC60000;
 
     // Performs a 32-bit multiplication modulo 2^32, approximating the
-    // unsigned type in C.  Javascript integers are stored as floating
-    // point value, which means they have 53 bits of precision.
+    // unsigned type in C.  Javascript integers are stored as a double
+    // precision floating point value, which means they have 53 bits
+    // of for integer values -- an awkward amount.
     function multiply_uint32(a, b) {
         var ah = (a >>> 16) & 0xffff, al = a & 0xffff;
         var bh = (b >>> 16) & 0xffff, bl = b & 0xffff;
@@ -40,7 +41,8 @@
         return (((high << 16) + (al * bl)) & 0xffffffff) >>> 0;
     }
 
-    var int32 = function () {
+    var int32 = function() {
+        // This is the heart of the Mersenne Twister implementation
         var current;
         var mag01 = [ 0, RRAND_MATRIX_A ];
         if (this.mti >= RRAND_N) {
@@ -75,9 +77,21 @@
         return current;
     };
 
+    // Returns a number between zero inclusive and one exclusive.
+    // This works like Math.random() but since a seed can be provided
+    // this can generate predictable sequences.
+    var random = function()
+    { return this.int32() * (1.0 / 4294967295.0); };
+
     exports.random = function(seed) {
-        var self = {int32: int32};
+        var self = {int32: int32, random: random};
         var mti = 0;
+
+        // Default is a moderately unpredictable seed.  This is NOT
+        // good enough for cryptographic purposes.
+        if (typeof seed === 'undefined')
+            seed = new Date().getTime();
+
         self.mt = new Array();
         self.mt[mti] = seed & RRAND_MAXIMUM;
         for (mti = 1; mti < RRAND_N; mti++) {
@@ -104,8 +118,7 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
     ];
     for (i = 0; i < check_state.length; i++) {
         console.log("r.mt[" + i + "] = " + r.mt[i].toString(16) +
-                    (r.mt[i] === check_state[i] ?
-                     "" : " (expected " +
+                    (r.mt[i] === check_state[i] ? "" : " (expected " +
                      check_state[i].toString(16) + ")"));
         if (r.mt[i] != check_state[i])
             result = 1;
@@ -119,7 +132,8 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
         var value = r.int32();
         console.log("random: " + value.toString(16) +
                     (value === check_uint32[i] ?
-                     "" : " (expected " +
+                     " (decimal " + value.toString() + ")" :
+                     " (expected " +
                      check_uint32[i].toString(16) + ")"));
         if (value != check_uint32[i])
             result = 1;
