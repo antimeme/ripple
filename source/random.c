@@ -18,6 +18,7 @@
  * ---------------------------------------------------------------------
  * Mersenne Twister implementation.  For algorithm details:
  *     http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html */
+#include <limits.h>
 #include "ripple/random.h"
 
 enum {
@@ -81,11 +82,4 @@ ripple_random_uint32(struct ripple_random *rrand)
 
 double
 ripple_random_double(struct ripple_random *rrand)
-{
-  union {
-    unsigned int i;
-    float f;
-  } convert;
-  convert.i = ripple_random_uint32(rrand) & 0x007fffff | 0x3f800000;
-  return convert.f - 1.0;
-}
+{ return ripple_random_uint32(rrand) / (double)UINT_MAX; }

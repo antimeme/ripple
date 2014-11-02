@@ -61,9 +61,10 @@ check_random(void)
     printf("\n");
   }
 
+  rrand_seed(&r, check_seed);
   for (i = 0; i < 10; ++i) {
     double sample = rrand_double(&r);
-    printf("double: %lf", sample);
+    printf("double: %.16f", sample);
     printf("\n");
   }
   return result;

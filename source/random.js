@@ -108,19 +108,18 @@
 })(typeof exports === 'undefined'? this['random'] = {}: exports);
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
-    var result = 0;
-    var r = exports.random(5489);
-    var i;
+    var result = 0, check_seed = 5489;
+    var ii, r = exports.random(check_seed);
 
     var check_state = [
         0x00001571, 0x4d98ee96, 0xaf25f095, 0xafd9ba96, 0x6fcbd068,
         0x2cd06a72, 0x384f0100, 0x85b46507, 0x295e8801, 0x0d1b316e
     ];
-    for (i = 0; i < check_state.length; i++) {
-        console.log("r.mt[" + i + "] = " + r.mt[i].toString(16) +
-                    (r.mt[i] === check_state[i] ? "" : " (expected " +
+    for (ii = 0; ii < check_state.length; ++ii) {
+        console.log("r.mt[" + ii + "] = " + r.mt[ii].toString(16) +
+                    (r.mt[ii] === check_state[ii] ? "" : " (expected " +
                      check_state[i].toString(16) + ")"));
-        if (r.mt[i] != check_state[i])
+        if (r.mt[ii] != check_state[ii])
             result = 1;
     }
 
@@ -128,15 +127,19 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
         0xd091bb5c, 0x22ae9ef6, 0xe7e1faee, 0xd5c31f79, 0x2082352c,
         0xf807b7df, 0xe9d30005, 0x3895afe1, 0xa1e24bba, 0x4ee4092b
     ];
-    for (i = 0; i < check_uint32.length; i++) {
+    for (ii = 0; ii < check_uint32.length; ++ii) {
         var value = r.int32();
         console.log("random: " + value.toString(16) +
-                    (value === check_uint32[i] ?
+                    (value === check_uint32[ii] ?
                      " (decimal " + value.toString() + ")" :
                      " (expected " +
-                     check_uint32[i].toString(16) + ")"));
-        if (value != check_uint32[i])
+                     check_uint32[ii].toString(16) + ")"));
+        if (value != check_uint32[ii])
             result = 1;
     }
+
+    r = exports.random(check_seed);
+    for (ii = 0; ii < 10; ++ii)
+        console.log('double: ' + r.random().toFixed(16));
     process.exit(result);
 }
