@@ -74,7 +74,7 @@ JAVAC    = ${JAVA_HOME:+$JAVA_HOME/bin/}javac
 JAVA     = ${JAVA_HOME:+$JAVA_HOME/bin/}java
 JAR      = ${JAVA_HOME:+$JAVA_HOME/bin/}jar
 javadir = $(datadir)/@PACKAGE@
-dist_@PACKAGE@java_JAVA = $(srcdir)/source/*.java source/Ripple.java
+dist_@PACKAGE@java_JAVA = $(srcdir)/source/*.java
 dist_@PACKAGE@java_DATA = @PACKAGE@-@VERSION@.jar
 
 @PACKAGE@-@VERSION@.jar: $(srcdir)/META-INF/MANIFEST.MF \
