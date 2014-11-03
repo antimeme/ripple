@@ -200,9 +200,9 @@ public class Standalone
         Standalone result = new Standalone(a, args);
         f.add(a);
         f.pack();
-        f.addWindowListener(result);
         f.setLocationRelativeTo(null);
         a.init();
+        f.addWindowListener(result);
         f.setVisible(true);
         a.start();
         return result;
