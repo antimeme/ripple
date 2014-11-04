@@ -360,6 +360,14 @@
             }
             return false;
         });
+
+        $('body').on('keyup', self, function(event) {
+            if (event.keyCode == 32) {
+                moving = !moving;
+                redraw();
+            }
+            return false;
+        });
     };
 
     exports.setup = setup;
