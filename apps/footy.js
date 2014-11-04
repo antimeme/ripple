@@ -362,7 +362,7 @@
         });
 
         $('body').on('keyup', self, function(event) {
-            if (event.keyCode == 32) {
+            if (event.keyCode == 32) { // space bar
                 moving = !moving;
                 redraw();
             }
