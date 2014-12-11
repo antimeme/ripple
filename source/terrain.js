@@ -110,9 +110,7 @@
             roughness: (settings && settings.roughness) ?
                 settings.roughness : 0.75,
             r: (settings && settings.random) ?
-                settings.random :
-                ((settings && settings.seed) ?
-                 random.random(settings.seed) : random.random())
+                settings.random : Math
         };
         var detail = (settings && settings.detail) ?
             settings.detail : 3;
@@ -132,6 +130,15 @@
 })(typeof exports === 'undefined'? this['terrain'] = {}: exports);
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
-    var terrain = exports.create({detail: 3, roughness: 0.75});
+    var random = require('./random.js');
+    var opt = require('node-getopt').create([
+        ['s', 'seed=NUMBER', 'starting value for pseudo-random numbers']
+    ]).bindHelp().parseSystem();
+    //console.info(opt);
+
+    var terrain = exports.create({
+        detail: 3, roughness: 0.75,
+        random: opt.options.seed &&
+            random.random(parseInt(opt.options.seed, 10)) });
     terrain.print();
 }
