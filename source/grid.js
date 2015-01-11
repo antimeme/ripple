@@ -568,9 +568,8 @@
         return result;
     };
 
-    exports.test = function($, parent) {
+    exports.test = function($, parent, viewport) {
         var self = $('<canvas></canvas>').appendTo(parent);
-        var viewport = $(window);
         var colorTapInner = 'rgba(45, 45, 128, 0.8)';
         var colorTapOuter = 'rgba(128, 255, 128, 0.6)';
         var colorSelected = 'rgba(255, 255, 0, 0.6)';
@@ -704,10 +703,8 @@
             }
             draw_id = 0;
         };
-        var redraw = function() {
-            if (!draw_id)
-                draw_id = requestAnimationFrame(draw);
-        };
+        var redraw = function()
+        { if (!draw_id) draw_id = requestAnimationFrame(draw); };
 
         var resize = function(event) {
             // Consume enough space to fill the viewport.
