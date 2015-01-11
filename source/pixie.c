@@ -36,6 +36,7 @@
    {
        CONTENT [peripheries=2];
        CONTENT -> TAGOPEN [label="<"];
+       CONTENT -> CONTENT [label="*"];
        TAGOPEN -> ENTITY  [label="!"];
        TAGOPEN -> CONTROL [label="?"];
        TAGOPEN -> TAGNAME [label="*"];
@@ -45,6 +46,7 @@
        CONTROL -> CONTROL [label="*"];
        CONTROL -> CONTENT [label=">"];
        COMMENT -> CONTENT [label=">"];
+       COMMENT -> COMMENT [label="-"];
        COMMENT -> COMMENT [label="*"];
        TAGNAME -> TAGNAME [label="*"];
        TAGNAME -> TAGSTOP [label="/"];
