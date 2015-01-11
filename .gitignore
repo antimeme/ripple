@@ -7,7 +7,6 @@
 *.trs
 .deps/
 .libs/
-.classes/
 aclocal.m4
 autom4te.cache/
 config.guess
@@ -19,19 +18,19 @@ depcomp
 install-sh
 libtool
 ltmain.sh
+missing
+test-driver
 Makefile
 Makefile.in
-missing
-py-compile
 include/ripple/config.h
 include/ripple/config.h.in
 include/ripple/stamp-h1
 ripple.dpkg
 ripple.spec
-test-driver
 ripple-*.tar.gz
 
 # Python
+py-compile
 build/
 dist/
 ripple.egg-info/
@@ -39,7 +38,11 @@ source/__init__.py
 
 # Java
 classripplejava.stamp
+.classes/
 classes-ripple/
 javadoc/
 source/Ripple.java
 ripple-*.jar
+
+# JavaScript
+source/node_modules/
