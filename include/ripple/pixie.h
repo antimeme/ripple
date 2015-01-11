@@ -16,7 +16,7 @@
  * <http://www.gnu.org/licenses/>.
  *
  * ---------------------------------------------------------------------
- * An event driven parsing system. */
+ * An event driven XML parsing library. */
 #ifndef RIPPLE_PIXIE_H
 #define RIPPLE_PIXIE_H
 #ifdef __cplusplus
@@ -30,19 +30,21 @@ extern "C" {
  * values are reserved for pixie itself and can be resolved to
  * readable strings using pixie_strerror).  Any error will halt
  * parsing immediately. */
-struct pixie_xml_parser;
-typedef int (*pixie_xml_contents_t)(struct pixie_xml_parser *parser,
-                                    const char *text);
-typedef int (*pixie_xml_tag_begin_t)(struct pixie_xml_parser *parser,
-                                     const char *ns, const char *tag,
-                                     const char * const *attrs,
-                                     const char * const *values);
-typedef int (*pixie_xml_tag_end_t)(struct pixie_xml_parser *parser,
-                                   const char *ns, const char *tag);
+struct pixie_parser;
+typedef int (*pixie_contents_t)(struct pixie_parser *parser,
+                                const char *text);
+typedef int (*pixie_tag_begin_t)(struct pixie_parser *parser,
+                                 const char *ns, const char *tag,
+                                 const char * const *attrs,
+                                 const char * const *values);
+typedef int (*pixie_tag_end_t)(struct pixie_parser *parser,
+                               const char *ns, const char *tag);
 
-enum pixie_flags {}; /* reserved for future use */
+enum pixie_flags { /* reserved for future use */
+  PIXIE_FLAG_NONE = 0
+};
 
-struct pixie_xml_parser {
+struct pixie_parser {
   /* Callbacks may read these values directly */
   unsigned depth;
   unsigned line;
@@ -54,9 +56,9 @@ struct pixie_xml_parser {
   unsigned state;
   int quote;
   int last;
-  pixie_xml_contents_t  contents;
-  pixie_xml_tag_begin_t tag_begin;
-  pixie_xml_tag_end_t   tag_end;
+  pixie_contents_t  contents;
+  pixie_tag_begin_t tag_begin;
+  pixie_tag_end_t   tag_end;
   struct pixie_buffer *current;
   struct pixie_buffer *ns;
   struct pixie_attr *attrs;
@@ -73,11 +75,11 @@ struct pixie_xml_parser {
  * @return zero on success or an error code suitable for use
  *              with pixie_strerror otherwise */
 int
-pixie_xml_setup(struct pixie_xml_parser *parser,
-                struct ripple_context *rctx, unsigned flags,
-                pixie_xml_contents_t contents,
-                pixie_xml_tag_begin_t tag_begin,
-                pixie_xml_tag_end_t tag_end);
+pixie_setup(struct pixie_parser *parser,
+            struct ripple_context *rctx, unsigned flags,
+            pixie_contents_t contents,
+            pixie_tag_begin_t tag_begin,
+            pixie_tag_end_t tag_end);
 
 /**
  * Reclaim resources used by a parser.
@@ -85,20 +87,20 @@ pixie_xml_setup(struct pixie_xml_parser *parser,
  * @param parser parser to clear
  * @return the parser for cascading calls */
 void
-pixie_xml_cleanup(struct pixie_xml_parser *parser);
+pixie_cleanup(struct pixie_parser *parser);
 
 /**
  * Return a parser to a clean state.
  *
  * @param parser parser to clear
  * @return the parser for cascading calls */
-struct pixie_xml_parser *
-pixie_xml_clear(struct pixie_xml_parser *parser);
+struct pixie_parser *
+pixie_clear(struct pixie_parser *parser);
 
 /**
  * Process an XML stream using event callbacks.  Call this for each
  * chunk of available data.  Once data is exhausted call
- * pixie_xml_finish to collect any cached content and to check
+ * pixie_finish to collect any cached content and to check
  * that the stream ended in a valid way.
  *
  * @param parser state for parser
@@ -107,13 +109,13 @@ pixie_xml_clear(struct pixie_xml_parser *parser);
  * @return zero on success, negative on parser errors and positive on
  *         callback errors */
 int
-pixie_xml_parse(struct pixie_xml_parser *parser,
-                const char *data, unsigned n_data);
+pixie_parse(struct pixie_parser *parser,
+            const char *data, unsigned n_data);
 
 /**
  * Complete parsing at the end of a stream. */
 int
-pixie_xml_finish(struct pixie_xml_parser *parser);
+pixie_finish(struct pixie_parser *parser);
 
 /**
  * Return a readable string describing a pixie error code.

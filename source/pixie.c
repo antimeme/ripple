@@ -16,8 +16,7 @@
  * <http://www.gnu.org/licenses/>.
  *
  * ---------------------------------------------------------------------
- * An event driven parsing system. */
-
+ * An event driven XML parsing library. */
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -307,11 +306,11 @@ pixie__free_attr(struct ripple_context *rctx, struct pixie_attr *attr)
 }
 
 int
-pixie_xml_setup(struct pixie_xml_parser *parser,
-                struct ripple_context *rctx, unsigned flags,
-                pixie_xml_contents_t contents,
-                pixie_xml_tag_begin_t tag_begin,
-                pixie_xml_tag_end_t tag_end)
+pixie_setup(struct pixie_parser *parser,
+            struct ripple_context *rctx, unsigned flags,
+            pixie_contents_t contents,
+            pixie_tag_begin_t tag_begin,
+            pixie_tag_end_t tag_end)
 {
   int result = PIXIE_SUCCESS;
   memset(parser, 0, sizeof(*parser));
@@ -334,13 +333,13 @@ pixie_xml_setup(struct pixie_xml_parser *parser,
   /* :TODO: attrs */
 
   if (result)
-    pixie_xml_cleanup(parser);
-  else pixie_xml_clear(parser);
+    pixie_cleanup(parser);
+  else pixie_clear(parser);
   return result;
 }
 
 void
-pixie_xml_cleanup(struct pixie_xml_parser *parser)
+pixie_cleanup(struct pixie_parser *parser)
 {
   pixie_buffer_cleanup(parser->current);
   ripple_context_free(parser->rctx, parser->current);
@@ -349,8 +348,8 @@ pixie_xml_cleanup(struct pixie_xml_parser *parser)
   /* :TODO: attrs */
 }
 
-struct pixie_xml_parser *
-pixie_xml_clear(struct pixie_xml_parser *parser)
+struct pixie_parser *
+pixie_clear(struct pixie_parser *parser)
 {
   parser->state = PSTATE_CONTENT;
   parser->line = 1;
@@ -362,12 +361,12 @@ pixie_xml_clear(struct pixie_xml_parser *parser)
 }
 
 int
-pixie_xml_parse(struct pixie_xml_parser *parser,
-                const char *data, unsigned n_data)
+pixie_parse(struct pixie_parser *parser,
+            const char *data, unsigned n_data)
 {
   int result = PIXIE_SUCCESS;
   int index = 0;
-
+  
   while ((result >= PIXIE_SUCCESS) && (index < n_data)) {
     int c = data[index++];
 
@@ -620,7 +619,7 @@ pixie_xml_parse(struct pixie_xml_parser *parser,
 }
 
 int
-pixie_xml_finish(struct pixie_xml_parser *parser) {
+pixie_finish(struct pixie_parser *parser) {
   int result = PIXIE_SUCCESS;
 
   switch (parser->state) {

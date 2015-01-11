@@ -16,7 +16,7 @@
  * <http://www.gnu.org/licenses/>.
  *
  * ---------------------------------------------------------------------
- * Check program for pixie parser. */
+ * Check program for pixie XML parser library. */
 #include <stdio.h>
 #include <stdlib.h>
 #include "ripple/pixie.h"
@@ -37,7 +37,7 @@ const char xml[] =
   "</Root>";
 
 int
-begin(struct pixie_xml_parser *parser, const char *ns, const char *tag,
+begin(struct pixie_parser *parser, const char *ns, const char *tag,
       const char * const *keys, const char * const *values)
 {
   printf("TAG: %s (depth %d)\n", tag, parser->depth);
@@ -49,9 +49,10 @@ check_pixie(void)
 {
   int result = EXIT_SUCCESS;
   int rc;
-  struct pixie_xml_parser parser;
-  if (!(rc = pixie_xml_setup(&parser, NULL, 0, NULL, begin, NULL)))
-    rc = pixie_xml_parse(&parser, xml, sizeof(xml));
+  struct pixie_parser parser;
+  if (!(rc = pixie_setup(&parser, NULL, 0, NULL, begin, NULL)) &&
+      !(rc = pixie_parse(&parser, xml, sizeof(xml))))
+    rc = pixie_finish(&parser);
 
   if (rc) {
     printf("FAILED (%u,%u): %s\n", parser.line, parser.column,
