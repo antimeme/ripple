@@ -1,4 +1,4 @@
-/* ripple/random.c
+/* source/random.c
  * Copyright (C) 2011-2013 by Jeff Gold.
  *
  * This program is free software: you can redistribute it and/or

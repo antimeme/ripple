@@ -1,4 +1,4 @@
-/* ripple/juju.c
+/* source/juju.c
  * Copyright (C) 2014 by Jeff Gold.
  *
  * This program is free software: you can redistribute it and/or

@@ -1,4 +1,4 @@
-/* ripple/stream.c
+/* source/stream.c
  * Copyright (C) 2010-2014 by Jeff Gold.
  * 
  * This program is free software: you can redistribute it and/or
