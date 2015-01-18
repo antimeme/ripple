@@ -251,6 +251,8 @@
         return result;
     };
     SquareGrid.prototype._pairpoints = function(node1, node2) {
+        // Diagonal neighbors need special treatment because the base
+        // implemenation assumes two points
         return (((node1.row - node2.row) * (node1.row - node2.row) +
                  (node1.col - node2.col) * (node1.col - node2.col) > 1) ?
                 [{x: node1.x + (node2.x - node1.x) / 2,
@@ -394,27 +396,14 @@
     };
 
     RTriangleGrid.prototype._pairpoints = function(node1, node2) {
-        var cmod = node1.col % 2 ? -1 : 1;
         if ((node1.row !== node2.row) ||
-            (node1.col + cmod !== node2.col)) {
-            var halfsize = this._size / 2;
-            var fifth = this._size / 5;
-            var x_sign = (node1.col % 2) ? 1 : -1;
-            var y_sign = x_sign *
-                ((!this.regular && ((node1.row < 0) ^ (node1.col < 0))) ?
-                 -1 : 1);
-            var corner = Math.abs(node1.col % 2) * this._size;
-            var x = node1.x - (halfsize + x_sign * fifth);
-            var y = node1.y - (halfsize + y_sign * fifth);
-            return (y_sign == x_sign) ? [
-                {x: x + corner, y: y + corner},
-                (node1.row === node2.row) ? {x: x + this._size, y: y} :
-                {x: x, y: y + this._size}] : [
-                    (node1.row === node2.row) ? {x: x, y: y} :
-                    {x: x + this._size, y: y + this._size},
-                    {x: x + this._size * Math.abs(node1.col % 2),
-                     y: y + this._size *
-                     Math.abs((node1.col + 1) % 2)}];
+            (node1.col + (node1.col % 2 ? -1 : 1) !== node2.col)) {
+            var sign = (this.regular || ((node1.row < 0) ===
+                                         (node1.col < 0)));
+            var points = this.points(node1);
+            return [points[0], ((node1.row !== node2.row) ===
+                                (node1.col % 2 ? !sign : sign)) ?
+                    points[1] : points[2]];
         }
         return BaseGrid.prototype._pairpoints.call(this, node1, node2);
     };
@@ -435,9 +424,9 @@
             {x: x + corner, y: y + corner},
             {x: x + this._size, y: y},
             {x: x, y: y + this._size}] : [
-                {x: x, y: y}, {x: x + this._size, y: y + this._size},
                 {x: x + this._size * Math.abs(node.col % 2),
-                 y: y + this._size * Math.abs((node.col + 1) % 2)}];
+                 y: y + this._size * Math.abs((node.col + 1) % 2)},
+                {x: x, y: y}, {x: x + this._size, y: y + this._size}];
     };
 
     // HexGrid represents a mapping between cartesian coordinates and
@@ -590,8 +579,8 @@
         var self = $('<canvas></canvas>').appendTo(parent);
         var colorTapInner = 'rgba(45, 45, 128, 0.8)';
         var colorTapOuter = 'rgba(128, 255, 128, 0.6)';
-        var colorSelected = 'rgba(255, 255, 0, 0.6)';
-        var colorNeighbor = 'rgba(64, 64, 0, 0.4)';
+        var colorSelected = 'rgba(192, 192, 0, 0.6)';
+        var colorNeighbor = 'rgba(128, 128, 0, 0.4)';
         var lineWidth = 0, lineFactor = 40;
         var numbers = false, combined = false;
         var grid, tap, selected, drag, zooming, gesture, press = 0;
@@ -686,12 +675,15 @@
                     ctx.fillStyle = colorNeighbor;
                     ctx.fill();
 
-                    ctx.beginPath();
+                    var colors = ['red', 'green', 'blue',
+                                  'cyan', 'magenta', 'yellow',
+                                  'black', 'white'];
                     for (index in neighbors) {
+                        ctx.beginPath();
                         points = neighbors[index].points;
                         if (points.length > 1) {
                             vector = {x: points[1].x - points[0].x,
-                                          y: points[1].y - points[0].y};
+                                      y: points[1].y - points[0].y};
                             ctx.moveTo(points[0].x + 0.25 * vector.x,
                                        points[0].y + 0.25 * vector.y);
                             ctx.lineTo(points[0].x + 0.75 * vector.x,
@@ -703,9 +695,14 @@
                             ctx.arc(points[0].x, points[0].y,
                                     radius, 0, 2 * Math.PI);
                         }
+                        ctx.moveTo(neighbors[index].x + lineWidth * 2,
+                                   neighbors[index].y);
+                        ctx.arc(neighbors[index].x, neighbors[index].y,
+                                lineWidth * 2, 0, 2 * Math.PI);
+
+                        ctx.strokeStyle = colors[index % colors.length];
+                        ctx.stroke();
                     }
-                    ctx.strokeStyle = self.css('background-color');
-                    ctx.stroke();
                 }
                 if (tap) {
                     ctx.beginPath();
