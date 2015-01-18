@@ -243,7 +243,7 @@
                       {row: node.row + 1, col: node.col},
                       {row: node.row - 1, col: node.col}];
         if (this.diagonal)
-            result = Array.concat(result, [
+            result = result.concat([
                 {row: node.row + 1, col: node.col + 1, cost: _sqrt2},
                 {row: node.row + 1, col: node.col - 1, cost: _sqrt2},
                 {row: node.row - 1, col: node.col + 1, cost: _sqrt2},
@@ -688,7 +688,7 @@
                                        points[0].y + 0.25 * vector.y);
                             ctx.lineTo(points[0].x + 0.75 * vector.x,
                                        points[0].y + 0.75 * vector.y);
-                        } else {
+                        } else if (points.length === 1) {
                             radius = lineWidth * 5;
                             ctx.moveTo(points[0].x + radius,
                                        points[0].y);
