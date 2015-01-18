@@ -44,7 +44,7 @@
 //                    boundary between two neighbors
 //     * points: return points in grid cell polygon
 //
-// Overriding _update is not required if the grid has no size
+// Overriding _update is not required if the grid has no size-
 // dependant state.  The coordinate, position and neighbors functions
 // in BaseGrid will automatically adjust for the grid offset, so
 // there's no need to account for this in the _coordinate, _position
@@ -161,6 +161,7 @@
                 {row: node.row + 1, col: node.col},
                 {row: node.row - 1, col: node.col}];
     };
+
     BaseGrid.prototype._pairpoints = function(node1, node2) {
         var midpoint = {x: (node2.x - node1.x) / 2,
                         y: (node2.y - node1.y) / 2};
@@ -250,13 +251,11 @@
         return result;
     };
     SquareGrid.prototype._pairpoints = function(node1, node2) {
-        var delta = (node1.row - node2.row) * (node1.row - node2.row) +
-            (node1.col - node2.col) * (node1.col - node2.col);
-        if (delta > 1) {
-            return [{x: node1.x + (node2.x - node1.x) / 2,
-                     y: node1.y + (node2.y - node1.y) / 2}];
-        }
-        return BaseGrid.prototype._pairpoints.call(this, node1, node2);
+        return (((node1.row - node2.row) * (node1.row - node2.row) +
+                 (node1.col - node2.col) * (node1.col - node2.col) > 1) ?
+                [{x: node1.x + (node2.x - node1.x) / 2,
+                  y: node1.y + (node2.y - node1.y) / 2}] :
+                BaseGrid.prototype._pairpoints.call(this, node1, node2));
     };
     SquareGrid.prototype.points = function(node) {
         // Given a node with the coordinates for the center of a square,
@@ -395,9 +394,28 @@
     };
 
     RTriangleGrid.prototype._pairpoints = function(node1, node2) {
-        // :FIXME: corrections needed!  Neighbor boundaries are
-        // sometimes non-sensical in default implementation due
-        // to strange angles between grid cells in most cases
+        var cmod = node1.col % 2 ? -1 : 1;
+        if ((node1.row !== node2.row) ||
+            (node1.col + cmod !== node2.col)) {
+            var halfsize = this._size / 2;
+            var fifth = this._size / 5;
+            var x_sign = (node1.col % 2) ? 1 : -1;
+            var y_sign = x_sign *
+                ((!this.regular && ((node1.row < 0) ^ (node1.col < 0))) ?
+                 -1 : 1);
+            var corner = Math.abs(node1.col % 2) * this._size;
+            var x = node1.x - (halfsize + x_sign * fifth);
+            var y = node1.y - (halfsize + y_sign * fifth);
+            return (y_sign == x_sign) ? [
+                {x: x + corner, y: y + corner},
+                (node1.row === node2.row) ? {x: x + this._size, y: y} :
+                {x: x, y: y + this._size}] : [
+                    (node1.row === node2.row) ? {x: x, y: y} :
+                    {x: x + this._size, y: y + this._size},
+                    {x: x + this._size * Math.abs(node1.col % 2),
+                     y: y + this._size *
+                     Math.abs((node1.col + 1) % 2)}];
+        }
         return BaseGrid.prototype._pairpoints.call(this, node1, node2);
     };
 
