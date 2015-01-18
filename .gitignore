@@ -28,6 +28,7 @@ include/ripple/stamp-h1
 ripple.dpkg
 ripple.spec
 ripple-*.tar.gz
+check-ripple
 
 # Python
 py-compile
