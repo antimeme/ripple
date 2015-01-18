@@ -22,25 +22,38 @@
 #include "ripple/pixie.h"
 
 const char xml[] =
-  "<Root>"
-  "  <TaxRate>7.25</TaxRate>"
-  "  <Data>"
-  "    <Category>A</Category>"
-  "    <Quantity>3</Quantity>"
-  "    <Price>24.50</Price>"
-  "  </Data>"
-  "  <Data>"
-  "    <Category>B</Category>"
-  "    <Quantity>1</Quantity>"
-  "    <Price>89.99</Price>"
-  "  </Data>"
-  "</Root>";
+  "<space:Root>\n"
+  "  <TaxRate>7.25</TaxRate>\n"
+  "  <Data color=\"blue\" size='small'>\n"
+  "    <Category>A</Category>\n"
+  "    <Quantity>3</Quantity>\n"
+  "    <Price>24.50</Price>\n"
+  "  </Data>\n"
+  "  <Data color='red' size='medium'>\n"
+  "    <Category>B</Category>\n"
+  "    <Quantity>1</Quantity>\n"
+  "    <Price>89.99</Price>\n"
+  "  </Data>\n"
+  "</space:Root>\n";
 
 int
-begin(struct pixie_parser *parser, const char *ns, const char *tag,
+begin(struct pixie_parser *parser,
+      const char *ns, const char *tag, unsigned n_attrs,
       const char * const *keys, const char * const *values)
 {
-  printf("TAG: %s (depth %d)\n", tag, parser->depth);
+  unsigned index;
+  printf("TAG-BEGIN: %s%s%s (depth %d)\n",
+         ns, (ns && *ns) ? ": " : "", tag, parser->depth);
+  for (index = 0; index < n_attrs; ++index)
+    printf("    ATTR: %s -> \"%s\"\n", keys[index], values[index]);
+  return 0;
+}
+
+int
+end(struct pixie_parser *parser, const char *ns, const char *tag)
+{
+  printf("TAG-END:   %s%s%s (depth %d)\n",
+         ns, (ns && *ns) ? ": " : "", tag, parser->depth);
   return 0;
 }
 
@@ -50,9 +63,11 @@ check_pixie(void)
   int result = EXIT_SUCCESS;
   int rc;
   struct pixie_parser parser;
-  if (!(rc = pixie_setup(&parser, NULL, 0, NULL, begin, NULL)) &&
-      !(rc = pixie_parse(&parser, xml, sizeof(xml))))
-    rc = pixie_finish(&parser);
+  if (!(rc = pixie_setup(&parser, NULL, 0, NULL, begin, end))) {
+    if (!(rc = pixie_parse(&parser, xml, sizeof(xml))))
+      rc = pixie_parse(&parser, NULL, 0);
+    pixie_cleanup(&parser);
+  }
 
   if (rc) {
     printf("FAILED (%u,%u): %s\n", parser.line, parser.column,

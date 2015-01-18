@@ -29,39 +29,26 @@ extern "C" {
  * A non-zero return should always be a positive integer (negative
  * values are reserved for pixie itself and can be resolved to
  * readable strings using pixie_strerror).  Any error will halt
- * parsing immediately. */
+ * parsing immediately.
+ *
+ * Note that strings passed as parameters here are exist only for the
+ * duration of the callback.  Afterward they may be overwritten with
+ * other data.  Any strings which are needed after parsing must be
+ * copied by the callback into memory managed outside the parser. */
 struct pixie_parser;
 typedef int (*pixie_contents_t)(struct pixie_parser *parser,
                                 const char *text);
 typedef int (*pixie_tag_begin_t)(struct pixie_parser *parser,
                                  const char *ns, const char *tag,
-                                 const char * const *attrs,
+                                 unsigned n_attrs,
+                                 const char * const *keys,
                                  const char * const *values);
 typedef int (*pixie_tag_end_t)(struct pixie_parser *parser,
                                const char *ns, const char *tag);
 
-enum pixie_flags { /* reserved for future use */
-  PIXIE_FLAG_NONE = 0
-};
-
-struct pixie_parser {
-  /* Callbacks may read these values directly */
-  unsigned depth;
-  unsigned line;
-  unsigned column;
-
-  /* Everything else should be considered opaque */
-  struct ripple_context *rctx;
-  enum pixie_flags flags;
-  unsigned state;
-  int quote;
-  int last;
-  pixie_contents_t  contents;
-  pixie_tag_begin_t tag_begin;
-  pixie_tag_end_t   tag_end;
-  struct pixie_buffer *current;
-  struct pixie_buffer *ns;
-  struct pixie_attr *attrs;
+enum pixie_flags {
+  PIXIE_FLAG_NONE = 0,
+  PIXIE_FLAG_ATTRNOVAL = (1 << 0), /* allow attributes without value */
 };
 
 /**
@@ -104,18 +91,15 @@ pixie_clear(struct pixie_parser *parser);
  * that the stream ended in a valid way.
  *
  * @param parser state for parser
- * @param data chunk of bytes to process
- * @param n_data number of bytes in chunk
+ * @param data chunk of bytes to process (NULL indicates that hte
+ *             stream has no more data)
+ * @param n_data number of bytes in chunk (zero indicates that the
+ *               stream has no more data)
  * @return zero on success, negative on parser errors and positive on
  *         callback errors */
 int
 pixie_parse(struct pixie_parser *parser,
             const char *data, unsigned n_data);
-
-/**
- * Complete parsing at the end of a stream. */
-int
-pixie_finish(struct pixie_parser *parser);
 
 /**
  * Return a readable string describing a pixie error code.
@@ -128,6 +112,47 @@ pixie_strerror(int e);
 /**
  * Source for ripple context log messages. */
 const char *pixie_logstr;
+
+/* === Internal implementation details */
+
+struct pixie_buffer {
+  struct ripple_context *rctx;
+  unsigned m_data; /* number of bytes available */
+  unsigned n_data; /* number of bytes in use */
+  char *data;
+};
+
+struct pixie_attrs {
+  struct ripple_context *rctx;
+  struct pixie_buffer key;
+  struct pixie_buffer value;
+
+  unsigned n_attrs;
+  unsigned m_attrs;
+  char **keys;
+  char **values;
+};
+
+struct pixie_parser {
+  /* Callbacks may read these values directly */
+  unsigned depth;
+  unsigned line;
+  unsigned column;
+
+  /* Everything else should be considered opaque */
+  struct ripple_context *rctx;
+  enum pixie_flags flags;
+  unsigned state;
+  int quote;
+  int last;
+  pixie_contents_t  contents;
+  pixie_tag_begin_t tag_begin;
+  pixie_tag_end_t   tag_end;
+  struct pixie_buffer current;
+  struct pixie_buffer ns;
+  struct pixie_attrs attrs;
+  void *chunk;
+};
 
 #ifdef __cplusplus
 }

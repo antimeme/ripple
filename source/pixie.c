@@ -96,6 +96,7 @@ enum pixie_status {
   PIXIE_EALLOC,
   PIXIE_EINCOMPLETE,
   PIXIE_EBADATTR,
+  PIXIE_EBADESC,
   PIXIE_ENEGDEPTH,
   PIXIE_EUNTERMINATED,
 };
@@ -109,6 +110,7 @@ pixie_strerror(int e)
   case PIXIE_EALLOC:        return "failed to allocate memory";
   case PIXIE_EINCOMPLETE:   return "incomplete tag";
   case PIXIE_EBADATTR:      return "bad attribute definition";
+  case PIXIE_EBADESC:       return "unknown escape sequence";
   case PIXIE_ENEGDEPTH:     return "negative depth detected";
   case PIXIE_EUNTERMINATED: return "unterminated tags";
   default: return "unknown error";
@@ -118,13 +120,6 @@ pixie_strerror(int e)
 const char *pixie_logstr = "pixie";
 #define logstr pixie_logstr
 
-struct pixie_buffer {
-  struct ripple_context *rctx;
-  unsigned m_data; /* number of bytes available */
-  unsigned n_data; /* number of bytes in use */
-  char *data;
-};
-
 /**
  * Configure a buffer for use.  This is intended for use on an
  * unintialized buffer and may result in memory leaks if called
@@ -132,8 +127,8 @@ struct pixie_buffer {
  *
  * @param self buffer to configure
  * @param rctx context to use for memory allocation
- * @return self or NULL if memory allcoation fails */
-int
+ * @return 0 on success or an error code */
+static int
 pixie_buffer_setup(struct pixie_buffer *self,
                    struct ripple_context *rctx);
 
@@ -142,7 +137,7 @@ pixie_buffer_setup(struct pixie_buffer *self,
  * any further calls except pixie_buffer_setup is undefined.
  *
  * @param self buffer to reclaim */
-void
+static void
 pixie_buffer_cleanup(struct pixie_buffer *self);
 
 /**
@@ -150,15 +145,26 @@ pixie_buffer_cleanup(struct pixie_buffer *self);
  *
  * @param self buffer to use
  * @return null-terminated string */
-const char *
+static const char *
 pixie_buffer_str(struct pixie_buffer *self);
+
+/**
+ * Return a null-terminated string with buffer contents
+ * and clear the buffer.  The value returned is allocated
+ * and will NOT be reclaimed when the buffer is reclaimed.
+ * The caller is responsible for cleaning up after it.
+ *
+ * @param self buffer to use
+ * @return non-empty null-terminated string or NULL */
+static char *
+pixie_buffer_steal(struct pixie_buffer *self);
 
 /**
  * Return the number of bytes in this buffer.
  *
  * @param self buffer to use
  * @return number of bytes in buffer */
-unsigned
+static unsigned
 pixie_buffer_len(struct pixie_buffer *self);
 
 /**
@@ -166,7 +172,7 @@ pixie_buffer_len(struct pixie_buffer *self);
  *
  * @param self buffer to clear
  * @return self */
-struct pixie_buffer *
+static struct pixie_buffer *
 pixie_buffer_clear(struct pixie_buffer *self);
 
 /**
@@ -174,8 +180,8 @@ pixie_buffer_clear(struct pixie_buffer *self);
  *
  * @param c character to add
  * @param self buffer to add to
- * @return 0 on success and negative on error */
-int
+ * @return 0 on success or negative on error */
+static int
 pixie_buffer_putc(struct pixie_buffer *self, int c);
 
 /**
@@ -183,21 +189,76 @@ pixie_buffer_putc(struct pixie_buffer *self, int c);
  *
  * @param s string to add
  * @param self buffer to add to
- * @return 0 on success and negative on error */
-int
+ * @return 0 on success or negative on error */
+static int
 pixie_buffer_puts(const char *s, struct pixie_buffer *self);
 
 /**
- * Copy the contents of other into self
- * @param self buffer to append into
- * @param other buffer to copy from 
+ * Copy the contents of one buffer into another.  Anything in
+ * the destination buffer is retained with the source data added
+ * to the end.
+ *
+ * @param dst destination buffer to copy into
+ * @param src source buffer to copy from
  * @return self */
-int
-pixie_buffer_merge(struct pixie_buffer *self,
-                   struct pixie_buffer *other);
+static int
+pixie_buffer_concat(struct pixie_buffer *dst,
+                    struct pixie_buffer *src);
 
+/**
+ * Configure an attribute structure for use.
+ *
+ * @param attrs structure to initialize
+ * @return 0 on success or a negative error code */
+static int
+pixie_attrs_setup(struct pixie_attrs *attrs,
+                  struct ripple_context *rctx);
 
-int
+/**
+ * Reclaim any resoures associated with an attribute structure.
+ * After calling this subsequent pixie_attrs_* methods have
+ * undefined results until pixie_buffer_setup is called again.
+ *
+ * @param attrs structure to reclaim */
+static void
+pixie_attrs_cleanup(struct pixie_attrs *attrs);
+
+/**
+ * Erase any existing attribute information.
+ *
+ * @param attrs structure to clear
+ * @return the attrs structure for cascading calls */
+static struct pixie_attrs *
+pixie_attrs_clear(struct pixie_attrs *attrs);
+
+/**
+ * Absorb the current working key and value into the collection.
+ * This requires allocation which may fail.
+ *
+ * @param attrs
+ * @return 0 on success or a negative error code */
+static int
+pixie_attrs_push(struct pixie_attrs *attrs);
+
+/**
+ * Return a key buffer
+ *
+ * @param attrs
+ * @return buffer to hold key data */
+static struct pixie_buffer *
+pixie_attrs_key(struct pixie_attrs *attrs);
+
+/**
+ * Return a value buffer
+ *
+ * @param attrs
+ * @return buffer to hold value data */
+static struct pixie_buffer *
+pixie_attrs_value(struct pixie_attrs *attrs);
+
+/* === Implementation */
+
+static int
 pixie_buffer_setup(struct pixie_buffer *self,
                    struct ripple_context *rctx)
 {
@@ -220,6 +281,19 @@ pixie_buffer_str(struct pixie_buffer *self)
     self->data[self->n_data] = 0;
   }
   return self->data ? self->data : "";
+}
+
+char *
+pixie_buffer_steal(struct pixie_buffer *self)
+{
+  char *result = self->data;
+  if (result)
+    /* This should be safe because pixie_buffer__avail and
+     * pixie_buffer__alloc reserve space for a terminator. */
+    result[self->n_data] = 0;
+  self->data = NULL;
+  self->n_data = self->m_data = 0;
+  return result;
 }
 
 unsigned
@@ -272,40 +346,99 @@ pixie_buffer_puts(const char *s, struct pixie_buffer *self)
   if (pixie_buffer__avail(self, len)) {
     memcpy(self->data + self->n_data, s, len);
     self->n_data += len;
-  } else return PIXIE_EALLOC;
+  } else return -PIXIE_EALLOC;
   return PIXIE_SUCCESS;
 }
 
 int
-pixie_buffer_merge(struct pixie_buffer *self,
-                   struct pixie_buffer *other)
+pixie_buffer_concat(struct pixie_buffer *self,
+                    struct pixie_buffer *other)
 {
   pixie_buffer__alloc(self, other->n_data);
   if (pixie_buffer__avail(self, other->n_data)) {
     memcpy(self->data + self->n_data, other->data, other->n_data);
     self->n_data += other->n_data;
-  } else return PIXIE_EALLOC;
+  } else return -PIXIE_EALLOC;
   return PIXIE_SUCCESS;
 }
 
-struct pixie_attr {
-  struct pixie_buffer key;
-  struct pixie_buffer value;
-  struct pixie_attr   *next;
-};
-
-static struct pixie_attr *
-pixie__free_attr(struct ripple_context *rctx, struct pixie_attr *attr)
+static int
+pixie_attrs_setup(struct pixie_attrs *attrs,
+                  struct ripple_context *rctx)
 {
-  while (attr) {
-    struct pixie_attr *next = attr->next;
-    pixie_buffer_cleanup(&attr->key);
-    pixie_buffer_cleanup(&attr->value);
-    ripple_context_free(rctx, attr);
-    attr = next;
-  }
-  return NULL;
+  int result = PIXIE_SUCCESS;
+  attrs->rctx = rctx;
+  attrs->n_attrs = attrs->m_attrs = 0;
+  attrs->keys = attrs->values = NULL;
+  pixie_buffer_setup(&attrs->key, rctx);
+  pixie_buffer_setup(&attrs->value, rctx);
+  return result;
 }
+
+static void
+pixie_attrs_cleanup(struct pixie_attrs *attrs)
+{
+  pixie_buffer_clear(&attrs->key);
+  pixie_buffer_clear(&attrs->value);
+  pixie_attrs_clear(attrs);
+  ripple_context_free(attrs->rctx, attrs->keys);
+  ripple_context_free(attrs->rctx, attrs->values);
+}
+
+static struct pixie_attrs *
+pixie_attrs_clear(struct pixie_attrs *attrs)
+{
+  unsigned index;
+  for (index = 0; index < attrs->n_attrs; index++) {
+    ripple_context_free(attrs->rctx, attrs->keys[index]);
+    ripple_context_free(attrs->rctx, attrs->values[index]);
+  }
+  attrs->n_attrs = 0;
+  pixie_buffer_clear(&attrs->key);
+  pixie_buffer_clear(&attrs->value);
+  return attrs;
+}
+
+static int
+pixie_attrs_push(struct pixie_attrs *attrs)
+{
+  int result = PIXIE_SUCCESS;
+
+  /* Attempt to make space for one more attribute plus an
+   * additional NULL terminator */
+  if (attrs->n_attrs + 2 > attrs->m_attrs) {
+    unsigned m_attrs = attrs->n_attrs + 2;
+    char **keys = ripple_context_realloc
+      (attrs->rctx, attrs->keys, sizeof(char *) * m_attrs);
+    if (keys) {
+      char **values = ripple_context_realloc
+        (attrs->rctx, attrs->values, sizeof(char *) * m_attrs);
+      if (values) {
+        attrs->m_attrs = m_attrs;
+        attrs->values = values;
+      }
+      attrs->keys = keys;
+    }
+  }
+
+  if (attrs->n_attrs + 2 <= attrs->m_attrs) {
+    attrs->keys[attrs->n_attrs]   = pixie_buffer_steal(&attrs->key);
+    attrs->values[attrs->n_attrs] = pixie_buffer_steal(&attrs->value);
+
+    attrs->n_attrs++;
+    attrs->keys[attrs->n_attrs] = NULL;
+    attrs->values[attrs->n_attrs] = NULL;
+  } else result = -PIXIE_EALLOC;
+  return result;
+}
+
+static struct pixie_buffer *
+pixie_attrs_key(struct pixie_attrs *attrs)
+{ return &attrs->key; }
+
+static struct pixie_buffer *
+pixie_attrs_value(struct pixie_attrs *attrs)
+{ return &attrs->value; }
 
 int
 pixie_setup(struct pixie_parser *parser,
@@ -321,33 +454,20 @@ pixie_setup(struct pixie_parser *parser,
   parser->tag_begin = tag_begin;
   parser->tag_end   = tag_end;
 
-  parser->current = ripple_context_malloc
-    (rctx, sizeof(*parser->current));
-  if (parser->current)
-    result = pixie_buffer_setup(parser->current, rctx);
-  else result = PIXIE_EALLOC;
-
-  parser->ns = ripple_context_malloc(rctx, sizeof(*parser->ns));
-  if (parser->ns)
-    result = pixie_buffer_setup(parser->ns, rctx);
-  else result = PIXIE_EALLOC;
-
-  /* :TODO: attrs */
-
-  if (result)
-    pixie_cleanup(parser);
-  else pixie_clear(parser);
+  if (!(result = pixie_buffer_setup(&parser->current, rctx)) &&
+      !(result = pixie_buffer_setup(&parser->ns, rctx)) &&
+      !(result = pixie_attrs_setup(&parser->attrs, rctx)))
+    pixie_clear(parser);
+  else pixie_cleanup(parser);
   return result;
 }
 
 void
 pixie_cleanup(struct pixie_parser *parser)
 {
-  pixie_buffer_cleanup(parser->current);
-  ripple_context_free(parser->rctx, parser->current);
-  pixie_buffer_cleanup(parser->ns);
-  ripple_context_free(parser->rctx, parser->ns);
-  /* :TODO: attrs */
+  pixie_buffer_cleanup(&parser->current);
+  pixie_buffer_cleanup(&parser->ns);
+  pixie_attrs_cleanup(&parser->attrs);
 }
 
 struct pixie_parser *
@@ -357,9 +477,9 @@ pixie_clear(struct pixie_parser *parser)
   parser->line = 1;
   parser->column = 0;
 
-  pixie_buffer_clear(parser->current);
-  pixie_buffer_clear(parser->ns);
-  /* :TODO: clear attrs */
+  pixie_buffer_clear(&parser->current);
+  pixie_buffer_clear(&parser->ns);
+  pixie_attrs_clear(&parser->attrs);
 }
 
 int
@@ -367,8 +487,35 @@ pixie_parse(struct pixie_parser *parser,
             const char *data, unsigned n_data)
 {
   int result = PIXIE_SUCCESS;
-  int index = 0;
+  int index = 0, esc;
   
+  if (!n_data || !data) {
+    switch (parser->state) {
+    case PSTATE_CONTENT: {
+      if (parser->contents && pixie_buffer_len(&parser->current))
+        result = parser->contents
+          (parser, pixie_buffer_str(&parser->current));
+      /* Arguably we should really be whinging about having
+       * data past the final tag.  Maybe some kind of strict
+       * mode will be introduced in the future. */
+    } break;
+    case PSTATE_TAGOPEN:
+    case PSTATE_TAGSTOP:
+    case PSTATE_TAGTERM:
+    case PSTATE_COMMENT:
+    case PSTATE_CONTROL:
+    case PSTATE_ENTITY:
+    case PSTATE_ATTRIB:
+    case PSTATE_ATTRKEY:
+    case PSTATE_ATTREQ:
+    case PSTATE_ATTRQUO:
+    case PSTATE_ATTRVAL:
+    case PSTATE_ATTRESC:
+      result = -PIXIE_EINCOMPLETE;
+    default: result = -PIXIE_EINTERNAL;
+    }
+  }
+
   while ((result >= PIXIE_SUCCESS) && (index < n_data)) {
     int c = data[index++];
 
@@ -378,10 +525,10 @@ pixie_parse(struct pixie_parser *parser,
       if (c == '<') {
         if (parser->contents)
           result = parser->contents
-            (parser, pixie_buffer_str(parser->current));
+            (parser, pixie_buffer_str(&parser->current));
         parser->state = PSTATE_TAGOPEN;
-        pixie_buffer_clear(parser->current);
-      } else if (pixie_buffer_putc(parser->current, c))
+        pixie_buffer_clear(&parser->current);
+      } else if (pixie_buffer_putc(&parser->current, c))
         result = -PIXIE_EALLOC;
     } break;
 
@@ -395,185 +542,167 @@ pixie_parse(struct pixie_parser *parser,
         parser->state = PSTATE_CONTROL;
       } else if (isspace(c)) { /* skip leading whitespace */
       } else {
-        result = pixie_buffer_putc(parser->current, c);
+        result = pixie_buffer_putc(&parser->current, c);
         parser->state = PSTATE_TAGNAME;
       }
     } break;
 
     case PSTATE_ENTITY: { /* ignore entities but notice comments */
-      RIPPLE_DEBUG(parser->rctx, logstr, "ENTITY: %d %d", c, c);
-      if ((c == '-') && !pixie_buffer_len(parser->current)) {
+      RIPPLE_DEBUG(parser->rctx, logstr, "ENTITY: %d %c", c, c);
+      if ((c == '-') && !pixie_buffer_len(&parser->current)) {
         parser->state = PSTATE_COMMENT;
-        if (pixie_buffer_putc(parser->current, c))
+        if (pixie_buffer_putc(&parser->current, c))
           result = -PIXIE_EALLOC;
       } if (c == '>') {
         parser->state = PSTATE_CONTENT;
-        pixie_buffer_clear(parser->current);
-      } else if (!pixie_buffer_len(parser->current) &&
-                 pixie_buffer_putc(parser->current, c))
+        pixie_buffer_clear(&parser->current);
+      } else if (!pixie_buffer_len(&parser->current) &&
+                 pixie_buffer_putc(&parser->current, c))
         result = -PIXIE_EALLOC;
     } break;
 
     case PSTATE_COMMENT: { /* ignore comments until close marker */
-      RIPPLE_DEBUG(parser->rctx, logstr, "COMMENT: %d %d", c, c);
-      if ((c == '>') && (pixie_buffer_len(parser->current) >= 2)) {
+      RIPPLE_DEBUG(parser->rctx, logstr, "COMMENT: %d %c", c, c);
+      if ((c == '>') && (pixie_buffer_len(&parser->current) >= 2)) {
         parser->state = PSTATE_CONTENT;
-        pixie_buffer_clear(parser->current);
+        pixie_buffer_clear(&parser->current);
       } else if (c == '-') {
-        if (pixie_buffer_putc(parser->current, c))
+        if (pixie_buffer_putc(&parser->current, c))
           result = -PIXIE_EALLOC;
-      } else pixie_buffer_clear(parser->current);
+      } else pixie_buffer_clear(&parser->current);
     } break;
 
     case PSTATE_CONTROL: { /* ignore contents of control tags */
-      RIPPLE_DEBUG(parser->rctx, logstr, "CONTROL: %d %d", c, c);
+      RIPPLE_DEBUG(parser->rctx, logstr, "CONTROL: %d %c", c, c);
       if (c == '>') {
         parser->state = PSTATE_CONTENT;
-        pixie_buffer_clear(parser->current);
+        pixie_buffer_clear(&parser->current);
       }
     } break;
 
     case PSTATE_TAGNAME: { /* parse tag name and namespace */
-      RIPPLE_DEBUG(parser->rctx, logstr, "TAGNAME: %d %d", c, c);
+      RIPPLE_DEBUG(parser->rctx, logstr, "TAGNAME: %d %c", c, c);
       if (isspace(c)) {
+        pixie_attrs_clear(&parser->attrs);
         parser->state = PSTATE_ATTRIB;
       } else if (c == ':') {
-        if (pixie_buffer_len(parser->ns))
-          if (pixie_buffer_putc(parser->ns, ':'))
+        if (pixie_buffer_len(&parser->ns))
+          if (pixie_buffer_putc(&parser->ns, ':'))
             result = -PIXIE_EALLOC;
-        if ((result >= 0) && pixie_buffer_merge
-            (parser->ns, parser->current))
+        if ((result >= 0) && pixie_buffer_concat
+            (&parser->ns, &parser->current))
           result = -PIXIE_EALLOC;
-        pixie_buffer_clear(parser->current);
+        pixie_buffer_clear(&parser->current);
       } else if (c == '/') {
-        if (parser->tag_begin)
-          result = parser->tag_begin(parser,
-                                     pixie_buffer_str(parser->ns),
-                                     pixie_buffer_str(parser->current),
-                                     NULL, NULL); // FIXME attr null
-        if ((result >= 0) && parser->tag_end)
-          result = parser->tag_end(parser,
-                                   pixie_buffer_str(parser->ns),
-                                   pixie_buffer_str(parser->current));
-        pixie_buffer_clear(parser->current);
-        pixie_buffer_clear(parser->ns);
         parser->state = PSTATE_TAGSTOP;
       } else if (c == '>') {
         if (parser->tag_begin)
-          result = parser->tag_begin(parser,
-                                     pixie_buffer_str(parser->ns),
-                                     pixie_buffer_str(parser->current),
-                                     NULL, NULL); // FIXME attr null
-        pixie_buffer_clear(parser->current);
-        pixie_buffer_clear(parser->ns);
+          result = parser->tag_begin
+            (parser, pixie_buffer_str(&parser->ns),
+             pixie_buffer_str(&parser->current), 0, NULL, NULL);
+        pixie_buffer_clear(&parser->current);
+        pixie_buffer_clear(&parser->ns);
         parser->depth++;
+
         parser->state = PSTATE_CONTENT;
-      } else if (pixie_buffer_putc(parser->current, c))
+      } else if (pixie_buffer_putc(&parser->current, c))
         result = -PIXIE_EALLOC;
     } break;
 
     case PSTATE_TAGTERM: { /* slashes in tags must be followed by '>' */
-      RIPPLE_DEBUG(parser->rctx, logstr, "TAGTERM: %d %d", c, c);
+      RIPPLE_DEBUG(parser->rctx, logstr, "TAGTERM: %d %c", c, c);
       if (c == ':') {
-        if (pixie_buffer_len(parser->ns))
-          if (pixie_buffer_putc(parser->ns, ':'))
-            result = -PIXIE_EALLOC;
-        if ((result >= 0) && pixie_buffer_merge
-            (parser->ns, parser->current))
-          result = -PIXIE_EALLOC;
-        pixie_buffer_clear(parser->current);
+        if (pixie_buffer_len(&parser->ns))
+          result = pixie_buffer_putc(&parser->ns, ':');
+        if (!result)
+          result = pixie_buffer_concat(&parser->ns, &parser->current);
+        pixie_buffer_clear(&parser->current);
       } else if (c == '>') {
         if (parser->depth > 0) {
           parser->depth--;
           if (parser->tag_end)
             result = parser->tag_end(parser,
-                                     pixie_buffer_str(parser->ns),
-                                     pixie_buffer_str(parser->current));
+                                     pixie_buffer_str(&parser->ns),
+                                     pixie_buffer_str(&parser->current));
+          pixie_buffer_clear(&parser->current);
+          pixie_buffer_clear(&parser->ns);
+
           parser->state = PSTATE_CONTENT;
-          pixie_buffer_clear(parser->current);
-          pixie_buffer_clear(parser->ns);
         } else result = -PIXIE_ENEGDEPTH;
-      } else if (pixie_buffer_putc(parser->current, c))
-        result = -PIXIE_EALLOC;
+      } else result = pixie_buffer_putc(&parser->current, c);
     } break;
 
     case PSTATE_TAGSTOP: { /* slashes in tags must be followed by '>' */
-      RIPPLE_DEBUG(parser->rctx, logstr, "TAGSTOP: %d %d", c, c);
+      RIPPLE_DEBUG(parser->rctx, logstr, "TAGSTOP: %d %c", c, c);
       if (c == '>') {
+        if (parser->tag_begin)
+          result = parser->tag_begin
+            (parser, pixie_buffer_str(&parser->ns),
+             pixie_buffer_str(&parser->current), parser->attrs.n_attrs,
+             (const char *const *)parser->attrs.keys,
+             (const char *const *)parser->attrs.values);
+        if (!result && parser->tag_end)
+          result = parser->tag_end
+            (parser, pixie_buffer_str(&parser->ns),
+             pixie_buffer_str(&parser->current));
+        pixie_buffer_clear(&parser->current);
+        pixie_buffer_clear(&parser->ns);
+        pixie_attrs_clear(&parser->attrs);
+
         parser->state = PSTATE_CONTENT;
-        pixie_buffer_clear(parser->current);
       } else result = -PIXIE_EINCOMPLETE;
     } break;
 
     case PSTATE_ATTRIB: { /* search for the start of an attribute */
-      RIPPLE_DEBUG(parser->rctx, logstr, "ATTRIB: %d %d", c, c);
+      RIPPLE_DEBUG(parser->rctx, logstr, "ATTRIB: %d %c", c, c);
       if (c == '/') {
-        if (parser->tag_begin)
-          result = parser->tag_begin(parser,
-                                     pixie_buffer_str(parser->ns),
-                                     pixie_buffer_str(parser->current),
-                                     NULL, NULL); // FIXME attr
-        parser->attrs = pixie__free_attr(parser->rctx, parser->attrs);
-        if ((result >= 0) && parser->tag_end)
-          result = parser->tag_end(parser,
-                                   pixie_buffer_str(parser->ns),
-                                   pixie_buffer_str(parser->current));
-        pixie_buffer_clear(parser->current);
-        pixie_buffer_clear(parser->ns);
-
         parser->state = PSTATE_TAGSTOP;
       } else if (c == '>') {
         if (parser->tag_begin)
           result = parser->tag_begin
-            (parser, pixie_buffer_str(parser->ns),
-             pixie_buffer_str(parser->current), NULL, NULL); // FIXME attr
-        pixie_buffer_clear(parser->current);
-        pixie_buffer_clear(parser->ns);
-        parser->attrs = pixie__free_attr(parser->rctx, parser->attrs);
+            (parser, pixie_buffer_str(&parser->ns),
+             pixie_buffer_str(&parser->current), parser->attrs.n_attrs,
+             (const char * const*)parser->attrs.keys,
+             (const char * const*)parser->attrs.values);
+        pixie_buffer_clear(&parser->current);
+        pixie_buffer_clear(&parser->ns);
+        pixie_attrs_clear(&parser->attrs);
         parser->depth++;
 
         parser->state = PSTATE_CONTENT;
       } else if (!isspace(c)) {
-        struct pixie_attr *newattr =
-          ripple_context_malloc(parser->rctx, sizeof(*newattr));
-        if (newattr) {
-          if ((result = pixie_buffer_setup(&newattr->key, parser->rctx)) >= 0)
-            result = pixie_buffer_setup(&newattr->value, parser->rctx);
-          else pixie_buffer_cleanup(&newattr->key);
+        result = pixie_buffer_putc(pixie_attrs_key(&parser->attrs), c);
 
-          if (result >= 0) {
-            newattr->next = parser->attrs;
-            parser->attrs = newattr;
-            parser->state = PSTATE_ATTRKEY;
-            if (pixie_buffer_putc(&newattr->key, c))
-              result = -PIXIE_EALLOC;
-          } else ripple_context_free(parser->rctx, newattr);
-        } else result = -PIXIE_EALLOC;
+        parser->state = PSTATE_ATTRKEY;
       }
     } break;
 
     case PSTATE_ATTRKEY: { /* get an attribute name */
-      RIPPLE_DEBUG(parser->rctx, logstr, "ATTRKEY: %d %d", c, c);
+      RIPPLE_DEBUG(parser->rctx, logstr, "ATTRKEY: %d %c", c, c);
       if (c == '=') {
         parser->state = PSTATE_ATTRQUO;
       } else if (c == '>') {
         result = -PIXIE_EBADATTR;
       } else if (isspace(c)) {
         parser->state = PSTATE_ATTREQ;
-      } else if (pixie_buffer_putc(&parser->attrs->key, c))
-        result = -PIXIE_EALLOC;
+      } else result = pixie_buffer_putc
+               (pixie_attrs_key(&parser->attrs), c);
     } break;
 
     case PSTATE_ATTREQ: { /* search for an equal sign */
-      RIPPLE_DEBUG(parser->rctx, logstr, "ATTREQ: %d %d", c, c);
+      RIPPLE_DEBUG(parser->rctx, logstr, "ATTREQ: %d %c", c, c);
       if (c == '=')
         parser->state = PSTATE_ATTRQUO;
-      else if (!isspace(c))
-        result = -PIXIE_EBADATTR;
+      else if (!isspace(c)) {
+        if (parser->flags & PIXIE_FLAG_ATTRNOVAL) {
+          result = pixie_attrs_push(&parser->attrs);
+          parser->state = PSTATE_ATTRIB;
+        } else result = -PIXIE_EBADATTR;
+      }
     } break;
 
-    case PSTATE_ATTRQUO: { /* search for a quote */
-      RIPPLE_DEBUG(parser->rctx, logstr, "ATTRQUO: %d %d", c, c);
+    case PSTATE_ATTRQUO: { /* search for an end quote */
+      RIPPLE_DEBUG(parser->rctx, logstr, "ATTRQUO: %d %c", c, c);
       if ((c == '\'') || (c == '"')) {
         parser->quote = c;
         parser->state = PSTATE_ATTRVAL;
@@ -582,20 +711,35 @@ pixie_parse(struct pixie_parser *parser,
     } break;
 
     case PSTATE_ATTRVAL: { /* get the attribute value */
-      RIPPLE_DEBUG(parser->rctx, logstr, "ATTRVAL: %d %d", c, c);
+      RIPPLE_DEBUG(parser->rctx, logstr, "ATTRVAL: %d %c", c, c);
       if (c == '\\')
         parser->state = PSTATE_ATTRESC;
-      else if (c == parser->quote)
+      else if (c == parser->quote) {
+        result = pixie_attrs_push(&parser->attrs);
         parser->state = PSTATE_ATTRIB;
-      else if (pixie_buffer_putc(&parser->attrs->value, c))
+      } else if (pixie_buffer_putc(pixie_attrs_value
+                                   (&parser->attrs), c))
         result = -PIXIE_EALLOC;
     } break;
 
-    case PSTATE_ATTRESC: { /* process backslash escape sequences */
-      RIPPLE_DEBUG(parser->rctx, logstr, "ATTRESC: %d %d", c, c);
+    case PSTATE_ATTRESC: { /* process backslash escape in attributes */
+      RIPPLE_DEBUG(parser->rctx, logstr, "ATTRESC: %d %c", c, c);
+      switch (c) {
+      case 'n': esc = '\n'; break;
+      case 'r': esc = '\r'; break;
+      case 't': esc = '\t'; break;
+      case 'f': esc = '\f'; break;
+      case '\\': esc = '\\'; break;
+      case '\'': esc = '\''; break;
+      case '"': esc = '"'; break;
+      default:
+        result = -PIXIE_EBADESC;
+      }
+      if (!result)
+        result = pixie_buffer_putc(pixie_attrs_value
+                                   (&parser->attrs), esc);
+
       parser->state = PSTATE_ATTRVAL;
-      if (pixie_buffer_putc(&parser->attrs->value, c))
-        result = -PIXIE_EALLOC;
     } break;
 
     default: result = -PIXIE_EINTERNAL;
@@ -616,37 +760,6 @@ pixie_parse(struct pixie_parser *parser,
       }
       parser->last = c;
     }
-  }
-  return result;
-}
-
-int
-pixie_finish(struct pixie_parser *parser) {
-  int result = PIXIE_SUCCESS;
-
-  switch (parser->state) {
-    case PSTATE_CONTENT: {
-      if (parser->contents && pixie_buffer_len(parser->current))
-        result = parser->contents
-          (parser, pixie_buffer_str(parser->current));
-      /* Arguably we should really be whinging about having
-       * data past the final tag.  Maybe some kind of strict
-       * mode will be introduced in the future. */
-    } break;
-    case PSTATE_TAGOPEN:
-    case PSTATE_TAGSTOP:
-    case PSTATE_TAGTERM:
-    case PSTATE_COMMENT:
-    case PSTATE_CONTROL:
-    case PSTATE_ENTITY:
-    case PSTATE_ATTRIB:
-    case PSTATE_ATTRKEY:
-    case PSTATE_ATTREQ:
-    case PSTATE_ATTRQUO:
-    case PSTATE_ATTRVAL:
-    case PSTATE_ATTRESC:
-      result = -PIXIE_EINCOMPLETE;
-    default: result = -PIXIE_EINTERNAL;
   }
   return result;
 }
