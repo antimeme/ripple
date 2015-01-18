@@ -814,13 +814,13 @@
                         '">' + name + '</li>');
         });
         menu.append('<hr />');
-        menu.append('<li data-toggle-animation="yes">' +
+        menu.append('<li data-action="animation">' +
                     'Toggle Animation</li>');
-        menu.append('<li data-toggle-numbers="yes">' +
+        menu.append('<li data-action="numbers">' +
                     'Toggle Numbers</li>');
-        menu.append('<li data-swap-colors="yes">' +
+        menu.append('<li data-action="colors">' +
                     'Swap Colors</li>');
-        menu.append('<li data-full-screen="yes">Full Screen</li>');
+        menu.append('<li data-action="full-screen">Full Screen</li>');
         menu.on('click', 'li', function(event) {
             menu.hide();
             var gtype = this.getAttribute('data-grid-type');
@@ -837,34 +837,35 @@
                 redraw();
             }
 
-            if (this.getAttribute('data-full-screen')) {
+            switch (this.getAttribute('data-action')) {
+            case 'full-screen': {
                 $.toggleFullscreen(self.parent().get(0));
                 resize();
-            }
-
-            if (this.getAttribute('data-toggle-animation'))
-            { animation.toggle(); }
-
-            if (this.getAttribute('data-toggle-numbers')) {
+            } break;
+            case 'animation': {
+                animation.toggle();
+            } break;
+            case 'numbers': {
                 if (combined) {
                     numbers = combined = false;
                 } else if (numbers)
                     combined = true;
                 else numbers = true;
                 redraw();
-            }
-            if (this.getAttribute('data-swap-colors')) {
+            } break;
+            case 'colors': {
                 var foreground = self.css('color');
                 var background = self.css('background-color');
                 self.css({color: background,
                           "background-color": foreground});
                 redraw();
+            } break;
             }
         });
 
         // Show grid menu at event location
         var menuate = function(tap) {
-            menu.css('top', tap.y - 40).css('left', tap.x - 25).show();
+            menu.css('top', 10).css('left', 25).show();
             drag = undefined;
         };
 
