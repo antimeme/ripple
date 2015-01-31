@@ -118,10 +118,10 @@
         self.max = self.size - 1;
         self.map = new Float32Array(self.size * self.size);
 
-        self.set(0, 0, self.max);
-        self.set(self.max, 0, self.max / 2);
-        self.set(self.max, self.max, 0);
-        self.set(0, self.max, self.max / 2);
+        self.set(0, 0,               self.r.random() * 255);
+        self.set(self.max, 0,        self.r.random() * 255);
+        self.set(self.max, self.max, self.r.random() * 255);
+        self.set(0, self.max,        self.r.random() * 255);
 
         divide.call(self, self.max);
         return self;
