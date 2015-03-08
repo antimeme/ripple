@@ -1,0 +1,25 @@
+<!DOCTYPE HTML>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="X-UA-Compatible" content="chrome=1">
+<title>Quanta: Particle Physics Simulation</title>
+<style>
+body {
+    background: blue;
+    margin: 0px;
+    padding: 0px;
+}
+canvas {
+    background: black;
+    margin: auto;
+    display: block;
+}
+</style>
+<script src="lib/jquery.min.js"></script>
+<script src="lib/jquery.mousewheel.js"></script>
+<script src="quanta.js"></script>
+<script>//<![CDATA[
+jQuery(function($) { quanta.go($, $('body')); });
+//]]></script>
