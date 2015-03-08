@@ -37,10 +37,15 @@ ripple_random_seed(struct ripple_random *rrand, unsigned seed);
 unsigned long
 ripple_random_uint32(struct ripple_random *rrand);
 
+/* Returns a pseudo-randomly generated double. */
+double
+ripple_random_double(struct ripple_random *rrand);
+
 #ifndef RIPPLE_NO_ABBR
 typedef struct ripple_random rrand_t;
 #define rrand_seed    ripple_random_seed
 #define rrand_uint32  ripple_random_uint32
+#define rrand_double  ripple_random_double
 #endif /* !RIPPLE_NO_ABBR */
 
 #ifdef __cplusplus

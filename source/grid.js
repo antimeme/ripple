@@ -44,7 +44,7 @@
 //                    boundary between two neighbors
 //     * points: return points in grid cell polygon
 //
-// Overriding _update is not required if the grid has no size
+// Overriding _update is not required if the grid has no size-
 // dependant state.  The coordinate, position and neighbors functions
 // in BaseGrid will automatically adjust for the grid offset, so
 // there's no need to account for this in the _coordinate, _position
@@ -55,6 +55,15 @@
     "use strict";
     var _sqrt2 = Math.sqrt(2);
     var _sqrt3 = Math.sqrt(3);
+
+    var magnitude = function() {
+        var index;
+        var result = 0;
+        for (index = 0; index < arguments.length; ++index)
+            if (arguments[index])
+                result += arguments[index] * arguments[index];
+        return Math.sqrt(result);
+    }
 
     // BaseGrid serves a base class for other grids.  Although it
     // thinks like a SquareGrid for the most part, it returns an empty
@@ -152,14 +161,13 @@
                 {row: node.row + 1, col: node.col},
                 {row: node.row - 1, col: node.col}];
     };
+
     BaseGrid.prototype._pairpoints = function(node1, node2) {
         var midpoint = {x: (node2.x - node1.x) / 2,
                         y: (node2.y - node1.y) / 2};
         var rotated = {x: (node1.y - node2.y) / 2,
                        y: (node2.x - node1.x) / 2};
-        var factor = this._size /
-            (2 * Math.sqrt((rotated.x * rotated.x) +
-                           (rotated.y * rotated.y)));
+        var factor = this._size / (2 * magnitude(rotated.x, rotated.y));
         var scaled = {x: rotated.x * factor, y: rotated.y * factor};
         return [{x: node1.x + midpoint.x + scaled.x,
                  y: node1.y + midpoint.y + scaled.y},
@@ -192,6 +200,7 @@
                                    y: 1 - this._size});
         var end = this.position({x: width + this._size - 1,
                                  y: height + this._size - 1});
+        var row, col;
         for (col = start.col; col <= end.col + 1; col++) {
             for (row = start.row; row <= end.row + 1; row++)
                 fn(this.coordinate({row: row, col: col}));
@@ -234,7 +243,7 @@
                       {row: node.row + 1, col: node.col},
                       {row: node.row - 1, col: node.col}];
         if (this.diagonal)
-            result = Array.concat(result, [
+            result = result.concat([
                 {row: node.row + 1, col: node.col + 1, cost: _sqrt2},
                 {row: node.row + 1, col: node.col - 1, cost: _sqrt2},
                 {row: node.row - 1, col: node.col + 1, cost: _sqrt2},
@@ -242,13 +251,13 @@
         return result;
     };
     SquareGrid.prototype._pairpoints = function(node1, node2) {
-        var delta = (node1.row - node2.row) * (node1.row - node2.row) +
-            (node1.col - node2.col) * (node1.col - node2.col);
-        if (delta > 1) {
-            return [{x: node1.x + (node2.x - node1.x) / 2,
-                     y: node1.y + (node2.y - node1.y) / 2}];
-        }
-        return BaseGrid.prototype._pairpoints.call(this, node1, node2);
+        // Diagonal neighbors need special treatment because the base
+        // implemenation assumes two points
+        return (((node1.row - node2.row) * (node1.row - node2.row) +
+                 (node1.col - node2.col) * (node1.col - node2.col) > 1) ?
+                [{x: node1.x + (node2.x - node1.x) / 2,
+                  y: node1.y + (node2.y - node1.y) / 2}] :
+                BaseGrid.prototype._pairpoints.call(this, node1, node2));
     };
     SquareGrid.prototype.points = function(node) {
         // Given a node with the coordinates for the center of a square,
@@ -387,9 +396,15 @@
     };
 
     RTriangleGrid.prototype._pairpoints = function(node1, node2) {
-        // :FIXME: corrections needed!  Neighbor boundaries are
-        // sometimes non-sensical in default implementation due
-        // to strange angles between grid cells in most cases
+        if ((node1.row !== node2.row) ||
+            (node1.col + (node1.col % 2 ? -1 : 1) !== node2.col)) {
+            var sign = (this.regular || ((node1.row < 0) ===
+                                         (node1.col < 0)));
+            var points = this.points(node1);
+            return [points[0], ((node1.row !== node2.row) ===
+                                (node1.col % 2 ? !sign : sign)) ?
+                    points[1] : points[2]];
+        }
         return BaseGrid.prototype._pairpoints.call(this, node1, node2);
     };
 
@@ -409,9 +424,9 @@
             {x: x + corner, y: y + corner},
             {x: x + this._size, y: y},
             {x: x, y: y + this._size}] : [
-                {x: x, y: y}, {x: x + this._size, y: y + this._size},
                 {x: x + this._size * Math.abs(node.col % 2),
-                 y: y + this._size * Math.abs((node.col + 1) % 2)}];
+                 y: y + this._size * Math.abs((node.col + 1) % 2)},
+                {x: x, y: y}, {x: x + this._size, y: y + this._size}];
     };
 
     // HexGrid represents a mapping between cartesian coordinates and
@@ -560,19 +575,21 @@
         return result;
     };
 
-    exports.test = function($, parent) {
+    exports.test = function($, parent, viewport) {
         var self = $('<canvas></canvas>').appendTo(parent);
-        var viewport = $(window);
         var colorTapInner = 'rgba(45, 45, 128, 0.8)';
         var colorTapOuter = 'rgba(128, 255, 128, 0.6)';
-        var colorSelected = 'rgba(255, 255, 0, 0.6)';
-        var colorNeighbor = 'rgba(64, 64, 0, 0.4)';
+        var colorSelected = 'rgba(192, 192, 0, 0.6)';
+        var colorNeighbor = 'rgba(128, 128, 0, 0.4)';
         var lineWidth = 0, lineFactor = 40;
         var numbers = false, combined = false;
         var grid, tap, selected, drag, zooming, gesture, press = 0;
 
         var draw_id = 0;
         var draw = function() {
+            var neighbors, vector, radius;
+            var points, last, index;
+
             if (self[0].getContext) {
                 var ctx = self[0].getContext('2d');
                 var width = self.width(), height = self.height();
@@ -587,12 +604,13 @@
                 ctx.textAlign = 'center';
                 ctx.font = 'bold ' + 12 + 'pt sans-serif';
                 grid.map(width, height, function(node) {
-                    var points = grid.points(node);
+                    var index, points = grid.points(node);
                     if (points.length) {
                         var last = points[points.length - 1];
                         ctx.moveTo(last.x, last.y);
-                        for (i in points)
-                            ctx.lineTo(points[i].x, points[i].y);
+                        for (index in points)
+                            ctx.lineTo(points[index].x,
+                                       points[index].y);
                     }
                 });
                 ctx.fillStyle = self.css('background-color');
@@ -618,16 +636,15 @@
                     // updated in case the grid offsets have moved
                     // since the last draw call.
                     selected = grid.coordinate(selected);
-                    var points = grid.points(selected);
-                    var last;
-                    var index;
+                    points = grid.points(selected);
 
                     ctx.beginPath();
                     if (points.length) {
                         last = points[points.length - 1];
                         ctx.moveTo(last.x, last.y);
-                        for (i in points)
-                            ctx.lineTo(points[i].x, points[i].y);
+                        for (index in points)
+                            ctx.lineTo(points[index].x,
+                                       points[index].y);
                     } else {
                         ctx.moveTo(selected.x, selected.y);
                         ctx.arc(selected.x, selected.y,
@@ -636,7 +653,7 @@
                     ctx.fillStyle = colorSelected;
                     ctx.fill();
 
-                    var neighbors = grid.neighbors(
+                    neighbors = grid.neighbors(
                         selected, {coordinates: true, points: true});
                     ctx.beginPath();
                     for (index in neighbors) {
@@ -644,7 +661,7 @@
                         if (points.length) {
                             last = points[points.length - 1];
                             ctx.moveTo(last.x, last.y);
-                            for (i in points)
+                            for (index in points)
                                 ctx.lineTo(points[index].x,
                                            points[index].y);
                         } else {
@@ -658,26 +675,34 @@
                     ctx.fillStyle = colorNeighbor;
                     ctx.fill();
 
-                    ctx.beginPath();
+                    var colors = ['red', 'green', 'blue',
+                                  'cyan', 'magenta', 'yellow',
+                                  'black', 'white'];
                     for (index in neighbors) {
-                        points = neighbors[i].points;
+                        ctx.beginPath();
+                        points = neighbors[index].points;
                         if (points.length > 1) {
-                            var vector = {x: points[1].x - points[0].x,
-                                          y: points[1].y - points[0].y};
+                            vector = {x: points[1].x - points[0].x,
+                                      y: points[1].y - points[0].y};
                             ctx.moveTo(points[0].x + 0.25 * vector.x,
                                        points[0].y + 0.25 * vector.y);
                             ctx.lineTo(points[0].x + 0.75 * vector.x,
                                        points[0].y + 0.75 * vector.y);
-                        } else {
-                            var radius = lineWidth * 5;
+                        } else if (points.length === 1) {
+                            radius = lineWidth * 5;
                             ctx.moveTo(points[0].x + radius,
                                        points[0].y);
                             ctx.arc(points[0].x, points[0].y,
                                     radius, 0, 2 * Math.PI);
                         }
+                        ctx.moveTo(neighbors[index].x + lineWidth * 2,
+                                   neighbors[index].y);
+                        ctx.arc(neighbors[index].x, neighbors[index].y,
+                                lineWidth * 2, 0, 2 * Math.PI);
+
+                        ctx.strokeStyle = colors[index % colors.length];
+                        ctx.stroke();
                     }
-                    ctx.strokeStyle = self.css('background-color');
-                    ctx.stroke();
                 }
                 if (tap) {
                     ctx.beginPath();
@@ -693,10 +718,8 @@
             }
             draw_id = 0;
         };
-        var redraw = function() {
-            if (!draw_id)
-                draw_id = requestAnimationFrame(draw);
-        };
+        var redraw = function()
+        { if (!draw_id) draw_id = requestAnimationFrame(draw); };
 
         var resize = function(event) {
             // Consume enough space to fill the viewport.
@@ -711,7 +734,6 @@
             self.attr("width", self.innerWidth());
             self.attr("height", self.innerHeight());
 
-            console.log(lineWidth);
             zooming = drag = undefined;
             redraw();
         };
@@ -789,13 +811,13 @@
                         '">' + name + '</li>');
         });
         menu.append('<hr />');
-        menu.append('<li data-toggle-animation="yes">' +
+        menu.append('<li data-action="animation">' +
                     'Toggle Animation</li>');
-        menu.append('<li data-toggle-numbers="yes">' +
+        menu.append('<li data-action="numbers">' +
                     'Toggle Numbers</li>');
-        menu.append('<li data-swap-colors="yes">' +
+        menu.append('<li data-action="colors">' +
                     'Swap Colors</li>');
-        menu.append('<li data-full-screen="yes">Full Screen</li>');
+        menu.append('<li data-action="full-screen">Full Screen</li>');
         menu.on('click', 'li', function(event) {
             menu.hide();
             var gtype = this.getAttribute('data-grid-type');
@@ -812,34 +834,35 @@
                 redraw();
             }
 
-            if (this.getAttribute('data-full-screen')) {
+            switch (this.getAttribute('data-action')) {
+            case 'full-screen': {
                 $.toggleFullscreen(self.parent().get(0));
                 resize();
-            }
-
-            if (this.getAttribute('data-toggle-animation'))
-            { animation.toggle(); }
-
-            if (this.getAttribute('data-toggle-numbers')) {
+            } break;
+            case 'animation': {
+                animation.toggle();
+            } break;
+            case 'numbers': {
                 if (combined) {
                     numbers = combined = false;
                 } else if (numbers)
                     combined = true;
                 else numbers = true;
                 redraw();
-            }
-            if (this.getAttribute('data-swap-colors')) {
+            } break;
+            case 'colors': {
                 var foreground = self.css('color');
                 var background = self.css('background-color');
                 self.css({color: background,
                           "background-color": foreground});
                 redraw();
+            } break;
             }
         });
 
         // Show grid menu at event location
         var menuate = function(tap) {
-            menu.css('top', tap.y - 40).css('left', tap.x - 25).show();
+            menu.css('top', 10).css('left', 25).show();
             drag = undefined;
         };
 
@@ -951,4 +974,5 @@
     exports.types = types;
     exports.canonical = canonical;
     exports.create = create;
+    exports.magnitude = magnitude;
 })(typeof exports === 'undefined'? this['grid'] = {}: exports);

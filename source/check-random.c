@@ -42,7 +42,7 @@ check_random(void)
   rrand_t r;
 
   rrand_seed(&r, check_seed);
-  for (i = 0; i < sizeof(check_state)/sizeof(*check_state); i++) {
+  for (i = 0; i < sizeof(check_state)/sizeof(*check_state); ++i) {
     printf("mt[%d] = 0x%08lx", i, r.mt[i]);
     if (r.mt[i] != check_state[i]) {
       printf(" (expected 0x%08x)", check_state[i]);
@@ -51,13 +51,20 @@ check_random(void)
     printf("\n");
   }
 
-  for (i = 0; i < sizeof(check_uint32)/sizeof(*check_uint32); i++) {
+  for (i = 0; i < sizeof(check_uint32)/sizeof(*check_uint32); ++i) {
     unsigned sample = rrand_uint32(&r);
-    printf("random: 0x%08x", sample);
+    printf("uint32: 0x%08x", sample);
     if (sample != check_uint32[i]) {
       printf(" (expected 0x%08x)", check_uint32[i]);
       result = EXIT_FAILURE;
     }
+    printf("\n");
+  }
+
+  rrand_seed(&r, check_seed);
+  for (i = 0; i < 10; ++i) {
+    double sample = rrand_double(&r);
+    printf("double: %.16f", sample);
     printf("\n");
   }
   return result;

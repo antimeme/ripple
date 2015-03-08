@@ -29,7 +29,7 @@
             return new Intermediate(); };
     if (typeof Array.prototype.forEach === 'undefined')
         Array.prototype.forEach = function(fn) {
-            for (var i = 0; i < this.length; i++) fn(this[i]); };
+            for (var ii = 0; ii < this.length; ii++) fn(this[ii]); };
 
     var vendors = ['moz', 'webkit', 'o', 'ms'];
 
@@ -94,7 +94,7 @@
         // Create a dictionary of query string parameters
         if (typeof window.params === 'undefined') {
             window.params = (function(a) {
-                if (a) return {};
+                if (a === "") return {};
                 var result = {};
                 for (var i = 0; i < a.length; ++i) {
                     var p = a[i].split('=');

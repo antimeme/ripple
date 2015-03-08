@@ -34,6 +34,7 @@ extern int check_random(void);
 extern int check_tree(void);
 extern int check_context(void);
 extern int check_stream(void);
+extern int check_pixie(void);
 extern int check_juju(void);
 
 #define DECLARE_TEST(flags, testfn) \
@@ -50,6 +51,7 @@ struct test {
   DECLARE_TEST(0, check_tree),
   DECLARE_TEST(0, check_context),
   DECLARE_TEST(0, check_stream),
+  DECLARE_TEST(0, check_pixie),
   DECLARE_TEST(0, check_juju),
 };
 

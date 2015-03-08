@@ -32,6 +32,7 @@ lib@PACKAGE@_la_SOURCES  = \
 	source/stream.c \
 	source/option.c \
 	source/random.c \
+	source/pixie.c \
 	source/juju.c
 pkginclude_HEADERS = include/ripple/*.h
 
@@ -45,6 +46,7 @@ check_@PACKAGE@_SOURCES  = \
 	source/check-stream.c \
 	source/check-option.c \
 	source/check-random.c \
+	source/check-pixie.c \
 	source/check-juju.c
 
 ## Python ==============================================================
@@ -68,13 +70,13 @@ endif
 #   http://www.freesoftwaremagazine.com/articles/autotools_example
 if HAVE_JAVA
 @PACKAGE@javadir = $(libdir)/@PACKAGE@
-JAVAROOT = $(top_builddir)/classes
+JAVAROOT = $(top_builddir)/.classes
 JAVADOC  = ${JAVA_HOME:+$JAVA_HOME/bin/}javadoc
 JAVAC    = ${JAVA_HOME:+$JAVA_HOME/bin/}javac
 JAVA     = ${JAVA_HOME:+$JAVA_HOME/bin/}java
 JAR      = ${JAVA_HOME:+$JAVA_HOME/bin/}jar
 javadir = $(datadir)/@PACKAGE@
-dist_@PACKAGE@java_JAVA = $(srcdir)/source/*.java source/Ripple.java
+dist_@PACKAGE@java_JAVA = $(srcdir)/source/*.java
 dist_@PACKAGE@java_DATA = @PACKAGE@-@VERSION@.jar
 
 @PACKAGE@-@VERSION@.jar: $(srcdir)/META-INF/MANIFEST.MF \
@@ -104,7 +106,7 @@ install-dist_@PACKAGE@javaJAVA: javadoc
 
 clean-@PACKAGE@javaJAVA:
 	-rm -rf class@PACKAGE@java.stamp javadoc jartest.sh \
-	    $(top_builddir)/classes @PACKAGE@-@VERSION@.jar
+	    $(JAVAROOT) @PACKAGE@-@VERSION@.jar
 
 jartest.sh:
 	echo '#!/bin/sh' > $@

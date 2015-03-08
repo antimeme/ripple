@@ -7,7 +7,10 @@
 <title>Poke!</title>
 <style>
     html, body { padding: 0; margin: 0; overflow: hidden; }
-    #target canvas { margin: 0 auto 0 auto; display: block; }
+    #target canvas {
+      margin: 0 auto 0 auto; display: block;
+      touch-action: none; // Prevents browser default touch events
+    }
     #log { height: 16em; overflow: scroll; background: lightblue; }
 </style>
 <div id="target">
