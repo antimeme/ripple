@@ -57,6 +57,7 @@
             var result = Object.create(this);
             result.width = width;
             result.height = height;
+            result.scale = (width > height ? height : width);
             return result;
         },
 
@@ -84,30 +85,84 @@
     };
 
     var Photon = {
-        spin: 1,
+        spin: 1, charge: 0,
         particle: 'photon',
         env: undefined, freq: undefined,
         position: {x: undefined, y: undefined}, scale: undefined,
         phase: Math.PI / 6, velocity: {x: 0, y: 0}, absorbed: false,
+        spectrum: [
+            {name: 'red',    freq: 442 * Math.pow(10, 12),
+             color: {r: 255, g: 128, b: 128}},
+            {name: 'orange', freq: 496 * Math.pow(10, 12),
+             color: {r: 255, g: 192, b: 128}},
+            {name: 'yellow', freq: 517 * Math.pow(10, 12),
+             color: {r: 255, g: 255, b: 128}},
+            {name: 'green',  freq: 566 * Math.pow(10, 12),
+             color: {r: 128, g: 255, b: 128}},
+            {name: 'blue',   freq: 637 * Math.pow(10, 12),
+             color: {r: 128, g: 128, b: 255}},
+            {name: 'violet', freq: 728.5 * Math.pow(10, 12),
+             color: {r: 255, g: 128, b: 255}}],
 
-        create: function(env, scale, position, velocity, freq) {
+        _lerp: function(low, high, i, f) {
+            return Math.floor(low.color[i] + f *
+                              (high.color[i] - low.color[i]));
+        },
+        _freqColor: function(freq) {
+            var result = 'white', fraction;
+            var index, current = null, low = null, high = null;
+            for (index = 0; index < this.spectrum.length; ++index) {
+                low = current;
+                current = this.spectrum[index];
+                high = current;
+                if (freq <= current.freq)
+                    break;
+                high = null;
+            }
+
+            if (low !== null && high !== null) { // visible
+                fraction = (freq - low.freq) / (high.freq - low.freq);
+                result = 'rgb(' + this._lerp(low, high, 'r', fraction) +
+                    ',' + this._lerp(low, high, 'g', fraction) + ',' +
+                    this._lerp(low, high, 'b', fraction) + ')';
+            } else if (low === null && high !== null) { // infra
+            } else if (low !== null && high === null) { // ultra
+            }
+            return result;
+        },
+        _setFreq: function(freq) {
+            this._speed = Math.log(freq) / (1000 * Math.log(10));
+            this._color = this._freqColor(freq);
+            this.freq = freq;
+        },
+
+        create: function(env, config) {
             var result = Object.create(this);
             result.env = env;
-            result.scale = scale;
-            result.position = position;
-            if (velocity)
-                result.velocity = velocity.norm();
-            result.freq = freq;
+            result.scale = config && config.scale ? config.scale :
+                env.scale * 0.05;
+            result.position = config && config.position ?
+                config.position : Vector.create(
+                    Math.random() * env.width,
+                    Math.random() * env.height);
+            result.velocity = (config && config.velocity) ?
+                velocity.norm() :
+                Vector.polar(1, Math.random() * 2 * Math.PI);
+
+            result._setFreq(config && config.freq ? config.freq :
+                result.spectrum[0].freq + Math.random() *
+                (result.spectrum[result.spectrum.length - 1].freq -
+                 result.spectrum[0].freq));
             return result;
         },
 
         update: function(dt) {
             var retain_chance;
-            this.phase += dt * 0.01;
+            this.phase += dt * this._speed;
             if (this.absorbed) {
                 this.absorbed.duration += dt;
-                retain_chance = Math.pow(0.999, Math.floor
-                                         (this.absorbed.duration / 10));
+                retain_chance = Math.pow(
+                    0.999, Math.floor(this.absorbed.duration / 10));
                 if (Math.random() > retain_chance) {
                     this.velocity = Vector.polar(
                         1, Math.random() * 2 * Math.PI);
@@ -137,26 +192,31 @@
                 0, this.scale / 2);
             context.lineWidth = this.scale / 25;
             context.lineCap = 'round';
-            context.strokeStyle = 'white';
+            context.strokeStyle = this._color;
             context.stroke();
             context.restore();
         }
     };
 
     var Electron = {
-        spin: 0.5,
+        spin: 0.5, charge: -1,
         particle: 'electron',
         cx: undefined, cy: undefined, scale: undefined,
         phase: Math.PI / 6, velocity: {dx: 0, dy: 0},
         absorbed: false,
 
-        create: function(env, scale, position, velocity) {
+        create: function(env, config) {
             var result = Object.create(this);
             result.env = env;
-            result.scale = scale;
-            result.position = position;
-            if (velocity)
-                result.velocity = velocity.norm();
+            result.scale = config && config.scale ? config.scale :
+                env.scale * 0.055;
+            result.position = config && config.position ?
+                config.position : Vector.create(
+                    Math.random() * env.width,
+                    Math.random() * env.height);
+            result.velocity = (config && config.velocity) ?
+                velocity.norm() :
+                Vector.polar(1, Math.random() * 2 * Math.PI);
             return result;
         },
 
@@ -212,28 +272,13 @@
         var env = Environment.create(
             canvas.get(0).getAttribute('width'),
             canvas.get(0).getAttribute('height'));
-        var scale = (env.width > env.height ? env.height : env.width);
         env.particles = [
-            Photon.create(
-                env, scale * 0.05,
-                Vector.create(Math.random() * env.width,
-                              Math.random() * env.height),
-                Vector.polar(1, Math.random() * 2 * Math.PI)),
-            Photon.create(
-                env, scale * 0.05,
-                Vector.create(Math.random() * env.width,
-                              Math.random() * env.height),
-                Vector.polar(1, Math.random() * 2 * Math.PI)),
-            Photon.create(
-                env, scale * 0.05,
-                Vector.create(Math.random() * env.width,
-                              Math.random() * env.height),
-                Vector.polar(1, Math.random() * 2 * Math.PI)),
-            Electron.create(
-                env, scale * 0.075,
-                Vector.create(Math.random() * env.width,
-                              Math.random() * env.height),
-                Vector.polar(1, Math.random() * 2 * Math.PI))];
+            Photon.create(env),
+            Photon.create(env),
+            Photon.create(env),
+            Photon.create(env, {freq: 10000}),
+            Photon.create(env, {freq: Math.pow(10, 18)}),
+            Electron.create(env)];
 
         var context = canvas.get(0).getContext('2d');
         var last = new Date().getTime();
