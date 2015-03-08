@@ -18,21 +18,24 @@
 // ---------------------------------------------------------------------
 // A particle physics simulation.
 //
-// Note that particles always have an exact position and momentum, which
-// would violate the Heisenburg Uncertainty Principle.  For the moment
-// ease of understanding is favored over accuracy, since it's not clear
-// how to visually represent particle-wave duality.
+// Note that particles always have an exact position and momentum,
+// which would violate the Heisenburg Uncertainty Principle in
+// reality.  However, there's no obvious way to display an electron
+// with uncertain position and momentum so to make the visualization
+// understandable we dispense with some realism.
 (function(exports) {
     "use strict";
 
     var Vector = {
         create: function(x, y) {
+            // Creates and returns a vector using Cartesian coordinates
             var result = Object.create(this);
             result.x = x;
             result.y = y;
             return result;
         },
         polar: function(r, theta) {
+            // Creates and returns a vector using polar coordinates
             var result = Object.create(this);
             result.x = r * Math.cos(theta);
             result.y = r * Math.sin(theta);
@@ -44,6 +47,8 @@
         { return this.create(this.x + other.x, this.y + other.y); },
         minus: function(other)
         { return this.plus(other.reverse()); },
+        times: function(value)
+        { return this.create(this.x * value, this.y * value); },
         dotp: function(other)
         { return this.x * other.x + this.y * other.y; },
         norm: function() {
@@ -53,218 +58,256 @@
     };
 
     var Environment = {
+        planck: 4.135667516 / Math.pow(10, 15),
+
+        particles: undefined,
         create: function(width, height) {
             var result = Object.create(this);
+            result.particles = [];
             result.width = width;
             result.height = height;
             result.scale = (width > height ? height : width);
             return result;
         },
+        add: function(particle) {
+            this.particles.push(particle);
+        },
+        make: function(particleType, config) {
+            this.add(particleType.create(this, config));
+        },
+        _collect: function(events) {
+            var index, particle, velocity, time;
+            var xmin, xmax, ymin, ymax;
+            for (index = 0; index < this.particles.length; ++index) {
+                particle = this.particles[index];
+                xmin = particle.scale / 2;
+                xmax = this.width - xmin;
+                ymin = particle.scale / 2;
+                ymax = this.height - ymin;
+                velocity = particle.direction.times(particle.speed);
 
-        bounce: function(particle, factor) {
-            particle.position.x += particle.velocity.x * factor;
-            if (particle.position.x < particle.scale / 2) {
-                particle.position.x = particle.scale / 2;
-                particle.velocity.x = -particle.velocity.x;
-            } else if (particle.position.x > this.width -
-                       particle.scale / 2) {
-                particle.position.x = this.width - particle.scale / 2;
-                particle.velocity.x = -particle.velocity.x;
+                time = -1;
+                if (velocity.x < 0)
+                    time = (xmin - particle.position.x) / velocity.x;
+                else if (velocity.x > 0)
+                    time = (xmax - particle.position.x) / velocity.x;
+                if (time >= 0)
+                    events.push({
+                        time: time, particle: particle,
+                        axis: 'x',
+                        action: function() {
+                            this.direction.x = -this.direction.x; }});
+
+                time = -1;
+                if (velocity.y < 0)
+                    time = (ymin - particle.position.y) / velocity.y;
+                else if (velocity.y > 0)
+                    time = (ymax - particle.position.y) / velocity.y;
+                if (time >= 0)
+                    events.push({
+                        time: time, particle: particle,
+                        axis: 'y',
+                        action: function() {
+                            this.direction.y = -this.direction.y; }});
             }
-            
-            particle.position.y += particle.velocity.y * factor;
-            if (particle.position.y < particle.scale / 2) {
-                particle.position.y = particle.scale / 2;
-                particle.velocity.y = -particle.velocity.y;
-            } else if (particle.position.y > this.height -
-                       particle.scale / 2) {
-                particle.position.y = this.height - particle.scale / 2;
-                particle.velocity.y = -particle.velocity.y;
+            events.sort(function(a, b) { return a.time - b.time; });
+            return events;
+        },
+        _move: function(delta) {
+            var index, particle, velocity, oldpos;
+            var xmin, xmax, ymin, ymax;
+
+            for (index = 0; index < this.particles.length;
+                 ++index) {
+                particle = this.particles[index];
+                velocity = particle.direction.times(particle.speed);
+                particle.position = particle.position.plus(
+                    velocity.times(delta));
             }
+        },
+        update: function(delta) {
+            var index, current = 0, processed = 0, event;
+            var events = this._collect([]);
+            while (processed < delta) {
+                event = null;
+                if ((events.length > 0) && (events[0].time <= delta)) {
+                    event = events.shift();
+                    current = event.time;
+                } else current = delta;
+
+                this._move(current - processed);
+                if (event)
+                    event.action.call(event.particle, this);
+                processed = current;
+                current = 0;
+            }
+
+            for (index = 0; index < this.particles.length; ++index)
+                this.particles[index].update(delta, this);
+        },
+        draw: function(context) {
+            var index;
+            for (index = 0; index < this.particles.length; ++index)
+                this.particles[index].draw(context, this);
         }
     };
 
-    var Photon = {
-        spin: 1, charge: 0,
-        particle: 'photon',
-        env: undefined, freq: undefined,
-        position: {x: undefined, y: undefined}, scale: undefined,
-        phase: Math.PI / 6, velocity: {x: 0, y: 0}, absorbed: false,
-        spectrum: [
-            {name: 'red',    freq: 442 * Math.pow(10, 12),
-             color: {r: 255, g: 128, b: 128}},
-            {name: 'orange', freq: 496 * Math.pow(10, 12),
-             color: {r: 255, g: 192, b: 128}},
-            {name: 'yellow', freq: 517 * Math.pow(10, 12),
-             color: {r: 255, g: 255, b: 128}},
-            {name: 'green',  freq: 566 * Math.pow(10, 12),
-             color: {r: 128, g: 255, b: 128}},
-            {name: 'blue',   freq: 637 * Math.pow(10, 12),
-             color: {r: 128, g: 128, b: 255}},
-            {name: 'violet', freq: 728.5 * Math.pow(10, 12),
-             color: {r: 255, g: 128, b: 255}}],
+    var Particle = {
+        // Abstraction to describe both fundamental and composite
+        // particles such as electrons, photons, quarks, protons,
+        // neutrons and even entire atoms.  Use this by calling
+        // Object.create(Particle) and using the return value as a new
+        // class.  Call the .create() method of the result to create
+        // instances of the new particle type.
+        mass: 0 /* Given in eV/c^2 */,
+        spin: 0,
+        eCharge: 0,
+        cCharge: 'w',
+        scaleFactor: 0.05,
+        absorbed: false,
+        position: undefined,
+        direction: undefined,
+        speed: undefined,
+        scale: undefined,
+        _init: function(env, config) {
+            this.scale = config && config.scale ? config.scale :
+                env.scale * this.scaleFactor;
+            this.position = Vector.create(
+                    Math.random() * (env.width - this.scale) +
+                    this.scale / 2,
+                    Math.random() * (env.height - this.scale) +
+                    this.scale / 2);
+            this.direction = (config && config.direction) ?
+                direction.norm() :
+                Vector.polar(1, Math.random() * 2 * Math.PI);
+            if (this.mass === 0)
+                this.speed = 1;
+            else this.speed = 0;
+            return this;
+        },
+        create: function(env, config) {
+            return Object.create(this)._init(env, config);
+        },
+        _update: function(delta, env) {},
+        update: function(delta, env)
+        { return this._update(delta, env); },
+        _draw: function(context) {},
+        draw: function(context) {
+            this._draw(context);
+        },
+    };
 
-        _lerp: function(low, high, i, f) {
+    // A photon is a massless guage boson that mediates the
+    // electromagnetic force.
+    var Photon = Object.create(Particle);
+    Photon.spin = 1;
+    Photon.phase = Math.PI / 6;
+    Photon.spectrum = [
+        {name: 'red',    freq: 442 * Math.pow(10, 12),
+         color: {r: 255, g: 128, b: 128}},
+        {name: 'orange', freq: 496 * Math.pow(10, 12),
+         color: {r: 255, g: 192, b: 128}},
+        {name: 'yellow', freq: 517 * Math.pow(10, 12),
+         color: {r: 255, g: 255, b: 128}},
+        {name: 'green',  freq: 566 * Math.pow(10, 12),
+         color: {r: 128, g: 255, b: 128}},
+        {name: 'blue',   freq: 637 * Math.pow(10, 12),
+         color: {r: 128, g: 128, b: 255}},
+        {name: 'violet', freq: 728.5 * Math.pow(10, 12),
+         color: {r: 255, g: 128, b: 255}}];
+    Photon.setFreq = function(freq) {
+        var fraction;
+        var index, current = null, low = null, high = null;
+        for (index = 0; index < this.spectrum.length; ++index) {
+            low = current;
+            current = this.spectrum[index];
+            high = current;
+            if (freq <= current.freq)
+                break;
+            high = null;
+        }
+
+        var _lerp = function(low, high, i, f) {
             return Math.floor(low.color[i] + f *
                               (high.color[i] - low.color[i]));
-        },
-        _freqColor: function(freq) {
-            var result = 'white', fraction;
-            var index, current = null, low = null, high = null;
-            for (index = 0; index < this.spectrum.length; ++index) {
-                low = current;
-                current = this.spectrum[index];
-                high = current;
-                if (freq <= current.freq)
-                    break;
-                high = null;
-            }
-
-            if (low !== null && high !== null) { // visible
-                fraction = (freq - low.freq) / (high.freq - low.freq);
-                result = 'rgb(' + this._lerp(low, high, 'r', fraction) +
-                    ',' + this._lerp(low, high, 'g', fraction) + ',' +
-                    this._lerp(low, high, 'b', fraction) + ')';
-            } else if (low === null && high !== null) { // infra
-            } else if (low !== null && high === null) { // ultra
-            }
-            return result;
-        },
-        _setFreq: function(freq) {
-            this._speed = Math.log(freq) / (1000 * Math.log(10));
-            this._color = this._freqColor(freq);
-            this.freq = freq;
-        },
-
-        create: function(env, config) {
-            var result = Object.create(this);
-            result.env = env;
-            result.scale = config && config.scale ? config.scale :
-                env.scale * 0.05;
-            result.position = config && config.position ?
-                config.position : Vector.create(
-                    Math.random() * env.width,
-                    Math.random() * env.height);
-            result.velocity = (config && config.velocity) ?
-                velocity.norm() :
-                Vector.polar(1, Math.random() * 2 * Math.PI);
-
-            result._setFreq(config && config.freq ? config.freq :
-                result.spectrum[0].freq + Math.random() *
-                (result.spectrum[result.spectrum.length - 1].freq -
-                 result.spectrum[0].freq));
-            return result;
-        },
-
-        update: function(dt) {
-            var retain_chance;
-            this.phase += dt * this._speed;
-            if (this.absorbed) {
-                this.absorbed.duration += dt;
-                retain_chance = Math.pow(
-                    0.999, Math.floor(this.absorbed.duration / 10));
-                if (Math.random() > retain_chance) {
-                    this.velocity = Vector.polar(
-                        1, Math.random() * 2 * Math.PI);
-                    this.position = Vector.create(
-                        this.absorbed.by.position.x + this.velocity.x *
-                            (this.scale + this.absorbed.by.scale),
-                        this.absorbed.by.position.y + this.velocity.y *
-                            (this.scale + this.absorbed.by.scale));
-                    this.absorbed = false;
-                } else this.absorbed.duration %= 1;
-            } else this.env.bounce(this, dt * 0.25);
-            return this;
-        },
-        draw: function(context) {
-            if (this.absorbed)
-                return;
-            context.save();
-            context.translate(this.position.x, this.position.y);
-            context.rotate(this.phase);
-            context.beginPath();
-            context.moveTo(this.scale / 2, 0);
-            context.arc(0, 0, this.scale / 2, 0, 2 * Math.PI);
-            context.moveTo(0, -this.scale / 2);
-            context.bezierCurveTo(
-                    -this.scale / 2, this.scale / 5,
-                this.scale / 2, -this.scale / 5,
-                0, this.scale / 2);
-            context.lineWidth = this.scale / 25;
-            context.lineCap = 'round';
-            context.strokeStyle = this._color;
-            context.stroke();
-            context.restore();
+        };
+        this._color = 'white';
+        if (low !== null && high !== null) { // visible
+            fraction = (freq - low.freq) / (high.freq - low.freq);
+            this._color = 'rgb(' + _lerp(low, high, 'r', fraction) +
+                ',' + _lerp(low, high, 'g', fraction) + ',' +
+                _lerp(low, high, 'b', fraction) + ')';
+        } else if (low === null && high !== null) { // infra
+        } else if (low !== null && high === null) { // ultra
         }
+
+        this._speed = Math.log(freq) / (1000 * Math.log(10));
+        this.freq = freq;
+    };
+    Photon.create = function(env, config) {
+        var result = Object.create(this);
+        result._init(env, config);
+
+        result.setFreq(config && config.freq ? config.freq :
+                       result.spectrum[0].freq + Math.random() *
+                       (result.spectrum[
+                           result.spectrum.length - 1].freq -
+                        result.spectrum[0].freq));
+        return result;
+    };
+    Photon._update = function(delta, env) {
+        this.phase += delta * this._speed;
+    };
+    Photon._draw = function(context, env) {
+        if (this.absorbed)
+            return;
+        context.save();
+        context.translate(this.position.x, this.position.y);
+        context.rotate(this.phase);
+        context.beginPath();
+        context.moveTo(this.scale / 2, 0);
+        context.arc(0, 0, this.scale / 2, 0, 2 * Math.PI);
+        context.moveTo(0, -this.scale / 2);
+        context.bezierCurveTo(
+                -this.scale / 2, this.scale / 5,
+            this.scale / 2, -this.scale / 5,
+            0, this.scale / 2);
+        context.lineWidth = this.scale / 25;
+        context.lineCap = 'round';
+        context.strokeStyle = this._color;
+        context.stroke();
+        context.restore();
     };
 
-    var Electron = {
-        spin: 0.5, charge: -1,
-        particle: 'electron',
-        cx: undefined, cy: undefined, scale: undefined,
-        phase: Math.PI / 6, velocity: {dx: 0, dy: 0},
-        absorbed: false,
-
-        create: function(env, config) {
-            var result = Object.create(this);
-            result.env = env;
-            result.scale = config && config.scale ? config.scale :
-                env.scale * 0.055;
-            result.position = config && config.position ?
-                config.position : Vector.create(
-                    Math.random() * env.width,
-                    Math.random() * env.height);
-            result.velocity = (config && config.velocity) ?
-                velocity.norm() :
-                Vector.polar(1, Math.random() * 2 * Math.PI);
-            return result;
-        },
-
-        update: function(dt) {
-            var index, other, touch, delta, distance;
-            for (index = 0; index < this.env.particles.length;
-                 ++index) {
-                other = this.env.particles[index];
-                if (other.particle !== 'photon')
-                    continue;
-                
-                touch = other.scale / 2 + this.scale / 2;
-                touch *= touch;
-                delta = this.position.minus(other.position);
-                distance = delta.dotp(delta);
-                if (distance < touch) {
-                    other.absorbed = {by: this, duration: 0};
-                }
-            }
-            
-            this.phase += dt * 0.005;
-            if (this.absorbed) {
-            } else this.env.bounce(this, dt * 0.25);
-            return this;
-        },
-        draw: function(context) {
-            if (this.absorbed)
-                return;
-            context.save();
-            context.translate(this.position.x, this.position.y);
-            //context.rotate(this.phase);
-            context.beginPath();
-            context.moveTo(this.scale / 2, 0);
-            context.arc(0, 0, this.scale / 2, 0, 2 * Math.PI);
-            context.moveTo(-this.scale / 4, 0);
-            context.lineTo(this.scale / 4, 0);
-            context.lineWidth = this.scale / 20;
-            context.lineCap = 'round';
-            context.fillStyle = "rgb(64,64,255)";
-            context.fill();
-            context.strokeStyle = 'lightgrey';
-            context.stroke();
-            context.restore();
-        }
+    // An electron is the most stable charged lepton.
+    var Electron = Object.create(Particle);
+    Electron.mass = 510998.910;
+    Electron.spin = 0.5;
+    Electron.eCharge = -1;
+    Electron.scaleFactor *= 1.1;
+    Electron._draw = function(context) {
+        if (this.absorbed)
+            return;
+        context.save();
+        context.translate(this.position.x, this.position.y);
+        //context.rotate(this.phase);
+        context.beginPath();
+        context.moveTo(this.scale / 2, 0);
+        context.arc(0, 0, this.scale / 2, 0, 2 * Math.PI);
+        context.moveTo(-this.scale / 4, 0);
+        context.lineTo(this.scale / 4, 0);
+        context.lineWidth = this.scale / 20;
+        context.lineCap = 'round';
+        context.fillStyle = "rgb(64,64,255)";
+        context.fill();
+        context.strokeStyle = 'lightgrey';
+        context.stroke();
+        context.restore();
     };
-    
 
     exports.go = function($, container) {
+        var quanta = exports;
+
         // Resize canvas to consume most of the screen
         var canvas = $('<canvas></canvas>').appendTo(container);
         canvas.get(0).setAttribute('width', window.innerWidth);
@@ -272,29 +315,33 @@
         var env = Environment.create(
             canvas.get(0).getAttribute('width'),
             canvas.get(0).getAttribute('height'));
-        env.particles = [
-            Photon.create(env),
-            Photon.create(env),
-            Photon.create(env),
-            Photon.create(env, {freq: 10000}),
-            Photon.create(env, {freq: Math.pow(10, 18)}),
-            Electron.create(env)];
+        env.make(Photon);
+        env.make(Photon);
+        env.make(Photon);
+        env.make(Photon);
+        env.make(Photon);
+        env.make(Photon);
+        env.make(Photon);
+        env.make(Photon);
+        env.make(Photon);
+        //env.make(Photon, {freq: 10000});
+        //env.make(Photon, {freq: Math.pow(10, 18)});
+        env.make(Electron);
 
         var context = canvas.get(0).getContext('2d');
         var last = new Date().getTime();
         var update = function() {
             var now = new Date().getTime();
-            var p, index;
-            for (index = 0; index < env.particles.length; ++index)
-                env.particles[index].update(now - last);
+            env.update(now - last);
             last = now;
             
             context.clearRect(0, 0, env.width, env.height);
+            env.draw(context);
+
             context.font = '32px serif';
             context.fillStyle = 'red';
-            //context.fillText("DEBUG ");
-            for (index = 0; index < env.particles.length; ++index)
-                env.particles[index].draw(context);
+            context.fillText("DEBUG", 15, env.height - 15);
+
             requestAnimationFrame(update);
         };
         update();
