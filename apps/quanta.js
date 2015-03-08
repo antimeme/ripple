@@ -94,9 +94,10 @@
                 if (time >= 0)
                     events.push({
                         time: time, particle: particle,
-                        axis: 'x',
                         action: function() {
-                            this.direction.x = -this.direction.x; }});
+                            this.direction.x = -this.direction.x;
+                            return {};
+                        }});
 
                 time = -1;
                 if (velocity.y < 0)
@@ -106,7 +107,6 @@
                 if (time >= 0)
                     events.push({
                         time: time, particle: particle,
-                        axis: 'y',
                         action: function() {
                             this.direction.y = -this.direction.y; }});
             }
@@ -126,8 +126,9 @@
             }
         },
         update: function(delta) {
-            var index, current = 0, processed = 0, event;
-            var events = this._collect([]);
+            var index, current = 0, processed = 0, event, events;
+            events = this._collect([]);
+
             while (processed < delta) {
                 event = null;
                 if ((events.length > 0) && (events[0].time <= delta)) {
@@ -307,6 +308,8 @@
 
     exports.go = function($, container) {
         var quanta = exports;
+        var nphotons = Math.max(0, parseInt(
+            window.params['nphotons'], 10) || 3);
 
         // Resize canvas to consume most of the screen
         var canvas = $('<canvas></canvas>').appendTo(container);
@@ -315,15 +318,9 @@
         var env = Environment.create(
             canvas.get(0).getAttribute('width'),
             canvas.get(0).getAttribute('height'));
-        env.make(Photon);
-        env.make(Photon);
-        env.make(Photon);
-        env.make(Photon);
-        env.make(Photon);
-        env.make(Photon);
-        env.make(Photon);
-        env.make(Photon);
-        env.make(Photon);
+        var index;
+        for (index = 0; index < nphotons; ++index)
+            env.make(Photon);
         //env.make(Photon, {freq: 10000});
         //env.make(Photon, {freq: Math.pow(10, 18)});
         env.make(Electron);
@@ -338,7 +335,7 @@
             context.clearRect(0, 0, env.width, env.height);
             env.draw(context);
 
-            context.font = '32px serif';
+            context.font = Math.floor(env.scale / 40) + 'px serif';
             context.fillStyle = 'red';
             context.fillText("DEBUG", 15, env.height - 15);
 
