@@ -23,7 +23,7 @@
 // reality.  However, there's no obvious way to display an electron
 // with uncertain position and momentum so to make the visualization
 // understandable we dispense with some realism.
-(function(exports) {
+(function(quanta) {
     "use strict";
 
     var Vector = {
@@ -57,24 +57,36 @@
         }
     };
 
-    var Environment = {
+    var Laboratory = {
         planck: 4.135667516 / Math.pow(10, 15),
 
         particles: undefined,
         create: function(width, height) {
             var result = Object.create(this);
             result.particles = [];
-            result.width = width;
-            result.height = height;
-            result.scale = (width > height ? height : width);
+            result.resize(width, height);
             return result;
         },
-        add: function(particle) {
-            this.particles.push(particle);
+        resize: function(width, height) {
+            var index;
+            this.width = width;
+            this.height = height;
+            this.scale = (width > height ? height : width);
+            for (index = 0; index < this.particles.length; ++index)
+                this.particles[index].scale = (
+                    this.particles[index].scaleFactor * this.scale);
         },
-        make: function(particleType, config) {
-            this.add(particleType.create(this, config));
+        active: function() {
+            // Returns true iff there is continuing activity in the lab.
+            var index;
+            for (index = 0; index < this.particles.length; ++index)
+                if (this.particles[index].speed > 0)
+                    return true;
+            return false;
         },
+        add: function(particle) { this.particles.push(particle); },
+        make: function(particleType, config)
+        { this.add(particleType.create(this, config)); },
         _collect: function(events) {
             var index, particle, velocity, time;
             var xmin, xmax, ymin, ymax;
@@ -170,13 +182,13 @@
         direction: undefined,
         speed: undefined,
         scale: undefined,
-        _init: function(env, config) {
+        _init: function(lab, config) {
             this.scale = config && config.scale ? config.scale :
-                env.scale * this.scaleFactor;
+                lab.scale * this.scaleFactor;
             this.position = Vector.create(
-                    Math.random() * (env.width - this.scale) +
+                    Math.random() * (lab.width - this.scale) +
                     this.scale / 2,
-                    Math.random() * (env.height - this.scale) +
+                    Math.random() * (lab.height - this.scale) +
                     this.scale / 2);
             this.direction = (config && config.direction) ?
                 direction.norm() :
@@ -186,24 +198,22 @@
             else this.speed = 0;
             return this;
         },
-        create: function(env, config) {
-            return Object.create(this)._init(env, config);
+        create: function(lab, config) {
+            return Object.create(this)._init(lab, config);
         },
-        _update: function(delta, env) {},
-        update: function(delta, env)
-        { return this._update(delta, env); },
+        _update: function(delta, lab) {},
+        update: function(delta, lab)
+        { return this._update(delta, lab); },
         _draw: function(context) {},
-        draw: function(context) {
-            this._draw(context);
-        },
+        draw: function(context) { this._draw(context); },
     };
 
     // A photon is a massless guage boson that mediates the
     // electromagnetic force.
-    var Photon = Object.create(Particle);
-    Photon.spin = 1;
-    Photon.phase = Math.PI / 6;
-    Photon.spectrum = [
+    quanta.Photon = Object.create(Particle);
+    quanta.Photon.spin = 1;
+    quanta.Photon.phase = Math.PI / 6;
+    quanta.Photon.spectrum = [
         {name: 'red',    freq: 442 * Math.pow(10, 12),
          color: {r: 255, g: 128, b: 128}},
         {name: 'orange', freq: 496 * Math.pow(10, 12),
@@ -216,7 +226,7 @@
          color: {r: 128, g: 128, b: 255}},
         {name: 'violet', freq: 728.5 * Math.pow(10, 12),
          color: {r: 255, g: 128, b: 255}}];
-    Photon.setFreq = function(freq) {
+    quanta.Photon.setFreq = function(freq) {
         var fraction;
         var index, current = null, low = null, high = null;
         for (index = 0; index < this.spectrum.length; ++index) {
@@ -245,9 +255,9 @@
         this._speed = Math.log(freq) / (1000 * Math.log(10));
         this.freq = freq;
     };
-    Photon.create = function(env, config) {
+    quanta.Photon.create = function(lab, config) {
         var result = Object.create(this);
-        result._init(env, config);
+        result._init(lab, config);
 
         result.setFreq(config && config.freq ? config.freq :
                        result.spectrum[0].freq + Math.random() *
@@ -256,10 +266,10 @@
                         result.spectrum[0].freq));
         return result;
     };
-    Photon._update = function(delta, env) {
+    quanta.Photon._update = function(delta, lab) {
         this.phase += delta * this._speed;
     };
-    Photon._draw = function(context, env) {
+    quanta.Photon._draw = function(context, lab) {
         if (this.absorbed)
             return;
         context.save();
@@ -281,12 +291,12 @@
     };
 
     // An electron is the most stable charged lepton.
-    var Electron = Object.create(Particle);
-    Electron.mass = 510998.910;
-    Electron.spin = 0.5;
-    Electron.eCharge = -1;
-    Electron.scaleFactor *= 1.1;
-    Electron._draw = function(context) {
+    quanta.Electron = Object.create(Particle);
+    quanta.Electron.mass = 510998.910;
+    quanta.Electron.spin = 0.5;
+    quanta.Electron.eCharge = -1;
+    quanta.Electron.scaleFactor *= 1.1;
+    quanta.Electron._draw = function(context) {
         if (this.absorbed)
             return;
         context.save();
@@ -306,42 +316,42 @@
         context.restore();
     };
 
-    exports.go = function($, container) {
-        var quanta = exports;
+    quanta.go = function($, container, viewport) {
         var nphotons = Math.max(0, parseInt(
             window.params['nphotons'], 10) || 3);
-
-        // Resize canvas to consume most of the screen
+        var index, lab = null;
         var canvas = $('<canvas></canvas>').appendTo(container);
-        canvas.get(0).setAttribute('width', window.innerWidth);
-        canvas.get(0).setAttribute('height', window.innerHeight);
-        var env = Environment.create(
-            canvas.get(0).getAttribute('width'),
-            canvas.get(0).getAttribute('height'));
-        var index;
-        for (index = 0; index < nphotons; ++index)
-            env.make(Photon);
-        //env.make(Photon, {freq: 10000});
-        //env.make(Photon, {freq: Math.pow(10, 18)});
-        env.make(Electron);
-
         var context = canvas.get(0).getContext('2d');
         var last = new Date().getTime();
         var update = function() {
             var now = new Date().getTime();
-            env.update(now - last);
+            lab.update(now - last);
             last = now;
-            
-            context.clearRect(0, 0, env.width, env.height);
-            env.draw(context);
 
-            context.font = Math.floor(env.scale / 40) + 'px serif';
-            context.fillStyle = 'red';
-            context.fillText("DEBUG", 15, env.height - 15);
-
+            context.clearRect(0, 0, canvas.attr('width'),
+                              canvas.attr('height'));
+            lab.draw(context);
+            if (lab.active())
+                requestAnimationFrame(update);
+        };
+        var resize = function() {
+            canvas.attr('width', viewport.innerWidth());
+            canvas.attr('height', viewport.innerHeight());
+            if (lab)
+                lab.resize(canvas.attr('width'),
+                           canvas.attr('height'));
             requestAnimationFrame(update);
         };
-        update();
+        resize();
+        viewport.resize(resize);
+
+        lab = Laboratory.create(canvas.attr('width'),
+                                canvas.attr('height'));
+        for (index = 0; index < nphotons; ++index)
+            lab.make(quanta.Photon);
+        //lab.make(quanta.Photon, {freq: 10000});
+        //lab.make(quanta.Photon, {freq: Math.pow(10, 18)});
+        lab.make(quanta.Electron);
     };
 
 })(typeof exports === 'undefined'? this['quanta'] = {}: exports);
