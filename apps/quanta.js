@@ -26,6 +26,9 @@
 (function(quanta) {
     "use strict";
 
+    var epsilon = 0.000001;
+    var planck  = 4.135667516e-15;
+
     var Vector = {
         create: function(x, y) {
             // Creates and returns a vector using Cartesian coordinates
@@ -54,12 +57,28 @@
         norm: function() {
             var m = Math.sqrt(this.dotp(this));
             return this.create(this.x / m, this.y / m);
+        },
+        reflect: function(target) {
+            // r = d - ((2 d . n) / (n . n)) n
+            return (this.dotp(this) > epsilon) ?
+                target.minus(this.times(2 * this.dotp(target) /
+                                        this.dotp(this))) : target;
+        },
+        draw: function(context, center, config) {
+            context.save();
+            context.beginPath();
+            context.translate(center.x, center.y);
+            context.moveTo(0, 0);
+            context.lineTo(this.x, this.y);
+            context.lineWidth = (config && config.lineWidth) || 5;
+            context.strokeStyle = (config && config.color) || 'white';
+            context.stroke();
+            context.closePath();
+            context.restore();
         }
     };
 
-    var Laboratory = {
-        planck: 4.135667516 / Math.pow(10, 15),
-
+    quanta.Laboratory = {
         particles: undefined,
         create: function(width, height) {
             var result = Object.create(this);
@@ -206,6 +225,31 @@
         { return this._update(delta, lab); },
         _draw: function(context) {},
         draw: function(context) { this._draw(context); },
+        brush: function(other, radius) {
+            // This is an experimental function intended to determine
+            // the time at which two moving objects will brush up
+            // against one another.  The radius should be the sum of
+            // the radii of the two objects.
+            var vs = this.direction.times(this.speed);
+            var vo = other.direction.times(other.speed);
+            var m = ((vs.x - vo.x) * (vs.x - vo.x) +
+                     (vs.x - vo.y) * (vs.x - vo.y));
+            var n = ((this.position.x - other.position.x) *
+                     (this.position.x - other.position.x) *
+                     (vs.x - vo.x) * (vs.x - vo.x) +
+                     (this.position.y - other.position.y) *
+                     (this.position.y - other.position.y) *
+                     (vs.y - vo.y) * (vs.y - vo.y));
+            var q = ((this.position.x - other.position.x) *
+                     (this.position.x - other.position.x) +
+                     (this.position.y - other.position.y) *
+                     (this.position.y - other.position.y));
+
+            return ((Math.abs(m) > epsilon) ?
+                    (Math.sqrt(n * n - m *
+                               (q - radius * radius)) - n) / m :
+                    undefined);
+        }
     };
 
     // A photon is a massless guage boson that mediates the
@@ -318,35 +362,42 @@
 
     quanta.go = function($, container, viewport) {
         var nphotons = Math.max(0, parseInt(
-            window.params['nphotons'], 10) || 3);
+            window.params['nphotons'] || 3, 10));
         var index, lab = null;
         var canvas = $('<canvas></canvas>').appendTo(container);
         var context = canvas.get(0).getContext('2d');
         var last = new Date().getTime();
         var update = function() {
             var now = new Date().getTime();
-            lab.update(now - last);
+            lab.update(Math.min(5000, now - last));
             last = now;
 
             context.clearRect(0, 0, canvas.attr('width'),
                               canvas.attr('height'));
+            lab.resize(canvas.attr('width'), canvas.attr('height'));
             lab.draw(context);
             if (lab.active())
                 requestAnimationFrame(update);
+
+            // var center = Vector.create(canvas.attr('width') / 2,
+            //                            canvas.attr('height') / 2);
+            // var d = Vector.create(250, 250);
+            // var axis = Vector.create(-50, 0);
+            // var r = axis.reflect(d);
+            // d.draw(context, center, {color: 'green'});
+            // axis.draw(context, center, {color: 'blue'});
+            // r.draw(context, center, {color: 'red'});
         };
         var resize = function() {
             canvas.attr('width', viewport.innerWidth());
             canvas.attr('height', viewport.innerHeight());
-            if (lab)
-                lab.resize(canvas.attr('width'),
-                           canvas.attr('height'));
             requestAnimationFrame(update);
         };
         resize();
         viewport.resize(resize);
 
-        lab = Laboratory.create(canvas.attr('width'),
-                                canvas.attr('height'));
+        lab = quanta.Laboratory.create(
+            canvas.attr('width'), canvas.attr('height'));
         for (index = 0; index < nphotons; ++index)
             lab.make(quanta.Photon);
         //lab.make(quanta.Photon, {freq: 10000});
