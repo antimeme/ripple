@@ -28,13 +28,14 @@
 
     var epsilon = 0.000001;
     var planck  = 4.135667516e-15;
+    var c = 1; // speed of light
 
     var Vector = {
         create: function(x, y) {
             // Creates and returns a vector using Cartesian coordinates
             var result = Object.create(this);
-            result.x = x;
-            result.y = y;
+            result.x = x || 0;
+            result.y = y || 0;
             return result;
         },
         polar: function(r, theta) {
@@ -54,9 +55,11 @@
         { return this.create(this.x * value, this.y * value); },
         dotp: function(other)
         { return this.x * other.x + this.y * other.y; },
+        length: function() { return Math.sqrt(this.dotp(this)); },
+        angle: function() { return Math.acos(this.norm().x); },
         norm: function() {
-            var m = Math.sqrt(this.dotp(this));
-            return this.create(this.x / m, this.y / m);
+            var length = this.length();
+            return this.create(this.x / length, this.y / length);
         },
         reflect: function(target) {
             // r = d - ((2 d . n) / (n . n)) n
@@ -65,15 +68,32 @@
                                         this.dotp(this))) : target;
         },
         draw: function(context, center, config) {
+            var length = this.length();
+            var angle  = this.angle();
+            var adepth = 0.9, awidth;
+
             context.save();
-            context.beginPath();
-            context.translate(center.x, center.y);
-            context.moveTo(0, 0);
-            context.lineTo(this.x, this.y);
-            context.lineWidth = (config && config.lineWidth) || 5;
+            context.lineCap = 'round';
             context.strokeStyle = (config && config.color) || 'white';
-            context.stroke();
+            context.fillStyle = context.strokeStyle;
+            context.lineWidth = (config && config.lineWidth) || 5;
+            awidth = Math.min(context.lineWidth, length / 10);
+
+            context.translate(center ? center.x : 0,
+                              center ? center.y : 0);
+            context.rotate((this.y > 0 ? 1 : -1) * angle);
+
+            context.beginPath();
+            context.moveTo(0, 0);
+            context.lineTo(adepth * length, 0);
+            context.lineTo(adepth * length, awidth);
+            context.lineTo(length, 0);
+            context.lineTo(adepth * length, -awidth);
+            context.lineTo(adepth * length, 0);
             context.closePath();
+
+            context.stroke();
+            context.fill();
             context.restore();
         }
     };
@@ -99,13 +119,25 @@
             // Returns true iff there is continuing activity in the lab.
             var index;
             for (index = 0; index < this.particles.length; ++index)
-                if (this.particles[index].speed > 0)
+                if (this.particles[index].speed > epsilon)
                     return true;
             return false;
         },
         add: function(particle) { this.particles.push(particle); },
         make: function(particleType, config)
         { this.add(particleType.create(this, config)); },
+        _move: function(delta) {
+            var index, particle, velocity, oldpos;
+            var xmin, xmax, ymin, ymax;
+
+            for (index = 0; index < this.particles.length;
+                 ++index) {
+                particle = this.particles[index];
+                velocity = particle.direction.times(particle.speed);
+                particle.position = particle.position.plus(
+                    velocity.times(delta));
+            }
+        },
         _collect: function(events) {
             var index, particle, velocity, time;
             var xmin, xmax, ymin, ymax;
@@ -144,20 +176,9 @@
             events.sort(function(a, b) { return a.time - b.time; });
             return events;
         },
-        _move: function(delta) {
-            var index, particle, velocity, oldpos;
-            var xmin, xmax, ymin, ymax;
-
-            for (index = 0; index < this.particles.length;
-                 ++index) {
-                particle = this.particles[index];
-                velocity = particle.direction.times(particle.speed);
-                particle.position = particle.position.plus(
-                    velocity.times(delta));
-            }
-        },
         update: function(delta) {
             var index, current = 0, processed = 0, event, events;
+            var particle;
             events = this._collect([]);
 
             while (processed < delta) {
@@ -172,6 +193,15 @@
                     event.action.call(event.particle, this);
                 processed = current;
                 current = 0;
+            }
+
+            for (index = 0; index < this.particles.length; ++index) {
+                particle = this.particles[index];
+                if ((particle.position.x < particle.scale) ||
+                    (particle.position.x > particle.scale) ||
+                    (particle.position.y < particle.scale) ||
+                    (particle.position.y > particle.scale)) {
+                }
             }
 
             for (index = 0; index < this.particles.length; ++index)
@@ -196,29 +226,30 @@
         eCharge: 0,
         cCharge: 'w',
         scaleFactor: 0.05,
-        absorbed: false,
+        phase: Math.PI / 6,
         position: undefined,
         direction: undefined,
         speed: undefined,
         scale: undefined,
-        _init: function(lab, config) {
-            this.scale = config && config.scale ? config.scale :
-                lab.scale * this.scaleFactor;
-            this.position = Vector.create(
-                    Math.random() * (lab.width - this.scale) +
-                    this.scale / 2,
-                    Math.random() * (lab.height - this.scale) +
-                    this.scale / 2);
-            this.direction = (config && config.direction) ?
+        _init: function(lab, config) { return this; },
+        create: function(lab, config) {
+            var result = Object.create(this);
+            result.scale = config && config.scale ? config.scale :
+                lab.scale * result.scaleFactor;
+            result.position = Vector.create(
+                    Math.random() * (lab.width - result.scale) +
+                    result.scale / 2,
+                    Math.random() * (lab.height - result.scale) +
+                    result.scale / 2);
+            result.direction = (config && config.direction) ?
                 direction.norm() :
                 Vector.polar(1, Math.random() * 2 * Math.PI);
-            if (this.mass === 0)
-                this.speed = 1;
-            else this.speed = 0;
-            return this;
-        },
-        create: function(lab, config) {
-            return Object.create(this)._init(lab, config);
+            result.phase = (config && config.phase) ?
+                config.phase : Math.random() * 2 * Math.PI;
+            if (result.mass === 0)
+                result.speed = c;
+            else result.speed = 0;
+            return result._init(lab, config);
         },
         _update: function(delta, lab) {},
         update: function(delta, lab)
@@ -256,7 +287,6 @@
     // electromagnetic force.
     quanta.Photon = Object.create(Particle);
     quanta.Photon.spin = 1;
-    quanta.Photon.phase = Math.PI / 6;
     quanta.Photon.spectrum = [
         {name: 'red',    freq: 442 * Math.pow(10, 12),
          color: {r: 255, g: 128, b: 128}},
@@ -296,26 +326,21 @@
         } else if (low !== null && high === null) { // ultra
         }
 
-        this._speed = Math.log(freq) / (1000 * Math.log(10));
+        this._rotrate = Math.log(freq) / (2000 * Math.log(10));
         this.freq = freq;
     };
-    quanta.Photon.create = function(lab, config) {
-        var result = Object.create(this);
-        result._init(lab, config);
-
-        result.setFreq(config && config.freq ? config.freq :
-                       result.spectrum[0].freq + Math.random() *
-                       (result.spectrum[
-                           result.spectrum.length - 1].freq -
-                        result.spectrum[0].freq));
-        return result;
+    quanta.Photon._init = function(lab, config) {
+        this.setFreq(config && config.freq ? config.freq :
+                     this.spectrum[0].freq + Math.random() *
+                     (this.spectrum[
+                         this.spectrum.length - 1].freq -
+                      this.spectrum[0].freq));
+        return this;
     };
     quanta.Photon._update = function(delta, lab) {
-        this.phase += delta * this._speed;
+        this.phase += delta * this._rotrate;
     };
     quanta.Photon._draw = function(context, lab) {
-        if (this.absorbed)
-            return;
         context.save();
         context.translate(this.position.x, this.position.y);
         context.rotate(this.phase);
@@ -341,30 +366,43 @@
     quanta.Electron.eCharge = -1;
     quanta.Electron.scaleFactor *= 1.1;
     quanta.Electron._draw = function(context) {
-        if (this.absorbed)
-            return;
         context.save();
         context.translate(this.position.x, this.position.y);
-        //context.rotate(this.phase);
         context.beginPath();
         context.moveTo(this.scale / 2, 0);
         context.arc(0, 0, this.scale / 2, 0, 2 * Math.PI);
         context.moveTo(-this.scale / 4, 0);
         context.lineTo(this.scale / 4, 0);
         context.lineWidth = this.scale / 20;
+
+
         context.lineCap = 'round';
         context.fillStyle = "rgb(64,64,255)";
         context.fill();
         context.strokeStyle = 'lightgrey';
         context.stroke();
+
+        context.beginPath();
+        context.rotate(this.phase);
+        context.moveTo(0, -this.scale / 2);
+        context.arc(0, -this.scale / 2, this.scale / 10, 0, 2 * Math.PI);
+        context.fillStyle = 'lightgrey';
+        context.fill();
+
         context.restore();
     };
 
     quanta.go = function($, container, viewport) {
+        // Query Parameters
         var nphotons = Math.max(0, parseInt(
             window.params['nphotons'] || 3, 10));
+        var center = window.params['center'] || 'center';
+        c = Math.max(0.01, parseFloat(window.params['customc'] || 1.0));
+
+        // Settings
         var index, lab = null;
-        var canvas = $('<canvas></canvas>').appendTo(container);
+        var canvas = $('<canvas class="' + center +
+                       '"></canvas>').appendTo(container);
         var context = canvas.get(0).getContext('2d');
         var last = new Date().getTime();
         var update = function() {
@@ -378,23 +416,24 @@
             lab.draw(context);
             if (lab.active())
                 requestAnimationFrame(update);
-
-            // var center = Vector.create(canvas.attr('width') / 2,
-            //                            canvas.attr('height') / 2);
-            // var d = Vector.create(250, 250);
-            // var axis = Vector.create(-50, 0);
-            // var r = axis.reflect(d);
-            // d.draw(context, center, {color: 'green'});
-            // axis.draw(context, center, {color: 'blue'});
-            // r.draw(context, center, {color: 'red'});
         };
         var resize = function() {
-            canvas.attr('width', viewport.innerWidth());
-            canvas.attr('height', viewport.innerHeight());
+            var width = viewport.innerWidth();
+            var height = viewport.innerHeight();
+            if (width > height)
+                width = height;
+            else if (height > width)
+                height = width;
+            canvas.attr('width', width);
+            canvas.attr('height', height);
             requestAnimationFrame(update);
         };
         resize();
         viewport.resize(resize);
+        canvas.on('click', function(event) {
+            console.log(lab.active(), d.angle(), axis.angle(),
+                        d.norm().dotp(Vector.create(1, 0)));
+        });
 
         lab = quanta.Laboratory.create(
             canvas.attr('width'), canvas.attr('height'));
