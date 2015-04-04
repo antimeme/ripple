@@ -26,11 +26,12 @@
 (function(quanta) {
     "use strict";
 
-    var epsilon = 0.000001;
     var planck  = 4.135667516e-15;
     var c = 1; // speed of light
 
     var Vector = {
+        epsilon: 0.000001,
+
         create: function(x, y) {
             // Creates and returns a vector using Cartesian coordinates
             var result = Object.create(this);
@@ -38,35 +39,46 @@
             result.y = y || 0;
             return result;
         },
+
         polar: function(r, theta) {
             // Creates and returns a vector using polar coordinates
             var result = Object.create(this);
             result.x = r * Math.cos(theta);
             result.y = r * Math.sin(theta);
-            return result;            
+            return result;
         },
+
         reverse: function()
         { return this.create(-this.x, -this.y); },
+
         plus: function(other)
         { return this.create(this.x + other.x, this.y + other.y); },
+
         minus: function(other)
         { return this.plus(other.reverse()); },
+
         times: function(value)
         { return this.create(this.x * value, this.y * value); },
+
         dotp: function(other)
         { return this.x * other.x + this.y * other.y; },
+
         length: function() { return Math.sqrt(this.dotp(this)); },
+
         angle: function() { return Math.acos(this.norm().x); },
+
         norm: function() {
             var length = this.length();
             return this.create(this.x / length, this.y / length);
         },
+
         reflect: function(target) {
             // r = d - ((2 d . n) / (n . n)) n
-            return (this.dotp(this) > epsilon) ?
+            return (this.dotp(this) > this.epsilon) ?
                 target.minus(this.times(2 * this.dotp(target) /
                                         this.dotp(this))) : target;
         },
+
         draw: function(context, center, config) {
             var length = this.length();
             var angle  = this.angle();
@@ -106,6 +118,7 @@
             result.resize(width, height);
             return result;
         },
+
         resize: function(width, height) {
             var index;
             this.width = width;
@@ -115,20 +128,23 @@
                 this.particles[index].scale = (
                     this.particles[index].scaleFactor * this.scale);
         },
+
         active: function() {
             // Returns true iff there is continuing activity in the lab.
             var index;
             for (index = 0; index < this.particles.length; ++index)
-                if (this.particles[index].speed > epsilon)
+                if (this.particles[index].speed > Vector.epsilon)
                     return true;
             return false;
         },
+
         add: function(particle) { this.particles.push(particle); },
+
         make: function(particleType, config)
         { this.add(particleType.create(this, config)); },
+
         _move: function(delta) {
-            var index, particle, velocity, oldpos;
-            var xmin, xmax, ymin, ymax;
+            var index, particle, velocity;
 
             for (index = 0; index < this.particles.length;
                  ++index) {
@@ -138,61 +154,80 @@
                     velocity.times(delta));
             }
         },
-        _collect: function(events) {
-            var index, particle, velocity, time;
-            var xmin, xmax, ymin, ymax;
-            for (index = 0; index < this.particles.length; ++index) {
-                particle = this.particles[index];
-                xmin = particle.scale / 2;
-                xmax = this.width - xmin;
-                ymin = particle.scale / 2;
-                ymax = this.height - ymin;
-                velocity = particle.direction.times(particle.speed);
 
-                time = -1;
-                if (velocity.x < 0)
-                    time = (xmin - particle.position.x) / velocity.x;
-                else if (velocity.x > 0)
-                    time = (xmax - particle.position.x) / velocity.x;
-                if (time >= 0)
-                    events.push({
-                        time: time, particle: particle,
-                        action: function() {
-                            this.direction.x = -this.direction.x;
-                            return {};
-                        }});
-
-                time = -1;
-                if (velocity.y < 0)
-                    time = (ymin - particle.position.y) / velocity.y;
-                else if (velocity.y > 0)
-                    time = (ymax - particle.position.y) / velocity.y;
-                if (time >= 0)
-                    events.push({
-                        time: time, particle: particle,
-                        action: function() {
-                            this.direction.y = -this.direction.y; }});
+        _bounds: function(particle) {
+            var halfscale = particle.scale / 2;
+            return {
+                xmin: halfscale,
+                xmax: this.width - halfscale,
+                ymin: halfscale,
+                ymax: this.height - halfscale,
             }
-            events.sort(function(a, b) { return a.time - b.time; });
-            return events;
         },
+
+        _particles: function(map, reduce, start) {
+            // Calls the map function on each particle and then uses
+            // the reduce function to construct a return value.  The
+            // start parameter is optional and is used as the second
+            // argument to reduce the first time map is called.
+            var result = start;
+            var index;
+
+            for (index = 0; index < this.particles.length; ++index) {
+                result = (reduce ? reduce: function(a, b)
+                          { return a; })(
+                    map.call(this, this.particles[index], index),
+                    result);
+            }
+            return result;
+        },
+
+        _nextBounce: function(delta) {
+            return this._particles(function(particle, index) {
+                var xtime, ytime, time, dir;
+                var bounds = this._bounds(particle);
+                var velocity = particle.direction.times(particle.speed);
+
+                xtime = (Math.abs(velocity.x) > Vector.epsilon) ?
+                    (((velocity.x < 0) ? bounds.xmin : bounds.xmax) -
+                     particle.position.x) / velocity.x : -1;
+                ytime = (Math.abs(velocity.y) > Vector.epsilon) ?
+                    (((velocity.y < 0) ? bounds.ymin : bounds.ymax) -
+                     particle.position.y) / velocity.y : -1;
+
+                if ((xtime < 0 && ytime < 0) ||
+                    (xtime > delta && ytime > delta)) {
+                    return null;
+                } else if (xtime >= 0 && ytime < 0) {
+                    dir = "y";  time = ytime;
+                } else if (ytime >= 0 && xtime < 0) {
+                    dir = "x";  time = xtime;
+                } else {
+                    dir = (xtime < ytime) ? "x" : "y";
+                }
+                return {
+                    time: time, particle: particle,
+                    action: function() {
+                        this.direction[dir] = -this.direction[dir]; }};
+            }, function(current, best) {
+                return !best ? current :
+                    ((!current || (best.time <= current.time)) ?
+                     best : current);
+            });
+        },
+
         update: function(delta) {
-            var index, current = 0, processed = 0, event, events;
+            var index, current = 0, processed = 0, event;
             var particle;
-            events = this._collect([]);
 
             while (processed < delta) {
-                event = null;
-                if ((events.length > 0) && (events[0].time <= delta)) {
-                    event = events.shift();
-                    current = event.time;
-                } else current = delta;
-
-                this._move(current - processed);
+                event = this._nextBounce(delta - processed);
+                current = event ? event.time : (delta - processed);
+                this._move(current);
                 if (event)
                     event.action.call(event.particle, this);
+
                 processed = current;
-                current = 0;
             }
 
             for (index = 0; index < this.particles.length; ++index) {
@@ -201,6 +236,7 @@
                     (particle.position.x > particle.scale) ||
                     (particle.position.y < particle.scale) ||
                     (particle.position.y > particle.scale)) {
+                    // TODO: detect escapees
                 }
             }
 
@@ -276,7 +312,7 @@
                      (this.position.y - other.position.y) *
                      (this.position.y - other.position.y));
 
-            return ((Math.abs(m) > epsilon) ?
+            return ((Math.abs(m) > Vector.epsilon) ?
                     (Math.sqrt(n * n - m *
                                (q - radius * radius)) - n) / m :
                     undefined);
@@ -374,7 +410,6 @@
         context.moveTo(-this.scale / 4, 0);
         context.lineTo(this.scale / 4, 0);
         context.lineWidth = this.scale / 20;
-
 
         context.lineCap = 'round';
         context.fillStyle = "rgb(64,64,255)";
