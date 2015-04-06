@@ -16,6 +16,7 @@
       <li class="active"><a href="#">Home</a></li>
       <li><a href="#">Link</a></li>
       <li><a href="#">Link</a></li>
+      <li><select id="tomes"></select></li>
     </ul>
   </div>
 </div>
@@ -67,11 +68,38 @@
 //]]></script><![endif]-->
 <script src="lib/bootstrap.min.js"></script>
 <script>
-    jQuery(function ($) { // Required to make Bootstrap tabs work
-        $('#myTab a').click(function (event) {
-            $(this).tab('show'); return false; });
-    })
+  jQuery(function($) { // Required to make Bootstrap tabs work
+    $('#myTab a').click(function (event) {
+      $(this).tab('show'); return false; }); })
 </script>
 <script src="ripple/context.js"></script>
 <script src="ripple/grid.js"></script>
 <script src="grimoire.js"></script>
+<script>
+  jQuery(function($) {
+    var complete = function() {
+      $.each(grimoire.tomes, function(name, tome) {
+        $('#tomes').append('<option>' + name + '</option>');
+      });
+      console.log('complete');
+    };
+    var loading = 0;
+    var loaded = function() {
+      loading -= 1;
+      if (loading == 0)
+        complete();
+    };
+    $.getJSON('tomes/index').fail(function() { complete(); })
+                            .done(function(data) {
+      for (var index in data) {
+        var name = data[index];
+        loading += 1;
+        $.ajax({
+          dataType: "json", url: 'tomes/' + name, cache: false,
+          tomeName: name}).done(function(data) {
+          grimoire.load(this.tomeName, data);
+        }).always(function() { loaded(); });
+      }
+    });
+  });
+</script>
