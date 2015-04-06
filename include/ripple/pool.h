@@ -1,5 +1,5 @@
 /* ripple/pool.h
- * Copyright (C) 2006-2010 by Jeff Gold.
+ * Copyright (C) 2006-2015 by Jeff Gold.
  * 
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -25,6 +25,7 @@
  * the need to reclaim resources individually. */
 #ifndef RIPPLE_POOL_H
 #define RIPPLE_POOL_H
+#include <stdio.h>
 #include <ripple/context.h>
 
 #ifdef __cplusplus

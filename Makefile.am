@@ -32,6 +32,7 @@ lib@PACKAGE@_la_SOURCES  = \
 	source/stream.c \
 	source/option.c \
 	source/random.c \
+	source/pool.c \
 	source/pixie.c \
 	source/juju.c
 pkginclude_HEADERS = include/ripple/*.h
@@ -46,6 +47,7 @@ check_@PACKAGE@_SOURCES  = \
 	source/check-stream.c \
 	source/check-option.c \
 	source/check-random.c \
+	source/check-pool.c \
 	source/check-pixie.c \
 	source/check-juju.c
 
