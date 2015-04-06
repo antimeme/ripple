@@ -17,6 +17,14 @@
  *
  * ---------------------------------------------------------------------
  * An event driven XML parsing library. */
+/* TODO:
+ * - capture XML comments
+ * - optionally compress content to combine white space
+ * - translate character entities
+ *   = customizable
+ *   = HTML
+ *   = <!ENTITY name "value"> tags
+ */
 #ifndef RIPPLE_PIXIE_H
 #define RIPPLE_PIXIE_H
 #ifdef __cplusplus
@@ -41,14 +49,15 @@ typedef int (*pixie_contents_t)(struct pixie_parser *parser,
 typedef int (*pixie_tag_begin_t)(struct pixie_parser *parser,
                                  const char *ns, const char *tag,
                                  unsigned n_attrs,
-                                 const char * const *keys,
-                                 const char * const *values);
+                                 const char *const *keys,
+                                 const char *const *values);
 typedef int (*pixie_tag_end_t)(struct pixie_parser *parser,
                                const char *ns, const char *tag);
 
 enum pixie_flags {
   PIXIE_FLAG_NONE = 0,
-  PIXIE_FLAG_ATTRNOVAL = (1 << 0), /* allow attributes without value */
+  PIXIE_FLAG_STRICT = (1 << 0),
+  PIXIE_FLAG_ATTRNOVAL = (1 << 1), /* allow valueless attributes */
 };
 
 /**
@@ -64,9 +73,8 @@ enum pixie_flags {
 int
 pixie_setup(struct pixie_parser *parser,
             struct ripple_context *rctx, unsigned flags,
-            pixie_contents_t contents,
-            pixie_tag_begin_t tag_begin,
-            pixie_tag_end_t tag_end);
+            pixie_contents_t content, pixie_contents_t comment,
+            pixie_tag_begin_t tag_begin, pixie_tag_end_t tag_end);
 
 /**
  * Reclaim resources used by a parser.
@@ -145,7 +153,8 @@ struct pixie_parser {
   unsigned state;
   int quote;
   int last;
-  pixie_contents_t  contents;
+  pixie_contents_t  content;
+  pixie_contents_t  comment;
   pixie_tag_begin_t tag_begin;
   pixie_tag_end_t   tag_end;
   struct pixie_buffer current;

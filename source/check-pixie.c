@@ -19,17 +19,19 @@
  * Check program for pixie XML parser library. */
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include "ripple/pixie.h"
 
 const char xml[] =
   "<space:Root>\n"
+  "  <!-- a comment -->\n"
   "  <TaxRate>7.25</TaxRate>\n"
   "  <Data color=\"blue\" size='small'>\n"
   "    <Category>A</Category>\n"
   "    <Quantity>3</Quantity>\n"
   "    <Price>24.50</Price>\n"
   "  </Data>\n"
-  "  <Data color='red' size='medium'>\n"
+  "  <Data color=\"red\" size=\"medium\">\n"
   "    <Category>B</Category>\n"
   "    <Quantity>1</Quantity>\n"
   "    <Price>89.99</Price>\n"
@@ -39,11 +41,11 @@ const char xml[] =
 int
 begin(struct pixie_parser *parser,
       const char *ns, const char *tag, unsigned n_attrs,
-      const char * const *keys, const char * const *values)
+      const char *const *keys, const char *const *values)
 {
   unsigned index;
-  printf("TAG-BEGIN: %s%s%s (depth %d)\n",
-         ns, (ns && *ns) ? ": " : "", tag, parser->depth);
+  printf("TAG-BEGIN: %s%s%s (depth %d)\n", ns, (ns && *ns) ? ": " : "",
+         tag, parser->depth);
   for (index = 0; index < n_attrs; ++index)
     printf("    ATTR: %s -> \"%s\"\n", keys[index], values[index]);
   return 0;
@@ -52,8 +54,32 @@ begin(struct pixie_parser *parser,
 int
 end(struct pixie_parser *parser, const char *ns, const char *tag)
 {
-  printf("TAG-END:   %s%s%s (depth %d)\n",
-         ns, (ns && *ns) ? ": " : "", tag, parser->depth);
+  printf("TAG-END:   %s%s%s (depth %d)\n", ns, (ns && *ns) ? ": " : "",
+         tag, parser->depth);
+  return 0;
+}
+
+int
+content(struct pixie_parser *parser, const char *text)
+{
+  /* strip leading whitespace */
+  while (text && *text && isspace(*text))
+    ++text;
+
+  if (text && *text)
+    printf("CONTENTS:  \"%s\"\n", text);
+  return 0;
+}
+
+int
+comment(struct pixie_parser *parser, const char *text)
+{
+  /* strip leading whitespace */
+  while (text && *text && isspace(*text))
+    ++text;
+
+  if (text && *text)
+    printf("COMMENT:   \"%s\"\n", text);
   return 0;
 }
 
@@ -63,8 +89,9 @@ check_pixie(void)
   int result = EXIT_SUCCESS;
   int rc;
   struct pixie_parser parser;
-  if (!(rc = pixie_setup(&parser, NULL, 0, NULL, begin, end))) {
-    if (!(rc = pixie_parse(&parser, xml, sizeof(xml))))
+  if (!(rc = pixie_setup(&parser, NULL, PIXIE_FLAG_STRICT,
+                         content, comment, begin, end))) {
+    if (!(rc = pixie_parse(&parser, xml, sizeof(xml) - 1)))
       rc = pixie_parse(&parser, NULL, 0);
     pixie_cleanup(&parser);
   }

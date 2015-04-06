@@ -74,14 +74,14 @@
    }
    === END XML */
 enum pixie_state {
-  PSTATE_CONTENT, // text inside a tag
-  PSTATE_TAGOPEN, // inside a start tag
-  PSTATE_ENTITY,  // something with "<!"
-  PSTATE_COMMENT, // <!-- comment -->
-  PSTATE_CONTROL,
-  PSTATE_TAGNAME,
-  PSTATE_TAGSTOP,
-  PSTATE_TAGTERM,
+  PSTATE_CONTENT, /* text inside a tag */
+  PSTATE_TAGOPEN, /* inside a start tag */
+  PSTATE_ENTITY,  /* something with "<!" */
+  PSTATE_COMMENT, /* inside a <!-- comment --> */
+  PSTATE_CONTROL, /* <?xml version="1.0" encoding="utf-8"?> */
+  PSTATE_TAGNAME, /* after a '<' character */
+  PSTATE_TAGSTOP, /* after "<.../" */
+  PSTATE_TAGTERM, /* after "</" */
   PSTATE_ATTRIB,
   PSTATE_ATTRKEY,
   PSTATE_ATTREQ,
@@ -94,7 +94,9 @@ enum pixie_status {
   PIXIE_SUCCESS = 0,
   PIXIE_EINTERNAL,
   PIXIE_EALLOC,
+  PIXIE_EROOT,
   PIXIE_EINCOMPLETE,
+  PIXIE_EBADENTITY,
   PIXIE_EBADATTR,
   PIXIE_EBADESC,
   PIXIE_ENEGDEPTH,
@@ -108,7 +110,9 @@ pixie_strerror(int e)
   case PIXIE_SUCCESS:       return "success";
   case PIXIE_EINTERNAL:     return "internal error";
   case PIXIE_EALLOC:        return "failed to allocate memory";
+  case PIXIE_EROOT:         return "content outside root";
   case PIXIE_EINCOMPLETE:   return "incomplete tag";
+  case PIXIE_EBADENTITY:    return "bad entity";
   case PIXIE_EBADATTR:      return "bad attribute definition";
   case PIXIE_EBADESC:       return "unknown escape sequence";
   case PIXIE_ENEGDEPTH:     return "negative depth detected";
@@ -331,35 +335,38 @@ pixie_buffer__alloc(struct pixie_buffer *self, unsigned size)
 int
 pixie_buffer_putc(struct pixie_buffer *self, int c)
 {
+  int result = PIXIE_SUCCESS;
   pixie_buffer__alloc(self, 1);
   if (pixie_buffer__avail(self, 1))
     self->data[self->n_data++] = c;
-  else return -PIXIE_EALLOC;
-  return PIXIE_SUCCESS;
+  else result = -PIXIE_EALLOC;
+  return result;
 }
 
 int
 pixie_buffer_puts(const char *s, struct pixie_buffer *self)
 {
+  int result = PIXIE_SUCCESS;
   unsigned len = strlen(s);
   pixie_buffer__alloc(self, len);
   if (pixie_buffer__avail(self, len)) {
     memcpy(self->data + self->n_data, s, len);
     self->n_data += len;
-  } else return -PIXIE_EALLOC;
-  return PIXIE_SUCCESS;
+  } else result = -PIXIE_EALLOC;
+  return result;
 }
 
 int
 pixie_buffer_concat(struct pixie_buffer *self,
                     struct pixie_buffer *other)
 {
+  int result = PIXIE_SUCCESS;
   pixie_buffer__alloc(self, other->n_data);
   if (pixie_buffer__avail(self, other->n_data)) {
     memcpy(self->data + self->n_data, other->data, other->n_data);
     self->n_data += other->n_data;
-  } else return -PIXIE_EALLOC;
-  return PIXIE_SUCCESS;
+  } else result = -PIXIE_EALLOC;
+  return result;
 }
 
 static int
@@ -443,14 +450,15 @@ pixie_attrs_value(struct pixie_attrs *attrs)
 int
 pixie_setup(struct pixie_parser *parser,
             struct ripple_context *rctx, unsigned flags,
-            pixie_contents_t contents,
-            pixie_tag_begin_t tag_begin,
-            pixie_tag_end_t tag_end)
+            pixie_contents_t content, pixie_contents_t comment,
+            pixie_tag_begin_t tag_begin, pixie_tag_end_t tag_end)
 {
   int result = PIXIE_SUCCESS;
   memset(parser, 0, sizeof(*parser));
-  parser->rctx = rctx;
-  parser->contents  = contents;
+  parser->rctx      = rctx;
+  parser->flags     = flags;
+  parser->content   = content;
+  parser->comment   = comment;
   parser->tag_begin = tag_begin;
   parser->tag_end   = tag_end;
 
@@ -487,17 +495,16 @@ pixie_parse(struct pixie_parser *parser,
             const char *data, unsigned n_data)
 {
   int result = PIXIE_SUCCESS;
-  int index = 0, esc;
+  int index = 0;
   
-  if (!n_data || !data) {
+  if (!n_data || !data) { /* indicates termination of stream */
     switch (parser->state) {
     case PSTATE_CONTENT: {
-      if (parser->contents && pixie_buffer_len(&parser->current))
-        result = parser->contents
+      if (parser->depth > 0)
+        result = -PIXIE_EUNTERMINATED;
+      else if (pixie_buffer_len(&parser->current) && parser->content)
+        result = parser->content
           (parser, pixie_buffer_str(&parser->current));
-      /* Arguably we should really be whinging about having
-       * data past the final tag.  Maybe some kind of strict
-       * mode will be introduced in the future. */
     } break;
     case PSTATE_TAGOPEN:
     case PSTATE_TAGSTOP:
@@ -523,13 +530,16 @@ pixie_parse(struct pixie_parser *parser,
     case PSTATE_CONTENT: { /* collect text outside of tags */
       RIPPLE_DEBUG(parser->rctx, logstr, "CONTENT: %d %c\n", c, c);
       if (c == '<') {
-        if (parser->contents)
-          result = parser->contents
+        if (parser->content)
+          result = parser->content
             (parser, pixie_buffer_str(&parser->current));
         parser->state = PSTATE_TAGOPEN;
         pixie_buffer_clear(&parser->current);
-      } else if (pixie_buffer_putc(&parser->current, c))
-        result = -PIXIE_EALLOC;
+      } else if ((parser->depth == 0) && !isspace(c) &&
+                 (parser->flags & PIXIE_FLAG_STRICT)) {
+        printf("ZING '%c' %u %d\n", c, c, isspace(c));
+        result = -PIXIE_EROOT;
+      } else result = pixie_buffer_putc(&parser->current, c);
     } break;
 
     case PSTATE_TAGOPEN: { /* determine the type of tag */
@@ -540,7 +550,8 @@ pixie_parse(struct pixie_parser *parser,
         parser->state = PSTATE_ENTITY;
       } else if (c == '?') {
         parser->state = PSTATE_CONTROL;
-      } else if (isspace(c)) { /* skip leading whitespace */
+      } else if (isspace(c)) {
+        /* skip leading whitespace */
       } else {
         result = pixie_buffer_putc(&parser->current, c);
         parser->state = PSTATE_TAGNAME;
@@ -551,14 +562,11 @@ pixie_parse(struct pixie_parser *parser,
       RIPPLE_DEBUG(parser->rctx, logstr, "ENTITY: %d %c", c, c);
       if ((c == '-') && !pixie_buffer_len(&parser->current)) {
         parser->state = PSTATE_COMMENT;
-        if (pixie_buffer_putc(&parser->current, c))
-          result = -PIXIE_EALLOC;
+        result = pixie_buffer_putc(&parser->current, c);
       } if (c == '>') {
         parser->state = PSTATE_CONTENT;
         pixie_buffer_clear(&parser->current);
-      } else if (!pixie_buffer_len(&parser->current) &&
-                 pixie_buffer_putc(&parser->current, c))
-        result = -PIXIE_EALLOC;
+      } else result = pixie_buffer_putc(&parser->current, c);
     } break;
 
     case PSTATE_COMMENT: { /* ignore comments until close marker */
@@ -567,8 +575,7 @@ pixie_parse(struct pixie_parser *parser,
         parser->state = PSTATE_CONTENT;
         pixie_buffer_clear(&parser->current);
       } else if (c == '-') {
-        if (pixie_buffer_putc(&parser->current, c))
-          result = -PIXIE_EALLOC;
+        result = pixie_buffer_putc(&parser->current, c);
       } else pixie_buffer_clear(&parser->current);
     } break;
 
@@ -587,11 +594,9 @@ pixie_parse(struct pixie_parser *parser,
         parser->state = PSTATE_ATTRIB;
       } else if (c == ':') {
         if (pixie_buffer_len(&parser->ns))
-          if (pixie_buffer_putc(&parser->ns, ':'))
-            result = -PIXIE_EALLOC;
-        if ((result >= 0) && pixie_buffer_concat
-            (&parser->ns, &parser->current))
-          result = -PIXIE_EALLOC;
+          result = pixie_buffer_putc(&parser->ns, ':');
+        if (result >= 0)
+          result = pixie_buffer_concat(&parser->ns, &parser->current);
         pixie_buffer_clear(&parser->current);
       } else if (c == '/') {
         parser->state = PSTATE_TAGSTOP;
@@ -605,8 +610,7 @@ pixie_parse(struct pixie_parser *parser,
         parser->depth++;
 
         parser->state = PSTATE_CONTENT;
-      } else if (pixie_buffer_putc(&parser->current, c))
-        result = -PIXIE_EALLOC;
+      } else result = pixie_buffer_putc(&parser->current, c);
     } break;
 
     case PSTATE_TAGTERM: { /* slashes in tags must be followed by '>' */
@@ -717,12 +721,12 @@ pixie_parse(struct pixie_parser *parser,
       else if (c == parser->quote) {
         result = pixie_attrs_push(&parser->attrs);
         parser->state = PSTATE_ATTRIB;
-      } else if (pixie_buffer_putc(pixie_attrs_value
-                                   (&parser->attrs), c))
-        result = -PIXIE_EALLOC;
+      } else result = pixie_buffer_putc(pixie_attrs_value
+                                        (&parser->attrs), c);
     } break;
 
     case PSTATE_ATTRESC: { /* process backslash escape in attributes */
+      int esc;
       RIPPLE_DEBUG(parser->rctx, logstr, "ATTRESC: %d %c", c, c);
       switch (c) {
       case 'n': esc = '\n'; break;
