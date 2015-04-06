@@ -42,6 +42,7 @@ classripplejava.stamp
 .classes/
 classes-ripple/
 javadoc/
+jartest.sh
 source/Ripple.java
 ripple-*.jar
 
