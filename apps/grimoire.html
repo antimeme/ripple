@@ -16,7 +16,7 @@
       <li class="active"><a href="#">Home</a></li>
       <li><a href="#">Link</a></li>
       <li><a href="#">Link</a></li>
-      <li><select id="tomes"></select></li>
+      <li><select class="tomebar"></select></li>
     </ul>
   </div>
 </div>
@@ -77,29 +77,12 @@
 <script src="grimoire.js"></script>
 <script>
   jQuery(function($) {
-    var complete = function() {
-      $.each(grimoire.tomes, function(name, tome) {
-        $('#tomes').append('<option>' + name + '</option>');
+      grimoire.loadAjax($, null, function() {
+          $.each(grimoire.tomes, function(name, tome) {
+              if (tome.display)
+                  $('.tomebar').append('<option>' + name + '</option>');
+          });
+          console.log('complete');
       });
-      console.log('complete');
-    };
-    var loading = 0;
-    var loaded = function() {
-      loading -= 1;
-      if (loading == 0)
-        complete();
-    };
-    $.getJSON('tomes/index').fail(function() { complete(); })
-                            .done(function(data) {
-      for (var index in data) {
-        var name = data[index];
-        loading += 1;
-        $.ajax({
-          dataType: "json", url: 'tomes/' + name, cache: false,
-          tomeName: name}).done(function(data) {
-          grimoire.load(this.tomeName, data);
-        }).always(function() { loaded(); });
-      }
-    });
   });
 </script>

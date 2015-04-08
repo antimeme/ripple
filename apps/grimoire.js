@@ -1,5 +1,30 @@
 // grimoire.js
 // Character management system for role playing games.
+// TODO:
+// - automatically load parent tomes
+
+// === Manipulators
+// Characters have one or more manipulator slots.  These are things
+// like hands for humans which can be used to manipulate objects.
+// When empty these have the following possibilities:
+//
+// Empty:
+// - Take: pick up an item from nearby or another character
+// - Fetch: get an item from another slot or container
+// - Attack: perform an unarmed attack
+//
+// Once a manipulater has an item (due to Take or Fetch) the following
+// actions are possible:
+//
+// Item:
+// - Give: hold the item out for another character to take
+// - Drop: put an item down
+// - Throw: hurl an item
+// - Stow: put the item into another slot or container
+// - Consume*: eat the item or drink from it (if appropriate)
+// - Use*: perform some item specific task
+// - Attack*: use the item to harm another character
+
 (function(grimoire) {
     "use strict";
     // All tomes that we know about are kept in an object, refrenced
@@ -25,6 +50,7 @@
             return races[name];
         if ((parent in data) && !races.hasOwnProperty(parent))
             races[parent] = race_setup(races, data, parent);
+
         if (parent in races)
             base = races[parent];
         else base = {};
@@ -37,8 +63,8 @@
     };
 
     /**
-     * Sets up a single tome. */
-    var tome_setup = function(name, data) {
+     * Convert raw data to an integrated tome. */
+    grimoire.load = function(name, data) {
         var tome, field, child, races, race_name;
         var parent = {};
         if (data.parent in grimoire.tomes)
@@ -61,14 +87,44 @@
         for (child in grimoire.tomes)
             if (name !== child &&
                 name === grimoire.tomes[child].parent)
-                grimoire.tomes[child] = tome_setup(
+                grimoire.tomes[child] = grimoire.load(
                     child, grimoire.tomes[child].raw);
         tome.raw = data;
         return tome;
     };
 
-    grimoire.load = function(name, data, report)
-    { return tome_setup(name, data); }
+    /**
+     * Automatically load tomes based on index with a fallback. */
+    grimoire.loadAjax = function($, tomes, complete) {
+        var index, loading = 0, loaded = function() {
+            loading -= 1;
+            if (loading == 0)
+                complete();
+        };
+        var load = function(name) {
+            loading += 1;
+            $.ajax({
+                url: 'tomes/' + name, dataType: "json",
+                cache: false}).done(function(data) {
+                    console.log('Loaded: ' + name);
+                    grimoire.load(name, data);
+                    if (data.parent && !(data.parent in grimoire.tomes))
+                        load(data.parent);
+                }).always(function() { loaded(); });
+        };
+
+        if (tomes && tomes.length > 0) {
+            for (index in tomes)
+                load(tomes[index]);
+        } else $.getJSON('tomes/index').fail(function() {
+            load('grimoire');
+        }).done(function(data) {
+            var index;
+            for (index = 0; index < data.length; ++index)
+                load(data[index]);
+        });
+        return $;
+    }
 })(typeof exports === 'undefined'? this['grimoire'] = {}: exports);
 
 // Entry point for command line use.
@@ -76,9 +132,7 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
     var result = 0;
     var fs = require('fs');
     var grimoire = exports;
-    var tomes = [];
-    var path = process.argv[1].substring(
-        0, process.argv[1].lastIndexOf('/'));
+    var tomes = []; // names of tomes to load
 
     // Process command line options
     for (index = 2; index < process.argv.length; ++index) {
@@ -96,34 +150,79 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
         }
     }
 
-    // Load any relevant tomes
-    if (!tomes.length) {
-        var data = fs.readFileSync(path + '/tomes/index.json',
-                                   {encoding: 'utf8'});
-        tomes = JSON.parse(data);
-        // var end = '.tome';
-        // var names = fs.readdirSync(path + '/tomes');
-        // names.forEach(function(name) {
-        //     if (name.indexOf(end, name.length - end.length) !== -1)
-        //         tomes.push(name.substring(
-        //             0, name.length - end.length));
-        // });
-    }
-    tomes.forEach(function(name) {
-        var data = fs.readFileSync(path + '/tomes/' + name + '.tome',
-                                   {encoding: 'utf8'});
-        var tome = grimoire.load(name, JSON.parse(
-            data.replace(/\s+/gm, ' ')));
-        console.log('Loaded ' + name + ': ' + tome.description);
-    });
+    /**
+     * Emulates jQuery Ajax but uses file operations instead.
+     * This allows us to use grimoire.loadAjax directly. */
+    var fjax = {
+        getJSON: function(url) { return this.ajax({url: url}); },
+        ajax: function(options) {
+            var result = {
+                base: this, cbs: [],
+                url: options.url,
+                done: function(fn) {
+                    this.cbs.push({which: 'done', fn: fn});
+                    return this;
+                },
+                fail: function(fn) {
+                    this.cbs.push({which: 'fail', fn: fn});
+                    return this;
+                },
+                always: function(fn) {
+                    this.cbs.push({which: null, fn: fn});
+                return this;
+                },
+            };
+            if (!this.pending)
+                this.pending = [];
+            this.pending.push(result);
+            return result;
+        },
+        execute: function() {
+            var path = process.argv[1].substring(
+                0, process.argv[1].lastIndexOf('/'));
+            var data = null, mode = 'done', status = 'success';
+            var index, jndex, current, request, request, callback;
+            while (this.pending) {
+                current = this.pending;
+                this.pending = undefined;
+
+                for (index = 0; index < current.length; ++index) {
+                    request = current[index];
+                    try {
+                        data = JSON.parse(fs.readFileSync(
+                            path + '/' + request.url + '.json',
+                            {encoding: 'utf8'}));
+                    } catch (error) { mode = 'fail'; status = 'error'; }
+
+                    for (jndex = 0; jndex < request.cbs.length;
+                         ++jndex) {
+                        callback = request.cbs[jndex];
+                        if (!callback.which || callback.which === mode)
+                            callback.fn(data, status, null);
+                    }
+                }
+            }
+        }
+    };
+    grimoire.loadAjax(fjax, tomes, function() {}).execute();
 
     for (tome_name in grimoire.tomes) {
         var tome = grimoire.tomes[tome_name];
-        if (tome.characters) {
-            console.log('Tome: ' + tome_name);
-            for (var index = 0; index < tome.characters.length;
-                 ++index) {
-                var character = tome.characters[index];
+        var index, character, race;
+
+        if (tome.races && Object.keys(tome.races).length) {
+            console.log('Races: ' + tome_name);
+            for (index in tome.races) {
+                race = tome.races[index];
+                if (race.player)
+                    console.log('  ' + index);
+            }
+        }
+
+        if (tome.characters && tome.characters.length) {
+            console.log('Characters: ' + tome_name);
+            for (index = 0; index < tome.characters.length; ++index) {
+                character = tome.characters[index];
                 console.log('  ' + character.fname + ' ' +
                             character.lname);
             }
