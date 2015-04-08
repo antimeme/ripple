@@ -1,9 +1,32 @@
 // grimoire.js
 // Character management system for role playing games.
-// TODO:
-// - automatically load parent tomes
 
-// === Manipulators
+// === Character Actions
+//
+// This is an attempt to summarize the actions a character can take in
+// the context of a game.  The goal is to focus thinking for user
+// interface design.  A character doesn't make too much sense without
+// a world to give some context.  What can a character do?
+// Unfortunately the answer is, "it depends."  There are many
+// different kinds of worlds the character can inhabit.  For example,
+// the world may be a two dimensional grid or it may be a free form
+// three dimensional world.
+//
+// Ideally Grimoire would support a wide variety of different kinds of
+// worlds.  A single character could transition seamlessly between
+// them.  Some details will be different.  For example in a three
+// dimensional world there are X, Y and Z coordinates.  In a two
+// dimensional grid there might only be a row and a column.  This must
+// be abstracted somehow but the interface is critical.
+//
+// That's because we need to give a player the ability to take actions
+// using the character.  Actions have to be modal in some sense.  In a
+// real-time game most actions are always available but time is always
+// advancing.  A character in the middle of combat in a turn based
+// game must wait until his or her turn arrives.  However, even in a
+// turn based game the character may have long stretches between
+// adventures in which time is abundant for things like shopping.
+//
 // Characters have one or more manipulator slots.  These are things
 // like hands for humans which can be used to manipulate objects.
 // When empty these have the following possibilities:
@@ -24,6 +47,49 @@
 // - Consume*: eat the item or drink from it (if appropriate)
 // - Use*: perform some item specific task
 // - Attack*: use the item to harm another character
+//
+// These are actions that make sense in a particular moment.  However,
+// there are times when things must get more abstract.  In particular
+// this is true during character creation or other cases when long
+// stretches of time are passing.  In this abstract time, actions
+// include things such as:
+//
+// Actions:
+// - Training: improving skills using experience points?
+// - Shopping: buying and selling equipment
+//
+// When shopping, the character spends currency such as coins.  When
+// training the currency instead is time.  So what if at any moment
+// the character is connected to zero or more shops and has zero or
+// more hours of down time.  When in combat, there are no shops and
+// no down time to be had.  Only combat actions can be taken and then
+// only if the character has action points of some kind.  So really
+// there are three kinds of currencies, some combination of which
+// may be spendable.
+//
+// So every character has a current context.  (This current context
+// needs a better name!)  Each context has zero or more shops associated
+// with it.  A shop has an inventory and a cash balance, possibly made
+// up of different types of coins.  This same shop may be accessible in
+// a real time or even turn based mode, but if it's attached to the
+// context a character is in then he or she can conduct an unlimited
+// number of transactions.
+//
+// Likewise the context has a certain amount of down time, which may
+// be unlimited.  Each character spends the alloted down time
+// independently and can't do more once it's used up.  Visiting a shop
+// may cost some down time?  This could be configurable?  A character
+// can also train to improve skills and spend experience in down time.
+//
+// A context might also offer employment possibilities.  These are
+// ways for the character to earn money at the expense of down time.
+// Another possiblity is background trees, which may be mandatory.
+// The player must navigate these to make the character ready for the
+// next game session, for example.  Mostly these would be used for
+// character creation where they would add various ancillary skills.
+// But they could be used to deal with long stretches of time between
+// adventures as well.  For instance, a year passes.  What does the
+// character do?
 
 (function(grimoire) {
     "use strict";
