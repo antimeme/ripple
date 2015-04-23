@@ -28,8 +28,9 @@
             Intermediate.prototype = parent;
             return new Intermediate(); };
     if (typeof Array.prototype.forEach === 'undefined')
-        Array.prototype.forEach = function(fn) {
-            for (var ii = 0; ii < this.length; ii++) fn(this[ii]); };
+        Array.prototype.forEach = function(fn, self) {
+            for (var index = 0; index < this.length; index++)
+                fn.call(self, this[index], index, this); };
 
     var vendors = ['moz', 'webkit', 'o', 'ms'];
 
