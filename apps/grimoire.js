@@ -1,8 +1,20 @@
 // grimoire.js
 // Character management system for role playing games.
 
-// === Character Actions
+// === Items
+// An item is something a character wears or carries.
 //
+// var item = {
+//     "base": "dagger", // item definition with defaults
+//     "mass": 0,        // mass of object in grams
+//     "wear": ["feet"], // list of string slot names
+//     "cost": 7,        // average price in currency units
+//     "contents": []    // other items contained in this one
+// };
+
+// === Characters
+//
+
 // This is an attempt to summarize the actions a character can take in
 // the context of a game.  The goal is to focus thinking for user
 // interface design.  A character doesn't make too much sense without
@@ -34,7 +46,7 @@
 // Empty:
 // - Take: pick up an item from nearby or another character
 // - Fetch: get an item from another slot or container
-// - Attack: perform an unarmed attack
+// - Attack: perform an unarmed strike
 //
 // Once a manipulater has an item (due to Take or Fetch) the following
 // actions are possible:
@@ -100,10 +112,22 @@
     grimoire.tomes = {};
 
     /**
-     * Character races can have parents from which they inherit any
-     * properties not directly specified. In JSON this means a
-     * "parent" attribute but to make this work the object heirarcy
-     * must be constructed. */
+     * Configure a race object beyond what is present in raw data. */
+    var character_setup = function(character) {
+        return character;
+    };
+
+    var character_name = function(character) {
+        return character.lname ?
+            (character.fname + " " + character.lname) :
+            character.fname;
+    };
+
+    /**
+     * Configure a race object beyond what is present in raw data.
+     * For example, races can have a parent from which they inherit
+     * but this is not representable in JSON.  So that gets fixed
+     * up here. */
     var race_setup = function(races, data, name) {
         var race, base, field;
         var parent = data.races[name].parent;
@@ -131,11 +155,12 @@
     /**
      * Convert raw data to an integrated tome. */
     grimoire.load = function(name, data) {
-        var tome, field, child, races, race_name;
+        var tome, field, child, races, race_name, index;
         var parent = {};
         if (data.parent in grimoire.tomes)
             tome = Object.create(parent = grimoire.tomes[data.parent]);
         else tome = {};
+        tome.raw = data;
 
         for (field in data) {
             if (!data.hasOwnProperty(field))
@@ -143,19 +168,29 @@
             if (field === 'races') {
                 races = parent.races ? Object.create(parent.races) : {}
                 for (race_name in data.races || {})
-                    races[race_name] = race_setup(
-                        races, data, race_name);
+                    races[name] = race_setup(races, data, race_name);
                 tome[field] = races;
+            } if (field === 'characters') {
+                tome[field] = parent[field] ?
+                    parent[field].slice() : [];
+                tome[field].concat(data[field]);
             } else tome[field] = data[field];
         }
 
-        grimoire.tomes[name] = tome;
+        tome.charmap = {};
+        if (tome.characters) {
+            for (index = 0; index < tome.characters.length; ++index) {
+                name = character_name(tome.characters[index]);
+                tome.charmap[name] = tome.characters[index];
+            }
+        }
+
         for (child in grimoire.tomes)
             if (name !== child &&
                 name === grimoire.tomes[child].parent)
                 grimoire.tomes[child] = grimoire.load(
                     child, grimoire.tomes[child].raw);
-        tome.raw = data;
+        grimoire.tomes[name] = tome;
         return tome;
     };
 
@@ -164,7 +199,7 @@
     grimoire.loadAjax = function($, tomes, complete) {
         var index, loading = 0, loaded = function() {
             loading -= 1;
-            if (loading == 0)
+            if (loading <= 0)
                 complete();
         };
         var load = function(name) {
@@ -172,7 +207,6 @@
             $.ajax({
                 url: 'tomes/' + name, dataType: "json",
                 cache: false}).done(function(data) {
-                    console.log('Loaded: ' + name);
                     grimoire.load(name, data);
                     if (data.parent && !(data.parent in grimoire.tomes))
                         load(data.parent);
@@ -219,7 +253,7 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
     /**
      * Emulates jQuery Ajax but uses file operations instead.
      * This allows us to use grimoire.loadAjax directly. */
-    var fjax = {
+    var fakejax = {
         getJSON: function(url) { return this.ajax({url: url}); },
         ajax: function(options) {
             var result = {
@@ -270,7 +304,7 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
             }
         }
     };
-    grimoire.loadAjax(fjax, tomes, function() {}).execute();
+    grimoire.loadAjax(fakejax, tomes, function() {}).execute();
 
     for (tome_name in grimoire.tomes) {
         var tome = grimoire.tomes[tome_name];

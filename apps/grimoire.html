@@ -67,9 +67,13 @@
 <script>
   jQuery(function($) {
       grimoire.loadAjax($, null, function() {
+          var tomebar = $('.tomebar');
           $.each(grimoire.tomes, function(name, tome) {
               if (tome.display)
-                  $('.tomebar').append('<option>' + name + '</option>');
+                  tomebar.append('<option>' + name + '</option>');
+          });
+          tomebar.on("change", function(event) {
+              console.log("Changed", $(this).val());
           });
           console.log('complete');
       });
