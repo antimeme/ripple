@@ -51,7 +51,7 @@
 // and _neighbors functions.  Because the input to the points function
 // is expected to already have correct x and y coordinates there's no
 // need to perform adjustments there either.
-(function(exports) {
+(function(grid) {
     "use strict";
     var _sqrt2 = Math.sqrt(2);
     var _sqrt3 = Math.sqrt(3);
@@ -575,7 +575,7 @@
         return result;
     };
 
-    exports.test = function($, parent, viewport) {
+    grid.test = function($, parent, viewport) {
         var self = $('<canvas></canvas>').appendTo(parent);
         var colorTapInner = 'rgba(45, 45, 128, 0.8)';
         var colorTapOuter = 'rgba(128, 255, 128, 0.6)';
@@ -583,7 +583,8 @@
         var colorNeighbor = 'rgba(128, 128, 0, 0.4)';
         var lineWidth = 0, lineFactor = 40;
         var numbers = false, combined = false;
-        var grid, tap, selected, drag, zooming, gesture, press = 0;
+        var instance;
+        var tap, selected, drag, zooming, gesture, press = 0;
 
         var draw_id = 0;
         var draw = function() {
@@ -603,8 +604,8 @@
                 ctx.lineWidth = lineWidth;
                 ctx.textAlign = 'center';
                 ctx.font = 'bold ' + 12 + 'pt sans-serif';
-                grid.map(width, height, function(node) {
-                    var index, points = grid.points(node);
+                instance.map(width, height, function(node) {
+                    var index, points = instance.points(node);
                     if (points.length) {
                         var last = points[points.length - 1];
                         ctx.moveTo(last.x, last.y);
@@ -618,14 +619,14 @@
                 ctx.strokeStyle = color;
                 ctx.stroke();
                 if (combined)
-                    grid.map(width, height, function(node) {
+                    instance.map(width, height, function(node) {
                         ctx.fillStyle = color;
                         ctx.fillText(
                             ripple.pair(node.row, node.col),
                             node.x, node.y);
                     });
                 else if (numbers)
-                    grid.map(width, height, function(node) {
+                    instance.map(width, height, function(node) {
                         ctx.fillStyle = color;
                         ctx.fillText('(' + node.row + ', ' +
                                      node.col + ')', node.x, node.y);
@@ -635,8 +636,8 @@
                     // Coordinates of the selected square must be
                     // updated in case the grid offsets have moved
                     // since the last draw call.
-                    selected = grid.coordinate(selected);
-                    points = grid.points(selected);
+                    selected = instance.coordinate(selected);
+                    points = instance.points(selected);
 
                     ctx.beginPath();
                     if (points.length) {
@@ -648,16 +649,16 @@
                     } else {
                         ctx.moveTo(selected.x, selected.y);
                         ctx.arc(selected.x, selected.y,
-                                grid.size() / 2, 0, 2 * Math.PI);
+                                instance.size() / 2, 0, 2 * Math.PI);
                     }
                     ctx.fillStyle = colorSelected;
                     ctx.fill();
 
-                    neighbors = grid.neighbors(
+                    neighbors = instance.neighbors(
                         selected, {coordinates: true, points: true});
                     ctx.beginPath();
                     for (index in neighbors) {
-                        points = grid.points(neighbors[index]);
+                        points = instance.points(neighbors[index]);
                         if (points.length) {
                             last = points[points.length - 1];
                             ctx.moveTo(last.x, last.y);
@@ -667,9 +668,9 @@
                         } else {
                             ctx.moveTo(neighbors[index].x,
                                        neighbors[index].y);
-                            ctx.arc(neighbors[index].x,
-                                    neighbors[index].y,
-                                    grid.size() / 2, 0, 2 * Math.PI);
+                            ctx.arc(
+                                neighbors[index].x, neighbors[index].y,
+                                instance.size() / 2, 0, 2 * Math.PI);
                         }
                     }
                     ctx.fillStyle = colorNeighbor;
@@ -739,9 +740,8 @@
         };
         viewport.resize(resize);
         resize();
-        grid = create({width: self.width(), height: self.height()});
-        lineWidth = grid.size() / lineFactor;
-
+        instance = create({width: self.width(), height: self.height()});
+        lineWidth = instance.size() / lineFactor;
 
         var animation = new (function() {
             var id, current, start, stop, limit = 60000;
@@ -755,7 +755,7 @@
                    current = now;
                 do {
                     if (!stop) {
-                       var offset = grid.offset();
+                       var offset = instance.offset();
                        var angle = 2 * Math.PI * Math.random();
                        var magnitude = 100 + choose(50);
 
@@ -771,10 +771,11 @@
                     }
                     var portion = Math.min(1.0, (now - start.time) /
                                            (stop.time - start.time));
-                    grid.offset(Math.floor(start.left + portion *
-                                           (stop.left - start.left)),
-                                Math.floor(start.top + portion *
-                                           (stop.top - start.top)));
+                    instance.offset(
+                        Math.floor(start.left + portion *
+                                   (stop.left - start.left)),
+                        Math.floor(start.top + portion *
+                                   (stop.top - start.top)));
                     if (stop.time < now) {
                         current = stop.time;
                         stop = undefined;
@@ -829,8 +830,8 @@
                    options = {type: gtype};
                 options.width  = self.width();
                 options.height = self.height();
-                grid = create(options);
-                lineWidth = grid.size() / lineFactor;
+                instance = create(options);
+                lineWidth = instance.size() / lineFactor;
                 redraw();
             }
 
@@ -875,10 +876,10 @@
         var zoom = function(left, top, size, x, y, factor) {
             if (factor && factor > 0) {
                 if (size * factor > 50) {
-                    grid.offset((left - x) * factor + x,
-                                (top - y)  * factor + y);
-                    grid.size(size * factor);
-                    lineWidth = grid.size() / lineFactor;
+                    instance.offset((left - x) * factor + x,
+                                    (top - y)  * factor + y);
+                    instance.size(size * factor);
+                    lineWidth = instance.size() / lineFactor;
                 }
                 redraw();
             }
@@ -886,12 +887,12 @@
 
         // Process mouse and touch events on grid itself
         self.on('mousewheel', function(event) {
-            var offset = grid.offset();
+            var offset = instance.offset();
             var x, y;
             if (tap) {
                 x = tap.x; y = tap.y;
             } else { x = self.width() / 2; y = self.height() / 2; }
-            zoom(offset.left, offset.top, grid.size(), x, y,
+            zoom(offset.left, offset.top, instance.size(), x, y,
                  1 + 0.1 * event.deltaY);
         });
         self.on('mousedown touchstart', function(event) {
@@ -908,12 +909,13 @@
                     zooming = {
                         diameter: Math.sqrt(sqdist(t0, t1)),
                         x: (t0.x + t1.x) / 2, y: (t0.y + t1.y) / 2,
-                        size: grid.size(), offset: grid.offset()};
+                        size: instance.size(),
+                        offset: instance.offset()};
                 }
                 if (press) { clearTimeout(press); press = 0; }
             } else {
                 tap = drag = targets;
-                selected = grid.position(tap);
+                selected = instance.position(tap);
 
                 // Show a menu on either double tap or long press.
                 // There are some advantages to using a native double
@@ -939,9 +941,9 @@
             if (drag) {
                 animation.stop();
                 tap = $.targets(event);
-                var goff = grid.offset();
-                grid.offset(goff.left + tap.x - drag.x,
-                            goff.top + tap.y - drag.y);
+                var goff = instance.offset();
+                instance.offset(goff.left + tap.x - drag.x,
+                                goff.top + tap.y - drag.y);
                 if ((sqdist(drag, tap) > 125) && press)
                     clearTimeout(press);
                 redraw();
@@ -971,8 +973,8 @@
         });
     };
 
-    exports.types = types;
-    exports.canonical = canonical;
-    exports.create = create;
-    exports.magnitude = magnitude;
+    grid.types = types;
+    grid.canonical = canonical;
+    grid.create = create;
+    grid.magnitude = magnitude;
 })(typeof exports === 'undefined'? this['grid'] = {}: exports);
