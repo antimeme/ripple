@@ -17,7 +17,7 @@
 //
 // ---------------------------------------------------------------------
 // Methods of generating pseudo-random terrain data.
-(function(exports) {
+(function(terrain) {
     "use strict";
 
     /**
@@ -104,7 +104,7 @@
         divide.call(this, size / 2);
     };
 
-    exports.create = function(settings) {
+    terrain.create = function(settings) {
         var self = {
             get: get, set: set, print: print,
             roughness: (settings && settings.roughness) ?
