@@ -1,5 +1,5 @@
 // grid.js
-// Copyright (C) 2013-2014 by Jeff Gold.
+// Copyright (C) 2013-2015 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -706,10 +706,15 @@
                     }
                 }
                 if (tap) {
-                    ctx.beginPath();
-                    ctx.arc(tap.x, tap.y, 20, 0, 2 * Math.PI);
-                    ctx.fillStyle = colorTapOuter;
-                    ctx.fill();
+                    for (index = 0; index < tap.touches.length;
+                         ++index) {
+                        ctx.beginPath();
+                        ctx.arc(tap.touches[index].x,
+                                tap.touches[index].y,
+                                20, 0, 2 * Math.PI);
+                        ctx.fillStyle = colorTapOuter;
+                        ctx.fill();
+                    }
                     ctx.beginPath();
                     ctx.arc(tap.x, tap.y, 10, 0, 2 * Math.PI);
                     ctx.fillStyle = colorTapInner;
