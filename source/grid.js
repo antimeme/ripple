@@ -575,6 +575,11 @@
         return result;
     };
 
+    grid.types = types;
+    grid.canonical = canonical;
+    grid.create = create;
+    grid.magnitude = magnitude;
+
     grid.test = function($, parent, viewport) {
         var self = $('<canvas></canvas>').appendTo(parent);
         var colorTapInner = 'rgba(45, 45, 128, 0.8)';
@@ -740,7 +745,8 @@
         };
         viewport.resize(resize);
         resize();
-        instance = create({width: self.width(), height: self.height()});
+        instance = grid.create({width: self.width(),
+                                height: self.height()});
         lineWidth = instance.size() / lineFactor;
 
         var animation = new (function() {
@@ -802,7 +808,7 @@
         // Populate menu with available grid types
         var menu = $('<ul class="menu"></ul>').hide();
         menu.appendTo(self.parent());
-        canonical.forEach(function (entry) {
+        grid.canonical.forEach(function (entry) {
             var name = entry[0];
             var options = JSON.stringify(entry[1]);
             menu.append('<li data-grid-type="' + name +
@@ -830,7 +836,7 @@
                    options = {type: gtype};
                 options.width  = self.width();
                 options.height = self.height();
-                instance = create(options);
+                instance = grid.create(options);
                 lineWidth = instance.size() / lineFactor;
                 redraw();
             }
@@ -972,9 +978,4 @@
             return false;
         });
     };
-
-    grid.types = types;
-    grid.canonical = canonical;
-    grid.create = create;
-    grid.magnitude = magnitude;
 })(typeof exports === 'undefined'? this['grid'] = {}: exports);
