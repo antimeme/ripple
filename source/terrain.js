@@ -105,6 +105,8 @@
     };
 
     exports.create = function(settings) {
+        var detail = (settings && settings.detail) ?
+            settings.detail : 3;
         var self = {
             get: get, set: set, print: print,
             roughness: (settings && settings.roughness) ?
@@ -112,10 +114,8 @@
             r: (settings && settings.random) ?
                 settings.random : Math
         };
-        var detail = (settings && settings.detail) ?
-            settings.detail : 3;
-        self.size = Math.pow(2, detail) + 1;
-        self.max = self.size - 1;
+        self.max = Math.pow(2, detail);
+        self.size = self.max + 1;
         self.map = new Float32Array(self.size * self.size);
 
         self.set(0, 0,               self.r.random() * 255);
