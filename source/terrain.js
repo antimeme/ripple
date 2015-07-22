@@ -17,7 +17,7 @@
 //
 // ---------------------------------------------------------------------
 // Methods of generating pseudo-random terrain data.
-(function(exports) {
+(function(terrain) {
     "use strict";
 
     /**
@@ -104,7 +104,7 @@
         divide.call(this, size / 2);
     };
 
-    exports.create = function(settings) {
+    terrain.create = function(settings) {
         var detail = (settings && settings.detail) ?
             settings.detail : 3;
         var self = {
@@ -127,18 +127,46 @@
         return self;
     };
 
+
+    // Create a pseudo-random landscape
+    //
+    // @param seed mathematical origin of landscape
+    // @param zoom logarithmic level of detail
+    terrain.landscape = function(config) {
+        var random = (config && config.random) ? config.random : Math;
+        var seed = (config && config.seed) ? config.seed : 0;
+        var zoom = (config && config.zoom) ? config.zoom : 5;
+        var chunks = {};
+
+        return {
+            get: function(x, y) {
+                var chnum = ripple.pair(Math.floor(x / zoom),
+                                        Math.floor(y / zoom));
+                if (!(chnum in chunks)) {
+                    chunks[chnum] = terrain.create({detail: zoom});
+                }
+                return chunks[chnum].get(x, y);
+            }
+        };
+    };
+
 })(typeof exports === 'undefined'? this['terrain'] = {}: exports);
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
+    var terrain = exports;
+    var ripple = require('./ripple.js');
     var random = require('./random.js');
     var opt = require('node-getopt').create([
         ['s', 'seed=NUMBER', 'starting value for pseudo-random numbers']
     ]).bindHelp().parseSystem();
     //console.info(opt);
 
-    var terrain = exports.create({
+    var created = exports.create({
         detail: 3, roughness: 0.75,
         random: opt.options.seed &&
             random.random(parseInt(opt.options.seed, 10)) });
-    terrain.print();
+    created.print();
+
+    var landscape = terrain.landscape({zoom: 5});
+    console.log(landscape.get(2, 2));
 }

@@ -71,8 +71,7 @@
                     for (var i in gneigh) {
                         var seed = ripple.pair(gneigh[i].row,
                                                gneigh[i].col);
-                        if ((seed % 5) != 2)
-                            self.push(gneigh[i]);
+                        self.push(gneigh[i]);
                     }
                     return self;
                 },
@@ -138,8 +137,7 @@
         var seed = Math.max(0, parseInt(window.params['seed'], 10) ||
                             random.random().int32());
         console.log('seed =', seed);
-        var patch = terrain.create({detail: 4, roughness: 10,
-                                    random: random.random(seed)});
+        var landscape = terrain.landscape({zoom: 4, seed: seed});
 
         var draw_id = 0;
         var draw = function(now) {
@@ -159,39 +157,20 @@
                 mapgrid.map(width, height, function(node) {
                     var seed, points, fstyle = 'black';
                     
-                    if ((node.row >= 0 && node.row < patch.max) &&
-                        (node.col >= 0 && node.col < patch.max)) {
-                        var value = Math.min(
-                            patch.get(node.row, node.col) / 255, 1);
-                        if (value > 0.9) {
-                            fstyle = 'rgb(89,68,51)';
-                        } else if (value > 0.25) {
-                            fstyle = 'rgb(' +
-                                0 +
-                                ',' + Math.floor((1 - value + .2) * 256) + ',' +
-                                0 + ')';
-                        } else if (value > 0.20) {
-                            fstyle = 'rgb(192,192,64)'
-                        } else {
-                            fstyle = 'blue';
-                        }
+                    var value = Math.min(
+                        landscape.get(node.row, node.col) / 255, 1);
+                    if (value > 0.9) {
+                        fstyle = 'rgb(89,68,51)';
+                    } else if (value > 0.25) {
+                        fstyle = 'rgb(' +
+                            0 +
+                            ',' + Math.floor((1 - value + .2) * 256) + ',' +
+                            0 + ')';
+                    } else if (value > 0.20) {
+                        fstyle = 'rgb(192,192,64)'
                     } else {
-                        seed = ripple.pair(node.row, node.col);
-                        switch (seed % 5) {
-                        case 0:
-                        case 1:
-                            fstyle = 'green';
-                            break;
-                        case 2:
-                            fstyle = 'rgb(64,64,64)';
-                            break;
-                        case 3:
-                            fstyle = 'rgb(128,128,128)';
-                            break;
-                        default:
-                            fstyle = 'blue';
-                        };
-                    } 
+                        fstyle = 'blue';
+                    }
 
                     ctx.beginPath();
                     points = mapgrid.points(node);
