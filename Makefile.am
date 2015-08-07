@@ -79,7 +79,10 @@ JAVA     = ${JAVA_HOME:+$JAVA_HOME/bin/}java
 JAR      = ${JAVA_HOME:+$JAVA_HOME/bin/}jar
 javadir = $(datadir)/@PACKAGE@
 dist_@PACKAGE@java_JAVA = $(srcdir)/source/*.java
-dist_@PACKAGE@java_DATA = @PACKAGE@-@VERSION@.jar
+dist_@PACKAGE@java_DATA = @PACKAGE@.jar
+
+@PACKAGE@.jar: @PACKAGE@-@VERSION@.jar
+	$(LN_S) $^ $@
 
 @PACKAGE@-@VERSION@.jar: $(srcdir)/META-INF/MANIFEST.MF \
 			 class@PACKAGE@java.stamp \

@@ -26,6 +26,7 @@ AM_INIT_AUTOMAKE
 AC_PROG_CC
 AC_PROG_LIBTOOL
 AC_PROG_MKDIR_P
+AC_PROG_LN_S
 
 # Conditionally build Python
 AC_ARG_ENABLE(python,

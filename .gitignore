@@ -46,6 +46,7 @@ javadoc/
 jartest.sh
 source/Ripple.java
 ripple-*.jar
+ripple.jar
 
 # JavaScript
 source/node_modules/

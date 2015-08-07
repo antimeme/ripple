@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<title>Jarbles</title>
+<meta name="keywords" content="abalone java applet" />
+<link rel="shortcut icon" type="image/png" href="/style/icon.png" />
+<link rel="stylesheet" type="text/css" href="/style/default.css" />
+<style>
+  h1 { text-align: center; }
+  .applet {
+  margin: 0 auto 0 auto; width: 50%; height: 18em;
+  background-color: lightgray; foreground-color: black;
+  border: 5px solid;
+  }
+  .applet > object[classid] { height: 100%; width: 100%; }
+</style>
+<h1>Jarbles</h1>
+<div class="applet">
+  <object classid="java:net.esclat.jarbles.Jarbles"
+          archive="../ripple-0.1.1.jar" type="application/x-java-applet">
+    <object classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93">
+      <param name="code" value="net.esclat.jarbles.Jarbles"/>
+      <param name="archive" value="../ripple.jar"/>
+      <p>
+        (You're seeing this text instead of an interactive Java
+        applet.  Perhaps you don't have Java installed or the browser
+        plugin enabled.  You can execute this program directly by
+        downloading <a href="../ripple.jar">ripple.jar</a> and
+        typing <code>java -jar ripple.jar jarbles</code> at a command
+        prompt.)
+      </p>
+    </object>
+  </object>
+</div>
+
+<p>
+  Jarbles is an implementation of Abalone
+  in <a href="http://java.com/">Java</a>.
+</p>
+
+<p>
+  This applet divides available space into three sections.  The
+  largest is the game board itself on the left.  Clicking the
+  start, end and target positions makes a move.  The top right
+  section is a move pane.  A piece of the color which must make
+  the next move is in the center.  When something is selected on
+  the board additional pieces will appear to indicate which
+  directions are currently legal moves.  Clicking one of these
+  will make that move and might be more intuitive for some
+  players.  When one color wins the game, either by forcing six
+  pieces off the board or running the opponent out of time, the
+  center of the move pane will be empty and all other cells will
+  show the winning color.  Finally, on the bottom right is the
+  score pane which shows all captured pieces as well as the
+  current timers.
+</p>
+
+<p>
+  This program determines the sizes of everything from pieces to
+  text dynamically so the applet can scale smoothly.  The board is
+  made as large as possible within the given dimensions so the
+  applet is usable under almost any circumstances.  (Of course,
+  when made small enough it becomes difficult to visually
+  distinguish different cells and eventually individual pixes will
+  cover more than one cell.)
+</p>
+
+<p>
+  There are some additional features that are not yet accessible
+  through this applet.  For instance there is theme support, a
+  simple computer controlled opponent and a standalone application
+  which can be executed from the command line.
+</p>
+
+<hr/>
+<p>
+  Copyright &copy; 2007-2015 by
+  <a href="mailto:jgold&#064;esclat&#046;net">Jeff Gold</a>.
+  All rights reserved.
+</p>
