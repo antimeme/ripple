@@ -1,5 +1,5 @@
 // Ripple.java.in                                    -*- mode: java; -*-
-// Copyright (C) 2007-2013 by Jeff Gold
+// Copyright (C) 2007-2015 by Jeff Gold
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -53,10 +53,10 @@ public class Ripple {
             if (line.length() == 0)
                 continue;
             try {
-                Class<?> c = Class.forName
-                    (clazz.getPackage().getName() + "." + line);
+                Class<?> c = Class.forName(line);
                 Method m = c.getMethod("main", String[].class);
                 commands.add(line);
+            } catch (ClassNotFoundException ex) { /* skip */
             } catch (NoSuchMethodException ex) { /* skip */}
         }
         return commands;
@@ -64,8 +64,6 @@ public class Ripple {
 
     /** Release version of the Ripple package as a printable string. */
     public static final String VERSION = "@VERSION@";
-    public static final String APPS =
-        Ripple.class.getPackage().getName();
 
     /**
      * Release version of the Ripple package as a decimal number.
@@ -355,8 +353,15 @@ public class Ripple {
         o.println("Commands:");
         int maxlen = 0;
         for (String command : commands)
-            if (command.length() > maxlen)
-                maxlen = command.length();
+            try {
+                Class<?> c = Class.forName(command);
+                Method m = c.getMethod("usageLine");
+                String cname = (command.lastIndexOf('.') < 0) ?
+                    command : command.substring
+                    (command.lastIndexOf('.') + 1).toLowerCase();
+                if (cname.length() > maxlen)
+                    maxlen = cname.length();
+            } catch (NoSuchMethodException ex) { /* undocumented */ }
         for (String[] internal : internals)
             if (internal[0].length() > maxlen)
                 maxlen = internal[0].length();
@@ -365,10 +370,13 @@ public class Ripple {
             helpCommand(o, internal[0], internal[1], maxlen);
         for (String command : commands)
             try {
-                Class<?> c = Class.forName(APPS + "." + command);
+                Class<?> c = Class.forName(command);
                 Method m = c.getMethod("usageLine");
-                helpCommand(o, command,
-                            m.invoke(null).toString(), maxlen);
+                String cname = (command.lastIndexOf('.') < 0) ?
+                    command : command.substring
+                    (command.lastIndexOf('.') + 1).toLowerCase();
+                helpCommand(o, cname, m.invoke(null).toString(),
+                            maxlen);
             } catch (InvocationTargetException ex) {
                 ex.getCause().printStackTrace(o);
             } catch (NoSuchMethodException ex) { /* undocumented */ }
@@ -444,15 +452,16 @@ public class Ripple {
         return result;
     }
     
-    /** Attempts to invoke a method on a class described by a string. */
+    /** Attempts to get a method on a class described by a string. */
     private static Method getMethod
-        (String cname, String mname, Class<?> argtype)
+        (String className, String methodName, Class<?> argumentType)
         throws Exception
     {
         Method result = null;
-        Class<?> c = Class.forName(APPS + "." + cname);
-        Method m = (argtype != null) ?
-            c.getMethod(mname, argtype) : c.getMethod(mname);
+        Class<?> c = Class.forName(className);
+        Method m = (argumentType != null) ?
+            c.getMethod(methodName, argumentType) :
+            c.getMethod(methodName);
         return result;
     }
 
@@ -461,7 +470,7 @@ public class Ripple {
     {
         int result = 0;
         System.out.println("Ripple " + VERSION + " - Copyright (C) " +
-                           "2007-2014 by Jeff Gold.");
+                           "2007-2015 by Jeff Gold.");
         if (args.length == 0)
             result = help(System.out);
         else if ("questions".equals(args[0])) {
@@ -523,8 +532,7 @@ public class Ripple {
                 for (String command: args) {
                     ++tests;
                     try {
-                        Class<?> c = Class.forName
-                            (APPS + "." + command);
+                        Class<?> c = Class.forName(command);
                         Method m = c.getMethod("test");
                         System.out.println(">>> BEGIN: " + command);
                         boolean success = false;
@@ -549,8 +557,7 @@ public class Ripple {
                 for (String command: getCommands()) {
                     ++tests;
                     try {
-                        Class<?> c = Class.forName
-                            (APPS + "." + command);
+                        Class<?> c = Class.forName(command);
                         Method m = c.getMethod("test");
                         System.out.println(">>> BEGIN: " + command);
                         boolean success = false;
@@ -579,24 +586,29 @@ public class Ripple {
             }
         } else {
             // Correct string case if possible
-            String command = args[0].toLowerCase();
-            for (String candidate : getCommands())
-                if (candidate.toLowerCase().equals(command)) {
-                    command = candidate; break;
+            String request = args[0].toLowerCase();
+            for (String command : getCommands()) {
+                String cname = (command.lastIndexOf('.') < 0) ?
+                    command : command.substring
+                    (command.lastIndexOf('.') + 1).toLowerCase();
+                if (cname.equals(request)) {
+                    request = command;
+                    break;
                 }
+            }
 
             // Delegate to a specified command
             String[] subargs = new String[args.length - 1];
             for (int i = 1; i < args.length; i++)
                 subargs[i - 1] = args[i]; 
             try {
-                Class<?> c = Class.forName(APPS + "." + command);
+                Class<?> c = Class.forName(request);
                 Method m = c.getMethod("main", subargs.getClass());
                 m.invoke(null, new Object[] { subargs });
             } catch (ClassNotFoundException ex) {
-                System.err.println("No such command: " + command);
+                System.err.println("No such command: " + request);
             } catch (NoSuchMethodException ex) {
-                System.err.println("Missing command: " + command);
+                System.err.println("Missing command: " + request);
             } catch (InvocationTargetException ex) {
                 throw ex.getCause();
             }

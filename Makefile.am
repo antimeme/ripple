@@ -1,5 +1,5 @@
 ## Makefile.am
-## Copyright (C) 2006-2014 by Jeff Gold.
+## Copyright (C) 2006-2015 by Jeff Gold.
 ##
 ## This program is free software: you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -85,18 +85,20 @@ dist_@PACKAGE@java_DATA = @PACKAGE@-@VERSION@.jar
 			 class@PACKAGE@java.stamp \
 			 $(JAVAROOT)/.commands javadoc
 	$(JAR) cvfm $@ $(srcdir)/META-INF/MANIFEST.MF \
+	    -C $(srcdir)/resources sounds \
 	    -C $(top_builddir) javadoc -C $(JAVAROOT) .
 	chmod +x $@
 
 $(JAVAROOT)/.commands: class@PACKAGE@java.stamp
 	find $(JAVAROOT) -name \*.class | \
-	    sed -n 's,.*/\([A-Za-z][A-Za-z0-9_]*\).class,\1,p' > $@
+	    sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
+	    sort -u > $@
 
 class@PACKAGE@java.stamp: $(dist_@PACKAGE@java_JAVA)
 	$(MKDIR_P) $(JAVAROOT)
 	$(CLASSPATH_ENV) $(JAVAC) -d $(JAVAROOT) \
 	    $(AM_JAVACFLAGS) $(JAVACFLAGS) $?
-	echo timestamp > $@
+	date > $@
 
 javadoc: $(dist_@PACKAGE@java_JAVA)
 	$(JAVADOC) -docencoding utf-8 -public -d javadoc $^
