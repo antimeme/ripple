@@ -1,5 +1,5 @@
 // Standalone.java
-// Copyright (C) 2007-2014 by Jeff Gold.
+// Copyright (C) 2007-2015 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -270,7 +270,7 @@ public class Standalone
     public synchronized Standalone join()
         throws InterruptedException
     {
-        if (active != null)
+        while (active != null)
             wait();
         return this;
     }
@@ -288,7 +288,7 @@ public class Standalone
                 active.stop();
             active.destroy();
             active = null;
-            notifyAll();
         }
+        notifyAll();
     }
 }

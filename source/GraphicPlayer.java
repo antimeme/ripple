@@ -1,5 +1,5 @@
 // GraphicPlayer.java
-// Copyright (C) 2006-2013 by Jeff Gold.
+// Copyright (C) 2006-2015 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -36,12 +36,6 @@ import java.awt.event.ComponentListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
-
-// Dependencies needed only for module unit test.
-import java.awt.Frame;
-import java.awt.GridLayout;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowAdapter;
 
 /** A lightweight component that provides a complete user interface
  *  for playing Abalone.  Double buffering, animation and custom
@@ -712,9 +706,10 @@ public class GraphicPlayer extends Component
     /** Continuously updates time counters and animation. */
     public void run() {
         final long interval = 50; // millisecond loop delay
-        while (Thread.interrupted() == false) {
+        while (!Thread.interrupted()) {
             try { Thread.sleep(interval); }
-            catch (InterruptedException e) { break; }
+            catch (InterruptedException e)
+                { Thread.currentThread().interrupt(); }
             elapse();
         }
     }
@@ -858,15 +853,17 @@ public class GraphicPlayer extends Component
             applyMove(m);
     }
 
-    public synchronized Board.Move makeMove(Board.Move m,
-                                            long tB, long tW) {
+    public synchronized Board.Move
+        makeMove(Board.Move m, long tB, long tW)
+    {
         timeBlack = tB;
         timeWhite = tW;
         if ((m != null) && ((lastMove == null) || 
                             (!lastMove.equals(m))))
             applyMove(m);
         enabled = true;
-        try { wait(); } catch (InterruptedException e)
+        try { wait(); }
+        catch (InterruptedException e)
             { Thread.currentThread().interrupt(); }
         return lastMove;
     }

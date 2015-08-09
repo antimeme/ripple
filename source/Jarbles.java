@@ -49,10 +49,11 @@ public class Jarbles extends Applet implements Runnable {
                 gpw.setContext(getAppletContext());
                 add(gpw);
             }
-        } catch (NumberFormatException ex) {}
+        } catch (NumberFormatException ex) { /* ignored */ }
+
         try {
             time = 1000 * Long.parseLong(getParameter("time"));
-        } catch (NumberFormatException ex) {}
+        } catch (NumberFormatException ex) { /* ignored */ }
     }
 
     public void start() {

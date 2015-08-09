@@ -82,6 +82,7 @@ dist_@PACKAGE@java_JAVA = $(srcdir)/source/*.java
 dist_@PACKAGE@java_DATA = @PACKAGE@.jar
 
 @PACKAGE@.jar: @PACKAGE@-@VERSION@.jar
+	rm -f $@
 	$(LN_S) $^ $@
 
 @PACKAGE@-@VERSION@.jar: $(srcdir)/META-INF/MANIFEST.MF \
@@ -113,7 +114,7 @@ install-dist_@PACKAGE@javaJAVA: javadoc
 
 clean-@PACKAGE@javaJAVA:
 	-rm -rf class@PACKAGE@java.stamp javadoc jartest.sh \
-	    $(JAVAROOT) @PACKAGE@-@VERSION@.jar
+	    $(JAVAROOT) @PACKAGE@-@VERSION@.jar @PACKAGE@.jar
 
 jartest.sh:
 	echo '#!/bin/sh' > $@
