@@ -25,6 +25,7 @@ import java.applet.AppletContext;
 import java.applet.AudioClip;
 import java.awt.Frame;
 import java.awt.Image;
+import java.awt.MenuBar;
 import java.awt.Toolkit;
 import java.awt.event.WindowListener;
 import java.awt.event.WindowEvent;
@@ -57,15 +58,22 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  *      public class ExampleApplet extends Applet {
  *          // ...
  *          public static void main(String[] args)
- *          { Standalone.app(new ExampleApplet(), args).joinQuit(0); }
+ *          { Standalone.app(new ExampleApplet(), args); }
  *      }
  *  </pre>
+ *
+ * <p>
+ *   An application which needs to perform some steps after the frame
+ *   has been clsoed can use the {@link #join} on the return value to
+ *   block until the user closes the application.
+ * </p>
  */
 public class Standalone
     implements AudioClip, AppletStub, AppletContext, WindowListener
 {
     static final long serialVersionUID = 0;
-    protected Applet active = null;
+    protected Frame appFrame = null;
+    protected Applet applet = null;
     protected Map<String,String> argmap = null;
     protected Clip clip;
 
@@ -73,7 +81,7 @@ public class Standalone
     protected Standalone(Clip clip) { this.clip = clip; }
 
     /** AppletStub contructor */
-    protected Standalone(Applet a, String[] args)
+    protected Standalone(Frame f, Applet a, String[] args)
     {
         if (args != null) {
             argmap = new HashMap<String,String>();
@@ -87,8 +95,9 @@ public class Standalone
             }
         }
 
-        active = a;
-        active.setStub(this);
+        appFrame = f;
+        applet = a;
+        applet.setStub(this);
     }
 
     // AudioClib methods
@@ -112,7 +121,7 @@ public class Standalone
         } catch(MalformedURLException e) { return null; }
     }
     public URL           getCodeBase() { return getDocumentBase(); }
-    public boolean       isActive() { return active != null; }
+    public boolean       isActive() { return applet != null; }
     public AppletContext getAppletContext() { return this; }
     public void          appletResize(int width, int height) {}
 
@@ -151,8 +160,8 @@ public class Standalone
         // it may make sense to permit this class to manage more than
         // one applet at a time.
         Vector<Applet> v = new Vector<Applet>();
-        if (active != null)
-            v.add(active);
+        if (applet != null)
+            v.add(applet);
         return Collections.enumeration(v);
     }
     public void showDocument(URL url)
@@ -175,18 +184,17 @@ public class Standalone
 
     /**
      * Creates a standalone application.  This application will run
-     * until something terminates it, but no non-daemon threads are
-     * created.  This means that unless the calling application
-     * continues or calls join on the return value the JVM may
-     * terminate immediately, taking the application with it.
+     * until something calls {@link #terminate} or a user clicks the
+     * close icon in the window decoration.
      *
      * @param a Applet to present
      * @param title displayed as frame title
      * @param icon application image
+     * @param mb MenuBar to use for application
      * @param args command line arguments
      * @return an AppletContext which can be used terminate or join */
-    public static Standalone app
-        (Applet a, String title, Image icon, String[] args)
+    public static Standalone app(Applet a, String title, Image icon,
+                                 MenuBar mb, String[] args)
     {
         Frame f = new Frame();
         if (icon != null)
@@ -196,8 +204,9 @@ public class Standalone
             title = title.substring(title.lastIndexOf(".") + 1);
         }
         f.setTitle(title);
+        f.setMenuBar(mb);
 
-        Standalone result = new Standalone(a, args);
+        Standalone result = new Standalone(f, a, args);
         f.add(a);
         f.pack();
         f.setLocationRelativeTo(null);
@@ -210,18 +219,18 @@ public class Standalone
 
     /**
      * Creates a standalone application.  This application will run
-     * until something terminates it, but no non-daemon threads are
-     * created.  This means that unless the calling application
-     * continues or calls join on the return value the JVM may
-     * terminate immediately, taking the application with it.
+     * until something calls {@link #terminate} or a user clicks the
+     * close icon in the window decoration.
      *
      * @param a Applet to present
      * @param title displayed as frame title
      * @param iconName path to image to load for icon
+     * @param mb MenuBar to use for application
      * @param args command line arguments
      * @return an AppletContext which can be used terminate or join */
     public static Standalone app
-        (Applet a, String title, String iconName, String[] args)
+        (Applet a, String title, String iconName,
+         MenuBar mb, String[] args)
     {
         Image icon = null;
         if (iconName != null) {
@@ -230,29 +239,48 @@ public class Standalone
             if (resource != null)
                 icon = Toolkit.getDefaultToolkit().getImage(resource);
         }
-        return app(a, title, icon, args);
+        return app(a, title, icon, mb, args);
     }
 
     /**
      * Creates a standalone application.  This application will run
-     * until something terminates it, but no non-daemon threads are
-     * created.  This means that unless the calling application
-     * continues or calls join on the return value the JVM may
-     * terminate immediately, taking the application with it.
+     * until something calls {@link #terminate} or a user clicks the
+     * close icon in the window decoration.
+     *
+     * @param a Applet to present
+     * @param title displayed as frame title
+     * @param iconName path to image to load for icon
+     * @param args command line arguments
+     * @return an AppletContext which can be used terminate or join */
+    public static Standalone app(Applet a, String title,
+                                 String iconName, String[] args)
+    {
+        Image icon = null;
+        if (iconName != null) {
+            URL resource = a.getClass().getClassLoader()
+                .getResource(iconName);
+            if (resource != null)
+                icon = Toolkit.getDefaultToolkit().getImage(resource);
+        }
+        return app(a, title, icon, null, args);
+    }
+
+    /**
+     * Creates a standalone application.  This application will run
+     * until something calls {@link #terminate} or a user clicks the
+     * close icon in the window decoration.
      *
      * @param a Applet to present
      * @param title displayed as frame title
      * @param args command line arguments
      * @return an AppletContext which can be used terminate or join */
     public static Standalone app(Applet a, String title, String[] args)
-    { return app(a, title, (Image)null, args); }
+    { return app(a, title, (Image)null, null, args); }
 
     /**
      * Creates a standalone application.  This application will run
-     * until something terminates it, but no non-daemon threads are
-     * created.  This means that unless the calling application
-     * continues or calls join on the return value the JVM may
-     * terminate immediately, taking the application with it.
+     * until something calls {@link #terminate} or a user clicks the
+     * close icon in the window decoration.
      *
      * Note that the title in the application frame will be the
      * class name of the applet.
@@ -264,30 +292,42 @@ public class Standalone
     { return app(a, null, args); }
 
     /**
+     * Creates a standalone application.  This application will run
+     * until something calls {@link #terminate} or a user clicks the
+     * close icon in the window decoration.
+     *
+     * Note that the title in the application frame will be the
+     * class name of the applet.
+     *
+     * @param a Applet to present
+     * @return an AppletContext which can be used terminate or join */
+    public static Standalone app(Applet a)
+    { return app(a, null, null); }
+
+    /**
      * Blocks until the application is terminated.  Usually termination
      * is the result of a user clicking the close button on the frame
      * window decoration. */
     public synchronized Standalone join()
         throws InterruptedException
     {
-        while (active != null)
+        while (applet != null)
             wait();
         return this;
     }
 
-    /**
-     * Blocks until the application is terminated and then terminates
-     * the entire JVM. */
-    public synchronized void joinQuit(int status)
-        throws InterruptedException { join(); System.exit(status); }
-
     /** Signals the application to shut down. */
     public synchronized void terminate() {
-        if (active != null) {
-            if (active.isActive())
+        if (applet != null) {
+            if (applet.isActive())
                 active.stop();
-            active.destroy();
-            active = null;
+            applet.destroy();
+            applet = null;
+        }
+        if (appFrame != null) {
+            appFrame.setVisible(false);
+            appFrame.dispose();
+            appFrame = null;
         }
         notifyAll();
     }

@@ -176,7 +176,6 @@ public class Jarbles extends Applet
         menuTheme.add(jbls.createMenuItem("Aqua"));
         mb.add(menuTheme);
 
-        Standalone.app(jbls, null, "images/jarbles.png", mb, args).
-            joinQuit(0);
+        Standalone.app(jbls, null, "images/jarbles.png", mb, args);
     }
 }
