@@ -25,13 +25,21 @@ import net.esclat.ripple.Standalone;
 import net.esclat.jarbles.abalone.Player;
 import net.esclat.jarbles.abalone.Board;
 import net.esclat.jarbles.abalone.GraphicPlayer;
+import net.esclat.jarbles.abalone.Aqua;
 import java.applet.Applet;
 import java.applet.AudioClip;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Dimension;
+import java.awt.MenuBar;
+import java.awt.Menu;
+import java.awt.MenuItem;
+import java.awt.Container;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
-public class Jarbles extends Applet implements Runnable {
+public class Jarbles extends Applet
+    implements Runnable, ActionListener {
     static final long serialVersionUID = 0;
     Thread gameThread = null;
     GraphicPlayer gpb = new GraphicPlayer();
@@ -71,6 +79,14 @@ public class Jarbles extends Applet implements Runnable {
             gameThread.interrupt();
             gameThread = null;
         }
+    }
+
+    public void actionPerformed(ActionEvent action) {
+        String themeName =
+            ((MenuItem)action.getSource()).getActionCommand();
+        if (themeName.equals("Aqua"))
+            gpb.setTheme(new Aqua());
+        else gpb.setTheme(new GraphicPlayer.Theme());
     }
 
     /** Conduct an Abalone game and determine the winner. */
@@ -146,8 +162,21 @@ public class Jarbles extends Applet implements Runnable {
              (gpb != gpw) ? gpw.getMinimumSize() : null);
     }
 
+    private MenuItem createMenuItem(String label) {
+        MenuItem result = new MenuItem(label);
+        result.addActionListener(this);
+        return result;
+    }
+
     public static void main(String args[]) throws Exception {
-        Standalone.app(new Jarbles(), null, "images/jarbles.png",
-                       args).joinQuit(0);
+        Jarbles jbls = new Jarbles();
+        MenuBar mb = new MenuBar();
+        Menu menuTheme = new Menu("Theme");
+        menuTheme.add(jbls.createMenuItem("Basic"));
+        menuTheme.add(jbls.createMenuItem("Aqua"));
+        mb.add(menuTheme);
+
+        Standalone.app(jbls, null, "images/jarbles.png", mb, args).
+            joinQuit(0);
     }
 }
