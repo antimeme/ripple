@@ -199,18 +199,18 @@ public class Standalone
         Frame f = new Frame();
         if (icon != null)
             f.setIconImage(icon);
-        if (title == null) {
+        if (title == null) { // Class name is default title
             title = a.getClass().getName();
             title = title.substring(title.lastIndexOf(".") + 1);
         }
         f.setTitle(title);
         f.setMenuBar(mb);
+        f.add(a);
 
         Standalone result = new Standalone(f, a, args);
-        f.add(a);
-        f.pack();
-        f.setLocationRelativeTo(null);
         a.init();
+        f.pack(); // after init so that applet parameters matter
+        f.setLocationRelativeTo(null); // center frame on screen
         f.addWindowListener(result);
         f.setVisible(true);
         a.start();
