@@ -784,6 +784,7 @@ public class GraphicPlayer extends Component
             if (retheme != null) {
                 theme = retheme;
                 retheme = null;
+                buffer = null;
             }
             b = board;
             if (animation != null)
