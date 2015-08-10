@@ -652,6 +652,7 @@ public class GraphicPlayer extends Component
     private Image     buffer;  // backing store for double buffering
     private Theme     theme;   // implements visual details
     private Theme     retheme; // replace theme with this one
+    private AppletContext ctx; // context for getting sounds
 
     /** Creates a graphic player. */
     public GraphicPlayer(Theme t, Board b) {
@@ -680,14 +681,17 @@ public class GraphicPlayer extends Component
 
     /** Configures themes with any necessary sound clips. */
     public GraphicPlayer setContext(AppletContext ctx)
-    { theme.setContext(ctx); return this; }
+    { this.ctx = ctx; theme.setContext(ctx); return this; }
 
     public boolean getAnimated() { return animated; }
     public void    setAnimated(boolean value) { animated = value; }
     public Theme   getTheme() { return theme; }
-    public void    setTheme(Theme t) { 
+    public GraphicPlayer setTheme(Theme t) {
         retheme = t;
+        if (ctx != null)
+            retheme.setContext(ctx);
         repaint();
+        return this;
     }
 
     /** Launches a thread to call the {@link #elapse()}
