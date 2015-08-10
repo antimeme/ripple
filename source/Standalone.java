@@ -320,7 +320,7 @@ public class Standalone
     public synchronized void terminate() {
         if (applet != null) {
             if (applet.isActive())
-                active.stop();
+                applet.stop();
             applet.destroy();
             applet = null;
         }

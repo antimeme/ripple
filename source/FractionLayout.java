@@ -1,5 +1,5 @@
 // FractionLayout.java
-// Copyright (C) 2006-2011 by Jeff Gold.
+// Copyright (C) 2006-2015 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -135,6 +135,6 @@ public final class FractionLayout implements LayoutManager {
         a.setLayout(new FractionLayout());
         a.add(new Button("one"), "0.05 0.05 0.4 0.4");
         a.add(new Button("two"), "0.5 0.5 0.25 0.25");
-        Standalone.app(a, "FractionLayout", args).joinQuit(0);
+        Standalone.app(a, "FractionLayout", args);
     }
 }
