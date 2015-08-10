@@ -841,7 +841,7 @@ public class GraphicPlayer extends Component
     public synchronized void setBoard(Board b, long tB, long tW) {
         board = (b != null) ? b : new Board();
         timeBlack = tB;
-        timeBlack = tW;
+        timeWhite = tW;
         animation = null;
         lastMove  = null;
         selection.clear();
