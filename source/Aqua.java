@@ -4,6 +4,8 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class Aqua extends GraphicPlayer.Theme {
+    public static String getName() { return "Aqua"; }
+
     public Aqua() {
         lineOne = "Aqua Jarbles";
         lineTwo = "by Jeff Gold";

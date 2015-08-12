@@ -87,13 +87,14 @@ dist_@PACKAGE@java_DATA = @PACKAGE@.jar
 
 @PACKAGE@-@VERSION@.jar: $(srcdir)/META-INF/MANIFEST.MF \
 			 class@PACKAGE@java.stamp \
-			 $(JAVAROOT)/.commands javadoc
+			 $(JAVAROOT)/.classes javadoc
 	$(JAR) cvfm $@ $(srcdir)/META-INF/MANIFEST.MF \
 	    -C $(srcdir)/resources sounds \
+	    -C $(srcdir)/resources images \
 	    -C $(top_builddir) javadoc -C $(JAVAROOT) .
 	chmod +x $@
 
-$(JAVAROOT)/.commands: class@PACKAGE@java.stamp
+$(JAVAROOT)/.classes: class@PACKAGE@java.stamp
 	find $(JAVAROOT) -name \*.class | \
 	    sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
 	    sort -u > $@

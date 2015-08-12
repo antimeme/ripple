@@ -26,6 +26,15 @@ import net.esclat.jarbles.abalone.Player;
 import net.esclat.jarbles.abalone.Board;
 import net.esclat.jarbles.abalone.GraphicPlayer;
 import net.esclat.jarbles.abalone.Aqua;
+import java.util.List;
+import java.util.LinkedList;
+import java.net.URL;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 import java.applet.Applet;
 import java.applet.AudioClip;
 import java.awt.Graphics;
@@ -41,11 +50,13 @@ import java.awt.event.ActionEvent;
 public class Jarbles extends Applet
     implements Runnable, ActionListener {
     static final long serialVersionUID = 0;
+    protected final String ptheme = "theme:";
     Thread gameThread = null;
     GraphicPlayer gpb = new GraphicPlayer();
     GraphicPlayer gpw = gpb;
     long time = 0;
 
+    /** Implements java.awt.Applet */
     public void init() {
         setLayout(new GridLayout());
         gpb.setContext(getAppletContext());
@@ -64,6 +75,7 @@ public class Jarbles extends Applet
         } catch (NumberFormatException ex) { /* ignored */ }
     }
 
+    /** Implements java.awt.Applet */
     public void start() {
         if (gameThread == null) {
             gameThread = new Thread(this);
@@ -74,6 +86,7 @@ public class Jarbles extends Applet
         }
     }
 
+    /** Implements java.awt.Applet */
     public void stop() {
         if (gameThread != null) {
             gameThread.interrupt();
@@ -81,15 +94,37 @@ public class Jarbles extends Applet
         }
     }
 
+    /** Implements java.awt.event.ActionListener */
     public void actionPerformed(ActionEvent action) {
-        String themeName =
-            ((MenuItem)action.getSource()).getActionCommand();
-        if (themeName.equals("Aqua"))
-            gpb.setTheme(new Aqua());
-        else gpb.setTheme(new GraphicPlayer.Theme());
+        String command = action.getActionCommand();
+
+        if (command.startsWith(ptheme)) {
+            try {
+                Class<?> cls = Class.forName
+                    (command.substring(ptheme.length()));
+                Constructor cons = cls.getDeclaredConstructor();
+                gpb.setTheme((GraphicPlayer.Theme)cons.newInstance());
+            } catch (ClassNotFoundException ex) {
+                System.out.println("Failed to find class: " + command);
+            } catch (NoSuchMethodException ex) {
+                System.out.println
+                    ("Missing no-argument constructor: " + command);
+            } catch (IllegalAccessException ex) {
+                System.out.println
+                    ("No public no-argument constructor: " + command);
+            } catch (InvocationTargetException ex) {
+                System.out.println
+                    ("InstantionException? " + ex.getMessage());
+            } catch (InstantiationException ex) {
+                System.out.println
+                    ("InstantionException? " + ex.getMessage());
+            }
+        }
     }
 
-    /** Conduct an Abalone game and determine the winner. */
+    /**
+     * Implements java.lang.Runnable by conducting an Abalone game and
+     * determining the winner. */
     public void run() {
         Board board = new Board();
         Board.Move move;
@@ -140,6 +175,7 @@ public class Jarbles extends Applet
         // :TODO: do something with status
     }
 
+    /** Implements java.awt.Component */
     public void update(Graphics g) { paint(g); }
 
     private Dimension mergeDimensions(Dimension a, Dimension b) {
@@ -151,31 +187,86 @@ public class Jarbles extends Applet
         }
         return result;
     }
+
+    /** Implements java.awt.Component */
     public Dimension getPreferredSize() {
         return mergeDimensions
             (gpb.getPreferredSize(),
              (gpb != gpw) ? gpw.getPreferredSize() : null);
     }
+
+    /** Implements java.awt.Component */
     public Dimension getMinimumSize() {
         return mergeDimensions
             (gpb.getMinimumSize(),
              (gpb != gpw) ? gpw.getMinimumSize() : null);
     }
 
-    private MenuItem createMenuItem(String label) {
-        MenuItem result = new MenuItem(label);
-        result.addActionListener(this);
+    private List<Class> getThemes() {
+        List<Class> themes = new LinkedList<Class>();
+        try {
+            URL resource = this.getClass().getClassLoader().
+                getResource(".classes");
+            if (resource != null) {
+                BufferedReader in = new BufferedReader
+                    (new InputStreamReader(resource.openStream()));
+                String line;
+                while ((line = in.readLine()) != null) {
+                    line = line.trim();
+                    if (line.length() == 0)
+                        continue;
+                    try {
+                        Class<?> c = Class.forName(line);
+                        c.asSubclass(GraphicPlayer.Theme.class);
+                        themes.add(c);
+                    } catch (ClassCastException ex) { /* ignored */
+                    } catch (ClassNotFoundException ex) {
+                        ex.printStackTrace(System.err);
+                    }
+                }
+            } else System.err.println(this.getClass().getName() +
+                                      ": .classes not found");
+        } catch (IOException ex) {
+            System.err.println(this.getClass().getName() +
+                               ": .classes I/O");
+            ex.printStackTrace(System.err);
+        }
+        return themes;
+    }
+
+    private MenuItem setupTheme(Class clazz) {
+        MenuItem result = null;
+        String themeName = null;
+        try {
+            Method method = clazz.getMethod("getName");
+            themeName = (String)method.invoke(null);
+            result = new MenuItem(themeName);
+            result.setActionCommand(ptheme + clazz.getName());
+            result.addActionListener(this);
+        } catch (IllegalArgumentException ex) {
+            ex.printStackTrace(System.err);
+        } catch (IllegalAccessException ex) {
+            ex.printStackTrace(System.err);
+        } catch (InvocationTargetException ex) {
+            ex.printStackTrace(System.err);
+        } catch (SecurityException ex) {
+            ex.printStackTrace(System.err);
+        } catch (NoSuchMethodException ex) {
+            ex.printStackTrace(System.err);
+        }
         return result;
     }
 
+    /** Jarbles application entry point */
     public static void main(String args[]) throws Exception {
-        Jarbles jbls = new Jarbles();
+        Jarbles jarbles = new Jarbles();
         MenuBar mb = new MenuBar();
         Menu menuTheme = new Menu("Theme");
-        menuTheme.add(jbls.createMenuItem("Basic"));
-        menuTheme.add(jbls.createMenuItem("Aqua"));
+        menuTheme.add(jarbles.setupTheme(GraphicPlayer.Theme.class));
+        for (Class clazz : jarbles.getThemes())
+            menuTheme.add(jarbles.setupTheme(clazz));
         mb.add(menuTheme);
 
-        Standalone.app(jbls, null, "images/jarbles.png", mb, args);
+        Standalone.app(jarbles, null, "images/jarbles.png", mb, args);
     }
 }

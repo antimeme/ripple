@@ -265,6 +265,8 @@ public class GraphicPlayer extends Component
 
     /** An engine for customizing the appearance of a GraphicPlayer. */
     public static class Theme {
+        public static String getName() { return "Default"; }
+
         protected long duration   =  500; // millisecond animation time
         protected long resolution = 1000; // millisecond clock precision
 

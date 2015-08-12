@@ -46,7 +46,7 @@ public class Ripple {
         BufferedReader in = new BufferedReader
             (new InputStreamReader
              (clazz.getClassLoader().getResource
-              (".commands").openStream()));
+              (".classes").openStream()));
         String line;
         while ((line = in.readLine()) != null) {
             line = line.trim();
