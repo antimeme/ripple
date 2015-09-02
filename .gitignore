@@ -30,6 +30,7 @@ ripple.dpkg
 ripple.spec
 ripple-*.tar.gz
 check-ripple
+check-ripple.exe
 
 # Python
 py-compile
