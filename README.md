@@ -21,8 +21,8 @@ experienced software developers.
 
 GNU autotools are used to assemble a C shared library as well as a
 Java JAR file suitable for use either as a library or direct execution
-using the `-jar` option.  Source source files for both C and Java are
-kept in the `source` directory.  C header files are kept in the
+using the `-jar` option.  Source files for both C and Java are kept in
+the `source` directory.  C header files are kept in the
 `include/ripple` directory.  The `apps` directory contains web
 applications and associated resources.
 
@@ -31,11 +31,19 @@ applications and associated resources.
 If you've checked ripple out of a source repository (such as git)
 execute `./bootstrap` to begin.  If you've downloaded this package as
 a tar file run `./configure` instead.  Either way, the next step is to
-run `make` to build compiled components.  To make the library
-available system wide use `sudo make install`.
+run `make` to build compiled components.  It's a good idea to run
+`make check` to confirm that everything works correctly on your
+platform.  Use `sudo make install` to make the library available to
+everyone on the system.
+
+This project is sometimes tested using Cygin with MinGW.  The following
+commands may create working Microsoft Windows executables:
+
+    ./configure --host=x86_64-w64-mingw32
+    make check
 
 Ripple can be assembled into an RPM package for distributions which
-support that.  A `ripple.spec` file is included in the tar file so
+support them.  A `ripple.spec` file is included in the tar file so
 commands like `rpmbuild -ta ripple-$VERSION.tar.gz` should work.  The
 spec file uses a reasonable build root so it should be possible to
 construct an RPM without root privileges.  (Building an RPM is a good

@@ -24,6 +24,8 @@
 #ifdef _WIN32
 # define snprintf _snprintf
 # define getpid   _getpid
+# define gmtime_r(timep, result) gmtime(timep)
+# define localtime_r(timep, result) localtime(timep)
 typedef int pid_t;
 #else
 # include <unistd.h>
@@ -232,8 +234,8 @@ ripple__putlog(unsigned settings, unsigned level,
     char timestr[64];
     struct tm tmval;
     if (settings & RIPPLE_CTXFLAG_UTC)
-      gmtime_r(&now, &tmval);
-    else localtime_r(&now, &tmval);
+      tmval = *gmtime_r(&now, &tmval);
+    else tmval = *localtime_r(&now, &tmval);
     if (strftime(timestr, sizeof timestr, timefmt, &tmval))
       result = ripple__addlog(buffer, size, result, "%s ", timestr);
   }

@@ -21,6 +21,7 @@
 #ifdef _WIN32
 # define snprintf _snprintf
 # define getpid   _getpid
+# define localtime_r(timep, result) localtime(timep)
 typedef int pid_t;
 #else
 # include <unistd.h>
@@ -101,7 +102,7 @@ check_context(void)
     char timestr[64];
     time_t now = time(NULL);
     pid_t pid = getpid();
-    localtime_r(&now, &tmval);
+    tmval = *localtime_r(&now, &tmval);
     strftime(timestr, sizeof timestr, timefmt, &tmval);
     snprintf(expected, sizeof(expected), expected_template,
              timestr, pid, __FILE__, __LINE__ - 41,
