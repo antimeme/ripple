@@ -128,7 +128,7 @@ public class Standalone
     /**
      * Responds with a value determined from command line arguments.
      * Each command line argument should be of this form:
-     * <q>name=value</q> A call to this method with a name that
+     * <code>name=value</code> A call to this method with a name that
      * matches such an argument will get that value.  Otherwise this
      * method will return null, just as if no applet parameter with
      * that name had been specified. Note that a command line

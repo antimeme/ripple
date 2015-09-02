@@ -58,14 +58,14 @@ public final class Board implements Cloneable {
         }
         
         /** Creates a move from a valid string encoding.  An encoding
-         *  is valid if it has the form: <q>(RStart, CStart)-(REnd,
-         *  CEnd):(RTarget, CTarget)</q> where the values are replaced
-         *  by integers between one and nine.  The Start coordinate is
-         *  the first point on the line, the End coordinate is the
-         *  last, and the Target coordinate is the destination for the
-         *  piece at the End coordinate.  For example,
-         *  <q>(1,1)-(3,3):(4,4)</q> is a legal move for black on a
-         *  newly initialized board. */
+         *  is valid if it has the form: <code>(RStart, CStart)-(REnd,
+         *  CEnd):(RTarget, CTarget)</code> where the values are
+         *  replaced by integers between one and nine.  The Start
+         *  coordinate is the first point on the line, the End
+         *  coordinate is the last, and the Target coordinate is the
+         *  destination for the piece at the End coordinate.  For
+         *  example, <code>(1,1)-(3,3):(4,4)</code> is a legal move
+         *  for black on a newly initialized board. */
         public Move(String source) {
             byte rowT, colT;
             StringTokenizer tokens = 

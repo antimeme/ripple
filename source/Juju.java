@@ -44,7 +44,8 @@ import java.util.LinkedHashMap;
  *
  * <pre>
        Object o = Juju.parseJSON("{\"a\": false, \"b\": 7.7 }");
-       System.out.println("b = " + ((Map<String, Object>)o).get("b"));
+       System.out.println("b = " + ((Map&lt;String, Object&gt;)o).
+                                   get("b"));
  * </pre> */
 public class Juju {
 
