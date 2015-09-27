@@ -17,10 +17,10 @@
 //
 // ---------------------------------------------------------------------
 
-(function(exports) {
+(function(ripple) {
 
     // http://www.math.drexel.edu/~tolya/cantorpairing.pdf
-    exports.cantor = {
+    ripple.cantor = {
         name: "Cantor",
         pair: function(x, y) {
             return (x + y) * (x + y + 1) / 2 + y; },
@@ -33,7 +33,7 @@
     };
 
     // http://szudzik.com/ElegantPairing.pdf
-    exports.szudzik = {
+    ripple.szudzik = {
         name: "Szudzik",
         pair: function(x, y) {
             return (x >= y) ? x * x + x + y :  y * y + x; },
@@ -45,13 +45,13 @@
         }
     };
 
-    exports.pair = function(x, y) {
+    ripple.pair = function(x, y) {
         var nx = (x >= 0) ? 2 * x : -2 * x - 1;
         var ny = (y >= 0) ? 2 * y : -2 * y - 1;
-        return exports.szudzik.pair(nx, ny);
+        return ripple.szudzik.pair(nx, ny);
     };
-    exports.unpair = function(z) {
-        var result = exports.szudzik.unpair(z);
+    ripple.unpair = function(z) {
+        var result = ripple.szudzik.unpair(z);
         if (result.x % 2)
             result.x = -result.x + 1;
         if (result.y % 2)
@@ -61,7 +61,7 @@
         return result;
     };
 
-    exports.eval = function() {
+    ripple.eval = function() {
         var index;
         for (index = 0; index < arguments.length; ++index)
             arguments[index];
