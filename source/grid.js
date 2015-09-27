@@ -593,13 +593,15 @@
 
         var draw_id = 0;
         var draw = function() {
-            var neighbors, vector, radius;
+            var ctx, width, height, color;
             var points, last, index;
+            var neighbors, vector, radius;
 
             if (self[0].getContext) {
-                var ctx = self[0].getContext('2d');
-                var width = self.width(), height = self.height();
-                var color = (self.css('color') == 'transparent' ?
+                ctx = self[0].getContext('2d');
+                width = self.width();
+                height = self.height();
+                color = (self.css('color') == 'transparent' ?
                              'white' : self.css('color'));
                 ctx.save();
                 ctx.clearRect(0, 0, width, height);
@@ -610,9 +612,9 @@
                 ctx.textAlign = 'center';
                 ctx.font = 'bold ' + 12 + 'pt sans-serif';
                 instance.map(width, height, function(node) {
-                    var index, points = instance.points(node);
+                    points = instance.points(node);
                     if (points.length) {
-                        var last = points[points.length - 1];
+                        last = points[points.length - 1];
                         ctx.moveTo(last.x, last.y);
                         for (index in points)
                             ctx.lineTo(points[index].x,
