@@ -4,11 +4,14 @@
         "Repair": {"cost": 5},
         "Engineering": {"cost": 5},
         "Shields": {"cost": 5},
+        "Target": {"cost": 5},
+
+        "Pilot": {"cost": 5},
         "Pilot 3D": {"parent": "Pilot", "cost": 5},
         "Pilot 2D": {"parent": "Pilot", "cost": 5},
-        "Pilot": {"cost": 5},
-        "Target": {"cost": 5},
+
         "Brawl": {"cost": 5},
+
         "Marksman": {"cost": 5},
         "Pistol": {"parent": "Marksman", "cost": 5},
         "Rifle": {"parent": "Marksman", "cost": 5}

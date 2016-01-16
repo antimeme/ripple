@@ -1,19 +1,41 @@
 // Streya is a game of space trading, ship construction, crew
 // management and combat.
 (function(streya) {
+    'use strict';
+
+    // === Ship representation
+    // A ship consists of a set of connected cells.
+    var createShip = function(config) {
+        var cells = {};
+        var getCell = function(node) {
+            return cells[ripple.pair(node.row, node.col)];
+        };
+        var setCell = function(node, value) {
+            cells[ripple.pair(node.row, node.col)] = value;
+            return this;
+        };
+
+        setCell({row: 0, col: 0}, 'empty');
+
+        return {
+            name: (config && config.name) ? config.name : 'Ship',
+            getCell: getCell, setCell: setCell
+        };
+    };
+
+    streya.setup = function($) {
+        console.log('streya.setup');
+        $.ajax({url: 'streya.json', dataType: 'json', cache: false})
+            .done(function(data) {
+                console.log(data.components.length);
+            });
+        return $;
+    };
+
     streya.game = function($, parent, viewport) {
         var self = $('<canvas></canvas>').appendTo(parent);
-        var ship = {
-            name: 'Ship',
-            getCell: function(node) {
-                return this.cells[ripple.pair(node.row, node.col)];
-            },
-            setCell: function(node, value) {
-                this.cells[ripple.pair(node.row, node.col)] = value;
-                return this;
-            },
-            cells: {0: 'emtpy'}
-        };
+
+        var ship = createShip();
 
 
 
@@ -45,8 +67,7 @@
                 // Draw the ship
                 instance.map(width, height, function(node) {
                     var index, points, last;
-                    var cell = ship.cells[
-                        ripple.pair(node.row, node.col)];
+                    var cell = ship.getCell(node);
                     if (cell) {
                         points = instance.points(node);
                         ctx.beginPath();
@@ -176,15 +197,14 @@
         menu.css({
             position: 'absolute', padding: '0.5em',
             background: '#333', color: 'white',
-            border: '2px solid white'
-        }).
-            css('border-radius', '5px').
-            css('list-style-type', 'none').
-            css('list-style-position', 'outside');
+            border: '2px solid white',
+            'border-radius': '5px',
+            'list-style-type': 'none',
+            'list-style-position': 'outside'});
         //.menu a { text-decoration: none; color: white; }
         //.menu li { padding: 0.5em; border-radius: 5px; }
         //.menu li:hover { background: #55e; }
-        
+
         menu.appendTo(self.parent());
         grid.canonical.forEach(function (entry) {
             var name = entry[0];
