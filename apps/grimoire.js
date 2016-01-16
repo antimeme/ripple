@@ -196,7 +196,7 @@
 
     /**
      * Automatically load tomes based on index with a fallback. */
-    grimoire.loadAjax = function($, tomes, complete) {
+    grimoire.loadAJAX = function($, tomes, complete) {
         var index, loading = 0, loaded = function() {
             loading -= 1;
             if (loading <= 0)
@@ -206,11 +206,16 @@
             loading += 1;
             $.ajax({
                 url: 'tomes/' + name, dataType: "json",
-                cache: false}).done(function(data) {
+                cache: false}).
+                done(function(data) {
                     grimoire.load(name, data);
                     if (data.parent && !(data.parent in grimoire.tomes))
                         load(data.parent);
-                }).always(function() { loaded(); });
+                }).
+                always(function() { loaded(); }).
+                fail(function(a, err) {
+                    console.log("ERROR: failed to load tome " + name +
+                                ": " + JSON.stringify(err)); });
         };
 
         if (tomes && tomes.length > 0) {
@@ -252,7 +257,7 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
 
     /**
      * Emulates jQuery Ajax but uses file operations instead.
-     * This allows us to use grimoire.loadAjax directly. */
+     * This allows us to use grimoire.loadAJAX directly. */
     var fakejax = {
         getJSON: function(url) { return this.ajax({url: url}); },
         ajax: function(options) {
@@ -269,7 +274,7 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
                 },
                 always: function(fn) {
                     this.cbs.push({which: null, fn: fn});
-                return this;
+                    return this;
                 },
             };
             if (!this.pending)
@@ -277,7 +282,11 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
             this.pending.push(result);
             return result;
         },
-        execute: function() {
+        sync: function() {
+            // Process tome loading until completion.  This isn't
+            // necessary in a real AJAX application because the
+            // browser event loop takes care of things but it's
+            // necessary for a synchronous command line application.
             var path = process.argv[1].substring(
                 0, process.argv[1].lastIndexOf('/'));
             var data = null, mode = 'done', status = 'success';
@@ -292,7 +301,7 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
                         data = JSON.parse(fs.readFileSync(
                             path + '/' + request.url + '.json',
                             {encoding: 'utf8'}));
-                    } catch (error) { mode = 'fail'; status = 'error'; }
+                    } catch (error) { mode = 'fail'; status = error; }
 
                     for (jndex = 0; jndex < request.cbs.length;
                          ++jndex) {
@@ -304,29 +313,30 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
             }
         }
     };
-    grimoire.loadAjax(fakejax, tomes, function() {}).execute();
+    grimoire.loadAJAX(fakejax, tomes, function() {
+        for (tome_name in grimoire.tomes) {
+            var tome = grimoire.tomes[tome_name];
+            var index, character, race;
 
-    for (tome_name in grimoire.tomes) {
-        var tome = grimoire.tomes[tome_name];
-        var index, character, race;
+            if (tome.races && Object.keys(tome.races).length) {
+                console.log('Races: ' + tome_name);
+                for (index in tome.races) {
+                    race = tome.races[index];
+                    if (race.player)
+                        console.log('  ' + index);
+                }
+            }
 
-        if (tome.races && Object.keys(tome.races).length) {
-            console.log('Races: ' + tome_name);
-            for (index in tome.races) {
-                race = tome.races[index];
-                if (race.player)
-                    console.log('  ' + index);
+            if (tome.characters && tome.characters.length) {
+                console.log('Characters: ' + tome_name);
+                for (index = 0; index < tome.characters.length;
+                     ++index) {
+                    character = tome.characters[index];
+                    console.log('  ' + character.fname + ' ' +
+                                character.lname);
+                }
             }
         }
-
-        if (tome.characters && tome.characters.length) {
-            console.log('Characters: ' + tome_name);
-            for (index = 0; index < tome.characters.length; ++index) {
-                character = tome.characters[index];
-                console.log('  ' + character.fname + ' ' +
-                            character.lname);
-            }
-        }
-    }
+    }).sync();
     process.exit(result);
 }
