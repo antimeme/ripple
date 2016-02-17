@@ -342,8 +342,8 @@ public class Ripple {
             { "hexEncode", "Convert argument strings to hex." },
             { "hexDecode", "Display the contents of argument " +
               "hex strings." },
-            { "base64Encode", "Convert argument strings to base64." },
-            { "base64Decode", "Display the contents of argument " +
+            { "b64Encode", "Convert argument strings to base64." },
+            { "b64Decode", "Display the contents of argument " +
               "base64 strings." },
         };
 
@@ -507,8 +507,8 @@ public class Ripple {
             }
         } else if ("hexEncode".equals(args[0]) ||
                    "hexDecode".equals(args[0]) ||
-                   "base64Encode".equals(args[0]) ||
-                   "base64Decode".equals(args[0])) {
+                   "b64Encode".equals(args[0]) ||
+                   "b64Decode".equals(args[0])) {
             if (args.length > 1) {
                 for (int i = 1; i < args.length; i++)
                     System.out.println
@@ -517,7 +517,7 @@ public class Ripple {
                           hexEncode(args[i].getBytes("utf-8")) :
                           ("hexDecode".equals(args[0]) ?
                            new String(hexDecode(args[i]), "utf-8") :
-                           ("base64Decode".equals(args[0]) ?
+                           ("b64Decode".equals(args[0]) ?
                             new String(base64Decode(args[i]), "utf-8"):
                             base64Encode(args[i].getBytes("utf-8"))))));
             } else wrap(System.out, 0, 0, 72,
