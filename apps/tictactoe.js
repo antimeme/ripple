@@ -1,5 +1,5 @@
 // tictactoe.js
-// Copyright (C) 2016 by Jeff Gold.
+// Copyright (C) 2016 by Jeff Gold and Simon Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -18,97 +18,115 @@
 // ---------------------------------------------------------------------
 // An implementation of the simplistic game known as Tic-Tac-Toe
 // (https://en.wikipedia.org/wiki/Tic-tac-toe)
+//
+// The board is represented this way:
+//     [0, 1, 2]
+//     [3, 4, 5]
+//     [6, 7, 8]
 (function(tictactoe) {
     "use strict";
+    var __wins = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6],
+        [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
 
-    var ai = function(player, state) {
-        // :TODO: make this less braindead
-        var ii;
-        for (ii in state.board)
-            if (!state.board[ii]) {
-                state.board[ii] = player;
-                break;
-            }
-        return state;
-    };
+    var __findWin = function(win, player, goal, state) {
+        // Return the index of the winning position if possible or
+        // -1 if not
+        if ((state.board[win[0]] === goal) &&
+            (state.board[win[1]] === player) &&
+            (state.board[win[2]] === player))
+            return win[0];
+        else if (goal != player) {
+            if ((state.board[win[1]] === goal) &&
+                (state.board[win[0]] === player) &&
+                (state.board[win[2]] === player))
+                return win[1];
+            if ((state.board[win[2]] === goal) &&
+                (state.board[win[1]] === player) &&
+                (state.board[win[0]] === player))
+                return win[2];
+        }
+        return -1;
+    }
     
-    var clear = function() {
-        return { winner: 0, start: null, stop: null,
+    // Creates a clear board state
+    var __clear = function() {
+        return { winner: 0, draw: false, start: null, stop: null,
                  begin: null, end: null,
                  board: [0, 0, 0, 0, 0, 0, 0, 0, 0] };
     };
 
-    var getPoint = function(position, width, height) {
+    // Gets the center of the specified board square
+    var __getPoint = function(position, width, height) {
         return {x: width * (2 * (position % 3) + 1) / 6,
-                y: height * (2 * Math.floor(position / 3) + 1) / 6 }
-    }
+                y: height * (2 * Math.floor(position / 3) + 1) / 6 };
+    };
+
+    // A playing algorithm that randomly selects valid moves
+    var ai_random = function(player, state) {
+        var done = false;
+        do {
+            var choice = Math.floor(Math.random() * 9);
+            if (!state.board[choice]) {
+                state.board[choice] = player;
+                done = true;
+            }
+        } while (!done);
+        return state;
+    };
+
+    // A playing algorithm that takes a win if immediately possible,
+    // blocks defeat if possible but otherwise randomly selects a
+    // valid move
+    var ai_defensive = function(player, state) {
+        var ii, w;
+        for (ii in __wins) {
+            w = __findWin(__wins[ii], player, 0, state);
+            if (w >= 0) {
+                state.board[w] = player;
+                return state;
+            }
+        }
+        for (ii in __wins) {
+            w = __findWin(__wins[ii], player * -1, 0, state);
+            if (w >= 0) {
+                state.board[w] = player;
+                return state;
+            }
+        }
+        return ai_random(player, state);
+    };
+
+    var ais = {'random': ai_random, 'defensive': ai_defensive};
 
     var checkWinner = function(state) {
-        if (!state.winner && state.board[0]) {
-            if ((state.board[0] === state.board[1]) &&
-                (state.board[1] === state.board[2])) {
-                state.winner = state.board[0];
-                state.start = 0;
-                state.stop = 2;
-            } else if ((state.board[0] === state.board[3]) &&
-                       (state.board[3] === state.board[6])) {
-                state.winner = state.board[0];
-                state.start = 0;
-                state.stop = 6;
-            } else if ((state.board[0] === state.board[4]) &&
-                       (state.board[4] === state.board[8])) {
-                state.winner = state.board[0];
-                state.start = 0;
-                state.stop = 8;
-            }
-        }
-
-        if (!state.winner && state.board[3]) {
-            if ((state.board[3] === state.board[4]) &&
-                (state.board[4] === state.board[5])) {
-                state.winner = state.board[3];
-                state.start = 3;
-                state.stop = 5;
-            }
-        }
-        if (!state.winner && state.board[1]) {
-            if ((state.board[1] === state.board[4]) &&
-                (state.board[4] === state.board[7])) {
-                state.winner = state.board[1];
-                state.start = 1;
-                state.stop = 7;
-            }
-        }
-        if (!state.winner && state.board[8]) {
-            if ((state.board[8] === state.board[7]) &&
-                (state.board[7] === state.board[6])) {
-                state.winner = state.board[8];
-                state.start = 6;
-                state.stop = 8;
-            } else if ((state.board[8] === state.board[5]) &&
-                       (state.board[5] === state.board[2])) {
-                state.winner = state.board[8];
-                state.start = 2;
-                state.stop = 8;
-            }
-        }
-        if (!state.winner && state.board[6]) {
-            if ((state.board[6] === state.board[4]) &&
-                (state.board[4] === state.board[2])) {
-                state.winner = state.board[6];
-                state.start = 2;
-                state.stop = 6;
+        var ii;
+        for (ii in __wins) {
+            if (__findWin(__wins[ii], 1, 1, state) >= 0) {
+                state.winner = 1;
+                state.start = __wins[ii][0];
+                state.stop = __wins[ii][2];
+            } else if (__findWin(__wins[ii], -1, -1, state) >= 0) {
+                state.winner = -1;
+                state.start = __wins[ii][0];
+                state.stop = __wins[ii][2];
             }
         }
         if (state.winner) {
             state.begin = new Date().getTime();
             state.end = state.begin + 1000;
+        } else {
+            state.draw = true;
+            for (ii in state.board)
+                if (!state.board[ii])
+                    state.draw = false;
         }
         return state;
     };
 
     tictactoe.go = function($, container) {
-        var state = clear();
+        var state = __clear();
+        var ai = ai_defensive;
         var player = 1;
         var board = $('<canvas>').attr({
             'class': 'board'
@@ -155,7 +173,7 @@
                 // Draw X's
                 ctx.beginPath();
                 for (ii in state.board) {
-                    cpoint = getPoint(ii, width, height);
+                    cpoint = __getPoint(ii, width, height);
                     if (state.board[ii] > 0) {
                         ctx.moveTo(cpoint.x - width / 8,
                                    cpoint.y - width / 8);
@@ -173,7 +191,7 @@
                 // Draw O's
                 ctx.beginPath();
                 for (ii in state.board) {
-                    cpoint = getPoint(ii, width, height);
+                    cpoint = __getPoint(ii, width, height);
                     if (state.board[ii] < 0) {
                         ctx.moveTo(cpoint.x + width / 8, cpoint.y);
                         ctx.arc(cpoint.x, cpoint.y, width / 8,
@@ -188,8 +206,8 @@
                     var now = new Date().getTime();
                     increment = Math.min(1, (now - state.begin) /
                                          (state.end - state.begin));
-                    cpoint = getPoint(state.start, width, height);
-                    dpoint = getPoint(state.stop, width, height);
+                    cpoint = __getPoint(state.start, width, height);
+                    dpoint = __getPoint(state.stop, width, height);
 
                     ctx.beginPath();
                     ctx.moveTo(cpoint.x, cpoint.y);
@@ -229,7 +247,7 @@
             if (!state.winner && !state.board[row * 3 + col]) {
                 state.board[row * 3 + col] = player;
                 checkWinner(state);
-                if (!state.winner) {
+                if (!state.winner && !state.draw) {
                     ai(player * -1, state);
                     checkWinner(state);
                 }
@@ -239,12 +257,12 @@
         board.resize(resize);
         resize();
         var reset = function() {
-            state = clear();
+            state = __clear();
             if (player < 0)
                 ai(player * -1, state);
             redraw();
         };
-        
+
         var bbar = $('<div>').css({
             margin: 'auto', display: 'block', 'text-align': 'center'
         }).appendTo(container);
@@ -262,5 +280,25 @@
             reset();
         });
         
+        var aibar = $('<div>').css({
+            margin: 'auto', display: 'block', 'text-align': 'center'
+        }).appendTo(container);
+        var ailabel = $('<label>Opponent: </label>').appendTo(aibar);
+        var aiselect = $('<select>').appendTo(ailabel);
+        Object.keys(ais).sort().forEach(function(value) {
+            var vtitle = value.replace(/^[a-z]/, function(i) {
+                return i.toUpperCase(); });
+            var attrs = {value: value};
+            aiselect.append($('<option>' + vtitle +
+                              '</option>').attr(attrs));
+            if (ais[value] === ai)
+                aiselect.val(value);
+        });
+        aiselect.on('change', function(event) {
+            var chosen = $(event.target).val();
+            if (chosen in ais)
+                ai = ais[chosen];
+        });
     }
 })(typeof exports === 'undefined'? this['tictactoe'] = {}: exports);
+
