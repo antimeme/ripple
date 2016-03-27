@@ -75,18 +75,10 @@
         return state;
     };
 
-    // A playing algorithm that takes a win if immediately possible,
-    // blocks defeat if possible but otherwise randomly selects a
-    // valid move
+    // A playing algorithm that blocks defeat if possible but
+    // otherwise randomly selects a valid move
     var ai_defensive = function(player, state) {
         var ii, w;
-        for (ii in __wins) {
-            w = __findWin(__wins[ii], player, 0, state);
-            if (w >= 0) {
-                state.board[w] = player;
-                return state;
-            }
-        }
         for (ii in __wins) {
             w = __findWin(__wins[ii], player * -1, 0, state);
             if (w >= 0) {
@@ -97,7 +89,26 @@
         return ai_random(player, state);
     };
 
-    var ais = {'random': ai_random, 'defensive': ai_defensive};
+    // A playing algorithm that takes a win if immediately possible,
+    // blocks defeat if possible but otherwise randomly selects a
+    // valid move
+    var ai_opportune = function(player, state) {
+        var ii, w;
+        for (ii in __wins) {
+            w = __findWin(__wins[ii], player, 0, state);
+            if (w >= 0) {
+                state.board[w] = player;
+                return state;
+            }
+        }
+        return ai_defensive(player, state);
+    };
+
+    var ais = {
+        'random': ai_random,
+        'defensive': ai_defensive,
+        'opportune': ai_opportune
+    };
 
     var checkWinner = function(state) {
         var ii;
@@ -126,7 +137,7 @@
 
     tictactoe.go = function($, container) {
         var state = __clear();
-        var ai = ai_defensive;
+        var ai = ai_opportune;
         var player = 1;
         var board = $('<canvas>').attr({
             'class': 'board'
