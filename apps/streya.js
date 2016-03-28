@@ -6,16 +6,19 @@
     // === Ship representation
     // A ship consists of a set of connected cells.
     var createShip = function(config) {
-        var cells = {};
+        var __cells = {};
         var getCell = function(node) {
-            return cells[ripple.pair(node.row, node.col)];
+            return __cells[ripple.pair(node.row, node.col)];
         };
         var setCell = function(node, value) {
-            cells[ripple.pair(node.row, node.col)] = value;
+            __cells[ripple.pair(node.row, node.col)] = value;
             return this;
         };
 
-        setCell({row: 0, col: 0}, 'empty');
+        if (config && config.cells) {
+            for (key in config.cells)
+                __cells[key] = config.cells[key];
+        } else setCell({row: 0, col: 0}, 'empty');
 
         return {
             name: (config && config.name) ? config.name : 'Ship',
@@ -24,11 +27,20 @@
     };
 
     streya.setup = function($) {
-        console.log('streya.setup');
-        $.ajax({url: 'streya.json', dataType: 'json', cache: false})
-            .done(function(data) {
-                console.log(data.components.length);
-            });
+        $.ajax({
+            url: 'streya.json',
+            dataType: 'json',
+            cache: false,
+            beforeSend: function(xhr) {
+                // Without this browsers give confusing warnings about
+                // content type mismatches when using a file:// URL.
+                if (xhr.overrideMimeType) {
+                    xhr.overrideMimeType("application/json");
+                }
+            }
+        }).done(function(data) {
+            console.log(data);
+        });
         return $;
     };
 
@@ -36,11 +48,6 @@
         var self = $('<canvas></canvas>').appendTo(parent);
 
         var ship = createShip();
-
-
-
-
-
 
         var colorTapInner = 'rgba(45, 45, 128, 0.8)';
         var colorTapOuter = 'rgba(128, 255, 128, 0.6)';
@@ -378,6 +385,8 @@
             if (press) { clearTimeout(press); press = 0; }
             return false;
         });
+
+        streya.setup($);
 
     };
 })(typeof exports === 'undefined'? this['streya'] = {}: exports);
