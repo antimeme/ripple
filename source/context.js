@@ -21,7 +21,8 @@
     "use strict";
 
     // ECMAScript 5 introduces some useful functions which are missing
-    // in earlier versions.  Fallbacks provide.
+    // in earlier versions.  Fallback functions are provided here...
+
     if (typeof Object.create === 'undefined')
         Object.create = function(parent) {
             var Intermediate = function() {};
