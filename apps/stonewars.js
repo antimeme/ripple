@@ -1,95 +1,115 @@
-// Streya is a game of space trading, ship construction, crew
-// management and combat.
-(function(streya) {
-    'use strict';
+// Stonewars is a game of strategy and tactics created by Julian Gold
+(function(stonewars) {
 
-    // === Ship representation
-    // A ship consists of a set of connected cells.
-    var createShip = function(config) {
-        var __cells = {};
-        var getCell = function(node) {
-            return __cells[ripple.pair(node.row, node.col)];
-        };
-        var setCell = function(node, value) {
-            __cells[ripple.pair(node.row, node.col)] = value;
-            return this;
-        };
+    stonewars.demo = function($, parent, viewport) {
+        var animating = true;
+        var renderer = new THREE.WebGLRenderer( { antialias: true } );
+        var resize = function(event) {
+            renderer.setSize(parent.width(), parent.height());
+        }
+        resize();
+        parent.append(renderer.domElement);
 
-        if (config && config.cells) {
-            for (key in config.cells)
-                __cells[key] = config.cells[key];
-        } else setCell({row: 0, col: 0}, 'empty');
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(
+            45, parent.width() / parent.height());
+        parent.append(renderer.domElement);
+        camera.position.set(0, 0, 3);
 
-        return {
-            name: (config && config.name) ? config.name : 'Ship',
-            getCell: getCell, setCell: setCell
+        var light = new THREE.DirectionalLight(0xffffff, 1.5);
+        light.position.set(0, 0, 1);
+        scene.add(light);
+
+        var update = function() {
+            renderer.render(scene, camera);
+            if (animating)
+                cube.rotation.y -= 0.01;
+            requestAnimationFrame(update);
         };
+        var geometry = new THREE.CubeGeometry(1, 1, 1);
+        var material, cube;
+        var loader = new THREE.TextureLoader();
+        loader.load("img/ripple.png", function(texture) {
+            material = new THREE.MeshPhongMaterial({'map': texture});
+            cube = new THREE.Mesh(geometry, material);
+            cube.rotation.x = Math.PI / 5;
+            cube.rotation.y = Math.PI / 5;
+            scene.add(cube);
+
+            renderer.domElement.addEventListener(
+            'mouseup', function(event) {
+                event.preventDefault();
+                animating = !animating;
+            });
+
+            update();
+        },
+	function(xhr) {
+	    console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
+	},
+	function ( xhr ) {
+	    console.log( 'An error happened' );
+	});
     };
 
-    streya.setup = function($) {
-        $.ajax({
-            url: 'streya.json',
-            dataType: 'json',
-            cache: false,
-            beforeSend: function(xhr) {
-                // Without this browsers give confusing warnings about
-                // content type mismatches when using a file:// URL.
-                if (xhr.overrideMimeType) {
-                    xhr.overrideMimeType("application/json");
-                }
-            }
-        }).done(function(data) {
-            console.log(data);
-        });
-        return $;
-    };
-
-    streya.game = function($, parent, viewport) {
+    stonewars.game = function($, parent, viewport) {
         var self = $('<canvas></canvas>').appendTo(parent);
-
-        var ship = createShip();
-
         var colorTapInner = 'rgba(45, 45, 128, 0.8)';
         var colorTapOuter = 'rgba(128, 255, 128, 0.6)';
-        var colorSelected = 'rgba(192, 192, 0, 0.2)';
+        var colorSelected = 'rgba(192, 192, 0, 0.6)';
         var colorNeighbor = 'rgba(128, 128, 0, 0.4)';
         var lineWidth = 0, lineFactor = 40;
+        var numbers = false, combined = false;
         var instance;
         var tap, selected, drag, zooming, gesture, press = 0;
 
         var draw_id = 0;
         var draw = function() {
-            var neighbors, vector, radius;
+            var ctx, width, height, color;
             var points, last, index;
+            var neighbors, vector, radius;
 
             if (self[0].getContext) {
-                var ctx = self[0].getContext('2d');
-                var width = self.width(), height = self.height();
-                var color = (self.css('color') == 'transparent' ?
+                ctx = self[0].getContext('2d');
+                width = self.width();
+                height = self.height();
+                color = (self.css('color') == 'transparent' ?
                              'white' : self.css('color'));
                 ctx.save();
-                ctx.fillStyle = 'rgb(32, 32, 32)';
-                ctx.fillRect(0, 0, width, height);
+                ctx.clearRect(0, 0, width, height);
 
-                // Draw the ship
+                // Create a grid
+                ctx.beginPath();
+                ctx.lineWidth = lineWidth;
+                ctx.textAlign = 'center';
+                ctx.font = 'bold ' + 12 + 'pt sans-serif';
                 instance.map(width, height, function(node) {
-                    var index, points, last;
-                    var cell = ship.getCell(node);
-                    if (cell) {
-                        points = instance.points(node);
-                        ctx.beginPath();
-                        ctx.lineWidth = lineWidth;
-                        if (points.length) {
-                            last = points[points.length - 1];
-                            ctx.moveTo(last.x, last.y);
-                            for (index in points)
-                                ctx.lineTo(points[index].x,
-                                           points[index].y);
-                        }
-                        ctx.fillStyle = 'rgb(160, 160, 160)';
-                        ctx.fill();
+                    points = instance.points(node);
+                    if (points.length) {
+                        last = points[points.length - 1];
+                        ctx.moveTo(last.x, last.y);
+                        for (index in points)
+                            ctx.lineTo(points[index].x,
+                                       points[index].y);
                     }
                 });
+                ctx.fillStyle = self.css('background-color');
+                ctx.fill();
+                ctx.strokeStyle = color;
+                ctx.stroke();
+                if (combined)
+                    instance.map(width, height, function(node) {
+                        ctx.fillStyle = color;
+                        ctx.fillText(
+                            ripple.pair(node.row, node.col),
+                            node.x, node.y);
+                    });
+                else if (numbers)
+                    instance.map(width, height, function(node) {
+                        ctx.fillStyle = color;
+                        ctx.fillText('(' + node.row + ', ' +
+                                     node.col + ')', node.x, node.y);
+                    });
 
                 if (selected) {
                     // Coordinates of the selected square must be
@@ -111,6 +131,72 @@
                                 instance.size() / 2, 0, 2 * Math.PI);
                     }
                     ctx.fillStyle = colorSelected;
+                    ctx.fill();
+
+                    neighbors = instance.neighbors(
+                        selected, {coordinates: true, points: true});
+                    ctx.beginPath();
+                    for (index in neighbors) {
+                        points = instance.points(neighbors[index]);
+                        if (points.length) {
+                            last = points[points.length - 1];
+                            ctx.moveTo(last.x, last.y);
+                            for (index in points)
+                                ctx.lineTo(points[index].x,
+                                           points[index].y);
+                        } else {
+                            ctx.moveTo(neighbors[index].x,
+                                       neighbors[index].y);
+                            ctx.arc(
+                                neighbors[index].x, neighbors[index].y,
+                                instance.size() / 2, 0, 2 * Math.PI);
+                        }
+                    }
+                    ctx.fillStyle = colorNeighbor;
+                    ctx.fill();
+
+                    var colors = ['red', 'green', 'blue',
+                                  'cyan', 'magenta', 'yellow',
+                                  'black', 'white'];
+                    for (index in neighbors) {
+                        ctx.beginPath();
+                        points = neighbors[index].points;
+                        if (points.length > 1) {
+                            vector = {x: points[1].x - points[0].x,
+                                      y: points[1].y - points[0].y};
+                            ctx.moveTo(points[0].x + 0.25 * vector.x,
+                                       points[0].y + 0.25 * vector.y);
+                            ctx.lineTo(points[0].x + 0.75 * vector.x,
+                                       points[0].y + 0.75 * vector.y);
+                        } else if (points.length === 1) {
+                            radius = lineWidth * 5;
+                            ctx.moveTo(points[0].x + radius,
+                                       points[0].y);
+                            ctx.arc(points[0].x, points[0].y,
+                                    radius, 0, 2 * Math.PI);
+                        }
+                        ctx.moveTo(neighbors[index].x + lineWidth * 2,
+                                   neighbors[index].y);
+                        ctx.arc(neighbors[index].x, neighbors[index].y,
+                                lineWidth * 2, 0, 2 * Math.PI);
+
+                        ctx.strokeStyle = colors[index % colors.length];
+                        ctx.stroke();
+                    }
+                }
+                if (tap) {
+                    for (index = 0; index < tap.touches.length;
+                         ++index) {
+                        ctx.beginPath();
+                        ctx.arc(tap.touches[index].x,
+                                tap.touches[index].y,
+                                20, 0, 2 * Math.PI);
+                        ctx.fillStyle = colorTapOuter;
+                        ctx.fill();
+                    }
+                    ctx.beginPath();
+                    ctx.arc(tap.x, tap.y, 10, 0, 2 * Math.PI);
+                    ctx.fillStyle = colorTapInner;
                     ctx.fill();
                 }
                 ctx.restore();
@@ -138,8 +224,7 @@
         };
         viewport.resize(resize);
         resize();
-        instance = grid.create({type: 'hex',
-                                width: self.width(),
+        instance = grid.create({width: self.width(),
                                 height: self.height()});
         lineWidth = instance.size() / lineFactor;
 
@@ -201,17 +286,6 @@
 
         // Populate menu with available grid types
         var menu = $('<ul class="menu"></ul>').hide();
-        menu.css({
-            position: 'absolute', padding: '0.5em',
-            background: '#333', color: 'white',
-            border: '2px solid white',
-            'border-radius': '5px',
-            'list-style-type': 'none',
-            'list-style-position': 'outside'});
-        //.menu a { text-decoration: none; color: white; }
-        //.menu li { padding: 0.5em; border-radius: 5px; }
-        //.menu li:hover { background: #55e; }
-
         menu.appendTo(self.parent());
         grid.canonical.forEach(function (entry) {
             var name = entry[0];
@@ -225,6 +299,8 @@
         menu.append('<hr />');
         menu.append('<li data-action="animation">' +
                     'Toggle Animation</li>');
+        menu.append('<li data-action="numbers">' +
+                    'Toggle Numbers</li>');
         menu.append('<li data-action="colors">' +
                     'Swap Colors</li>');
         menu.append('<li data-action="full-screen">Full Screen</li>');
@@ -251,6 +327,14 @@
             } break;
             case 'animation': {
                 animation.toggle();
+            } break;
+            case 'numbers': {
+                if (combined) {
+                    numbers = combined = false;
+                } else if (numbers)
+                    combined = true;
+                else numbers = true;
+                redraw();
             } break;
             case 'colors': {
                 var foreground = self.css('color');
@@ -297,7 +381,6 @@
                  1 + 0.1 * event.deltaY);
         });
         self.on('mousedown touchstart', function(event) {
-            var cell, index, neighbors;
             var targets = $.targets(event);
             menu.hide();
             if (event.which > 1) {
@@ -318,18 +401,6 @@
             } else {
                 tap = drag = targets;
                 selected = instance.position(tap);
-
-                cell = ship.getCell(selected);
-                if (!cell) {
-                    neighbors = instance.neighbors(
-                        selected, {coordinates: true, points: true});
-                    for (index in neighbors) {
-                        if (ship.getCell(neighbors[index])) {
-                            ship.setCell(selected, 'empty');
-                            break;
-                        }
-                    }
-                }
 
                 // Show a menu on either double tap or long press.
                 // There are some advantages to using a native double
@@ -385,8 +456,6 @@
             if (press) { clearTimeout(press); press = 0; }
             return false;
         });
-
-        streya.setup($);
-
     };
-})(typeof exports === 'undefined'? this['streya'] = {}: exports);
+    
+})(typeof exports === 'undefined'? this['stonewars'] = {}: exports);
