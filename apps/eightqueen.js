@@ -225,6 +225,8 @@
         });
         self.on('mousedown touchstart', function(event) {
             var targets = $.targets(event);
+            var candidate, qnum;
+
             menu.hide();
             if (event.which > 1) {
                 // Reserve right and middle clicks for browser menus
@@ -246,8 +248,23 @@
                 selected = instance.position(tap);
 
                 if (selected.row >= 1 && selected.row <= 8 &&
-                    selected.col >= 1 && selected.col <= 8)
-                    queens.push(selected);
+                    selected.col >= 1 && selected.col <= 8) {
+                    candidate = selected;
+
+                    for (qnum = 0; (qnum < queens.length) &&
+                         candidate; ++qnum) {
+                        var queen = queens[qnum];
+                        var rdiff = queen.row - candidate.row;
+                        var cdiff = queen.col - candidate.col;
+                        if (queen.row === candidate.row ||
+                            queen.col === candidate.col ||
+                            Math.abs(rdiff) === Math.abs(cdiff)) {
+                            candidate = undefined;
+                        }
+                    }
+                    if (candidate)
+                        queens.push(candidate);
+                }
 
                 // Show a menu on either double tap or long press.
                 // There are some advantages to using a native double
