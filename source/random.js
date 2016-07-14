@@ -19,19 +19,21 @@
 // Mersenne Twister implementation.  For algorithm details:
 //     http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
 (function (exports) {
-    const RRAND_N = 624;
-    const RRAND_M = 397;
-    const RRAND_MATRIX_A   = 0x9908B0DF;
-    const RRAND_UPPER_MASK = 0x80000000;
-    const RRAND_LOWER_MASK = 0x7FFFFFFF;
-    const RRAND_MAXIMUM    = 0xFFFFFFFF;
-    const RRAND_TAOCP2P106 = 1812433253;
-    const RRAND_TEMPER_B   = 0x9D2C5680;
-    const RRAND_TEMPER_C   = 0xEFC60000;
+    "use strict";
+    var RRAND_N = 624;
+    var RRAND_M = 397;
+    var RRAND_MATRIX_A   = 0x9908B0DF;
+    var RRAND_UPPER_MASK = 0x80000000;
+    var RRAND_LOWER_MASK = 0x7FFFFFFF;
+    var RRAND_MAXIMUM    = 0xFFFFFFFF;
+    var RRAND_TAOCP2P106 = 1812433253;
+    var RRAND_TEMPER_B   = 0x9D2C5680;
+    var RRAND_TEMPER_C   = 0xEFC60000;
 
     // Performs a 32-bit multiplication modulo 2^32, approximating the
-    // unsigned type in C.  Javascript integers are stored as floating
-    // point value, which means they have 53 bits of precision.
+    // unsigned type in C.  Javascript integers are stored as a double
+    // precision floating point value, which means they have 53 bits
+    // of for integer values -- an awkward amount.
     function multiply_uint32(a, b) {
         var ah = (a >>> 16) & 0xffff, al = a & 0xffff;
         var bh = (b >>> 16) & 0xffff, bl = b & 0xffff;
@@ -39,7 +41,8 @@
         return (((high << 16) + (al * bl)) & 0xffffffff) >>> 0;
     }
 
-    var int32 = function () {
+    var int32 = function() {
+        // This is the heart of the Mersenne Twister implementation
         var current;
         var mag01 = [ 0, RRAND_MATRIX_A ];
         if (this.mti >= RRAND_N) {
@@ -65,17 +68,30 @@
                                     mag01[current & 1]) >>> 0;
             this.mti = 0;
         }
-        current = this.mt[this.mti++];
+        current = this.mt[this.mti];
+        ++this.mti;
         current = (current ^ (current >>> 11)) >>> 0;
         current = (current ^ (current << 7)  & RRAND_TEMPER_B) >>> 0;
         current = (current ^ (current << 15) & RRAND_TEMPER_C) >>> 0;
         current = (current ^ (current >>> 18)) >>> 0;
         return current;
-    }
+    };
+
+    // Returns a number between zero inclusive and one exclusive.
+    // This works like Math.random() but since a seed can be provided
+    // this can generate predictable sequences.
+    var random = function()
+    { return this.int32() * (1.0 / 4294967295.0); };
 
     exports.random = function(seed) {
-        var self = {int32: int32};
+        var self = {int32: int32, random: random};
         var mti = 0;
+
+        // Default is a moderately unpredictable seed.  This is NOT
+        // good enough for cryptographic purposes.
+        if (typeof seed === 'undefined')
+            seed = new Date().getTime();
+
         self.mt = new Array();
         self.mt[mti] = seed & RRAND_MAXIMUM;
         for (mti = 1; mti < RRAND_N; mti++) {
@@ -87,39 +103,43 @@
         }
         self.mti = mti;
         return self;
-    }
+    };
 
 })(typeof exports === 'undefined'? this['random'] = {}: exports);
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
-    var result = 0;
-    var r = exports.random(5489);
+    var result = 0, check_seed = 5489;
+    var ii, r = exports.random(check_seed);
 
     var check_state = [
         0x00001571, 0x4d98ee96, 0xaf25f095, 0xafd9ba96, 0x6fcbd068,
-        0x2cd06a72, 0x384f0100, 0x85b46507, 0x295e8801, 0x0d1b316e,
+        0x2cd06a72, 0x384f0100, 0x85b46507, 0x295e8801, 0x0d1b316e
     ];
-    for (var i = 0; i < check_state.length; i++) {
-        console.log("r.mt[" + i + "] = " + r.mt[i].toString(16) +
-                    (r.mt[i] === check_state[i] ?
-                     "" : " (expected " +
+    for (ii = 0; ii < check_state.length; ++ii) {
+        console.log("r.mt[" + ii + "] = " + r.mt[ii].toString(16) +
+                    (r.mt[ii] === check_state[ii] ? "" : " (expected " +
                      check_state[i].toString(16) + ")"));
-        if (r.mt[i] != check_state[i])
+        if (r.mt[ii] != check_state[ii])
             result = 1;
     }
 
     var check_uint32 = [
         0xd091bb5c, 0x22ae9ef6, 0xe7e1faee, 0xd5c31f79, 0x2082352c,
-        0xf807b7df, 0xe9d30005, 0x3895afe1, 0xa1e24bba, 0x4ee4092b,
+        0xf807b7df, 0xe9d30005, 0x3895afe1, 0xa1e24bba, 0x4ee4092b
     ];
-    for (var i = 0; i < check_uint32.length; i++) {
+    for (ii = 0; ii < check_uint32.length; ++ii) {
         var value = r.int32();
         console.log("random: " + value.toString(16) +
-                    (value === check_uint32[i] ?
-                     "" : " (expected " +
-                     check_uint32[i].toString(16) + ")"));
-        if (value != check_uint32[i])
+                    (value === check_uint32[ii] ?
+                     " (decimal " + value.toString() + ")" :
+                     " (expected " +
+                     check_uint32[ii].toString(16) + ")"));
+        if (value != check_uint32[ii])
             result = 1;
     }
+
+    r = exports.random(check_seed);
+    for (ii = 0; ii < 10; ++ii)
+        console.log('double: ' + r.random().toFixed(16));
     process.exit(result);
 }

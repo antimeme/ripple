@@ -1,5 +1,5 @@
 // Octahedron.java
-// Copyright (C) 2010 by Jeff Gold
+// Copyright (C) 2010-2015 by Jeff Gold
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -138,7 +138,6 @@ public class Octahedron extends Applet {
                      offy + (size + height) / 2);
     }
 
-    public static void main(String[] args) {
-        Standalone.app(new Octahedron(), null, null, args);
-    }
+    public static void main(String[] args) throws Exception
+    { Standalone.app(new Octahedron(), args); }
 }

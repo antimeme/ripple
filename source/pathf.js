@@ -18,6 +18,7 @@
 // ---------------------------------------------------------------------
 // Path finding routines
 (function(exports) {
+    "use strict";
 
     var Heap = function(compare) {
         // This is a priority queue implementation.  The smallest
@@ -92,7 +93,7 @@
             return item;
         };
         return this;
-    }
+    };
 
     exports.astarsearch = function(start, goals, neighbors, heuristic,
                                    costfn, limit, stringify) {
@@ -120,20 +121,21 @@
         if (!costfn) costfn = function(node, prev) { return 1; };
         if (!heuristic) // Degrade to Dijkstra's algorithm if necessary
             heuristic = function(node, cost, goal) { return cost; };
+        var index;
 
         // Construct a goal set
         if (!goals || !goals.length)
             return null; // No path without at least one goal
         var goalset = {};
-        for (var i in goals)
-            goalset[stringify(goals[i])] = goals[i];
+        for (index in goals)
+            goalset[stringify(goals[index])] = goals[index];
 
         function mknode(value, prev) {
             var cost = prev ? prev.cost + costfn(prev.value, value) : 0;
-            var hcost = null;
+            var g, h, hcost = null;
             for (g in goalset) {
-                var h = heuristic(value, cost, goalset[g]);
-                if (hcost == null || h < hcost)
+                h = heuristic(value, cost, goalset[g]);
+                if (!hcost || h < hcost)
                     hcost = h;
             }
             return {value: value, prev: prev, repr: stringify(value),
@@ -167,8 +169,8 @@
 
             // Consider nodes reachable from here
             var neighborhood = neighbors(current.value);
-            for (var i in neighborhood) {
-                var neighbor = mknode(neighborhood[i], current);
+            for (index in neighborhood) {
+                var neighbor = mknode(neighborhood[index], current);
                 if (limit && neighbor.cost > limit)
                     continue; // too expensive to consider
                 if (neighbor.repr in explored &&
@@ -183,6 +185,6 @@
 
         // Ran out of nodes to consider without finding a path
         return null;
-    }
+    };
 
 })(typeof exports === 'undefined'? this['pathf'] = {}: exports);

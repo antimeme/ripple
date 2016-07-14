@@ -1,5 +1,5 @@
 // FractionLayout.java
-// Copyright (C) 2006-2011 by Jeff Gold.
+// Copyright (C) 2006-2015 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -12,13 +12,11 @@
 // General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with this program.  If not, see
-// <http://www.gnu.org/licenses/>.
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-//
 // A layout manager that uses decimal fractions between zero and one
-// to create sensible scaling behavior for a container.
+// to create sensible scaling behavior for a user interface container.
 package net.esclat.ripple;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
@@ -29,7 +27,7 @@ import java.awt.Component;
 import java.awt.Container;
 
 // Dependencies needed only for module unit test.
-import java.awt.Frame;
+import java.applet.Applet;
 import java.awt.Button;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -38,18 +36,18 @@ import java.awt.event.WindowEvent;
  *  as numbers between zero and one.  */
 public final class FractionLayout implements LayoutManager {
     private static class LayoutItem {
-	float x, y, width, height;
-	Component comp;
+        float x, y, width, height;
+        Component comp;
     }
     private ArrayList<LayoutItem> items = new ArrayList<LayoutItem>();
 
     private float getFraction(StringTokenizer tokens) {
         float value = 0.0f;
         if (tokens.hasMoreTokens()) {
-	    value = Float.valueOf(tokens.nextToken()).floatValue();
-	    if ((value <= 0.0) || (value > 1.0))
-		throw new IllegalArgumentException("out of range");
-	} else throw new IllegalArgumentException("invalid constraint");
+            value = Float.valueOf(tokens.nextToken()).floatValue();
+            if ((value <= 0.0) || (value > 1.0))
+                throw new IllegalArgumentException("out of range");
+        } else throw new IllegalArgumentException("invalid constraint");
         return value;
     }
 
@@ -58,91 +56,85 @@ public final class FractionLayout implements LayoutManager {
      *  "0.25 0.25 0.5 0.5" (this example would center the component
      *  at half the total size of the parent). */
     public void addLayoutComponent(String name, Component comp) {
-	StringTokenizer tokens = new StringTokenizer(name);
-	LayoutItem item = new LayoutItem();
+        StringTokenizer tokens = new StringTokenizer(name);
+        LayoutItem item = new LayoutItem();
         item.x      = getFraction(tokens);
         item.y      = getFraction(tokens);
         item.width  = getFraction(tokens);
         item.height = getFraction(tokens);
-	item.comp   = comp;
-	items.add(item);
+        item.comp   = comp;
+        items.add(item);
     }
 
     public void layoutContainer(Container parent) {
-	Dimension size = parent.getSize();
-	Insets insets = parent.getInsets();
-	int x, y, width, height;
-	x = insets.left;
-	y = insets.top;
-	width  = size.width  - (insets.left + insets.right);
-	height = size.height - (insets.top  + insets.bottom);
+        Dimension size = parent.getSize();
+        Insets insets = parent.getInsets();
+        int x, y, width, height;
+        x = insets.left;
+        y = insets.top;
+        width  = size.width  - (insets.left + insets.right);
+        height = size.height - (insets.top  + insets.bottom);
 
         for (LayoutItem item : items)
-	    item.comp.setBounds(x + (int)(width * item.x),
-				y + (int)(height * item.y),
-				(int)(width  * item.width),
-				(int)(height * item.height));
+            item.comp.setBounds(x + (int)(width * item.x),
+                                y + (int)(height * item.y),
+                                (int)(width  * item.width),
+                                (int)(height * item.height));
     }
 
     public Dimension minimumLayoutSize(Container parent) {
-	Dimension parent_size = new Dimension(0, 0);
+        Dimension parent_size = new Dimension(0, 0);
         for (LayoutItem item : items) {
-	    Dimension child_size = item.comp.getMinimumSize();
+            Dimension child_size = item.comp.getMinimumSize();
 
-	    child_size.width  /= item.width;
-	    child_size.height /= item.height;
-	    if (child_size.width > parent_size.width)
-		parent_size.width = child_size.width;
-	    if (child_size.height > parent_size.height)
-		parent_size.height = child_size.height;
-	}
+            child_size.width  /= item.width;
+            child_size.height /= item.height;
+            if (child_size.width > parent_size.width)
+                parent_size.width = child_size.width;
+            if (child_size.height > parent_size.height)
+                parent_size.height = child_size.height;
+        }
 
-	Insets insets = parent.getInsets();
-	parent_size.width  += insets.left + insets.right;
-	parent_size.height += insets.top  + insets.bottom;
-	return parent_size;
+        Insets insets = parent.getInsets();
+        parent_size.width  += insets.left + insets.right;
+        parent_size.height += insets.top  + insets.bottom;
+        return parent_size;
     }
 
     public Dimension preferredLayoutSize(Container parent) {
-	Dimension parent_size = new Dimension(0, 0);
+        Dimension parent_size = new Dimension(0, 0);
         for (LayoutItem item : items) {
-	    Dimension child_size = item.comp.getPreferredSize();
+            Dimension child_size = item.comp.getPreferredSize();
 
-	    child_size.width  /= item.width;
-	    child_size.height /= item.height;
-	    if (child_size.width > parent_size.width)
-		parent_size.width = child_size.width;
-	    if (child_size.height > parent_size.height)
-		parent_size.height = child_size.height;
-	}
+            child_size.width  /= item.width;
+            child_size.height /= item.height;
+            if (child_size.width > parent_size.width)
+                parent_size.width = child_size.width;
+            if (child_size.height > parent_size.height)
+                parent_size.height = child_size.height;
+        }
 
-	Insets insets = parent.getInsets();
-	parent_size.width  += insets.left + insets.right;
-	parent_size.height += insets.top  + insets.bottom;
-	return parent_size;
+        Insets insets = parent.getInsets();
+        parent_size.width  += insets.left + insets.right;
+        parent_size.height += insets.top  + insets.bottom;
+        return parent_size;
     }
 
     public void removeLayoutComponent(Component comp) {
-	LayoutItem target = null;
+        LayoutItem target = null;
         for (LayoutItem defendant : items)
-	    if (defendant.comp == comp) {
-		target = defendant;
-		break;
-	    }
-	items.remove(target);
+            if (defendant.comp == comp) {
+                target = defendant;
+                break;
+            }
+        items.remove(target);
     }
 
-    public static void main(String args[]) {
-	Frame frame = new Frame("FractionLayout");
-	frame.addWindowListener(new WindowAdapter() {
-		public void windowClosing(WindowEvent e) {
-		    System.exit(0);
-		}
-	    });
-	frame.setLayout(new FractionLayout());
-	frame.add(new Button("one"), "0.05 0.05 0.25 0.25");
-	frame.add(new Button("two"), "0.5 0.5 0.45 0.25");
-	frame.pack();
-	frame.setVisible(true);
+    public static void main(String args[]) throws Exception {
+        Applet a = new Applet();
+        a.setLayout(new FractionLayout());
+        a.add(new Button("one"), "0.05 0.05 0.4 0.4");
+        a.add(new Button("two"), "0.5 0.5 0.25 0.25");
+        Standalone.app(a, "FractionLayout", args);
     }
 }

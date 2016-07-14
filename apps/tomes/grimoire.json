@@ -1,0 +1,35 @@
+{
+    "description": "Example tome for Grimoire testing",
+    "display": true,
+    "races": {
+        "Humanoid": {
+            "player": false,
+            "walk": 6,
+            "size": "medium",
+            "slots": [
+                ["rhand", true],
+                ["lhand", true],
+                ["head", false],
+                ["neck", false],
+                ["back", false],
+                ["shoulders", false],
+                ["torso", false],
+                ["waist", false],
+                ["legs", false],
+                ["feet", false]
+            ]},
+        "Human": {"parent": "Humanoid", "player": true}
+    },
+    "characters": [],
+    "itemdefs": {
+        "Dagger": {"mass": 330},
+        "Boots": {"mass": 1400, "wear": "feet"},
+        "Belt": {"mass": 1400, "wear": "waist"},
+        "Breeches": {"mass": 700, "wear": "legs"},
+        "Tunic": {"mass": 300, "wear": "torso"},
+        "Cloak": {"mass": 3000, "wear": "shoulders"},
+        "Lined Cloak": {"mass": 8000, "wear": "shoulders"},
+        "Cowl": {"mass": 200, "wear": "head"},
+        "Necklace": {"mass": 100, "wear": "neck"}
+    }
+}

@@ -71,8 +71,7 @@
                     for (var i in gneigh) {
                         var seed = ripple.pair(gneigh[i].row,
                                                gneigh[i].col);
-                        if ((seed % 5) != 2)
-                            self.push(gneigh[i]);
+                        self.push(gneigh[i]);
                     }
                     return self;
                 },
@@ -135,6 +134,11 @@
         var throttle = null;
         var counter = 0;
 
+        var seed = Math.max(0, parseInt(window.params['seed'], 10) ||
+                            random.random().int32());
+        console.log('seed =', seed);
+        var landscape = terrain.landscape({zoom: 4, seed: seed});
+
         var draw_id = 0;
         var draw = function(now) {
             if (throttle && now < throttle + 1000) {
@@ -151,30 +155,32 @@
                 ctx.clearRect(0, 0, width, height);
 
                 mapgrid.map(width, height, function(node) {
+                    var seed, points, fstyle = 'black';
+                    
+                    var value = Math.min(
+                        landscape.get(node.row, node.col) / 255, 1);
+                    if (value > 0.9) {
+                        fstyle = 'rgb(89,68,51)';
+                    } else if (value > 0.25) {
+                        fstyle = 'rgb(' +
+                            0 +
+                            ',' + Math.floor((1 - value + .2) * 256) + ',' +
+                            0 + ')';
+                    } else if (value > 0.20) {
+                        fstyle = 'rgb(192,192,64)'
+                    } else {
+                        fstyle = 'blue';
+                    }
+
                     ctx.beginPath();
-                    var points = mapgrid.points(node);
+                    points = mapgrid.points(node);
                     if (points.length) {
                         var last = points[points.length - 1];
                         ctx.moveTo(last.x, last.y);
                         for (i in points)
                             ctx.lineTo(points[i].x, points[i].y);
                     }
-
-                    var seed = ripple.pair(node.row, node.col);
-                    switch (seed % 5) {
-                    case 0:
-                    case 1:
-                        ctx.fillStyle = 'green';
-                        break;
-                    case 2:
-                        ctx.fillStyle = 'rgb(64,64,64)';
-                        break;
-                    case 3:
-                        ctx.fillStyle = 'rgb(128,128,128)';
-                        break;
-                    default:
-                        ctx.fillStyle = 'blue';
-                    };
+                    ctx.fillStyle = fstyle;
                     ctx.fill();
                 });
 
@@ -354,5 +360,7 @@
 if ((typeof require !== 'undefined') && (require.main === module)) {
     var grid = require('./ripple/grid.js');
     var pathf = require('./ripple/pathf.js');
+    var terrain = require('./ripple/terrain.js');
+    var random = require('./ripple/random.js');
     console.log('Test!');
 }

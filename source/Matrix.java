@@ -505,7 +505,7 @@ public class Matrix implements Serializable {
 
     /** Return a subset matrix with nRow rows and <code>nCol</code>
      *  columns that contains the elements of this matrix beginning at
-     *  <code>sRow</code> and <code>sCol<code>.  Requires that
+     *  <code>sRow</code> and <code>sCol</code>.  Requires that
      *  <code>sRow</code>, <code>sCol</code> must be valid indicies.
      *  <code>sRow</code> + <code>nRow</code> must be less than or
      *  equal to the number of rows in this matrix.  <code>sCol</code>

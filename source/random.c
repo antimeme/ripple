@@ -1,4 +1,4 @@
-/* ripple/random.c
+/* source/random.c
  * Copyright (C) 2011-2013 by Jeff Gold.
  *
  * This program is free software: you can redistribute it and/or
@@ -18,6 +18,7 @@
  * ---------------------------------------------------------------------
  * Mersenne Twister implementation.  For algorithm details:
  *     http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html */
+#include <limits.h>
 #include "ripple/random.h"
 
 enum {
@@ -78,3 +79,7 @@ ripple_random_uint32(struct ripple_random *rrand)
   current ^= current >> 18;
   return current;
 }
+
+double
+ripple_random_double(struct ripple_random *rrand)
+{ return ripple_random_uint32(rrand) / (double)UINT_MAX; }

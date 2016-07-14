@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="X-UA-Compatible" content="chrome=1">
+<title>Footy</title>
+<style>
+    html, body
+    { padding: 0; margin: 0; overflow: hidden; position: relative; }
+    canvas { background: #060; color: white; touch-action: none; }
+</style>
+<canvas class="footy"></canvas>
+
+<script src="lib/jquery.min.js"></script>
+<!--[if lt IE 9]><script>//<![CDATA[
+  jQuery(function($) {
+     $.getScript('http://ajax.googleapis.com/ajax/libs/' +
+                 'chrome-frame/1/CFInstall.min.js',
+                 function() { CFInstall.check(); }); });
+//]]></script><![endif]-->
+<script src="ripple/context.js"></script>
+<script src="footy.js"></script>
+<script>//<![CDATA[
+jQuery(function($) { $('canvas.footy').each(footy.setup); });
+//]]></script>

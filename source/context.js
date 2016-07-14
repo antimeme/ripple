@@ -18,20 +18,53 @@
 // ---------------------------------------------------------------------
 // Lightweight polyfill and utility features for web apps.
 (function() {
+    "use strict";
+
     // ECMAScript 5 introduces some useful functions which are missing
-    // in earlier versions.  Fallbacks provide.
+    // in earlier versions.  Fallback functions are provided here...
+
     if (typeof Object.create === 'undefined')
         Object.create = function(parent) {
-            var Intermediate = function() {}
+            var Intermediate = function() {};
             Intermediate.prototype = parent;
             return new Intermediate(); };
     if (typeof Array.prototype.forEach === 'undefined')
-        Array.prototype.forEach = function(fn) {
-            for (var i = 0; i < this.length; i++) fn(this[i]); };
+        Array.prototype.forEach = function(fn, self) {
+            for (var index = 0; index < this.length; index++)
+                fn.call(self, this[index], index, this); };
 
     var vendors = ['moz', 'webkit', 'o', 'ms'];
 
     if (typeof window !== 'undefined') {
+
+        // Based on Douglas Crockford's talk The Metamorphosis of Ajax
+        if (typeof window.getElementsByClassName === 'undefined') {
+            var walkDOM = function(node, fn) {
+                fn(node);
+                node = node.firstChild;
+                while (node) {
+                    walkDOM(node, fn);
+                    node = node.nextSibling;
+                }
+            };
+
+            window.getElementsByClassName = function(className) {
+                var result = [];
+                walkDOM(document.body, function(node) {
+                    var a, i, c = node.className;
+                    if (c) {
+                        a = c.split(' ');
+                        for (i = 0; i < a.length; ++i) {
+                            if (a[i] === className) {
+                                result.push(node);
+                                break;
+                            }
+                        }
+                    }
+                });
+                return result;
+            };
+        }
 
         // Support animation even in older browsers which are missing
         // requestAnimationFrame or have a vendor prefixed version.
@@ -63,7 +96,7 @@
         // Create a dictionary of query string parameters
         if (typeof window.params === 'undefined') {
             window.params = (function(a) {
-                if (a == "") return {};
+                if (a === "") return {};
                 var result = {};
                 for (var i = 0; i < a.length; ++i) {
                     var p = a[i].split('=');
@@ -82,9 +115,10 @@
         jQuery.requestFullscreen = function(elem) {
             var req = elem.requestFullscreen || elem.requestFullScreen;
             var names = ["RequestFullscreen", "RequestFullScreen"];
-            for (var i = 0; !req && i < vendors.length; ++i)
+            for (var i = 0; !req && i < vendors.length; ++i) {
                 for (var n = i; !req && n < names.length; ++n)
                     req = elem[vendors[i] + names[n]];
+            }
             console.log("rfs", elem, req);
             if (req) req.apply(elem);
         };
@@ -93,9 +127,10 @@
                 document.exitFullScreen;
             var names = ["ExitFullscreen", "ExitFullScreen",
                          "CancelFullScreen"];
-            for (var i = 0; !efs && i < vendors.length; ++i)
+            for (var i = 0; !efs && i < vendors.length; ++i) {
                 for (var n = i; !efs && n < names.length; ++n)
                     efs = document[vendors[i] + names[n]];
+            }
             console.log("efs");
             if (efs) efs.apply(document);
         };
@@ -103,9 +138,10 @@
             var fse = document.fullscreenElement ||
                 document.fullScreenElement;
             var names = ["FullscreenElement", "FullScreenElement"];
-            for (var i = 0; !fse && i < vendors.length; ++i)
+            for (var i = 0; !fse && i < vendors.length; ++i) {
                 for (var n = i; !fse && n < names.length; ++n)
                     fse = document[vendors[i] + names[n]];
+            }
             console.log(fse);
             return fse ? jQuery.exitFullscreen() :
                 jQuery.requestFullscreen(elem);
@@ -132,6 +168,6 @@
                 result.touches = [{x: result.x, y: result.y}];
             }
             return result;
-        }
+        };
     }
 }());
