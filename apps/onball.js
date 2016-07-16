@@ -1,9 +1,63 @@
 (function(exports) {
     var sqrt2 = Math.sqrt(2);
+    var sqrt3 = Math.sqrt(3);
+    var sqrt5 = Math.sqrt(5);
     var sqrt6 = Math.sqrt(6);
-    var tetrahedron = [[0, 0, 1], [0, 2 * sqrt2 / 3, -1 / 3],
+    var __ico_c1 = Math.sqrt((3 - sqrt5)/8);
+    var __ico_s1 = Math.sqrt((5 + sqrt5)/8);
+    var __ico_c2 = Math.sqrt((3 + sqrt5)/8);
+    var __ico_s2 = Math.sqrt((5 - sqrt5)/8);
+
+    var shapes = {
+        tetrahedron: {
+            vertices: [[0, 0, 1], [0, 2 * sqrt2 / 3, -1 / 3],
                        [sqrt6 / 3, -sqrt2 / 3, -1 / 3],
-                       [-sqrt6 / 3, -sqrt2 / 3, -1 / 3]];
+                       [-sqrt6 / 3, -sqrt2 / 3, -1 / 3]],
+            faces: [[0, 2, 1], [0, 3, 2], [0, 1, 3], [1, 2, 3]],
+            rotation: {x: Math.PI/12, y: 0}},
+        cube: {
+            vertices: [[1/sqrt3, 1/sqrt3, 1/sqrt3],
+                       [1/sqrt3, 1/sqrt3, -1/sqrt3],
+                       [1/sqrt3, -1/sqrt3, 1/sqrt3],
+                       [1/sqrt3, -1/sqrt3, -1/sqrt3],
+                       [-1/sqrt3, 1/sqrt3, 1/sqrt3],
+                       [-1/sqrt3, 1/sqrt3, -1/sqrt3],
+                       [-1/sqrt3, -1/sqrt3, 1/sqrt3],
+                       [-1/sqrt3, -1/sqrt3, -1/sqrt3]],
+            faces: [[0, 3, 1], [0, 2, 3], [4, 5, 7], [4, 7, 6],
+                    [0, 5, 4], [0, 1, 5], [7, 3, 2], [7, 2, 6],,
+                    [0, 4, 2], [6, 2, 4], [1, 3, 5], [7, 5, 3]],
+            rotation: {x: Math.PI / 4, y: Math.PI / 4}},
+        octahedron: {
+            vertices: [[0, 0, 1], [1/sqrt2, 1/sqrt2, 0],
+                       [-1/sqrt2, 1/sqrt2, 0],
+                       [-1/sqrt2, -1/sqrt2, 0],
+                       [1/sqrt2, -1/sqrt2, 0], [0, 0, -1]],
+            faces: [[0, 1, 2], [0, 2, 3], [0, 3, 4], [0, 4, 1],
+                    [5, 2, 1], [5, 3, 2], [5, 4, 3], [5, 1, 4]],
+            rotation: {x: Math.PI / 3, y: Math.PI / 12}},
+        icosahedron: {
+            vertices: [
+                [0, 0, 1],
+                [2/sqrt5, 0, 1/sqrt5],
+                [2/sqrt5 * __ico_c1, 2/sqrt5 * __ico_s1, 1/sqrt5],
+                [-2/sqrt5 * __ico_c2, 2/sqrt5 * __ico_s2, 1/sqrt5],
+                [-2/sqrt5 * __ico_c2, -2/sqrt5 * __ico_s2, 1/sqrt5],
+                [2/sqrt5 * __ico_c1, -2/sqrt5 * __ico_s1, 1/sqrt5],
+                [0, 0, -1],
+                [-2/sqrt5, 0, -1/sqrt5],
+                [-2/sqrt5 * __ico_c1, -2/sqrt5 * __ico_s1, -1/sqrt5],
+                [2/sqrt5 * __ico_c2, -2/sqrt5 * __ico_s2, -1/sqrt5],
+                [2/sqrt5 * __ico_c2, 2/sqrt5 * __ico_s2, -1/sqrt5],
+                [-2/sqrt5 * __ico_c1, 2/sqrt5 * __ico_s1, -1/sqrt5]],
+            faces: [[0, 1, 2], [0, 2, 3], [0, 3, 4], [0, 4, 5],
+                    [0, 5, 1], [2, 1, 10], [3, 2, 11], [4, 3, 7],
+                    [5, 4, 8], [1, 5, 9], [7, 8, 4], [8, 9, 5],
+                    [9, 10, 1], [10, 11, 2], [11, 7, 3],
+                    [6, 8, 7], [6, 9, 8], [6, 10, 9],
+                    [6, 11, 10], [6, 7, 11]],
+            rotation: {x: 0, y: 0}}
+    };
 
     var quaternion = {
         // Defines a quaternion.  The real part is a while the
@@ -61,10 +115,10 @@
         }
     };
 
-    var createSubject = function(steps) {
+    var createSubject = function(shape, steps) {
         // Create a tetrahedron inscribed within a unit sphere
-        var vertices = tetrahedron.slice();
-        var faces = [[0, 2, 1], [0, 3, 2], [0, 1, 3], [1, 2, 3]];
+        var vertices = shape.vertices.slice();
+        var faces = shape.faces.slice();
         var materials = [];
         var step;
         var subvert = function(v1, v2) {
@@ -110,12 +164,16 @@
             geometry.faces.push(
                 new THREE.Face3(face[0], face[1], face[2]));
         });
-        return THREE.SceneUtils.createMultiMaterialObject(
+        var result = THREE.SceneUtils.createMultiMaterialObject(
             geometry, [
                 new THREE.MeshBasicMaterial({ color: 0x8080ff }),
                 new THREE.MeshBasicMaterial(
                     { color: 0x000000, wireframe: true,
                       transparent: true })]);
+        result.rotation.x = shape.rotation.x || 0;
+        result.rotation.y = shape.rotation.y || 0;
+        result.rotation.z = shape.rotation.z || 0;
+        return result;
     }
 
     // Creates a game rendered using three.js
@@ -129,10 +187,10 @@
         renderer.setSize(viewport.width(), viewport.height());
         parent.append(renderer.domElement);
 
-        var subject = createSubject(Math.min(8, parseInt(
-            window.params['steps'], 10)));
-        subject.rotation.x = 0;
-        subject.rotation.y = Math.PI / 2;
+        var subject = createSubject(
+            window.params['shape'] in shapes ?
+                shapes[window.params['shape']] : shapes.cube,
+            Math.min(8, parseInt(window.params['steps'], 10)));
         scene.add(subject);
 
         var light = new THREE.DirectionalLight( 0xffffff );
@@ -149,18 +207,18 @@
         };
 
         var self = $(renderer.domElement);
-        self.on('mousedown touchstart', function(e) {
+        self.on('mousedown touchstart', function(event) {
             isDragging = true;
         });
 
-        self.on('mouseup mouseleave touchend', function(e) {
+        self.on('mouseup mouseleave touchend', function(event) {
             isDragging = false;
         });
 
-        self.on('mousemove touchmove', function(e) {
+        self.on('mousemove touchmove', function(event) {
             var deltaMove = {
-                x: e.offsetX-previousMousePosition.x,
-                y: e.offsetY-previousMousePosition.y
+                x: event.offsetX-previousMousePosition.x,
+                y: event.offsetY-previousMousePosition.y
             };
 
             if(isDragging) {
@@ -177,8 +235,8 @@
             }
 
             previousMousePosition = {
-                x: e.offsetX,
-                y: e.offsetY
+                x: event.offsetX,
+                y: event.offsetY
             };
         });
 
