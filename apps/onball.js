@@ -149,15 +149,15 @@
         };
 
         var self = $(renderer.domElement);
-        self.on('mousedown', function(e) {
+        self.on('mousedown touchstart', function(e) {
             isDragging = true;
         });
 
-        self.on('mouseup mouseleave', function(e) {
+        self.on('mouseup mouseleave touchend', function(e) {
             isDragging = false;
         });
 
-        self.on('mousemove', function(e) {
+        self.on('mousemove touchmove', function(e) {
             var deltaMove = {
                 x: e.offsetX-previousMousePosition.x,
                 y: e.offsetY-previousMousePosition.y
