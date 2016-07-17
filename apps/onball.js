@@ -178,8 +178,10 @@
 
     // Creates a game rendered using three.js
     onball.go = function(parent, viewport) {
+        var shapeName = window.params['shape'] in shapes ?
+            window.params['shape'] : 'cube';
+        var steps = Math.min(8, parseInt(window.params['steps'], 10));
         var minzoom = 1.1;
-        var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera(
             75, viewport.width() / viewport.height(), 0.1, 1000);
         var renderer = new THREE.WebGLRenderer({antialias: true});
@@ -187,15 +189,8 @@
         renderer.setSize(viewport.width(), viewport.height());
         parent.append(renderer.domElement);
 
-        var subject = createSubject(
-            window.params['shape'] in shapes ?
-                shapes[window.params['shape']] : shapes.cube,
-            Math.min(8, parseInt(window.params['steps'], 10)));
-        scene.add(subject);
-
         var light = new THREE.DirectionalLight( 0xffffff );
         light.position.set(1, 1, 1);
-        scene.add(light);
 
         camera.position.z = Math.max(minzoom, parseInt(
             window.params['zoom'], 10) || 2);
@@ -205,6 +200,16 @@
             x: 0,
             y: 0
         };
+
+        var scene, subject;
+        var createScene = function() {
+            var result = new THREE.Scene();
+            subject = createSubject(shapes[shapeName], steps);
+            result.add(subject);
+            result.add(light);
+            return result;
+        }
+        scene = createScene();
 
         var self = $(renderer.domElement);
         self.on('mousedown touchstart', function(event) {
@@ -271,6 +276,40 @@
         function toRadians(angle) {
 	    return angle * (Math.PI / 180);
         }
+
+        var menu = $('<fieldset class="menu"></ul>');
+        menu.append('<legend>On the Ball</legend>');
+        var menuList = $('<ul></ul>').appendTo(menu);
+        var selectShape = $('<select class="shape"></select>');
+        Object.keys(shapes).forEach(function(shapeKey) {
+            var prefix = '<option';
+            if (shapeKey === shapeName)
+                prefix += ' selected="selected"';
+            selectShape.append(prefix + ' value="' + shapeKey + '">' +
+                               shapeKey + '</option>');
+        });
+        var selectSteps = $('<select class="steps"></select>');
+        var index;
+        for (index = 0; index <= 8; ++index)
+            selectSteps.append('<option value="' + index + '">' +
+                               index + '</option>');
+        menuList.append($('<li></li>').append(
+            $('<label>Shape </label>').append(selectShape)));
+        menuList.append($('<li></li>').append(
+            $('<label>Steps </label>').append(selectSteps)));
+
+        menu.on('change', '.shape', function(event) {
+            shapeName = this.value;
+            scene = createScene();
+        });
+
+        menu.on('change', '.steps', function(event) {
+            var chosenSteps = parseInt(this.value, 10);
+            if (chosenSteps >= 0 && chosenSteps <= 8)
+                steps = chosenSteps;
+            scene = createScene();
+        });
+        menu.appendTo(parent).css('top', 10).css('left', 25).show();
     };
 
 })(typeof exports === 'undefined'? this['onball'] = {}: exports);
