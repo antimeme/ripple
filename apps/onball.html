@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="X-UA-Compatible" content="chrome=1">
+<title>On the Ball</title>
+<style>
+    html, body
+    { padding: 0; margin: 0; overflow: hidden; position: relative; }
+    .menu {
+      position: absolute; padding: 0.5em;
+      background: #338; color: white;
+      border: 2px solid white; border-radius: 5px;
+    }
+    .menu legend { padding: 0; }
+    .menu ul {
+      padding: 0; margin: 0;
+      list-style-type: none; list-style-position: outside;
+    }
+    .menu a { text-decoration: none; color: white; }
+    .menu li { padding: 0.25em; border-radius: 5px; }
+    .menu li:hover { background: #55e; }
+</style>
+
+<script src="lib/jquery.min.js"></script>
+<!--[if lt IE 9]><script>//<![CDATA[
+  jQuery(function($) {
+     $.getScript('http://ajax.googleapis.com/ajax/libs/' +
+                 'chrome-frame/1/CFInstall.min.js',
+                 function() { CFInstall.check(); }); });
+//]]></script><![endif]-->
+<script src="lib/jquery.mousewheel.js"></script>
+<script src="lib/three.min.js"></script>
+<script src="ripple/context.js"></script>
+<script src="onball.js"></script>
+<script>//<![CDATA[
+jQuery(function($) { onball.go($('body'), $(window)); });
+//]]></script>

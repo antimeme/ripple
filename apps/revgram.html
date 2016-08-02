@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="X-UA-Compatible" content="chrome=1">
+<title>Revgram Test</title>
+<style>
+    html, body
+    { padding: 0; margin: 0; overflow: hidden; position: relative; }
+    canvas { background: white; color: #336; }
+</style>
+
+<input id="revgram" type="text"></input>
+<button id="revgram-button">Generate</button>
+
+<div id="revgram-list"></div>
+
+<script src="lib/jquery.min.js"></script>
+<script src="lib/jquery.mousewheel.js"></script>
+<!--[if lt IE 9]><script>//<![CDATA[
+  jQuery(function($) {
+     $.getScript('http://ajax.googleapis.com/ajax/libs/' +
+                 'chrome-frame/1/CFInstall.min.js',
+                 function() { CFInstall.check(); }); });
+//]]></script><![endif]-->
+<script src="ripple/context.js"></script>
+<script src="ripple/ripple.js"></script>
+<script src="ripple/revgram.js"></script>
+<script>//<![CDATA[
+jQuery(function($) {
+    var example = {
+        'name': [[4, '%start', '%middle', '%end'],
+                 [1, '%start', '%end']],
+        'start': [[1, '%consonant', '%vowel']],
+        'middle': [[4, '%consonant', '%vowel'],
+                   [1, '%middle', '%middle']],
+        'end': [[1, '%consonant']],
+
+        'vowel': [[1, 'a'], [1, 'e'], [1, 'i'], [1, 'o'], [1, 'u']],
+        'consonant': [[1, 'b'], [1, 'c'], [1, 'd'], [1, 'f'], [1, 'g'],
+                      [1, 'h'], [1, 'j'], [1, 'k'], [1, 'l'], [1, 'm'],
+                      [1, 'n'], [1, 'p'], [1, 'r'], [1, 's'], [1, 't'],
+                      [1, 'v'], [1, 'w'], [1, 'x'], [1, 'z']]
+    };
+
+    $('#revgram-button').on('click', function(event) {
+        $('#revgram-list').prepend('<p>' + $('#revgram').val() + '</p>');
+        $('#revgram').val(revgram.generate(example, 'name'));
+    });
+}); //]]></script>

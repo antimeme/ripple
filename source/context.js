@@ -22,6 +22,7 @@
 
     // ECMAScript 5 introduces some useful functions which are missing
     // in earlier versions.  Let's add them if they're missing!
+
     if (typeof Object.create === 'undefined')
         Object.create = function(parent) {
             var Intermediate = function() {};
