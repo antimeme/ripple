@@ -1,5 +1,5 @@
 // context.js
-// Copyright (C) 2011-2014 by Jeff Gold.
+// Copyright (C) 2011-2016 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -21,7 +21,7 @@
     "use strict";
 
     // ECMAScript 5 introduces some useful functions which are missing
-    // in earlier versions.  Fallbacks provide.
+    // in earlier versions.  Let's add them if they're missing!
     if (typeof Object.create === 'undefined')
         Object.create = function(parent) {
             var Intermediate = function() {};
@@ -32,8 +32,12 @@
             for (var index = 0; index < this.length; index++)
                 fn.call(self, this[index], index, this); };
 
+    // Browser vendors sometimes introduce features before standards
+    // are agreed upon, but with prefixes.  We'll search for these
+    // prefixes for some values.
     var vendors = ['moz', 'webkit', 'o', 'ms'];
 
+    // This indicates that the runtime environment is a browser
     if (typeof window !== 'undefined') {
 
         // Based on Douglas Crockford's talk The Metamorphosis of Ajax
@@ -108,6 +112,7 @@
         }
     }
 
+    // Extensions for jQuery, but only when it's present
     if (typeof jQuery !== 'undefined') {
 
         // Process full screen events independent of browser vendor
@@ -150,7 +155,7 @@
         jQuery.targets = function(event) {
             var result = {};
             var offset = jQuery(event.target).offset();
-            if (event.originalEvent.targetTouches) {
+             if (event.originalEvent.targetTouches) {
                 var touches = event.originalEvent.targetTouches;
                 if (touches.length > 0) {
                     result.x = touches[0].pageX - offset.left;
