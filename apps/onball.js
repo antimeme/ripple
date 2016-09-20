@@ -115,8 +115,9 @@
         }
     };
 
-    var createSubject = function(shape, steps) {
-        // Create a tetrahedron inscribed within a unit sphere
+    var createSubject = function(shape, steps, previous, invert) {
+        // Create a regular polyhedron inscribed within a unit sphere
+        var meshColor = invert ? 0x80ff80 : 0x8080ff;
         var vertices = shape.vertices.slice();
         var faces = shape.faces.slice();
         var materials = [];
@@ -166,13 +167,20 @@
         });
         var result = THREE.SceneUtils.createMultiMaterialObject(
             geometry, [
-                new THREE.MeshBasicMaterial({ color: 0x8080ff }),
+                new THREE.MeshBasicMaterial({ color: meshColor }),
                 new THREE.MeshBasicMaterial(
                     { color: 0x000000, wireframe: true,
                       transparent: true })]);
-        result.rotation.x = shape.rotation.x || 0;
-        result.rotation.y = shape.rotation.y || 0;
-        result.rotation.z = shape.rotation.z || 0;
+
+        if (previous) {
+            result.rotation.x = previous.rotation.x || 0;
+            result.rotation.y = previous.rotation.y || 0;
+            result.rotation.z = previous.rotation.z || 0;
+        } else {
+            result.rotation.x = shape.rotation.x || 0;
+            result.rotation.y = shape.rotation.y || 0;
+            result.rotation.z = shape.rotation.z || 0;
+        }
         return result;
     }
 
@@ -201,10 +209,11 @@
             y: 0
         };
 
-        var scene, subject;
-        var createScene = function() {
+        var scene, subject = undefined;
+        var createScene = function(invert) {
             var result = new THREE.Scene();
-            subject = createSubject(shapes[shapeName], steps);
+            subject = createSubject(
+                shapes[shapeName], steps, subject, invert);
             result.add(subject);
             result.add(light);
             return result;
@@ -214,10 +223,12 @@
         var self = $(renderer.domElement);
         self.on('mousedown touchstart', function(event) {
             isDragging = true;
+            scene = createScene(true);
         });
 
         self.on('mouseup mouseleave touchend', function(event) {
             isDragging = false;
+            scene = createScene(false);
         });
 
         self.on('mousemove touchmove', function(event) {
