@@ -234,9 +234,10 @@
         });
 
         self.on('mousemove touchmove', function(event) {
+            var tap = $.targets(event);
             var deltaMove = {
-                x: event.offsetX-previousMousePosition.x,
-                y: event.offsetY-previousMousePosition.y
+                x: tap.x - previousMousePosition.x,
+                y: tap.y - previousMousePosition.y
             };
 
             if(isDragging) {
@@ -253,8 +254,8 @@
             }
 
             previousMousePosition = {
-                x: event.offsetX,
-                y: event.offsetY
+                x: tap.x,
+                y: tap.y
             };
             return false;
         });
