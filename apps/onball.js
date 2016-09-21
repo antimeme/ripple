@@ -224,15 +224,16 @@
         self.on('mousedown touchstart', function(event) {
             isDragging = true;
             scene = createScene(true);
+            return false;
         });
 
         self.on('mouseup mouseleave touchend', function(event) {
             isDragging = false;
             scene = createScene(false);
+            return false;
         });
 
         self.on('mousemove touchmove', function(event) {
-            event.preventDefault();
             var deltaMove = {
                 x: event.offsetX-previousMousePosition.x,
                 y: event.offsetY-previousMousePosition.y
@@ -255,6 +256,7 @@
                 x: event.offsetX,
                 y: event.offsetY
             };
+            return false;
         });
 
         self.on('mousewheel', function(event) {
