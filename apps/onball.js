@@ -232,6 +232,7 @@
         });
 
         self.on('mousemove touchmove', function(event) {
+            event.preventDefault();
             var deltaMove = {
                 x: event.offsetX-previousMousePosition.x,
                 y: event.offsetY-previousMousePosition.y
