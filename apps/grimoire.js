@@ -196,26 +196,28 @@
 
     /**
      * Automatically load tomes based on index with a fallback. */
-    grimoire.loadAJAX = function($, tomes, complete) {
+    grimoire.loadAJAX = function($, tomes, finished) {
         var index, loading = 0, loaded = function() {
             loading -= 1;
             if (loading <= 0)
-                complete();
+                finished();
         };
         var load = function(name) {
             loading += 1;
             $.ajax({
-                url: 'tomes/' + name, dataType: "json",
-                cache: false}).
-                done(function(data) {
-                    grimoire.load(name, data);
-                    if (data.parent && !(data.parent in grimoire.tomes))
-                        load(data.parent);
-                }).
-                always(function() { loaded(); }).
-                fail(function(a, err) {
-                    console.log("ERROR: failed to load tome " + name +
-                                ": " + JSON.stringify(err)); });
+                url: 'tomes/' + name, dataType: "json", cache: false}).
+              done(function(data) {
+                  grimoire.load(name, data);
+                  if (data.parent && !(data.parent in grimoire.tomes))
+                      load(data.parent);
+                  loaded();
+              }).
+              fail(function(jqXHR, err) {
+                  var message = err;
+                  if (jqXHR.statusText)
+                      message = jqXHR.statusText;
+                  console.log("ERROR: failed to load tome " + name +
+                              ": " + message); loaded(); });
         };
 
         if (tomes && tomes.length > 0) {
@@ -232,10 +234,11 @@
     }
 })(typeof exports === 'undefined'? this['grimoire'] = {}: exports);
 
-// Entry point for command line use.
+// Entry point for command line.
 if ((typeof require !== 'undefined') && (require.main === module)) {
     var result = 0;
     var fs = require('fs');
+    var path = require('path');
     var grimoire = exports;
     var tomes = []; // names of tomes to load
 
@@ -287,9 +290,9 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
             // necessary in a real AJAX application because the
             // browser event loop takes care of things but it's
             // necessary for a synchronous command line application.
-            var path = process.argv[1].substring(
-                0, process.argv[1].lastIndexOf('/'));
-            var data = null, mode = 'done', status = 'success';
+            var directory = process.argv[1].substring(
+                0, process.argv[1].lastIndexOf(path.sep));
+            var data = null, mode, status, fname;
             var index, jndex, current, request, request, callback;
             while (this.pending) {
                 current = this.pending;
@@ -297,10 +300,13 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
 
                 for (index = 0; index < current.length; ++index) {
                     request = current[index];
+                    status = 'success';
+                    mode = 'done';
+                    fname = directory + path.sep + path.join.apply(
+                        null, request.url.split('/')) + '.json';
                     try {
                         data = JSON.parse(fs.readFileSync(
-                            path + '/' + request.url + '.json',
-                            {encoding: 'utf8'}));
+                            fname, {encoding: 'utf8'}));
                     } catch (error) { mode = 'fail'; status = error; }
 
                     for (jndex = 0; jndex < request.cbs.length;

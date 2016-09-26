@@ -57,25 +57,25 @@
 //]]></script><![endif]-->
 <script src="lib/bootstrap.min.js"></script>
 <script>
-  jQuery(function($) { // Required to make Bootstrap tabs work
-    $('#myTab a').click(function (event) {
-      $(this).tab('show'); return false; }); })
+ jQuery(function($) { // Required to make Bootstrap tabs work
+     $('#myTab a').click(function (event) {
+         $(this).tab('show'); return false; }); })
 </script>
 <script src="ripple/context.js"></script>
 <script src="ripple/grid.js"></script>
 <script src="grimoire.js"></script>
 <script>
-  jQuery(function($) {
-      grimoire.loadAJAX($, null, function() {
-          var tomebar = $('.tomebar');
-          $.each(grimoire.tomes, function(name, tome) {
-              if (tome.display)
-                  tomebar.append('<option>' + name + '</option>');
-          });
-          tomebar.on("change", function(event) {
-              console.log("Changed", $(this).val());
-          });
-          console.log('complete');
-      });
-  });
+ jQuery(function($) {
+     grimoire.loadAJAX($, null, function() {
+         var tomebar = $('.tomebar');
+         $.each(grimoire.tomes, function(name, tome) {
+             if (tome.display)
+                 tomebar.append('<option>' + name + '</option>');
+         });
+         tomebar.on("change", function(event) {
+             console.log("Changed", $(this).val());
+         });
+         console.log('complete');
+     });
+ });
 </script>
