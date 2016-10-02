@@ -1,4 +1,4 @@
-Copyright (C) 2006-2014 by Jeff Gold.
+Copyright (C) 2006-2016 by Jeff Gold.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -319,27 +319,41 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
             }
         }
     };
+
     grimoire.loadAJAX(fakejax, tomes, function() {
-        for (tome_name in grimoire.tomes) {
-            var tome = grimoire.tomes[tome_name];
-            var index, character, race;
+        var iface, gateway = process.env.GATEWAY_INTERFACE;
+        if (gateway)
+            gateway = gateway.split('/');
+        iface = ((gateway && gateway[0]) ?
+                 gateway[0].toUpperCase() : null);
 
-            if (tome.races && Object.keys(tome.races).length) {
-                console.log('Races: ' + tome_name);
-                for (index in tome.races) {
-                    race = tome.races[index];
-                    if (race.player)
-                        console.log('  ' + index);
+        if (iface === 'CGI') {
+            console.log('CGI');
+        } else if (iface === 'HTTP') {
+            console.log('HTTP');
+        } else {
+
+            for (tome_name in grimoire.tomes) {
+                var tome = grimoire.tomes[tome_name];
+                var index, character, race;
+
+                if (tome.races && Object.keys(tome.races).length) {
+                    console.log('Races: ' + tome_name);
+                    for (index in tome.races) {
+                        race = tome.races[index];
+                        if (race.player)
+                            console.log('  ' + index);
+                    }
                 }
-            }
 
-            if (tome.characters && tome.characters.length) {
-                console.log('Characters: ' + tome_name);
-                for (index = 0; index < tome.characters.length;
-                     ++index) {
-                    character = tome.characters[index];
-                    console.log('  ' + character.fname + ' ' +
-                                character.lname);
+                if (tome.characters && tome.characters.length) {
+                    console.log('Characters: ' + tome_name);
+                    for (index = 0; index < tome.characters.length;
+                         ++index) {
+                        character = tome.characters[index];
+                        console.log('  ' + character.fname + ' ' +
+                                    character.lname);
+                    }
                 }
             }
         }
