@@ -238,6 +238,8 @@
 if ((typeof require !== 'undefined') && (require.main === module)) {
     var fs = require('fs');
     var path = require('path');
+    var url = require('url');
+    var querystring = require('querystring');
     var grimoire = exports;
     var tomes = []; // names of tomes to load
 
@@ -257,10 +259,10 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
         }
     }
 
-    var sanitizeURL = function(url, index) {
+    var sanitizeURL = function(target, index) {
         var result = [], ii, current;
-        // TODO: unquote URL first
-        var s = url.replace(/[^\/a-zA-Z0-9._-]/g, '').split('/');
+        var urlObj = url.parse(target, true);
+        var s = querystring.unescape(urlObj.pathname).split('/');
         for (ii = 0; ii < s.length; ++ii) {
             current = s[ii].trim();
             if (!current || current === '.')
@@ -275,7 +277,7 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
         return result.join(path.sep);
     };
 
-    var errorpage = function(response, code, url) {
+    var errorpage = function(response, code, target) {
         fs.readFile(
             'errorpages/page' + code + '.html',
             function(err, data) {
@@ -295,7 +297,8 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
                 }
                 response.setHeader('Content-Type', 'text/html');
                 response.writeHeader(code);
-                response.end(data.toString().replace(/:PATH:/g, url));
+                response.end(data.toString().replace(
+                        /:PATH:/g, target));
             });
     };
 
@@ -304,7 +307,17 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
         var target = sanitizeURL(request.url, 'grimoire.html');
 
         // Otherwise unrecognized URLs are treated as file paths
-        fs.readFile(target, function (err, data) {
+        var fetchFile = function (err, data) {
+            var match;
+            if (err && err.code === 'ENOENT') {
+                //match = request.url.match(/\/[^.]*/);
+                if (match) {
+                    console.log('RETRY', path.join(target, '.json'));
+                    fs.readFile(target + '.json', fetchFile);
+                    return;
+                }
+            }
+
             if (err) {
                 if (err.code === 'ENOENT')
                     errorpage(response, 404, target);
@@ -322,14 +335,14 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
                 'jpeg': 'image/jpeg',
                 'jpg':  'image/jpeg',
             };
-            var match = target.match(/\.([^.]*)$/);
+            match = target.match(/\.([^.]*)$/);
             if (match && match[1] in tmap)
                 ctype = tmap[match[1]];
             response.setHeader('Content-Type', ctype);
             response.writeHead(200);
             response.end(data);
-        });
-
+        };
+        fs.readFile(target, fetchFile);
     }
 
     /** Emulates jQuery Ajax using local file operations.  This allows
