@@ -214,7 +214,7 @@
               }).
               fail(function(jqXHR, err) {
                   var message = err;
-                  if (jqXHR.statusText)
+                  if (jqXHR && jqXHR.statusText)
                       message = jqXHR.statusText;
                   console.log("ERROR: failed to load tome " + name +
                               ": " + message); loaded(); });
@@ -236,7 +236,6 @@
 
 // Entry point for command line.
 if ((typeof require !== 'undefined') && (require.main === module)) {
-    var result = 0;
     var fs = require('fs');
     var path = require('path');
     var grimoire = exports;
@@ -258,9 +257,83 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
         }
     }
 
-    /**
-     * Emulates jQuery Ajax but uses file operations instead.
-     * This allows us to use grimoire.loadAJAX directly. */
+    var sanitizeURL = function(url, index) {
+        var result = [], ii, current;
+        // TODO: unquote URL first
+        var s = url.replace(/[^\/a-zA-Z0-9._-]/g, '').split('/');
+        for (ii = 0; ii < s.length; ++ii) {
+            current = s[ii].trim();
+            if (!current || current === '.')
+                continue;
+            else if (current === '..')
+                result.pop();
+            else result.push(current);
+        }
+        if (!result.length && index)
+            result.push(index);
+        result.unshift('.');
+        return result.join(path.sep);
+    };
+
+    var errorpage = function(response, code, url) {
+        fs.readFile(
+            'errorpages/page' + code + '.html',
+            function(err, data) {
+                if (err) {
+                    if (err.code === 'ENOENT') {
+                        // TODO: put error explanation strings in
+                        response.setHeader('Content-Type', 'text/html');
+                        response.writeHeader(code);
+                        response.end(
+                            '<h1>HTTP ERROR ' + code + '</h1>');
+                    } else {
+                        response.setHeader('Content-Type', 'text/html');
+                        response.writeHeader(500);
+                        response.end(err.toString());
+                    }
+                    return;
+                }
+                response.setHeader('Content-Type', 'text/html');
+                response.writeHeader(code);
+                response.end(data.toString().replace(/:PATH:/g, url));
+            });
+    };
+
+    // HTTP Processing Routine
+    var handleHTTP = function(request, response) {
+        var target = sanitizeURL(request.url, 'grimoire.html');
+
+        // Otherwise unrecognized URLs are treated as file paths
+        fs.readFile(target, function (err, data) {
+            if (err) {
+                if (err.code === 'ENOENT')
+                    errorpage(response, 404, target);
+                else if (err.code === 'EACCES')
+                    errorpage(response, 403, target);
+                else errorpage(response, 500, target);
+                return;
+            }
+
+            var ctype = 'text/plain';
+            var tmap = {
+                'html': 'text/html',
+                'css':  'text/css',
+                'png':  'image/png',
+                'jpeg': 'image/jpeg',
+                'jpg':  'image/jpeg',
+            };
+            var match = target.match(/\.([^.]*)$/);
+            if (match && match[1] in tmap)
+                ctype = tmap[match[1]];
+            response.setHeader('Content-Type', ctype);
+            response.writeHead(200);
+            response.end(data);
+        });
+
+    }
+
+    /** Emulates jQuery Ajax using local file operations.  This allows
+     *  us to use grimoire.loadAJAX directly. */
     var fakejax = {
         getJSON: function(url) { return this.ajax({url: url}); },
         ajax: function(options) {
@@ -321,6 +394,8 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
     };
 
     grimoire.loadAJAX(fakejax, tomes, function() {
+        const fs = require('fs');
+        var port, options;
         var iface, gateway = process.env.GATEWAY_INTERFACE;
         if (gateway)
             gateway = gateway.split('/');
@@ -330,7 +405,21 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
         if (iface === 'CGI') {
             console.log('CGI');
         } else if (iface === 'HTTP') {
-            console.log('HTTP');
+            const http = require('http');
+            options = {};
+            port = 8080;
+
+            http.createServer(handleHTTP).listen(port);
+            console.log('HTTP server active on port', port, '...');
+        } else if (iface === 'HTTPS') {
+            const https = require('https');
+            options = {
+                key: fs.readFileSync('grimoire-key.pem'),
+                cert: fs.readFileSync('grimoire-cert.pem')
+            };
+
+            https.createServer(options, handleHTTP).listen(port);
+            console.log('HTTPS server active on port', port, '...');
         } else {
 
             for (tome_name in grimoire.tomes) {
@@ -358,5 +447,4 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
             }
         }
     }).sync();
-    process.exit(result);
 }
