@@ -207,6 +207,7 @@ if (typeof require !== 'undefined') (function(solymos) {
             services: ((options && options.services) ?
                        options.services : {}),
             activate: function(options) {
+                var self = this;
                 var gateway = process.env.GATEWAY_INTERFACE;
                 var iface, httpsOptions;
                 if (gateway)
@@ -220,7 +221,7 @@ if (typeof require !== 'undefined') (function(solymos) {
                     console.log('CGI'); // FIXME
                 } else if (iface === 'HTTP') {
                     http.createServer(function(request, response) {
-                        handler.handle(request, response);
+                        self.handle(request, response);
                     }).listen(this.portHTTP);
                     console.log(this.serverName,
                                 'HTTP server active on port',
@@ -234,7 +235,7 @@ if (typeof require !== 'undefined') (function(solymos) {
 
                     https.createServer(httpsOptions, function(
                         request, response) {
-                        handler.handle(request, response);
+                        self.handle(request, response);
                     }).listen(this.portHTTPS);
                     console.log(this.serverName,
                                 'HTTPS server active on port',
