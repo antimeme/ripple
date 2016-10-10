@@ -223,13 +223,16 @@
         if (tomes && tomes.length > 0) {
             for (index in tomes)
                 load(tomes[index]);
-        } else $.getJSON('tomes/index').fail(function(err) {
+        } else $.getJSON('tomes/index').fail(function(
+            jqXHR, status, err) {
+            if (err !== 'Not Found' &&
+                (!err.code || err.code !== 'ENOENT'))
+                console.log(status, err.code ? err.code : err);
             load('grimoire');
         }).done(function(data) {
-            var index;
-            for (index = 0; index < data.length; ++index) {
-                load(data[index]);
-            }
+            var ii;
+            for (ii = 0; ii < data.length; ++ii)
+                load(data[ii]);
         });
         return $;
     }
@@ -313,7 +316,7 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
                          ++jndex) {
                         callback = request.cbs[jndex];
                         if (!callback.which || callback.which === mode)
-                            callback.fn(data, status, null);
+                            callback.fn(data, mode, status);
                     }
                 }
             }
