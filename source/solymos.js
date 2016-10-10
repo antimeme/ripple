@@ -185,9 +185,11 @@
 
     solymos.createHandler = function(options) {
         return {
+            defaultPage: ((options && options.defaultPage) ?
+                          options.defaultPage : 'index.html'),
             handle: function(request, response) {
                 var key, target = solymos.sanitizeURL(
-                    request.url, 'grimoire.html');
+                    request.url, this.defaultPage);
                 console.log('===', target);
 
                 // FIXME: create escape hatch for service urls
@@ -210,5 +212,12 @@
 })(typeof exports === 'undefined' ? window['solymos'] = {} : exports);
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
+    var http = require('http');
+    var solymos = exports;
+    var port = 8080, handler = solymos.createHandler();
 
+    http.createServer(function(request, response) {
+        handler.handle(request, response);
+    }).listen(port);
+    console.log('HTTP server active on port', port, '...');
 }

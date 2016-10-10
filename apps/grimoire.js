@@ -330,7 +330,8 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
                  gateway[0].toUpperCase() : null);
 
         if (iface) {
-            handler = solymos.createHandler();
+            handler = solymos.createHandler({
+                defaultPage: 'grimoire.html'});
 
             if (iface === 'CGI') {
                 console.log('CGI');
