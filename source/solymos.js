@@ -42,9 +42,11 @@
 // Library routines that apply only to Node.js applications
 if (typeof require !== 'undefined') (function(solymos) {
     'use strict';
-    var fs   = require('fs');
-    var path = require('path');
-    var url  = require('url');
+    var fs    = require('fs');
+    var path  = require('path');
+    var http  = require('http');
+    var https = require('https');
+    var url   = require('url');
     var querystring = require('querystring');
 
     solymos.sanitizeURL = function(target, index) {
@@ -192,17 +194,74 @@ if (typeof require !== 'undefined') (function(solymos) {
         };
     };
 
-    solymos.createHandler = function(options) {
+    solymos.createServer = function(options) {
         return {
             defaultPage: ((options && options.defaultPage) ?
                           options.defaultPage : 'index.html'),
+            serverName: ((options && options.serverName) ?
+                         options.serverName : 'Solymos'),
+            portHTTP: ((options && options.portHTTP) ?
+                       options.portHTTP : 80),
+            portHTTPS: ((options && options.portHTTPS) ?
+                        options.portHTTPS : 443),
+            services: ((options && options.services) ?
+                       options.services : {}),
+            activate: function(options) {
+                var gateway = process.env.GATEWAY_INTERFACE;
+                var iface, httpsOptions;
+                if (gateway)
+                    gateway = gateway.split('/');
+                iface = ((gateway && gateway[0]) ?
+                         gateway[0].toUpperCase() :
+                         ((options && options.fallback) ?
+                          null : 'HTTP'));
+
+                if (iface === 'CGI') {
+                    console.log('CGI'); // FIXME
+                } else if (iface === 'HTTP') {
+                    http.createServer(function(request, response) {
+                        handler.handle(request, response);
+                    }).listen(this.portHTTP);
+                    console.log(this.serverName,
+                                'HTTP server active on port',
+                                this.portHTTP, '...');
+                } else if (iface === 'HTTPS') {
+                    const https = require('https');
+                    httpsOptions = {
+                        key: fs.readFileSync('grimoire-key.pem'),
+                        cert: fs.readFileSync('grimoire-cert.pem')
+                    }; // FIXME
+
+                    https.createServer(httpsOptions, function(
+                        request, response) {
+                        handler.handle(request, response);
+                    }).listen(this.portHTTPS);
+                    console.log(this.serverName,
+                                'HTTPS server active on port',
+                                this.portHTTPS, '...');
+                } else if (iface) {
+                    console.log(this.serverName,
+                                'unknown interface:', iface);
+                    iface = null;
+                }
+                return !!iface;
+            },
             handle: function(request, response) {
-                var key, target = solymos.sanitizeURL(
+                var key, service = null, target = solymos.sanitizeURL(
                     request.url, this.defaultPage);
                 console.log(new Date().toISOString(),
                             'INFO: request', target);
 
-                // FIXME: create escape hatch for service urls
+                // Allow application to handle designated services
+                Object.keys(this.services).forEach(
+                    function(key) {
+                        if (target.startsWith(key) &&
+                            (target.length === key.length ||
+                             target[key.length] === '/'))
+                            service = this.services[target];
+                    });
+                if (service)
+                    return service(request, response, target, options);
 
                 // Otherwise unrecognized URLs are treated as file paths
                 var fetchFile = function (err, data) {
@@ -223,10 +282,9 @@ if (typeof require !== 'undefined') (function(solymos) {
 if ((typeof require !== 'undefined') && (require.main === module)) {
     var http = require('http');
     var solymos = exports;
-    var port = 8080, handler = solymos.createHandler();
+    var server = solymos.createServer({
+        portHTTP: 8080, portHTTPS: 8443
+    });
 
-    http.createServer(function(request, response) {
-        handler.handle(request, response);
-    }).listen(port);
-    console.log('HTTP server active on port', port, '...');
+    server.activate();
 }

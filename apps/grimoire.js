@@ -223,12 +223,13 @@
         if (tomes && tomes.length > 0) {
             for (index in tomes)
                 load(tomes[index]);
-        } else $.getJSON('tomes/index').fail(function() {
+        } else $.getJSON('tomes/index').fail(function(err) {
             load('grimoire');
         }).done(function(data) {
             var index;
-            for (index = 0; index < data.length; ++index)
+            for (index = 0; index < data.length; ++index) {
                 load(data[index]);
+            }
         });
         return $;
     }
@@ -322,42 +323,13 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
     grimoire.loadAJAX(fakejax, tomes, function() {
         const fs = require('fs');
         const solymos = require('./ripple/solymos');
-        var port, handler, options;
-        var iface, gateway = process.env.GATEWAY_INTERFACE;
-        if (gateway)
-            gateway = gateway.split('/');
-        iface = ((gateway && gateway[0]) ?
-                 gateway[0].toUpperCase() : null);
+        var handler = solymos.createServer({
+            defaultPage: 'grimoire.html',
+            portHTTP: 8080, portHTTPS: 8443,
+            privateKey: 'grimoire-key.pem',
+            certificate: 'grimoire-cert.pem'});
 
-        if (iface) {
-            handler = solymos.createHandler({
-                defaultPage: 'grimoire.html'});
-
-            if (iface === 'CGI') {
-                console.log('CGI');
-            } else if (iface === 'HTTP') {
-                const http = require('http');
-                options = {};
-                port = 8080;
-
-                http.createServer(function(request, response) {
-                    handler.handle(request, response);
-                }).listen(port);
-                console.log('HTTP server active on port', port, '...');
-            } else if (iface === 'HTTPS') {
-                const https = require('https');
-                options = {
-                    key: fs.readFileSync('grimoire-key.pem'),
-                    cert: fs.readFileSync('grimoire-cert.pem')
-                };
-
-                https.createServer(options, function(
-                    request, response) {
-                    handler.handle(request, response);
-                }).listen(port);
-                console.log('HTTPS server active on port', port, '...');
-            }
-        } else {
+        if (!handler.activate({fallback: true})) {
 
             for (tome_name in grimoire.tomes) {
                 var tome = grimoire.tomes[tome_name];
