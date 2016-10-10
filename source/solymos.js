@@ -87,9 +87,34 @@
             });
     };
 
-    var startAccepts = function(response, target) {
-        // FIXME
-        errorPage(response, 500, target);
+    var serveFile = function(response, target, ext, err, data) {
+        if (!err) {
+            var ctype = 'text/plain';
+            var tmap = {
+                'html': 'text/html',
+                'css':  'text/css',
+                'png':  'image/png',
+                'jpeg': 'image/jpeg',
+                'jpg':  'image/jpeg',
+                'js':   'text/javascript',
+                'json': 'application/json',
+            };
+            if (ext)
+                ctype = tmap[ext];
+            else {
+                match = target.match(/\.([^.]*)$/);
+                if (match && match[1] in tmap)
+                    ctype = tmap[match[1]];
+            }
+            response.setHeader('Content-Type', ctype);
+            response.writeHead(200);
+            response.end(data);
+            console.log('served', target, data.length);
+        } else if (err.code === 'ENOENT')
+            errorPage(response, 404, target);
+        else if (err.code === 'EACCES')
+            errorPage(response, 403, target);
+        else errorPage(response, 500, target);
     };
 
     var parseAccept = function(accept) {
@@ -115,64 +140,70 @@
 
         Object.keys(unordered).sort(function(a, b) {
             return parseFloat(b) - parseFloat(a);
-        }).forEach(function(key) {
-            ordered.push(unordered[key]);
-        });
+        }).forEach(function(key) { ordered.push(unordered[key]); });
         return {
-            start: startAccepts,
-            stages: ordered
-        };
-    };
+            outstanding: 0, done: false,
+            stages: ordered,
+            start: function(response, target) {
+                var extensions = {};
+                var stage = this.stages.shift();
+                var self = this;
 
-    var serveFile = function(response, target, data) {
-        var ctype = 'text/plain';
-        var tmap = {
-            'html': 'text/html',
-            'css':  'text/css',
-            'png':  'image/png',
-            'jpeg': 'image/jpeg',
-            'jpg':  'image/jpeg',
-            'js':   'text/javascript',
-            'json': 'application/json',
-        };
-        match = target.match(/\.([^.]*)$/);
-        if (match && match[1] in tmap)
-            ctype = tmap[match[1]];
-        response.setHeader('Content-Type', ctype);
-        response.writeHead(200);
-        response.end(data);
-    };
+                if (stage) {
+                    stage.forEach(function(entry) {
+                        if (entry === 'application/json') {
+                            extensions['js'] = true;
+                        } else if (entry === 'text/javascript') {
+                            extensions['json'] = true;
+                        } else if (entry === '*/*') {
+                            extensions['html'] = true;
+                            extensions['js'] = true;
+                            extensions['json'] = true;
+                        } else console.log("UNCERTAIN:", entry);
+                    });
+                } else return errorPage(response, 404, target);
 
-    var handle = function(request, response) {
-        var target = solymos.sanitizeURL(request.url, 'grimoire.html');
-        var accepts = parseAccept(request.headers['accept']);
-        var key;
-
-        // Otherwise unrecognized URLs are treated as file paths
-        var fetchFile = function (err, data) {
-            var match;
-            if (err && err.code === 'ENOENT') {
-                match = request.url.match(/\/[^.]*/);
-                if (match) {
-                    accepts.start(response, target);
-                    return;
-                }
+                if (Object.keys(extensions).length === 0)
+                    return errorPage(response, 500, target);
+                Object.keys(extensions).forEach(function(ext) {
+                    ++self.outstanding;
+                    fs.readFile(target + '.' + ext, function(
+                        err, data) {
+                        if (self.done)
+                            return;
+                        if (!err) {
+                            serveFile(response, target, ext, err, data);
+                            self.done = true;
+                        } else if (--self.outstanding <= 0) {
+                            self.start(response, target);
+                        }
+                    });
+                });
             }
-
-            if (!err)
-                serveFile(response, target, data);
-            else if (err.code === 'ENOENT')
-                errorPage(response, 404, target);
-            else if (err.code === 'EACCES')
-                errorPage(response, 403, target);
-            else errorPage(response, 500, target);
         };
-        fs.readFile(target, fetchFile);
     };
 
     solymos.createHandler = function(options) {
         return {
-            handle: handle
+            handle: function(request, response) {
+                var key, target = solymos.sanitizeURL(
+                    request.url, 'grimoire.html');
+                console.log('===', target);
+
+                // FIXME: create escape hatch for service urls
+
+                // Otherwise unrecognized URLs are treated as file paths
+                var fetchFile = function (err, data) {
+                    var match;
+                    if (err && err.code === 'ENOENT' &&
+                        (match = request.url.match(/\/[^.]*/)))
+                        return parseAccept(
+                            request.headers['accept']).start(
+                                response, target);
+                    serveFile(response, target, null, err, data);
+                };
+                fs.readFile(target, fetchFile);
+            }
         };
     };
 
