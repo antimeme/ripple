@@ -16,15 +16,10 @@
 // <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-// A web framework in which elements are constructed as objects so that
-// quoting can happen automatically.
+// A framework for building web applications.
 
 (function(solymos) {
-    var fs   = require('fs');
-    var path = require('path');
-    var url  = require('url');
-    var querystring = require('querystring');
-
+    'use strict';
     solymos.element = function(name, attrs) {
         return {
             name: name,
@@ -42,7 +37,15 @@
     solymos.link = function() {};
     solymos.request = function() {};
     solymos.response = function() {};
+})(typeof exports === 'undefined' ? window['solymos'] = {} : exports);
 
+// Library routines that apply only to Node.js applications
+if (typeof require !== 'undefined') (function(solymos) {
+    'use strict';
+    var fs   = require('fs');
+    var path = require('path');
+    var url  = require('url');
+    var querystring = require('querystring');
 
     solymos.sanitizeURL = function(target, index) {
         var result = [], ii, current;
@@ -73,10 +76,14 @@
                         response.writeHeader(code);
                         response.end(
                             '<h1>HTTP ERROR ' + code + '</h1>');
+                        console.log(new Date().toISOString(),
+                                    'ERROR:', code, target, '(NOPAGE)');
                     } else {
                         response.setHeader('Content-Type', 'text/html');
                         response.writeHeader(500);
                         response.end(err.toString());
+                        console.log(new Date().toISOString(),
+                                    'ERROR: 500', target, err.code);
                     }
                     return;
                 }
@@ -84,12 +91,14 @@
                 response.writeHeader(code);
                 response.end(data.toString().replace(
                         /:PATH:/g, target));
+                console.log(new Date().toISOString(),
+                            'ERROR:', code, target);
             });
     };
 
     var serveFile = function(response, target, ext, err, data) {
         if (!err) {
-            var ctype = 'text/plain';
+            var match, ctype = 'text/plain';
             var tmap = {
                 'html': 'text/html',
                 'css':  'text/css',
@@ -99,17 +108,17 @@
                 'js':   'text/javascript',
                 'json': 'application/json',
             };
-            if (ext)
-                ctype = tmap[ext];
-            else {
+            if (!ext) {
                 match = target.match(/\.([^.]*)$/);
                 if (match && match[1] in tmap)
                     ctype = tmap[match[1]];
-            }
+            } else ctype = tmap[ext];
             response.setHeader('Content-Type', ctype);
             response.writeHead(200);
             response.end(data);
-            console.log('served', target, data.length);
+            console.log(new Date().toISOString(), 'INFO: sending',
+                        target + (ext ? ('[.' + ext + ']') : ''),
+                        data.length, 'bytes');
         } else if (err.code === 'ENOENT')
             errorPage(response, 404, target);
         else if (err.code === 'EACCES')
@@ -190,7 +199,8 @@
             handle: function(request, response) {
                 var key, target = solymos.sanitizeURL(
                     request.url, this.defaultPage);
-                console.log('===', target);
+                console.log(new Date().toISOString(),
+                            'INFO: request', target);
 
                 // FIXME: create escape hatch for service urls
 
@@ -208,7 +218,6 @@
             }
         };
     };
-
 })(typeof exports === 'undefined' ? window['solymos'] = {} : exports);
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
