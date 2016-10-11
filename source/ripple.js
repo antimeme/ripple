@@ -214,6 +214,75 @@
         });
     };
 
+})(typeof exports === 'undefined' ? window['ripple'] = {} : exports);
+
+// Library routines that apply only to Node.js applications
+if (typeof require !== 'undefined') (function(ripple) {
+    'use strict';
+    var fs   = require('fs');
+    var path = require('path');
+
+    /** Emulates jQuery Ajax using local file operations.  This allows
+     *  us to use grimoire.loadAJAX directly. */
+    ripple.fakejax = {
+        getJSON: function(url) { return this.ajax({url: url}); },
+        ajax: function(options) {
+            var result = {
+                base: this, cbs: [],
+                url: options.url,
+                done: function(fn) {
+                    this.cbs.push({which: 'done', fn: fn});
+                    return this;
+                },
+                fail: function(fn) {
+                    this.cbs.push({which: 'fail', fn: fn});
+                    return this;
+                },
+                always: function(fn) {
+                    this.cbs.push({which: null, fn: fn});
+                    return this;
+                },
+            };
+            if (!this.pending)
+                this.pending = [];
+            this.pending.push(result);
+            return result;
+        },
+        sync: function() {
+            // Process tome loading until completion.  This isn't
+            // necessary in a real AJAX application because the
+            // browser event loop takes care of things but it's
+            // necessary for a synchronous command line application.
+            var directory = process.argv[1].substring(
+                0, process.argv[1].lastIndexOf(path.sep));
+            var data = null, mode, status, fname;
+            var index, jndex, current, request, request, callback;
+            while (this.pending) {
+                current = this.pending;
+                this.pending = undefined;
+
+                for (index = 0; index < current.length; ++index) {
+                    request = current[index];
+                    status = 'success';
+                    mode = 'done';
+                    fname = directory + path.sep + path.join.apply(
+                        null, request.url.split('/')) + '.json';
+                    try {
+                        data = JSON.parse(fs.readFileSync(
+                            fname, {encoding: 'utf8'}));
+                    } catch (error) { mode = 'fail'; status = error; }
+
+                    for (jndex = 0; jndex < request.cbs.length;
+                         ++jndex) {
+                        callback = request.cbs[jndex];
+                        if (!callback.which || callback.which === mode)
+                            callback.fn(data, mode, status);
+                    }
+                }
+            }
+        }
+    };
+
 })(typeof exports === 'undefined' ? this['ripple'] = {} : exports);
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
