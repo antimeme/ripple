@@ -50,7 +50,8 @@ if (typeof require !== 'undefined') (function(solymos) {
     var querystring = require('querystring');
 
     solymos.sanitizeURL = function(target, index) {
-        var result = [], ii, current;
+        var result = {};
+        var segments = [], ii, current;
         var urlObj = url.parse(target, true);
         var s = querystring.unescape(urlObj.pathname).split('/');
         for (ii = 0; ii < s.length; ++ii) {
@@ -58,13 +59,15 @@ if (typeof require !== 'undefined') (function(solymos) {
             if (!current || current === '.')
                 continue;
             else if (current === '..')
-                result.pop();
-            else result.push(current);
+                segments.pop();
+            else segments.push(current);
         }
-        if (!result.length && index)
-            result.push(index);
-        result.unshift('.');
-        return result.join(path.sep);
+        if (!segments.length && index)
+            segments.push(index);
+        result.path = segments.join('/');
+        segments.unshift('.');
+        result.fileName = segments.join(path.sep);
+        return result;
     };
 
     var negotiateAccept = function(accept) {
@@ -94,39 +97,45 @@ if (typeof require !== 'undefined') (function(solymos) {
         return {
             outstanding: 0, done: false,
             stages: ordered,
-            start: function(server, target, response) {
+            start: function(server, fileName, response) {
                 var extensions = {};
                 var stage = this.stages.shift();
                 var self = this;
 
                 if (stage) {
                     stage.forEach(function(entry) {
-                        if (entry === 'application/json') {
+                        if (entry === 'text/html') {
+                            extensions['html'] = true;
+                        } else if (entry === 'application/xhtml+xml') {
+                            extensions['xhtml'] = true;
+                        } else if (entry === 'application/json') {
                             extensions['js'] = true;
                         } else if (entry === 'text/javascript') {
                             extensions['json'] = true;
                         } else if (entry === '*/*') {
-                            extensions['html'] = true;
-                            extensions['js'] = true;
-                            extensions['json'] = true;
+                            extensions['xhtml'] = true;
+                            extensions['html']  = true;
+                            extensions['js']    = true;
+                            extensions['json']  = true;
                         } else console.log("UNCERTAIN:", entry);
                     });
-                } else return errorPage(response, 404, target);
+                } else return server.errorPage(response, 404, fileName);
 
                 if (Object.keys(extensions).length === 0)
-                    return errorPage(response, 500, target);
+                    return server.errorPage(response, 500, fileName);
                 Object.keys(extensions).forEach(function(ext) {
                     ++self.outstanding;
-                    fs.readFile(target + '.' + ext, function(
+                    fs.readFile(fileName + '.' + ext, function(
                         err, data) {
                         if (self.done)
                             return;
                         if (!err) {
-                            server.serveFile(
-                                err, data, target, response, ext);
+                            response.setHeader('Vary', 'accept');
+                            server.serveData(
+                                err, data, fileName, response, ext);
                             self.done = true;
                         } else if (--self.outstanding <= 0) {
-                            self.start(server, target, response);
+                            self.start(server, fileName, response);
                         }
                     });
                 });
@@ -134,34 +143,40 @@ if (typeof require !== 'undefined') (function(solymos) {
         };
     };
 
+    var matchService = function(target, serviceName) {
+        return (target.startsWith(serviceName) &&
+                (target.length === serviceName.length ||
+                 target[serviceName.length] === '/'));
+    };
+
     var handleRequest = function(server, request, response) {
         var key, service = null, target = solymos.sanitizeURL(
             request.url, server.defaultPage);
         console.log(new Date().toISOString(),
-                    'INFO: request', target);
+                    'INFO: request', target.path);
 
         // Allow application to handle designated services
         Object.keys(server.services).forEach(
             function(key) {
-                if (target.startsWith(key) &&
-                    (target.length === key.length ||
-                     target[key.length] === '/'))
-                    service = server.services[target];
+                if (matchService(target.path, key))
+                    service = server.services[target.path];
             });
+        if (!service && server.defaultService &&
+            matchService(target.path, path.basename(process.argv[1])))
+            service = server.defaultService;
         if (service)
-            return service(request, response, target, options);
+            return service(server, request, response, target.fileName);
 
         // Otherwise unrecognized URLs are treated as file paths
-        var fetchFile = function (err, data) {
+        fs.readFile(target.fileName, function (err, data) {
             var match;
             if (err && err.code === 'ENOENT' &&
                 (match = request.url.match(/\/[^.]*/)))
                 return negotiateAccept(
                     request.headers['accept']).start(
-                        response, target);
-            server.serveFile(err, data, target, response);
-        };
-        fs.readFile(target, fetchFile);
+                        server, target.fileName, response);
+            server.serveData(err, data, target.fileName, response);
+        });
     };
 
     solymos.createServer = function(options) {
@@ -174,6 +189,7 @@ if (typeof require !== 'undefined') (function(solymos) {
                        options.portHTTP : 80),
             portHTTPS: ((options && options.portHTTPS) ?
                         options.portHTTPS : 443),
+            defaultService: options && options.defaultService,
             services: ((options && options.services) ?
                        options.services : {}),
 
@@ -219,38 +235,40 @@ if (typeof require !== 'undefined') (function(solymos) {
                 return !!iface;
             },
 
-            serveFile: function(err, data, target, response, ext) {
+            serveData: function(err, data, fileName, response, ext) {
                 if (!err) {
                     var match, ctype = 'text/plain';
                     var tmap = {
-                        'html': 'text/html',
-                        'css':  'text/css',
-                        'png':  'image/png',
-                        'jpeg': 'image/jpeg',
-                        'jpg':  'image/jpeg',
-                        'js':   'text/javascript',
-                        'json': 'application/json',
+                        'html':  'text/html',
+                        'css':   'text/css',
+                        'png':   'image/png',
+                        'jpeg':  'image/jpeg',
+                        'jpg':   'image/jpeg',
+                        'js':    'text/javascript',
+                        'json':  'application/json',
+                        'xhtml': 'application/xhtml+xml',
                     };
                     if (!ext) {
-                        match = target.match(/\.([^.]*)$/);
+                        match = fileName.match(/\.([^.]*)$/);
                         if (match && match[1] in tmap)
                             ctype = tmap[match[1]];
-                    } else ctype = tmap[ext];
+                    } else if (ext in tmap)
+                        ctype = tmap[ext];
                     response.setHeader('Content-Type', ctype);
                     response.writeHead(200);
                     response.end(data);
                     console.log(new Date().toISOString(),
-                                'INFO: sending', target +
+                                'INFO: sending', fileName +
                                 (ext ? ('[.' + ext + ']') : ''),
                                 data.length, 'bytes');
                 } else if (err.code === 'ENOENT')
-                    this.errorPage(response, 404, target);
+                    this.errorPage(response, 404, fileName);
                 else if (err.code === 'EACCES')
-                    this.errorPage(response, 403, target);
-                else this.errorPage(response, 500, target);
+                    this.errorPage(response, 403, fileName);
+                else this.errorPage(response, 500, fileName);
             },
 
-            errorPage: function(response, code, target) {
+            errorPage: function(response, code, fileName) {
                 fs.readFile(
                     'errorpages/page' + code + '.html',
                     function(err, data) {
@@ -264,7 +282,7 @@ if (typeof require !== 'undefined') (function(solymos) {
                                     '<h1>HTTP ERROR ' + code + '</h1>');
                                 console.log(
                                     new Date().toISOString(),
-                                    'ERROR:', code, target, '(NOPAGE)');
+                                    'ERROR:', code, fileName, '(NOPAGE)');
                             } else {
                                 response.setHeader(
                                     'Content-Type', 'text/html');
@@ -272,16 +290,16 @@ if (typeof require !== 'undefined') (function(solymos) {
                                 response.end(err.toString());
                                 console.log(
                                     new Date().toISOString(),
-                                    'ERROR: 500', target, err.code);
+                                    'ERROR: 500', fileName, err.code);
                             }
                             return;
                         }
                         response.setHeader('Content-Type', 'text/html');
                         response.writeHeader(code);
                         response.end(data.toString().replace(
-                            /:PATH:/g, target));
+                            /:PATH:/g, fileName));
                         console.log(new Date().toISOString(),
-                                    'ERROR:', code, target);
+                                    'ERROR:', code, fileName);
                     });
             }
         };
