@@ -168,7 +168,7 @@ if (typeof require !== 'undefined') (function(solymos) {
                         if (!err) {
                             response.setHeader('Vary', 'accept');
                             server.serveData(
-                                err, data, fileName, response, ext);
+                                data, fileName, response, ext);
                             self.done = true;
                         } else if (--self.outstanding <= 0) {
                             self.start(server, fileName, response);
@@ -211,12 +211,19 @@ if (typeof require !== 'undefined') (function(solymos) {
         // Otherwise unrecognized URLs are treated as file paths
         fs.readFile(target.fileName, function (err, data) {
             var match;
-            if (err && err.code === 'ENOENT' &&
-                (match = request.url.match(/\/[^.]*/)))
-                return negotiateAccept(
-                    request.headers['accept']).start(
-                        server, target.fileName, response);
-            server.serveData(err, data, target.fileName, response);
+            if (err) {
+                if (err.code === 'ENOENT') {
+                    if ((match = request.url.match(/\/[^.]*/)))
+                        return negotiateAccept(
+                            request.headers['accept']).start(
+                                server, target.fileName, response);
+                    else return server.errorPage(
+                        response, 404, fileName);
+                } else if (err.code === 'EACCES')
+                    return server.errorPage(response, 403, fileName);
+                return server.errorPage(
+                    response, 500, fileName, err.code);
+            } else server.serveData(data, target.fileName, response);
         });
     };
 
@@ -282,38 +289,35 @@ if (typeof require !== 'undefined') (function(solymos) {
                 return !!iface;
             },
 
-            serveData: function(err, data, fileName, response, ext) {
-                if (!err) {
-                    var match, ctype = 'text/plain';
-                    var tmap = {
-                        'html':  'text/html',
-                        'css':   'text/css',
-                        'png':   'image/png',
-                        'gif':   'image/gif',
-                        'jpeg':  'image/jpeg',
-                        'jpg':   'image/jpeg',
-                        'js':    'text/javascript',
-                        'json':  'application/json',
-                        'xhtml': 'application/xhtml+xml',
-                    };
-                    if (!ext) {
-                        match = fileName.match(/\.([^.]*)$/);
-                        if (match && match[1] in tmap)
-                            ctype = tmap[match[1]];
-                    } else if (ext in tmap)
-                        ctype = tmap[ext];
-                    response.setHeader('Content-Type', ctype);
-                    response.writeHead(200);
-                    response.end(data);
-                    console.log(new Date().toISOString(),
-                                'INFO: sending', fileName +
-                                (ext ? ('[.' + ext + ']') : ''),
-                                data.length, 'bytes');
-                } else if (err.code === 'ENOENT')
-                    this.errorPage(response, 404, fileName);
-                else if (err.code === 'EACCES')
-                    this.errorPage(response, 403, fileName);
-                else this.errorPage(response, 500, fileName, err.code);
+            serveData: function(data, fileName, response, ext) {
+                var match, ctype = 'text/html';
+                var tmap = {
+                    'txt':   'text/plain',
+                    'html':  'text/html',
+                    'css':   'text/css',
+                    'png':   'image/png',
+                    'gif':   'image/gif',
+                    'jpeg':  'image/jpeg',
+                    'jpg':   'image/jpeg',
+                    'js':    'text/javascript',
+                    'json':  'application/json',
+                    'xhtml': 'application/xhtml+xml',
+                };
+                if (!ext) {
+                    match = fileName.match(/\.([^.]*)$/);
+                    if (match && match[1] in tmap)
+                        ctype = tmap[match[1]];
+                } else if (ext in tmap)
+                    ctype = tmap[ext];
+                console.log('DEBUG', ctype, ext, fileName);
+                response.setHeader(
+                    'Content-Type', ctype || 'text/html');
+                response.writeHead(200);
+                response.end(data);
+                console.log(new Date().toISOString(),
+                            'INFO: sending', fileName +
+                            (ext ? ('[.' + ext + ']') : ''),
+                            data.length, 'bytes');
             },
 
             errorPage: function(response, code, fileName, message) {

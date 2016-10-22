@@ -32,9 +32,9 @@ for (index = 2; index < process.argv.length; ++index) {
 var service = function(targetPath, request, response) {
     response.setHeader('Content-Type', 'text/html');
     var data = [
-        '<!doctype html>',
+        '<!doctype html>', '<meta charset="utf-8">',
         '<p>hello world</p>', ''];
-    this.serveData(null, data.join('\n'), targetPath, response);
+    this.serveData(data.join('\n'), targetPath, response);
 };
 
 var command = function() {
