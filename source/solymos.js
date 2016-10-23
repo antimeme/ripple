@@ -40,7 +40,7 @@
 })(typeof exports === 'undefined' ? window['solymos'] = {} : exports);
 
 // Library routines that apply only to Node.js applications
-if (typeof require !== 'undefined') (function(solymos) {
+if (typeof exports !== 'undefined') (function(solymos) {
     'use strict';
     var fs    = require('fs');
     var path  = require('path');
@@ -152,7 +152,7 @@ if (typeof require !== 'undefined') (function(solymos) {
                             extensions['jpeg']  = true;
                             extensions['gif']   = true;
                             extensions['png']   = true;
-                        } else console.log("UNCERTAIN:", entry);
+                        } else server.log("UNCERTAIN:", entry);
                     });
                 } else return server.errorPage(
                     response, this.wildcard ? 404 : 406, fileName);
@@ -188,8 +188,7 @@ if (typeof require !== 'undefined') (function(solymos) {
     var handleRequest = function(server, request, response) {
         var key, service = null, target = solymos.sanitizeURL(
             request.url, server.defaultPage, server.directory);
-        console.log(new Date().toISOString(),
-                    'INFO: request', target.path);
+        server.log('INFO: request', target.path);
 
         // Allow application to handle designated services
         Object.keys(server.services).forEach(
@@ -201,10 +200,10 @@ if (typeof require !== 'undefined') (function(solymos) {
             target.path, path.basename(process.argv[1])))
             service = server.defaultService;
         if (service)
-            return service.call(server, target.fileName,
-                                request, response);
+            return service.call(server, target, request, response);
 
         // Serving files can be disabled using false or null
+        // but undefined means use the current directory
         if (server.directory === false || server.directory === null)
             return server.errorPage(response, 404, target.fileName);
 
@@ -225,6 +224,45 @@ if (typeof require !== 'undefined') (function(solymos) {
                     response, 500, fileName, err.code);
             } else server.serveData(data, target.fileName, response);
         });
+    };
+
+    var serveCGI = function(server) {
+        var request  = {
+            url: process.env.REQUEST_URI || '/',
+            headers: {
+                'host': process.env.HTTP_HOST,
+                'user-agent': process.env.HTTP_USER_AGENT,
+                'accept': process.env.HTTP_ACCEPT,
+                'accept-charset': process.env.HTTP_ACCEPT_CHARSET,
+                'accept-encoding': process.env.HTTP_ACCEPT_ENCODING,
+                'accept-language': process.env.HTTP_ACCEPT_LANGUAGE,
+            }
+        };
+        var response = {
+            __headers: {},
+            setHeader: function(name, value) {
+                this.__headers[name] = value;
+            },
+            writeHead: function(code) {
+                var self = this;
+                if (code !== 200)
+                    console.log('HTTP/1.0', code, 'FIXME'); // FIXME
+                if (!this.__headers['Content-Type']) // FIXME
+                    this.__headers['Content-Type'] = 'text/html';
+                Object.keys(this.__headers).forEach(function (header) {
+                    console.log(header + ':', self.__headers[header]);
+                });
+                console.log();
+            },
+            end: function(data) {
+                console.log(data); // FIXME
+            }
+        };
+        console.log('DEBUG', request.url);
+        var target = solymos.sanitizeURL(
+            request.url, this.defaultPage, this.directory);
+
+        this.defaultService(target, request, response);
     };
 
     solymos.createServer = function(options) {
@@ -259,34 +297,43 @@ if (typeof require !== 'undefined') (function(solymos) {
                           null : 'HTTP'));
 
                 if (iface === 'CGI') {
-                    console.log('CGI'); // FIXME: implement!
+                    if (server.defaultService)
+                        serveCGI.call(server);
+                    else {
+                        console.log();
+                    }
                 } else if (iface === 'HTTP') {
                     http.createServer(function(request, response) {
                         handleRequest(server, request, response);
-                    }).listen(this.portHTTP);
-                    console.log(this.serverName,
-                                'HTTP server active on port',
-                                this.portHTTP, '...');
+                    }).listen(server.portHTTP);
+                    server.log(server.serverName,
+                               'HTTP server active on port',
+                               server.portHTTP, '...');
                 } else if (iface === 'HTTPS') {
                     const https = require('https');
                     httpsOptions = {
-                        key: fs.readFileSync(this.privateKey),
-                        cert: fs.readFileSync(this.certificate)
+                        key: fs.readFileSync(server.privateKey),
+                        cert: fs.readFileSync(server.certificate)
                     }; // FIXME: support automatic certificates?
 
                     https.createServer(httpsOptions, function(
                         request, response) {
                         handleRequest(server, request, response);
-                    }).listen(this.portHTTPS);
-                    console.log(this.serverName,
-                                'HTTPS server active on port',
-                                this.portHTTPS, '...');
+                    }).listen(server.portHTTPS);
+                    server.log(server.serverName,
+                               'HTTPS server active on port',
+                               server.portHTTPS, '...');
                 } else if (iface) {
-                    console.log(this.serverName,
-                                'unknown interface:', iface);
+                    server.log('unknown interface:', iface);
                     iface = null;
                 }
                 return !!iface;
+            },
+
+            log: function() {
+                var message = Array.prototype.slice.call(arguments);
+                message.unshift(new Date().toISOString());
+                console.error.apply(console, message);
             },
 
             serveData: function(data, fileName, response, ext) {
@@ -309,15 +356,13 @@ if (typeof require !== 'undefined') (function(solymos) {
                         ctype = tmap[match[1]];
                 } else if (ext in tmap)
                     ctype = tmap[ext];
-                console.log('DEBUG', ctype, ext, fileName);
                 response.setHeader(
                     'Content-Type', ctype || 'text/html');
                 response.writeHead(200);
                 response.end(data);
-                console.log(new Date().toISOString(),
-                            'INFO: sending', fileName +
-                            (ext ? ('[.' + ext + ']') : ''),
-                            data.length, 'bytes');
+                this.log('INFO: sending', fileName +
+                         (ext ? ('[.' + ext + ']') : ''),
+                         data.length, 'bytes');
             },
 
             errorPage: function(response, code, fileName, message) {
@@ -344,8 +389,7 @@ if (typeof require !== 'undefined') (function(solymos) {
                     response.setHeader('Content-Type', 'text/html');
                     response.writeHeader(code);
                     response.end(data.join('\r\n'));
-                    console.log(new Date().toISOString(),
-                                'ERROR:', code, fileName,
+                    server.log('ERROR:', code, fileName,
                                 '(errpage: ' + err.code + ')');
                 }
 
@@ -359,13 +403,12 @@ if (typeof require !== 'undefined') (function(solymos) {
                         response.writeHeader(code);
                         response.end(data.toString().replace(
                             /:PATH:/g, fileName));
-                        console.log(new Date().toISOString(),
-                                    'ERROR:', code, fileName);
+                        server.log('ERROR:', code, fileName);
                     });
             }
         };
     };
-})(typeof exports === 'undefined' ? window['solymos'] = {} : exports);
+})(exports);
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
     var http = require('http');

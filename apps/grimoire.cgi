@@ -29,12 +29,12 @@ for (index = 2; index < process.argv.length; ++index) {
     }
 }
 
-var service = function(targetPath, request, response) {
+var service = function(target, request, response) {
     response.setHeader('Content-Type', 'text/html');
     var data = [
         '<!doctype html>', '<meta charset="utf-8">',
         '<p>hello world</p>', ''];
-    this.serveData(data.join('\n'), targetPath, response);
+    this.serveData(data.join('\n'), target.fileName, response);
 };
 
 var command = function() {
