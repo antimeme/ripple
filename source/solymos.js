@@ -300,7 +300,7 @@ if (typeof exports !== 'undefined') (function(solymos) {
                     if (server.defaultService)
                         serveCGI.call(server);
                     else {
-                        console.log();
+                        console.log(); // FIXME
                     }
                 } else if (iface === 'HTTP') {
                     http.createServer(function(request, response) {
@@ -310,7 +310,6 @@ if (typeof exports !== 'undefined') (function(solymos) {
                                'HTTP server active on port',
                                server.portHTTP, '...');
                 } else if (iface === 'HTTPS') {
-                    const https = require('https');
                     httpsOptions = {
                         key: fs.readFileSync(server.privateKey),
                         cert: fs.readFileSync(server.certificate)

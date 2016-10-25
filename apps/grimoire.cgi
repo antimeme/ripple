@@ -64,8 +64,8 @@ var command = function() {
 }
 
 grimoire.loadAJAX(ripple.fakejax, tomes, function() {
-    const fs = require('fs');
-    const solymos = require('./ripple/solymos');
+    var fs = require('fs');
+    var solymos = require('./ripple/solymos');
     var server = solymos.createServer({
         serverName: 'Grimoire', portHTTP: 8080, portHTTPS: 8443,
         defaultPage: 'grimoire.html', defaultService: service,
