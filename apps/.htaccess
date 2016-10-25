@@ -1,2 +1,7 @@
-AddType application/json .tome
-Options +MultiViews
+Options +MultiViews +ExecCGI
+AddHandler cgi-script .cgi
+
+AuthType Digest
+AuthName "RippleApps"
+AuthDigestProvider socache dbd
+#Require valid-user
