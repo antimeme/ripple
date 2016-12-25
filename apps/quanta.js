@@ -29,87 +29,6 @@
     var planck  = 4.135667516e-15;
     var c = 1; // speed of light
 
-    var Vector = {
-        epsilon: 0.000001,
-
-        create: function(x, y) {
-            // Creates and returns a vector using Cartesian coordinates
-            var result = Object.create(this);
-            result.x = x || 0;
-            result.y = y || 0;
-            return result;
-        },
-
-        polar: function(r, theta) {
-            // Creates and returns a vector using polar coordinates
-            var result = Object.create(this);
-            result.x = r * Math.cos(theta);
-            result.y = r * Math.sin(theta);
-            return result;
-        },
-
-        reverse: function()
-        { return this.create(-this.x, -this.y); },
-
-        plus: function(other)
-        { return this.create(this.x + other.x, this.y + other.y); },
-
-        minus: function(other)
-        { return this.plus(other.reverse()); },
-
-        times: function(value)
-        { return this.create(this.x * value, this.y * value); },
-
-        dotp: function(other)
-        { return this.x * other.x + this.y * other.y; },
-
-        length: function() { return Math.sqrt(this.dotp(this)); },
-
-        angle: function() { return Math.acos(this.norm().x); },
-
-        norm: function() {
-            var length = this.length();
-            return this.create(this.x / length, this.y / length);
-        },
-
-        reflect: function(target) {
-            // r = d - ((2 d . n) / (n . n)) n
-            return (this.dotp(this) > this.epsilon) ?
-                target.minus(this.times(2 * this.dotp(target) /
-                                        this.dotp(this))) : target;
-        },
-
-        draw: function(context, center, config) {
-            var length = this.length();
-            var angle  = this.angle();
-            var adepth = 0.9, awidth;
-
-            context.save();
-            context.lineCap = 'round';
-            context.strokeStyle = (config && config.color) || 'white';
-            context.fillStyle = context.strokeStyle;
-            context.lineWidth = (config && config.lineWidth) || 5;
-            awidth = Math.min(context.lineWidth, length / 10);
-
-            context.translate(center ? center.x : 0,
-                              center ? center.y : 0);
-            context.rotate((this.y > 0 ? 1 : -1) * angle);
-
-            context.beginPath();
-            context.moveTo(0, 0);
-            context.lineTo(adepth * length, 0);
-            context.lineTo(adepth * length, awidth);
-            context.lineTo(length, 0);
-            context.lineTo(adepth * length, -awidth);
-            context.lineTo(adepth * length, 0);
-            context.closePath();
-
-            context.stroke();
-            context.fill();
-            context.restore();
-        }
-    };
-
     quanta.Laboratory = {
         particles: undefined,
         create: function(width, height) {
@@ -133,7 +52,7 @@
             // Returns true iff there is continuing activity in the lab.
             var index;
             for (index = 0; index < this.particles.length; ++index)
-                if (this.particles[index].speed > Vector.epsilon)
+                if (this.particles[index].speed > ripple.vector.epsilon)
                     return true;
             return false;
         },
@@ -188,10 +107,10 @@
                 var bounds = this._bounds(particle);
                 var velocity = particle.direction.times(particle.speed);
 
-                xtime = (Math.abs(velocity.x) > Vector.epsilon) ?
+                xtime = (Math.abs(velocity.x) > ripple.vector.epsilon) ?
                     (((velocity.x < 0) ? bounds.xmin : bounds.xmax) -
                      particle.position.x) / velocity.x : -1;
-                ytime = (Math.abs(velocity.y) > Vector.epsilon) ?
+                ytime = (Math.abs(velocity.y) > ripple.vector.epsilon) ?
                     (((velocity.y < 0) ? bounds.ymin : bounds.ymax) -
                      particle.position.y) / velocity.y : -1;
 
@@ -272,14 +191,14 @@
             var result = Object.create(this);
             result.scale = config && config.scale ? config.scale :
                 lab.scale * result.scaleFactor;
-            result.position = Vector.create(
+            result.position = ripple.vector.create(
                     Math.random() * (lab.width - result.scale) +
                     result.scale / 2,
                     Math.random() * (lab.height - result.scale) +
                     result.scale / 2);
             result.direction = (config && config.direction) ?
                 direction.norm() :
-                Vector.polar(1, Math.random() * 2 * Math.PI);
+                ripple.vector.polar(1, Math.random() * 2 * Math.PI);
             result.phase = (config && config.phase) ?
                 config.phase : Math.random() * 2 * Math.PI;
             if (result.mass === 0)
@@ -312,7 +231,7 @@
                      (this.position.y - other.position.y) *
                      (this.position.y - other.position.y));
 
-            return ((Math.abs(m) > Vector.epsilon) ?
+            return ((Math.abs(m) > ripple.vector.epsilon) ?
                     (Math.sqrt(n * n - m *
                                (q - radius * radius)) - n) / m :
                     undefined);
@@ -467,7 +386,7 @@
         viewport.resize(resize);
         canvas.on('click', function(event) {
             console.log(lab.active(), d.angle(), axis.angle(),
-                        d.norm().dotp(Vector.create(1, 0)));
+                        d.norm().dotp(ripple.vector.create(1, 0)));
         });
 
         lab = quanta.Laboratory.create(

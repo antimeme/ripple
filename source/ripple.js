@@ -19,6 +19,91 @@
 
 (function(ripple) {
 
+    ripple.vector = {
+        epsilon: 0.000001,
+
+        create: function(x, y) {
+            // Creates and returns a vector using Cartesian coordinates
+            var result = Object.create(this);
+            result.x = x || 0;
+            result.y = y || 0;
+            return result;
+        },
+
+        polar: function(r, theta) {
+            // Creates and returns a vector using polar coordinates
+            var result = Object.create(this);
+            result.x = r * Math.cos(theta);
+            result.y = r * Math.sin(theta);
+            return result;
+        },
+
+        reverse: function()
+        { return this.create(-this.x, -this.y); },
+
+        plus: function(other)
+        { return this.create(this.x + other.x, this.y + other.y); },
+
+        minus: function(other)
+        { return this.plus(other.reverse()); },
+
+        times: function(value)
+        { return this.create(this.x * value, this.y * value); },
+
+        dotp: function(other)
+        { return this.x * other.x + this.y * other.y; },
+
+        sqlen: function() { return this.dotp(this); },
+
+        length: function() { return Math.sqrt(this.dotp(this)); },
+
+        angle: function() { return Math.acos(this.norm().x); },
+
+        norm: function() {
+            var length = this.length();
+            var result = this.create(this.x / length, this.y / length);
+            result.originalLength = length;
+            return result;
+        },
+
+        reflect: function(target) {
+            // r = d - ((2 d . n) / (n . n)) n
+            return (this.dotp(this) > this.epsilon) ?
+                   target.minus(this.times(2 * this.dotp(target) /
+                       this.dotp(this))) : target;
+        },
+
+        draw: function(context, center, config) {
+            var length = this.length();
+            var angle  = this.angle();
+            var adepth = 0.9, awidth;
+
+            context.save();
+            context.lineCap = 'round';
+            context.strokeStyle = (config && config.color) || 'white';
+            context.fillStyle = context.strokeStyle;
+            context.lineWidth = (config && config.lineWidth) || 5;
+            awidth = Math.min(context.lineWidth, length / 10);
+
+            context.translate(center ? center.x : 0,
+                              center ? center.y : 0);
+            context.rotate((this.y > 0 ? 1 : -1) * angle);
+
+            context.beginPath();
+            context.moveTo(0, 0);
+            context.lineTo(adepth * length, 0);
+            context.lineTo(adepth * length, awidth);
+            context.lineTo(length, 0);
+            context.lineTo(adepth * length, -awidth);
+            context.lineTo(adepth * length, 0);
+            context.closePath();
+
+            context.stroke();
+            context.fill();
+            context.restore();
+        }
+    };
+
     // http://www.math.drexel.edu/~tolya/cantorpairing.pdf
     ripple.cantor = {
         name: "Cantor",
