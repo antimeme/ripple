@@ -22,11 +22,12 @@
     ripple.vector = {
         epsilon: 0.000001,
 
-        create: function(x, y) {
+        create: function(x, y, z) {
             // Creates and returns a vector using Cartesian coordinates
             var result = Object.create(this);
             result.x = x || 0;
             result.y = y || 0;
+            result.z = z || 0;
             return result;
         },
 
@@ -35,23 +36,31 @@
             var result = Object.create(this);
             result.x = r * Math.cos(theta);
             result.y = r * Math.sin(theta);
+            // TODO: z coordinate?
             return result;
         },
 
         reverse: function()
-        { return this.create(-this.x, -this.y); },
+        { return this.create(-this.x, -this.y, -this.z); },
 
-        plus: function(other)
-        { return this.create(this.x + other.x, this.y + other.y); },
+        plus: function(other) {
+            return this.create(
+                this.x + other.x, this.y + other.y, this.z + other.z);
+        },
 
         minus: function(other)
         { return this.plus(other.reverse()); },
 
-        times: function(value)
-        { return this.create(this.x * value, this.y * value); },
+        times: function(value) {
+            return this.create(
+                this.x * value, this.y * value, this.z * value);
+        },
 
-        dotp: function(other)
-        { return this.x * other.x + this.y * other.y; },
+        dotp: function(other) {
+            return this.x * other.x +
+                   this.y * other.y +
+                   this.z * other.z;
+        },
 
         sqlen: function() { return this.dotp(this); },
 
