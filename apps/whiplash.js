@@ -391,7 +391,7 @@
                     if ((typeof(state.arrow) === 'undefined') ||
                         (state.arrow && state.arrow.dotp(arrow) >
                             Math.cos(Math.PI / 3)))
-                    state.arrow = arrow;
+                        state.arrow = arrow;
                     else state.arrow = null;
                     state.mmove = mmove;
                 }
@@ -404,8 +404,9 @@
             var delta;
             var size;
             if (state.arrow) {
-                delta = { x: state.tap.x - state.width / 2,
-                          y: state.tap.y - state.height / 2};
+                delta = ripple.vector.create(
+                    state.tap.x - state.width / 2,
+                    state.tap.y - state.height / 2);
                 size = Math.min(state.height, state.width);
                 if ((delta.dotp(delta) < size * size / 4) &&
                     (state.mmove.dotp(state.mmove) >
