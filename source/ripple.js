@@ -31,12 +31,13 @@
             return result;
         },
 
-        polar: function(r, theta) {
+        polar: function(r, theta, phi) {
             // Creates and returns a vector using polar coordinates
             var result = Object.create(this);
-            result.x = r * Math.cos(theta);
-            result.y = r * Math.sin(theta);
-            // TODO: z coordinate?
+            var cosphi = phi ? Math.cos(phi) : 1;
+            result.x = r * Math.cos(theta) * cosphi;
+            result.y = r * Math.sin(theta) * cosphi;
+            result.z = phi ? (r * Math.sin(phi)) : 0;
             return result;
         },
 
