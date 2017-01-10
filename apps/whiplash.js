@@ -4,6 +4,15 @@
 // Whiplash Paradox is a game about time travel
 (function(whiplash) {
     "use strict";
+    var data = { // TODO get this from AJAX instead
+        walls: [
+            {s: {x: 12, y: 12}, e: {x: 0, y: 15}},
+            {s: {x: 0, y: 15}, e: {x: -12, y: 12}},
+            {s: {x: -12, y: 12}, e: {x: -12, y: -12}},
+            {s: {x: 0, y: -15}, e: {x:-12, y: -12}},
+            {s: {x: 12, y: -12}, e: {x: 0, y: -15}},
+        ]
+    }
 
     // State arrow can be either:
     //   {x, y} - unit vector indicating direction
@@ -35,6 +44,18 @@
         ctx.arc(0, -10, 1, 0, 2 * Math.PI);
         ctx.fillStyle = 'green';
         ctx.fill();
+
+
+        ctx.beginPath();
+        data.walls.forEach(function(wall) {
+            ctx.moveTo(wall.s.x, wall.s.y);
+            ctx.lineTo(wall.e.x, wall.e.y);
+        });
+        ctx.lineWidth = 0.5;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = 'purple';
+        ctx.stroke();
+
     };
 
     var drawVision = function(ctx, character, state, now) {
