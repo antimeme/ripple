@@ -14,16 +14,6 @@
         ]
     }
 
-    // State arrow can be either:
-    //   {x, y} - unit vector indicating direction
-    //   undefined - arrow in process of being set
-    //   null - arrow not set
-    var state = {
-        height: 320, width: 320,
-        zoom: { value: 50, min: 10, max: 150, reference: 0 },
-        swipe: null, tap: null, mmove: null, arrow: null,
-        characters: []
-    };
     var zclamp = function(state, zoom) {
         if (zoom < state.zoom.min)
             zoom = state.zoom.min;
@@ -233,50 +223,47 @@
     };
 
     whiplash.go = function($, container, viewport) {
-        var board = $('<canvas>').attr({
-            'class': 'board'
-        }).css({
-            width: 320, height: 320, margin: 'auto',
-            display: 'block',
-            color: '#222', background: '#ddd'
-        }).appendTo(container);
+        // State arrow can be either:
+        //   {x, y} - unit vector indicating direction
+        //   undefined - arrow in process of being set
+        //   null - arrow not set
+        var state = {
+            height: 320, width: 320,
+            zoom: { value: 50, min: 10, max: 150, reference: 0 },
+            swipe: null, tap: null, mmove: null, arrow: null,
+            characters: []
+        };
+        state.characters.push(makeGuard(-5, -5, 1));
+        state.characters.push(makeGuard(5, -5, 1));
+        state.characters.push(makeGuard(-5, 5, 1));
+        state.characters.push(makeGuard(5, 5, 1));
+	state.characters.push(state.player = makePlayer(0, 0, 1));
 
-        var draw_id = 0, draw_last = 0;
-        var draw = function() {
-            var ii, ctx, width, height, color, lineWidth, size;
-            var now = new Date().getTime();
-            draw_id = 0;
+        ripple.app($, container, viewport, {
+            draw: function(ctx, width, height, now, last) {
+                var size;
+                var lineWidth;
+                lineWidth = Math.max(width, height) / 50;
 
-            if (now - draw_last < 1000)
-	        state.characters.forEach(function(character) {
-                    character.update(state, now);
-                });
-            draw_last = now;
+                if (now - last < 1000)
+	            state.characters.forEach(function(character) {
+                        character.update(state, now);
+                    });
 
-            if (board.get(0).getContext) {
-                width = board.width();
-                height = board.height();
-                lineWidth = (width > height) ?
-                    (width / 50) : (height / 50);
-                color = board.css('color');
-
-                ctx = board[0].getContext('2d');
                 ctx.save();
-                ctx.lineWidth = lineWidth;
-                ctx.clearRect(0, 0, width, height);
-
                 ctx.scale(state.zoom.value, state.zoom.value)
                 ctx.translate((width / (2 * state.zoom.value)) -
                               state.player.position.x,
                               (height / (2 * state.zoom.value)) -
                               state.player.position.y);
-
-                drawBackground(ctx, state, now);
+                ctx.lineWidth = lineWidth;
 
                 state.characters.forEach(function(character) {
                     if (character.drawPre)
                         character.drawPre(ctx, state, now);
                 });
+
+                drawBackground(ctx, state, now);
 
                 state.characters.forEach(function(character) {
                     if (character.draw)
@@ -298,162 +285,118 @@
                 ctx.fillText('Whiplash Paradox',
                              state.width / 2, size / 50);
 
+            },
+            resize: function(width, height) {
+                state.width = width;
+                state.height = height;
+            },
+            keydown: function(event, redraw) {
+                // Recognize WASD and arrow keys
+	        if (event.keyCode == 37 || event.keyCode == 65) {
+		    state.player.control.left = true;
+                    state.player.control.arrow = null;
+	        } else if (event.keyCode == 38 || event.keyCode == 87) {
+                    state.player.control.up = true;
+                    state.player.control.arrow = null;
+	        } else if (event.keyCode == 39 || event.keyCode == 68) {
+		    state.player.control.right = true;
+                    state.player.control.arrow = null;
+	        } else if (event.keyCode == 40 || event.keyCode == 83) {
+		    state.player.control.down = true;
+                    state.player.control.arrow = null;
+	        }
                 redraw();
-            }
-        };
-
-        var redraw = function()
-        { if (!draw_id) draw_id = requestAnimationFrame(draw); };
-
-        var resize = function(event) {
-	    board.width(viewport.width());
-	    board.height(viewport.height());
-            state.width = board.innerWidth();
-            state.height = board.innerHeight();
-
-            // A canvas has a height and a width that are part of the
-            // document object model but also separate height and
-            // width attributes which determine how many pixels are
-            // part of the canvas itself.  Keeping the two in sync
-            // is essential to avoid ugly stretching effects.
-            board.attr("width", board.innerWidth());
-            board.attr("height", board.innerHeight());
-
-            redraw();
-        };
-
-        board.on('click', function(event) {
-            var row = Math.floor(event.offsetY * 3 / board.height());
-            var col = Math.floor(event.offsetX * 3 / board.width());
-        });
-
-        board.resize(resize);
-        resize();
-
-        state.characters.push(makeGuard(-5, -5, 1));
-        state.characters.push(makeGuard(5, -5, 1));
-        state.characters.push(makeGuard(-5, 5, 1));
-        state.characters.push(makeGuard(5, 5, 1));
-	state.characters.push(state.player = makePlayer(0, 0, 1));
-
-	viewport.on('keydown', function(event) {
-            // Recognize WASD and arrow keys
-	    if (event.keyCode == 37 || event.keyCode == 65) {
-		state.player.control.left = true;
-                state.player.control.arrow = null;
-	    } else if (event.keyCode == 38 || event.keyCode == 87) {
-                state.player.control.up = true;
-                state.player.control.arrow = null;
-	    } else if (event.keyCode == 39 || event.keyCode == 68) {
-		state.player.control.right = true;
-                state.player.control.arrow = null;
-	    } else if (event.keyCode == 40 || event.keyCode == 83) {
-		state.player.control.down = true;
-                state.player.control.arrow = null;
-	    }
-            redraw();
-	});
-
-	viewport.on('keyup', function(event) {
-            // Recognize WASD and arrow keys
-	    if (event.keyCode == 37 || event.keyCode == 65) {
-		state.player.control.left = false;
-                state.player.control.arrow = null;
-	    } else if (event.keyCode == 38 || event.keyCode == 87) {
-                state.player.control.up = false;
-                state.player.control.arrow = null;
-	    } else if (event.keyCode == 39 || event.keyCode == 68) {
-		state.player.control.right = false;
-                state.player.control.arrow = null;
-	    } else if (event.keyCode == 40 || event.keyCode == 83) {
-		state.player.control.down = false;
-                state.player.control.arrow = null;
-	    }
-            redraw();
-	});
-
-        viewport.on('mousedown touchstart', function(event) {
-            state.tap = $.targets(event);
-            state.arrow = null;
-            state.mmove = null;
-            if (state.tap.touches.length > 1) {
-                state.zoom.reference =
-                    ripple.vector.create(
-                        state.tap.touches[0].x - state.tap.touches[1].x,
-                        state.tap.touches[0].y - state.tap.touches[1].y
-                    ).sqlen();
-            } else state.arrow = undefined;
-            redraw();
-            return false;
-        });
-
-        viewport.on('mousemove touchmove', function(event) {
-            var current, mmove, arrow, zoomref;
-            if (state.tap) {
-                current = $.targets(event);
-                if (current.touches.length > 1) {
-                    if (state.zoom.reference >
-                        Math.min(state.height, state.width) / 100) {
-                        zoomref = ripple.vector.create(
-                            current.touches[0].x -
-                            current.touches[1].x,
-                            current.touches[0].y -
-                            current.touches[1].y
+            },
+            keyup: function(event, redraw) {
+                // Recognize WASD and arrow keys
+	        if (event.keyCode == 37 || event.keyCode == 65) {
+		    state.player.control.left = false;
+                    state.player.control.arrow = null;
+	        } else if (event.keyCode == 38 || event.keyCode == 87) {
+                    state.player.control.up = false;
+                    state.player.control.arrow = null;
+	        } else if (event.keyCode == 39 || event.keyCode == 68) {
+		    state.player.control.right = false;
+                    state.player.control.arrow = null;
+	        } else if (event.keyCode == 40 || event.keyCode == 83) {
+		    state.player.control.down = false;
+                    state.player.control.arrow = null;
+	        }
+                redraw();
+            },
+            mtdown: function(event, redraw) {
+                state.tap = $.targets(event);
+                state.arrow = null;
+                state.mmove = null;
+                if (state.tap.touches.length > 1) {
+                    state.zoom.reference =
+                        ripple.vector.create(
+                            state.tap.touches[0].x - state.tap.touches[1].x,
+                            state.tap.touches[0].y - state.tap.touches[1].y
                         ).sqlen();
-                        zclamp(state, state.zoom.value *
-                            Math.sqrt(zoomref /
-                                state.zoom.reference));
+                } else state.arrow = undefined;
+                redraw();
+                return false;
+            },
+            mtmove: function(event, redraw) {
+                var current, mmove, arrow, zoomref;
+                if (state.tap) {
+                    current = $.targets(event);
+                    if (current.touches.length > 1) {
+                        if (state.zoom.reference >
+                            Math.min(state.height, state.width) / 100) {
+                            zoomref = ripple.vector.create(
+                                current.touches[0].x -
+                                current.touches[1].x,
+                                current.touches[0].y -
+                                current.touches[1].y
+                            ).sqlen();
+                            zclamp(state, state.zoom.value *
+                                Math.sqrt(zoomref /
+                                    state.zoom.reference));
+                        }
+                    } else {
+                        mmove = ripple.vector.create(
+                            current.x - state.tap.x,
+                            current.y - state.tap.y);
+                        arrow = mmove.norm();
+                        if ((typeof(state.arrow) === 'undefined') ||
+                            (state.arrow && state.arrow.dotp(arrow) >
+                                Math.cos(Math.PI / 3)))
+                            state.arrow = arrow;
+                        else state.arrow = null;
+                        state.mmove = mmove;
                     }
-                } else {
-                    mmove = ripple.vector.create(
-                        current.x - state.tap.x,
-                        current.y - state.tap.y);
-                    arrow = mmove.norm();
-                    if ((typeof(state.arrow) === 'undefined') ||
-                        (state.arrow && state.arrow.dotp(arrow) >
-                            Math.cos(Math.PI / 3)))
-                        state.arrow = arrow;
-                    else state.arrow = null;
-                    state.mmove = mmove;
                 }
+                redraw();
+                return false;
+            },
+            mtup: function(event, redraw) {
+                var delta;
+                var size;
+                if (state.arrow) {
+                    delta = ripple.vector.create(
+                        state.tap.x - state.width / 2,
+                        state.tap.y - state.height / 2);
+                    size = Math.min(state.height, state.width);
+                    if ((delta.dotp(delta) < size * size / 4) &&
+                        (state.mmove.dotp(state.mmove) >
+                            size * size / 144))
+                        state.player.control.arrow = state.arrow;
+                    else state.player.control.arrow = null;
+                } else state.player.control.arrow = null;
+                state.tap = null;
+                state.arrow = null;
+                state.mmove = null;
+                redraw();
+                return false;
+            },
+            mwheel: function(event, redraw) {
+                zclamp(state, state.zoom.value *
+                    (1 + (0.001 * event.deltaY)));
+                redraw();
+                return false;
             }
-            redraw();
-            return false;
         });
-
-        viewport.on('mouseleave mouseup touchend', function(event) {
-            var delta;
-            var size;
-            if (state.arrow) {
-                delta = ripple.vector.create(
-                    state.tap.x - state.width / 2,
-                    state.tap.y - state.height / 2);
-                size = Math.min(state.height, state.width);
-                if ((delta.dotp(delta) < size * size / 4) &&
-                    (state.mmove.dotp(state.mmove) >
-                    size * size / 144))
-                    state.player.control.arrow = state.arrow;
-                else state.player.control.arrow = null;
-            } else state.player.control.arrow = null;
-            state.tap = null;
-            state.arrow = null;
-            state.mmove = null;
-            redraw();
-            return false;
-        });
-
-        viewport.on('mousewheel', function(event) {
-            zclamp(state, state.zoom.value *
-                (1 + (0.001 * event.deltaY)));
-            redraw();
-            return false;
-        });
-
-        var heartbeat = function() {
-            //console.log("Thunk");
-            setTimeout(heartbeat, 2000);
-        };
-        //heartbeat();
-
-    }
+    };
 })(typeof exports === 'undefined'? this['whiplash'] = {}: exports);

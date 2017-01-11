@@ -179,133 +179,86 @@
     // app.up(targets, event)
     // app.down(targets, event)
     // app.move(targets, event)
-    ripple.appify = function(app, $, parent, viewport) {
-        var self = $('<canvas></canvas>').appendTo(parent);
+    ripple.app = function($, container, viewport, app) {
+        var board = $('<canvas>').attr({
+            'class': 'board'
+        }).css({
+            width: app.width || 320,
+            height: app.height || 320,
+            margin: 'auto', display: 'block',
+            color: app.color || '#222',
+            background: app.background || '#ddd'
+        }).appendTo(container);
 
-        var tap, selected, drag, gesture, press = 0;
-
-        var zoom = 1;
-        var inv = undefined, last = new Date().getTime();
-        var draw_id = 0;
+        var draw_id = 0, draw_last = 0;
         var draw = function() {
-            var ctx, ii, width, height;
-
+            var ii, ctx, width, height;
+            var now = new Date().getTime();
             draw_id = 0;
-            if (self[0].getContext) {
-                ctx = self[0].getContext('2d');
-                width = self.width();
-                height = self.height();
 
-                // Clear invalidated portion of the canvas
-                if (inv)
-                    ctx.clearRect(inv.x, inv.y, inv.width, inv.height);
-
-                // Allow each actor to increment their state
-                if (app.resize)
-                    app.resize(width, height);
-                if (app.update)
-                    app.update(now - last);
-                if (app.actors)
-                    app.actors.forEach(function(actor) {
-                        actor.resize(width, height);
-                        actor.update(now - last);
-                    });
-                last = now;
-
-                // Allow each actor to draw
-                ctx.save();
-                if (app.draw)
-                    app.draw(ctx, inv, width, height); // TODO: canvas clip?
-                if (app.actors)
-                    app.actors.forEach(function(actor) {
-                        // TODO: canvas clip?
-                        actor.draw(ctx, inv, width, height);
-                        if (actor.isActive())
-                            redraw();
-                    });
-                ctx.restore();
+            if (board.get(0).getContext) {
+                width = board.width();
+                height = board.height();
+                ctx = board[0].getContext('2d');
+                ctx.clearRect(0, 0, width, height);
+                app.draw(ctx, width, height, now, draw_last);
             }
+            draw_last = now;
+            if (!app.isActive || app.isActive())
+                redraw();
         };
 
-        var redraw = function(rectangle) {
-            var endx, endy;
-            if (typeof(inv) !== 'undefined' &&
-                typeof(rectangle) !== 'undefined') { // merge
-                endx = Math.max(
-                    inv.x + inv.width, rectangle.x + rectangle.width);
-                endy = Math.max(
-                    inv.y + inv.height, rectangle.y + rectangle.height);
-                inv.x = Math.min(inv.x, rectangle.x);
-                inv.y = Math.min(inv.y, rectangle.y);
-                inv.width = endx - inv.x;
-                inv.height = endy - inv.y;
-            } else if (typeof(rectangle) !== 'undefined') { // replace
-                inv = rectangle;
-            } else inv = { x: 0, y: 0, width: self.width,
-                           height: self.height };
-
-            if (!draw_id)
-                draw_id = requestAnimationFrame(draw);
-        };
+        var redraw = function()
+        { if (!draw_id) draw_id = requestAnimationFrame(draw); };
 
         var resize = function(event) {
-            // Consume enough space to fill the viewport.
-            self.width(viewport.width());
-            self.height(viewport.height());
+	    board.width(viewport.width());
+	    board.height(viewport.height());
+            if (app.resize)
+                app.resize(board.innerWidth(), board.innerHeight());
 
             // A canvas has a height and a width that are part of the
             // document object model but also separate height and
             // width attributes which determine how many pixels are
             // part of the canvas itself.  Keeping the two in sync
             // is essential to avoid ugly stretching effects.
-            self.attr("width", self.innerWidth());
-            self.attr("height", self.innerHeight());
+            board.attr("width", board.innerWidth());
+            board.attr("height", board.innerHeight());
+
             redraw();
         };
-        viewport.resize(resize);
+
+        board.resize(resize);
         resize();
 
-        // Process mouse and touch events on grid itself
-        self.on('mousewheel', function(event) {
-            // event.deltaY
+	viewport.on('keydown', function(event) {
+            if (app.keydown)
+                return app.keydown(event, redraw);
+	});
+
+	viewport.on('keyup', function(event) {
+            if (app.keyup)
+                return app.keyup(event, redraw);
+	});
+
+        viewport.on('mousedown touchstart', function(event) {
+            if (app.mtdown)
+                return app.mtdown(event, redraw);
         });
 
-        self.on('mousedown touchstart', function(event) {
-            var targets = $.targets(event);
-            if (event.which > 1) {
-                // Reserve right and middle clicks for browser menus
-                return true;
-            } else if (targets.touches.length > 1) {
-                tap = targets;
-                if (targets.touches.length == 2) {
-                    var t0 = targets.touches[0];
-                    var t1 = targets.touches[1];
-                }
-                if (press) { clearTimeout(press); press = 0; }
-            } else {
-                // Allow applications to respond to long press events
-                if (app.pressTimeout)
-                    press = setTimeout(function() {
-                        app.press(targets); }, app.pressTimeout);
-                if (app.down)
-                    app.down(targets, event);
-            }
-
-            redraw();
-            return false;
+        viewport.on('mousemove touchmove', function(event) {
+            if (app.mtmove)
+                return app.mtmove(event, redraw);
         });
 
-        self.on('mousemove touchmove', function(event) {
-            if (app.move)
-                app.move($.targets(event), event);
-            return false;
+        viewport.on('mouseleave mouseup touchend', function(event) {
+            if (app.mtup)
+                return app.mtup(event, redraw);
         });
 
-        self.on('mouseleave mouseup touchend', function(event) {
-            if (app.up)
-                app.up($.targets(event), event);
-            if (press) { clearTimeout(press); press = 0; }
-            return false;
+        viewport.on('mousewheel', function(event) {
+            if (app.mwheel)
+                return app.mwheel(event, redraw);
         });
     };
 
