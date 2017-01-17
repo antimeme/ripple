@@ -37,23 +37,27 @@ lib@PACKAGE@_la_SOURCES  = \
 	source/juju.c
 pkginclude_HEADERS = include/ripple/*.h
 
-check_PROGRAMS = check-@PACKAGE@
-check_@PACKAGE@_CPPFLAGS = -I$(srcdir)/include
-check_@PACKAGE@_LDADD    = lib@PACKAGE@.la
-check_@PACKAGE@_SOURCES  = \
-	source/check-@PACKAGE@.c \
-	source/check-tree.c \
-	source/check-context.c \
-	source/check-stream.c \
-	source/check-option.c \
-	source/check-random.c \
-	source/check-pool.c \
-	source/check-pixie.c \
-	source/check-juju.c
+check_PROGRAMS = check-ripple
+check_ripple_CPPFLAGS = -I$(srcdir)/include
+check_ripple_LDADD    = lib@PACKAGE@.la
+check_ripple_SOURCES  = \
+	source/check/ripple.c \
+	source/check/tree.c \
+	source/check/context.c \
+	source/check/stream.c \
+	source/check/option.c \
+	source/check/random.c \
+	source/check/pool.c \
+	source/check/pixie.c \
+	source/check/juju.c
+
+TESTS = $(check_PROGRAMS)
+MOSTLYCLEANFILES =
+DISTCLEANFILES   =
+CLEANFILES       =
 
 ## Python ==============================================================
 if HAVE_PYTHON
-tests_python = source/random.py source/match.py
 pkgpython_PYTHON = source/__init__.py $(tests_python)
 
 dist/@PACKAGE@-@VERSION@-py@PYTHON_VERSION@.egg: $(pkgpython_PYTHON)

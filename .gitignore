@@ -40,9 +40,7 @@ ripple.egg-info/
 source/__init__.py
 
 # Java
-classripplejava.stamp
 .classes/
-classes-ripple/
 javadoc/
 jartest.sh
 source/Ripple.java
