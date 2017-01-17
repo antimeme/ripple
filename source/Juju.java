@@ -735,7 +735,7 @@ public class Juju {
                     throw new ParseException
                         (0, column, "Given index " + index +
                          " for non-list: " + formatJSON(result));
-                result = ((List<Object>)result).get((int)index);
+                result = ((List<Object>)result).get((Integer)index);
             }
         }
         return result;

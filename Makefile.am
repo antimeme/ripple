@@ -15,8 +15,8 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ## ---------------------------------------------------------------------
-EXTRA_DIST = bootstrap META-INF/MANIFEST.MF @PACKAGE@.spec
-
+EXTRA_DIST = bootstrap META-INF/MANIFEST.MF @PACKAGE@.spec \
+	     resources source/*.java source/random.py source/match.py
 docdir        = $(datadir)/doc/@PACKAGE@-@VERSION@
 dist_doc_DATA = README.md LICENSE
 
@@ -24,9 +24,10 @@ uninstall-local:
 	rm -rf $(DESTDIR)$(docdir)
 
 ## C ===================================================================
-lib_LTLIBRARIES          = lib@PACKAGE@.la
+lib_LTLIBRARIES = lib@PACKAGE@.la
 lib@PACKAGE@_la_LDFLAGS  = -version-info $(LIBVERSION)
 lib@PACKAGE@_la_CPPFLAGS = -I$(srcdir)/include
+lib@PACKAGE@_la_CFLAGS   = -g -Wall -Werror
 lib@PACKAGE@_la_SOURCES  = \
 	source/context.c \
 	source/stream.c \
@@ -66,68 +67,62 @@ dist/@PACKAGE@-@VERSION@-py@PYTHON_VERSION@.egg: $(pkgpython_PYTHON)
 # :TODO: make this part of "make dist" somehow...
 egg: dist/@PACKAGE@-@VERSION@-py@PYTHON_VERSION@.egg
 
+TESTS += source/random.py source/match.py
 endif
 
 ## Java ================================================================
-# Automake support for Java is limited and almost useless, but it gets
-# in the way enough to make it inconvenient to avoid... for now.
-# See /usr/share/automake-${AM_VERSION}/am/java.am for details.
+# Names of macros such as JCC, JARROOT and JSOURCES have been chosen to
+# avoid the broken and unmaintained autoconf support for Java
 # Possible improvement:
 #   http://www.freesoftwaremagazine.com/articles/autotools_example
 if HAVE_JAVA
-@PACKAGE@javadir = $(libdir)/@PACKAGE@
-JAVAROOT = $(top_builddir)/.classes
-JAVADOC  = ${JAVA_HOME:+$JAVA_HOME/bin/}javadoc
-JAVAC    = ${JAVA_HOME:+$JAVA_HOME/bin/}javac
-JAVA     = ${JAVA_HOME:+$JAVA_HOME/bin/}java
-JAR      = ${JAVA_HOME:+$JAVA_HOME/bin/}jar
 javadir = $(datadir)/@PACKAGE@
-dist_@PACKAGE@java_JAVA = $(srcdir)/source/*.java
-dist_@PACKAGE@java_DATA = @PACKAGE@.jar
-
-@PACKAGE@.jar: @PACKAGE@-@VERSION@.jar
-	rm -f $@
-	$(LN_S) $^ $@
+java_DATA = @PACKAGE@-@VERSION@.jar
+JAR = $(JAVA_HOME)/bin/jar
+JCC = $(JAVA_HOME)/bin/javac
+JAVADOC = $(JAVA_HOME)/bin/javadoc
+JARROOT = $(top_builddir)/.classes
+JSOURCES =  $(srcdir)/source/*.java
 
 @PACKAGE@-@VERSION@.jar: $(srcdir)/META-INF/MANIFEST.MF \
-			 class@PACKAGE@java.stamp \
-			 $(JAVAROOT)/.classes javadoc
+			 $(JARROOT)/.classes javadoc
 	$(JAR) cvfm $@ $(srcdir)/META-INF/MANIFEST.MF \
 	    -C $(srcdir)/resources sounds \
 	    -C $(srcdir)/resources images \
-	    -C $(top_builddir) javadoc -C $(JAVAROOT) .
+	    -C $(top_builddir) javadoc -C $(JARROOT) .
 	chmod +x $@
+	rm -f @PACKAGE@.jar
+	$(LN_S) $@ @PACKAGE@.jar
 
-$(JAVAROOT)/.classes: class@PACKAGE@java.stamp
-	find $(JAVAROOT) -name \*.class | \
+$(JARROOT)/.classes: $(JSOURCES)
+	$(MKDIR_P) $(JARROOT)
+	$(JCC) -d $(JARROOT) -source 1.6 -target 1.6 $^
+	find $(JARROOT) -name \*.class | \
 	    sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
 	    sort -u > $@
 
-class@PACKAGE@java.stamp: $(dist_@PACKAGE@java_JAVA)
-	$(MKDIR_P) $(JAVAROOT)
-	$(CLASSPATH_ENV) $(JAVAC) -d $(JAVAROOT) \
-	    $(AM_JAVACFLAGS) $(JAVACFLAGS) $?
-	date > $@
-
-javadoc: $(dist_@PACKAGE@java_JAVA)
+javadoc: $(JSOURCES)
 	$(JAVADOC) -docencoding utf-8 -public -d javadoc $^
 	@touch $@
 
-install-dist_@PACKAGE@javaJAVA: javadoc
+install-data-local: javadoc
 	$(MKDIR_P) $(DESTDIR)$(docdir)
 	cp -R $^ $(DESTDIR)$(docdir)
 
-clean-@PACKAGE@javaJAVA:
-	-rm -rf class@PACKAGE@java.stamp javadoc jartest.sh \
-	    $(JAVAROOT) @PACKAGE@-@VERSION@.jar @PACKAGE@.jar
-
-jartest.sh:
+scripts/check-java.sh:
+	$(MKDIR_P) scripts
 	echo '#!/bin/sh' > $@
-	echo $(JAVA) -jar @PACKAGE@-@VERSION@.jar test >> $@
+	echo $(JAVA_HOME)/bin/java -jar @PACKAGE@.jar test >> $@
 	chmod +x $@
 
-tests_java = jartest.sh
+TESTS += scripts/check-java.sh
+MOSTLYCLEANFILES += @PACKAGE@-@VERSION@.jar @PACKAGE@.jar
+CLEANFILES += scripts/check-java.sh
 
-endif HAVE_JAVA
+clean-local:
+	-rm -rf javadoc
 
-TESTS = $(check_PROGRAMS) $(tests_java) $(tests_python)
+mostlyclean-local:
+	-rm -rf $(JARROOT)
+
+endif

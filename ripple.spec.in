@@ -57,7 +57,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%doc %{_datadir}/doc/%{name}-%{version}/RIPPLE
+%doc %{_datadir}/doc/%{name}-%{version}/README.md
 %doc %{_datadir}/doc/%{name}-%{version}/LICENSE
 %{_prefix}/lib/libripple.so.*
 
@@ -110,7 +110,7 @@ Install this package to use ripple Java modules.
 
 %files java
 %defattr(-,root,root,-)
-%{_prefix}/lib/%{name}/%{name}-%{version}.jar
+%{_prefix}/share/%{name}/%{name}-%{version}.jar
 %doc %{_datadir}/doc/%{name}-%{version}/javadoc
 
 %endif
