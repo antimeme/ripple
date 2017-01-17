@@ -15,8 +15,14 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ## ---------------------------------------------------------------------
-EXTRA_DIST = bootstrap META-INF/MANIFEST.MF @PACKAGE@.spec \
-	     resources source/*.java source/random.py source/match.py
+EXTRA_DIST = \
+	bootstrap resources \
+	META-INF/MANIFEST.MF \
+	scripts/@PACKAGE@.spec \
+	scripts/@PACKAGE@.dpkg \
+	source/*.java \
+	source/random.py \
+	source/match.py
 docdir        = $(datadir)/doc/@PACKAGE@-@VERSION@
 dist_doc_DATA = README.md LICENSE
 

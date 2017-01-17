@@ -89,8 +89,8 @@ fi
 
 AC_CONFIG_FILES([
     Makefile
-    ripple.spec
-    ripple.dpkg
+    scripts/ripple.spec
+    scripts/ripple.dpkg
     source/__init__.py
     source/Ripple.java
 ], [test -e ripple/__init__.py && chmod +x ripple/__init__.py])
