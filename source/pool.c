@@ -75,7 +75,7 @@ ripple_pool_realloc(struct ripple_pool* rpool,
     if (rpool->nblocks >= rpool->mblocks) { // need more block space?
       unsigned mblocks = rpool->mblocks ? (rpool->mblocks * 2) : 16;
       void** blocks = ripple_context_realloc
-        (rctx, blocks, mblocks * sizeof(void*));
+        (rctx, rpool->blocks, mblocks * sizeof(void*));
       if (blocks) {
         rpool->blocks = blocks;
         rpool->mblocks = mblocks;
@@ -113,7 +113,7 @@ ripple_pool_add(struct ripple_pool* rpool, void* resource,
     unsigned mresources = rpool->mresources ?
       (rpool->mresources * 2) : 16;
     struct ripple_pool_resource* resources =
-      ripple_context_realloc(rctx, resources, mresources *
+      ripple_context_realloc(rctx, rpool->resources, mresources *
                              sizeof(struct ripple_pool_resource));
     if (resources) {
       rpool->resources  = resources;

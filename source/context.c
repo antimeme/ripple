@@ -201,7 +201,7 @@ static inline int
 ripple__addlogv(char* buffer, size_t size, int used,
                 const char* message, va_list args)
 {
-  int result;
+  int result = 0;
   if ((used >= 0) && ((unsigned)used < size)) {
     result = vsnprintf(buffer + used, size - used, message, args);
     if (result >= 0) 

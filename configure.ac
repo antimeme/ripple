@@ -56,8 +56,8 @@ esac], [enable_java=1])
 if test "x$enable_java" = x1; then
     AC_PATH_PROG([JAVA_PATH_NAME], [java])
     if test "x$JAVA_HOME" != x; then
-      # Don't question a user supplied JAVA_HOME
-      true
+        # Don't question a user supplied JAVA_HOME
+        true
     elif test -d /etc/alternatives/java_sdk; then
         # /etc/alternatives might specify preferred Java installation
         AC_PATH_PROG([READLINK], [readlink])

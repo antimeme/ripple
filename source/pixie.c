@@ -189,15 +189,6 @@ static int
 pixie_buffer_putc(struct pixie_buffer *self, int c);
 
 /**
- * Add a null-terminated string to a buffer.
- *
- * @param s string to add
- * @param self buffer to add to
- * @return 0 on success or negative on error */
-static int
-pixie_buffer_puts(const char *s, struct pixie_buffer *self);
-
-/**
  * Copy the contents of one buffer into another.  Anything in
  * the destination buffer is retained with the source data added
  * to the end.
@@ -344,19 +335,6 @@ pixie_buffer_putc(struct pixie_buffer *self, int c)
 }
 
 int
-pixie_buffer_puts(const char *s, struct pixie_buffer *self)
-{
-  int result = PIXIE_SUCCESS;
-  unsigned len = strlen(s);
-  pixie_buffer__alloc(self, len);
-  if (pixie_buffer__avail(self, len)) {
-    memcpy(self->data + self->n_data, s, len);
-    self->n_data += len;
-  } else result = -PIXIE_EALLOC;
-  return result;
-}
-
-int
 pixie_buffer_concat(struct pixie_buffer *self,
                     struct pixie_buffer *other)
 {
@@ -488,6 +466,7 @@ pixie_clear(struct pixie_parser *parser)
   pixie_buffer_clear(&parser->current);
   pixie_buffer_clear(&parser->ns);
   pixie_attrs_clear(&parser->attrs);
+  return parser;
 }
 
 int
