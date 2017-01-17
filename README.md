@@ -1,5 +1,3 @@
-## Ripple
-
 Ripple is a collection of applications and libraries compiled over a
 career in software development.  It's eclectic.  Start by having a
 look at some of the web [apps](apps/).
