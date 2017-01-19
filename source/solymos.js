@@ -152,7 +152,7 @@ if (typeof exports !== 'undefined') (function(solymos) {
                             extensions['jpeg']  = true;
                             extensions['gif']   = true;
                             extensions['png']   = true;
-                        } else server.log("UNCERTAIN:", entry);
+                        } else server.warning("UNCERTAIN:", entry);
                     });
                 } else return server.errorPage(
                     response, this.wildcard ? 404 : 406, fileName);
@@ -188,7 +188,7 @@ if (typeof exports !== 'undefined') (function(solymos) {
     var handleRequest = function(server, request, response) {
         var key, service = null, target = solymos.sanitizeURL(
             request.url, server.defaultPage, server.directory);
-        server.log('INFO: request', target.path);
+        server.info('request', target.path);
 
         // Allow application to handle designated services
         Object.keys(server.services).forEach(
@@ -258,7 +258,6 @@ if (typeof exports !== 'undefined') (function(solymos) {
                 console.log(data); // FIXME
             }
         };
-        console.log('DEBUG', request.url);
         var target = solymos.sanitizeURL(
             request.url, this.defaultPage, this.directory);
 
@@ -300,15 +299,17 @@ if (typeof exports !== 'undefined') (function(solymos) {
                     if (server.defaultService)
                         serveCGI.call(server);
                     else {
-                        console.log(); // FIXME
+                        console.log('content-type: text/plain');
+                        console.log();
+                        console.log('no services defined');
                     }
                 } else if (iface === 'HTTP') {
                     http.createServer(function(request, response) {
                         handleRequest(server, request, response);
                     }).listen(server.portHTTP);
-                    server.log(server.serverName,
-                               'HTTP server active on port',
-                               server.portHTTP, '...');
+                    server.info(server.serverName,
+                                'HTTP server active on port',
+                                server.portHTTP, '...');
                 } else if (iface === 'HTTPS') {
                     httpsOptions = {
                         key: fs.readFileSync(server.privateKey),
@@ -319,20 +320,34 @@ if (typeof exports !== 'undefined') (function(solymos) {
                         request, response) {
                         handleRequest(server, request, response);
                     }).listen(server.portHTTPS);
-                    server.log(server.serverName,
-                               'HTTPS server active on port',
-                               server.portHTTPS, '...');
+                    server.info(server.serverName,
+                                'HTTPS server active on port',
+                                server.portHTTPS, '...');
                 } else if (iface) {
-                    server.log('unknown interface:', iface);
+                    server.error('unknown interface:', iface);
                     iface = null;
                 }
                 return !!iface;
             },
 
-            log: function() {
-                var message = Array.prototype.slice.call(arguments);
+            __log: function(level, message) {
+                message.unshift(level);
                 message.unshift(new Date().toISOString());
                 console.error.apply(console, message);
+            },
+            info: function() {
+                this.__log('INFO', Array.prototye.slice.call(
+                    arguments));
+            },
+
+            warning: function() {
+                this.__log('WARNING', Array.prototye.slice.call(
+                    arguments));
+            },
+
+            error: function() {
+                this.__log('ERROR', Array.prototye.slice.call(
+                    arguments));
             },
 
             serveData: function(data, fileName, response, ext) {
@@ -359,9 +374,9 @@ if (typeof exports !== 'undefined') (function(solymos) {
                     'Content-Type', ctype || 'text/html');
                 response.writeHead(200);
                 response.end(data);
-                this.log('INFO: sending', fileName +
-                         (ext ? ('[.' + ext + ']') : ''),
-                         data.length, 'bytes');
+                this.info('sending', fileName +
+                          (ext ? ('[.' + ext + ']') : ''),
+                          data.length, 'bytes');
             },
 
             errorPage: function(response, code, fileName, message) {
@@ -388,7 +403,7 @@ if (typeof exports !== 'undefined') (function(solymos) {
                     response.setHeader('Content-Type', 'text/html');
                     response.writeHeader(code);
                     response.end(data.join('\r\n'));
-                    server.log('ERROR:', code, fileName,
+                    server.error(code, fileName,
                                 '(errpage: ' + err.code + ')');
                 }
 
@@ -402,7 +417,7 @@ if (typeof exports !== 'undefined') (function(solymos) {
                         response.writeHeader(code);
                         response.end(data.toString().replace(
                             /:PATH:/g, fileName));
-                        server.log('ERROR:', code, fileName);
+                        server.error(code, fileName);
                     });
             }
         };
