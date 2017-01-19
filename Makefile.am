@@ -1,5 +1,5 @@
 ## Makefile.am
-## Copyright (C) 2006-2015 by Jeff Gold.
+## Copyright (C) 2006-2017 by Jeff Gold.
 ##
 ## This program is free software: you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -42,12 +42,12 @@ lib@PACKAGE@_la_SOURCES  = \
 	source/pool.c \
 	source/pixie.c \
 	source/juju.c
-pkginclude_HEADERS = include/ripple/*.h
+pkginclude_HEADERS = include/@PACKAGE@/*.h
 
-check_PROGRAMS = check-ripple
-check_ripple_CPPFLAGS = -I$(srcdir)/include
-check_ripple_LDADD    = lib@PACKAGE@.la
-check_ripple_SOURCES  = \
+check_PROGRAMS = check-@PACKAGE@
+check_@PACKAGE@_CPPFLAGS = -I$(srcdir)/include
+check_@PACKAGE@_LDADD    = lib@PACKAGE@.la
+check_@PACKAGE@_SOURCES  = \
 	source/check/ripple.c \
 	source/check/tree.c \
 	source/check/context.c \

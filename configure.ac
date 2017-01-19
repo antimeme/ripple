@@ -1,5 +1,5 @@
 dnl configure.ac
-dnl Copyright (C) 2006-2014 by Jeff Gold.
+dnl Copyright (C) 2006-2017 by Jeff Gold.
 dnl 
 dnl This program is free software: you can redistribute it and/or
 dnl modify it under the terms of the GNU General Public License as
