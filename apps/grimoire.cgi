@@ -37,7 +37,7 @@ var service = function(target, request, response) {
     this.serveData(data.join('\n'), target.fileName, response);
 };
 
-var command = function() {
+var commandLine = function() {
     for (tome_name in grimoire.tomes) {
         var tome = grimoire.tomes[tome_name];
         var index, character, race;
@@ -73,5 +73,5 @@ grimoire.loadAJAX(ripple.fakejax, tomes, function() {
         certificate: 'grimoire-cert.pem'});
 
     if (!server.activate({fallback: fallback}))
-        command();
+        commandLine();
 }).sync();
