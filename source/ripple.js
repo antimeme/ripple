@@ -187,11 +187,9 @@
     // app.down(targets, event)
     // app.move(targets, event)
     ripple.app = function($, container, viewport, app) {
-        var board = $('<canvas>').attr({
+        var canvas = $('<canvas>').attr({
             'class': 'board'
         }).css({
-            width: app.width || 320,
-            height: app.height || 320,
             margin: 'auto', display: 'block',
             color: app.color || '#222',
             background: app.background || '#ddd'
@@ -203,10 +201,10 @@
             var now = new Date().getTime();
             draw_id = 0;
 
-            if (board.get(0).getContext) {
-                width = board.width();
-                height = board.height();
-                ctx = board[0].getContext('2d');
+            if (canvas.get(0).getContext) {
+                width = canvas.width();
+                height = canvas.height();
+                ctx = canvas[0].getContext('2d');
                 ctx.clearRect(0, 0, width, height);
                 app.draw(ctx, width, height, now, draw_last);
             }
@@ -219,23 +217,23 @@
         { if (!draw_id) draw_id = requestAnimationFrame(draw); };
 
         var resize = function(event) {
-	    board.width(viewport.width());
-	    board.height(viewport.height());
+	    canvas.width(viewport.width());
+	    canvas.height(viewport.height());
             if (app.resize)
-                app.resize(board.innerWidth(), board.innerHeight());
+                app.resize(canvas.innerWidth(), canvas.innerHeight());
 
             // A canvas has a height and a width that are part of the
             // document object model but also separate height and
             // width attributes which determine how many pixels are
             // part of the canvas itself.  Keeping the two in sync
             // is essential to avoid ugly stretching effects.
-            board.attr("width", board.innerWidth());
-            board.attr("height", board.innerHeight());
+            canvas.attr("width", canvas.innerWidth());
+            canvas.attr("height", canvas.innerHeight());
 
             redraw();
         };
 
-        board.resize(resize);
+        canvas.resize(resize);
         resize();
 
 	viewport.on('keydown', function(event) {
