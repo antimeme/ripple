@@ -96,6 +96,33 @@
                        this.dotp(this))) : target;
         },
 
+        closestLineT: function(p1, p2) {
+            // Computes time representing the closest point on a line,
+            // where time represents parameterized movement from p1
+            // to p2 in one unit of time.
+            var p1mp  = p1.minus(this);
+            var p2mp1 = p2.minus(p1);
+            return -(p1mp.dot(p2mp1) / p2mp1.dot(p2mp1));
+        },
+        closestLinePoint: function(p1, p2) {
+            // Computes the point on a line closest to this point
+            var t = this.closestLineT(p1, p2);
+            return this.create(p1.x + (p2.x - p1.x) * t,
+                               p1.y + (p2.y - p1.y) * t,
+                               p1.z + (p2.z - p1.z) * t);
+        },
+
+        closestLineD2: function(p1, p2) {
+            // Computes square of the distance between a line and this
+            var p1mp  = p1.minus(this);
+            var p2mp1 = p2.minus(p1);
+            return (((p1mp.dot(p1mp) * p2mp1.dot(p2mp1)) -
+                     p1mp.dot(p2mp1) * p1mp.dot(p2mp1)) /
+                p2mp1.dot(p2mp1));
+        },
+        closestLineDistance: function(p1, p2)
+        { return Math.sqrt(this.closestLineD2(p1, p2)); },
+
         draw: function(context, center, config) {
             var length = this.length();
             var angle  = this.angle();
@@ -126,6 +153,69 @@
             context.restore();
         }
     };
+
+    var buildBSP = function(walls) {
+        // Creates a Binary Space Partition tree that allows
+        // best-case logarithmic searching for collisions with
+        // a given array of walls.  Each entry in the walls array
+        // must be an object with an 's' and 'e' property, each
+        // of which contains an 'x' and a 'y' property.
+        walls.forEach(function(wall) {
+        });
+    };
+
+    var linearCollide = function(s1, e1, r1, s2, e2, r2) {
+        // Given the two spherical objects moving at constant
+        // velocity, this routine computes the earliest time
+        // greater than or equal to zero at which they will collide.
+        // If no collision is possible the result will be undefined.
+        // Each object requires a starting point, ending point and
+        // radius for this computation.
+        //
+        // The math here is derived by computing a parameterized
+        // path followed by both objects and computing the distance
+        // between them over time.  Then the quadratic formula is
+        // used to find where that distance is equal to the sum
+        // of the radii, which is when their edges touch.
+        var result = undefined;
+        var startDiff, pathDiff;
+        var a, b, c, discriminant;
+        var t1, t2;
+
+        startDiff = this.sub(s1, s2);
+        pathDiff = this.sub(this.sub(e1, s1), this.sub(e2, s2));
+        a = pathDiff.sqdist();
+        b = 2 * pathDiff.dot(startDiff);
+        c = startDiff.sqdist() - (r1 + r2) * (r1 + r2);
+        if (zeroish(a)) {
+            // When a is zero (or close enough) the parameterized
+            // distance is linear rather than quadratic with time.
+            // There can be only one collision point.
+            if (c <= 0)
+                result = 0;
+            else if (b < 0)
+                result = -c / b;
+        } else {
+            discriminant = b * b - 4 * a * c;
+            if (discriminant < 0) {
+                // The paths don't overlap enough for a collision to
+                // ever take place.  Result remains undefined
+            } else if (discriminant > 0) {
+                discriminant = Math.sqrt(discriminant);
+                t1 = (-b + discriminant) / (2 * a);
+                t2 = (-b - discriminant) / (2 * a);
+
+                if (t1 >= 0) {
+                    if (t2 >= 0)
+                        result = t1 < t2 ? t1 : t2;
+                    else result = t1;
+                } else if (t2 >= 0)
+                    result = t2;
+            } else if (b <= 0)
+                result = -b / (2 * a);
+        }
+        return result;
+    }
 
     // http://www.math.drexel.edu/~tolya/cantorpairing.pdf
     ripple.cantor = {
