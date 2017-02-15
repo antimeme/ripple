@@ -169,12 +169,6 @@
         return result;
     };
 
-    ripple.eval = function() {
-        var index;
-        for (index = 0; index < arguments.length; ++index)
-            arguments[index];
-    };
-
     // Framework for canvas applications
     // Object passed as the app is expected to have the following:
     //
@@ -342,6 +336,14 @@ if (typeof require !== 'undefined') (function(ripple) {
                 }
             }
         }
+    };
+
+    // TODO create a simple programming language for handling
+    // user scripts
+    ripple.eval = function() {
+        var index;
+        for (index = 0; index < arguments.length; ++index)
+            arguments[index];
     };
 
 })(typeof exports === 'undefined' ? this['ripple'] = {} : exports);
