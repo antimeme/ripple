@@ -35,7 +35,6 @@
         ctx.fillStyle = 'green';
         ctx.fill();
 
-
         ctx.beginPath();
         data.walls.forEach(function(wall) {
             ctx.moveTo(wall.s.x, wall.s.y);
@@ -45,7 +44,6 @@
         ctx.lineCap = 'round';
         ctx.strokeStyle = 'purple';
         ctx.stroke();
-
     };
 
     var drawVision = function(ctx, character, state, now) {
@@ -111,7 +109,13 @@
             direction: 0, size: size, speed: 0.009,
             control: { up: false, down: false,
                        left: false, right: false,
-                       arrow: null },
+                       sleft: false, sright: false,
+                       arrow: null,
+                       clear: function() {
+                           this.up = this.down =
+                               this.left = this.right =
+                                   this.sleft = this.sright = false;
+                       }},
             headColor: 'orangered',
             bodyColor: 'orange',
             eyeColor: 'blue',
@@ -331,8 +335,10 @@
                 if (state.tap.touches.length > 1) {
                     state.zoom.reference =
                         ripple.vector.create(
-                            state.tap.touches[0].x - state.tap.touches[1].x,
-                            state.tap.touches[0].y - state.tap.touches[1].y
+                            state.tap.touches[0].x -
+                            state.tap.touches[1].x,
+                            state.tap.touches[0].y -
+                            state.tap.touches[1].y
                         ).sqlen();
                 } else state.arrow = undefined;
                 redraw();
