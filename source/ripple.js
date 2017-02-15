@@ -18,9 +18,17 @@
 // ---------------------------------------------------------------------
 
 (function(ripple) {
+    'use strict';
+    var epsilon = 0.000001;
+
+    var zeroish = function(value)
+    { return (value <= epsilon && value >= -epsilon); };
 
     ripple.vector = {
-        epsilon: 0.000001,
+        // Represents an immutable three dimensional vector.  Only the
+        // create and polar methods are safe to call from this object.
+        // Other methods are intended for use within instances.
+        __length: undefined,
 
         create: function(x, y, z) {
             // Creates and returns a vector using Cartesian coordinates
@@ -33,11 +41,16 @@
 
         polar: function(r, theta, phi) {
             // Creates and returns a vector using polar coordinates
-            var result = Object.create(this);
+            var x, y, z;
             var cosphi = phi ? Math.cos(phi) : 1;
-            result.x = r * Math.cos(theta) * cosphi;
-            result.y = r * Math.sin(theta) * cosphi;
-            result.z = phi ? (r * Math.sin(phi)) : 0;
+            return this.create(r * Math.cos(theta) * cosphi,
+                               r * Math.sin(theta) * cosphi,
+                               phi ? (r * Math.sin(phi)) : 0);
+        },
+
+        norm: function() {
+            var length = this.length();
+            var result = this.times(1 / length);
             return result;
         },
 
@@ -65,20 +78,20 @@
 
         sqlen: function() { return this.dotp(this); },
 
-        length: function() { return Math.sqrt(this.dotp(this)); },
+        length: function() {
+            return (typeof(this.__length) !== 'undefined') ?
+                   this.__lenght :
+                   (this.__length = Math.sqrt(this.dotp(this)));
+        },
 
-        angle: function() { return Math.acos(this.norm().x); },
-
-        norm: function() {
-            var length = this.length();
-            var result = this.create(this.x / length, this.y / length);
-            result.originalLength = length;
-            return result;
+        angle: function() {
+            // FIXME: account for z
+            return Math.acos(this.norm().x);
         },
 
         reflect: function(target) {
             // r = d - ((2 d . n) / (n . n)) n
-            return (this.dotp(this) > this.epsilon) ?
+            return (this.dotp(this) > epsilon) ?
                    target.minus(this.times(2 * this.dotp(target) /
                        this.dotp(this))) : target;
         },
