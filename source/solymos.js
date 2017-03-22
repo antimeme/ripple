@@ -20,15 +20,83 @@
 
 (function(solymos) {
     'use strict';
-    solymos.element = function(name, attrs) {
-        return {
-            name: name,
-            attrs: attrs,
-            contents: [],
-            push: function() {},
-            toString: function() {},
-            emit: function() {},
-        };
+
+    // Adapted from http://stackoverflow.com/a/9756789
+    // Replace characters that would be invalid in an HTML or XML
+    // attribute value.
+    solymos.quoteAttr = function(s, preserveCR) {
+        preserveCR = preserveCR ? '&#13;' : '\n';
+        return ('' + s) /* Force conversion to string. */
+            .replace(/&/g, '&amp;') /* MUST be first */
+            .replace(/'/g, '&apos;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\r\n/g, preserveCR)
+            .replace(/[\r\n]/g, preserveCR);
+    }
+
+    // Represents an HTML or XML element.  Use the emit method
+    // to create a formatted string.  Use the toString method to
+    // create a string with minimal white space.
+    solymos.element = {
+        create: function(name, attrs) {
+            var result = Object.create(this);
+            result.name = name;
+            result.attrs = attrs ? attrs : {};
+            result.contents = [];
+            return result;
+        },
+        setAttr: function(attr, value) {
+            this.attrs[attr] = value;
+            return this;
+        },
+        push: function(value) {
+            this.contents.push(value);
+            return this;
+        },
+        add: function(value) {
+            this.contents.push(value);
+            return value;
+        },
+        toString: function() {
+            return this.emit().replace(/\s+/g, ' ');
+        },
+        emit: function(indent) {
+            var result = [];
+            var self = this;
+            var first = true;
+            var attrval = '';
+            var pos;
+
+            if (!indent)
+                indent = '';
+            pos = indent.length + self.name.length + 1;
+
+            Object.keys(self.attrs).sort().forEach(function(attr) {
+                var value = solymos.quoteAttr(self.attrs[attr]);
+                if (!first && pos + value.length + 1 > 72) {
+                    attrval += '\n' + indent + ' ' +
+                               self.name.replace(/./g, ' ');
+                    pos = indent.length + self.name.length + 1;
+                }
+                first = false;
+                attrval += ' ' + attr + '="' + value + '"';
+                pos += attr.length + value.length + 4;
+            });
+            if (self.contents) {
+                result.push(indent + '<' + self.name +
+                            attrval + '>');
+                self.contents.forEach(function(thing) {
+                    if (solymos.element.isPrototypeOf(thing))
+                        result.push(thing.emit(indent + '  '));
+                    else result.push(indent + thing); // FIXME wrap
+                });
+                result.push(indent + '</' + self.name + '>');
+            } else result.push(indent + '<' + self.name +
+                               attrval + ' />');
+            return result.join('\n' + indent);
+        }
     };
 
     solymos.comment = function() {};
@@ -375,7 +443,7 @@ if (typeof exports !== 'undefined') (function(solymos) {
                 response.writeHead(200);
                 response.end(data);
                 this.info('sending', fileName +
-                          (ext ? ('[.' + ext + ']') : ''),
+                           (ext ? ('[.' + ext + ']') : ''),
                           data.length, 'bytes');
             },
 
