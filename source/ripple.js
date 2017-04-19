@@ -91,39 +91,14 @@
 
         reflect: function(target) {
             // r = d - ((2 d . n) / (n . n)) n
-            return (this.dotp(this) > epsilon) ?
+            return (!zeroish(this.dotp(this))) ?
                    target.minus(this.times(2 * this.dotp(target) /
                        this.dotp(this))) : target;
         },
 
-        closestLineT: function(p1, p2) {
-            // Computes time representing the closest point on a line,
-            // where time represents parameterized movement from p1
-            // to p2 in one unit of time.
-            var p1mp  = p1.minus(this);
-            var p2mp1 = p2.minus(p1);
-            return -(p1mp.dot(p2mp1) / p2mp1.dot(p2mp1));
-        },
-        closestLinePoint: function(p1, p2) {
-            // Computes the point on a line closest to this point
-            var t = this.closestLineT(p1, p2);
-            return this.create(p1.x + (p2.x - p1.x) * t,
-                               p1.y + (p2.y - p1.y) * t,
-                               p1.z + (p2.z - p1.z) * t);
-        },
-
-        closestLineD2: function(p1, p2) {
-            // Computes square of the distance between a line and this
-            var p1mp  = p1.minus(this);
-            var p2mp1 = p2.minus(p1);
-            return (((p1mp.dot(p1mp) * p2mp1.dot(p2mp1)) -
-                     p1mp.dot(p2mp1) * p1mp.dot(p2mp1)) /
-                p2mp1.dot(p2mp1));
-        },
-        closestLineDistance: function(p1, p2)
-        { return Math.sqrt(this.closestLineD2(p1, p2)); },
-
         draw: function(context, center, config) {
+            // Draw an arrow representing this vector
+            // Intended for debugging purposes
             var length = this.length();
             var angle  = this.angle();
             var adepth = 0.9, awidth;
@@ -164,13 +139,46 @@
         });
     };
 
-    var linearCollide = function(s1, e1, r1, s2, e2, r2) {
+    var quadraticRoots = function(a, b, c) {
+        // Computes the real roots of a quadradic expression.  Returns
+        // either undefined (no real roots) or an array containing
+        // either one or two numbers at which the expression is zero
+        var result = undefined;
+        var discriminant;
+        if (zeroish(a)) {
+            result = [-c / b];
+        } else {
+            discriminant = b * b - 4 * a * c;
+            if (discriminant < 0) {
+                // No real roots exist so result remains undefined
+            } else if (discriminant > 0) {
+                discriminant = Math.sqrt(discriminant);
+                x1 = (-b + discriminant) / (2 * a);
+                x2 = (-b - discriminant) / (2 * a);
+                result = [(-b + discriminant) / (2 * a),
+                          (-b - discriminant) / (2 * a)];
+            } else result = [-b / (2 * a)];
+        }
+        return result;
+    };
+
+    var smallestRange = function(start, end, roots) {
+        var result = undefined;
+        if (roots) {
+            result = Math.min.apply(null, roots.filter(function(v) {
+                return ((v >= start) && (v <= end));
+            }));
+        }
+        return result;
+    };
+
+    ripple.collideRadiusRadius = function(s1, e1, r1, s2, e2, r2) {
         // Given the two spherical objects moving at constant
         // velocity, this routine computes the earliest time
         // greater than or equal to zero at which they will collide.
-        // If no collision is possible the result will be undefined.
-        // Each object requires a starting point, ending point and
-        // radius for this computation.
+        // If no collision is possible returns undefined. Each object
+        // requires a starting point, ending point and radius for this
+        // computation.
         //
         // The math here is derived by computing a parameterized
         // path followed by both objects and computing the distance
@@ -178,47 +186,73 @@
         // used to find where that distance is equal to the sum
         // of the radii, which is when their edges touch.
         var result = undefined;
-        var startDiff, pathDiff;
-        var a, b, c, discriminant;
-        var t1, t2;
+        var startDiff = this.sub(s1, s2);
+        var pathDiff = this.sub(this.sub(e1, s1), this.sub(e2, s2));
 
-        startDiff = this.sub(s1, s2);
-        pathDiff = this.sub(this.sub(e1, s1), this.sub(e2, s2));
-        a = pathDiff.sqdist();
-        b = 2 * pathDiff.dot(startDiff);
-        c = startDiff.sqdist() - (r1 + r2) * (r1 + r2);
-        if (zeroish(a)) {
-            // When a is zero (or close enough) the parameterized
-            // distance is linear rather than quadratic with time.
-            // There can be only one collision point.
-            if (c <= 0)
-                result = 0;
-            else if (b < 0)
-                result = -c / b;
-        } else {
-            discriminant = b * b - 4 * a * c;
-            if (discriminant < 0) {
-                // The paths don't overlap enough for a collision to
-                // ever take place.  Result remains undefined
-            } else if (discriminant > 0) {
-                discriminant = Math.sqrt(discriminant);
-                t1 = (-b + discriminant) / (2 * a);
-                t2 = (-b - discriminant) / (2 * a);
-
-                if (t1 >= 0) {
-                    if (t2 >= 0)
-                        result = t1 < t2 ? t1 : t2;
-                    else result = t1;
-                } else if (t2 >= 0)
-                    result = t2;
-            } else if (b <= 0)
-                result = -b / (2 * a);
-        }
+        result = smallestRange(
+            0, 1, quadraticRoots(
+                pathDiff.sqdist(),
+                2 * pathDiff.dot(startDiff),
+                startDiff.sqdist() - (r1 + r2) * (r1 + r2)));
         return result;
     }
 
+    ripple.collideRadiusSegment = function(s, e, r, segment) {
+        // Given a spherical object moving at constant velocity and a
+        // line segment, this routine computes the earliest time greater
+        // than or equal to zero at which they will collide. If no
+        // collision is possible returns undefined. The object requires
+        // a starting point, ending point and radius for this
+        // computation.  The segment is an object with the following
+        // fields expected:
+        //
+        //   segment {
+        //     s: vector representing starting point
+        //     e: vector representing ending point
+        //     len: (optional) length of segment
+        //     sqlen: (optional) squared length of segment
+        // thickness.  The distance bewteen the end points is an
+        // optional which can be used to reduce unnecessary steps.
+        //
+        // The math here is derived by computing a parameterized path
+        // followed by both objects and computing the distance between
+        // them over time.  Then the quadratic formula is used to find
+        // where that distance is equal to the sum of the radii, which
+        // is when their edges touch.
+        var result = undefined;
+        var q = segment.q ? segment.q : segment.e.minus(segment.s);
+        var sqlen = segment.sqlen ? segment.sqlen : q.sqlen();
+        var m, n;
+        if (zeroish(sqlen))
+            return result; // infinitessimal segment -- no collision
+        m = e.minus(s).plus(q.times(s.minus(e).dot(q) / sqlen));
+        n = s.minus(q.times(s.plus(segment.s).dot(q) / sqlen));
+
+        // Distance is only quadratic because we want to avoid
+        // computing a length so we compare square distances.
+        result = smallestRange(
+            0, 1, quadraticRoots(
+                m.dot(m),
+                2 * m.dot(n),
+                n.sqdist() - (r + w) * (r + w)));
+
+        // We now know when the object collides with the entire line,
+        // but not the actual line segment.  We must filter false
+        // positives out at this stage.
+        if (!isNaN(result)) {
+            var p = s.plus(e.minus(s).times(result));
+            var i = p.dot(q) / q.length();
+            if ((i < -r) || (i > q.length() + r))
+                result = undefined;
+            // FIXME When the angle of motion is sharp enough, the
+            // object may hit the wall after the false contact
+            // represented by the computed time.
+        }
+        return result;
+    };
+
     // http://www.math.drexel.edu/~tolya/cantorpairing.pdf
-    ripple.cantor = {
+    ripple.cantorPair = {
         name: "Cantor",
         pair: function(x, y) {
             return (x + y) * (x + y + 1) / 2 + y; },
@@ -231,7 +265,7 @@
     };
 
     // http://szudzik.com/ElegantPairing.pdf
-    ripple.szudzik = {
+    ripple.szudzikPair = {
         name: "Szudzik",
         pair: function(x, y) {
             return (x >= y) ? x * x + x + y :  y * y + x; },
@@ -246,10 +280,10 @@
     ripple.pair = function(x, y) {
         var nx = (x >= 0) ? 2 * x : -2 * x - 1;
         var ny = (y >= 0) ? 2 * y : -2 * y - 1;
-        return ripple.szudzik.pair(nx, ny);
+        return ripple.szudzikPair.pair(nx, ny);
     };
     ripple.unpair = function(z) {
-        var result = ripple.szudzik.unpair(z);
+        var result = ripple.szudzikPair.unpair(z);
         if (result.x % 2)
             result.x = -result.x + 1;
         if (result.y % 2)
@@ -448,7 +482,7 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
         console.log(JSON.stringify(tests[index]) + ' -> ' +
                     ripple.eval.apply(ripple.eval, tests[index]));
 
-    var p, z, zz, methods = [ripple.cantor, ripple.szudzik];
+    var p, z, zz, methods = [ripple.cantorPair, ripple.szudzikPair];
     for (index = 0; index < methods.length; ++index) {
         console.log(methods[index].name, "pairs:");
         for (z = 0; z < 1000; ++z) {
