@@ -353,8 +353,8 @@
 	        }
                 redraw();
             },
-            mtdown: function(event, redraw) {
-                state.tap = $.targets(event);
+            mtdown: function(targets, event, redraw) {
+                state.tap = targets;
                 state.arrow = null;
                 state.mmove = null;
                 if (state.tap.touches.length > 1) {
@@ -369,18 +369,18 @@
                 redraw();
                 return false;
             },
-            mtmove: function(event, redraw) {
-                var current, mmove, arrow, zoomref;
+            mtmove: function(targets, event, redraw) {
+                var mmove, arrow, zoomref;
                 if (state.tap) {
-                    current = $.targets(event);
-                    if (current.touches.length > 1) {
+                    targets = $.targets(event);
+                    if (targets.touches.length > 1) {
                         if (state.zoom.reference >
                             Math.min(state.height, state.width) / 100) {
                             zoomref = ripple.vector.create(
-                                current.touches[0].x -
-                                current.touches[1].x,
-                                current.touches[0].y -
-                                current.touches[1].y
+                                targets.touches[0].x -
+                                targets.touches[1].x,
+                                targets.touches[0].y -
+                                targets.touches[1].y
                             ).sqlen();
                             zclamp(state, state.zoom.value *
                                 Math.sqrt(zoomref /
@@ -389,8 +389,8 @@
                         }
                     } else {
                         mmove = ripple.vector.create(
-                            current.x - state.tap.x,
-                            current.y - state.tap.y);
+                            targets.x - state.tap.x,
+                            targets.y - state.tap.y);
                         arrow = mmove.norm();
                         if ((typeof(state.arrow) === 'undefined') ||
                             (state.arrow && state.arrow.dotp(arrow) >
@@ -404,7 +404,7 @@
                 redraw();
                 return false;
             },
-            mtup: function(event, redraw) {
+            mtup: function(targets, event, redraw) {
                 var delta;
                 var size;
                 if (state.arrow) {

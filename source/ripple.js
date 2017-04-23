@@ -20,7 +20,6 @@
 (function(ripple) {
     'use strict';
     var epsilon = 0.000001;
-
     var zeroish = function(value)
     { return (value <= epsilon && value >= -epsilon); };
 
@@ -300,9 +299,13 @@
     // Framework for canvas applications
     // Object passed as the app is expected to have the following:
     //
+    // app.draw(ctx, width, height, now)
     // app.resize(width, height)
-    // app.update(elapsed)
-    // app.draw(ctx, inv)
+    // app.keydown(event, redraw)
+    // app.keyup(event, redraw)
+    // app.mtdown(targets, event, redraw)
+    // app.mtup(targets, event, redraw)
+    // app.mtmove(targets, event, redraw)
     // app.isActive()
     // app.actors = [] // array of actors
     //     actor.resize(width, height)
@@ -311,9 +314,6 @@
     //     actor.isActive()
     // app.pressTimeout // milliseconds before press event
     // app.press(targets) // called on long press
-    // app.up(targets, event)
-    // app.down(targets, event)
-    // app.move(targets, event)
     ripple.app = function($, container, viewport, app) {
         var canvas = $('<canvas>').attr({
             'class': 'board'
@@ -375,18 +375,27 @@
 	});
 
         viewport.on('mousedown touchstart', function(event) {
-            if (app.mtdown)
-                return app.mtdown(event, redraw);
+            var targets;
+            if (app.mtdown) {
+                targets = $.targets(event);
+                return app.mtdown(targets, event, redraw);
+            }
         });
 
         viewport.on('mousemove touchmove', function(event) {
-            if (app.mtmove)
-                return app.mtmove(event, redraw);
+            var targets;
+            if (app.mtmove) {
+                targets = $.targets(event);
+                return app.mtmove(targets, event, redraw);
+            }
         });
 
         viewport.on('mouseleave mouseup touchend', function(event) {
-            if (app.mtup)
-                return app.mtup(event, redraw);
+            var targets;
+            if (app.mtup) {
+                targets = $.targets(event);
+                return app.mtup(targets, event, redraw);
+            }
         });
 
         viewport.on('mousewheel', function(event) {
