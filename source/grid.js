@@ -180,6 +180,17 @@
         return [];
     };
 
+    BaseGrid.prototype.draw = function(ctx, node) {
+        var last, points = this.points(node);
+        if (points.length > 0) {
+            last = points[points.length - 1];
+            ctx.moveTo(last.x, last.y);
+            for (index in points)
+                ctx.lineTo(points[index].x,
+                           points[index].y);
+        }
+    };
+
     BaseGrid.prototype.center = function(width, height) {
         // Adjusts the grid offset such that cell {row: 0, col: 0} is
         // in the center of a rectangular region.
@@ -612,14 +623,7 @@
                 ctx.textAlign = 'center';
                 ctx.font = 'bold ' + 12 + 'pt sans-serif';
                 instance.map(width, height, function(node) {
-                    points = instance.points(node);
-                    if (points.length) {
-                        last = points[points.length - 1];
-                        ctx.moveTo(last.x, last.y);
-                        for (index in points)
-                            ctx.lineTo(points[index].x,
-                                       points[index].y);
-                    }
+                    instance.draw(ctx, node);
                 });
                 ctx.fillStyle = self.css('background-color');
                 ctx.fill();
