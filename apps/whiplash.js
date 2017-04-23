@@ -4,7 +4,7 @@
 // Whiplash Paradox is a game about time travel
 (function(whiplash) {
     "use strict";
-    var data = { // TODO get this from AJAX instead
+    var data = { // TODO get this using AJAX instead
         walls: [
             {s: {x: 12, y: 12}, e: {x: 0, y: 15}},
             {s: {x: 0, y: 15}, e: {x: -12, y: 12}},
@@ -12,7 +12,17 @@
             {s: {x: 0, y: -15}, e: {x:-12, y: -12}},
             {s: {x: 12, y: -12}, e: {x: 0, y: -15}},
         ]
-    }
+    };
+
+    var processWall = function(wall) {
+        var result = {
+            s: ripple.vector.convert(wall.s),
+            e: ripple.vector.convert(wall.e)};
+        result.q = wall.q ? ripple.vector.convert(wall.q) :
+                   result.e.minus(result.s);
+        result.sqlen = wall.sqlen ? wall.sqlen : result.q.sqlen();
+        return result;
+    };
 
     var zclamp = function(state, zoom) {
         if (zoom < state.zoom.min)
@@ -36,7 +46,7 @@
         ctx.fill();
 
         ctx.beginPath();
-        data.walls.forEach(function(wall) {
+        state.walls.forEach(function(wall) {
             ctx.moveTo(wall.s.x, wall.s.y);
             ctx.lineTo(wall.e.x, wall.e.y);
         });
@@ -235,12 +245,21 @@
             height: 320, width: 320,
             zoom: { value: 50, min: 10, max: 150, reference: 0 },
             swipe: null, tap: null, mmove: null, arrow: null,
-            characters: []
+            characters: [],
+            walls: data.walls.map(processWall),
+            update: function(now) {
+                var self = this;
+                if (!now)
+                    now = new Date().getTime();
+	        self.characters.forEach(function(character) {
+                    character.update(self, now);
+                });
+            }
         };
         state.characters.push(makeGuard(-5, -5, 1));
-        state.characters.push(makeGuard(5, -5, 1));
-        state.characters.push(makeGuard(-5, 5, 1));
-        state.characters.push(makeGuard(5, 5, 1));
+        //state.characters.push(makeGuard(5, -5, 1));
+        //state.characters.push(makeGuard(-5, 5, 1));
+        //state.characters.push(makeGuard(5, 5, 1));
 	state.characters.push(state.player = makePlayer(0, 0, 1));
 
         ripple.app($, container, viewport, {
@@ -250,9 +269,7 @@
                 lineWidth = Math.max(width, height) / 50;
 
                 if (now - last < 1000)
-	            state.characters.forEach(function(character) {
-                        character.update(state, now);
-                    });
+                    state.update(now, last);
 
                 ctx.save();
                 ctx.scale(state.zoom.value, state.zoom.value)
@@ -299,15 +316,19 @@
 	        if (event.keyCode == 37 || event.keyCode == 65) {
 		    state.player.control.left = true;
                     state.player.control.arrow = null;
+                    state.update();
 	        } else if (event.keyCode == 38 || event.keyCode == 87) {
                     state.player.control.up = true;
                     state.player.control.arrow = null;
+                    state.update();
 	        } else if (event.keyCode == 39 || event.keyCode == 68) {
 		    state.player.control.right = true;
                     state.player.control.arrow = null;
+                    state.update();
 	        } else if (event.keyCode == 40 || event.keyCode == 83) {
 		    state.player.control.down = true;
                     state.player.control.arrow = null;
+                    state.update();
 	        }
                 redraw();
             },
@@ -316,15 +337,19 @@
 	        if (event.keyCode == 37 || event.keyCode == 65) {
 		    state.player.control.left = false;
                     state.player.control.arrow = null;
+                    state.update();
 	        } else if (event.keyCode == 38 || event.keyCode == 87) {
                     state.player.control.up = false;
                     state.player.control.arrow = null;
+                    state.update();
 	        } else if (event.keyCode == 39 || event.keyCode == 68) {
 		    state.player.control.right = false;
                     state.player.control.arrow = null;
+                    state.update();
 	        } else if (event.keyCode == 40 || event.keyCode == 83) {
 		    state.player.control.down = false;
                     state.player.control.arrow = null;
+                    state.update();
 	        }
                 redraw();
             },
@@ -360,6 +385,7 @@
                             zclamp(state, state.zoom.value *
                                 Math.sqrt(zoomref /
                                     state.zoom.reference));
+                            state.update();
                         }
                     } else {
                         mmove = ripple.vector.create(
@@ -372,6 +398,7 @@
                             state.arrow = arrow;
                         else state.arrow = null;
                         state.mmove = mmove;
+                        state.update();
                     }
                 }
                 redraw();
@@ -394,6 +421,7 @@
                 state.tap = null;
                 state.arrow = null;
                 state.mmove = null;
+                state.update();
                 redraw();
                 return false;
             },

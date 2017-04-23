@@ -39,6 +39,10 @@
             return result;
         },
 
+        convert: function(o) {
+            return this.create(o.x || 0, o.y || 0, o.z || 0);
+        },
+
         polar: function(r, theta, phi) {
             // Creates and returns a vector using polar coordinates
             var x, y, z;
@@ -209,7 +213,7 @@
         //   segment {
         //     s: vector representing starting point
         //     e: vector representing ending point
-        //     len: (optional) length of segment
+        //     q: (optional) vector e - s
         //     sqlen: (optional) squared length of segment
         // thickness.  The distance bewteen the end points is an
         // optional which can be used to reduce unnecessary steps.
