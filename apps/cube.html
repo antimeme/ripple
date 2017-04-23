@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="X-UA-Compatible" content="chrome=1">
+<title>Cube</title>
+<style>
+ html, body
+ { padding: 0; margin: 0; overflow: hidden; position: relative; }
+ #stuff { width: 100%; height: 480px; background: gray; }
+</style>
+
+<div id="stuff"></div>
+
+<script src="lib/jquery.min.js"></script>
+<script src="lib/jquery.mousewheel.js"></script>
+<script src="lib/three.min.js"></script>
+<!--[if lt IE 9]><script>//<![CDATA[
+    jQuery(function($) {
+    $.getScript('http://ajax.googleapis.com/ajax/libs/' +
+    'chrome-frame/1/CFInstall.min.js',
+    function() { CFInstall.check(); }); });
+    //]]></script><![endif]-->
+<script src="ripple/context.js"></script>
+<script src="ripple/ripple.js"></script>
+<script src="cube.js"></script>
+<script>//<![CDATA[
+ jQuery(function($) { cube.demo($, $('#stuff'), $(window)); });
+//]]></script>

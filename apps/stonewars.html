@@ -8,7 +8,7 @@
 <style>
     html, body
     { padding: 0; margin: 0; overflow: hidden; position: relative; }
-    #stuff { width: 100%; height: 480px; background: gray; }
+    #stuff { width: 100%; height: 100%; background: gray; }
 </style>
 
 <div id="stuff"></div>
@@ -27,5 +27,7 @@
 <script src="ripple/grid.js"></script>
 <script src="stonewars.js"></script>
 <script>//<![CDATA[
-jQuery(function($) { stonewars.demo($, $('#stuff'), $(window)); });
+ jQuery(function($) { stonewars.game($, $('#stuff'), $(window)); });
+ //jQuery(function($) { ripple.app($, $('#stuff'), $(window),
+ //                                stonewars.app); });
 //]]></script>
