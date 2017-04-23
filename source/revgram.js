@@ -34,27 +34,29 @@
         var value = '', total = 0, choice;
         var current = rules[start];
 
-        current.forEach(function(element, index) {
-            total += element[0]; });
-        choice = Math.random() * total;
-        current.forEach(function(element, index) {
-            if (choice < 0) { // skip
-            } else if (choice < element[0]) {
-                element.slice(1).forEach(function(component) {
-                    if (revgram.isrule(component))
-                        value += revgram.generate(
-                            rules, component.substring(1));
-                    else value += revgram.unquote(component);
-                });
-                choice = -1;
-            } else choice -= element[0]; 
-        });
+        if (current) {
+            current.forEach(function(element, index) {
+                total += element[0]; });
+            choice = Math.random() * total;
+            current.forEach(function(element, index) {
+                if (choice < 0) { // skip
+                } else if (choice < element[0]) {
+                    element.slice(1).forEach(function(component) {
+                        if (revgram.isrule(component))
+                            value += revgram.generate(
+                                rules, component.substring(1));
+                        else value += revgram.unquote(component);
+                    });
+                    choice = -1;
+                } else choice -= element[0];
+            });
+        } else value = 'missing-%' + start;
         return value;
     }
 }(typeof exports === 'undefined' ? this['revgram'] = {} : exports));
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
-    var example = {
+    var rule = 'name', rules = {
         'name': [[4, '%start', '%middle', '%end'],
                  [1, '%start', '%end']],
         'start': [[1, '%consonant', '%vowel']],
@@ -69,11 +71,23 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
                       [1, 'v'], [1, 'w'], [1, 'x'], [1, 'z']]
     };
 
+    var fs = require('fs');
     var revgram = exports;
+
+    var mode = null;
+    process.argv.splice(2).forEach(function (argument) {
+        if (mode === 'load') {
+            rules = JSON.parse(fs.readFileSync(argument).
+                                  toString('utf-8'));
+            mode = null;
+        } else if (mode === 'rule') {
+            rule = argument;
+        } else if (argument.startsWith('--')) {
+            mode = argument.slice(2);
+        }
+    });
+
     var index;
     for (index = 0; index < 22; ++index)
-        console.log(revgram.generate(example, 'name'));
-
-    process.argv.splice(2).forEach(function (argument) {
-    });
+        console.log(revgram.generate(rules, rule));
 }
