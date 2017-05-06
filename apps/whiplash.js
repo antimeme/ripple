@@ -57,22 +57,23 @@
     };
 
     var drawVision = function(ctx, character, state, now) {
-        var size = character.size;
-        ctx.save();
-        ctx.translate(character.position.x, character.position.y);
-        ctx.rotate(character.direction);
-
+        var size;
         if (character.visionRange && character.visionArc &&
             character.visionColor) {
+            size = character.size;
+            ctx.save();
+            ctx.translate(character.position.x, character.position.y);
+            ctx.rotate(character.direction);
+
             ctx.beginPath();
             ctx.moveTo(0, 0);
             ctx.arc(0, 0, size * character.visionRange,
                    -character.visionArc, character.visionArc);
             ctx.fillStyle = character.visionColor;
             ctx.fill();
+            ctx.restore();
         }
-        ctx.restore();
-    }
+    };
 
     var drawPerson = function(ctx, character, state, now) {
         var size = character.size;
@@ -110,130 +111,186 @@
             ctx.fill();
         }
         ctx.restore();
-    }
+    };
 
-    var makePlayer = function(x, y, size) {
+    /**
+     * A character is a representation of a humanoid create.
+     * Characters have the following properties:
+     *
+     *   position: vector location
+     *   direction: radians angle with x axis
+     *   size: number radius
+     *   speed: number movement rate
+     *   destination: vector location of desired update move
+     *
+     *   headColor: color for head
+     *   bodyColor: color for body
+     *   eyeColor: color for eyes
+     *   blinkFreq: milliseconds between blinks
+     *   blinkLength: milliseconds duration
+     *   blinkPhase: milliseconds start of blink cycle
+     *   visionRange: meters radius of vision cone
+     *   visionArc: radians angle of vision cone
+     *   visionColor: color of vision cone
+     */
+    var makeCharacter = function(config) {
         return {
-            last: new Date().getTime(),
-            position: ripple.vector.create(x, y),
-            direction: 0, size: size, speed: 0.009,
-            control: { up: false, down: false,
-                       left: false, right: false,
-                       sleft: false, sright: false,
-                       arrow: null,
-                       clear: function() {
-                           this.up = this.down =
-                               this.left = this.right =
-                                   this.sleft = this.sright = false;
-                       }},
-            headColor: 'orangered',
-            bodyColor: 'orange',
-            eyeColor: 'blue',
-            blinkFreq: 4000, blinkLength: 250, blinkPhase: 0,
-            update: function(state, now) {
-                var steps = this.speed * (now - this.last);
-                var rots = 0.005 * (now - this.last);
-                var dirvec;
+            position: ripple.vector.create(
+                config.x || 0, config.y || 0),
+            direction: config.direction || 0,
+            size: config.size || 1,
+            speed: config.speed || 0.005,
+            destination: null,
 
-                if (this.control.arrow) {
-                    dirvec = ripple.vector.create(
-                        Math.cos(this.direction),
-                        Math.sin(this.direction));
-                    if (this.control.arrow.dotp(dirvec) <
-                        Math.cos(Math.PI / 10)) {
-                        if (dirvec.x * this.control.arrow.y -
-                            dirvec.y * this.control.arrow.x < 0)
-                            this.direction -= rots;
-                        else this.direction += rots;
-                    } else {
-                        this.position.x +=
-                            Math.cos(this.direction) * steps;
-                        this.position.y +=
-                            Math.sin(this.direction) * steps;
-                    }
-                } else {
-                    if (this.control.left && !this.control.right) {
-                        this.direction -= rots;
-                    } else if (!this.control.left &&
-                               this.control.right) {
-                        this.direction += rots;
-                    }
+            headColor: config.headColor || 'darkgray',
+            bodyColor: config.bodyColor || 'black',
+            eyeColor: config.eyeColor || 'white',
+            blinkFreq: config.blinkFreq || 4000,
+            blinkLength: config.blinkLength || 250,
+            blinkPhase: config.blinkPhase || (Math.random() * 1000),
+            visionRange: config.visionRange || 0,
+            visionArc: config.visionArc || (Math.PI / 10),
+            visionColor: config.visionColor ||
+                         'rgba(255, 255, 255, 0.25)',
 
-                    if (this.control.up && !this.control.down) {
-                        this.position.x +=
-                            Math.cos(this.direction) * steps;
-                        this.position.y +=
-                            Math.sin(this.direction) * steps;
-                    } else if (!this.control.up && this.control.down) {
-                        this.position.x -=
-                            Math.cos(this.direction) * steps * 0.75;
-                        this.position.y -=
-                            Math.sin(this.direction) * steps * 0.75;
-                    }
+            last: config.last || new Date().getTime(),
+
+            update: config.update || function(state, now) {
+                if (this.destination) {
+                    this.position = this.destination;
+                    this.destination = null;
                 }
-                this.last = now;
             },
-            drawPre: function(ctx, state, now) {
+
+            plan: config.plan || function(state, now) {
+                // idle
+            },
+
+            drawPre: config.drawPre || function(ctx, state, now) {
                 drawVision(ctx, this, state, now);
             },
-            draw: function(ctx, state, now) {
+
+            draw: config.draw || function(ctx, state, now) {
                 drawPerson(ctx, this, state, now);
             }
         };
     };
 
-    var makeGuard = function(x, y, size) {
-        return {
-            last: new Date().getTime(),
+    var makePlayer = function(config) {
+        var result = makeCharacter(ripple.mergeConfig(config, {
+            headColor: 'orangered',
+            bodyColor: 'orange',
+            eyeColor: 'blue',
+            speed: 0.009
+        }));
+        result.control = {
+            up: false, down: false,
+            left: false, right: false,
+            sleft: false, sright: false,
+            arrow: null,
+            clear: function() {
+                this.up = this.down =
+                    this.left = this.right =
+                        this.sleft = this.sright = false; }};
+
+        result.plan = function(state, now) {
+            var steps = this.speed * (now - this.last);
+            var rots = 0.005 * (now - this.last);
+            var dirvec;
+
+            if (this.control.arrow) {
+                // Process swipe arrows
+                dirvec = ripple.vector.create(
+                    Math.cos(this.direction),
+                    Math.sin(this.direction));
+                if (this.control.arrow.dotp(dirvec) <
+                    Math.cos(Math.PI / 10)) {
+                    if (dirvec.x * this.control.arrow.y -
+                        dirvec.y * this.control.arrow.x < 0)
+                        this.direction -= rots;
+                    else this.direction += rots;
+                } else {
+                    this.destination = riple.vector.create(
+                        this.position.x +
+                        Math.cos(this.direction) * steps,
+                        this.position.y +
+                        Math.sin(this.direction) * steps);
+                }
+            } else {
+                // Process WASD and arrow keys
+                if (this.control.left && !this.control.right) {
+                    this.direction -= rots;
+                } else if (!this.control.left &&
+                           this.control.right) {
+                    this.direction += rots;
+                }
+
+                if (this.control.up && !this.control.down) {
+                    this.destination = ripple.vector.create(
+                        this.position.x +
+                        Math.cos(this.direction) * steps,
+                        this.position.y +
+                        Math.sin(this.direction) * steps);
+                } else if (!this.control.up && this.control.down) {
+                    // Reverse direction at reduced speed
+                    this.destination = ripple.vector.create(
+                        this.position.x -
+                        Math.cos(this.direction) * steps * 0.75,
+                        this.position.y -
+                        Math.sin(this.direction) * steps * 0.75);
+                }
+            }
+            this.last = now;
+        };
+        return result;
+    };
+
+    var makeGuard = function(config) {
+        var result = makeCharacter(ripple.mergeConfig(config, {
+            speed: 0.008,
             headColor: 'blue',
             bodyColor: 'darkgray',
             eyeColor: 'black',
-            position: ripple.vector.create(x, y),
-            direction: 0, size: size, speed: 0.008,
-            blinkFreq: 1000, blinkLength: 100,
+            blinkFreq: 1000,
+            blinkLength: 100,
             blinkPhase: Math.random() * 1000,
-            visionRange: 5, visionArc: Math.PI / 10,
-            visionColor: 'rgba(255, 255, 255, 0.25)',
-            update: function(state, now) {
-                var steps = this.speed * (now - this.last);
-                var rots = 0.005 * (now - this.last);
-                var pdir = ripple.vector.create(
-                    state.player.position.x - this.position.x,
-                    state.player.position.y - this.position.y).norm();
-                var direction, target;
+            visionRange: 5}));
 
-                if (pdir.dotp(ripple.vector.create(
-                    Math.cos(this.direction),
-                    Math.sin(this.direction))) <
-                    Math.cos(Math.PI / 10)) {
-                    if ((state.player.position.x - this.position.x) *
-                        Math.sin(this.direction) -
-                        (state.player.position.y - this.position.y) *
-                        Math.cos(this.direction) < 0)
-                        this.direction += rots;
-                    else this.direction -= rots;
-                } else if (pdir.originalLength >
-                           this.size * this.visionRange) {
-                    direction = {
-                        x: Math.cos(this.direction),
-                        y: Math.sin(this.direction)};
+        result.plan = function(state, now) {
+            var steps = this.speed * (now - this.last);
+            var rots = 0.005 * (now - this.last);
+            var pdir = ripple.vector.create(
+                state.player.position.x - this.position.x,
+                state.player.position.y - this.position.y).norm();
+            var direction, target;
 
-                    state.characters.forEach(function(current) {
-                        if (current === this)
-                            return;
-                    }, this);
-                    this.position.x += direction.x * steps;
-                    this.position.y += direction.y * steps;
-                }
-                this.last = now;
-            },
-            drawPre: function(ctx, state, now) {
-                drawVision(ctx, this, state, now);
-            },
-            draw: function(ctx, state, now) {
-                drawPerson(ctx, this, state, now);
+            if (pdir.dotp(ripple.vector.create(
+                Math.cos(this.direction),
+                Math.sin(this.direction))) <
+                Math.cos(Math.PI / 10)) {
+                if ((state.player.position.x - this.position.x) *
+                    Math.sin(this.direction) -
+                    (state.player.position.y - this.position.y) *
+                    Math.cos(this.direction) < 0)
+                    this.direction += rots;
+                else this.direction -= rots;
+            } else if (pdir.originalLength >
+                this.size * this.visionRange) {
+                direction = {
+                    x: Math.cos(this.direction),
+                    y: Math.sin(this.direction)};
+
+                state.characters.forEach(function(current) {
+                    if (current === this)
+                        return;
+                }, this);
+                this.destination = ripple.vector.create(
+                    this.position.x + direction.x * steps,
+                    this.position.y + direction.y * steps);
             }
+            this.last = now;
         };
+        return result;
     };
 
     whiplash.go = function($, container, viewport) {
@@ -252,15 +309,28 @@
                 if (!now)
                     now = new Date().getTime();
 	        self.characters.forEach(function(character) {
+                    character.plan(self, now);
+                    if (character.destination)
+                        this.walls.forEach(function(wall) {
+                            /* var c = ripple.collideRadiusSegment(
+                             *     character.position,
+                             *     character.destination,
+                             *     character.size, wall);
+                             * if (!isNaN(c))
+                             *     console.log('THUNK', c);*/
+                        });
+                }, this);
+	        self.characters.forEach(function(character) {
                     character.update(self, now);
                 });
             }
         };
-        state.characters.push(makeGuard(-5, -5, 1));
-        //state.characters.push(makeGuard(5, -5, 1));
-        //state.characters.push(makeGuard(-5, 5, 1));
-        //state.characters.push(makeGuard(5, 5, 1));
-	state.characters.push(state.player = makePlayer(0, 0, 1));
+        state.characters.push(makeGuard({x: -5, y: -5}));
+        //state.characters.push(makeGuard(5, -5));
+        //state.characters.push(makeGuard(-5, 5));
+        //state.characters.push(makeGuard(5, 5));
+        state.characters.push(makeCharacter({x: 5, y: 5, size: 1.5}));
+	state.characters.push(state.player = makePlayer());
 
         ripple.app($, container, viewport, {
             draw: function(ctx, width, height, now, last) {
