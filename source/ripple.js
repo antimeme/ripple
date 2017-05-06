@@ -1,5 +1,5 @@
 // ripple.js
-// Copyright (C) 2014-2016 by Jeff Gold.
+// Copyright (C) 2014-2017 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -97,6 +97,11 @@
             return (!zeroish(this.dotp(this))) ?
                    target.minus(this.times(2 * this.dotp(target) /
                        this.dotp(this))) : target;
+        },
+
+        toString: function() {
+            return 'ripple.vector(' + this.x + ', ' +
+                   this.y + ', ' + this.z + ')';
         },
 
         draw: function(context, center, config) {
@@ -296,6 +301,22 @@
         return result;
     };
 
+    ripple.mergeConfig = function() {
+        var result = {}, index, config;
+
+        for (index = 0; index < arguments.length; ++index) {
+            if (arguments[index] &&
+                typeof(arguments[index]) === 'object') {
+                config = arguments[index];
+                Object.keys(config).forEach(function(key) {
+                    if (!(key in result))
+                        result[key] = config[key];
+                });
+            }
+        }
+        return result;
+    };
+
     // Framework for canvas applications
     // Object passed as the app is expected to have the following:
     //
@@ -361,7 +382,7 @@
             redraw();
         };
 
-        canvas.resize(resize);
+        viewport.resize(resize);
         resize();
 
 	viewport.on('keydown', function(event) {
