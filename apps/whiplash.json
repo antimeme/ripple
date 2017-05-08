@@ -1,0 +1,27 @@
+{
+    "chartypes": {
+        "player": {
+            "headColor": "orangered",
+            "bodyColor": "orange",
+            "eyeColor": "blue",
+            "speed": 0.009
+        },
+        "guard": {
+            "headColor": "blue",
+            "bodyColor": "darkgray",
+            "eyeColor": "black",
+            "blinkFreq": 1000,
+            "blinkLength": 100,
+            "visionRange": 5,
+            "speed": 0.008
+        }
+    },
+    "walls": [
+        {"s": {"x": 12, "y": 12}, "e": {"x": 0, "y": 15}},
+        {"s": {"x": 0, "y": 15}, "e": {"x": -12, "y": 12}},
+        {"s": {"x": -12, "y": 12}, "e": {"x": -12, "y": -12},
+         "width": 0.75 },
+        {"s": {"x": 0, "y": -15}, "e": {"x":-12, "y": -12}},
+        {"s": {"x": 12, "y": -12}, "e": {"x": 0, "y": -15}}
+    ]
+}

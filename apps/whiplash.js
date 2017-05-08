@@ -4,15 +4,6 @@
 // Whiplash Paradox is a game about time travel
 (function(whiplash) {
     "use strict";
-    var data = { // TODO get this using AJAX instead
-        walls: [
-            {s: {x: 12, y: 12}, e: {x: 0, y: 15}},
-            {s: {x: 0, y: 15}, e: {x: -12, y: 12}},
-            {s: {x: -12, y: 12}, e: {x: -12, y: -12}},
-            {s: {x: 0, y: -15}, e: {x:-12, y: -12}},
-            {s: {x: 12, y: -12}, e: {x: 0, y: -15}},
-        ]
-    };
 
     var processWall = function(wall) {
         var result = {
@@ -21,6 +12,7 @@
         result.q = wall.q ? ripple.vector.convert(wall.q) :
                    result.e.minus(result.s);
         result.sqlen = wall.sqlen ? wall.sqlen : result.q.sqlen();
+        result.width = wall.width ? wall.width : 0.5;
         return result;
     };
 
@@ -33,6 +25,9 @@
     };
 
     var drawBackground = function(ctx, state, now) {
+        var first = true;
+        var lineWidth = undefined;
+
         ctx.beginPath();
         ctx.moveTo(10, 0);
         ctx.arc(10, 0, 1, 0, 2 * Math.PI);
@@ -45,14 +40,26 @@
         ctx.fillStyle = 'green';
         ctx.fill();
 
-        ctx.beginPath();
-        state.walls.forEach(function(wall) {
-            ctx.moveTo(wall.s.x, wall.s.y);
-            ctx.lineTo(wall.e.x, wall.e.y);
-        });
-        ctx.lineWidth = 0.5;
         ctx.lineCap = 'round';
         ctx.strokeStyle = 'purple';
+        ctx.beginPath();
+        state.walls.forEach(function(wall) {
+            if (typeof(lineWidth) !== 'undefined' &&
+                lineWidth != wall.width) {
+                ctx.stroke();
+                ctx.beginPath();
+            }
+            ctx.lineWidth = lineWidth = wall.width;
+            ctx.moveTo(wall.s.x, wall.s.y);
+            ctx.lineTo(wall.e.x, wall.e.y);
+
+            if (first) {
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.strokeStyle = 'green';
+                first = false;
+            }
+        });
         ctx.stroke();
     };
 
@@ -177,12 +184,7 @@
     };
 
     var makePlayer = function(config) {
-        var result = makeCharacter(ripple.mergeConfig(config, {
-            headColor: 'orangered',
-            bodyColor: 'orange',
-            eyeColor: 'blue',
-            speed: 0.009
-        }));
+        var result = makeCharacter(config);
         result.control = {
             up: false, down: false,
             left: false, right: false,
@@ -246,17 +248,10 @@
     };
 
     var makeGuard = function(config) {
-        var result = makeCharacter(ripple.mergeConfig(config, {
-            speed: 0.008,
-            headColor: 'blue',
-            bodyColor: 'darkgray',
-            eyeColor: 'black',
-            blinkFreq: 1000,
-            blinkLength: 100,
-            blinkPhase: Math.random() * 1000,
-            visionRange: 5}));
+        var result = makeCharacter(config);
 
         result.plan = function(state, now) {
+            // FIXME this doesn't work anymore?
             var steps = this.speed * (now - this.last);
             var rots = 0.005 * (now - this.last);
             var pdir = ripple.vector.create(
@@ -293,7 +288,35 @@
         return result;
     };
 
-    whiplash.go = function($, container, viewport) {
+    var update = function(now) {
+        if (!now)
+            now = new Date().getTime();
+	this.characters.forEach(function(character) {
+            character.plan(this, now);
+        }, this);
+
+        // Only player can collide with walls for now
+        if (this.player.destination && this.walls.length > 0) {
+            var wall = this.walls[0];
+            var r = this.player.size;
+            var s = this.player.position;
+            var e = this.player.destination;
+            var q = wall.q ? wall.q : wall.e.minus(wall.s);
+            var sqlen = wall.sqlen ? wall.sqlen : q.sqlen();
+            var metric =
+                wall.s.minus(e).minus(
+                    q.times(wall.s.minus(e).dotp(q) / sqlen) ).sqlen() -
+                ((r + wall.width) * (r + wall.width));
+            console.log(metric, ripple.collideRadiusSegment(
+                s, e, r, wall));
+        }
+
+        this.characters.forEach(function(character) {
+            character.update(this, now);
+        }, this);
+    };
+
+    whiplash.go = function($, container, viewport, data) {
         // State arrow can be either:
         //   {x, y} - unit vector indicating direction
         //   undefined - arrow in process of being set
@@ -302,35 +325,19 @@
             height: 320, width: 320,
             zoom: { value: 50, min: 10, max: 150, reference: 0 },
             swipe: null, tap: null, mmove: null, arrow: null,
-            characters: [],
+            characters: [], player: null,
             walls: data.walls.map(processWall),
-            update: function(now) {
-                var self = this;
-                if (!now)
-                    now = new Date().getTime();
-	        self.characters.forEach(function(character) {
-                    character.plan(self, now);
-                    if (character.destination)
-                        this.walls.forEach(function(wall) {
-                            /* var c = ripple.collideRadiusSegment(
-                             *     character.position,
-                             *     character.destination,
-                             *     character.size, wall);
-                             * if (!isNaN(c))
-                             *     console.log('THUNK', c);*/
-                        });
-                }, this);
-	        self.characters.forEach(function(character) {
-                    character.update(self, now);
-                });
-            }
+            update: update
         };
-        state.characters.push(makeGuard({x: -5, y: -5}));
+
+	state.characters.push(state.player = makePlayer(
+            data.chartypes['player']));
+        state.characters.push(makeGuard(ripple.mergeConfig(
+            {x: -5, y: -5}, data.chartypes['guard'])));
         //state.characters.push(makeGuard(5, -5));
         //state.characters.push(makeGuard(-5, 5));
         //state.characters.push(makeGuard(5, 5));
-        state.characters.push(makeCharacter({x: 5, y: 5, size: 1.5}));
-	state.characters.push(state.player = makePlayer());
+        state.characters.push(makeCharacter({x: 5, y: 5}));
 
         ripple.app($, container, viewport, {
             draw: function(ctx, width, height, now, last) {

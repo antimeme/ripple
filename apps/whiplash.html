@@ -24,5 +24,20 @@
 <script src="ripple/ripple.js"></script>
 <script src="whiplash.js"></script>
 <script>//<![CDATA[
-jQuery(function($) { whiplash.go($, $('.whiplash'), $(window)); });
-//]]></script>
+ var wdata = null, start = null;
+ jQuery.ajax({url: 'whiplash.json'}).done(function(data) {
+     wdata = data;
+     if (start)
+         start();
+ }).fail(function(jqXHR, err) {
+     console.log(err);
+     alert(err);
+ });
+ jQuery(function($) {
+     start = function() {
+         whiplash.go($, $('.whiplash'), $(window), wdata);
+     }
+     if (wdata)
+         start();
+ });
+ //]]></script>
