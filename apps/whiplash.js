@@ -301,14 +301,23 @@
             var r = this.player.size;
             var s = this.player.position;
             var e = this.player.destination;
-            var q = wall.q ? wall.q : wall.e.minus(wall.s);
-            var sqlen = wall.sqlen ? wall.sqlen : q.sqlen();
-            var metric =
-                wall.s.minus(e).minus(
-                    q.times(wall.s.minus(e).dotp(q) / sqlen) ).sqlen() -
-                ((r + wall.width) * (r + wall.width));
-            console.log(metric, ripple.collideRadiusSegment(
-                s, e, r, wall));
+            var collide = ripple.collideRadiusSegment(
+                s, e, r, wall);
+
+            var metric = this.player.destination.
+                              shortestSegment(wall).sqlen();
+            console.log('metric', metric, 'collide', collide);
+
+            if (!isNaN(collide)) {
+                var outcome = this.player.position.interpolate(
+                    this.player.destination, collide);
+                //console.log('position', this.player.position,
+                //            'desination', this.player.destination,
+                //            'outcome', outcome,
+                //            'width', wall.width,
+                //            'sqlen', sqlen);
+                this.player.destination = outcome;
+            }
         }
 
         this.characters.forEach(function(character) {
