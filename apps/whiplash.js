@@ -53,12 +53,12 @@
             ctx.moveTo(wall.s.x, wall.s.y);
             ctx.lineTo(wall.e.x, wall.e.y);
 
-            if (first) {
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.strokeStyle = 'green';
-                first = false;
-            }
+            //if (first) {
+            //    ctx.stroke();
+            //    ctx.beginPath();
+            //    ctx.strokeStyle = 'green';
+            //    first = false;
+            //}
         });
         ctx.stroke();
     };
@@ -196,6 +196,7 @@
                         this.sleft = this.sright = false; }};
 
         result.plan = function(state, now) {
+            var destination = undefined;
             var steps = this.speed * (now - this.last);
             var rots = 0.005 * (now - this.last);
             var dirvec;
@@ -212,7 +213,7 @@
                         this.direction -= rots;
                     else this.direction += rots;
                 } else {
-                    this.destination = riple.vector.create(
+                    destination = ripple.vector.create(
                         this.position.x +
                         Math.cos(this.direction) * steps,
                         this.position.y +
@@ -228,14 +229,14 @@
                 }
 
                 if (this.control.up && !this.control.down) {
-                    this.destination = ripple.vector.create(
+                    destination = ripple.vector.create(
                         this.position.x +
                         Math.cos(this.direction) * steps,
                         this.position.y +
                         Math.sin(this.direction) * steps);
                 } else if (!this.control.up && this.control.down) {
                     // Reverse direction at reduced speed
-                    this.destination = ripple.vector.create(
+                    destination = ripple.vector.create(
                         this.position.x -
                         Math.cos(this.direction) * steps * 0.75,
                         this.position.y -
@@ -243,6 +244,7 @@
                 }
             }
             this.last = now;
+            return destination;
         };
         return result;
     };
@@ -252,6 +254,7 @@
 
         result.plan = function(state, now) {
             // FIXME this doesn't work anymore?
+            var destination = undefined;
             var steps = this.speed * (now - this.last);
             var rots = 0.005 * (now - this.last);
             var pdir = ripple.vector.create(
@@ -279,11 +282,12 @@
                     if (current === this)
                         return;
                 }, this);
-                this.destination = ripple.vector.create(
+                destination = ripple.vector.create(
                     this.position.x + direction.x * steps,
                     this.position.y + direction.y * steps);
             }
             this.last = now;
+            return destination;
         };
         return result;
     };
@@ -292,21 +296,24 @@
         if (!now)
             now = new Date().getTime();
 	this.characters.forEach(function(character) {
-            character.plan(this, now);
+            character.destination = character.plan(this, now);
         }, this);
 
         // Only player can collide with walls for now
         if (this.player.destination && this.walls.length > 0) {
-            var wall = this.walls[0];
-            var r = this.player.size;
-            var s = this.player.position;
-            var e = this.player.destination;
-            var collide = ripple.collideRadiusSegment(
-                s, e, r, wall);
+            var collide = undefined;
+            // DEBUG: remove slice to check all walls
+            this.walls.slice(0, 1).forEach(function(wall) {
+                var current = ripple.collideRadiusSegment(
+                    this.player.position,
+                    this.player.destination,
+                    this.player.size, wall);
+                if (!isNaN(current) &&
+                    (isNaN(collide) || current < collide))
+                    collide = current;
+            }, this);
 
-            var metric = this.player.destination.
-                              shortestSegment(wall).sqlen();
-            console.log('metric', metric, 'collide', collide);
+            console.log('collide', collide);
 
             if (!isNaN(collide)) {
                 var outcome = this.player.position.interpolate(

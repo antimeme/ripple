@@ -20,14 +20,23 @@
 (function(ripple) {
     'use strict';
     var epsilon = 0.000001;
-    var zeroish = function(value)
-    { return (value <= epsilon && value >= -epsilon); };
+    var zeroish = function(value) {
+        return (!isNaN(value) && value <= epsilon && value >= -epsilon);
+    };
 
     ripple.vector = {
         // Represents an immutable three dimensional vector.  Only the
         // create and polar methods are safe to call from this object.
         // Other methods are intended for use within instances.
+        //
+        // Vector length is memoized so only the first call performs
+        // the computation.
         __length: undefined,
+        length: function() {
+            return (typeof(this.__length) !== 'undefined') ?
+                   this.__lenght :
+                   (this.__length = Math.sqrt(this.dotp(this)));
+        },
 
         create: function(x, y, z) {
             // Creates and returns a vector using Cartesian coordinates
@@ -39,6 +48,7 @@
         },
 
         convert: function(o) {
+            // Converts a vector-like object into a proper vector
             return this.create(o.x || 0, o.y || 0, o.z || 0);
         },
 
@@ -52,6 +62,7 @@
         },
 
         norm: function() {
+            // Returns a unit vector with the same direction
             var length = this.length();
             var result = this.times(1 / length);
             return result;
@@ -81,12 +92,6 @@
 
         sqlen: function() { return this.dotp(this); },
 
-        length: function() {
-            return (typeof(this.__length) !== 'undefined') ?
-                   this.__lenght :
-                   (this.__length = Math.sqrt(this.dotp(this)));
-        },
-
         angle: function() {
             // FIXME: account for z
             return Math.acos(this.norm().x);
@@ -99,8 +104,19 @@
                        this.dotp(this))) : target;
         },
 
+        interpolate: function(destination, t) {
+            return this.plus(destination.minus(this).times(t));
+        },
+
+        shortestSegment: function(segment) {
+            var q = segment.q ? segment.q : segment.e.minus(segment.s);
+            var q2 = segment.sqlen ? segment.sqlen : q.sqlen();
+            return this.minus(segment.s).minus(
+                q.times(this.minus(segment.s).dotp(q) / q2));
+        },
+
         toString: function() {
-            return 'ripple.vector(' + this.x + ', ' +
+            return 'ripple.vector.create(' + this.x + ', ' +
                    this.y + ', ' + this.z + ')';
         },
 
@@ -149,20 +165,18 @@
 
     var quadraticRoots = function(a, b, c) {
         // Computes the real roots of a quadradic expression.  Returns
-        // either undefined (no real roots) or an array containing
-        // either one or two numbers at which the expression is zero
-        var result = undefined;
+        // an array with either zero (no real roots) one or two numbers
+        // at which the expression is zero
+        var result = [];
         var discriminant;
         if (zeroish(a)) {
             result = [-c / b];
         } else {
             discriminant = b * b - 4 * a * c;
             if (discriminant < 0) {
-                // No real roots exist so result remains undefined
+                // No real roots exist so result remains empty
             } else if (discriminant > 0) {
                 discriminant = Math.sqrt(discriminant);
-                x1 = (-b + discriminant) / (2 * a);
-                x2 = (-b - discriminant) / (2 * a);
                 result = [(-b + discriminant) / (2 * a),
                           (-b - discriminant) / (2 * a)];
             } else result = [-b / (2 * a)];
@@ -172,10 +186,12 @@
 
     var smallestRange = function(start, end, roots) {
         var result = undefined;
-        if (roots) {
-            result = Math.min.apply(null, roots.filter(function(v) {
+        if (roots && roots.length > 0) {
+            roots = roots.filter(function(v) {
                 return ((v >= start) && (v <= end));
-            }));
+            });
+            if (roots.length > 0)
+                result = Math.min.apply(null, roots);
         }
         return result;
     };
@@ -199,26 +215,26 @@
 
         result = smallestRange(
             0, 1, quadraticRoots(
-                pathDiff.sqdist(),
-                2 * pathDiff.dot(startDiff),
-                startDiff.sqdist() - (r1 + r2) * (r1 + r2)));
+                pathDiff.sqlen(),
+                2 * pathDiff.dotp(startDiff),
+                startDiff.sqlen() - (r1 + r2) * (r1 + r2)));
         return result;
     }
 
     ripple.collideRadiusSegment = function(s, e, r, segment) {
         // Given a spherical object moving at constant velocity and a
-        // line segment, this routine computes the earliest time greater
-        // than or equal to zero at which they will collide. If no
-        // collision is possible returns undefined. The object requires
-        // a starting point, ending point and radius for this
-        // computation.  The segment is an object with the following
-        // fields expected:
+        // line segment, this routine computes the time at which the
+        // two will collide.  The object is assumed to be at s (start
+        // point) when t == 0 and at e (end point) when t == 1. If no
+        // collision occurs this routine returns undefined.  The
+        // segment is an object with the following fields expected:
         //
         //   segment {
         //     s: vector representing starting point
         //     e: vector representing ending point
         //     q: (optional) vector e - s
         //     sqlen: (optional) squared length of segment
+        //     width: (optional) width of the segment
         // thickness.  The distance bewteen the end points is an
         // optional which can be used to reduce unnecessary steps.
         //
@@ -229,33 +245,57 @@
         // is when their edges touch.
         var result = undefined;
         var q = segment.q ? segment.q : segment.e.minus(segment.s);
-        var sqlen = segment.sqlen ? segment.sqlen : q.sqlen();
-        var m, n;
-        if (zeroish(sqlen))
-            return result; // infinitessimal segment -- no collision
-        m = e.minus(s).plus(q.times(s.minus(e).dot(q) / sqlen));
-        n = s.minus(q.times(s.plus(segment.s).dot(q) / sqlen));
+        var q2 = segment.sqlen ? segment.sqlen : q.sqlen();
+        var width = segment.width ? segment.width : 0;
+        var m, n, mq, nq, margin;
+        if (zeroish(q2))
+            return collideRadiusRadius(
+                s, e, r, segment.s, segment.s, width / 2);
 
-        // Distance is only quadratic because we want to avoid
-        // computing a length so we compare square distances.
-        result = smallestRange(
-            0, 1, quadraticRoots(
-                m.dot(m),
-                2 * m.dot(n),
-                n.sqdist() - (r + w) * (r + w)));
+        // Distance squared is
+        //   (p - segment.s) - ((p - segment.s) . q)q/q^2)^2 -
+        //   (r - width/2)^2
+        // Since p is moving, it can be expanded to p = s + (e - s)t
+        // Then we break things down in terms of t and find roots
+        m = e.minus(s); mq = m.dotp(q);
+        n = s.minus(segment.s); nq = n.dotp(q);
+        margin = r + width / 2;
+
+        // Rather than computing square roots, which can be expensive,
+        // we compare the square of the distance between point and line
+        // to the square of the sum of the radius and wall width.
+        // The roots represent the points in time when the difference
+        // between these values is zero, which are the moments of
+        // collison
+        result = quadraticRoots(
+            m.dotp(m) - mq * mq / q2,
+            2 * m.dotp(n) - 2 * mq * nq / q2,
+            n.dotp(n) - nq * nq / q2 - margin * margin);
+        result = smallestRange(0, 1, result.map(function(v) {
+            return zeroish(v) ? 0 : v;
+        }));
+
+        // Don't report collisions if the object starts up against
+        // the segment but is moving away
+        if (zeroish(result)) {
+            var ds = s.shortestSegment(segment);
+            var de = e.shortestSegment(segment);
+            if ((de.sqlen() > ds.sqlen()) && ds.dotp(de) > 0)
+                result = undefined;
+        }
 
         // We now know when the object collides with the entire line,
         // but not the actual line segment.  We must filter false
         // positives out at this stage.
-        if (!isNaN(result)) {
-            var p = s.plus(e.minus(s).times(result));
-            var i = p.dot(q) / q.length();
-            if ((i < -r) || (i > q.length() + r))
-                result = undefined;
+        //if (!isNaN(result)) {
+        //    var p = s.plus(e.minus(s).times(result));
+        //    var i = p.dotp(q) / q.length();
+        //    if ((i < -r) || (i > q.length() + r))
+        //        result = undefined;
             // FIXME When the angle of motion is sharp enough, the
             // object may hit the wall after the false contact
             // represented by the computed time.
-        }
+        //}
         return result;
     };
 
