@@ -195,13 +195,20 @@
                     this.left = this.right =
                         this.sleft = this.sright = false; }};
 
-        result.plan = function(state, now) {
+        result.plan = function(state, now, collide) {
             var destination = undefined;
             var steps = this.speed * (now - this.last);
             var rots = 0.005 * (now - this.last);
             var dirvec;
 
-            if (this.control.arrow) {
+            if (!isNaN(collide)) {
+                // This is how the system informs us of collisions
+                // which indicates that we must update our plan
+                this.control.arrow = null;
+                this.destination =
+                    this.position.interpolate(
+                        this.destination, collide);
+            } else if (this.control.arrow) {
                 // Process swipe arrows
                 dirvec = ripple.vector.create(
                     Math.cos(this.direction),
@@ -244,7 +251,7 @@
                 }
             }
             this.last = now;
-            return destination;
+            return this.destination = destination;
         };
         return result;
     };
@@ -302,8 +309,7 @@
         // Only player can collide with walls for now
         if (this.player.destination && this.walls.length > 0) {
             var collide = undefined;
-            // DEBUG: remove slice to check all walls
-            this.walls.slice(0, 1).forEach(function(wall) {
+            this.walls.forEach(function(wall) {
                 var current = ripple.collideRadiusSegment(
                     this.player.position,
                     this.player.destination,
@@ -313,17 +319,8 @@
                     collide = current;
             }, this);
 
-            console.log('collide', collide);
-
             if (!isNaN(collide)) {
-                var outcome = this.player.position.interpolate(
-                    this.player.destination, collide);
-                //console.log('position', this.player.position,
-                //            'desination', this.player.destination,
-                //            'outcome', outcome,
-                //            'width', wall.width,
-                //            'sqlen', sqlen);
-                this.player.destination = outcome;
+                this.player.plan(this, now, collide);
             }
         }
 

@@ -109,6 +109,10 @@
         },
 
         shortestSegment: function(segment) {
+            // Returns a vector going from the point represented
+            // by this vector to the closest point on the line.
+            // The output of this method plus the original vector
+            // is the closest point on the line
             var q = segment.q ? segment.q : segment.e.minus(segment.s);
             var q2 = segment.sqlen ? segment.sqlen : q.sqlen();
             return this.minus(segment.s).minus(
@@ -253,7 +257,8 @@
                 s, e, r, segment.s, segment.s, width / 2);
 
         // Distance squared is
-        //   (p - segment.s) - ((p - segment.s) . q)q/q^2)^2 -
+        //   (p - segment.s) - ((p - segment.s) . q)q/q^2)^2
+        // A collision happens when this value is less than
         //   (r - width/2)^2
         // Since p is moving, it can be expanded to p = s + (e - s)t
         // Then we break things down in terms of t and find roots
@@ -287,15 +292,15 @@
         // We now know when the object collides with the entire line,
         // but not the actual line segment.  We must filter false
         // positives out at this stage.
-        //if (!isNaN(result)) {
-        //    var p = s.plus(e.minus(s).times(result));
-        //    var i = p.dotp(q) / q.length();
-        //    if ((i < -r) || (i > q.length() + r))
-        //        result = undefined;
+        if (!isNaN(result)) {
+            var p = s.plus(e.minus(s).times(result));
+            var i = p.minus(segment.s).dotp(q) / q2;
+            if ((i < 0) || (i > 1))
+                result = undefined;
             // FIXME When the angle of motion is sharp enough, the
             // object may hit the wall after the false contact
             // represented by the computed time.
-        //}
+        }
         return result;
     };
 
