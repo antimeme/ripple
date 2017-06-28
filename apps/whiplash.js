@@ -16,6 +16,13 @@
         return result;
     };
 
+    var processPillar = function(pillar) {
+        var result = {
+            p: ripple.vector.convert(pillar.p),
+            r: pillar.r, color: pillar.color };
+        return result;
+    };
+
     var zclamp = function(state, zoom) {
         if (zoom < state.zoom.min)
             zoom = state.zoom.min;
@@ -28,17 +35,13 @@
         var first = true;
         var lineWidth = undefined;
 
-        ctx.beginPath();
-        ctx.moveTo(10, 0);
-        ctx.arc(10, 0, 1, 0, 2 * Math.PI);
-        ctx.moveTo(-10, 0);
-        ctx.arc(-10, 0, 1, 0, 2 * Math.PI);
-        ctx.moveTo(0, 10);
-        ctx.arc(0, 10, 1, 0, 2 * Math.PI);
-        ctx.moveTo(0, -10);
-        ctx.arc(0, -10, 1, 0, 2 * Math.PI);
-        ctx.fillStyle = 'green';
-        ctx.fill();
+        state.pillars.forEach(function(pillar) {
+            ctx.beginPath();
+            ctx.moveTo(pillar.p.x, pillar.p.y);
+            ctx.arc(pillar.p.x, pillar.p.y, pillar.r, 0, 2 * Math.PI);
+            ctx.fillStyle = 'green';
+            ctx.fill();
+        });
 
         ctx.lineCap = 'round';
         ctx.strokeStyle = 'purple';
@@ -306,14 +309,26 @@
             character.destination = character.plan(this, now);
         }, this);
 
-        // Only player can collide with walls for now
-        if (this.player.destination && this.walls.length > 0) {
+        // Only player can collide for now
+        if (this.player.destination) {
             var collide = undefined;
+
             this.walls.forEach(function(wall) {
                 var current = ripple.collideRadiusSegment(
                     this.player.position,
                     this.player.destination,
                     this.player.size, wall);
+                if (!isNaN(current) &&
+                    (isNaN(collide) || current < collide))
+                    collide = current;
+            }, this);
+
+            this.pillars.forEach(function(pillar) {
+                var current = ripple.collideRadiusRadius(
+                    this.player.position,
+                    this.player.destination,
+                    this.player.size,
+                    pillar.p, pillar.p, pillar.r);
                 if (!isNaN(current) &&
                     (isNaN(collide) || current < collide))
                     collide = current;
@@ -339,6 +354,7 @@
             zoom: { value: 50, min: 10, max: 150, reference: 0 },
             swipe: null, tap: null, mmove: null, arrow: null,
             characters: [], player: null,
+            pillars: data.pillars.map(processPillar),
             walls: data.walls.map(processWall),
             update: update
         };

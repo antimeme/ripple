@@ -34,7 +34,7 @@
         __length: undefined,
         length: function() {
             return (typeof(this.__length) !== 'undefined') ?
-                   this.__lenght :
+                   this.__length :
                    (this.__length = Math.sqrt(this.dotp(this)));
         },
 
@@ -164,6 +164,7 @@
         // must be an object with an 's' and 'e' property, each
         // of which contains an 'x' and a 'y' property.
         walls.forEach(function(wall) {
+            // TODO
         });
     };
 
@@ -188,40 +189,35 @@
         return result;
     };
 
-    var smallestRange = function(start, end, roots) {
-        var result = undefined;
-        if (roots && roots.length > 0) {
-            roots = roots.filter(function(v) {
-                return ((v >= start) && (v <= end));
-            });
-            if (roots.length > 0)
-                result = Math.min.apply(null, roots);
-        }
-        return result;
-    };
-
     ripple.collideRadiusRadius = function(s1, e1, r1, s2, e2, r2) {
-        // Given the two spherical objects moving at constant
-        // velocity, this routine computes the earliest time
-        // greater than or equal to zero at which they will collide.
-        // If no collision is possible returns undefined. Each object
-        // requires a starting point, ending point and radius for this
-        // computation.
+        // Given the two round objects moving at constant velocity,
+        // compute the earliest time during the interval at which they
+        // will collide. If no collision is possible return undefined.
         //
-        // The math here is derived by computing a parameterized
-        // path followed by both objects and computing the distance
-        // between them over time.  Then the quadratic formula is
-        // used to find where that distance is equal to the sum
-        // of the radii, which is when their edges touch.
+        // A parameterized path is computed for both objects and the
+        // quadratic formula is used to find where that distance is
+        // equal to the sum of the radii, which is where edges touch.
         var result = undefined;
-        var startDiff = this.sub(s1, s2);
-        var pathDiff = this.sub(this.sub(e1, s1), this.sub(e2, s2));
+        var d1 = e1.minus(s1);
+        var d2 = e2.minus(s2);
+        var gap = r1 + r2;
 
-        result = smallestRange(
-            0, 1, quadraticRoots(
-                pathDiff.sqlen(),
-                2 * pathDiff.dotp(startDiff),
-                startDiff.sqlen() - (r1 + r2) * (r1 + r2)));
+        result = quadraticRoots(
+            d1.dotp(d1) + d2.dotp(d2) - 2 * d1.dotp(d2),
+            2 * s1.dotp(d1) + 2 * s2.dotp(d2) -
+            2 * d1.dotp(s2) - 2 * d2.dotp(s1),
+            s1.dotp(s1) + s2.dotp(s2) - 2 * s1.dotp(s2) - gap * gap);
+        result = result.map(function(v) {
+            // Avoids rounding errors that cause missed collisions
+            return zeroish(v) ? 0 : v;
+        }).filter(function(v) { return ((v >= 0 && v <= 1)); });
+        result = (result.length > 0) ? Math.min(result) : undefined;
+
+        // Don't report collision when close and moving away
+        if (zeroish(result) &&
+            (s1.minus(s2).sqlen() < e1.minus(e2)))
+            result = undefined;
+
         return result;
     }
 
@@ -242,19 +238,36 @@
         // thickness.  The distance bewteen the end points is an
         // optional which can be used to reduce unnecessary steps.
         //
-        // The math here is derived by computing a parameterized path
-        // followed by both objects and computing the distance between
-        // them over time.  Then the quadratic formula is used to find
-        // where that distance is equal to the sum of the radii, which
-        // is when their edges touch.
-        var result = undefined;
+        // A parameterized path is computed nad the quadratic formula
+        // is used to find the fraction of the path at which the edges
+        // of the sphere and segment touch
+        var result = undefined; // undefined means no collision
         var q = segment.q ? segment.q : segment.e.minus(segment.s);
         var q2 = segment.sqlen ? segment.sqlen : q.sqlen();
         var width = segment.width ? segment.width : 0;
-        var m, n, mq, nq, margin;
+        var ps = s.minus(segment.s).dotp(q) / q.length();
+        var pe = e.minus(segment.s).dotp(q) / q.length();
+        var ds;
+        var de = e.shortestSegment(segment);
+        var m, n, mq, nq, gap;
+
+        // A zero length segment would create divide-by-zero problems
+        // so treat it as a round object instead
         if (zeroish(q2))
-            return collideRadiusRadius(
-                s, e, r, segment.s, segment.s, width / 2);
+            return ripple.collideRadiusRadius(
+                s, e, r, segment.s, segment.e, width / 2);
+        gap = r + width / 2;
+        gap *= gap;
+
+        ds = s.shortestSegment(segment);
+        if (ds.sqlen() < gap) {
+            if (ps + r < 0)
+                return ripple.collideRadiusRadius(
+                    s, e, r, segment.s, segment.s, width / 2);
+            else if (ps - r > q.length())
+                return ripple.collideRadiusRadius(
+                    s, e, r, segment.e, segment.e, width / 2);
+        }
 
         // Distance squared is
         //   (p - segment.s) - ((p - segment.s) . q)q/q^2)^2
@@ -264,7 +277,6 @@
         // Then we break things down in terms of t and find roots
         m = e.minus(s); mq = m.dotp(q);
         n = s.minus(segment.s); nq = n.dotp(q);
-        margin = r + width / 2;
 
         // Rather than computing square roots, which can be expensive,
         // we compare the square of the distance between point and line
@@ -275,31 +287,34 @@
         result = quadraticRoots(
             m.dotp(m) - mq * mq / q2,
             2 * m.dotp(n) - 2 * mq * nq / q2,
-            n.dotp(n) - nq * nq / q2 - margin * margin);
-        result = smallestRange(0, 1, result.map(function(v) {
+            n.dotp(n) - nq * nq / q2 - gap);
+        result = result.map(function(v) {
+            // Avoids rounding errors that cause missed collisions
             return zeroish(v) ? 0 : v;
-        }));
+        }).filter(function(v) { return ((v >= 0 && v <= 1)); });
+        result = (result.length > 0) ? Math.min(result) : undefined;
 
         // Don't report collisions if the object starts up against
         // the segment but is moving away
         if (zeroish(result)) {
             var ds = s.shortestSegment(segment);
             var de = e.shortestSegment(segment);
-            if ((de.sqlen() > ds.sqlen()) && ds.dotp(de) > 0)
+            if ((de.sqlen() > ds.sqlen()) && ds.dotp(de) > 0) {
                 result = undefined;
+                console.log('escape away');
+            }
         }
 
-        // We now know when the object collides with the entire line,
-        // but not the actual line segment.  We must filter false
-        // positives out at this stage.
         if (!isNaN(result)) {
-            var p = s.plus(e.minus(s).times(result));
-            var i = p.minus(segment.s).dotp(q) / q2;
-            if ((i < 0) || (i > 1))
+            // Ignore collisions that occur outside the boundaries
+            // of the segment -- makes it possible to go around
+            var ps = s.minus(segment.s).dotp(q) / q.length();
+            var pe = e.minus(segment.s).dotp(q) / q.length();
+            if (ps + r < 0 && pe + r < 0) {
                 result = undefined;
-            // FIXME When the angle of motion is sharp enough, the
-            // object may hit the wall after the false contact
-            // represented by the computed time.
+            } else if (ps - r > q.length() && pe -r > q.length()) {
+                result = undefined;
+            }
         }
         return result;
     };
