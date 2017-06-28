@@ -247,9 +247,9 @@
         var width = segment.width ? segment.width : 0;
         var ps = s.minus(segment.s).dotp(q) / q.length();
         var pe = e.minus(segment.s).dotp(q) / q.length();
-        var ds;
+        var ds = s.shortestSegment(segment);
         var de = e.shortestSegment(segment);
-        var m, n, mq, nq, gap;
+        var m, n, mq, nq, gap; // line distance computation variables
 
         // A zero length segment would create divide-by-zero problems
         // so treat it as a round object instead
@@ -259,12 +259,11 @@
         gap = r + width / 2;
         gap *= gap;
 
-        ds = s.shortestSegment(segment);
         if (ds.sqlen() < gap) {
-            if (ps + r < 0)
+            if (ps < 0)
                 return ripple.collideRadiusRadius(
                     s, e, r, segment.s, segment.s, width / 2);
-            else if (ps - r > q.length())
+            else if (ps > q.length())
                 return ripple.collideRadiusRadius(
                     s, e, r, segment.e, segment.e, width / 2);
         }
