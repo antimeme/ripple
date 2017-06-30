@@ -456,8 +456,12 @@
         { if (!draw_id) draw_id = requestAnimationFrame(draw); };
 
         var resize = function(event) {
-	    canvas.width(viewport.width());
-	    canvas.height(viewport.height());
+            var width = viewport.width();
+            var height = viewport.height();
+            var size = Math.min(width, height);
+
+            canvas.width(width);
+	    canvas.height(height);
             if (app.resize)
                 app.resize(canvas.innerWidth(), canvas.innerHeight());
 
@@ -468,6 +472,10 @@
             // is essential to avoid ugly stretching effects.
             canvas.attr("width", canvas.innerWidth());
             canvas.attr("height", canvas.innerHeight());
+
+            container.find('.button-bar div img').css({
+                width: size / 9, height: size / 9
+            });
 
             redraw();
         };
