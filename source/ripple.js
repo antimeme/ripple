@@ -26,11 +26,10 @@
 
     ripple.vector = {
         // Represents an immutable three dimensional vector.  Only the
-        // create and polar methods are safe to call from this object.
-        // Other methods are intended for use within instances.
-        //
-        // Vector length is memoized so only the first call performs
-        // the computation.
+        // create, polar and convert methods are safe to call from
+        // this object.  Other methods are intended for use within
+        // instances.  Vector length is memoized so only the first call
+        // performs the computation.
         __length: undefined,
         length: function() {
             return (typeof(this.__length) !== 'undefined') ?
@@ -47,11 +46,6 @@
             return result;
         },
 
-        convert: function(o) {
-            // Converts a vector-like object into a proper vector
-            return this.create(o.x || 0, o.y || 0, o.z || 0);
-        },
-
         polar: function(r, theta, phi) {
             // Creates and returns a vector using polar coordinates
             var x, y, z;
@@ -59,6 +53,11 @@
             return this.create(r * Math.cos(theta) * cosphi,
                                r * Math.sin(theta) * cosphi,
                                phi ? (r * Math.sin(phi)) : 0);
+        },
+
+        convert: function(o) {
+            // Converts a vector-like object into a proper vector
+            return this.create(o.x || 0, o.y || 0, o.z || 0);
         },
 
         norm: function() {
@@ -293,9 +292,9 @@
         }).filter(function(v) { return ((v >= 0 && v <= 1)); });
         result = (result.length > 0) ? Math.min(result) : undefined;
 
-        // Don't report collisions if the object starts up against
-        // the segment but is moving away
         if (zeroish(result)) {
+            // Don't report collisions if the object starts up against
+            // the segment but is moving away
             var ds = s.shortestSegment(segment);
             var de = e.shortestSegment(segment);
             if ((de.sqlen() > ds.sqlen()) && ds.dotp(de) > 0) {
@@ -305,8 +304,8 @@
         }
 
         if (!isNaN(result)) {
-            // Ignore collisions that occur outside the boundaries
-            // of the segment -- makes it possible to go around
+            // Ignore collisions that occur outside the boundaries of
+            // the segment -- makes it possible to go around segments
             var ps = s.minus(segment.s).dotp(q) / q.length();
             var pe = e.minus(segment.s).dotp(q) / q.length();
             if (ps + r < 0 && pe + r < 0) {
@@ -386,22 +385,54 @@
     // app.mtdown(targets, event, redraw)
     // app.mtup(targets, event, redraw)
     // app.mtmove(targets, event, redraw)
-    // app.isActive()
-    // app.actors = [] // array of actors
-    //     actor.resize(width, height)
-    //     actor.update(elapsed)
-    //     actor.draw(ctx, inv)
-    //     actor.isActive()
-    // app.pressTimeout // milliseconds before press event
-    // app.press(targets) // called on long press
+    // app.isActive() // return falsy if redraw not needed
+    // app.buttons [
+    //   {
+    //     img
+    //   }]
+    // app.color
+    // app.background
+    // app.class
     ripple.app = function($, container, viewport, app) {
-        var canvas = $('<canvas>').attr({
-            'class': 'board'
-        }).css({
-            margin: 'auto', display: 'block',
-            color: app.color || '#222',
-            background: app.background || '#ddd'
-        }).appendTo(container);
+        var canvas = $('<canvas>')
+            .attr('class', app.class || 'ripple-app')
+            .css({
+                display: 'block', margin: 0, border: 0,
+                position: 'relative', top: 0, left: 0,
+                color: app.color || '#222',
+                background: app.background || '#ddd',
+                'z-index': 1
+            }).appendTo(container);
+
+        if (app.buttons) {
+            var buttons = $('<div>')
+                .attr('class', 'button-bar')
+                .css({
+                    display: 'block', margin: 'auto',
+                    position: 'absolute', bottom: 0, left: 0,
+                    margin: '1%',
+                    border: '3px solid blue',
+                    'z-index': 2,
+                    color: app.buttonBarColor || '#222',
+                    background: app.buttonBarBackground || '#ddd',
+                    'font': 'bold 20px sans',
+                    'border-radius': app.buttonBorderRadius || 10
+                }).appendTo(container);
+
+            app.buttons.forEach(function(button) {
+                var b = $('<div>')
+                    .css({
+                        display: 'inline'
+                    })
+                    .appendTo(buttons);
+                if (button.icon) {
+                    b.append($('<img>').attr({
+                        src: button.icon }));
+                }
+                if (button.fn)
+                    b.on('click', button.fn);
+            });
+        }
 
         var draw_id = 0, draw_last = 0;
         var draw = function() {

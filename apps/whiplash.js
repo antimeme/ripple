@@ -536,7 +536,18 @@
                     (1 + (0.001 * event.deltaY)));
                 redraw();
                 return false;
-            }
+            },
+            buttons: [{
+                icon: 'img/ripple.png',
+                fn: function() {
+                    alert('button 1');
+                }
+            }, {
+                icon: 'img/ripple.png',
+                fn: function() {
+                    alert('button 2');
+                }
+            }]
         });
     };
 })(typeof exports === 'undefined'? this['whiplash'] = {}: exports);
