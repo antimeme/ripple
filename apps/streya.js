@@ -5,26 +5,26 @@
 
     // === Ship representation
     // A ship consists of a set of connected cells.
-    var createShip = function(config) {
-        var __cells = {};
-        var getCell = function(node) {
-            return __cells[ripple.pair(node.row, node.col)];
-        };
-        var setCell = function(node, value) {
-            __cells[ripple.pair(node.row, node.col)] = value;
+    var Ship = {
+        create: function(config) {
+            var result = Object.create(this);
+            result.__cells = {};
+            if (config && config.cells) {
+                for (key in config.cells)
+                    __cells[key] = config.cells[key];
+            } else result.setCell({row: 0, col: 0}, 'empty');
+            result.name = (config && config.name) ?
+                          config.name : 'Ship';
+            return result;
+        },
+        getCell: function(node) {
+            return this.__cells[ripple.pair(node.row, node.col)];
+        },
+        setCell: function(node, value) {
+            this.__cells[ripple.pair(node.row, node.col)] = value;
             return this;
-        };
-
-        if (config && config.cells) {
-            for (key in config.cells)
-                __cells[key] = config.cells[key];
-        } else setCell({row: 0, col: 0}, 'empty');
-
-        return {
-            name: (config && config.name) ? config.name : 'Ship',
-            getCell: getCell, setCell: setCell
-        };
-    };
+        }
+    }
 
     streya.setup = function($) {
         $.ajax({
@@ -45,9 +45,11 @@
     };
 
     streya.game = function($, parent, viewport) {
-        var self = $('<canvas></canvas>').appendTo(parent);
+        var self = $('<canvas>')
+            .css({position: 'relative', 'z-order': 1})
+            .appendTo(parent);
 
-        var ship = createShip();
+        var ship = Ship.create();
 
         var colorTapInner = 'rgba(45, 45, 128, 0.8)';
         var colorTapOuter = 'rgba(128, 255, 128, 0.6)';
@@ -143,100 +145,40 @@
                                 height: self.height()});
         lineWidth = instance.size() / lineFactor;
 
-        var animation = new (function() {
-            var id, current, start, stop, limit = 60000;
-            var choose = function(size) {
-                return Math.floor(size * Math.random());
-            };
-
-            this.start = function() {
-                var now = new Date().getTime();
-                if (!current)
-                   current = now;
-                do {
-                    if (!stop) {
-                       var offset = instance.offset();
-                       var angle = 2 * Math.PI * Math.random();
-                       var magnitude = 100 + choose(50);
-
-                       if (now - current > limit)
-                           current = now - limit;
-                       start = {left: offset.left, top: offset.top,
-                                time: current};
-                       stop = {left: offset.left + magnitude *
-                                     Math.cos(angle),
-                               top:  offset.top  + magnitude *
-                                     Math.sin(angle),
-                               time: current + choose(5000) + 2500};
-                    }
-                    var portion = Math.min(1.0, (now - start.time) /
-                                           (stop.time - start.time));
-                    instance.offset(
-                        Math.floor(start.left + portion *
-                                   (stop.left - start.left)),
-                        Math.floor(start.top + portion *
-                                   (stop.top - start.top)));
-                    if (stop.time < now) {
-                        current = stop.time;
-                        stop = undefined;
-                    }
-                } while (!stop);
-                draw();
-                var a = this;
-                id = requestAnimationFrame(function() { a.start(); });
-            };
-            this.stop = function() {
-                if (id)
-                    cancelAnimationFrame(id);
-                id = 0;
-                current = undefined;
-                stop = undefined;
-            };
-            this.toggle = function() {
-                if (!id)
-                    this.start();
-                else this.stop();
-            };
-        })();
-
         // Populate menu with available grid types
-        var menu = $('<ul class="menu"></ul>').hide();
-        menu.css({
-            position: 'absolute', padding: '0.5em',
-            background: '#333', color: 'white',
-            border: '2px solid white',
-            'border-radius': '5px',
-            'list-style-type': 'none',
-            'list-style-position': 'outside'});
+        var menu = $('<ul>')
+            .attr('class', 'menu')
+            .css({
+                position: 'absolute', top: 10, left: 25,
+                'z-order': 2,
+                padding: '0.5em',
+                background: '#333', color: 'white',
+                border: '2px solid white',
+                'border-radius': '5px',
+                'list-style-type': 'none',
+                'list-style-position': 'outside'})
+            .appendTo(self.parent());
         //.menu a { text-decoration: none; color: white; }
         //.menu li { padding: 0.5em; border-radius: 5px; }
         //.menu li:hover { background: #55e; }
 
-        menu.appendTo(self.parent());
-        grid.canonical.forEach(function (entry) {
-            var name = entry[0];
-            var options = JSON.stringify(entry[1]);
-            menu.append('<li data-grid-type="' + name +
-                        (options ? '" data-grid-options="' +
-                         options.replace(/"/g, '&#34;').  // "
-                                 replace(/'/g, '&#39;') : '') +
-                        '">' + name + '</li>');
-        });
-        menu.append('<hr />');
-        menu.append('<li data-action="animation">' +
-                    'Toggle Animation</li>');
-        menu.append('<li data-action="colors">' +
-                    'Swap Colors</li>');
+        var mode = $('<select>')
+            .on('change', function(event) {
+                console.log('DEBUG', mode.val());
+            })
+            .append('<option>Extend</option>')
+            .append('<option>Remove</option>');
+
+        menu.append($('<li data-action="mode">').append(mode));
         menu.append('<li data-action="full-screen">Full Screen</li>');
         menu.on('click', 'li', function(event) {
-            menu.hide();
             var gtype = this.getAttribute('data-grid-type');
             if (gtype) {
                 tap = undefined; selected = undefined;
                 var options = JSON.parse(
                     this.getAttribute('data-grid-options'));
                 if (!options)
-                   options = {type: gtype};
+                    options = {type: gtype};
                 options.width  = self.width();
                 options.height = self.height();
                 instance = grid.create(options);
@@ -245,26 +187,34 @@
             }
 
             switch (this.getAttribute('data-action')) {
-            case 'full-screen': {
-                $.toggleFullscreen(self.parent().get(0));
-                resize();
-            } break;
-            case 'animation': {
-                animation.toggle();
-            } break;
-            case 'colors': {
-                var foreground = self.css('color');
-                var background = self.css('background-color');
-                self.css({color: background,
-                          "background-color": foreground});
-                redraw();
-            } break;
+                case 'full-screen': {
+                    $.toggleFullscreen(self.parent().get(0));
+                    resize();
+                } break;
+                case 'colors': {
+                    var foreground = self.css('color');
+                    var background = self.css('background-color');
+                    self.css({color: background,
+                              "background-color": foreground});
+                    redraw();
+                } break;
             }
+        });
+
+        menu.append('<hr />');
+        grid.canonical.forEach(function (entry) {
+            var name = entry[0];
+            var options = JSON.stringify(entry[1]);
+            menu.append('<li data-grid-type="' + name +
+                          (options ? '" data-grid-options="' +
+                                     options.replace(/"/g, '&#34;').
+                                             replace(/'/g, '&#39;') : '') +
+                        '">' + name + '</li>');
         });
 
         // Show grid menu at event location
         var menuate = function(tap) {
-            menu.css('top', 10).css('left', 25).show();
+            //menu.show();
             drag = undefined;
         };
 
@@ -299,7 +249,6 @@
         self.on('mousedown touchstart', function(event) {
             var cell, index, neighbors;
             var targets = $.targets(event);
-            menu.hide();
             if (event.which > 1) {
                 // Reserve right and middle clicks for browser menus
                 return true;
@@ -320,7 +269,7 @@
                 selected = instance.position(tap);
 
                 cell = ship.getCell(selected);
-                if (!cell) {
+                if (mode.val() === 'Extend' && !cell) {
                     neighbors = instance.neighbors(
                         selected, {coordinates: true, points: true});
                     for (index in neighbors) {
@@ -329,6 +278,8 @@
                             break;
                         }
                     }
+                } else if (mode.val() === 'Remove' && cell) {
+                    ship.setCell(selected, undefined);
                 }
 
                 // Show a menu on either double tap or long press.
@@ -353,7 +304,6 @@
         });
         self.on('mousemove touchmove', function(event) {
             if (drag) {
-                animation.stop();
                 tap = $.targets(event);
                 var goff = instance.offset();
                 instance.offset(goff.left + tap.x - drag.x,
@@ -364,7 +314,6 @@
                 drag = tap;
             }
             if (zooming) {
-                animation.stop();
                 var targets = $.targets(event);
                 var factor;
                 if (zooming.diameter && targets.touches.length == 2) {
@@ -387,6 +336,5 @@
         });
 
         streya.setup($);
-
     };
 })(typeof exports === 'undefined'? this['streya'] = {}: exports);
