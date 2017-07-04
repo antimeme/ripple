@@ -156,7 +156,11 @@
         jQuery.targets = function(event) {
             var result = {};
             var offset = jQuery(event.target).offset();
-             if (event.originalEvent.targetTouches) {
+
+            if (!offset)
+                offset = {left: 0, top: 0};
+
+            if (event.originalEvent.targetTouches) {
                 var touches = event.originalEvent.targetTouches;
                 if (touches.length > 0) {
                     result.x = touches[0].pageX - offset.left;
