@@ -440,7 +440,7 @@
                         src: button.icon }));
                 }
                 if (button.fn)
-                    b.on('click', button.fn);
+                    b.on('click mousedown touchstart', button.fn);
             });
         }
 
