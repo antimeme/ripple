@@ -62,9 +62,7 @@
 
         norm: function() {
             // Returns a unit vector with the same direction
-            var length = this.length();
-            var result = this.times(1 / length);
-            return result;
+            return this.times(1 / this.length());
         },
 
         reverse: function()
@@ -90,6 +88,11 @@
         },
 
         crossp: function(other) {
+            // WARNING: the cross product is a fraud! A cross product is
+            // actually the orthogonal complement of the outer
+            // product of two vectors.  Geometric algebra is a much
+            // better way to solve problems than cross products!
+            // https://en.wikipedia.org/wiki/Geometric_algebra
             return ripple.vector.create(
                 this.y * other.z - this.z * other.y,
                 this.z * other.x - this.x * other.z,
@@ -100,7 +103,7 @@
 
         angle: function() {
             // FIXME: account for z
-            return Math.acos(this.norm().x);
+            return Math.acos(this.norm().dotp(this.create(1, 0, 0)));
         },
 
         reflect: function(target) {
