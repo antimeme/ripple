@@ -89,6 +89,13 @@
                    this.z * other.z;
         },
 
+        crossp: function(other) {
+            return ripple.vector.create(
+                this.y * other.z - this.z * other.y,
+                this.z * other.x - this.x * other.z,
+                this.x * other.y - this.y * other.x);
+        },
+
         sqlen: function() { return this.dotp(this); },
 
         angle: function() {
