@@ -39,7 +39,7 @@
             ctx.beginPath();
             ctx.moveTo(pillar.p.x, pillar.p.y);
             ctx.arc(pillar.p.x, pillar.p.y, pillar.r, 0, 2 * Math.PI);
-            ctx.fillStyle = 'green';
+            ctx.fillStyle = pillar.color;
             ctx.fill();
         });
 
@@ -540,12 +540,12 @@
             buttons: [{
                 icon: 'img/ripple.png',
                 fn: function() {
-                    alert('button 1');
+                    state.player.bodyColor = 'green';
                 }
             }, {
                 icon: 'img/ripple.png',
                 fn: function() {
-                    alert('button 2');
+                    state.player.bodyColor = 'orange';
                 }
             }]
         });
