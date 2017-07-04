@@ -56,6 +56,8 @@
 }(typeof exports === 'undefined' ? this['revgram'] = {} : exports));
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
+    // TODO support comments
+    // TODO support exclusion lists
     var rule = 'name', rules = {
         'name': [[4, '%start', '%middle', '%end'],
                  [1, '%start', '%end']],
