@@ -538,14 +538,28 @@
                 return false;
             },
             buttons: [{
-                icon: 'img/ripple.png',
+                url: 'images/icons.svg#svgView(viewBox(50,0,300,300))',
                 fn: function() {
                     state.player.bodyColor = 'green';
+                    console.log('green');
                 }
             }, {
-                icon: 'img/ripple.png',
+                url: 'images/icons.svg#svgView(viewBox(400,0,300,300))',
+                fn: function() {
+                    state.player.bodyColor = 'purple';
+                    console.log('purple');
+                }
+            }, {
+                url: 'images/icons.svg#svgView(viewBox(50,300,300,300))',
+                fn: function() {
+                    state.player.bodyColor = 'yellow';
+                    console.log('yellow');
+                }
+            }, {
+                url: 'images/icons.svg#svgView(viewBox(400,300,300,300))',
                 fn: function() {
                     state.player.bodyColor = 'orange';
+                    console.log('orange');
                 }
             }]
         });

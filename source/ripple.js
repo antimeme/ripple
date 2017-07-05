@@ -430,15 +430,12 @@
                 }).appendTo(container);
 
             app.buttons.forEach(function(button) {
-                var b = $('<div>')
+                var b = $('<img>')
+                    .attr({src: button.url})
                     .css({
-                        display: 'inline'
+                        display: 'inline-block',
                     })
                     .appendTo(buttons);
-                if (button.icon) {
-                    b.append($('<img>').attr({
-                        src: button.icon }));
-                }
                 if (button.fn)
                     b.on('click mousedown touchstart', button.fn);
             });
@@ -483,7 +480,9 @@
             canvas.attr("width", canvas.innerWidth());
             canvas.attr("height", canvas.innerHeight());
 
-            container.find('.button-bar div img').css({
+            // Enusre that the button bar (if present) has a reasonable
+            // size that's clickable but not too much space
+            container.find('.button-bar img').css({
                 width: size / 9, height: size / 9
             });
 
