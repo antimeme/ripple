@@ -29,7 +29,7 @@
         var geometry = new THREE.CubeGeometry(1, 1, 1);
         var material, cube;
         var loader = new THREE.TextureLoader();
-        loader.load("img/ripple.png", function(texture) {
+        loader.load("images/ripple.png", function(texture) {
             material = new THREE.MeshPhongMaterial({'map': texture});
             cube = new THREE.Mesh(geometry, material);
             cube.rotation.x = Math.PI / 5;
