@@ -538,25 +538,29 @@
                 return false;
             },
             buttons: [{
-                url: 'images/icons.svg#inventory',
+                url: 'images/icons.svg',
+                position: '0 0',
                 fn: function() {
                     state.player.bodyColor = 'green';
                     console.log('green');
                 }
             }, {
-                url: 'images/icons.svg#settings',
+                url: 'images/icons.svg',
+                position: '100% 0',
                 fn: function() {
                     state.player.bodyColor = 'purple';
                     console.log('purple');
                 }
             }, {
-                url: 'images/icons.svg#left-hand',
+                url: 'images/icons.svg',
+                position: '0 100%',
                 fn: function() {
                     state.player.bodyColor = 'yellow';
                     console.log('yellow');
                 }
             }, {
-                url: 'images/icons.svg#right-hand',
+                url: 'images/icons.svg',
+                position: '100% 100%',
                 fn: function() {
                     state.player.bodyColor = 'orange';
                     console.log('orange');

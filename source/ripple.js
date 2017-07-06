@@ -402,10 +402,9 @@
     //   }]
     // app.color
     // app.background
-    // app.class
     ripple.app = function($, container, viewport, app) {
         var canvas = $('<canvas>')
-            .attr('class', app.class || 'ripple-app')
+            .attr('class', 'ripple-app')
             .css({
                 display: 'block', margin: 0, border: 0,
                 position: 'relative', top: 0, left: 0,
@@ -416,7 +415,7 @@
 
         if (app.buttons) {
             var buttons = $('<div>')
-                .attr('class', 'button-bar')
+                .attr('class', 'ripple-bbar')
                 .css({
                     display: 'block', margin: 'auto',
                     position: 'absolute', bottom: 0, left: 0,
@@ -430,10 +429,15 @@
                 }).appendTo(container);
 
             app.buttons.forEach(function(button) {
-                var b = $('<img>')
-                    .attr({src: button.url})
+                console.log(button.url);
+                var b = $('<button>')
                     .css({
                         display: 'inline-block',
+                        background: 'url(' + button.url + ')',
+                        'background-repeat': 'no-repeat',
+                        'background-size': '200% 200%',
+                        'background-position': button.position,
+                        'border-radius': app.buttonBorderRadius || 10
                     })
                     .appendTo(buttons);
                 if (button.fn)
@@ -482,8 +486,9 @@
 
             // Enusre that the button bar (if present) has a reasonable
             // size that's clickable but not too much space
-            container.find('.button-bar img').css({
-                width: size / 9, height: size / 9
+            container.find('.ripple-bbar button').css({
+                width: Math.floor(size / 9),
+                height: Math.floor(size / 9)
             });
 
             redraw();
