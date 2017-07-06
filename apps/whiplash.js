@@ -538,32 +538,62 @@
                 return false;
             },
             buttons: [{
-                url: 'images/icons.svg',
-                position: '0 0',
+                url: 'images/whiplash-sprites.svg',
+                position: '0px 0px',
+                fn: function() {
+                    state.toggleInventory();
+                }
+            }, {
+                url: 'images/whiplash-sprites.svg',
+                position: '100% 0px',
                 fn: function() {
                     state.player.bodyColor = 'green';
                     console.log('green');
                 }
             }, {
-                url: 'images/icons.svg',
-                position: '100% 0',
-                fn: function() {
-                    state.player.bodyColor = 'purple';
-                    console.log('purple');
-                }
-            }, {
-                url: 'images/icons.svg',
-                position: '0 100%',
+                url: 'images/whiplash-sprites.svg',
+                position: '25% 0',
                 fn: function() {
                     state.player.bodyColor = 'yellow';
                     console.log('yellow');
                 }
             }, {
-                url: 'images/icons.svg',
-                position: '100% 100%',
+                url: 'images/whiplash-sprites.svg',
+                position: '50% 0',
                 fn: function() {
                     state.player.bodyColor = 'orange';
                     console.log('orange');
+                }
+            }, {
+                url: 'images/whiplash-sprites.svg',
+                position: '75% 0',
+                fn: function() {
+                    state.player.bodyColor = 'orange';
+                    console.log('orange');
+                }
+            }],
+            screens: [{
+                setShow: function(show) {
+                    state.showInventory = show;
+                },
+                setHide: function(hide) {
+                    state.hideInventory = hide;
+                },
+                setToggle: function(toggle) {
+                    state.toggleInventory = toggle;
+                },
+                draw: function(ctx, width, height, now, last) {
+                    var size = Math.min(width, height);
+
+                    ctx.fillStyle = 'rgba(192, 192, 192, 0.9)';
+                    ctx.fillRect(0, 0, width, height);
+
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    ctx.font = 'bold ' + Math.round(size / 20) + 'px sans';
+                    ctx.fillText('Inventory',
+                                 state.width / 2, size / 50);
                 }
             }]
         });

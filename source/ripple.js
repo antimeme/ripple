@@ -399,7 +399,10 @@
     // app.buttons [
     //   {
     //     img
-    //   }]
+    //   }, ...]
+    // app.screens [
+    //   {
+    //   }, ...]
     // app.color
     // app.background
     ripple.app = function($, container, viewport, app) {
@@ -419,31 +422,124 @@
                 .css({
                     display: 'block', margin: 'auto',
                     position: 'absolute', bottom: 0, left: 0,
-                    margin: '1%',
-                    border: '3px solid blue',
-                    'z-index': 2,
-                    color: app.buttonBarColor || '#222',
-                    background: app.buttonBarBackground || '#ddd',
-                    'font': 'bold 20px sans',
-                    'border-radius': app.buttonBorderRadius || 10
+                    margin: '1%', 'z-index': 4,
+                    'border-radius': app.buttonBorderRadius || 10,
+                    'background-color': 'rgba(255, 255, 255, 0.9)'
                 }).appendTo(container);
 
             app.buttons.forEach(function(button) {
-                console.log(button.url);
                 var b = $('<button>')
                     .css({
                         display: 'inline-block',
                         background: 'url(' + button.url + ')',
                         'background-repeat': 'no-repeat',
-                        'background-size': '200% 200%',
+                        'background-size': '500% 500%',
                         'background-position': button.position,
                         'border-radius': app.buttonBorderRadius || 10
                     })
                     .appendTo(buttons);
                 if (button.fn)
-                    b.on('click mousedown touchstart', button.fn);
+                    b.on('mousedown touchstart', button.fn);
             });
         }
+
+        if (app.screens)
+            app.screens.forEach(function(screen) {
+                var peer = $('<div>')
+                    .attr('class', 'ripple-screen')
+                    .css({
+                        position: 'absolute', 'z-index': 3,
+                        'border-radius': 15 })
+                    .appendTo(container)
+                    .hide();
+                var canvas = $('<canvas>')
+                    .css({
+                        border: '5px solid #333',
+                        'border-radius': 15 })
+                    .appendTo(peer);
+                var close;
+
+                if (screen.close)
+                    close = $('<button>')
+                        .css({
+                            position: 'absolute',
+                            top: '1%', right: '1%'
+                        })
+                        .on('touchstart mousedown', function(event)
+                            { peer.hide(); })
+                        .append('X')
+                        .appendTo(peer);
+
+                screen.setShow(function() { peer.show(); });
+                screen.setHide(function() { peer.hide(); });
+                screen.setToggle(function() { peer.toggle(); });
+
+                var draw_id = 0, draw_last = 0;
+                var draw = function() {
+                    var ctx, width, height;
+                    var now = new Date().getTime();
+                    draw_id = 0;
+
+                    if (canvas.get(0).getContext) {
+                        width = canvas.width();
+                        height = canvas.height();
+                        ctx = canvas[0].getContext('2d');
+                        ctx.clearRect(0, 0, width, height);
+                        if (screen.draw)
+                            screen.draw(
+                                ctx, width, height, now, draw_last);
+                    }
+                    draw_last = now;
+                    if (!app.isActive || app.isActive())
+                        redraw();
+                };
+                var redraw = function() {
+                    if (!draw_id)
+                        draw_id = requestAnimationFrame(draw);
+                };
+                redraw();
+
+	        peer.on('keydown', function(event) {
+                    if (screen.keydown)
+                        return screen.keydown(event, redraw);
+	        });
+
+	        peer.on('keyup', function(event) {
+                    if (screen.keyup)
+                        return screen.keyup(event, redraw);
+	        });
+
+                peer.on('mousedown touchstart', function(event) {
+                    var targets;
+                    if (screen.mtdown) {
+                        targets = $.targets(event);
+                        return screen.mtdown(targets, event, redraw);
+                    }
+                });
+
+                peer.on('mousemove touchmove', function(event) {
+                    var targets;
+                    if (screen.mtmove) {
+                        targets = $.targets(event);
+                        return screen.mtmove(targets, event, redraw);
+                    }
+                });
+
+                peer.on('mouseleave mouseup touchend', function(event) {
+                    var targets;
+                    if (screen.mtup) {
+                        targets = $.targets(event);
+                        return screen.mtup(targets, event, redraw);
+                    }
+                });
+
+                peer.on('mousewheel', function(event) {
+                    if (screen.mwheel)
+                        return screen.mwheel(event, redraw);
+                });
+
+
+            });
 
         var draw_id = 0, draw_last = 0;
         var draw = function() {
@@ -456,7 +552,8 @@
                 height = canvas.height();
                 ctx = canvas[0].getContext('2d');
                 ctx.clearRect(0, 0, width, height);
-                app.draw(ctx, width, height, now, draw_last);
+                if (app.draw)
+                    app.draw(ctx, width, height, now, draw_last);
             }
             draw_last = now;
             if (!app.isActive || app.isActive())
@@ -481,8 +578,8 @@
             // width attributes which determine how many pixels are
             // part of the canvas itself.  Keeping the two in sync
             // is essential to avoid ugly stretching effects.
-            canvas.attr("width", canvas.innerWidth());
-            canvas.attr("height", canvas.innerHeight());
+            canvas.attr("width",  Math.floor(canvas.innerWidth()));
+            canvas.attr("height", Math.floor(canvas.innerHeight()));
 
             // Enusre that the button bar (if present) has a reasonable
             // size that's clickable but not too much space
@@ -491,6 +588,26 @@
                 height: Math.floor(size / 9)
             });
 
+            // Ensure that screens have appropriate sizes
+            $.each(
+                container.find('.ripple-screen'),
+                function(index, screen) {
+                    var peer = $(screen);
+                    var canvas = peer.find('canvas');
+                    var width = viewport.width();
+                    var height = viewport.height();
+                    var size = Math.min(width, height);
+
+                    peer.css({
+                        top: Math.floor(size / 50),
+                        left: Math.floor(size / 50),
+                        height: Math.floor(height - size / 25),
+                        width: Math.floor(width - size / 25) });
+                    canvas.width(width - size / 25);
+                    canvas.height(height - size / 25);
+                    canvas.attr('width', canvas.innerWidth());
+                    canvas.attr('height', canvas.innerHeight());
+                });
             redraw();
         };
 
