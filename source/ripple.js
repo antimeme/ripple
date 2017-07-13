@@ -388,6 +388,7 @@
     // Framework for canvas applications
     // Object passed as the app is expected to have the following:
     //
+    // app.init($, container, viewport)
     // app.draw(ctx, width, height, now)
     // app.resize(width, height)
     // app.keydown(event, redraw)
@@ -409,137 +410,13 @@
         var canvas = $('<canvas>')
             .attr('class', 'ripple-app')
             .css({
-                display: 'block', margin: 0, border: 0,
-                position: 'relative', top: 0, left: 0,
                 color: app.color || '#222',
                 background: app.background || '#ddd',
                 'z-index': 1
             }).appendTo(container);
 
-        if (app.buttons) {
-            var buttons = $('<div>')
-                .attr('class', 'ripple-bbar')
-                .css({
-                    display: 'block', margin: 'auto',
-                    position: 'absolute', bottom: 0, left: 0,
-                    margin: '1%', 'z-index': 4,
-                    'border-radius': app.buttonBorderRadius || 10,
-                    'background-color': 'rgba(255, 255, 255, 0.9)'
-                }).appendTo(container);
-
-            app.buttons.forEach(function(button) {
-                var b = $('<button>')
-                    .css({
-                        display: 'inline-block',
-                        background: 'url(' + button.url + ')',
-                        'background-repeat': 'no-repeat',
-                        'background-size': '500% 500%',
-                        'background-position': button.position,
-                        'border-radius': app.buttonBorderRadius || 10
-                    })
-                    .appendTo(buttons);
-                if (button.fn)
-                    b.on('mousedown touchstart', button.fn);
-            });
-        }
-
-        if (app.screens)
-            app.screens.forEach(function(screen) {
-                var peer = $('<div>')
-                    .attr('class', 'ripple-screen')
-                    .css({
-                        position: 'absolute', 'z-index': 3,
-                        'border-radius': 15 })
-                    .appendTo(container)
-                    .hide();
-                var canvas = $('<canvas>')
-                    .css({
-                        border: '5px solid #333',
-                        'border-radius': 15 })
-                    .appendTo(peer);
-                var close;
-
-                if (screen.close)
-                    close = $('<button>')
-                        .css({
-                            position: 'absolute',
-                            top: '1%', right: '1%'
-                        })
-                        .on('touchstart mousedown', function(event)
-                            { peer.hide(); })
-                        .append('X')
-                        .appendTo(peer);
-
-                screen.setShow(function() { peer.show(); });
-                screen.setHide(function() { peer.hide(); });
-                screen.setToggle(function() { peer.toggle(); });
-
-                var draw_id = 0, draw_last = 0;
-                var draw = function() {
-                    var ctx, width, height;
-                    var now = new Date().getTime();
-                    draw_id = 0;
-
-                    if (canvas.get(0).getContext) {
-                        width = canvas.width();
-                        height = canvas.height();
-                        ctx = canvas[0].getContext('2d');
-                        ctx.clearRect(0, 0, width, height);
-                        if (screen.draw)
-                            screen.draw(
-                                ctx, width, height, now, draw_last);
-                    }
-                    draw_last = now;
-                    if (!app.isActive || app.isActive())
-                        redraw();
-                };
-                var redraw = function() {
-                    if (!draw_id)
-                        draw_id = requestAnimationFrame(draw);
-                };
-                redraw();
-
-	        peer.on('keydown', function(event) {
-                    if (screen.keydown)
-                        return screen.keydown(event, redraw);
-	        });
-
-	        peer.on('keyup', function(event) {
-                    if (screen.keyup)
-                        return screen.keyup(event, redraw);
-	        });
-
-                peer.on('mousedown touchstart', function(event) {
-                    var targets;
-                    if (screen.mtdown) {
-                        targets = $.targets(event);
-                        return screen.mtdown(targets, event, redraw);
-                    }
-                });
-
-                peer.on('mousemove touchmove', function(event) {
-                    var targets;
-                    if (screen.mtmove) {
-                        targets = $.targets(event);
-                        return screen.mtmove(targets, event, redraw);
-                    }
-                });
-
-                peer.on('mouseleave mouseup touchend', function(event) {
-                    var targets;
-                    if (screen.mtup) {
-                        targets = $.targets(event);
-                        return screen.mtup(targets, event, redraw);
-                    }
-                });
-
-                peer.on('mousewheel', function(event) {
-                    if (screen.mwheel)
-                        return screen.mwheel(event, redraw);
-                });
-
-
-            });
+        if (app.init)
+            app.init($, container, viewport);
 
         var draw_id = 0, draw_last = 0;
         var draw = function() {
@@ -571,7 +448,8 @@
             canvas.width(width);
 	    canvas.height(height);
             if (app.resize)
-                app.resize(canvas.innerWidth(), canvas.innerHeight());
+                app.resize(
+                    canvas.innerWidth(), canvas.innerHeight(), $);
 
             // A canvas has a height and a width that are part of the
             // document object model but also separate height and
@@ -580,34 +458,6 @@
             // is essential to avoid ugly stretching effects.
             canvas.attr("width",  Math.floor(canvas.innerWidth()));
             canvas.attr("height", Math.floor(canvas.innerHeight()));
-
-            // Enusre that the button bar (if present) has a reasonable
-            // size that's clickable but not too much space
-            container.find('.ripple-bbar button').css({
-                width: Math.floor(size / 9),
-                height: Math.floor(size / 9)
-            });
-
-            // Ensure that screens have appropriate sizes
-            $.each(
-                container.find('.ripple-screen'),
-                function(index, screen) {
-                    var peer = $(screen);
-                    var canvas = peer.find('canvas');
-                    var width = viewport.width();
-                    var height = viewport.height();
-                    var size = Math.min(width, height);
-
-                    peer.css({
-                        top: Math.floor(size / 50),
-                        left: Math.floor(size / 50),
-                        height: Math.floor(height - size / 25),
-                        width: Math.floor(width - size / 25) });
-                    canvas.width(width - size / 25);
-                    canvas.height(height - size / 25);
-                    canvas.attr('width', canvas.innerWidth());
-                    canvas.attr('height', canvas.innerHeight());
-                });
             redraw();
         };
 
@@ -624,7 +474,7 @@
                 return app.keyup(event, redraw);
 	});
 
-        viewport.on('mousedown touchstart', function(event) {
+        canvas.on('mousedown touchstart', function(event) {
             var targets;
             if (app.mtdown) {
                 targets = $.targets(event);
@@ -632,7 +482,7 @@
             }
         });
 
-        viewport.on('mousemove touchmove', function(event) {
+        canvas.on('mousemove touchmove', function(event) {
             var targets;
             if (app.mtmove) {
                 targets = $.targets(event);
@@ -640,7 +490,7 @@
             }
         });
 
-        viewport.on('mouseleave mouseup touchend', function(event) {
+        canvas.on('mouseleave mouseup touchend', function(event) {
             var targets;
             if (app.mtup) {
                 targets = $.targets(event);
@@ -648,7 +498,7 @@
             }
         });
 
-        viewport.on('mousewheel', function(event) {
+        canvas.on('mousewheel', function(event) {
             if (app.mwheel)
                 return app.mwheel(event, redraw);
         });

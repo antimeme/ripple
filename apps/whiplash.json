@@ -16,6 +16,10 @@
             "speed": 0.008
         }
     },
+    "characters": [
+        {"type": "guard", "position": {"x": -5, "y": -5}},
+        {"type": "guard", "position": {"x": 5, "y": -5}}
+    ],
     "pillars": [
         {"p": {"x": -10, "y": 0}, "r": 1, "color": "purple"},
         {"p": {"x": 10, "y": 0}, "r": 1, "color": "green"},

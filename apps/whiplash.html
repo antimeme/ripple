@@ -9,6 +9,29 @@
  html, body
  { padding: 0; margin: 0; position: relative; }
  h1 { text-align: center; }
+
+ .ripple-app {
+     display: block; margin: 0; border: 0;
+     position: relative; top: 0; left: 0;
+ }
+ .bbar {
+     position: absolute; bottom: 0; left: 0;
+     display: block; z-index: 2;
+     margin: 1%; border-radius: 10,
+ }
+ .bbar button {
+     display: inline-block; position: relative;
+     background-repeat: no-repeat;
+     background-color: rgba(255,255,255,0.8);
+ }
+ .bbar button:first-child {
+     border-top-left-radius: 15px;
+     border-bottom-left-radius: 15px;
+ }
+ .bbar button:last-child {
+     border-top-right-radius: 15px;
+     border-bottom-right-radius: 15px;
+ }
 </style>
 
 <div class="whiplash"></div>

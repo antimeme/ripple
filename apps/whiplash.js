@@ -123,6 +123,27 @@
         ctx.restore();
     };
 
+    var drawInventory = function(ctx, width, height, now, last) {
+        var size = Math.min(width, height);
+
+        ctx.fillStyle = 'rgba(192, 192, 192, 0.9)';
+        ctx.fillRect(0, 0, width, height);
+
+        ctx.strokeStyle = 'black';
+        ctx.strokeRect(Math.floor(width / 2 - size / 6),
+                       Math.floor(size / 10),
+                       Math.floor(size / 3),
+                       Math.floor(size * 8 / 10));
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.font = 'bold ' + Math.round(size / 20) + 'px sans';
+        ctx.fillText('Inventory',
+                     state.width / 2, size / 50);
+    }
+
+
     /**
      * A character is a representation of a humanoid create.
      * Characters have the following properties:
@@ -351,58 +372,47 @@
         //   null - arrow not set
         var state = {
             height: 320, width: 320,
-            zoom: { value: 50, min: 10, max: 150, reference: 0 },
+            zoom: { value: 50, min: 25, max: 100, reference: 0 },
             swipe: null, tap: null, mmove: null, arrow: null,
             characters: [], player: null,
             pillars: data.pillars.map(processPillar),
             walls: data.walls.map(processWall),
-            update: update
-        };
+            update: update,
 
-	state.characters.push(state.player = makePlayer(
-            data.chartypes['player']));
-        state.characters.push(makeGuard(ripple.mergeConfig(
-            {x: -5, y: -5}, data.chartypes['guard'])));
-        //state.characters.push(makeGuard(5, -5));
-        //state.characters.push(makeGuard(-5, 5));
-        //state.characters.push(makeGuard(5, 5));
-        state.characters.push(makeCharacter({x: 5, y: 5}));
-
-        ripple.app($, container, viewport, {
             draw: function(ctx, width, height, now, last) {
                 var size;
                 var lineWidth;
                 lineWidth = Math.max(width, height) / 50;
 
                 if (now - last < 1000)
-                    state.update(now, last);
+                    this.update(now, last);
 
                 ctx.save();
-                ctx.scale(state.zoom.value, state.zoom.value)
-                ctx.translate((width / (2 * state.zoom.value)) -
-                              state.player.position.x,
-                              (height / (2 * state.zoom.value)) -
-                              state.player.position.y);
+                ctx.scale(this.zoom.value, this.zoom.value)
+                ctx.translate((width / (2 * this.zoom.value)) -
+                              this.player.position.x,
+                              (height / (2 * this.zoom.value)) -
+                              this.player.position.y);
                 ctx.lineWidth = lineWidth;
 
-                state.characters.forEach(function(character) {
+                this.characters.forEach(function(character) {
                     if (character.drawPre)
-                        character.drawPre(ctx, state, now);
+                        character.drawPre(ctx, this, now);
                 });
 
-                drawBackground(ctx, state, now);
+                drawBackground(ctx, this, now);
 
-                state.characters.forEach(function(character) {
+                this.characters.forEach(function(character) {
                     if (character.draw)
-                        character.draw(ctx, state, now);
+                        character.draw(ctx, this, now);
                 });
 
-                state.characters.forEach(function(character) {
+                this.characters.forEach(function(character) {
                     if (character.drawPost)
-                        character.drawPost(ctx, state, now);
+                        character.drawPost(ctx, this, now);
                 });
 
-                size = Math.min(state.height, state.width);
+                size = Math.min(this.height, this.width);
 
                 ctx.restore();
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
@@ -410,101 +420,113 @@
                 ctx.textBaseline = 'top';
                 ctx.font = 'bold ' + Math.round(size / 20) + 'px sans';
                 ctx.fillText('Whiplash Paradox',
-                             state.width / 2, size / 50);
+                             this.width / 2, size / 50);
 
             },
-            resize: function(width, height) {
-                state.width = width;
-                state.height = height;
+            resize: function(width, height, $) {
+                var size = Math.min(width, height);
+                this.width = width;
+                this.height = height;
+
+                $('.bbar button').css({
+                    width: Math.floor(size / 9),
+                    height: Math.floor(size / 9)
+                });
             },
             keydown: function(event, redraw) {
                 // Recognize WASD and arrow keys
 	        if (event.keyCode == 37 || event.keyCode == 65) {
-		    state.player.control.left = true;
-                    state.player.control.arrow = null;
-                    state.update();
-	        } else if (event.keyCode == 38 || event.keyCode == 87) {
-                    state.player.control.up = true;
-                    state.player.control.arrow = null;
-                    state.update();
-	        } else if (event.keyCode == 39 || event.keyCode == 68) {
-		    state.player.control.right = true;
-                    state.player.control.arrow = null;
-                    state.update();
-	        } else if (event.keyCode == 40 || event.keyCode == 83) {
-		    state.player.control.down = true;
-                    state.player.control.arrow = null;
-                    state.update();
+		    this.player.control.left = true;
+                    this.player.control.arrow = null;
+                    this.update();
+	        } else if (event.keyCode == 38 ||
+                           event.keyCode == 87) {
+                    this.player.control.up = true;
+                    this.player.control.arrow = null;
+                    this.update();
+	        } else if (event.keyCode == 39 ||
+                           event.keyCode == 68) {
+		    this.player.control.right = true;
+                    this.player.control.arrow = null;
+                    this.update();
+	        } else if (event.keyCode == 40 ||
+                           event.keyCode == 83) {
+		    this.player.control.down = true;
+                    this.player.control.arrow = null;
+                    this.update();
 	        }
                 redraw();
             },
             keyup: function(event, redraw) {
                 // Recognize WASD and arrow keys
 	        if (event.keyCode == 37 || event.keyCode == 65) {
-		    state.player.control.left = false;
-                    state.player.control.arrow = null;
-                    state.update();
-	        } else if (event.keyCode == 38 || event.keyCode == 87) {
-                    state.player.control.up = false;
-                    state.player.control.arrow = null;
-                    state.update();
-	        } else if (event.keyCode == 39 || event.keyCode == 68) {
-		    state.player.control.right = false;
-                    state.player.control.arrow = null;
-                    state.update();
-	        } else if (event.keyCode == 40 || event.keyCode == 83) {
-		    state.player.control.down = false;
-                    state.player.control.arrow = null;
-                    state.update();
+		    this.player.control.left = false;
+                    this.player.control.arrow = null;
+                    this.update();
+	        } else if (event.keyCode == 38 ||
+                           event.keyCode == 87) {
+                    this.player.control.up = false;
+                    this.player.control.arrow = null;
+                    this.update();
+	        } else if (event.keyCode == 39 ||
+                           event.keyCode == 68) {
+		    this.player.control.right = false;
+                    this.player.control.arrow = null;
+                    this.update();
+	        } else if (event.keyCode == 40 ||
+                           event.keyCode == 83) {
+		    this.player.control.down = false;
+                    this.player.control.arrow = null;
+                    this.update();
 	        }
                 redraw();
             },
             mtdown: function(targets, event, redraw) {
-                state.tap = targets;
-                state.arrow = null;
-                state.mmove = null;
-                if (state.tap.touches.length > 1) {
-                    state.zoom.reference =
+                this.tap = targets;
+                this.arrow = null;
+                this.mmove = null;
+                if (this.tap.touches.length > 1) {
+                    this.zoom.reference =
                         ripple.vector.create(
-                            state.tap.touches[0].x -
-                            state.tap.touches[1].x,
-                            state.tap.touches[0].y -
-                            state.tap.touches[1].y
+                            this.tap.touches[0].x -
+                            this.tap.touches[1].x,
+                            this.tap.touches[0].y -
+                            this.tap.touches[1].y
                         ).sqlen();
-                } else state.arrow = undefined;
+                } else this.arrow = undefined;
                 redraw();
                 return false;
             },
             mtmove: function(targets, event, redraw) {
                 var mmove, arrow, zoomref;
-                if (state.tap) {
+                if (this.tap) {
                     targets = $.targets(event);
                     if (targets.touches.length > 1) {
-                        if (state.zoom.reference >
-                            Math.min(state.height, state.width) / 100) {
+                        if (this.zoom.reference >
+                            Math.min(this.height, this.width) / 100) {
                             zoomref = ripple.vector.create(
                                 targets.touches[0].x -
                                 targets.touches[1].x,
                                 targets.touches[0].y -
                                 targets.touches[1].y
                             ).sqlen();
-                            zclamp(state, state.zoom.value *
+                            zclamp(this, this.zoom.value *
                                 Math.sqrt(zoomref /
-                                    state.zoom.reference));
-                            state.update();
+                                    this.zoom.reference));
+                            this.update();
                         }
                     } else {
                         mmove = ripple.vector.create(
-                            targets.x - state.tap.x,
-                            targets.y - state.tap.y);
+                            targets.x - this.tap.x,
+                            targets.y - this.tap.y);
                         arrow = mmove.norm();
-                        if ((typeof(state.arrow) === 'undefined') ||
-                            (state.arrow && state.arrow.dotp(arrow) >
+                        if ((typeof(this.arrow) === 'undefined') ||
+                            (this.arrow && this.arrow.dotp(arrow) >
                                 Math.cos(Math.PI / 3)))
-                            state.arrow = arrow;
-                        else state.arrow = null;
-                        state.mmove = mmove;
-                        state.update();
+                            this.arrow = arrow;
+                        else this.arrow = null;
+                        this.mmove = mmove;
+                        this.update();
                     }
                 }
                 redraw();
@@ -513,89 +535,89 @@
             mtup: function(targets, event, redraw) {
                 var delta;
                 var size;
-                if (state.arrow) {
+                if (this.arrow) {
                     delta = ripple.vector.create(
-                        state.tap.x - state.width / 2,
-                        state.tap.y - state.height / 2);
-                    size = Math.min(state.height, state.width);
+                        this.tap.x - this.width / 2,
+                        this.tap.y - this.height / 2);
+                    size = Math.min(this.height, this.width);
                     if ((delta.dotp(delta) < size * size / 4) &&
-                        (state.mmove.dotp(state.mmove) >
+                        (this.mmove.dotp(this.mmove) >
                             size * size / 144))
-                        state.player.control.arrow = state.arrow;
-                    else state.player.control.arrow = null;
-                } else state.player.control.arrow = null;
-                state.tap = null;
-                state.arrow = null;
-                state.mmove = null;
-                state.update();
+                        this.player.control.arrow = this.arrow;
+                    else this.player.control.arrow = null;
+                } else this.player.control.arrow = null;
+                this.tap = null;
+                this.arrow = null;
+                this.mmove = null;
+                this.update();
                 redraw();
                 return false;
             },
             mwheel: function(event, redraw) {
-                zclamp(state, state.zoom.value *
-                    (1 + (0.001 * event.deltaY)));
+                zclamp(this, this.zoom.value *
+                    (1 + (0.01 * event.deltaY)));
                 redraw();
                 return false;
             },
-            buttons: [{
-                url: 'images/whiplash-sprites.svg',
-                position: '0px 0px',
-                fn: function() {
-                    state.toggleInventory();
-                }
-            }, {
-                url: 'images/whiplash-sprites.svg',
-                position: '100% 0px',
-                fn: function() {
-                    state.player.bodyColor = 'green';
-                    console.log('green');
-                }
-            }, {
-                url: 'images/whiplash-sprites.svg',
-                position: '25% 0',
-                fn: function() {
-                    state.player.bodyColor = 'yellow';
-                    console.log('yellow');
-                }
-            }, {
-                url: 'images/whiplash-sprites.svg',
-                position: '50% 0',
-                fn: function() {
-                    state.player.bodyColor = 'orange';
-                    console.log('orange');
-                }
-            }, {
-                url: 'images/whiplash-sprites.svg',
-                position: '75% 0',
-                fn: function() {
-                    state.player.bodyColor = 'orange';
-                    console.log('orange');
-                }
-            }],
-            screens: [{
-                setShow: function(show) {
-                    state.showInventory = show;
-                },
-                setHide: function(hide) {
-                    state.hideInventory = hide;
-                },
-                setToggle: function(toggle) {
-                    state.toggleInventory = toggle;
-                },
-                draw: function(ctx, width, height, now, last) {
-                    var size = Math.min(width, height);
+            init: function($, container, viewport) {
+                var buttons = [{
+                    url: 'images/whiplash-sprites.svg',
+                    position: '0px 0px',
+                    fn: function() {
+                        state.toggleInventory();
+                    }
+                }, {
+                    url: 'images/whiplash-sprites.svg',
+                    position: '100% 0px',
+                    fn: function() {
+                        state.player.bodyColor = 'green';
+                        console.log('green');
+                    }
+                }, {
+                    url: 'images/whiplash-sprites.svg',
+                    position: '25% 0',
+                    fn: function() {
+                        state.player.bodyColor = 'yellow';
+                        console.log('yellow');
+                    }
+                }, {
+                    url: 'images/whiplash-sprites.svg',
+                    position: '50% 0',
+                    fn: function() {
+                        state.player.bodyColor = 'orange';
+                        console.log('orange');
+                    }
+                }, {
+                    url: 'images/whiplash-sprites.svg',
+                    position: '75% 0',
+                    fn: function() {
+                        state.player.bodyColor = 'orange';
+                        console.log('orange');
+                    }
+                }];
 
-                    ctx.fillStyle = 'rgba(192, 192, 192, 0.9)';
-                    ctx.fillRect(0, 0, width, height);
+                this.bbar = $('<div>')
+                    .attr({'class': 'bbar'}).appendTo(container);
+                buttons.forEach(function(button) {
+                    var b = $('<button>')
+                        .css({
+                            'background-image':
+                            'url(' + button.url + ')',
+                            'background-position': button.position,
+                            'background-size': '500% 500%'
+                        })
+                        .on('mousedown touchstart', button.fn)
+                        .appendTo(this.bbar);
+                }, this);
+            }
+        };
 
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'top';
-                    ctx.font = 'bold ' + Math.round(size / 20) + 'px sans';
-                    ctx.fillText('Inventory',
-                                 state.width / 2, size / 50);
-                }
-            }]
-        });
+	state.characters.push(state.player = makePlayer(
+            data.chartypes['player']));
+        data.characters.forEach(function(character) {
+            state.characters.push(makeGuard(ripple.mergeConfig(
+                character.position, data.chartypes[character.type])));
+        })
+        ripple.app($, container, viewport, state);
     };
 })(typeof exports === 'undefined'? this['whiplash'] = {}: exports);
