@@ -429,13 +429,13 @@
                     height: height - Math.floor(
                         size / 20 + size / 11)
                 });
-                $('.page-primary').css({
+                $('.page-self').css({
                     width: Math.floor(
                         this.inventory.innerWidth() * 0.6),
                     height: Math.floor(
                         this.inventory.innerHeight())
                 });
-                $('.page-secondary').css({
+                $('.page-other').css({
                     width: Math.floor(
                         this.inventory.innerWidth() * 0.4),
                     height: Math.floor(
@@ -594,19 +594,21 @@
                         state.inventory.hide(); });
 
                 this.settings = $('<div>')
-                    .attr({'class': 'page'}).hide()
+                    .addClass('page').hide()
                     .append('<h2>Settings</h2>')
                     .appendTo(container);
                 this.inventory = $('<div>')
-                    .attr({'class': 'page'}).hide()
+                    .addClass('page').hide()
                     .append('<h2>Inventory</h2>')
                     .appendTo(container);
 
                 var personal = $('<div>')
-                    .addClass('page-primary')
+                    .addClass('page-pane')
+                    .addClass('page-self')
                     .appendTo(this.inventory);
                 var other = $('<div>')
-                    .addClass('page-secondary')
+                    .addClass('page-pane')
+                    .addClass('page-other')
                     .appendTo(this.inventory);
 
                 var makeThing = function(container, index) {
@@ -617,7 +619,7 @@
                             console.log('ping', value); });
                 }
                 var index;
-                for (index = 0; index < 20; ++index) {
+                for (index = 0; index < 150; ++index) {
                     makeThing(personal, index);
                     makeThing(other, index);
                 }

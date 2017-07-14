@@ -31,14 +31,13 @@ h1, h2, h3 {
     border-radius: 20px;
     box-sizing: border-box;
 }
-.page-primary {
-    position: absolute; top: 0; left: 0;
+.page-pane {
+    position: absolute;
     box-sizing: border-box;
+    overflow-y: auto;
 }
-.page-secondary {
-    position: absolute; top: 0; right: 0;
-    box-sizing: border-box;
-}
+.page-self  { top: 0; left:  0; }
+.page-other { top: 0; right: 0; }
 
 .whiplash-button {
     display: inline-block;
