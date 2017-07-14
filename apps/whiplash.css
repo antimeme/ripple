@@ -37,7 +37,6 @@ h1, h2, h3 {
 }
 .page-secondary {
     position: absolute; top: 0; right: 0;
-    border: 5px solid blue;
     box-sizing: border-box;
 }
 

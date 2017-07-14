@@ -609,15 +609,18 @@
                     .addClass('page-secondary')
                     .appendTo(this.inventory);
 
+                var makeThing = function(container, index) {
+                    var value = index + 1;
+                    createButton(
+                        container, sprites, '75% 0',
+                        function(event) {
+                            console.log('ping', value); });
+                }
                 var index;
-                for (index = 0; index < 20; ++index)
-                    (function() {
-                        var value = index + 1;
-                        createButton(
-                            personal, sprites, '75% 0',
-                            function(event) {
-                                console.log('ping', value); });
-                    })();
+                for (index = 0; index < 20; ++index) {
+                    makeThing(personal, index);
+                    makeThing(other, index);
+                }
             }
         };
 
