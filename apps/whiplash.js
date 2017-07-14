@@ -411,18 +411,19 @@
                     width: Math.floor(size / 11),
                     height: Math.floor(size / 11)
                 });
-                this.inventory.css({
+                $('.page').css({
+                    'border-width': Math.floor(size / 100),
                     top: Math.floor(size / 50),
                     left: Math.floor(size / 50),
                     width: width - Math.floor(size / 20),
-                    height: height - Math.floor(size / 20) });
-                $('.inventory-self').css({
-                    width: Math.floor(this.inventory.innerWidth() * 0.5),
-                    height: Math.floor(this.inventory.innerHeight())
+                    height: height - Math.floor(
+                        size / 20 + size / 11)
                 });
-                $('.inventory-other').css({
-                    width: Math.floor(this.inventory.width() * 0.49),
-                    height: Math.floor(this.inventory.height() * 0.94)
+                $('.page-primary, .page-secondary').css({
+                    width: Math.floor(
+                        this.inventory.innerWidth() * 0.5),
+                    height: Math.floor(
+                        this.inventory.innerHeight())
                 });
             },
             keydown: function(event, redraw) {
@@ -552,96 +553,90 @@
                 return false;
             },
             init: function($, container, viewport) {
-                var buttons = [{
-                    position: '0px 0px',
-                    fn: function() {
-                        state.inventory.show();
-                    }
-                }, {
-                    position: '100% 0px',
-                    fn: function() {
-                        state.player.bodyColor = 'green';
-                        console.log('green');
-                    }
-                }, {
-                    position: '25% 0',
-                    fn: function() {
-                        state.player.bodyColor = 'yellow';
-                        console.log('yellow');
-                    }
-                }, {
-                    position: '50% 0',
-                    fn: function() {
-                        state.player.bodyColor = 'orange';
-                        console.log('orange');
-                    }
-                }, {
-                    position: '75% 0',
-                    fn: function() {
-                        state.player.bodyColor = 'orange';
-                        console.log('orange');
-                    }
-                }];
-
                 var sprites = 'url(images/whiplash-sprites.svg)';
-                this.bbar = $('<div>')
+
+                this.actionBar = $('<div>')
                     .addClass('bbar')
                     .css({ bottom: 0, left: 0 })
                     .appendTo(container);
-                buttons.forEach(function(button) {
-                    var b = $('<button>')
-                        .addClass('whiplash-button')
-                        .css({
-                            'background-image': sprites,
-                            'background-position': button.position,
-                            'background-size': '500% 500%'
-                        })
-                        .on('mousedown touchstart', button.fn)
-                        .appendTo(this.bbar);
-                }, this);
-
-                this.inventory = $('<div>')
-                    .attr({'class': 'inventory'})
-                    .css({display: 'none'})
-                    .appendTo(container);
-
-                var invBBar = $('<div>')
-                    .addClass('bbar')
-                    .css({
-                        bottom: 0, left: 0 })
-                    .appendTo(this.inventory)
-
                 $('<button>')
                     .addClass('whiplash-button')
                     .css({
                         'background-image': sprites,
-                        'background-position': '0% 0%',
-                        'background-size': '500% 500%',
-                        'background-color': 'rgba(255,255,255,0.9)'
+                        'background-position': '100% 0',
                     })
-                    .append('x')
-                    .appendTo(invBBar)
                     .on('mousedown touchstart', function(event) {
-                        state.inventory.hide(); });
-
+                        console.log('interact');
+                    })
+                    .appendTo(this.actionBar);
                 $('<button>')
                     .addClass('whiplash-button')
                     .css({
-                        'background-image': 'url(images/whiplash-sprites.svg)',
-                        'background-position': '0% 50%',
-                        'background-size': '500% 500%'
+                        'background-image': sprites,
+                        'background-position': '25% 0',
                     })
-                    .appendTo(invBBar)
                     .on('mousedown touchstart', function(event) {
-                        state.inventory.hide(); });
+                        console.log('left-hand');
+                    })
+                    .appendTo(this.actionBar);
+                $('<button>')
+                    .addClass('whiplash-button')
+                    .css({
+                        'background-image': sprites,
+                        'background-position': '50% 0',
+                    })
+                    .on('mousedown touchstart', function(event) {
+                        console.log('right-hand');
+                    })
+                    .appendTo(this.actionBar);
+                $('<button>')
+                    .addClass('whiplash-button')
+                    .css({
+                        'background-image': sprites,
+                        'background-position': '0 0',
+                    })
+                    .on('mousedown touchstart', function(event) {
+                        state.inventory.toggle();
+                        state.settings.hide();
+                    }).appendTo(this.actionBar);
+                $('<button>')
+                    .addClass('whiplash-button')
+                    .css({
+                        'background-image': sprites,
+                        'background-position': '75% 0',
+                    })
+                    .on('mousedown touchstart', function() {
+                        state.settings.toggle();
+                        state.inventory.hide();
+                    }).appendTo(this.actionBar);
+
+                this.settings = $('<div>')
+                    .attr({'class': 'page'}).hide()
+                    .append('<h2>Settings</h2>')
+                    .appendTo(container);
+                this.inventory = $('<div>')
+                    .attr({'class': 'page'}).hide()
+                    .append('<h2>Inventory</h2>')
+                    .appendTo(container);
 
                 var personal = $('<div>')
-                    .addClass('inventory-self')
+                    .addClass('page-primary')
                     .appendTo(this.inventory);
                 var other = $('<div>')
-                    .addClass('inventory-other')
+                    .addClass('page-secondary')
                     .appendTo(this.inventory);
 
+                var index;
+                for (index = 0; index < 20; ++index)
+                    $('<button>')
+                    .addClass('whiplash-button')
+                    .css({
+                        'background-image': sprites,
+                        'background-position': '75% 0',
+                    })
+                    .on('mousedown touchstart', function() {
+                        console.log('ping');
+                    }).appendTo(personal);
             }
         };
 
