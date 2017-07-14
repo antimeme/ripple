@@ -344,6 +344,16 @@
         }, this);
     };
 
+    var createButton = function(container, sheet, position, fn) {
+        return $('<button>')
+            .addClass('whiplash-button')
+            .css({
+                'background-image': sheet,
+                'background-position': position,
+            })
+            .on('mousedown touchstart', fn).appendTo(container);
+    };
+
     whiplash.go = function($, container, viewport, data) {
         // State arrow can be either:
         //   {x, y} - unit vector indicating direction
@@ -419,9 +429,15 @@
                     height: height - Math.floor(
                         size / 20 + size / 11)
                 });
-                $('.page-primary, .page-secondary').css({
+                $('.page-primary').css({
                     width: Math.floor(
-                        this.inventory.innerWidth() * 0.5),
+                        this.inventory.innerWidth() * 0.6),
+                    height: Math.floor(
+                        this.inventory.innerHeight())
+                });
+                $('.page-secondary').css({
+                    width: Math.floor(
+                        this.inventory.innerWidth() * 0.4),
                     height: Math.floor(
                         this.inventory.innerHeight())
                 });
@@ -559,56 +575,23 @@
                     .addClass('bbar')
                     .css({ bottom: 0, left: 0 })
                     .appendTo(container);
-                $('<button>')
-                    .addClass('whiplash-button')
-                    .css({
-                        'background-image': sprites,
-                        'background-position': '100% 0',
-                    })
-                    .on('mousedown touchstart', function(event) {
-                        console.log('interact');
-                    })
-                    .appendTo(this.actionBar);
-                $('<button>')
-                    .addClass('whiplash-button')
-                    .css({
-                        'background-image': sprites,
-                        'background-position': '25% 0',
-                    })
-                    .on('mousedown touchstart', function(event) {
-                        console.log('left-hand');
-                    })
-                    .appendTo(this.actionBar);
-                $('<button>')
-                    .addClass('whiplash-button')
-                    .css({
-                        'background-image': sprites,
-                        'background-position': '50% 0',
-                    })
-                    .on('mousedown touchstart', function(event) {
-                        console.log('right-hand');
-                    })
-                    .appendTo(this.actionBar);
-                $('<button>')
-                    .addClass('whiplash-button')
-                    .css({
-                        'background-image': sprites,
-                        'background-position': '0 0',
-                    })
-                    .on('mousedown touchstart', function(event) {
+                createButton(
+                    this.actionBar, sprites, '100% 0', function(event) {
+                        console.log('interact'); });
+                createButton(
+                    this.actionBar, sprites, '25% 0', function(event) {
+                        console.log('left-hand'); });
+                createButton(
+                    this.actionBar, sprites, '50% 0', function(event) {
+                        console.log('right-hand'); });
+                createButton(
+                    this.actionBar, sprites, '0 0', function(event) {
                         state.inventory.toggle();
-                        state.settings.hide();
-                    }).appendTo(this.actionBar);
-                $('<button>')
-                    .addClass('whiplash-button')
-                    .css({
-                        'background-image': sprites,
-                        'background-position': '75% 0',
-                    })
-                    .on('mousedown touchstart', function() {
+                        state.settings.hide(); });
+                createButton(
+                    this.actionBar, sprites, '75% 0', function(event) {
                         state.settings.toggle();
-                        state.inventory.hide();
-                    }).appendTo(this.actionBar);
+                        state.inventory.hide(); });
 
                 this.settings = $('<div>')
                     .attr({'class': 'page'}).hide()
@@ -628,15 +611,13 @@
 
                 var index;
                 for (index = 0; index < 20; ++index)
-                    $('<button>')
-                    .addClass('whiplash-button')
-                    .css({
-                        'background-image': sprites,
-                        'background-position': '75% 0',
-                    })
-                    .on('mousedown touchstart', function() {
-                        console.log('ping');
-                    }).appendTo(personal);
+                    (function() {
+                        var value = index + 1;
+                        createButton(
+                            personal, sprites, '75% 0',
+                            function(event) {
+                                console.log('ping', value); });
+                    })();
             }
         };
 
