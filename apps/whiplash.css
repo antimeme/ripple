@@ -1,0 +1,38 @@
+html, body
+{ position: absolute; padding: 0; margin: 0; }
+h1 { text-align: center; }
+
+.ripple-app {
+    position: absolute; top: 0; bottom: 0; right: 0; left: 0;
+    display: block; margin: 0; border: 0; z-index: 1;
+    background-color: #ddd; color: #222; }
+.bbar {
+    position: fixed;
+    display: block; z-index: 2;
+    margin: 1%; border-radius: 10 }
+.bbar button:first-child {
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+}
+.bbar button:last-child {
+    border-top-right-radius: 15px;
+    border-bottom-right-radius: 15px;
+}
+.whiplash-button {
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-color: rgba(255,255,255,0.8);
+}
+.inventory {
+    position: absolute; top: 0; left: 0; z-index: 3;
+    border: 5px solid black;
+    background-color: #ddd;
+    border-radius: 20px;
+    box-sizing: border-box;
+}
+.inventory-self {
+    position: absolute; top: 0; left: 0;
+}
+.inventory-other {
+    position: absolute; top: 0; right: 0;
+}
