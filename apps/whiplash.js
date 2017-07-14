@@ -123,27 +123,6 @@
         ctx.restore();
     };
 
-    var drawInventory = function(ctx, width, height, now, last) {
-        var size = Math.min(width, height);
-
-        ctx.fillStyle = 'rgba(192, 192, 192, 0.9)';
-        ctx.fillRect(0, 0, width, height);
-
-        ctx.strokeStyle = 'black';
-        ctx.strokeRect(Math.floor(width / 2 - size / 6),
-                       Math.floor(size / 10),
-                       Math.floor(size / 3),
-                       Math.floor(size * 8 / 10));
-
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'top';
-        ctx.font = 'bold ' + Math.round(size / 20) + 'px sans';
-        ctx.fillText('Inventory',
-                     state.width / 2, size / 50);
-    }
-
-
     /**
      * A character is a representation of a humanoid create.
      * Characters have the following properties:
@@ -428,9 +407,22 @@
                 this.width = width;
                 this.height = height;
 
-                $('.bbar button').css({
-                    width: Math.floor(size / 9),
-                    height: Math.floor(size / 9)
+                $('.whiplash-button').css({
+                    width: Math.floor(size / 11),
+                    height: Math.floor(size / 11)
+                });
+                this.inventory.css({
+                    top: Math.floor(size / 50),
+                    left: Math.floor(size / 50),
+                    width: width - Math.floor(size / 20),
+                    height: height - Math.floor(size / 20) });
+                $('.inventory-self').css({
+                    width: Math.floor(this.inventory.innerWidth() * 0.5),
+                    height: Math.floor(this.inventory.innerHeight())
+                });
+                $('.inventory-other').css({
+                    width: Math.floor(this.inventory.width() * 0.49),
+                    height: Math.floor(this.inventory.height() * 0.94)
                 });
             },
             keydown: function(event, redraw) {
@@ -561,34 +553,29 @@
             },
             init: function($, container, viewport) {
                 var buttons = [{
-                    url: 'images/whiplash-sprites.svg',
                     position: '0px 0px',
                     fn: function() {
-                        state.toggleInventory();
+                        state.inventory.show();
                     }
                 }, {
-                    url: 'images/whiplash-sprites.svg',
                     position: '100% 0px',
                     fn: function() {
                         state.player.bodyColor = 'green';
                         console.log('green');
                     }
                 }, {
-                    url: 'images/whiplash-sprites.svg',
                     position: '25% 0',
                     fn: function() {
                         state.player.bodyColor = 'yellow';
                         console.log('yellow');
                     }
                 }, {
-                    url: 'images/whiplash-sprites.svg',
                     position: '50% 0',
                     fn: function() {
                         state.player.bodyColor = 'orange';
                         console.log('orange');
                     }
                 }, {
-                    url: 'images/whiplash-sprites.svg',
                     position: '75% 0',
                     fn: function() {
                         state.player.bodyColor = 'orange';
@@ -596,19 +583,65 @@
                     }
                 }];
 
+                var sprites = 'url(images/whiplash-sprites.svg)';
                 this.bbar = $('<div>')
-                    .attr({'class': 'bbar'}).appendTo(container);
+                    .addClass('bbar')
+                    .css({ bottom: 0, left: 0 })
+                    .appendTo(container);
                 buttons.forEach(function(button) {
                     var b = $('<button>')
+                        .addClass('whiplash-button')
                         .css({
-                            'background-image':
-                            'url(' + button.url + ')',
+                            'background-image': sprites,
                             'background-position': button.position,
                             'background-size': '500% 500%'
                         })
                         .on('mousedown touchstart', button.fn)
                         .appendTo(this.bbar);
                 }, this);
+
+                this.inventory = $('<div>')
+                    .attr({'class': 'inventory'})
+                    .css({display: 'none'})
+                    .appendTo(container);
+
+                var invBBar = $('<div>')
+                    .addClass('bbar')
+                    .css({
+                        bottom: 0, left: 0 })
+                    .appendTo(this.inventory)
+
+                $('<button>')
+                    .addClass('whiplash-button')
+                    .css({
+                        'background-image': sprites,
+                        'background-position': '0% 0%',
+                        'background-size': '500% 500%',
+                        'background-color': 'rgba(255,255,255,0.9)'
+                    })
+                    .append('x')
+                    .appendTo(invBBar)
+                    .on('mousedown touchstart', function(event) {
+                        state.inventory.hide(); });
+
+                $('<button>')
+                    .addClass('whiplash-button')
+                    .css({
+                        'background-image': 'url(images/whiplash-sprites.svg)',
+                        'background-position': '0% 50%',
+                        'background-size': '500% 500%'
+                    })
+                    .appendTo(invBBar)
+                    .on('mousedown touchstart', function(event) {
+                        state.inventory.hide(); });
+
+                var personal = $('<div>')
+                    .addClass('inventory-self')
+                    .appendTo(this.inventory);
+                var other = $('<div>')
+                    .addClass('inventory-other')
+                    .appendTo(this.inventory);
+
             }
         };
 

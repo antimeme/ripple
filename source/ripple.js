@@ -397,23 +397,12 @@
     // app.mtup(targets, event, redraw)
     // app.mtmove(targets, event, redraw)
     // app.isActive() // return falsy if redraw not needed
-    // app.buttons [
-    //   {
-    //     img
-    //   }, ...]
-    // app.screens [
-    //   {
-    //   }, ...]
     // app.color
     // app.background
     ripple.app = function($, container, viewport, app) {
         var canvas = $('<canvas>')
             .attr('class', 'ripple-app')
-            .css({
-                color: app.color || '#222',
-                background: app.background || '#ddd',
-                'z-index': 1
-            }).appendTo(container);
+            .appendTo(container);
 
         if (app.init)
             app.init($, container, viewport);
