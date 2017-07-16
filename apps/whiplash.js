@@ -344,14 +344,20 @@
         }, this);
     };
 
-    var createButton = function(container, sheet, position, fn) {
+    var createButton = function(sheet, position, fn) {
+        // Create a button backed by an image from a sprite sheet.
+        // Page CSS controls the number of sprites on a sheet.
+        // This routine wraps the function and forces a false
+        // return so that events do not propagate
         return $('<button>')
-            .addClass('whiplash-button')
+            .addClass('image-button')
             .css({
                 'background-image': sheet,
                 'background-position': position,
             })
-            .on('mousedown touchstart', fn).appendTo(container);
+            .on('mousedown touchstart', function(event) {
+                fn.call(this, arguments);
+                return false; });
     };
 
     whiplash.go = function($, container, viewport, data) {
@@ -417,9 +423,13 @@
                 this.width = width;
                 this.height = height;
 
-                $('.whiplash-button').css({
+                $('.image-button').css({
                     width: Math.floor(size / 11),
                     height: Math.floor(size / 11)
+                });
+                $('.slot-group').css({
+                    width: Math.floor(size * 4 / 11),
+                    height: Math.floor(size * 2 / 11)
                 });
                 $('.page').css({
                     'border-width': Math.floor(size / 100),
@@ -574,24 +584,24 @@
                 this.actionBar = $('<div>')
                     .addClass('bbar')
                     .css({ bottom: 0, left: 0 })
-                    .appendTo(container);
-                createButton(
-                    this.actionBar, sprites, '100% 0', function(event) {
-                        console.log('interact'); });
-                createButton(
-                    this.actionBar, sprites, '25% 0', function(event) {
-                        console.log('left-hand'); });
-                createButton(
-                    this.actionBar, sprites, '50% 0', function(event) {
-                        console.log('right-hand'); });
-                createButton(
-                    this.actionBar, sprites, '0 0', function(event) {
-                        state.inventory.toggle();
-                        state.settings.hide(); });
-                createButton(
-                    this.actionBar, sprites, '75% 0', function(event) {
-                        state.settings.toggle();
-                        state.inventory.hide(); });
+                    .appendTo(container)
+                    .append(createButton(
+                        sprites, '100% 0', function(event) {
+                            console.log('interact'); }))
+                    .append(createButton(
+                        sprites, '25% 0', function(event) {
+                            console.log('left-hand'); }))
+                    .append(createButton(
+                        sprites, '50% 0', function(event) {
+                            console.log('right-hand'); }))
+                    .append(createButton(
+                        sprites, '0 0', function(event) {
+                            state.inventory.toggle();
+                            state.settings.hide(); }))
+                    .append(createButton(
+                        sprites, '75% 0', function(event) {
+                            state.settings.toggle();
+                            state.inventory.hide(); }));
 
                 this.settings = $('<div>')
                     .addClass('page').hide()
@@ -602,21 +612,22 @@
                     .append('<h2>Inventory</h2>')
                     .appendTo(container);
 
-                var personal = $('<div>')
-                    .addClass('page-pane')
-                    .addClass('page-self')
-                    .appendTo(this.inventory);
                 var other = $('<div>')
                     .addClass('page-pane')
                     .addClass('page-other')
                     .appendTo(this.inventory);
+                var personal = $('<div>')
+                    .addClass('page-pane')
+                    .addClass('page-self')
+                    .appendTo(this.inventory);
 
+                // Let's create lots of test items for the
+                // character inventory.  What fun!
                 var makeThing = function(container, index) {
                     var value = index + 1;
-                    createButton(
-                        container, sprites, '75% 0',
-                        function(event) {
-                            console.log('ping', value); });
+                    container.append(
+                        createButton(sprites, '75% 0', function(event) {
+                            console.log('ping', value); }));
                 }
                 var index;
                 for (index = 0; index < 150; ++index) {
