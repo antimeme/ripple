@@ -84,7 +84,7 @@
                 attrval += ' ' + attr + '="' + value + '"';
                 pos += attr.length + value.length + 4;
             });
-            if (self.contents) {
+            if (self.contents.length > 0) {
                 result.push(indent + '<' + self.name +
                             attrval + '>');
                 self.contents.forEach(function(thing) {
