@@ -137,19 +137,19 @@
         //   coordinates: compute x and y position of each node iff true
         //   points: compute a pair of points which define the
         //           intersection
-        var self = this, result = [];
+        var result = [];
         if (options && options.points)
-            node = self.coordinate(node);
+            node = this.coordinate(node);
         this._neighbors(node).forEach(function(neigh) {
             if ((options && options.coordinates) ||
                 (options && options.points))
-                neigh = self.coordinate(neigh);
+                neigh = this.coordinate(neigh);
             if (options && options.points)
-                neigh.points = self._pairpoints(node, neigh);
+                neigh.points = this._pairpoints(node, neigh);
             if (typeof neigh.cost == 'undefined')
                 neigh.cost = 1;
             result.push(neigh);
-        });
+        }, this);
         return result;
     };
 
@@ -233,17 +233,17 @@
         // Return a node with a cartesian coordinate (x and y) for the
         // center of the square in the row and column specified within
         // node.  The return value will have the given row and column.
-        var halfsize = this._size / 2;
-        return {x: node.col * this._size + halfsize,
-                y: node.row * this._size + halfsize,
+        return {x: node.col * this._size,
+                y: node.row * this._size,
                 row: node.row, col: node.col};
     };
     SquareGrid.prototype._position = function(node) {
         // Return a node with the row and column of the square in which
         // the cartesian coordinate (x and y) is contained.  The return
         // value will have an x and y value for the square center.
-        return {row: Math.floor(node.y / this._size),
-                col: Math.floor(node.x / this._size)};
+        var halfsize = this._size / 2;
+        return {row: Math.floor((node.y + halfsize) / this._size),
+                col: Math.floor((node.x + halfsize) / this._size)};
     };
     SquareGrid.prototype._neighbors = function(node) {
         // Return a list of neighbors for the row and column specified
@@ -300,7 +300,7 @@
         // within node.  The return value will have the given row and
         // column as well.
         var offset = ((node.row + node.col) % 2) ?
-            this.centerh : this.radius;
+                   -this.centerh : 0;
         return {x: node.col * this._size / 2,
                 y: (node.row * this.rowh) + offset,
                 row: node.row, col: node.col};
@@ -312,10 +312,10 @@
         // return value will have an x and y value for the center of
         // the hexagon.
         var halfsize = this._size / 2;
-        var row = Math.floor(node.y / this.rowh);
+        var row = Math.floor((node.y + this.radius) / this.rowh);
         var col = Math.floor(node.x / halfsize);
         var xfrac = node.x / halfsize;
-        var yfrac = node.y / this.rowh;
+        var yfrac = (node.y + this.radius) / this.rowh;
         if ((row + col) % 2) {
             if ((yfrac - Math.ceil(yfrac)) +
                 (xfrac - Math.floor(xfrac)) > 0)
@@ -365,10 +365,10 @@
         var fifth = this._size / 5;
         var x_sign = (node.col % 2) ? 1 : -1;
         var y_sign = x_sign *
-            ((!this.regular && ((node.row < 0) ^ (node.col < 0))) ?
-             -1 : 1);
+        ((!this.regular && ((node.row < 0) ^ (node.col < 0))) ?
+        -1 : 1);
         var x = Math.floor(node.col / 2) * this._size +
-            halfsize + fifth * x_sign;
+                halfsize + fifth * x_sign;
         var y = node.row * this._size + halfsize + fifth * y_sign;
         return {row: node.row, col: node.col, x: x, y: y};
     };
@@ -478,7 +478,7 @@
         var result = {row: node.row, col: node.col};
         result[this.alpha] = (node[this.col] * this.hexw +
                               this.hexw / 2 *
-                              Math.abs((node[this.row] + 1) % 2));
+                              Math.abs(node[this.row] % 2));
         result[this.beta] = node[this.row] * this._size * 3 / 2;
         return result;
     };
@@ -501,7 +501,7 @@
                        (alpha_band - Math.floor(alpha_band)) > 0)
                 row += 1;
         }
-        var col = Math.floor(((Math.abs(row % 2) * this.hexw / 2) +
+        var col = Math.floor(((Math.abs((row + 1) % 2) * this.hexw / 2) +
                               node[this.alpha]) / this.hexw);
         var result = {};
         result[this.row] = row;
@@ -519,13 +519,13 @@
             {row: node.row, col: node.col - 1}];
         if (this.alpha == 'x') {
             result.push({row: node.row - 1, col: node.col +
-                         ((node.row % 2) ? -1 : 1)});
+                         ((node.row % 2) ? 1 : -1)});
             result.push({row: node.row + 1, col: node.col +
-                         ((node.row % 2) ? -1 : 1)});
+                         ((node.row % 2) ? 1 : -1)});
         } else {
-            result.push({row: node.row + (node.col % 2 ? -1 : 1),
+            result.push({row: node.row + (node.col % 2 ? 1 : -1),
                          col: node.col - 1});
-            result.push({row: node.row + (node.col % 2 ? -1 : 1),
+            result.push({row: node.row + (node.col % 2 ? 1 : -1),
                          col: node.col + 1});
         }
         return result;
@@ -534,8 +534,7 @@
     HexGrid.prototype.points = function(node) {
         // Given a node with the coordinates for the center of a
         // hexagon, return a set of coordinates for each vertex.
-        var self = this;
-        var p = function(a, b) {
+        var self = this, p = function(a, b) {
             var result = {};
             result[self.alpha] = a;
             result[self.beta]  = b;
@@ -553,9 +552,8 @@
 
     // Maps names to grid objects
     var types = {
-        triangle: TriangleGrid, rtriangle: RTriangleGrid,
-        square: SquareGrid,
-        hex: HexGrid, hexagon: HexGrid
+        square: SquareGrid, hex: HexGrid, hexagon: HexGrid,
+        triangle: TriangleGrid, rtriangle: RTriangleGrid
     };
 
     // Exposes grid types for use in user menus.  The first element of
@@ -564,11 +562,11 @@
     var canonical = [
         ["Square(strict)", {type: "square"}],
         ["Square(diagonal)", {type: "square", diagonal: true}],
+        ["Hex(point)", {type: "hex", orient: "point"}],
+        ["Hex(edge)", {type: "hex", orient: "edge"}],
         ["Triangle"],
         ["Right(regular)", {type: "rtriangle", regular: true}],
-        ["Right(diamond)", {type: "rtriangle", regular: false}],
-        ["Hex(point)", {type: "hex", orient: "point"}],
-        ["Hex(edge)", {type: "hex", orient: "edge"}]];
+        ["Right(diamond)", {type: "rtriangle", regular: false}]];
 
     // Create a new grid based on an options object.  The type field
     // of the options is a string which gets translated to a grid type
@@ -586,10 +584,8 @@
         return result;
     };
 
-    grid.types = types;
     grid.canonical = canonical;
     grid.create = create;
-    grid.magnitude = magnitude;
 
     grid.test = function($, parent, viewport) {
         var self = $('<canvas></canvas>').appendTo(parent);
@@ -933,6 +929,7 @@
             } else {
                 tap = drag = targets;
                 selected = instance.position(tap);
+                console.log('selected', selected);
 
                 // Show a menu on either double tap or long press.
                 // There are some advantages to using a native double
@@ -989,4 +986,4 @@
             return false;
         });
     };
-})(typeof exports === 'undefined'? this['grid'] = {}: exports);
+})(typeof exports === 'undefined'? this['grid'] = {} : exports);
