@@ -219,6 +219,105 @@
         return this;
     };
 
+    BaseGrid.prototype.maze = function(config) {
+        // Create a maze using the Growing Tree Algorithm
+        // http://weblog.jamisbuck.org/2011/1/27/
+        //        maze-generation-growing-tree-algorithm
+        // Configuration settings
+        //   config.random: random number generator
+        //   config.choose: function that chooses from an array
+        //   config.rings: number of concentric rings to include
+        var self = this;
+        var canonicalizeNode = function(node) {
+            return node.row + '/' + node.col; };
+        var canonicalizePair = function(nodeA, nodeB) {
+            var a, b;
+
+            if ((nodeA.row < nodeB.row) ||
+                ((nodeA.row === nodeB.row) &&
+                 (nodeA.col < nodeB.col))) {
+                a = nodeA; b = nodeB;
+            } else { a = nodeB; b = nodeA; }
+            return canonicalizeNode(a) + ':' + canonicalizeNode(b);
+        };
+        var contain = {};
+        var walls = {};
+        var addNode = function(node) {
+            adding.push(node);
+        };
+        var addWall = function(nodeA, nodeB) {
+            walls[canonicalizePair(nodeA, nodeB)] =
+                {points: self._pairpoints(nodeA, nodeB)};
+        };
+
+        // Maze variables
+        var index, unvisited, visited = {};
+        var random = (config && config.random) ? config.random : Math;
+        var choose = (config && config.choose) ? config.choose :
+                     function(elements) {
+                         return Math.floor(random.random() *
+                             elements.length); };
+        var addMaze = function(node) {
+            visited[canonicalizeNode(node)] = true;
+            adding.push(node);
+        };
+        var inMaze = function(node) {
+            return visited[canonicalizeNode(node)] || false; };
+
+        var adding = [], current, start;
+        var result = {
+            nodes: [], walls: [],
+            contains: function(node) {
+                return contain[canonicalizeNode(node)] || false; }};
+
+        start = this.coordinate({row: 0, col: 0});
+        start.ring = (config && config.hasOwnProperty('rings')) ?
+                     config.rings : 5;
+        addNode(start);
+
+        while (adding.length > 0) {
+            current = adding.shift();
+            result.nodes.push(current);
+            contain[canonicalizeNode(current)] = true;
+            this.neighbors(current, {coordinates: true}).forEach(
+                function(node) {
+                    if (!result.contains(node)) {
+                        addWall(current, node);
+                        if (current.ring > 0) {
+                            node.ring = current.ring - 1;
+                            addNode(node);
+                        }
+                    }
+                    console.log
+                }, this);
+        }
+
+        // Construct the maze by removing walls
+        // (Reuse the adding array since it was emptied above)
+        addMaze(result.nodes[Math.floor(
+            random.random() * result.nodes.length)]);
+        while (adding.length > 0) {
+            index = choose(adding);
+            current = adding[index];
+            unvisited = [];
+
+            this.neighbors(current).forEach(function(node) {
+                if (result.contains(node) && !inMaze(node))
+                    unvisited.push(node);
+            });
+
+            if (unvisited.length > 0) {
+                ripple.shuffle(unvisited);
+                delete walls[canonicalizePair(current, unvisited[0])];
+                addMaze(unvisited[0]);
+            } else adding.splice(index, 1);
+        }
+
+        Object.keys(walls).forEach(function(key) {
+            result.walls.push(walls[key]); });
+        return result;
+    };
+
     // SquareGrid represents a mapping between cartesian coordinates
     // and a continuous grid of squares.  The size parameter to the
     // constuctor represents the length of a square edge.
