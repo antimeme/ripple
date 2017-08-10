@@ -1,10 +1,11 @@
 {
-    "chartypes": {
+    "chardefs": {
         "player": {
             "headColor": "orangered",
             "bodyColor": "orange",
             "eyeColor": "blue",
-            "speed": 0.009
+            "speed": 0.009,
+            "inventory": [{"type": "flashlight"}]
         },
         "guard": {
             "headColor": "blue",
@@ -13,19 +14,35 @@
             "blinkFreq": 1000,
             "blinkLength": 100,
             "visionRange": 5,
-            "speed": 0.008
+            "speed": 0.008,
+            "plan": "guard",
+            "inventory": [{"type": "keycard"}, {"type": "baton"}]
         }
     },
+    "itemdefs": {
+        "flashlight": {"weight": 3, "light": {"width": 1, "length": 2}},
+        "tablet": {"weight": 2},
+        "knife": {"weight": 2},
+        "gun": {"weight": 5},
+        "keycard": {"weight": 0.02},
+        "baton": {"weight": 4}
+    },
+
     "characters": [
         {"type": "guard", "position": {"x": -5, "y": -5}},
         {"type": "guard", "position": {"x": 5, "y": -5}}
     ],
     "pillars": [
         {"p": {"x": 10, "y": 0}, "r": 1, "color": "purple"},
-        {"p": {"x": 0, "y": 10}, "r": 1, "color": "green"},
-        {"p": {"x": 0, "y": -10}, "r": 1, "color": "green"}
+        {"p": {"x": 0, "y": 10}, "r": 1, "color": "green",
+         "inventory": [{"type": "knife"}, {"type": "gun"}]},
+        {"p": {"x": 0, "y": -10}, "r": 1, "color": "green",
+         "inventory": [{"type": "tablet"}, {"type": "hat"}]}
     ],
     "walls": [
+        {"maze": {"type": "hex", "size": 10, "rings": 2}}
+    ],
+    "oldwalls": [
         {"s": {"x": -10, "y": -6}, "e": {"x": -10, "y": 6},
          "width": 1, "color": "purple"},
 

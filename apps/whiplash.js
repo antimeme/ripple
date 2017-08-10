@@ -5,14 +5,31 @@
 (function(whiplash) {
     "use strict";
 
-    var processWall = function(wall) {
-        var result = {
-            s: ripple.vector.convert(wall.s),
-            e: ripple.vector.convert(wall.e)};
-        result.q = wall.q ? ripple.vector.convert(wall.q) :
-                   result.e.minus(result.s);
-        result.sqlen = wall.sqlen ? wall.sqlen : result.q.sqlen();
-        result.width = wall.width ? wall.width : 0.5;
+    var processWalls = function(walls) {
+        var result = [];
+        var processWall = function(wall) {
+            var out = {
+                s: ripple.vector.convert(wall.s),
+                e: ripple.vector.convert(wall.e)};
+            out.q = wall.q ? ripple.vector.convert(wall.q) :
+                    out.e.minus(out.s);
+            out.sqlen = wall.sqlen ? wall.sqlen : out.q.sqlen();
+            out.width = wall.width ? wall.width : 0.5;
+            result.push(out);
+        };
+
+        walls.forEach(function(wall) {
+            if (wall.maze) {
+                grid.create(wall.maze).maze(wall.maze).walls.forEach(
+                    function(wall) {
+                        //console.log('wall', wall.points[0], wall.points[1]);
+                        processWall({s: wall.points[0],
+                                     e: wall.points[1]});
+                    });
+            } else if (wall.s && wall.e) {
+                processWall(wall);
+            } else console.error('Ivalid wall:', wall);
+        }, result);
         return result;
     };
 
@@ -29,6 +46,48 @@
         if (zoom > state.zoom.max)
             zoom = state.zoom.max;
         state.zoom.value = zoom;
+    };
+
+
+    var planners = {
+        idle: function(state, now) { /* do nothing */ },
+        guard: function(state, now) {
+            // FIXME this doesn't work anymore?
+            var destination = undefined;
+            var steps = this.speed * (now - this.last);
+            var rots = 0.005 * (now - this.last);
+            var pdir = ripple.vector.create(
+                state.player.position.x - this.position.x,
+                state.player.position.y - this.position.y).norm();
+            var direction, target;
+
+            if (pdir.dotp(ripple.vector.create(
+                Math.cos(this.direction),
+                Math.sin(this.direction))) <
+                Math.cos(Math.PI / 10)) {
+                if ((state.player.position.x - this.position.x) *
+                    Math.sin(this.direction) -
+                    (state.player.position.y - this.position.y) *
+                    Math.cos(this.direction) < 0)
+                    this.direction += rots;
+                else this.direction -= rots;
+            } else if (pdir.originalLength >
+                this.size * this.visionRange) {
+                direction = {
+                    x: Math.cos(this.direction),
+                    y: Math.sin(this.direction)};
+
+                state.characters.forEach(function(current) {
+                    if (current === this)
+                        return;
+                }, this);
+                destination = ripple.vector.create(
+                    this.position.x + direction.x * steps,
+                    this.position.y + direction.y * steps);
+            }
+            this.last = now;
+            return destination;
+        }
     };
 
     var drawBackground = function(ctx, state, now) {
@@ -143,10 +202,24 @@
      *   visionArc: radians angle of vision cone
      *   visionColor: color of vision cone
      */
-    var makeCharacter = function(config) {
+    var makeCharacter = function(config, state) {
+        var inventory = [];
+
+        config.inventory && config.inventory.forEach(function(item) {
+            if (!item && !item.type)
+                return;
+            inventory.push({
+                type: item.type,
+                weight: item.weight || 0,
+                definition: (state && item.type in state.itemdefs) ?
+                            state.itemdefs[item.type] : null});
+        });
+
         return {
-            position: ripple.vector.create(
-                config.x || 0, config.y || 0),
+            position: config.position ?
+                      ripple.vector.convert(config.position) :
+                      ripple.vector.create(
+                          config.x || 0, config.y || 0, config.z || 0),
             direction: config.direction || 0,
             size: config.size || 1,
             speed: config.speed || 0.005,
@@ -163,6 +236,8 @@
             visionColor: config.visionColor ||
                          'rgba(255, 255, 255, 0.25)',
 
+            inventory: inventory,
+
             last: config.last || new Date().getTime(),
 
             update: config.update || function(state, now) {
@@ -172,9 +247,8 @@
                 }
             },
 
-            plan: config.plan || function(state, now) {
-                // idle
-            },
+            plan: (config.plan && config.plan in planners) ?
+                  planners[config.plan] : planners.idle,
 
             drawPre: config.drawPre || function(ctx, state, now) {
                 drawVision(ctx, this, state, now);
@@ -186,8 +260,8 @@
         };
     };
 
-    var makePlayer = function(config) {
-        var result = makeCharacter(config);
+    var makePlayer = function(config, state) {
+        var result = makeCharacter(config, state);
         result.control = {
             up: false, down: false,
             left: false, right: false,
@@ -255,49 +329,6 @@
             }
             this.last = now;
             return this.destination = destination;
-        };
-        return result;
-    };
-
-    var makeGuard = function(config) {
-        var result = makeCharacter(config);
-
-        result.plan = function(state, now) {
-            // FIXME this doesn't work anymore?
-            var destination = undefined;
-            var steps = this.speed * (now - this.last);
-            var rots = 0.005 * (now - this.last);
-            var pdir = ripple.vector.create(
-                state.player.position.x - this.position.x,
-                state.player.position.y - this.position.y).norm();
-            var direction, target;
-
-            if (pdir.dotp(ripple.vector.create(
-                Math.cos(this.direction),
-                Math.sin(this.direction))) <
-                Math.cos(Math.PI / 10)) {
-                if ((state.player.position.x - this.position.x) *
-                    Math.sin(this.direction) -
-                    (state.player.position.y - this.position.y) *
-                    Math.cos(this.direction) < 0)
-                    this.direction += rots;
-                else this.direction -= rots;
-            } else if (pdir.originalLength >
-                this.size * this.visionRange) {
-                direction = {
-                    x: Math.cos(this.direction),
-                    y: Math.sin(this.direction)};
-
-                state.characters.forEach(function(current) {
-                    if (current === this)
-                        return;
-                }, this);
-                destination = ripple.vector.create(
-                    this.position.x + direction.x * steps,
-                    this.position.y + direction.y * steps);
-            }
-            this.last = now;
-            return destination;
         };
         return result;
     };
@@ -370,8 +401,9 @@
             zoom: { value: 50, min: 25, max: 100, reference: 0 },
             swipe: null, tap: null, mmove: null, arrow: null,
             characters: [], player: null,
+            itemdefs: data.itemdefs,
             pillars: data.pillars.map(processPillar),
-            walls: data.walls.map(processWall),
+            walls: processWalls(data.walls),
             update: update,
 
             draw: function(ctx, width, height, now, last) {
@@ -433,23 +465,12 @@
                 });
                 $('.page').css({
                     'border-width': Math.floor(size / 100),
+                    'border-radius': Math.floor(size / 25),
                     top: Math.floor(size / 50),
                     left: Math.floor(size / 50),
                     width: width - Math.floor(size / 20),
                     height: height - Math.floor(
                         size / 20 + size / 11)
-                });
-                $('.page-self').css({
-                    width: Math.floor(
-                        this.inventory.innerWidth() * 0.6),
-                    height: Math.floor(
-                        this.inventory.innerHeight())
-                });
-                $('.page-other').css({
-                    width: Math.floor(
-                        this.inventory.innerWidth() * 0.4),
-                    height: Math.floor(
-                        this.inventory.innerHeight())
                 });
             },
             keydown: function(event, redraw) {
@@ -614,12 +635,43 @@
 
                 var other = $('<div>')
                     .addClass('page-pane')
-                    .addClass('page-other')
+                    .addClass('inventory-other')
                     .appendTo(this.inventory);
                 var personal = $('<div>')
                     .addClass('page-pane')
-                    .addClass('page-self')
+                    .addClass('inventory-self')
                     .appendTo(this.inventory);
+
+                $('<div>')
+                    .append(createButton(
+                        sprites, '25% 0', function(event) {
+                            console.log('inv-left'); }))
+                    .append(createButton(
+                        sprites, '50% 0', function(event) {
+                            console.log('inv-right'); }))
+                    .append($('<div>')
+                        .addClass('slot-group')
+                        .append(createButton(
+                            sprites, '75% 0', function(event) {
+                                console.log('nothin');
+                            }))
+                        .append(createButton(
+                            sprites, '75% 0', function(event) {
+                                console.log('nothin');
+                            }))
+                        .append(createButton(
+                            sprites, '75% 0', function(event) {
+                                console.log('nothin');
+                            }))
+                        .append(createButton(
+                            sprites, '75% 0', function(event) {
+                                console.log('nothin');
+                            }))
+                        .append(createButton(
+                            sprites, '75% 0', function(event) {
+                                console.log('nothin');
+                            })))
+                    .appendTo(personal);
 
                 // Let's create lots of test items for the
                 // character inventory.  What fun!
@@ -638,10 +690,11 @@
         };
 
 	state.characters.push(state.player = makePlayer(
-            data.chartypes['player']));
+            data.chardefs['player'], state));
         data.characters.forEach(function(character) {
-            state.characters.push(makeGuard(ripple.mergeConfig(
-                character.position, data.chartypes[character.type])));
+            state.characters.push(makeCharacter(ripple.mergeConfig(
+                character.position,
+                data.chardefs[character.type]), state));
         })
         ripple.app($, container, viewport, state);
     };
