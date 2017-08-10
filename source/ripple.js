@@ -328,7 +328,7 @@
     };
 
     // http://www.math.drexel.edu/~tolya/cantorpairing.pdf
-    ripple.cantorPair = {
+    var cantorPair = {
         name: "Cantor",
         pair: function(x, y) {
             return (x + y) * (x + y + 1) / 2 + y; },
@@ -341,7 +341,7 @@
     };
 
     // http://szudzik.com/ElegantPairing.pdf
-    ripple.szudzikPair = {
+    var szudzikPair = {
         name: "Szudzik",
         pair: function(x, y) {
             return (x >= y) ? x * x + x + y :  y * y + x; },
@@ -356,10 +356,10 @@
     ripple.pair = function(x, y) {
         var nx = (x >= 0) ? 2 * x : -2 * x - 1;
         var ny = (y >= 0) ? 2 * y : -2 * y - 1;
-        return ripple.szudzikPair.pair(nx, ny);
+        return szudzikPair.pair(nx, ny);
     };
     ripple.unpair = function(z) {
-        var result = ripple.szudzikPair.unpair(z);
+        var result = szudzikPair.unpair(z);
         if (result.x % 2)
             result.x = -result.x + 1;
         if (result.y % 2)
@@ -369,6 +369,25 @@
         return result;
     };
 
+    // Randomize the order of an array in place, using an optional
+    // random number generator
+    ripple.shuffle = function(elements, rand) {
+        var ii, jj, swap;
+
+        if (!rand || !rand.random)
+            rand = Math;
+        for (ii = elements.length; ii; --ii) { // swap at random
+            jj = Math.floor(rand.random() * ii);
+            swap = elements[ii - 1];
+            elements[ii - 1] = elements[jj];
+            elements[jj] = swap;
+        }
+        return elements;
+    }
+
+    // Given a set of objects, return an object which contains the
+    // union of the keys found in each with preference given to values
+    // encountered first
     ripple.mergeConfig = function() {
         var result = {}, index, config;
 
