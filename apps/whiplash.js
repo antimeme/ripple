@@ -402,8 +402,9 @@
             swipe: null, tap: null, mmove: null, arrow: null,
             characters: [], player: null,
             itemdefs: data.itemdefs,
-            pillars: data.pillars.map(processPillar),
-            walls: processWalls(data.walls),
+            pillars: data.pillars ?
+                     data.pillars.map(processPillar) : [],
+            walls: data.walls ? processWalls(data.walls) : [],
             update: update,
 
             draw: function(ctx, width, height, now, last) {
