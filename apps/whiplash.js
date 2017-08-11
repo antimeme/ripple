@@ -4,6 +4,10 @@
 // Whiplash Paradox is a game about time travel
 (function(whiplash) {
     "use strict";
+    var mazetype = window.params['mazetype'];
+    var mazerings = ('mazerings' in window.params) ? Math.max(Math.min(
+        parseInt(window.params['mazerings'], 10), 5), 1) : 0;
+    var rotateworld = !!window.params['rotateworld'];
 
     var processWalls = function(walls) {
         var result = [];
@@ -20,6 +24,10 @@
 
         walls.forEach(function(wall) {
             if (wall.maze) {
+                if (mazetype)
+                    wall.maze.type = mazetype;
+                if (mazerings)
+                    wall.maze.rings = mazerings;
                 grid.create(wall.maze).maze(wall.maze).walls.forEach(
                     function(wall) {
                         //console.log('wall', wall.points[0], wall.points[1]);
@@ -334,6 +342,7 @@
     };
 
     var update = function(now) {
+        // Called to advance the game state
         if (!now)
             now = new Date().getTime();
 	this.characters.forEach(function(character) {
@@ -404,7 +413,7 @@
             itemdefs: data.itemdefs,
             pillars: data.pillars ?
                      data.pillars.map(processPillar) : [],
-            walls: data.walls ? processWalls(data.walls) : [],
+            walls: [],
             update: update,
 
             draw: function(ctx, width, height, now, last) {
@@ -415,12 +424,21 @@
                 if (now - last < 1000)
                     this.update(now, last);
 
-                ctx.save();
-                ctx.scale(this.zoom.value, this.zoom.value)
-                ctx.translate((width / (2 * this.zoom.value)) -
-                              this.player.position.x,
-                              (height / (2 * this.zoom.value)) -
-                              this.player.position.y);
+                ctx.save(); // use player perspective
+                ctx.scale(this.zoom.value, this.zoom.value);
+                ctx.translate(width / (2 * this.zoom.value),
+                              height / (2 * this.zoom.value));
+                if (rotateworld) {
+                    if (height >= width) {
+                        ctx.translate(
+                            0, height / (4 * this.zoom.value));
+                        ctx.rotate(-Math.PI / 2);
+                    } else ctx.translate(
+                        -width / (4 * this.zoom.value), 0);
+                    ctx.rotate(-this.player.direction);
+                }
+                ctx.translate(-this.player.position.x,
+                              -this.player.position.y);
                 ctx.lineWidth = lineWidth;
 
                 this.characters.forEach(function(character) {
@@ -690,13 +708,16 @@
             }
         };
 
+        state.walls = processWalls(data.walls);
 	state.characters.push(state.player = makePlayer(
-            data.chardefs['player'], state));
-        data.characters.forEach(function(character) {
-            state.characters.push(makeCharacter(ripple.mergeConfig(
-                character.position,
-                data.chardefs[character.type]), state));
-        })
+            (data.chardefs && 'player' in data.chardefs) ?
+            data.chardefs['player'] : {}, state));
+        if (data.characters)
+            data.characters.forEach(function(character) {
+                state.characters.push(makeCharacter(ripple.mergeConfig(
+                    character.position,
+                    data.chardefs[character.type]), state));
+            })
         ripple.app($, container, viewport, state);
     };
 })(typeof exports === 'undefined'? this['whiplash'] = {}: exports);
