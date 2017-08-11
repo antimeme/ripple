@@ -251,7 +251,7 @@
         };
 
         // Maze variables
-        var index, unvisited, visited = {};
+        var index, label, unvisited, visited = {};
         var random = (config && config.random) ? config.random : Math;
         var choose = (config && config.choose) ? config.choose :
                      function(elements) {
@@ -266,7 +266,7 @@
 
         var adding = [], current, start;
         var result = {
-            nodes: [], walls: [],
+            nodes: [], walls: [], portals: [],
             contains: function(node) {
                 return contain[canonicalizeNode(node)] || false; }};
 
@@ -308,7 +308,9 @@
 
             if (unvisited.length > 0) {
                 ripple.shuffle(unvisited);
-                delete walls[canonicalizePair(current, unvisited[0])];
+                label = canonicalizePair(current, unvisited[0]);
+                result.portals.push(walls[label]);
+                delete walls[label];
                 addMaze(unvisited[0]);
             } else adding.splice(index, 1);
         }
