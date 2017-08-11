@@ -29,10 +29,8 @@
                 if (mazerings)
                     wall.maze.rings = mazerings;
                 grid.create(wall.maze).maze(wall.maze).walls.forEach(
-                    function(wall) {
-                        //console.log('wall', wall.points[0], wall.points[1]);
-                        processWall({s: wall.points[0],
-                                     e: wall.points[1]});
+                    function(wall) { processWall({s: wall.points[0],
+                                                  e: wall.points[1]});
                     });
             } else if (wall.s && wall.e) {
                 processWall(wall);
@@ -55,7 +53,6 @@
             zoom = state.zoom.max;
         state.zoom.value = zoom;
     };
-
 
     var planners = {
         idle: function(state, now) { /* do nothing */ },
@@ -102,14 +99,6 @@
         var first = true;
         var lineWidth = undefined;
 
-        state.pillars.forEach(function(pillar) {
-            ctx.beginPath();
-            ctx.moveTo(pillar.p.x, pillar.p.y);
-            ctx.arc(pillar.p.x, pillar.p.y, pillar.r, 0, 2 * Math.PI);
-            ctx.fillStyle = pillar.color;
-            ctx.fill();
-        });
-
         ctx.lineCap = 'round';
         ctx.strokeStyle = 'purple';
         ctx.beginPath();
@@ -122,15 +111,16 @@
             ctx.lineWidth = lineWidth = wall.width;
             ctx.moveTo(wall.s.x, wall.s.y);
             ctx.lineTo(wall.e.x, wall.e.y);
-
-            //if (first) {
-            //    ctx.stroke();
-            //    ctx.beginPath();
-            //    ctx.strokeStyle = 'green';
-            //    first = false;
-            //}
         });
         ctx.stroke();
+
+        state.pillars.forEach(function(pillar) {
+            ctx.beginPath();
+            ctx.moveTo(pillar.p.x, pillar.p.y);
+            ctx.arc(pillar.p.x, pillar.p.y, pillar.r, 0, 2 * Math.PI);
+            ctx.fillStyle = pillar.color;
+            ctx.fill();
+        });
     };
 
     var drawVision = function(ctx, character, state, now) {
@@ -273,8 +263,7 @@
         result.control = {
             up: false, down: false,
             left: false, right: false,
-            sleft: false, sright: false,
-            arrow: null,
+            sleft: false, sright: false, swipe: null,
             clear: function() {
                 this.up = this.down =
                     this.left = this.right =
@@ -283,57 +272,67 @@
         result.plan = function(state, now, collide) {
             var destination = undefined;
             var steps = this.speed * (now - this.last);
-            var rots = 0.005 * (now - this.last);
-            var dirvec;
+            var rads = 0.005 * (now - this.last);
+            var dirvec, dotdiff, needrads;
 
             if (!isNaN(collide)) {
                 // This is how the system informs us of collisions
                 // which indicates that we must update our plan
-                this.control.arrow = null;
+                this.control.swipe = null;
                 this.destination =
                     this.position.interpolate(
                         this.destination, collide);
-            } else if (this.control.arrow) {
+            } else if (this.control.swipe) {
                 // Process swipe arrows
                 dirvec = ripple.vector.create(
                     Math.cos(this.direction),
                     Math.sin(this.direction));
-                if (this.control.arrow.dotp(dirvec) <
-                    Math.cos(Math.PI / 10)) {
-                    if (dirvec.x * this.control.arrow.y -
-                        dirvec.y * this.control.arrow.x < 0)
-                        this.direction -= rots;
-                    else this.direction += rots;
-                } else {
-                    destination = ripple.vector.create(
-                        this.position.x +
-                        Math.cos(this.direction) * steps,
-                        this.position.y +
-                        Math.sin(this.direction) * steps);
-                }
-            } else {
-                // Process WASD and arrow keys
-                if (this.control.left && !this.control.right) {
-                    this.direction -= rots;
-                } else if (!this.control.left &&
-                           this.control.right) {
-                    this.direction += rots;
+                dotdiff = dirvec.dotp(this.control.swipe);
+                if (dotdiff > 1)
+                    dotdiff = 1;
+                if (dotdiff < -1)
+                    dotdiff = -1;
+                needrads = Math.acos(dotdiff);
+
+                if (Math.abs(needrads) < 0.01) {
+                    // too small a time slice to turn
+                } else if (Math.abs(needrads) > rads) {
+                    this.direction += (
+                        (dirvec.x * this.control.swipe.y -
+                         dirvec.y * this.control.swipe.x >= 0) ?
+                        1 : -1) * rads;
+                    steps = 0;
+                } else if (rads > 0.01) {
+                    this.direction += needrads;
+                    steps *= (rads - Math.abs(needrads)) / rads;
                 }
 
-                if (this.control.up && !this.control.down) {
+                if (steps > 0)
                     destination = ripple.vector.create(
                         this.position.x +
                         Math.cos(this.direction) * steps,
                         this.position.y +
                         Math.sin(this.direction) * steps);
-                } else if (!this.control.up && this.control.down) {
-                    // Reverse direction at reduced speed
+            } else {
+                // Process WASD and arrow keys
+                if (this.control.left && !this.control.right)
+                    this.direction -= rads;
+                else if (!this.control.left && this.control.right)
+                    this.direction += rads;
+
+                if (this.control.up && !this.control.down)
+                    destination = ripple.vector.create(
+                        this.position.x +
+                        Math.cos(this.direction) * steps,
+                        this.position.y +
+                        Math.sin(this.direction) * steps);
+                else if (!this.control.up && this.control.down)
+                    // Reverse at reduced speed
                     destination = ripple.vector.create(
                         this.position.x -
                         Math.cos(this.direction) * steps * 0.75,
                         this.position.y -
                         Math.sin(this.direction) * steps * 0.75);
-                }
             }
             this.last = now;
             return this.destination = destination;
@@ -407,8 +406,8 @@
         //   null - arrow not set
         var state = {
             height: 320, width: 320,
-            zoom: { value: 50, min: 25, max: 100, reference: 0 },
-            swipe: null, tap: null, mmove: null, arrow: null,
+            zoom: { value: 50, min: 10, max: 100, reference: 0 },
+            tap: null, mmove: null, swipe: null,
             characters: [], player: null,
             itemdefs: data.itemdefs,
             pillars: data.pillars ?
@@ -431,10 +430,10 @@
                 if (rotateworld) {
                     if (height >= width) {
                         ctx.translate(
-                            0, height / (4 * this.zoom.value));
+                            0, 0.4 * height / this.zoom.value);
                         ctx.rotate(-Math.PI / 2);
                     } else ctx.translate(
-                        -width / (4 * this.zoom.value), 0);
+                        -0.4 * width / this.zoom.value, 0);
                     ctx.rotate(-this.player.direction);
                 }
                 ctx.translate(-this.player.position.x,
@@ -496,22 +495,22 @@
                 // Recognize WASD and arrow keys
 	        if (event.keyCode == 37 || event.keyCode == 65) {
 		    this.player.control.left = true;
-                    this.player.control.arrow = null;
+                    this.player.control.swipe = null;
                     this.update();
 	        } else if (event.keyCode == 38 ||
                            event.keyCode == 87) {
                     this.player.control.up = true;
-                    this.player.control.arrow = null;
+                    this.player.control.swipe = null;
                     this.update();
 	        } else if (event.keyCode == 39 ||
                            event.keyCode == 68) {
 		    this.player.control.right = true;
-                    this.player.control.arrow = null;
+                    this.player.control.swipe = null;
                     this.update();
 	        } else if (event.keyCode == 40 ||
                            event.keyCode == 83) {
 		    this.player.control.down = true;
-                    this.player.control.arrow = null;
+                    this.player.control.swipe = null;
                     this.update();
 	        }
                 redraw();
@@ -520,29 +519,29 @@
                 // Recognize WASD and arrow keys
 	        if (event.keyCode == 37 || event.keyCode == 65) {
 		    this.player.control.left = false;
-                    this.player.control.arrow = null;
+                    this.player.control.swipe = null;
                     this.update();
 	        } else if (event.keyCode == 38 ||
                            event.keyCode == 87) {
                     this.player.control.up = false;
-                    this.player.control.arrow = null;
+                    this.player.control.swipe = null;
                     this.update();
 	        } else if (event.keyCode == 39 ||
                            event.keyCode == 68) {
 		    this.player.control.right = false;
-                    this.player.control.arrow = null;
+                    this.player.control.swipe = null;
                     this.update();
 	        } else if (event.keyCode == 40 ||
                            event.keyCode == 83) {
 		    this.player.control.down = false;
-                    this.player.control.arrow = null;
+                    this.player.control.swipe = null;
                     this.update();
 	        }
                 redraw();
             },
             mtdown: function(targets, event, redraw) {
                 this.tap = targets;
-                this.arrow = null;
+                this.swipe = null;
                 this.mmove = null;
                 if (this.tap.touches.length > 1) {
                     this.zoom.reference =
@@ -552,7 +551,7 @@
                             this.tap.touches[0].y -
                             this.tap.touches[1].y
                         ).sqlen();
-                } else this.arrow = undefined;
+                } else this.swipe = undefined;
                 redraw();
                 return false;
             },
@@ -579,11 +578,11 @@
                             targets.x - this.tap.x,
                             targets.y - this.tap.y);
                         arrow = mmove.norm();
-                        if ((typeof(this.arrow) === 'undefined') ||
-                            (this.arrow && this.arrow.dotp(arrow) >
+                        if ((typeof(this.swipe) === 'undefined') ||
+                            (this.swipe && this.swipe.dotp(arrow) >
                                 Math.cos(Math.PI / 3)))
-                            this.arrow = arrow;
-                        else this.arrow = null;
+                            this.swipe = arrow;
+                        else this.swipe = null;
                         this.mmove = mmove;
                         this.update();
                     }
@@ -594,7 +593,7 @@
             mtup: function(targets, event, redraw) {
                 var delta;
                 var size;
-                if (this.arrow) {
+                if (this.swipe) {
                     delta = ripple.vector.create(
                         this.tap.x - this.width / 2,
                         this.tap.y - this.height / 2);
@@ -602,19 +601,20 @@
                     if ((delta.dotp(delta) < size * size / 4) &&
                         (this.mmove.dotp(this.mmove) >
                             size * size / 144))
-                        this.player.control.arrow = this.arrow;
-                    else this.player.control.arrow = null;
-                } else this.player.control.arrow = null;
+                        this.player.control.swipe = this.swipe;
+                    else this.player.control.swipe = null;
+                } else this.player.control.swipe = null;
                 this.tap = null;
-                this.arrow = null;
+                this.swipe = null;
                 this.mmove = null;
                 this.update();
                 redraw();
                 return false;
             },
             mwheel: function(event, redraw) {
-                zclamp(this, this.zoom.value *
-                    (1 + (0.01 * event.deltaY)));
+                if (event.deltaY)
+                    zclamp(this, this.zoom.value *
+                        (1 + (0.1 * (event.deltaY > 0 ? 1 : -1))));
                 redraw();
                 return false;
             },
