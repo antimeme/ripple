@@ -263,6 +263,8 @@
         };
         var inMaze = function(node) {
             return visited[canonicalizeNode(node)] || false; };
+        var addExit = function(node) {
+            node.exits = (node.exits ? node.exits : 0) + 1; };
 
         var adding = [], current, start;
         var result = {
@@ -312,6 +314,8 @@
                 result.portals.push(walls[label]);
                 delete walls[label];
                 addMaze(unvisited[0]);
+                addExit(unvisited[0]);
+                addExit(current);
             } else adding.splice(index, 1);
         }
 
