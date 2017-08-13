@@ -28,50 +28,58 @@
         "baton": {"weight": 4}
     },
 
-    "maze": {"type": "hex", "size": 10, "rings": 3},
-    "oldcharacters": [
-        {"type": "guard", "position": {"x": -5, "y": -5}},
-        {"type": "guard", "position": {"x": 5, "y": -5}}
-    ],
-    "oldpillars": [
-        {"p": {"x": 10, "y": 0}, "r": 1, "color": "purple"},
-        {"p": {"x": 0, "y": 10}, "r": 1, "color": "green",
-         "inventory": [{"type": "knife"}, {"type": "gun"}]},
-        {"p": {"x": 0, "y": -10}, "r": 1, "color": "green",
-         "inventory": [{"type": "tablet"}, {"type": "hat"}]}
-    ],
-    "oldwalls": [
-        {"s": {"x": -10, "y": -6}, "e": {"x": -10, "y": 6},
-         "width": 1, "color": "purple"},
+    "disableDebug": false,
+    "startStage": "start",
+    "stages": {
+        "start": {
+            "maze": {"type": "hex", "size": 10, "rings": 3}
+        },
+        "old": {
+            "characters": [
+                {"type": "guard", "position": {"x": -5, "y": -5}},
+                {"type": "guard", "position": {"x": 5, "y": -5}}
+            ],
+            "pillars": [
+                {"p": {"x": 10, "y": 0}, "r": 1, "color": "purple"},
+                {"p": {"x": 0, "y": 10}, "r": 1, "color": "green",
+                 "inventory": [{"type": "knife"}, {"type": "gun"}]},
+                {"p": {"x": 0, "y": -10}, "r": 1, "color": "green",
+                 "inventory": [{"type": "tablet"}, {"type": "hat"}]}
+            ],
+            "walls": [
+                {"s": {"x": -10, "y": -6}, "e": {"x": -10, "y": 6},
+                 "width": 1, "color": "purple"},
 
-        {"s": {"x": -10, "y": -17}, "e": {"x": 10, "y": -17},
-         "color": "purple"},
-        {"s": {"x": 10, "y": -17}, "e": {"x": 20, "y": 0},
-         "color": "purple"},
-        {"s": {"x": 20, "y": 0}, "e": {"x": 10, "y": 17},
-         "color": "purple"},
-        {"s": {"x": -10, "y": 17}, "e": {"x": -20, "y": 0},
-         "color": "purple"},
-        {"s": {"x": -20, "y": 0}, "e": {"x": -10, "y": -17},
-         "color": "purple"},
+                {"s": {"x": -10, "y": -17}, "e": {"x": 10, "y": -17},
+                 "color": "purple"},
+                {"s": {"x": 10, "y": -17}, "e": {"x": 20, "y": 0},
+                 "color": "purple"},
+                {"s": {"x": 20, "y": 0}, "e": {"x": 10, "y": 17},
+                 "color": "purple"},
+                {"s": {"x": -10, "y": 17}, "e": {"x": -20, "y": 0},
+                 "color": "purple"},
+                {"s": {"x": -20, "y": 0}, "e": {"x": -10, "y": -17},
+                 "color": "purple"},
 
-        {"s": {"x": 10, "y": 17}, "e": {"x": 3, "y": 17},
-         "color": "purple"},
-        {"s": {"x": -3, "y": 17}, "e": {"x": -10, "y": 17},
-         "color": "purple"},
+                {"s": {"x": 10, "y": 17}, "e": {"x": 3, "y": 17},
+                 "color": "purple"},
+                {"s": {"x": -3, "y": 17}, "e": {"x": -10, "y": 17},
+                 "color": "purple"},
 
-        {"s": {"x": 10, "y": 17}, "e": {"x": 20, "y": 34},
-         "color": "purple"},
-        {"s": {"x": 20, "y": 34}, "e": {"x": 10, "y": 51},
-         "color": "purple"},
-        {"s": {"x": 10, "y": 51}, "e": {"x": -10, "y": 51},
-         "color": "purple"},
-        {"s": {"x": -10, "y": 51}, "e": {"x": -20, "y": 34},
-         "color": "purple"},
-        {"s": {"x": -20, "y": 34}, "e": {"x": -10, "y": 17},
-         "color": "purple"},
+                {"s": {"x": 10, "y": 17}, "e": {"x": 20, "y": 34},
+                 "color": "purple"},
+                {"s": {"x": 20, "y": 34}, "e": {"x": 10, "y": 51},
+                 "color": "purple"},
+                {"s": {"x": 10, "y": 51}, "e": {"x": -10, "y": 51},
+                 "color": "purple"},
+                {"s": {"x": -10, "y": 51}, "e": {"x": -20, "y": 34},
+                 "color": "purple"},
+                {"s": {"x": -20, "y": 34}, "e": {"x": -10, "y": 17},
+                 "color": "purple"},
 
-        {"s": {"x": 0, "y": 26}, "e": {"x": 0, "y": 43},
-         "width": 1, "color": "purple"}
-    ]
+                {"s": {"x": 0, "y": 26}, "e": {"x": 0, "y": 43},
+                 "width": 1, "color": "purple"}
+            ]
+        }
+    }
 }

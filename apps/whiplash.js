@@ -5,10 +5,12 @@
 (function(whiplash) {
     "use strict";
     var debug = !!window.params['debug'];
-    var mazetype = window.params['mazetype'];
-    var mazerings = ('mazerings' in window.params) ? Math.max(Math.min(
-        parseInt(window.params['mazerings'], 10), 5), 1) : 0;
     var rotateworld = !!window.params['rotateworld'];
+    var mazeType = window.params['mazeType'] || undefined;
+    var mazeRings = ('mazeRings' in window.params) ?
+                    Math.max(Math.min(parseInt(
+                        window.params['mazeRings'],
+                        10), 8), 1) : undefined;
 
     var processWall = function(wall) {
         var out = {
@@ -392,9 +394,6 @@
             tap: null, mmove: null, swipe: null,
             player: null, characters: [], boxes: [],
             itemdefs: data.itemdefs ? data.itemdefs : {},
-            pillars: data.pillars ?
-                     data.pillars.map(processPillar) : [],
-            walls: data.walls ? data.walls.map(processWall) : [],
             update: update,
 
             draw: function(ctx, width, height, now, last) {
@@ -706,32 +705,45 @@
                     makeThing(other, index);
                 }
             },
-            processMaze: function(maze) {
-                var g;
-                if (!maze) return;
-                if (mazetype)
-                    maze.type = mazetype;
-                if (mazerings)
-                    maze.rings = mazerings;
-                g = grid.create(maze).maze(maze);
-                g.walls.forEach(function(wall) {
-                    this.walls.push(
-                        processWall({s: wall.points[0],
-                                     e: wall.points[1]}));
-                }, this);
+            stages: data.stages,
+            chardefs: data.chardefs,
+            setStage: function(stageName, config) {
+                var g, stage;
+
+                this.characters = [this.player];
+                if (stageName && data.stages &&
+                    stageName in data.stages)
+                    stage = data.stages[stageName];
+                else return;
+
+                this.pillars = (stage.pillars || []).map(processPillar);
+                this.walls = (stage.walls || []).map(processWall);
+                if (stage.characters)
+                    stage.characters.forEach(function(character) {
+                        this.characters.push(makeCharacter(
+                            ripple.mergeConfig(
+                                character.position,
+                                this.chardefs[character.type]), state));
+                    }, this);
+                if (stage.maze) {
+                    if (mazeType)
+                        stage.maze.type = mazeType;
+                    if (mazeRings)
+                        stage.maze.rings = mazeRings;
+                    g = grid.create(stage.maze).maze(stage.maze);
+                    g.walls.forEach(function(wall) {
+                        this.walls.push(
+                            processWall({s: wall.points[0],
+                                         e: wall.points[1]}));
+                    }, this);
+                }
             }
         };
 
-        state.processMaze(data.maze);
-	state.characters.push(state.player = makePlayer(
+	state.player = makePlayer(
             (data.chardefs && 'player' in data.chardefs) ?
-            data.chardefs['player'] : {}, state));
-        if (data.characters)
-            data.characters.forEach(function(character) {
-                state.characters.push(makeCharacter(ripple.mergeConfig(
-                    character.position,
-                    data.chardefs[character.type]), state));
-            })
+            data.chardefs['player'] : {}, state);
+        state.setStage(window.params['startStage'] || data.startStage);
         if (data.disableDebug)
             debug = false;
         ripple.app($, container, viewport, state);
