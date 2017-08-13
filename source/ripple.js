@@ -21,8 +21,8 @@
     'use strict';
     var epsilon = 0.000001;
     var zeroish = function(value) {
-        return (!isNaN(value) && value <= epsilon && value >= -epsilon);
-    };
+        return (!isNaN(value) && value <= epsilon &&
+                value >= -epsilon); };
 
     ripple.vector = {
         // Represents an immutable three dimensional vector.  Only the
@@ -106,6 +106,36 @@
             return Math.acos(this.norm().dotp(this.create(1, 0, 0)));
         },
 
+        rotate: function(v, w) {
+            // Return this vector rotated this vector in the plane
+            // described by vectors v and w by twice the angle between
+            // them.  To rotate by exactly the angle betwen v and w, use
+            // v and (v + w) instead since the length of the vectors
+            // doesn't affect the result.
+            var a, b, c, d; // product of v and w (quaternion or rotor)
+            var m, n, o, p; // multivector product of u v w
+            var scale = v.sqlen() * w.sqlen();
+            if (zeroish(scale))
+                return null;
+
+            a = v.x * w.x + v.y * w.y + v.z * w.z;
+            b = v.x * w.y - v.y * w.x;
+            c = v.y * w.z - v.z * w.y;
+            d = v.z * w.x - v.x * w.z;
+            m = a * this.x - b * this.y + d * this.z;
+            n = b * this.x + a * this.y - c * this.z;
+            o = c * this.y + a * this.z - b * this.x;
+            p = c * this.x + d * this.y + b * this.z;
+            // In addition to the rotated vector, this computation
+            // produces a trivector with magnitude
+            // (a * p - b * o - c * m - d * n) but this cancels
+            // out and becomes zero, so the result is a pure vector
+            return this.create(
+                (a * m - b * n + c * p + d * o) / scale,
+                (a * n + b * m - c * o + d * p) / scale,
+                (a * o + b * p + c * n - d * m) / scale);
+        },
+
         reflect: function(target) {
             // r = d - ((2 d . n) / (n . n)) n
             return (!zeroish(this.dotp(this))) ?
@@ -133,35 +163,32 @@
                    this.y + ', ' + this.z + ')';
         },
 
-        draw: function(context, center, config) {
+        draw: function(context, config) {
             // Draw an arrow representing this vector
             // Intended for debugging purposes
-            var length = this.length();
-            var angle  = this.angle();
-            var adepth = 0.9, awidth;
+            var length = (config && config.length) ? config.length : 1;
+            var bar = ripple.vector.create(-this.y, this.x).times(0.1);
+            var lineTo = function(ctx, vector) {
+                ctx.lineTo(vector.x, vector.y);
+            };
 
             context.save();
             context.lineCap = 'round';
-            context.strokeStyle = (config && config.color) || 'white';
-            context.fillStyle = context.strokeStyle;
+            context.strokeStyle = (config && config.color) || 'black';
+            context.fillStyle = (config && config.fill) || 'white';
             context.lineWidth = (config && config.lineWidth) || 5;
-            awidth = Math.min(context.lineWidth, length / 10);
-
-            context.translate(center ? center.x : 0,
-                              center ? center.y : 0);
-            context.rotate((this.y > 0 ? 1 : -1) * angle);
+            if (config.center)
+                context.translate(config.center.x, config.center.y);
 
             context.beginPath();
             context.moveTo(0, 0);
-            context.lineTo(adepth * length, 0);
-            context.lineTo(adepth * length, awidth);
-            context.lineTo(length, 0);
-            context.lineTo(adepth * length, -awidth);
-            context.lineTo(adepth * length, 0);
-            context.closePath();
-
-            context.stroke();
+            lineTo(context, this.times(length * 0.9));
+            lineTo(context, this.plus(bar).times(length * 0.9));
+            lineTo(context, this.times(length));
+            lineTo(context, this.minus(bar).times(length * 0.9));
+            lineTo(context, this.times(length * 0.9));
             context.fill();
+            context.stroke();
             context.restore();
         }
     };
@@ -307,10 +334,8 @@
             // the segment but is moving away
             var ds = s.shortestSegment(segment);
             var de = e.shortestSegment(segment);
-            if ((de.sqlen() > ds.sqlen()) && ds.dotp(de) > 0) {
+            if ((de.sqlen() > ds.sqlen()) && ds.dotp(de) > 0)
                 result = undefined;
-                console.log('escape away');
-            }
         }
 
         if (!isNaN(result)) {
@@ -404,6 +429,14 @@
         return result;
     };
 
+    ripple.clamp = function(value, max, min) {
+        if (value > max)
+            value = max;
+        else if (value < min)
+            value = min;
+        return value;
+    };
+
     // Framework for canvas applications
     // Object passed as the app is expected to have the following:
     //
@@ -433,8 +466,8 @@
             draw_id = 0;
 
             if (canvas.get(0).getContext) {
-                width = canvas.width();
-                height = canvas.height();
+                width = canvas.innerWidth();
+                height = canvas.innerHeight();
                 ctx = canvas[0].getContext('2d');
                 ctx.clearRect(0, 0, width, height);
                 if (app.draw)
