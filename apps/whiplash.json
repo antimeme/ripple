@@ -28,19 +28,17 @@
         "baton": {"weight": 4}
     },
 
-    "characters": [
+    "maze": {"type": "hex", "size": 10, "rings": 3},
+    "oldcharacters": [
         {"type": "guard", "position": {"x": -5, "y": -5}},
         {"type": "guard", "position": {"x": 5, "y": -5}}
     ],
-    "pillars": [
+    "oldpillars": [
         {"p": {"x": 10, "y": 0}, "r": 1, "color": "purple"},
         {"p": {"x": 0, "y": 10}, "r": 1, "color": "green",
          "inventory": [{"type": "knife"}, {"type": "gun"}]},
         {"p": {"x": 0, "y": -10}, "r": 1, "color": "green",
          "inventory": [{"type": "tablet"}, {"type": "hat"}]}
-    ],
-    "walls": [
-        {"maze": {"type": "hex", "size": 10, "rings": 2}}
     ],
     "oldwalls": [
         {"s": {"x": -10, "y": -6}, "e": {"x": -10, "y": 6},

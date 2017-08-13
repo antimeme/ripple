@@ -4,39 +4,21 @@
 // Whiplash Paradox is a game about time travel
 (function(whiplash) {
     "use strict";
+    var debug = !!window.params['debug'];
     var mazetype = window.params['mazetype'];
     var mazerings = ('mazerings' in window.params) ? Math.max(Math.min(
         parseInt(window.params['mazerings'], 10), 5), 1) : 0;
     var rotateworld = !!window.params['rotateworld'];
 
-    var processWalls = function(walls) {
-        var result = [];
-        var processWall = function(wall) {
-            var out = {
-                s: ripple.vector.convert(wall.s),
-                e: ripple.vector.convert(wall.e)};
-            out.q = wall.q ? ripple.vector.convert(wall.q) :
-                    out.e.minus(out.s);
-            out.sqlen = wall.sqlen ? wall.sqlen : out.q.sqlen();
-            out.width = wall.width ? wall.width : 0.5;
-            result.push(out);
-        };
-
-        walls.forEach(function(wall) {
-            if (wall.maze) {
-                if (mazetype)
-                    wall.maze.type = mazetype;
-                if (mazerings)
-                    wall.maze.rings = mazerings;
-                grid.create(wall.maze).maze(wall.maze).walls.forEach(
-                    function(wall) { processWall({s: wall.points[0],
-                                                  e: wall.points[1]});
-                    });
-            } else if (wall.s && wall.e) {
-                processWall(wall);
-            } else console.error('Ivalid wall:', wall);
-        }, result);
-        return result;
+    var processWall = function(wall) {
+        var out = {
+            s: ripple.vector.convert(wall.s),
+            e: ripple.vector.convert(wall.e)};
+        out.q = wall.q ? ripple.vector.convert(wall.q) :
+                out.e.minus(out.s);
+        out.sqlen = wall.sqlen ? wall.sqlen : out.q.sqlen();
+        out.width = wall.width ? wall.width : 0.5;
+        return out;
     };
 
     var processPillar = function(pillar) {
@@ -273,7 +255,7 @@
             var destination = undefined;
             var steps = this.speed * (now - this.last);
             var rads = 0.005 * (now - this.last);
-            var dirvec, dotdiff, needrads;
+            var dirvec, needrads, swipe;
 
             if (!isNaN(collide)) {
                 // This is how the system informs us of collisions
@@ -287,32 +269,32 @@
                 dirvec = ripple.vector.create(
                     Math.cos(this.direction),
                     Math.sin(this.direction));
-                dotdiff = dirvec.dotp(this.control.swipe);
-                if (dotdiff > 1)
-                    dotdiff = 1;
-                if (dotdiff < -1)
-                    dotdiff = -1;
-                needrads = Math.acos(dotdiff);
-
-                if (Math.abs(needrads) < 0.01) {
+                needrads = Math.acos(
+                    ripple.clamp(dirvec.dotp(
+                        this.control.swipe), 1, -1));
+                if (Math.abs(needrads) < 0.05) {
                     // too small a time slice to turn
                 } else if (Math.abs(needrads) > rads) {
                     this.direction += (
                         (dirvec.x * this.control.swipe.y -
                          dirvec.y * this.control.swipe.x >= 0) ?
                         1 : -1) * rads;
+                    dirvec = ripple.vector.create(
+                        Math.cos(this.direction),
+                        Math.sin(this.direction));
                     steps = 0;
                 } else if (rads > 0.01) {
                     this.direction += needrads;
+                    dirvec = ripple.vector.create(
+                        Math.cos(this.direction),
+                        Math.sin(this.direction));
                     steps *= (rads - Math.abs(needrads)) / rads;
                 }
 
                 if (steps > 0)
                     destination = ripple.vector.create(
-                        this.position.x +
-                        Math.cos(this.direction) * steps,
-                        this.position.y +
-                        Math.sin(this.direction) * steps);
+                        this.position.x + dirvec.x * steps,
+                        this.position.y + dirvec.y * steps);
             } else {
                 // Process WASD and arrow keys
                 if (this.control.left && !this.control.right)
@@ -406,13 +388,13 @@
         //   null - arrow not set
         var state = {
             height: 320, width: 320,
-            zoom: { value: 50, min: 10, max: 100, reference: 0 },
+            zoom: { value: 25, min: 18, max: 100, reference: 0 },
             tap: null, mmove: null, swipe: null,
-            characters: [], player: null,
-            itemdefs: data.itemdefs,
+            player: null, characters: [], boxes: [],
+            itemdefs: data.itemdefs ? data.itemdefs : {},
             pillars: data.pillars ?
                      data.pillars.map(processPillar) : [],
-            walls: [],
+            walls: data.walls ? data.walls.map(processWall) : [],
             update: update,
 
             draw: function(ctx, width, height, now, last) {
@@ -437,7 +419,7 @@
                     ctx.rotate(-this.player.direction);
                 }
                 ctx.translate(-this.player.position.x,
-                              -this.player.position.y);
+                             -this.player.position.y);
                 ctx.lineWidth = lineWidth;
 
                 this.characters.forEach(function(character) {
@@ -457,16 +439,33 @@
                         character.drawPost(ctx, this, now);
                 });
 
-                size = Math.min(this.height, this.width);
+                this.boxes.forEach(function(box) {
+                });
 
                 ctx.restore();
+
+                size = Math.min(this.height, this.width);
+                if (debug) {
+                    if (rotateworld)
+                        ripple.vector.create(
+                            this.height >= this.width ? 0 : 1,
+                            this.height >= this.width ? -1 : 0)
+                              .draw(ctx, {
+                                  center: {x: width / 2, y: height / 2},
+                                  length: size / 4, color: 'black'});
+                    ripple.vector.create(
+                        Math.cos(this.player.direction),
+                        Math.sin(this.player.direction))
+                          .draw(ctx, {
+                              center: {x: width / 2, y: height / 2},
+                              length: size / 4, color: 'red'});
+                }
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'top';
                 ctx.font = 'bold ' + Math.round(size / 20) + 'px sans';
                 ctx.fillText('Whiplash Paradox',
                              this.width / 2, size / 50);
-
             },
             resize: function(width, height, $) {
                 var size = Math.min(width, height);
@@ -556,7 +555,7 @@
                 return false;
             },
             mtmove: function(targets, event, redraw) {
-                var mmove, arrow, zoomref;
+                var mmove, swipe, zoomref;
                 if (this.tap) {
                     targets = $.targets(event);
                     if (targets.touches.length > 1) {
@@ -577,11 +576,11 @@
                         mmove = ripple.vector.create(
                             targets.x - this.tap.x,
                             targets.y - this.tap.y);
-                        arrow = mmove.norm();
+                        swipe = mmove.norm();
                         if ((typeof(this.swipe) === 'undefined') ||
-                            (this.swipe && this.swipe.dotp(arrow) >
+                            (this.swipe && this.swipe.dotp(swipe) >
                                 Math.cos(Math.PI / 3)))
-                            this.swipe = arrow;
+                            this.swipe = swipe;
                         else this.swipe = null;
                         this.mmove = mmove;
                         this.update();
@@ -591,18 +590,19 @@
                 return false;
             },
             mtup: function(targets, event, redraw) {
-                var delta;
-                var size;
+                var worldvec = ripple.vector.create(
+                    this.height >= this.width ? 0 : 1,
+                    this.height >= this.width ? -1 : 0);
                 if (this.swipe) {
-                    delta = ripple.vector.create(
-                        this.tap.x - this.width / 2,
-                        this.tap.y - this.height / 2);
-                    size = Math.min(this.height, this.width);
-                    if ((delta.dotp(delta) < size * size / 4) &&
-                        (this.mmove.dotp(this.mmove) >
-                            size * size / 144))
-                        this.player.control.swipe = this.swipe;
-                    else this.player.control.swipe = null;
+                    if (rotateworld) {
+                        this.player.control.swipe =
+                            this.swipe.rotate(
+                                worldvec,
+                                ripple.vector.create(
+                                    Math.cos(this.player.direction),
+                                    Math.sin(this.player.direction))
+                                      .plus(worldvec));
+                    } else this.player.control.swipe = this.swipe;
                 } else this.player.control.swipe = null;
                 this.tap = null;
                 this.swipe = null;
@@ -705,10 +705,24 @@
                     makeThing(personal, index);
                     makeThing(other, index);
                 }
+            },
+            processMaze: function(maze) {
+                var g;
+                if (!maze) return;
+                if (mazetype)
+                    maze.type = mazetype;
+                if (mazerings)
+                    maze.rings = mazerings;
+                g = grid.create(maze).maze(maze);
+                g.walls.forEach(function(wall) {
+                    this.walls.push(
+                        processWall({s: wall.points[0],
+                                     e: wall.points[1]}));
+                }, this);
             }
         };
 
-        state.walls = processWalls(data.walls);
+        state.processMaze(data.maze);
 	state.characters.push(state.player = makePlayer(
             (data.chardefs && 'player' in data.chardefs) ?
             data.chardefs['player'] : {}, state));
@@ -718,6 +732,8 @@
                     character.position,
                     data.chardefs[character.type]), state));
             })
+        if (data.disableDebug)
+            debug = false;
         ripple.app($, container, viewport, state);
     };
 })(typeof exports === 'undefined'? this['whiplash'] = {}: exports);
