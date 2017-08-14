@@ -219,7 +219,7 @@
         return this;
     };
 
-    BaseGrid.prototype.maze = function(config) {
+    BaseGrid.prototype.createMaze = function(config) {
         // Create a maze using the Growing Tree Algorithm
         // http://weblog.jamisbuck.org/2011/1/27/
         //        maze-generation-growing-tree-algorithm
@@ -241,10 +241,8 @@
             return canonicalizeNode(a) + ':' + canonicalizeNode(b);
         };
         var contain = {};
+        var considering = {};
         var walls = {};
-        var addNode = function(node) {
-            adding.push(node);
-        };
         var addWall = function(nodeA, nodeB) {
             walls[canonicalizePair(nodeA, nodeB)] =
                 {points: self._pairpoints(nodeA, nodeB)};
@@ -270,28 +268,42 @@
         var result = {
             nodes: [], walls: [], portals: [],
             contains: function(node) {
-                return contain[canonicalizeNode(node)] || false; }};
+                return contain[canonicalizeNode(node)] || null; }};
 
         start = this.coordinate({row: 0, col: 0});
         start.ring = (config && config.hasOwnProperty('rings')) ?
                      config.rings : 5;
-        addNode(start);
+        adding.push(start);
 
         while (adding.length > 0) {
-            current = adding.shift();
-            result.nodes.push(current);
-            contain[canonicalizeNode(current)] = true;
+            current = adding.pop();
+            if (result.contains(current))
+                continue;
+            current.adjacent = [];
+            current.exits = 0;
+
             this.neighbors(current, {coordinates: true}).forEach(
                 function(node) {
-                    if (!result.contains(node)) {
+                    index = canonicalizeNode(node);
+                    if (index in contain) {
+                        current.adjacent.push(contain[index]);
+                    } else {
+                        if (index in considering) {
+                            node = considering[index];
+                        } else considering[index] = node;
+
+                        current.adjacent.push(node);
                         addWall(current, node);
                         if (current.ring > 0) {
-                            node.ring = current.ring - 1;
-                            addNode(node);
+                            node.ring = Math.max(
+                                node.ring || 0, current.ring - 1);
+                            adding.push(node);
                         }
                     }
-                    console.log
                 }, this);
+
+            contain[canonicalizeNode(current)] = current;
+            result.nodes.push(current);
         }
 
         // Construct the maze by removing walls
@@ -303,7 +315,7 @@
             current = adding[index];
             unvisited = [];
 
-            this.neighbors(current).forEach(function(node) {
+            current.adjacent.forEach(function(node) {
                 if (result.contains(node) && !inMaze(node))
                     unvisited.push(node);
             });
