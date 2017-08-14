@@ -30,6 +30,14 @@
         return result;
     };
 
+    var processChest = function(chest) {
+        var result = {
+            position: {x: chest.position.x, y: chest.position.y},
+            direction: chest.direction,
+            inventory: chest.inventory };
+        return result;
+    };
+
     var zclamp = function(state, zoom) {
         if (zoom < state.zoom.min)
             zoom = state.zoom.min;
@@ -86,7 +94,7 @@
         ctx.lineCap = 'round';
         ctx.strokeStyle = 'purple';
         ctx.beginPath();
-        state.walls.forEach(function(wall) {
+        (state.walls || []).forEach(function(wall) {
             if (typeof(lineWidth) !== 'undefined' &&
                 lineWidth != wall.width) {
                 ctx.stroke();
@@ -98,13 +106,40 @@
         });
         ctx.stroke();
 
-        state.pillars.forEach(function(pillar) {
+        (state.pillars || []).forEach(function(pillar) {
             ctx.beginPath();
             ctx.moveTo(pillar.p.x, pillar.p.y);
             ctx.arc(pillar.p.x, pillar.p.y, pillar.r, 0, 2 * Math.PI);
             ctx.fillStyle = pillar.color;
             ctx.fill();
         });
+    };
+
+    var drawChest = function(ctx, chest, state, now) {
+        var x = Math.cos(Math.PI/5) * chest.size;
+        var y = Math.sin(Math.PI/5) * chest.size;
+        ctx.save();
+        ctx.translate(chest.position.x, chest.position.y);
+        ctx.rotate(chest.direction || 0);
+        ctx.lineWidth = chest.size / 10;
+
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(-x, y);
+        ctx.lineTo(-x, -y);
+        ctx.lineTo(x, -y);
+        ctx.lineTo(x, y);
+
+        ctx.moveTo(y, y);
+        ctx.lineTo(y, -y);
+        ctx.moveTo(-y, y);
+        ctx.lineTo(-y, -y);
+
+        ctx.fillStyle = chest.fillColor || 'brown';
+        ctx.fill();
+        ctx.strokeStyle = chest.strokeColor || 'black';
+        ctx.stroke();
+        ctx.restore();
     };
 
     var drawVision = function(ctx, character, state, now) {
@@ -392,9 +427,8 @@
             height: 320, width: 320,
             zoom: { value: 25, min: 18, max: 100, reference: 0 },
             tap: null, mmove: null, swipe: null,
-            player: null, characters: [], boxes: [],
+            player: null, update: update,
             itemdefs: data.itemdefs ? data.itemdefs : {},
-            update: update,
 
             draw: function(ctx, width, height, now, last) {
                 var size;
@@ -418,7 +452,7 @@
                     ctx.rotate(-this.player.direction);
                 }
                 ctx.translate(-this.player.position.x,
-                             -this.player.position.y);
+                              -this.player.position.y);
                 ctx.lineWidth = lineWidth;
 
                 this.characters.forEach(function(character) {
@@ -427,19 +461,19 @@
                 });
 
                 drawBackground(ctx, this, now);
+                (this.chests || []).forEach(function(chest) {
+                    drawChest(ctx, chest, this, now);
+                }, this);
 
                 this.characters.forEach(function(character) {
                     if (character.draw)
                         character.draw(ctx, this, now);
-                });
+                }, this);
 
                 this.characters.forEach(function(character) {
                     if (character.drawPost)
                         character.drawPost(ctx, this, now);
-                });
-
-                this.boxes.forEach(function(box) {
-                });
+                }, this);
 
                 ctx.restore();
 
@@ -718,6 +752,7 @@
 
                 this.pillars = (stage.pillars || []).map(processPillar);
                 this.walls = (stage.walls || []).map(processWall);
+                this.chests = (stage.chests || []).map(processChest);
                 if (stage.characters)
                     stage.characters.forEach(function(character) {
                         this.characters.push(makeCharacter(
@@ -730,11 +765,22 @@
                         stage.maze.type = mazeType;
                     if (mazeRings)
                         stage.maze.rings = mazeRings;
-                    g = grid.create(stage.maze).maze(stage.maze);
+                    g = grid.create(stage.maze).createMaze(stage.maze);
                     g.walls.forEach(function(wall) {
                         this.walls.push(
                             processWall({s: wall.points[0],
                                          e: wall.points[1]}));
+                    }, this);
+
+                    g.nodes.forEach(function(node) {
+                        if (node.ring === 0 && node.exits === 1) {
+                            this.chests.push({
+                                position: {x: node.x, y: node.y},
+                                direction: Math.random() * 2 * Math.PI,
+                                size: 1
+                            });
+                            console.log('addChest', node.x, node.y);
+                        }
                     }, this);
                 }
             }
