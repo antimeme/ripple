@@ -795,26 +795,30 @@
                 }
             },
             interact: function() {
-                var distance, angle;
-                var least = NaN;
-                var closest = null;
-                this.chests.forEach(function(chest) {
-                    var cvec = chest.position.minus(this.player.position);
-                    distance = cvec.sqlen();
-                    if (isNaN(least) ||  distance < least) {
-                        closest = chest;
-                        least = distance;
-                        angle = (cvec.dotp(ripple.vector.create(
-                            Math.cos(this.player.direction),
-                            Math.sin(this.player.direction))) /
-                            cvec.length());
-                    }
-                }, this);
+                if (state.inventory.is(':visible')) {
+                    state.inventory.hide();
+                } else {
+                    var distance, angle;
+                    var least = NaN;
+                    var closest = null;
+                    this.chests.forEach(function(chest) {
+                        var cvec = chest.position.minus(this.player.position);
+                        distance = cvec.sqlen();
+                        if (isNaN(least) ||  distance < least) {
+                            closest = chest;
+                            least = distance;
+                            angle = (cvec.dotp(ripple.vector.create(
+                                Math.cos(this.player.direction),
+                                Math.sin(this.player.direction))) /
+                                cvec.length());
+                        }
+                    }, this);
 
-                if (!isNaN(least) && (least < 9) &&
-                    (angle > Math.cos(Math.PI / 3))) {
-                    // TODO something to connect inventory
-                    state.inventory.show();
+                    if (!isNaN(least) && (least < 9) &&
+                        (angle > Math.cos(Math.PI / 3))) {
+                        // TODO something to connect inventory
+                        state.inventory.show();
+                    }
                 }
             }
         };
