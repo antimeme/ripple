@@ -32,7 +32,8 @@
 
     var processChest = function(chest) {
         var result = {
-            position: {x: chest.position.x, y: chest.position.y},
+            position: ripple.vector.create(
+                chest.position.x, chest.position.y),
             direction: chest.direction,
             inventory: chest.inventory };
         return result;
@@ -116,8 +117,8 @@
     };
 
     var drawChest = function(ctx, chest, state, now) {
-        var x = Math.cos(Math.PI/5) * chest.size;
-        var y = Math.sin(Math.PI/5) * chest.size;
+        var x = Math.cos(Math.PI/5) * (chest.size || 1);
+        var y = Math.sin(Math.PI/5) * (chest.size || 1);
         ctx.save();
         ctx.translate(chest.position.x, chest.position.y);
         ctx.rotate(chest.direction || 0);
@@ -370,31 +371,37 @@
         // Only player can collide for now
         if (this.player.destination) {
             var collide = undefined;
-
-            this.walls.forEach(function(wall) {
-                var current = ripple.collideRadiusSegment(
-                    this.player.position,
-                    this.player.destination,
-                    this.player.size, wall);
+            var updateCollide = function(current) {
                 if (!isNaN(current) &&
                     (isNaN(collide) || current < collide))
                     collide = current;
+            };
+
+            this.walls.forEach(function(wall) {
+                updateCollide(ripple.collideRadiusSegment(
+                    this.player.position,
+                    this.player.destination,
+                    this.player.size, wall));
             }, this);
 
             this.pillars.forEach(function(pillar) {
-                var current = ripple.collideRadiusRadius(
+                updateCollide(ripple.collideRadiusRadius(
                     this.player.position,
                     this.player.destination,
                     this.player.size,
-                    pillar.p, pillar.p, pillar.r);
-                if (!isNaN(current) &&
-                    (isNaN(collide) || current < collide))
-                    collide = current;
+                    pillar.p, pillar.p, pillar.r));
             }, this);
 
-            if (!isNaN(collide)) {
+            this.chests.forEach(function(chest) {
+                updateCollide(ripple.collideRadiusRadius(
+                    this.player.position,
+                    this.player.destination,
+                    this.player.size,
+                    chest.position, chest.position, chest.size));
+            }, this);
+
+            if (!isNaN(collide))
                 this.player.plan(this, now, collide);
-            }
         }
 
         this.characters.forEach(function(character) {
@@ -525,50 +532,53 @@
             },
             keydown: function(event, redraw) {
                 // Recognize WASD and arrow keys
-	        if (event.keyCode == 37 || event.keyCode == 65) {
+	        if (event.keyCode === 37 || event.keyCode === 65) {
 		    this.player.control.left = true;
                     this.player.control.swipe = null;
                     this.update();
-	        } else if (event.keyCode == 38 ||
-                           event.keyCode == 87) {
+	        } else if (event.keyCode === 38 ||
+                           event.keyCode === 87) {
                     this.player.control.up = true;
                     this.player.control.swipe = null;
                     this.update();
-	        } else if (event.keyCode == 39 ||
-                           event.keyCode == 68) {
+	        } else if (event.keyCode === 39 ||
+                           event.keyCode === 68) {
 		    this.player.control.right = true;
                     this.player.control.swipe = null;
                     this.update();
-	        } else if (event.keyCode == 40 ||
-                           event.keyCode == 83) {
+	        } else if (event.keyCode === 40 ||
+                           event.keyCode === 83) {
 		    this.player.control.down = true;
                     this.player.control.swipe = null;
                     this.update();
-	        }
+                } else if (event.keyCode === 70) { // f
+                    this.interact();
+	        } else if (debug) console.log('down', event.keyCode);
                 redraw();
             },
             keyup: function(event, redraw) {
                 // Recognize WASD and arrow keys
-	        if (event.keyCode == 37 || event.keyCode == 65) {
+	        if (event.keyCode === 37 || event.keyCode === 65) {
 		    this.player.control.left = false;
                     this.player.control.swipe = null;
                     this.update();
-	        } else if (event.keyCode == 38 ||
-                           event.keyCode == 87) {
+	        } else if (event.keyCode === 38 ||
+                           event.keyCode === 87) {
                     this.player.control.up = false;
                     this.player.control.swipe = null;
                     this.update();
-	        } else if (event.keyCode == 39 ||
-                           event.keyCode == 68) {
+	        } else if (event.keyCode === 39 ||
+                           event.keyCode === 68) {
 		    this.player.control.right = false;
                     this.player.control.swipe = null;
                     this.update();
-	        } else if (event.keyCode == 40 ||
-                           event.keyCode == 83) {
+	        } else if (event.keyCode === 40 ||
+                           event.keyCode === 83) {
 		    this.player.control.down = false;
                     this.player.control.swipe = null;
                     this.update();
-	        }
+                } else if (event.keyCode === 70) { // f
+	        } else if (debug) console.log('up', event.keyCode);
                 redraw();
             },
             mtdown: function(targets, event, redraw) {
@@ -660,7 +670,7 @@
                     .appendTo(container)
                     .append(createButton(
                         sprites, '100% 0', function(event) {
-                            console.log('interact'); }))
+                            state.interact(); }))
                     .append(createButton(
                         sprites, '25% 0', function(event) {
                             console.log('left-hand'); }))
@@ -775,13 +785,36 @@
                     g.nodes.forEach(function(node) {
                         if (node.ring === 0 && node.exits === 1) {
                             this.chests.push({
-                                position: {x: node.x, y: node.y},
+                                position: ripple.vector.create(
+                                    node.x, node.y),
                                 direction: Math.random() * 2 * Math.PI,
                                 size: 1
                             });
-                            console.log('addChest', node.x, node.y);
                         }
                     }, this);
+                }
+            },
+            interact: function() {
+                var distance, angle;
+                var least = NaN;
+                var closest = null;
+                this.chests.forEach(function(chest) {
+                    var cvec = chest.position.minus(this.player.position);
+                    distance = cvec.sqlen();
+                    if (isNaN(least) ||  distance < least) {
+                        closest = chest;
+                        least = distance;
+                        angle = (cvec.dotp(ripple.vector.create(
+                            Math.cos(this.player.direction),
+                            Math.sin(this.player.direction))) /
+                            cvec.length());
+                    }
+                }, this);
+
+                if (!isNaN(least) && (least < 9) &&
+                    (angle > Math.cos(Math.PI / 3))) {
+                    // TODO something to connect inventory
+                    state.inventory.show();
                 }
             }
         };
