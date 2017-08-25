@@ -35,7 +35,22 @@
             position: ripple.vector.create(
                 chest.position.x, chest.position.y),
             direction: chest.direction,
-            inventory: chest.inventory };
+            inventory: chest.inventory,
+            size: chest.size || 1,
+            accessible: false,
+            checkAccessible: function(player) {
+                var cvec = this.position.minus(player.position);
+                var sqdist = cvec.sqlen();
+                if (sqdist < 9) {
+                    var angle = (cvec.dotp(ripple.vector.create(
+                        Math.cos(player.direction),
+                        Math.sin(player.direction))) /
+                        cvec.length());
+                    this.accessible = (angle > Math.cos(Math.PI / 3));
+                } else this.accessible = false;
+                return sqdist;
+            }
+        };
         return result;
     };
 
@@ -117,8 +132,8 @@
     };
 
     var drawChest = function(ctx, chest, state, now) {
-        var x = Math.cos(Math.PI/5) * (chest.size || 1);
-        var y = Math.sin(Math.PI/5) * (chest.size || 1);
+        var x = Math.cos(Math.PI/5) * chest.size;
+        var y = Math.sin(Math.PI/5) * chest.size;
         ctx.save();
         ctx.translate(chest.position.x, chest.position.y);
         ctx.rotate(chest.direction || 0);
@@ -138,7 +153,8 @@
 
         ctx.fillStyle = chest.fillColor || 'brown';
         ctx.fill();
-        ctx.strokeStyle = chest.strokeColor || 'black';
+        ctx.strokeStyle = chest.accessible ? 'white' :
+                          (chest.strokeColor || 'black');
         ctx.stroke();
         ctx.restore();
     };
@@ -362,11 +378,10 @@
 
     var update = function(now) {
         // Called to advance the game state
-        if (!now)
+        if (isNaN(now))
             now = new Date().getTime();
 	this.characters.forEach(function(character) {
-            character.destination = character.plan(this, now);
-        }, this);
+            character.destination = character.plan(this, now); }, this);
 
         // Only player can collide for now
         if (this.player.destination) {
@@ -405,8 +420,11 @@
         }
 
         this.characters.forEach(function(character) {
-            character.update(this, now);
-        }, this);
+            character.update(this, now); }, this);
+
+        this.chests.forEach(function(chest) {
+            chest.checkAccessible(this.player); }, this);
+
     };
 
     var createButton = function(sheet, position, fn) {
@@ -784,12 +802,10 @@
 
                     g.nodes.forEach(function(node) {
                         if (node.ring === 0 && node.exits === 1) {
-                            this.chests.push({
-                                position: ripple.vector.create(
-                                    node.x, node.y),
-                                direction: Math.random() * 2 * Math.PI,
-                                size: 1
-                            });
+                            this.chests.push(processChest({
+                                position: { x: node.x, y: node.y },
+                                direction: Math.random() * 2 * Math.PI
+                            }));
                         }
                     }, this);
                 }
@@ -797,26 +813,22 @@
             interact: function() {
                 if (state.inventory.is(':visible')) {
                     state.inventory.hide();
+                } else if (state.settings.is(':visible')) {
+                    state.settings.hide();
                 } else {
-                    var distance, angle;
+                    var sqdist, angle;
                     var least = NaN;
                     var closest = null;
                     this.chests.forEach(function(chest) {
-                        var cvec = chest.position.minus(this.player.position);
-                        distance = cvec.sqlen();
-                        if (isNaN(least) ||  distance < least) {
+                        sqdist = chest.checkAccessible(this.player);
+                        if (isNaN(least) ||  sqdist < least) {
                             closest = chest;
-                            least = distance;
-                            angle = (cvec.dotp(ripple.vector.create(
-                                Math.cos(this.player.direction),
-                                Math.sin(this.player.direction))) /
-                                cvec.length());
+                            least = sqdist;
                         }
                     }, this);
 
-                    if (!isNaN(least) && (least < 9) &&
-                        (angle > Math.cos(Math.PI / 3))) {
-                        // TODO something to connect inventory
+                    if (closest && closest.accessible) {
+                        // TODO inventory connect
                         state.inventory.show();
                     }
                 }
