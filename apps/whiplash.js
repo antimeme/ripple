@@ -12,7 +12,7 @@
                         window.params['mazeRings'],
                         10), 8), 1) : undefined;
 
-    var processWall = function(wall) {
+    var createWall = function(wall) {
         var out = {
             s: ripple.vector.convert(wall.s),
             e: ripple.vector.convert(wall.e)};
@@ -23,14 +23,14 @@
         return out;
     };
 
-    var processPillar = function(pillar) {
+    var createPillar = function(pillar) {
         var result = {
             p: ripple.vector.convert(pillar.p),
             r: pillar.r, color: pillar.color };
         return result;
     };
 
-    var processChest = function(chest) {
+    var createChest = function(chest) {
         var result = {
             position: ripple.vector.create(
                 chest.position.x, chest.position.y),
@@ -778,9 +778,9 @@
                     stage = data.stages[stageName];
                 else return;
 
-                this.pillars = (stage.pillars || []).map(processPillar);
-                this.walls = (stage.walls || []).map(processWall);
-                this.chests = (stage.chests || []).map(processChest);
+                this.pillars = (stage.pillars || []).map(createPillar);
+                this.walls = (stage.walls || []).map(createWall);
+                this.chests = (stage.chests || []).map(createChest);
                 if (stage.characters)
                     stage.characters.forEach(function(character) {
                         this.characters.push(makeCharacter(
@@ -796,13 +796,13 @@
                     g = grid.create(stage.maze).createMaze(stage.maze);
                     g.walls.forEach(function(wall) {
                         this.walls.push(
-                            processWall({s: wall.points[0],
+                            createWall({s: wall.points[0],
                                          e: wall.points[1]}));
                     }, this);
 
                     g.nodes.forEach(function(node) {
                         if (node.ring === 0 && node.exits === 1) {
-                            this.chests.push(processChest({
+                            this.chests.push(createChest({
                                 position: { x: node.x, y: node.y },
                                 direction: Math.random() * 2 * Math.PI
                             }));
