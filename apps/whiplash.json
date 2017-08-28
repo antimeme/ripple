@@ -5,7 +5,7 @@
             "bodyColor": "orange",
             "eyeColor": "blue",
             "speed": 0.009,
-            "inventory": [{"type": "flashlight"}]
+            "inventory": [{"type": "flashlight"}, {"type": "cookie"}]
         },
         "guard": {
             "headColor": "blue",

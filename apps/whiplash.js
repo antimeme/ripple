@@ -12,6 +12,22 @@
                         window.params['mazeRings'],
                         10), 8), 1) : undefined;
 
+    var createButton = function($, sheet, position, fn) {
+        // Create a button backed by an image from a sprite sheet.
+        // Page CSS controls the number of sprites on a sheet.
+        // This routine wraps the function and forces a false
+        // return so that events do not propagate
+        return $('<button>')
+            .addClass('image-button')
+            .css({
+                'background-image': sheet,
+                'background-position': position,
+            })
+            .on('mousedown touchstart', function(event) {
+                fn.call(this, arguments);
+                return false; });
+    };
+
     var createWall = function(wall) {
         var out = {
             s: ripple.vector.convert(wall.s),
@@ -35,7 +51,7 @@
             position: ripple.vector.create(
                 chest.position.x, chest.position.y),
             direction: chest.direction,
-            inventory: chest.inventory,
+            inventory: chest.inventory || [],
             size: chest.size || 1,
             accessible: false,
             checkAccessible: function(player) {
@@ -424,23 +440,6 @@
 
         this.chests.forEach(function(chest) {
             chest.checkAccessible(this.player); }, this);
-
-    };
-
-    var createButton = function(sheet, position, fn) {
-        // Create a button backed by an image from a sprite sheet.
-        // Page CSS controls the number of sprites on a sheet.
-        // This routine wraps the function and forces a false
-        // return so that events do not propagate
-        return $('<button>')
-            .addClass('image-button')
-            .css({
-                'background-image': sheet,
-                'background-position': position,
-            })
-            .on('mousedown touchstart', function(event) {
-                fn.call(this, arguments);
-                return false; });
     };
 
     whiplash.go = function($, container, viewport, data) {
@@ -455,6 +454,108 @@
             player: null, update: update,
             itemdefs: data.itemdefs ? data.itemdefs : {},
 
+            setInventory: function(other) {
+                this.inventory.personal.empty();
+                this.player.inventory.forEach(function(item) {
+                    var name = item.type;
+                    this.inventory.add(name);
+                }, this);
+
+                this.inventory.other.empty();
+                if (other) {
+                    console.log(other);
+                    other.inventory.forEach(function(item) {
+                        var name = item.type;
+                        this.inventory.add(name, true);
+                    }, this);
+                }
+            },
+
+            init: function($, container, viewport) {
+                var sprites = 'url(images/whiplash-sprites.svg)';
+
+                $('<div>') // Create action bar
+                    .addClass('bbar')
+                    .css({ bottom: 0, left: 0 })
+                    .appendTo(container)
+                    .append(createButton(
+                        $, sprites, '100% 0', function(event) {
+                            state.interact(); }))
+                    .append(createButton(
+                        $, sprites, '25% 0', function(event) {
+                            console.log('left-hand'); }))
+                    .append(createButton(
+                        $, sprites, '50% 0', function(event) {
+                            console.log('right-hand'); }))
+                    .append(createButton(
+                        $, sprites, '0 0', function(event) {
+                            state.inventory.toggle();
+                            state.settings.hide(); }))
+                    .append(createButton(
+                        $, sprites, '75% 0', function(event) {
+                            state.settings.toggle();
+                            state.inventory.hide(); }));
+
+                this.settings = $('<div>')
+                    .addClass('page').hide()
+                    .append('<h2>Settings</h2>')
+                    .appendTo(container);
+
+                this.inventory = {
+                    pane: $('<div>')
+                        .addClass('page').hide()
+                        .appendTo(container),
+                    show: function() { this.pane.show(); },
+                    hide: function() { this.pane.hide(); },
+                    toggle: function() { this.pane.toggle(); },
+                    isVisible: function() {
+                        return this.pane.is(':visible'); },
+                    add: function(name, other) {
+                        var collection = (
+                            other ? this.other : this.personal);
+                        collection.append(createButton(
+                            $, sprites, '75% 0', function(event) {
+                                console.log(name);
+                            }));
+                    }
+                };
+                this.inventory.header = $('<div>')
+                    .addClass('inventory-header')
+                    .appendTo(this.inventory.pane);
+                this.inventory.personal = $('<div>')
+                    .addClass('page-pane')
+                    .addClass('inventory-personal')
+                    .appendTo(this.inventory.pane);
+                this.inventory.other = $('<div>')
+                    .addClass('page-pane')
+                    .addClass('inventory-other')
+                    .appendTo(this.inventory.pane);
+                this.setInventory();
+            },
+            resize: function(width, height, $) {
+                var size = Math.min(width, height);
+                this.width = width;
+                this.height = height;
+
+                $('.image-button').css({
+                    width: Math.floor(size / 11),
+                    height: Math.floor(size / 11) });
+                $('.page').css({
+                    'border-width': Math.floor(size / 100),
+                    'border-radius': Math.floor(size / 25),
+                    top: Math.floor(size / 50),
+                    left: Math.floor(size / 50),
+                    width: width - Math.floor(size / 20),
+                    height: height - Math.floor(
+                        size / 20 + size / 11)
+                });
+
+                $('.inventory-header').css({
+                    height: Math.floor(size * 2 / 11) });
+                $('.slot-group').css({
+                    width: Math.floor(size * 4 / 11),
+                    height: Math.floor(size * 2 / 11) });
+            },
             draw: function(ctx, width, height, now, last) {
                 var size;
                 var lineWidth;
@@ -477,7 +578,7 @@
                     ctx.rotate(-this.player.direction);
                 }
                 ctx.translate(-this.player.position.x,
-                              -this.player.position.y);
+                             -this.player.position.y);
                 ctx.lineWidth = lineWidth;
 
                 this.characters.forEach(function(character) {
@@ -524,29 +625,6 @@
                 ctx.font = 'bold ' + Math.round(size / 20) + 'px sans';
                 ctx.fillText('Whiplash Paradox',
                              this.width / 2, size / 50);
-            },
-            resize: function(width, height, $) {
-                var size = Math.min(width, height);
-                this.width = width;
-                this.height = height;
-
-                $('.image-button').css({
-                    width: Math.floor(size / 11),
-                    height: Math.floor(size / 11)
-                });
-                $('.slot-group').css({
-                    width: Math.floor(size * 4 / 11),
-                    height: Math.floor(size * 2 / 11)
-                });
-                $('.page').css({
-                    'border-width': Math.floor(size / 100),
-                    'border-radius': Math.floor(size / 25),
-                    top: Math.floor(size / 50),
-                    left: Math.floor(size / 50),
-                    width: width - Math.floor(size / 20),
-                    height: height - Math.floor(
-                        size / 20 + size / 11)
-                });
             },
             keydown: function(event, redraw) {
                 // Recognize WASD and arrow keys
@@ -679,94 +757,6 @@
                 redraw();
                 return false;
             },
-            init: function($, container, viewport) {
-                var sprites = 'url(images/whiplash-sprites.svg)';
-
-                this.actionBar = $('<div>')
-                    .addClass('bbar')
-                    .css({ bottom: 0, left: 0 })
-                    .appendTo(container)
-                    .append(createButton(
-                        sprites, '100% 0', function(event) {
-                            state.interact(); }))
-                    .append(createButton(
-                        sprites, '25% 0', function(event) {
-                            console.log('left-hand'); }))
-                    .append(createButton(
-                        sprites, '50% 0', function(event) {
-                            console.log('right-hand'); }))
-                    .append(createButton(
-                        sprites, '0 0', function(event) {
-                            state.inventory.toggle();
-                            state.settings.hide(); }))
-                    .append(createButton(
-                        sprites, '75% 0', function(event) {
-                            state.settings.toggle();
-                            state.inventory.hide(); }));
-
-                this.settings = $('<div>')
-                    .addClass('page').hide()
-                    .append('<h2>Settings</h2>')
-                    .appendTo(container);
-                this.inventory = $('<div>')
-                    .addClass('page').hide()
-                    .append('<h2>Inventory</h2>')
-                    .appendTo(container);
-
-                var other = $('<div>')
-                    .addClass('page-pane')
-                    .addClass('inventory-other')
-                    .appendTo(this.inventory);
-                var personal = $('<div>')
-                    .addClass('page-pane')
-                    .addClass('inventory-self')
-                    .appendTo(this.inventory);
-
-                $('<div>')
-                    .append(createButton(
-                        sprites, '25% 0', function(event) {
-                            console.log('inv-left'); }))
-                    .append(createButton(
-                        sprites, '50% 0', function(event) {
-                            console.log('inv-right'); }))
-                    .append($('<div>')
-                        .addClass('slot-group')
-                        .append(createButton(
-                            sprites, '75% 0', function(event) {
-                                console.log('nothin');
-                            }))
-                        .append(createButton(
-                            sprites, '75% 0', function(event) {
-                                console.log('nothin');
-                            }))
-                        .append(createButton(
-                            sprites, '75% 0', function(event) {
-                                console.log('nothin');
-                            }))
-                        .append(createButton(
-                            sprites, '75% 0', function(event) {
-                                console.log('nothin');
-                            }))
-                        .append(createButton(
-                            sprites, '75% 0', function(event) {
-                                console.log('nothin');
-                            })))
-                    .appendTo(personal);
-
-                // Let's create lots of test items for the
-                // character inventory.  What fun!
-                var makeThing = function(container, index) {
-                    var value = index + 1;
-                    container.append(
-                        createButton(sprites, '75% 0', function(event) {
-                            console.log('ping', value); }));
-                }
-                var index;
-                for (index = 0; index < 150; ++index) {
-                    makeThing(personal, index);
-                    makeThing(other, index);
-                }
-            },
             stages: data.stages,
             chardefs: data.chardefs,
             setStage: function(stageName, config) {
@@ -811,7 +801,7 @@
                 }
             },
             interact: function() {
-                if (state.inventory.is(':visible')) {
+                if (state.inventory.isVisible()) {
                     state.inventory.hide();
                 } else if (state.settings.is(':visible')) {
                     state.settings.hide();
@@ -828,7 +818,7 @@
                     }, this);
 
                     if (closest && closest.accessible) {
-                        // TODO inventory connect
+                        state.setInventory(closest);
                         state.inventory.show();
                     }
                 }

@@ -11,6 +11,12 @@ h1, h2, h3 {
     position: absolute; top: 0; bottom: 0; right: 0; left: 0;
     display: block; margin: 0; border: 0; z-index: 1;
     background-color: #ddd; color: #222; }
+.image-button {
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-color: rgba(255,255,255,0.8);
+    background-size: 500% 500%;
+}
 .bbar {
     position: fixed;
     display: block; z-index: 2;
@@ -37,22 +43,22 @@ h1, h2, h3 {
     box-sizing: border-box;
     overflow-y: auto;
 }
-.inventory-self  {
-    top: 0; left:  0;
-    width: 60%; height: 100%;
+.inventory-header {
+    top: 0; left: 0; right: 0;
+    background-color: rgba(48, 48, 144, 0.5);
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+.inventory-personal {
+    left: 0; width: 50%;
+    background-color: rgba(144, 48, 48, 0.5);
 }
 .inventory-other {
-    top: 0; right: 0;
-    width: 40%; height: 100%;
+    right: 0; width: 50%;
+    background-color: rgba(48, 144, 48, 0.5);
 }
 
 .slot-group {
-    display: inline-block;
-    background-repeat: no-repeat;
-    background-color: rgba(255,255,255,0.8);
-    background-size: 500% 500%;
-}
-.image-button {
     display: inline-block;
     background-repeat: no-repeat;
     background-color: rgba(255,255,255,0.8);
