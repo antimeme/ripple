@@ -77,6 +77,19 @@
         return result;
     };
 
+    var randomLoot = function(chest) {
+        var items = [
+            'keycard',
+            'flashlight',
+            'cookie'];
+        var result = [
+            {'type': items[Math.floor(
+                Math.random() * items.length)]},
+            {'type': items[Math.floor(
+                Math.random() * items.length)]}];
+        return result;
+    };
+
     var zclamp = function(state, zoom) {
         if (zoom < state.zoom.min)
             zoom = state.zoom.min;
@@ -520,7 +533,6 @@
 
                         this.other.empty();
                         if (other) {
-                            console.log(other);
                             other.inventory.forEach(function(item) {
                                 var name = item.type;
                                 this.add(name, true);
@@ -799,7 +811,8 @@
                         if (node.ring === 0 && node.exits === 1) {
                             this.chests.push(createChest({
                                 position: { x: node.x, y: node.y },
-                                direction: Math.random() * 2 * Math.PI
+                                direction: Math.random() * 2 * Math.PI,
+                                inventory: randomLoot()
                             }));
                         }
                     }, this);
