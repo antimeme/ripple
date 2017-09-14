@@ -1,5 +1,5 @@
 // whiplash.js
-// Copyright (C) 2016 by Simon Gold and Jeff Gold.
+// Copyright (C) 2016-2017 by Simon Gold and Jeff Gold.
 //
 // Whiplash Paradox is a game about time travel
 (function(whiplash) {
@@ -11,6 +11,13 @@
                     Math.max(Math.min(parseInt(
                         window.params['mazeRings'],
                         10), 8), 1) : undefined;
+
+    var setSquareSize = function(thing, size) {
+        thing.css({
+            width: Math.floor(size / 11),
+            height: Math.floor(size / 11) });
+        return thing;
+    };
 
     var createButton = function($, sheet, position, fn) {
         // Create a button backed by an image from a sprite sheet.
@@ -454,23 +461,6 @@
             player: null, update: update,
             itemdefs: data.itemdefs ? data.itemdefs : {},
 
-            setInventory: function(other) {
-                this.inventory.personal.empty();
-                this.player.inventory.forEach(function(item) {
-                    var name = item.type;
-                    this.inventory.add(name);
-                }, this);
-
-                this.inventory.other.empty();
-                if (other) {
-                    console.log(other);
-                    other.inventory.forEach(function(item) {
-                        var name = item.type;
-                        this.inventory.add(name, true);
-                    }, this);
-                }
-            },
-
             init: function($, container, viewport) {
                 var sprites = 'url(images/whiplash-sprites.svg)';
 
@@ -497,13 +487,16 @@
                             state.inventory.hide(); }));
 
                 this.settings = $('<div>')
-                    .addClass('page').hide()
+                    .addClass('page').addClass('settings').hide()
                     .append('<h2>Settings</h2>')
                     .appendTo(container);
 
                 this.inventory = {
+                    state: this,
                     pane: $('<div>')
-                        .addClass('page').hide()
+                        .addClass('page')
+                        .addClass('inventory')
+                        .hide()
                         .appendTo(container),
                     show: function() { this.pane.show(); },
                     hide: function() { this.pane.hide(); },
@@ -513,11 +506,27 @@
                     add: function(name, other) {
                         var collection = (
                             other ? this.other : this.personal);
-                        collection.append(createButton(
+                        collection.append(setSquareSize(createButton(
                             $, sprites, '75% 0', function(event) {
                                 console.log(name);
-                            }));
-                    }
+                            }), Math.min(state.width, state.height)));
+                    },
+                    populate: function(player, other) {
+                        this.personal.empty();
+                        player.inventory.forEach(function(item) {
+                            var name = item.type;
+                            this.add(name);
+                        }, this);
+
+                        this.other.empty();
+                        if (other) {
+                            console.log(other);
+                            other.inventory.forEach(function(item) {
+                                var name = item.type;
+                                this.add(name, true);
+                            }, this);
+                        }
+                    },
                 };
                 this.inventory.header = $('<div>')
                     .addClass('inventory-header')
@@ -530,16 +539,14 @@
                     .addClass('page-pane')
                     .addClass('inventory-other')
                     .appendTo(this.inventory.pane);
-                this.setInventory();
+                this.inventory.populate(this.player);
             },
             resize: function(width, height, $) {
                 var size = Math.min(width, height);
                 this.width = width;
                 this.height = height;
 
-                $('.image-button').css({
-                    width: Math.floor(size / 11),
-                    height: Math.floor(size / 11) });
+                setSquareSize($('.image-button'), size);
                 $('.page').css({
                     'border-width': Math.floor(size / 100),
                     'border-radius': Math.floor(size / 25),
@@ -561,9 +568,7 @@
                 var lineWidth;
                 lineWidth = Math.max(width, height) / 50;
 
-                if (now - last < 1000)
-                    this.update(now, last);
-
+                this.update(now, last);
                 ctx.save(); // use player perspective
                 ctx.scale(this.zoom.value, this.zoom.value);
                 ctx.translate(width / (2 * this.zoom.value),
@@ -818,7 +823,7 @@
                     }, this);
 
                     if (closest && closest.accessible) {
-                        state.setInventory(closest);
+                        state.inventory.populate(state.player, closest);
                         state.inventory.show();
                     }
                 }
