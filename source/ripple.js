@@ -118,6 +118,7 @@
             if (zeroish(scale))
                 return null;
             if (zeroish(v.z) && zeroish(w.z)) {
+                // Rotation in two dimensions
                 a = v.x * w.x + v.y * w.y;
                 b = v.x * w.y - v.y * w.x;
                 m = a * this.x - b * this.y;
@@ -126,6 +127,9 @@
                     (a * m - b * n) / scale,
                     (a * n + b * m) / scale, this.z);
             } else {
+                // Rotation in three dimensions
+                // Trivector magnitude (a * p - b * o - c * m - d * n)
+                // cancels out to zero so the result is a pure vector
                 a = v.x * w.x + v.y * w.y + v.z * w.z;
                 b = v.x * w.y - v.y * w.x;
                 c = v.y * w.z - v.z * w.y;
@@ -134,10 +138,6 @@
                 n = b * this.x + a * this.y - c * this.z;
                 o = c * this.y + a * this.z - b * this.x;
                 p = c * this.x + d * this.y + b * this.z;
-                // In addition to the rotated vector, this computation
-                // produces a trivector with magnitude
-                // (a * p - b * o - c * m - d * n) but this cancels
-                // out and becomes zero, so the result is a pure vector
                 return this.create(
                     (a * m - b * n + c * p + d * o) / scale,
                     (a * n + b * m - c * o + d * p) / scale,
