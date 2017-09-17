@@ -477,27 +477,28 @@
             init: function($, container, viewport) {
                 var sprites = 'url(images/whiplash-sprites.svg)';
 
-                $('<div>') // Create action bar
+                $('<div>') // Left Action Bar
                     .addClass('bbar')
                     .css({ bottom: 0, left: 0 })
                     .appendTo(container)
-                    .append(createButton(
-                        $, sprites, '100% 0', function(event) {
-                            state.interact(); }))
                     .append(createButton(
                         $, sprites, '25% 0', function(event) {
                             console.log('left-hand'); }))
                     .append(createButton(
                         $, sprites, '50% 0', function(event) {
-                            console.log('right-hand'); }))
-                    .append(createButton(
-                        $, sprites, '0 0', function(event) {
-                            state.inventory.toggle();
-                            state.settings.hide(); }))
+                            console.log('right-hand'); }));
+
+                $('<div>') // Create action bar
+                    .addClass('bbar')
+                    .css({ bottom: 0, right: 0 })
+                    .appendTo(container)
                     .append(createButton(
                         $, sprites, '75% 0', function(event) {
                             state.settings.toggle();
-                            state.inventory.hide(); }));
+                            state.inventory.hide(); }))
+                    .append(createButton(
+                        $, sprites, '100% 0', function(event) {
+                            state.interact(); }));
 
                 this.settings = $('<div>')
                     .addClass('page').addClass('settings').hide()
@@ -664,7 +665,8 @@
 		    this.player.control.down = true;
                     this.player.control.swipe = null;
                     this.update();
-                } else if (event.keyCode === 70) { // f
+                } else if (event.keyCode === 70 /* f */ ||
+                           event.keyCode === 13 /* enter */) {
                     this.interact();
 	        } else if (debug) console.log('down', event.keyCode);
                 redraw();
@@ -690,7 +692,8 @@
 		    this.player.control.down = false;
                     this.player.control.swipe = null;
                     this.update();
-                } else if (event.keyCode === 70) { // f
+                } else if (event.keyCode === 70 /* f */ ||
+                           event.keyCode === 13 /* enter */) {
 	        } else if (debug) console.log('up', event.keyCode);
                 redraw();
             },
@@ -835,10 +838,10 @@
                         }
                     }, this);
 
-                    if (closest && closest.accessible) {
-                        state.inventory.populate(state.player, closest);
-                        state.inventory.show();
-                    }
+                    state.inventory.populate(
+                        state.player, (closest && closest.accessible) ?
+                        closest : undefined);
+                    state.inventory.show();
                 }
             }
         };
