@@ -552,6 +552,9 @@
                     .addClass('page-pane')
                     .addClass('inventory-other')
                     .appendTo(this.inventory.pane);
+                this.inventory.footer = $('<div>')
+                    .addClass('inventory-footer')
+                    .appendTo(this.inventory.pane);
                 this.inventory.populate(this.player);
             },
             resize: function(width, height, $) {
@@ -571,6 +574,8 @@
                 });
 
                 $('.inventory-header').css({
+                    height: Math.floor(size * 2 / 11) });
+                $('.inventory-footer').css({
                     height: Math.floor(size * 2 / 11) });
                 $('.slot-group').css({
                     width: Math.floor(size * 4 / 11),
