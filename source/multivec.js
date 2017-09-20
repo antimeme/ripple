@@ -19,9 +19,9 @@
 // A multi-vector library intended to support Geometric Algebra.
 // Each multivector is the sum of zero or more components each
 // of which is a coefficient times zero or more ortho-normal basis
-// vectors that represent all of space.  This library can represent
-// Real numbers, complex numbers, quaternions, vectors and many other
-// kinds of mathematical objects.
+// vectors.  Objects from this library can represent real numbers,
+// complex numbers, quaternions, vectors and many other kinds of
+// mathematical objects.
 
 (function(multivec) {
     'use strict';
@@ -29,69 +29,52 @@
     var zeroish = function(value) {
         return (!isNaN(value) && value <= epsilon && value >= -epsilon);
     };
+    var multivec;
 
     var convert = function(value) {
         var result;
-        if (value instanceof multivec.create) {
+        if (value instanceof multivec) {
             result = value; // already a multi-vector
-        } else if (!isNaN(value)) {
-            result = Object.create(multivec.create.prototype);
-            result.components = {'': value};
-        } else if (Array.isArray(value)) {
-            result = Object.create(multivec.create.prototype);
-            result.components = {};
-            value.forEach(function(element, index) {
-                result.components['e' + (index + 1)] = element; });
-        } else if (typeof(value) === 'string') {
-            throw TypeError('Not yet implemented');
         } else {
-            Object.keys(value).forEach(function(key) {
-                var canonical = key;
-                var coefficient = value[key];
-                if (key === 'x' || key === 'X')
-                    canonical = 'e1';
-                else if (key === 'y' || key === 'Y')
-                    canonical = 'e2';
-                else if (key === 'z' || key === 'Z')
-                    canonical = 'e3';
-                // TODO flip e values so that they're in order
+            result = Object.create(multivec.prototype);
+            if (!isNaN(value)) {
+                result.components = {'': value};
+            } else if (Array.isArray(value)) {
+                result.components = {};
+                value.forEach(function(element, index) {
+                    result.components['e' + (index + 1)] = element; });
+            } else if (typeof(value) === 'string') {
+                // TODO parse strings into multivectors
+                throw TypeError('Not yet implemented');
+            } else {
+                result.components = {};
+                Object.keys(value).forEach(function(key) {
+                    var canonical = key;
+                    var coefficient = value[key];
+                    if (key === 'x' || key === 'X')
+                        canonical = 'e1';
+                    else if (key === 'y' || key === 'Y')
+                        canonical = 'e2';
+                    else if (key === 'z' || key === 'Z')
+                        canonical = 'e3';
+                    // TODO flip e values so that they're in order
 
-                result.components[canonical] = coefficient;
-            });
+                    result.components[canonical] = coefficient;
+                });
+            }
         }
         return result;
     }
-
-    multivec.create = function(value) {
-        var result = Object.create(multivec.create.prototype);
+    multivec = function(value) {
+        var result = Object.create(multivec.prototype);
         result.components = {};
-        if (value instanceof multivec.create) {
-            // Act as a copy constructor
-            Object.keys(value.components).forEach(function(key) {
-                result.components[key] = value.components[key]; });
-        } else if (!isNaN(value)) {
-            // Create a scalar
-            result.components[''] = value;
-        } else if (Array.isArray(value)) {
-            value.forEach(function(element, index) {
-                result.components['e' + (index + 1)] = element; });
-        } else if (typeof(value) === 'string') {
-            throw TypeError('Not yet implemented');
-        } else {
-            Object.keys(config).forEach(function(key) {
-                if (key === 'x' || key === 'X')
-                    key = 'e1';
-                else if (key === 'y' || key === 'Y')
-                    key = 'e2';
-                else if (key === 'z' || key === 'Z')
-                    key = 'e3';
-                result.components[key] = config[key];
-            });
-        }
+        value = convert(value);
+        Object.keys(value.components).forEach(function(key) {
+          result.components[key] = value.components[key]; });
         return result;
-    }
+    };
 
-    multivec.create.prototype.toString = function() {
+    multivec.prototype.toString = function() {
         var result = '';
 
         Object.keys(this.components).sort().forEach(function(key) {
@@ -107,7 +90,7 @@
         return result;
     }
 
-    multivec.create.prototype.zeroish = function() {
+    multivec.prototype.zeroish = function() {
         // Return true iff all components of this multi-vector are
         // approximately zero (actual zero not required due to floating
         // point rounding errors).
@@ -119,15 +102,15 @@
         return result;
     };
 
-    multivec.create.prototype.scalar = function() {
+    multivec.prototype.scalar = function() {
         return this.components[''] || 0; };
-    multivec.create.prototype.getX = function() {
+    multivec.prototype.getX = function() {
         return this.components['e1'] || 0; };
-    multivec.create.prototype.getY = function() {
+    multivec.prototype.getY = function() {
         return this.components['e2'] || 0; };
 
-    multivec.create.prototype.add = function(other) {
-        var result = multivec.create(0);
+    multivec.prototype.add = function(other) {
+        var result = multivec(0);
 
         Object.keys(this.components).forEach(function(key) {
             result.components[key] = 0; });
@@ -140,15 +123,15 @@
         return result;
     };
 
-    multivec.create.prototype.product = function(other) {
+    multivec.prototype.product = function(other) {
         // TODO return geometric product of this and other
     };
 
-    multivec.create.prototype.conjugate = function() {
+    multivec.prototype.conjugate = function() {
         // TODO flip all wedge products (so * -1 or not each term)
     };
 
-    multivec.create.prototype.inverse = function() {
+    multivec.prototype.inverse = function() {
         var scale = this.product(this.conjugate());
         if (scale.zeroish())
             throw new TypeError('No inverse of zero');
@@ -156,21 +139,25 @@
         
     };
 
-    multivec.create.prototype.norm = function() {
+    multivec.prototype.norm = function() {
         // Multi-vectors are immutable so norm is memoized
         if (isNaN(this.__norm))
             this.__norm = Math.sqrt(
                 this.product(this.conjugate()).scalar());
         return this.__norm; };
 
-})(typeof exports === 'undefined' ? window['multivec'] = {} : exports);
+    if (typeof exports === 'undefined') {
+        window['multivec'] = multivec;
+    } else { exports = multivec; }
+})();
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
     var multivec = exports;
 
-    console.log(multivec.create([2, 1, -1]).add(
-        multivec.create(5)).toString());
-    console.log(multivec.create([1, 1]).add(
-        multivec.create([4, -1])).toString());
-    //console.log(multivec.create('2e1 - e2').toString());
+    console.log(multivec([2, 1, -1]).add(
+        multivec(5)).toString());
+    console.log(multivec([1, 1]).add(
+        multivec([4, -1])).toString());
+    console.log(multivec({'': 3, 'e1e2': -2}).toString());
+    //console.log(multivec('2e1 - e2').toString());
 }
