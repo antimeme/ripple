@@ -216,9 +216,56 @@
 
     var drawPerson = function(ctx, character, state, now) {
         var size = character.size;
+        var fraction;
         ctx.save();
         ctx.translate(character.position.x, character.position.y);
         ctx.rotate(character.direction);
+
+        if (character.punchDuration && character.punchLeft &&
+            now < character.punchLeft +
+            character.punchDuration * 2000) {
+            fraction = ((now - character.punchLeft) /
+                (character.punchDuration * 1000));
+            if (fraction > 1)
+                fraction = 2 - fraction;
+
+            ctx.beginPath();
+            ctx.moveTo(0, size * -2 / 3);
+            ctx.lineTo(fraction * size * 3 / 2, size * -2 / 3);
+            ctx.lineWidth = size / 2;
+            ctx.strokeStyle = character.bodyColor;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(fraction * size * 3 / 2, size * -2 / 3);
+            ctx.arc(fraction * size * 3 / 2, size * -2 / 3,
+                    size / 4, 0, Math.PI * 2);
+            ctx.fillStyle = character.headColor;
+            ctx.fill();
+        }
+
+        if (character.punchDuration && character.punchRight &&
+            now < character.punchRight +
+            character.punchDuration * 2000) {
+            fraction = ((now - character.punchRight) /
+                (character.punchDuration * 1000));
+            if (fraction > 1)
+                fraction = 2 - fraction;
+
+            ctx.beginPath();
+            ctx.moveTo(0, size * 2 / 3);
+            ctx.lineTo(fraction * size * 3 / 2, size * 2 / 3);
+            ctx.lineWidth = size / 2;
+            ctx.strokeStyle = character.bodyColor;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(fraction * size * 3 / 2, size * 2 / 3);
+            ctx.arc(fraction * size * 3 / 2, size * 2 / 3,
+                    size / 4, 0, Math.PI * 2);
+            ctx.fillStyle = character.headColor;
+            ctx.fill();
+        }
 
         ctx.scale(0.8, 1);
         ctx.beginPath();
@@ -305,6 +352,7 @@
             visionArc: config.visionArc || (Math.PI / 10),
             visionColor: config.visionColor ||
                          'rgba(255, 255, 255, 0.25)',
+            punchDuration: 0.3,
 
             inventory: inventory,
 
@@ -483,9 +531,13 @@
                     .appendTo(container)
                     .append(createButton(
                         $, sprites, '25% 0', function(event) {
+                            state.player.punchLeft =
+                                new Date().getTime();
                             console.log('left-hand'); }))
                     .append(createButton(
                         $, sprites, '50% 0', function(event) {
+                            state.player.punchRight =
+                                new Date().getTime();
                             console.log('right-hand'); }));
 
                 $('<div>') // Create action bar
