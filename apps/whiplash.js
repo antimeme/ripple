@@ -19,7 +19,7 @@
         return thing;
     };
 
-    var createButton = function($, sheet, position, fn) {
+    var createButton = function($, sheet, position, fn, context) {
         // Create a button backed by an image from a sprite sheet.
         // Page CSS controls the number of sprites on a sheet.
         // This routine wraps the function and forces a false
@@ -31,7 +31,7 @@
                 'background-position': position,
             })
             .on('mousedown touchstart', function(event) {
-                fn.call(this, arguments);
+                fn.call(context, arguments);
                 return false; });
     };
 
@@ -517,7 +517,7 @@
         //   null - arrow not set
         var state = {
             height: 320, width: 320,
-            zoom: { value: 25, min: 18, max: 100, reference: 0 },
+            zoom: { value: 25, min: 10, max: 100, reference: 0 },
             tap: null, mmove: null, swipe: null,
             player: null, update: update,
             itemdefs: data.itemdefs ? data.itemdefs : {},
@@ -530,15 +530,9 @@
                     .css({ bottom: 0, left: 0 })
                     .appendTo(container)
                     .append(createButton(
-                        $, sprites, '25% 0', function(event) {
-                            state.player.punchLeft =
-                                new Date().getTime();
-                            console.log('left-hand'); }))
+                        $, sprites, '25% 0', state.handLeft, state))
                     .append(createButton(
-                        $, sprites, '50% 0', function(event) {
-                            state.player.punchRight =
-                                new Date().getTime();
-                            console.log('right-hand'); }));
+                        $, sprites, '50% 0', state.handRight, state));
 
                 $('<div>') // Create action bar
                     .addClass('bbar')
@@ -722,9 +716,13 @@
 		    this.player.control.down = true;
                     this.player.control.swipe = null;
                     this.update();
-                } else if (event.keyCode === 70 /* f */ ||
-                           event.keyCode === 13 /* enter */) {
+                } else if (event.keyCode === 73 /* i */ ||
+                           event.keyCode === 9 /* tab */) {
                     this.interact();
+                } else if (event.keyCode === 81 /* q */) {
+                    this.handLeft();
+                } else if (event.keyCode === 69 /* e */) {
+                    this.handRight();
 	        } else if (debug) console.log('down', event.keyCode);
                 redraw();
             },
@@ -749,8 +747,10 @@
 		    this.player.control.down = false;
                     this.player.control.swipe = null;
                     this.update();
-                } else if (event.keyCode === 70 /* f */ ||
-                           event.keyCode === 13 /* enter */) {
+                } else if (event.keyCode === 70 /* i */ ||
+                           event.keyCode === 9 /* tab */) {
+                } else if (event.keyCode === 81 /* q */) {
+                } else if (event.keyCode === 69 /* e */) {
 	        } else if (debug) console.log('up', event.keyCode);
                 redraw();
             },
@@ -900,7 +900,13 @@
                         closest : undefined);
                     state.inventory.show();
                 }
-            }
+            },
+            handRight: function(event) {
+                this.player.punchRight =
+                    new Date().getTime(); },
+            handLeft: function(event) {
+                this.player.punchLeft =
+                    new Date().getTime(); }
         };
 
 	state.player = makePlayer(
