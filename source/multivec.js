@@ -31,7 +31,7 @@
 // The following invariants should hold for all multivec routines:
 // - multivec values are immutable
 // - multivec basis values are in canonical order (low to high)
-// - multivec components are omitted when near zero
+// - multivec components are omitted when within rounding of zero
 
 (function(multivec) {
     'use strict';
@@ -44,6 +44,9 @@
     var multivec;
 
     var canonicalizeBasis = function(basis) {
+        // Converts basis strings to a canonical form to make them
+        // comparable.  Returns an array containing the updated
+        // basis string as well as the sign (either 1 or -1)
         var sign = 1, result = "";
         var b = [], breakdown = {}, m, ii, swap, squeeze = 0;
 
@@ -57,6 +60,7 @@
             } else if (m[0] === 'x' || m[0] === 'X') {
                 ii = 3;
             } else ii = parseInt(m[2], 10);
+
             b.push(ii);
             breakdown[ii] = (breakdown[ii] || 0) + 1;
             basis = basis.slice(m[0].length);
@@ -133,7 +137,8 @@
             });
         }
         return result;
-    }
+    };
+
     multivec = function(value) {
         if (!(this instanceof multivec))
             return new multivec(value);
@@ -141,7 +146,8 @@
         value = convert(value);
         Object.keys(value.components).forEach(function(key) {
             if (!zeroish(value.components[key]))
-                this.components[key] = value.components[key]; }, this);
+                this.components[key] = value.components[key];
+        }, this);
     };
 
     multivec.prototype.toString = function() {
@@ -163,7 +169,7 @@
         if (!result.length)
             result = '0';
         return result;
-    }
+    };
 
     multivec.prototype.zeroish = function() {
         // Return true iff all components of this multi-vector are
@@ -174,8 +180,7 @@
             if (!zeroish(this.components[key]))
                 result = false;
         }, this);
-        return result;
-    };
+        return result; };
 
     multivec.prototype.scalar = function() {
         return this.components[''] || 0; };
@@ -227,22 +232,34 @@
     };
 
     multivec.prototype.conjugate = function() {
-        // TODO flip all wedge products (so * -1 or not each term)
+        var result = multivec(this);
+        Object.keys(result.components).forEach(function(key) {
+            var k = key.split('o').length - 1;
+            if ((k * (k - 1) / 2) % 2)
+                result.components[key] *= -1;
+        });
+        return result;
     };
 
     multivec.prototype.inverse = function() {
+        // Everything except 0 has an inverse
         var scale = this.product(this.conjugate());
         if (scale.zeroish())
             throw new TypeError('No inverse of zero');
-        return this.product(1 / scale); };
+        return this.product(1 / scale);
+    };
 
     multivec.prototype.norm = function() {
-        // Multi-vectors are immutable so norm can be memoized
+        // Multi-vectors are immutable outside this library
+        // so norm can be memoized to minimize square roots
         if (isNaN(this.__norm))
             this.__norm = Math.sqrt(
                 this.product(this.conjugate()).scalar());
-        return this.__norm; };
+        return this.__norm;
+    };
 
+    // This library exports only one function so the name of the
+    // library itself is used.
     if (typeof exports === 'undefined') {
         window['multivec'] = multivec;
     } else { exports = multivec; }
