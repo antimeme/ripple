@@ -156,6 +156,7 @@
     };
 
     multivec = function(value) {
+        // Represents a multi-vector suitable for Geometric Algebra
         if (!(this instanceof multivec))
             return new multivec(value);
         this.components = {};
@@ -337,6 +338,23 @@
         return this.multiply(1 / this.norm());
     };
 
+    var dot = function(a, b) {
+        // Computes a scalar dot product of this vector with an other.
+        // This assumes that BOTH values are vectors.  The result is
+        // undefined otherwise.  This is a bit of an ugly optimization
+        // since it won't work for generic multivectors.
+        var result = 0;
+        var components = {};
+        Object.keys(a.components).forEach(function(key) {
+            components[key] = 0; });
+        Object.keys(b.components).forEach(function(key) {
+            components[key] = 0; });
+        Object.keys(components).forEach(function(key) {
+            result += ((a.components[key] || 0) *
+                (b.components[key] ||0)) });
+        return result;
+    };
+
     multivec.prototype.inner = function(other) {
         other = convert(other);
         var result = this.multiply(other).add(
@@ -371,9 +389,9 @@
         // Draw an arrow representing the o1 and o2 components of this
         // multi-vector (intended for debugging purposes)
         var length = (config && config.length) ? config.length : 1;
-        var bar = multivec([-this.getY(), this.getX()]).multiply(0.1);
+        var bar = multivec([-this.y, this.x]).multiply(0.1);
         var lineTo = function(ctx, vector) {
-            ctx.lineTo(vector.getX(), vector.getY());
+            ctx.lineTo(vector.x, vector.y);
         };
 
         ctx.save();
@@ -382,8 +400,8 @@
         ctx.fillStyle = (config && config.fill) || 'white';
         ctx.lineWidth = (config && config.lineWidth) || 5;
         if (config.center)
-            ctx.translate(config.center.getX(),
-                          config.center.getY());
+            ctx.translate(config.center.x,
+                          config.center.y);
 
         ctx.beginPath();
         ctx.moveTo(0, 0);
@@ -427,7 +445,7 @@
         var q2 = segment.normSquared ? segment.normSquared :
                  q.normSquared();
         return v.subtract(segment.s).subtract(
-            q.multiply(v.subtract(segment.s).inner(q).scalar / q2));
+            q.multiply(dot(v.subtract(segment.s), q) / q2));
     };
 
     multivec.collideRadiusRadius = function(s1, e1, r1, s2, e2, r2) {
@@ -444,12 +462,12 @@
         var gap = r1 + r2;
 
         result = quadraticRoots(
-            d1.inner(d1).scalar + d2.inner(d2).scalar -
-            2 * d1.inner(d2).scalar,
-            2 * s1.inner(d1).scalar + 2 * s2.inner(d2).scalar -
-            2 * d1.inner(s2).scalar - 2 * d2.inner(s1).scalar,
-            s1.inner(s1).scalar + s2.inner(s2).scalar -
-            2 * s1.inner(s2).scalar - gap * gap);
+            dot(d1, d1) + dot(d2, d2) -
+            2 * dot(d1, d2),
+            2 * dot(s1, d1) + 2 * dot(s2, d2) -
+            2 * dot(d1, s2) - 2 * dot(d2, s1),
+            dot(s1, s1) + dot(s2, s2) -
+            2 * dot(s1, s2) - gap * gap);
 
         result = result.map(function(v) {
             // Avoids rounding errors that cause missed collisions
@@ -491,8 +509,8 @@
         var q2 = segment.normSquared ? segment.normSquared :
                  q.normSquared();
         var width = segment.width ? segment.width : 0;
-        var ps = s.subtract(segment.s).inner(q).scalar / q.norm();
-        var pe = e.subtract(segment.s).inner(q).scalar / q.norm();
+        var ps = dot(s.subtract(segment.s), q) / q.norm();
+        var pe = dot(e.subtract(segment.s), q) / q.norm();
         var ds = shortestSegment(s, segment);
         var de = shortestSegment(e, segment);
         var m, n, mq, nq, gap; // line distance computation variables
@@ -520,8 +538,8 @@
         //   (r - width/2)^2
         // Since p is moving, it can be expanded to p = s + (e - s)t
         // Then we break things down in terms of t and find roots
-        m = e.subtract(s); mq = m.inner(q).scalar;
-        n = s.subtract(segment.s); nq = n.inner(q).scalar;
+        m = e.subtract(s); mq = dot(m, q);
+        n = s.subtract(segment.s); nq = dot(n, q);
 
         // Rather than computing square roots, which can be expensive,
         // we compare the square of the distance between point and line
@@ -530,9 +548,9 @@
         // between these values is zero, which are the moments of
         // collison
         result = quadraticRoots(
-            m.inner(m).scalar - mq * mq / q2,
-            2 * m.inner(n).scalar - 2 * mq * nq / q2,
-            n.inner(n).scalar - nq * nq / q2 - gap);
+            dot(m, m) - mq * mq / q2,
+            2 * dot(m, n) - 2 * mq * nq / q2,
+            dot(n, n) - nq * nq / q2 - gap);
         result = result.map(function(v) {
             // Avoids rounding errors that cause missed collisions
             return zeroish(v) ? 0 : v;
@@ -545,15 +563,15 @@
             var ds = shortestSegment(s, segment);
             var de = shortestSegment(e, segment);
             if ((de.normSquared() > ds.normSquared()) &&
-                ds.inner(de).scalar > 0)
+                dot(ds, de) > 0)
                 result = undefined;
         }
 
         if (!isNaN(result)) {
             // Ignore collisions that occur outside the boundaries of
             // the segment -- makes it possible to go around segments
-            var ps = s.subtract(segment.s).inner(q).scalar / q.norm();
-            var pe = e.subtract(segment.s).inner(q).scalar / q.norm();
+            var ps = dot(s.subtract(segment.s), q) / q.norm();
+            var pe = dot(e.subtract(segment.s), q) / q.norm();
             if (ps + r < 0 && pe + r < 0) {
                 result = undefined;
             } else if (ps - r > q.norm() && pe -r > q.norm()) {
