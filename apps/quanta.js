@@ -65,8 +65,7 @@
         _move: function(delta) {
             var index, particle, velocity;
 
-            for (index = 0; index < this.particles.length;
-                 ++index) {
+            for (index = 0; index < this.particles.length; ++index) {
                 particle = this.particles[index];
                 velocity = particle.direction.multiply(particle.speed);
                 particle.position = particle.position.add(
@@ -108,12 +107,12 @@
                 var velocity = particle.direction.multiply(
                     particle.speed);
 
-                xtime = !multivec(velocity.getX()).zeroish() ?
-                        (((velocity.getX() < 0) ? bounds.xmin : bounds.xmax) -
-                         particle.position.getX()) / velocity.getX() : -1;
-                ytime = !multivec(velocity.getY()).zeroish() ?
-                        (((velocity.getY() < 0) ? bounds.ymin : bounds.ymax) -
-                         particle.position.getY()) / velocity.getY() : -1;
+                xtime = !multivec(velocity.x).zeroish() ?
+                        (((velocity.x < 0) ? bounds.xmin : bounds.xmax) -
+                         particle.position.x) / velocity.x : -1;
+                ytime = !multivec(velocity.y).zeroish() ?
+                        (((velocity.y < 0) ? bounds.ymin : bounds.ymax) -
+                         particle.position.y) / velocity.y : -1;
 
                 if ((xtime < 0 && ytime < 0) ||
                     (xtime > delta && ytime > delta)) {
@@ -128,7 +127,13 @@
                 return {
                     time: time, particle: particle,
                     action: function() {
-                        this.direction[dir] = -this.direction[dir]; }};
+                        if (dir === 'x')
+                            this.direction = this.direction.reflect(
+                                {'y': 1});
+                        else if (dir === 'y')
+                            this.direction = this.direction.reflect(
+                                {'x': 1});
+                    }};
             }, function(current, best) {
                 return !best ? current :
                     ((!current || (best.time <= current.time)) ?
@@ -152,10 +157,10 @@
 
             for (index = 0; index < this.particles.length; ++index) {
                 particle = this.particles[index];
-                if ((particle.position.getX() < particle.scale) ||
-                    (particle.position.getX() > particle.scale) ||
-                    (particle.position.getY() < particle.scale) ||
-                    (particle.position.getY() > particle.scale)) {
+                if ((particle.position.x < particle.scale) ||
+                    (particle.position.x > particle.scale) ||
+                    (particle.position.y < particle.scale) ||
+                    (particle.position.y > particle.scale)) {
                     // TODO: detect escapees
                 }
             }
@@ -198,8 +203,9 @@
                 Math.random() * (lab.height - result.scale) +
                 result.scale / 2]);
             result.direction = (config && config.direction) ?
-                direction.normalize() :
-                multivec({theta: Math.random() * 2 * Math.PI});
+                               config.direction.normalize() :
+                               multivec({theta: Math.random() *
+                                   2 * Math.PI});
             result.phase = (config && config.phase) ?
                 config.phase : Math.random() * 2 * Math.PI;
             if (result.mass === 0)
@@ -219,18 +225,18 @@
             // the radii of the two objects.
             var vs = this.direction.multiply(this.speed);
             var vo = other.direction.multiply(other.speed);
-            var m = ((vs.getX() - vo.getX()) * (vs.getX() - vo.getX()) +
-                     (vs.getX() - vo.getY()) * (vs.getX() - vo.getY()));
-            var n = ((this.position.getX() - other.position.getX()) *
-                     (this.position.getX() - other.position.getX()) *
-                     (vs.getX() - vo.getX()) * (vs.getX() - vo.getX()) +
-                     (this.position.getY() - other.position.getY()) *
-                     (this.position.getY() - other.position.getY()) *
-                     (vs.getY() - vo.getY()) * (vs.getY() - vo.getY()));
-            var q = ((this.position.getX() - other.position.getX()) *
-                     (this.position.getX() - other.position.getX()) +
-                     (this.position.getY() - other.position.getY()) *
-                     (this.position.getY() - other.position.getY()));
+            var m = ((vs.x - vo.x) * (vs.x - vo.x) +
+                     (vs.x - vo.y) * (vs.x - vo.y));
+            var n = ((this.position.x - other.position.x) *
+                     (this.position.x - other.position.x) *
+                     (vs.x - vo.x) * (vs.x - vo.x) +
+                     (this.position.y - other.position.y) *
+                     (this.position.y - other.position.y) *
+                     (vs.y - vo.y) * (vs.y - vo.y));
+            var q = ((this.position.x - other.position.x) *
+                     (this.position.x - other.position.x) +
+                     (this.position.y - other.position.y) *
+                     (this.position.y - other.position.y));
 
             return (!multivec(m).zeroish() ?
                     (Math.sqrt(n * n - m *
@@ -297,7 +303,7 @@
     };
     quanta.Photon._draw = function(context, lab) {
         context.save();
-        context.translate(this.position.getX(), this.position.getY());
+        context.translate(this.position.x, this.position.y);
         context.rotate(this.phase);
         context.beginPath();
         context.moveTo(this.scale / 2, 0);
@@ -322,7 +328,7 @@
     quanta.Electron.scaleFactor *= 1.1;
     quanta.Electron._draw = function(context) {
         context.save();
-        context.translate(this.position.getX(), this.position.getY());
+        context.translate(this.position.x, this.position.y);
         context.beginPath();
         context.moveTo(this.scale / 2, 0);
         context.arc(0, 0, this.scale / 2, 0, 2 * Math.PI);
