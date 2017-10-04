@@ -40,8 +40,10 @@
     var zeroish = function(value) {
         return (!isNaN(value) && value <= epsilon && value >= -epsilon);
     };
-    var numExp = '([-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?)';
-    var basisExp = '(([oO][1-9][0-9]*)*)';
+    var termExpStr = '^\\s*([-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?)?' +
+                     '(([oO][1-9][0-9]*)*)(\\s+([+-])\\s+)?';
+    var termExp = new RegExp(termExpStr);
+    var basisExp = new RegExp(/([oO]([1-9][0-9]*))|[xyzXYZ]/);
 
     var canonicalizeBasis = function(basis) {
         // Converts basis strings to a canonical form to make them
@@ -51,8 +53,7 @@
         var b = [], breakdown = {}, m, ii, swap, squeeze = 0;
 
         // Extract basis vectors for further processing
-        while ((m = basis.match(/([oO]([1-9][0-9]*))|[xyzXYZ]/)) &&
-               m[0].length) {
+        while ((m = basis.match(basisExp)) && m[0].length) {
             if (m[0] === 'x' || m[0] === 'X') {
                 ii = 1;
             } else if (m[0] === 'y' || m[0] === 'Y') {
@@ -88,13 +89,10 @@
     };
 
     var fromString = function(value) {
-        var termExp = ('^\\s*' + numExp + '?' +
-                       basisExp + '(\\s+([+-])\\s+)?');
         var bsign, basis, sign, termOp = '+', components = {}, m;
         var components = {};
 
-        while ((m = value.match(new RegExp(termExp))) &&
-               (m[0].length > 0)) {
+        while ((m = value.match(termExp)) && m[0].length) {
             bsign = canonicalizeBasis(m[3]);
             basis = bsign[0]; sign = bsign[1];
             if (!components[basis])
