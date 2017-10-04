@@ -5,6 +5,7 @@
 (function(whiplash) {
     "use strict";
     var debug = !!window.params['debug'];
+    var profiling = false;
     var rotateworld = !!window.params['rotateworld'];
     var mazeType = window.params['mazeType'] || undefined;
     var mazeRings = ('mazeRings' in window.params) ?
@@ -37,38 +38,39 @@
 
     var createWall = function(wall) {
         var out = {
-            s: ripple.vector.convert(wall.s),
-            e: ripple.vector.convert(wall.e)};
-        out.q = wall.q ? ripple.vector.convert(wall.q) :
-                out.e.minus(out.s);
-        out.sqlen = wall.sqlen ? wall.sqlen : out.q.sqlen();
+            s: multivec(wall.s),
+            e: multivec(wall.e)};
+        out.q = wall.q ? multivec(wall.q) :
+                out.e.subtract(out.s);
+        out.normSquared = wall.normSquared ? wall.normSquared :
+                          out.q.normSquared();
         out.width = wall.width ? wall.width : 0.5;
         return out;
     };
 
     var createPillar = function(pillar) {
         var result = {
-            p: ripple.vector.convert(pillar.p),
+            p: multivec(pillar.p),
             r: pillar.r, color: pillar.color };
         return result;
     };
 
     var createChest = function(chest) {
         var result = {
-            position: ripple.vector.create(
-                chest.position.x, chest.position.y),
+            position: multivec([
+                chest.position.x, chest.position.y]),
             direction: chest.direction,
             inventory: chest.inventory || [],
             size: chest.size || 1,
             accessible: false,
             checkAccessible: function(player) {
-                var cvec = this.position.minus(player.position);
-                var sqdist = cvec.sqlen();
+                var cvec = this.position.subtract(player.position);
+                var sqdist = cvec.normSquared();
                 if (sqdist < 9) {
-                    var angle = (cvec.dotp(ripple.vector.create(
-                        Math.cos(player.direction),
-                        Math.sin(player.direction))) /
-                        cvec.length());
+                    var angle = (cvec.inner(multivec(
+                        [Math.cos(player.direction),
+                         Math.sin(player.direction)])) /
+                        cvec.norm());
                     this.accessible = (angle > Math.cos(Math.PI / 3));
                 } else this.accessible = false;
                 return sqdist;
@@ -105,14 +107,14 @@
             var destination = undefined;
             var steps = this.speed * (now - this.last);
             var rots = 0.005 * (now - this.last);
-            var pdir = ripple.vector.create(
+            var pdir = multivec([
                 state.player.position.x - this.position.x,
-                state.player.position.y - this.position.y).norm();
+                state.player.position.y - this.position.y]).normalize();
             var direction, target;
 
-            if (pdir.dotp(ripple.vector.create(
+            if (pdir.dotp(multivec([
                 Math.cos(this.direction),
-                Math.sin(this.direction))) <
+                Math.sin(this.direction)])) <
                 Math.cos(Math.PI / 10)) {
                 if ((state.player.position.x - this.position.x) *
                     Math.sin(this.direction) -
@@ -130,9 +132,9 @@
                     if (current === this)
                         return;
                 }, this);
-                destination = ripple.vector.create(
+                destination = multivec([
                     this.position.x + direction.x * steps,
-                    this.position.y + direction.y * steps);
+                    this.position.y + direction.y * steps]);
             }
             this.last = now;
             return destination;
@@ -334,9 +336,9 @@
 
         return {
             position: config.position ?
-                      ripple.vector.convert(config.position) :
-                      ripple.vector.create(
-                          config.x || 0, config.y || 0, config.z || 0),
+                      multivec(config.position) :
+                      multivec([
+                          config.x || 0, config.y || 0, config.z || 0]),
             direction: config.direction || 0,
             size: config.size || 1,
             speed: config.speed || 0.005,
@@ -400,13 +402,13 @@
                 // which indicates that we must update our plan
                 this.control.swipe = null;
                 this.destination =
-                    this.position.interpolate(
-                        this.destination, collide);
+                    this.position.add(
+                        this.destination.multiply(collide));
             } else if (this.control.swipe) {
                 // Process swipe arrows
-                dirvec = ripple.vector.create(
+                dirvec = multivec([
                     Math.cos(this.direction),
-                    Math.sin(this.direction));
+                    Math.sin(this.direction)]);
                 needrads = Math.acos(
                     ripple.clamp(dirvec.dotp(
                         this.control.swipe), 1, -1));
@@ -417,22 +419,22 @@
                         (dirvec.x * this.control.swipe.y -
                          dirvec.y * this.control.swipe.x >= 0) ?
                         1 : -1) * rads;
-                    dirvec = ripple.vector.create(
+                    dirvec = multivec([
                         Math.cos(this.direction),
-                        Math.sin(this.direction));
+                        Math.sin(this.direction)]);
                     steps = 0;
                 } else if (rads > 0.01) {
                     this.direction += needrads;
-                    dirvec = ripple.vector.create(
+                    dirvec = multivec([
                         Math.cos(this.direction),
-                        Math.sin(this.direction));
+                        Math.sin(this.direction)]);
                     steps *= (rads - Math.abs(needrads)) / rads;
                 }
 
                 if (steps > 0)
-                    destination = ripple.vector.create(
+                    destination = multivec([
                         this.position.x + dirvec.x * steps,
-                        this.position.y + dirvec.y * steps);
+                        this.position.y + dirvec.y * steps]);
             } else {
                 // Process WASD and arrow keys
                 if (this.control.left && !this.control.right)
@@ -441,18 +443,18 @@
                     this.direction += rads;
 
                 if (this.control.up && !this.control.down)
-                    destination = ripple.vector.create(
+                    destination = multivec([
                         this.position.x +
                         Math.cos(this.direction) * steps,
                         this.position.y +
-                        Math.sin(this.direction) * steps);
+                        Math.sin(this.direction) * steps]);
                 else if (!this.control.up && this.control.down)
                     // Reverse at reduced speed
-                    destination = ripple.vector.create(
+                    destination = multivec([
                         this.position.x -
                         Math.cos(this.direction) * steps * 0.75,
                         this.position.y -
-                        Math.sin(this.direction) * steps * 0.75);
+                        Math.sin(this.direction) * steps * 0.75]);
             }
             this.last = now;
             return this.destination = destination;
@@ -477,22 +479,24 @@
             };
 
             this.walls.forEach(function(wall) {
-                updateCollide(ripple.collideRadiusSegment(
+                updateCollide(multivec.collideRadiusSegment(
                     this.player.position,
                     this.player.destination,
                     this.player.size, wall));
             }, this);
 
             this.pillars.forEach(function(pillar) {
-                updateCollide(ripple.collideRadiusRadius(
+                multivec.debug = 1; // DEBUG
+                updateCollide(multivec.collideRadiusRadius(
                     this.player.position,
                     this.player.destination,
                     this.player.size,
                     pillar.p, pillar.p, pillar.r));
+                multivec.debug = 0; // DEBUG
             }, this);
 
             this.chests.forEach(function(chest) {
-                updateCollide(ripple.collideRadiusRadius(
+                updateCollide(multivec.collideRadiusRadius(
                     this.player.position,
                     this.player.destination,
                     this.player.size,
@@ -675,18 +679,18 @@
                 size = Math.min(this.height, this.width);
                 if (debug) {
                     if (rotateworld)
-                        ripple.vector.create(
+                        multivec([
                             this.height >= this.width ? 0 : 1,
-                            this.height >= this.width ? -1 : 0)
-                              .draw(ctx, {
-                                  center: {x: width / 2, y: height / 2},
-                                  length: size / 4, color: 'black'});
-                    ripple.vector.create(
+                            this.height >= this.width ? -1 : 0])
+                        .draw(ctx, {
+                            center: {x: width / 2, y: height / 2},
+                            length: size / 4, color: 'black'});
+                    multivec([
                         Math.cos(this.player.direction),
-                        Math.sin(this.player.direction))
-                          .draw(ctx, {
-                              center: {x: width / 2, y: height / 2},
-                              length: size / 4, color: 'red'});
+                        Math.sin(this.player.direction)])
+                        .draw(ctx, {
+                            center: {x: width / 2, y: height / 2},
+                            length: size / 4, color: 'red'});
                 }
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
                 ctx.textAlign = 'center';
@@ -723,6 +727,13 @@
                     this.handLeft();
                 } else if (event.keyCode === 69 /* e */) {
                     this.handRight();
+                } else if (event.keyCode === 80 /* p */) {
+                    if (debug) {
+                        if (profiling)
+                            console.profileEnd();
+                        else console.profile();
+                        profiling = !profiling;
+                    }
 	        } else if (debug) console.log('down', event.keyCode);
                 redraw();
             },
@@ -751,6 +762,7 @@
                            event.keyCode === 9 /* tab */) {
                 } else if (event.keyCode === 81 /* q */) {
                 } else if (event.keyCode === 69 /* e */) {
+                } else if (event.keyCode === 80 /* p */) {
 	        } else if (debug) console.log('up', event.keyCode);
                 redraw();
             },
@@ -760,12 +772,12 @@
                 this.mmove = null;
                 if (this.tap.touches.length > 1) {
                     this.zoom.reference =
-                        ripple.vector.create(
+                        multivec([
                             this.tap.touches[0].x -
                             this.tap.touches[1].x,
                             this.tap.touches[0].y -
                             this.tap.touches[1].y
-                        ).sqlen();
+                        ]).normSquared();
                 } else this.swipe = undefined;
                 redraw();
                 return false;
@@ -777,21 +789,21 @@
                     if (targets.touches.length > 1) {
                         if (this.zoom.reference >
                             Math.min(this.height, this.width) / 100) {
-                            zoomref = ripple.vector.create(
+                            zoomref = multivec([
                                 targets.touches[0].x -
                                 targets.touches[1].x,
                                 targets.touches[0].y -
                                 targets.touches[1].y
-                            ).sqlen();
+                            ]).normSquared();
                             zclamp(this, this.zoom.value *
                                 Math.sqrt(zoomref /
                                     this.zoom.reference));
                             this.update();
                         }
                     } else {
-                        mmove = ripple.vector.create(
+                        mmove = multivec([
                             targets.x - this.tap.x,
-                            targets.y - this.tap.y);
+                            targets.y - this.tap.y]);
                         swipe = mmove.norm();
                         if ((typeof(this.swipe) === 'undefined') ||
                             (this.swipe && this.swipe.dotp(swipe) >
@@ -806,18 +818,17 @@
                 return false;
             },
             mtup: function(targets, event, redraw) {
-                var worldvec = ripple.vector.create(
+                var worldvec = multivec([
                     this.height >= this.width ? 0 : 1,
-                    this.height >= this.width ? -1 : 0);
+                    this.height >= this.width ? -1 : 0]);
                 if (this.swipe) {
                     if (rotateworld) {
                         this.player.control.swipe =
                             this.swipe.rotate(
                                 worldvec,
-                                ripple.vector.create(
+                                multivec([
                                     Math.cos(this.player.direction),
-                                    Math.sin(this.player.direction))
-                                      .plus(worldvec));
+                                    Math.sin(this.player.direction)]));
                     } else this.player.control.swipe = this.swipe;
                 } else this.player.control.swipe = null;
                 this.tap = null;
