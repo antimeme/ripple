@@ -138,7 +138,7 @@
             if (!isNaN(value.phi)) {
                 result.components['o3'] = factor * Math.sin(value.phi);
                 factor *= Math.cos(phi);
-            } else factor = value.r;
+            }
             result.components['o1'] = factor * Math.cos(value.theta);
             result.components['o2'] = factor * Math.sin(value.theta);
             polish(result);
