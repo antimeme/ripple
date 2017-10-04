@@ -33,15 +33,15 @@
 // - multivec basis values are in canonical order (low to high)
 // - multivec components are omitted when within rounding of zero
 
-(function(multivec) {
+(function() {
     'use strict';
+    var multivec;
     var epsilon = 0.00000000001;
     var zeroish = function(value) {
         return (!isNaN(value) && value <= epsilon && value >= -epsilon);
     };
     var numExp = '([-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?)';
     var basisExp = '(([oO][1-9][0-9]*)*)';
-    var multivec;
 
     var canonicalizeBasis = function(basis) {
         // Converts basis strings to a canonical form to make them
@@ -55,9 +55,9 @@
                m[0].length) {
             if (m[0] === 'x' || m[0] === 'X') {
                 ii = 1;
-            } else if (m[0] === 'x' || m[0] === 'X') {
+            } else if (m[0] === 'y' || m[0] === 'Y') {
                 ii = 2;
-            } else if (m[0] === 'x' || m[0] === 'X') {
+            } else if (m[0] === 'z' || m[0] === 'Z') {
                 ii = 3;
             } else ii = parseInt(m[2], 10);
 
@@ -91,8 +91,7 @@
         var termExp = ('^\\s*' + numExp + '?' +
                        basisExp + '(\\s+([+-])\\s+)?');
         var bsign, basis, sign, termOp = '+', components = {}, m;
-        var result = Object.create(multivec.prototype);
-        result.components = {};
+        var components = {};
 
         while ((m = value.match(new RegExp(termExp))) &&
                (m[0].length > 0)) {
@@ -106,15 +105,21 @@
             value = value.slice(m[0].length);
         }
 
-        Object.keys(components).forEach(function(key) {
-            if (!zeroish(components[key]))
-                result.components[key] = components[key];
-        });
-        return result;
+        return convert(components);
+    };
+
+    var polish = function(value) {
+        // Give multivector some helpful values
+        value.scalar = value.components[''];
+        value.x = value.components['o1'] || 0;
+        value.y = value.components['o2'] || 0;
+        value.z = value.components['o3'] || 0;
+        return value;
     };
 
     var convert = function(value) {
         var result;
+
         if (value instanceof multivec)
             return value; // already a multi-vector
         else if (typeof(value) === 'string')
@@ -128,15 +133,24 @@
         } else if (Array.isArray(value)) {
             value.forEach(function(element, index) {
                 result.components['o' + (index + 1)] = element; });
+        } else if (!isNaN(value.theta)) {
+            var factor = isNaN(value.r) ? 1 : value.r;
+            if (!isNaN(value.phi)) {
+                result.components['o3'] = factor * Math.sin(value.phi);
+                factor *= Math.cos(phi);
+            } else factor = value.r;
+            result.components['o1'] = factor * Math.cos(value.theta);
+            result.components['o2'] = factor * Math.sin(value.theta);
         } else {
-            result.components = {};
             Object.keys(value).forEach(function(key) {
                 var bsign = canonicalizeBasis(key);
                 if (!zeroish(value[bsign[0]]))
-                    result.components[bsign[0]] = bsign[1] * value[key];
+                    result.components[bsign[0]] =
+                        (result.components[bsign[0]] || 0) +
+                        bsign[1] * value[key];
             });
         }
-        return result;
+        return polish(result);
     };
 
     multivec = function(value) {
@@ -144,10 +158,12 @@
             return new multivec(value);
         this.components = {};
         value = convert(value);
+
         Object.keys(value.components).forEach(function(key) {
             if (!zeroish(value.components[key]))
                 this.components[key] = value.components[key];
         }, this);
+        polish(this);
     };
 
     multivec.prototype.toString = function() {
@@ -163,7 +179,7 @@
                 result += ' + ' + (zeroish(coefficient - 1) ?
                                    '' : coefficient) + key;
             } else result += ' - ' + (zeroish(coefficient + 1) ?
-                                     '' : -coefficient) + key;
+                                      '' : -coefficient) + key;
         }, this);
 
         if (!result.length)
@@ -181,81 +197,365 @@
                 result = false;
         }, this);
         return result; };
-
-    multivec.prototype.scalar = function() {
-        return this.components[''] || 0; };
-    multivec.prototype.getX = function() {
-        return this.components['o1'] || 0; };
-    multivec.prototype.getY = function() {
-        return this.components['o2'] || 0; };
-    multivec.prototype.getZ = function() {
-        return this.components['o3'] || 0; };
-
-    multivec.prototype.add = function(other) {
-        var result = multivec();
-        var components = {};
-
-        Object.keys(this.components).forEach(function(key) {
-            components[key] = 0; });
-        Object.keys(other.components).forEach(function(key) {
-            components[key] = 0; });
-        Object.keys(components).forEach(function(key) {
-            components[key] =
-                (this.components[key] || 0) +
-                  (other.components[key] || 0); }, this);
-
-        Object.keys(components).forEach(function(key) {
-            if (!zeroish(components[key]))
-                result.components[key] = components[key]; });
+    multivec.zeroish = function() {
+        var result = true;
+        for (var ii = 0; ii < arguments.length; ++ii)
+            if (!convert(arguments[ii]).zeroish())
+                result = false;
         return result;
     };
 
-    multivec.prototype.product = function(other) {
-        var result = multivec();
-        var components = {};
+    var fieldOpBinary = function(fn, a, b) {
+        // Generic field operations (add, subtract, multiply)
+        // Division is excluded because it's a bit complex
+        var result = {};
+        b = convert(b);
 
-        Object.keys(this.components).forEach(function(left) {
-            Object.keys(other.components).forEach(function(right) {
+        if (fn) {
+            Object.keys(a.components).forEach(function(key) {
+                result[key] = 0; });
+            Object.keys(b.components).forEach(function(key) {
+                result[key] = 0; });
+            Object.keys(result).forEach(function(key) {
+                result[key] = fn((a.components[key] || 0),
+                                 (b.components[key] || 0)); });
+        } else Object.keys(a.components).forEach(function(left) {
+            Object.keys(b.components).forEach(function(right) {
                 var bsign = canonicalizeBasis(left + right);
 
-                components[bsign[0]] =
-                    (components[bsign[0]] || 0) + (
-                        bsign[1] * this.components[left] *
-                        other.components[right]);
-            }, this);
-        }, this);
+                result[bsign[0]] =
+                    (result[bsign[0]] || 0) +
+                    (bsign[1] * a.components[left] *
+                        b.components[right]);
+            });
+        });
+        return convert(result);
+    };
 
-        Object.keys(components).forEach(function(key) {
-            if (!zeroish(components[key]))
-                result.components[key] = components[key]; });
+    multivec.prototype.add = function(other) {
+        var result;
+        if (arguments.length === 1)
+            result = fieldOpBinary(
+                function(a, b) { return a + b }, this, other);
+        else
+            for (var ii = 0, result = this; ii < arguments.length; ++ii)
+                result = result.add(arguments[ii]);
+        return result;
+    };
+    multivec.prototype.plus = multivec.prototype.add;
+    multivec.prototype.sum = multivec.prototype.add;
+    multivec.sum = function() { return multivec(0).add(arguments); };
+
+    multivec.prototype.subtract = function(other) {
+        var result;
+        if (arguments.length === 1)
+            result = fieldOpBinary(
+                function(a, b) { return a - b }, this, other);
+        else
+            for (var ii = 0, result = this; ii < arguments.length; ++ii)
+                result = result.subtract(arguments[ii]);
+        return result;
+    };
+    multivec.prototype.minus = multivec.prototype.subtract;
+
+    multivec.prototype.multiply = function(other) {
+        var result;
+        if (arguments.length === 1)
+            result = fieldOpBinary(null, this, other);
+        else {
+            result = this;
+            for (var ii = 0; ii < arguments.length; ++ii)
+                result = result.multiply(arguments[ii]);
+        }
+        return result;
+    };
+    multivec.prototype.product = multivec.prototype.multiply;
+    multivec.prototype.times = multivec.prototype.multiply;
+    multivec.product = function() {
+        return multivec(1).multiply(arguments); };
+
+    multivec.prototype.divide = function(other) {
+        var result;
+        if (arguments.length === 1)
+            result = fieldOpBinary(
+                null, this, convert(other).inverseMult());
+        else
+            for (var ii = 0, result = this; ii < arguments.length; ++ii)
+                result = result.divide(arguments[ii]);
         return result;
     };
 
     multivec.prototype.conjugate = function() {
-        var result = multivec(this);
-        Object.keys(result.components).forEach(function(key) {
+        var components = {};
+        Object.keys(this.components).forEach(function(key) {
             var k = key.split('o').length - 1;
-            if ((k * (k - 1) / 2) % 2)
-                result.components[key] *= -1;
-        });
-        return result;
+            components[key] = ((((k * (k - 1) / 2) % 2) ? -1 : 1) *
+                this.components[key]);
+        }, this);
+        return convert(components);
     };
 
-    multivec.prototype.inverse = function() {
-        // Everything except 0 has an inverse
-        var scale = this.product(this.conjugate());
+    multivec.prototype.inverseAdd = function() {
+        // Returns the addative inverse of a multi-vector.
+        return this.multiply(-1);
+    };
+
+    multivec.prototype.inverseMult = function() {
+        // Returns the multiplicative inverse of a multi-vector,
+        // except for zero which has no inverse and throws an error.
+        var scale = this.multiply(this.conjugate());
         if (scale.zeroish())
-            throw new TypeError('No inverse of zero');
-        return this.product(1 / scale);
+            throw new TypeError('No multiplicative inverse of zero');
+        return this.multiply(1 / scale);
     };
 
     multivec.prototype.norm = function() {
-        // Multi-vectors are immutable outside this library
-        // so norm can be memoized to minimize square roots
+        // Return the Euclidian or 2-norm of a multi-vector.
+        // Memoized because multi-vectors are immutable.
         if (isNaN(this.__norm))
-            this.__norm = Math.sqrt(
-                this.product(this.conjugate()).scalar());
+            this.__norm = Math.sqrt(this.normSquared());
         return this.__norm;
+    };
+
+    multivec.prototype.normSquared = function() {
+        // Return the square of the multi-vector norm.  This is
+        // sometimes sufficient and saves a square root operation, for
+        // example to determine whether a vector is greater than a
+        // certain length.  Memoized because multi-vectors are immutable
+        if (isNaN(this.__normSquared))
+            this.__normSquared = this.multiply(this.conjugate()).scalar;
+        return this.__normSquared;
+    };
+
+    multivec.prototype.normalize = function() {
+        // Multi-vectors are immutable outside this library so norm can
+        // be memoized to minimize square roots
+        if (this.zeroish())
+            throw new TypeError('Zero cannot be normalized');
+        return this.multiply(1 / this.norm());
+    };
+
+    multivec.prototype.inner = function(other) {
+        var result = this.multiply(other).add(
+            convert(other).multiply(this)).multiply(1/2);
+        return result;
+    };
+
+    multivec.prototype.wedge = function(other) {
+        var result = this.multiply(other).add(
+            convert(other).multiply(-1).multiply(this)).multiply(1/2);
+        return result;
+    };
+    multivec.prototype.outer = multivec.prototype.wedge;
+
+    multivec.prototype.reflect = function(v) {
+        var result = this;
+        for (var ii = 0; ii < arguments.length; ++ii) {
+            var v = convert(arguments[ii]);
+            result = v.multiply(result).multiply(v.inverseMult());
+        }
+        return result;
+    };
+
+    multivec.prototype.rotate = function(v, w) {
+        // Rotates a vector along the plane defined by vectors v and w
+        // by the angle between the two vectors.
+        return this.reflect(v, v.plus(w));
+    };
+
+    multivec.prototype.draw = function(ctx, config) {
+        // Draw an arrow representing the o1 and o2 components of this
+        // multi-vector (intended for debugging purposes)
+        var length = (config && config.length) ? config.length : 1;
+        var bar = multivec([-this.getY(), this.getX()]).multiply(0.1);
+        var lineTo = function(ctx, vector) {
+            ctx.lineTo(vector.getX(), vector.getY());
+        };
+
+        ctx.save();
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = (config && config.color) || 'black';
+        ctx.fillStyle = (config && config.fill) || 'white';
+        ctx.lineWidth = (config && config.lineWidth) || 5;
+        if (config.center)
+            ctx.translate(config.center.getX(),
+                          config.center.getY());
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        lineTo(ctx, this.multiply(length * 0.9));
+        lineTo(ctx, this.add(bar).multiply(length * 0.9));
+        lineTo(ctx, this.multiply(length));
+        lineTo(ctx, this.add(bar.multiply(-1)).multiply(length * 0.9));
+        lineTo(ctx, this.multiply(length * 0.9));
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+    };
+
+    var quadraticRoots = function(a, b, c) {
+        // Computes the real roots of a quadradic expression.  Returns
+        // an array with either zero (no real roots) one or two numbers
+        // at which the expression is zero
+        var result = [];
+        var discriminant;
+        if (zeroish(a)) {
+            result = [-c / b];
+        } else {
+            discriminant = b * b - 4 * a * c;
+            if (discriminant < 0) {
+                // No real roots exist so result remains empty
+            } else if (discriminant > 0) {
+                discriminant = Math.sqrt(discriminant);
+                result = [(-b + discriminant) / (2 * a),
+                          (-b - discriminant) / (2 * a)];
+            } else result = [-b / (2 * a)];
+        }
+        return result;
+    };
+
+    var shortestSegment = function(v, segment) {
+        // Returns a vector going from the point represented
+        // by this vector to the closest point on the line.
+        // The output of this method plus the original vector
+        // is the closest point on the line
+        var q = segment.q ? segment.q : segment.e.subtract(segment.s);
+        var q2 = segment.normSquared ? segment.normSquared :
+                 q.normSquared();
+        return v.subtract(segment.s).subtract(
+            q.multiply(v.subtract(segment.s).inner(q).scalar / q2));
+    };
+
+    multivec.collideRadiusRadius = function(s1, e1, r1, s2, e2, r2) {
+        // Given the two round objects moving at constant velocity,
+        // compute the earliest time during the interval at which they
+        // will collide. If no collision is possible return undefined.
+        //
+        // A parameterized path is computed for both objects and the
+        // quadratic formula is used to find where that distance is
+        // equal to the sum of the radii, which is where edges touch.
+        var result = undefined;
+        var d1 = e1.subtract(s1);
+        var d2 = e2.subtract(s2);
+        var gap = r1 + r2;
+
+        result = quadraticRoots(
+            d1.inner(d1).scalar + d2.inner(d2).scalar -
+            2 * d1.inner(d2).scalar,
+            2 * s1.inner(d1).scalar + 2 * s2.inner(d2).scalar -
+            2 * d1.inner(s2).scalar - 2 * d2.inner(s1).scalar,
+            s1.inner(s1).scalar + s2.inner(s2).scalar -
+            2 * s1.inner(s2).scalar - gap * gap);
+        result = result.map(function(v) {
+            // Avoids rounding errors that cause missed collisions
+            return zeroish(v) ? 0 : v;
+        }).filter(function(v) { return ((v >= 0 && v <= 1)); });
+        result = (result.length > 0) ? Math.min(result) : undefined;
+
+        // Don't report collision when close and moving away
+        if (zeroish(result) &&
+            (s1.subtract(s2).normSquared() <
+                e1.subtract(e2).normSquared()))
+            result = undefined;
+
+        return result;
+    }
+
+    multivec.collideRadiusSegment = function(s, e, r, segment) {
+        // Given a spherical object moving at constant velocity and a
+        // line segment, this routine computes the time at which the
+        // two will collide.  The object is assumed to be at s (start
+        // point) when t == 0 and at e (end point) when t == 1. If no
+        // collision occurs this routine returns undefined.  The
+        // segment is an object with the following fields expected:
+        //
+        //   segment {
+        //     s: vector representing starting point
+        //     e: vector representing ending point
+        //     q: (optional) vector e - s
+        //     sqlen: (optional) squared length of segment
+        //     width: (optional) width of the segment
+        // thickness.  The distance bewteen the end points is an
+        // optional which can be used to reduce unnecessary steps.
+        //
+        // A parameterized path is computed nad the quadratic formula
+        // is used to find the fraction of the path at which the edges
+        // of the sphere and segment touch
+        var result = undefined; // undefined means no collision
+        var q = segment.q ? segment.q : segment.e.subtract(segment.s);
+        var q2 = segment.normSquared ? segment.normSquared :
+                 q.normSquared();
+        var width = segment.width ? segment.width : 0;
+        var ps = s.subtract(segment.s).inner(q).scalar / q.norm();
+        var pe = e.subtract(segment.s).inner(q).scalar / q.norm();
+        var ds = shortestSegment(s, segment);
+        var de = shortestSegment(e, segment);
+        var m, n, mq, nq, gap; // line distance computation variables
+
+        // A zero length segment would create divide-by-zero problems
+        // so treat it as a round object instead
+        if (zeroish(q2))
+            return multivec.collideRadiusRadius(
+                s, e, r, segment.s, segment.e, width / 2);
+        gap = r + width / 2;
+        gap *= gap;
+
+        if (ds.normSquared() < gap) {
+            if (ps < 0)
+                return multivec.collideRadiusRadius(
+                    s, e, r, segment.s, segment.s, width / 2);
+            else if (ps > q.norm())
+                return multivec.collideRadiusRadius(
+                    s, e, r, segment.e, segment.e, width / 2);
+        }
+
+        // Distance squared is
+        //   (p - segment.s) - ((p - segment.s) . q)q/q^2)^2
+        // A collision happens when this value is less than
+        //   (r - width/2)^2
+        // Since p is moving, it can be expanded to p = s + (e - s)t
+        // Then we break things down in terms of t and find roots
+        m = e.subtract(s); mq = m.inner(q).scalar;
+        n = s.subtract(segment.s); nq = n.inner(q).scalar;
+
+        // Rather than computing square roots, which can be expensive,
+        // we compare the square of the distance between point and line
+        // to the square of the sum of the radius and wall width.
+        // The roots represent the points in time when the difference
+        // between these values is zero, which are the moments of
+        // collison
+        result = quadraticRoots(
+            m.inner(m).scalar - mq * mq / q2,
+            2 * m.inner(n).scalar - 2 * mq * nq / q2,
+            n.inner(n).scalar - nq * nq / q2 - gap);
+        result = result.map(function(v) {
+            // Avoids rounding errors that cause missed collisions
+            return zeroish(v) ? 0 : v;
+        }).filter(function(v) { return ((v >= 0 && v <= 1)); });
+        result = (result.length > 0) ? Math.min(result) : undefined;
+
+        if (zeroish(result)) {
+            // Don't report collisions if the object starts up against
+            // the segment but is moving away
+            var ds = shortestSegment(s, segment);
+            var de = shortestSegment(e, segment);
+            if ((de.normSquared() > ds.normSquared()) &&
+                ds.inner(de).scalar > 0)
+                result = undefined;
+        }
+
+        if (!isNaN(result)) {
+            // Ignore collisions that occur outside the boundaries of
+            // the segment -- makes it possible to go around segments
+            var ps = s.subtract(segment.s).inner(q).scalar / q.norm();
+            var pe = e.subtract(segment.s).inner(q).scalar / q.norm();
+            if (ps + r < 0 && pe + r < 0) {
+                result = undefined;
+            } else if (ps - r > q.norm() && pe -r > q.norm()) {
+                result = undefined;
+            }
+        }
+        return result;
     };
 
     // This library exports only one function so the name of the
@@ -291,7 +591,7 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
                 .map(function(a) { return a.toString(); })
                 .join(') * (') + ') = ' +
                         mvecs.reduce(function(a, b) {
-                            return a.product(b); }));
+                            return a.multiply(b); }));
         }
     });
 }
