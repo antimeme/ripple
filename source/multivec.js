@@ -110,7 +110,7 @@
 
     var polish = function(value) {
         // Give multivector some helpful values
-        value.scalar = value.components[''];
+        value.scalar = value.components[''] || 0;
         value.x = value.components['o1'] || 0;
         value.y = value.components['o2'] || 0;
         value.z = value.components['o3'] || 0;
@@ -129,10 +129,12 @@
         result.components = {};
         if (!isNaN(value)) {
             result.components[''] = value;
+            polish(result);
         } else if (typeof(value) === 'undefined') {
         } else if (Array.isArray(value)) {
             value.forEach(function(element, index) {
                 result.components['o' + (index + 1)] = element; });
+            polish(result);
         } else if (!isNaN(value.theta)) {
             var factor = isNaN(value.r) ? 1 : value.r;
             if (!isNaN(value.phi)) {
@@ -141,6 +143,7 @@
             } else factor = value.r;
             result.components['o1'] = factor * Math.cos(value.theta);
             result.components['o2'] = factor * Math.sin(value.theta);
+            polish(result);
         } else {
             Object.keys(value).forEach(function(key) {
                 var bsign = canonicalizeBasis(key);
@@ -149,8 +152,9 @@
                         (result.components[bsign[0]] || 0) +
                         bsign[1] * value[key];
             });
+            polish(result);
         }
-        return polish(result);
+        return result;
     };
 
     multivec = function(value) {
@@ -336,14 +340,16 @@
     };
 
     multivec.prototype.inner = function(other) {
+        other = convert(other);
         var result = this.multiply(other).add(
-            convert(other).multiply(this)).multiply(1/2);
+            other.multiply(this)).divide(2);
         return result;
     };
 
     multivec.prototype.wedge = function(other) {
-        var result = this.multiply(other).add(
-            convert(other).multiply(-1).multiply(this)).multiply(1/2);
+        other = convert(other);
+        var result = this.multiply(other).subtract(
+            other.multiply(this)).divide(2);
         return result;
     };
     multivec.prototype.outer = multivec.prototype.wedge;
@@ -446,6 +452,7 @@
             2 * d1.inner(s2).scalar - 2 * d2.inner(s1).scalar,
             s1.inner(s1).scalar + s2.inner(s2).scalar -
             2 * s1.inner(s2).scalar - gap * gap);
+
         result = result.map(function(v) {
             // Avoids rounding errors that cause missed collisions
             return zeroish(v) ? 0 : v;
@@ -455,7 +462,7 @@
         // Don't report collision when close and moving away
         if (zeroish(result) &&
             (s1.subtract(s2).normSquared() <
-                e1.subtract(e2).normSquared()))
+             e1.subtract(e2).normSquared()))
             result = undefined;
 
         return result;
