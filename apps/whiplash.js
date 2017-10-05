@@ -2,8 +2,12 @@
 // Copyright (C) 2016-2017 by Simon Gold and Jeff Gold.
 //
 // Whiplash Paradox is a game about time travel
+// TODO click to target move
+// TODO click to access inventory
+// TODO event to register punch
+
 (function(whiplash) {
-    "use strict";
+    'use strict';
     var debug = !!window.params['debug'];
     var profiling = false;
     var rotateworld = !!window.params['rotateworld'];
@@ -370,6 +374,15 @@
             plan: (config.plan && config.plan in planners) ?
                   planners[config.plan] : planners.idle,
 
+            replan: function() {
+                // This is how the system informs us of collisions
+                // which indicates that we must update our plan
+                this.control.swipe = null;
+                this.destination =
+                    this.position.add(
+                        this.destination.multiply(collide));
+            },
+
             drawPre: config.drawPre || function(ctx, state, now) {
                 drawVision(ctx, this, state, now);
             },
@@ -391,20 +404,19 @@
                     this.left = this.right =
                         this.sleft = this.sright = false; }};
 
-        result.plan = function(state, now, collide) {
-            var destination = undefined;
+        result.replan = function(state, now, collide, destination) {
+            this.control.swipe = null;
+            return this.position.add(
+                destination.minus(this.position).multiply(collide));
+        };
+
+        result.plan = function(state, now) {
+            var result = undefined;
             var steps = this.speed * (now - this.last);
             var rads = 0.005 * (now - this.last);
             var dirvec, needrads, swipe;
 
-            if (!isNaN(collide)) {
-                // This is how the system informs us of collisions
-                // which indicates that we must update our plan
-                this.control.swipe = null;
-                this.destination =
-                    this.position.add(
-                        this.destination.multiply(collide));
-            } else if (this.control.swipe) {
+            if (this.control.swipe) {
                 // Process swipe arrows
                 dirvec = multivec([
                     Math.cos(this.direction),
@@ -432,7 +444,7 @@
                 }
 
                 if (steps > 0)
-                    destination = multivec([
+                    result = multivec([
                         this.position.x + dirvec.x * steps,
                         this.position.y + dirvec.y * steps]);
             } else {
@@ -442,22 +454,27 @@
                 else if (!this.control.left && this.control.right)
                     this.direction += rads;
 
+                if (this.control.sleft && !this.control.sright)
+                    result = (result ? result : this.position).plus(
+                        multivec({r: steps * 0.75,
+                                  theta: this.direction -
+                                         Math.PI / 2}));
+                else if (this.control.sright && !this.control.sleft)
+                    result = (result ? result : this.position).plus(
+                        multivec({r: steps * 0.75,
+                                  theta: this.direction +
+                                         Math.PI / 2}));
+
                 if (this.control.up && !this.control.down)
-                    destination = multivec([
-                        this.position.x +
-                        Math.cos(this.direction) * steps,
-                        this.position.y +
-                        Math.sin(this.direction) * steps]);
+                    result = (result ? result : this.position).plus(
+                        multivec({r: steps, theta: this.direction}));
                 else if (!this.control.up && this.control.down)
-                    // Reverse at reduced speed
-                    destination = multivec([
-                        this.position.x -
-                        Math.cos(this.direction) * steps * 0.75,
-                        this.position.y -
-                        Math.sin(this.direction) * steps * 0.75]);
+                    result = (result ? result : this.position).minus(
+                        multivec({r: steps * 0.75,
+                                  theta: this.direction}));
             }
             this.last = now;
-            return this.destination = destination;
+            return result;
         };
         return result;
     };
@@ -504,7 +521,8 @@
             }, this);
 
             if (!isNaN(collide))
-                this.player.plan(this, now, collide);
+                this.player.destination = this.player.replan(
+                    this, now, collide, this.player.destination);
         }
 
         this.characters.forEach(function(character) {
@@ -720,13 +738,21 @@
 		    this.player.control.down = true;
                     this.player.control.swipe = null;
                     this.update();
-                } else if (event.keyCode === 73 /* i */ ||
-                           event.keyCode === 9 /* tab */) {
-                    this.interact();
                 } else if (event.keyCode === 81 /* q */) {
-                    this.handLeft();
-                } else if (event.keyCode === 69 /* e */) {
+		    this.player.control.sleft = true;
+                    this.player.control.swipe = null;
+                    this.update();
+	        } else if (event.keyCode === 90 /* z */) {
                     this.handRight();
+                } else if (event.keyCode === 69 /* e */) {
+		    this.player.control.sright = true;
+                    this.player.control.swipe = null;
+                    this.update();
+	        } else if (event.keyCode === 67 /* c */) {
+                    this.handLeft();
+                } else if (event.keyCode === 73 /* i */ ||
+                           event.keyCode === 192 /* tilde */) {
+                    this.interact();
                 } else if (event.keyCode === 80 /* p */) {
                     if (debug) {
                         if (profiling)
@@ -758,10 +784,18 @@
 		    this.player.control.down = false;
                     this.player.control.swipe = null;
                     this.update();
-                } else if (event.keyCode === 70 /* i */ ||
-                           event.keyCode === 9 /* tab */) {
                 } else if (event.keyCode === 81 /* q */) {
+		    this.player.control.sleft = false;
+                    this.player.control.swipe = null;
+                    this.update();
                 } else if (event.keyCode === 69 /* e */) {
+		    this.player.control.sright = false;
+                    this.player.control.swipe = null;
+                    this.update();
+	        } else if (event.keyCode === 90 /* z */) {
+	        } else if (event.keyCode === 67 /* c */) {
+                } else if (event.keyCode === 70 /* i */ ||
+                           event.keyCode === 192 /* tilde */) {
                 } else if (event.keyCode === 80 /* p */) {
 	        } else if (debug) console.log('up', event.keyCode);
                 redraw();
