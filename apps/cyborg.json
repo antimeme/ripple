@@ -1,0 +1,242 @@
+{
+    "comment": [
+        "Cyborg is a deductive game in which players compete in ",
+        "factions to control a ship.  A battle cruiser has been ",
+        "sent to a war zone by an interplanetary empire, but on the ",
+        "way it was ambushed by enemy agents.  The attack temporarily ",
+        "scrambled the ships computer and gave a foothold to an ",
+        "infiltration team who downloaded programs into several ",
+        "cyborgs.  A group of mercenaries who helped the infiltrators ",
+        "have smelled an opportunity.  They have downloaded some of ",
+        "their own cyborgs as well and now seek to take control of ",
+        "the ship for themselves.  The ships computer is not ",
+        "defenseless and has downloaded loyal agents to most of the ",
+        "cyborgs.  To resolve the confict, the computer allows the ",
+        "group to vote on one cyborg to upload, shutting down its ",
+        "body for the good of the ship.  Who will gain control?"
+    ],
+    "factions": {
+        "loyalist": {
+            "comment": [
+                "At least one loyalist must be alive while all ",
+                "infiltrators and pirates are dead"]
+        },
+        "infiltrator": {
+            "comment": [
+                "At least one infiltrator must be alive while all ",
+                "loyalists and pirates are dead"]
+        },
+        "pirate": {
+            "comment": [
+                "At least one pirate must be alive while all ",
+                "infiltrators and loyalists are dead"]
+        },
+        "neutral": {
+            "comment": [
+                "Uncommitted to any faction"]
+        },
+        "malefactor": {
+            "comment": [
+                "Usually hostile to loyalists"]
+        },
+        "renegade": {
+            "comment": [
+                "Usually hostile to infiltrators"]
+        },
+        "justicar": {
+            "comment": [
+                "Usually hostile to pirates"]
+        }
+    },
+    "scenarios": {
+        "small": {
+            "loyalist": {
+                "console": 1,
+                "protective": 1,
+                "support": 1,
+                "informative": 1,
+                "offense": 1,
+                "any": 1
+            },
+            "malefactor": { "malefactor": 1 },
+            "infiltrator": {
+                "offense": 2
+            }
+        },
+        "medium": {
+            "loyalist": {
+                "console": 1,
+                "protective": 1,
+                "support": 2,
+                "informative": 2,
+                "offense": 1,
+                "any": 2
+            },
+            "malefactor": { "malefactor": 1 },
+            "pirate": { "pirate": 1 },
+            "infiltrator": {
+                "offense": 2,
+                "any": 1
+            }
+        }
+    },
+    "roles": {
+        "console": {
+            "restriction": "loyalist",
+            "category": "support",
+            "comment": [
+                "Able to speak to and hear uploaded players at night ",
+                "and can choose a live cyborg to communicate with ",
+                "after death"]
+        },
+        "bosun": {
+            "category": "support",
+            "unique": true,
+            "comment": [
+                "Can reveal during day and get 3 votes"]
+        },
+        "suppressor": {
+            "category": "support",
+            "comment": [
+                "Target one cyborg and prevent it from acting.",
+                "This role cannot be surppressed."]
+        },
+        "mechanic": {
+            "restriction": "loyalist",
+            "category": "protective",
+            "comment": [
+                "Target one cybrog and repair it if attacked"]
+        },
+        "guardian": {
+            "restriction": "loyalist",
+            "category": "protective",
+            "comment": [
+                "Target one cyborg and destroy one attacker at ",
+                "the cost of your own life"]
+        },
+        "inquisitor": {
+            "category": "informative",
+            "comment": [
+                "Target one cyborg and learn its loyalty. "
+                "Doing so inverts the results for opposing agents "
+                "and notifies the subject that they were interrogated."]
+        },
+        "detective": {
+            "category": "informative",
+            "comment": [
+                "Target one cyborg for a set of roles it might have."],
+            "categories": [
+                ["surpressor", "router"],
+                ["offence"],
+            ]
+        },
+        "scout": {
+            "category": "informative",
+            "comment": [
+                "Target one cyborg and see all who visit as well as ",
+                "all notifications that cyborg receives."]
+        },
+        "assault": {
+            "category": "offense",
+            "comment": [
+                "Target one cyborg to attack unless commanded"]
+        },
+        "commander": {
+            "category": "offense",
+            "restriction": "infiltrator",
+            "unique": true,
+            "defense": 2,
+            "comment": [
+                "Target one cyborg to attack, unless one or more ",
+                "unsuppressed friendly assault roles exist (in which ",
+                "case one of those will attack instead)"]
+        },
+        "router": {
+            "unique": true,
+            "restriction": "loyalist",
+            "comment": [
+                "Target two cyborgs - attempts to visit one will ",
+                "visit the other and vice versa."]
+        },
+        "pretender": {
+            "restriction": "infiltrator",
+            "comment": [
+                "Target one cyborg - assume its role for detectives ",
+                "and if killed"]
+        },
+        "evesdropper": {
+            "restriction": "infiltrator",
+            "comment": [
+                "Able to read whispers"]
+        },
+        "console": {
+            "comment": [
+                "Able to speak to hand hear all uploaded players"]
+        },
+        "buccaneer": {
+            "restriction": "pirate",
+            "category": "pirate",
+            "defense": 3,
+            "comment": [
+                "Target one cyborg to attack"]
+        },
+        "berzerker": {
+            "restriction": "pirate",
+            "category": "pirate",
+            "unique": true,
+            "defense": 3,
+            "comment": [
+                "Target one cyborg and attack with all visitors, ",
+                "ignoring any defense"]
+        },
+        "bomber": {
+            "restriction": "pirate",
+            "category": "pirate",
+            "defense": 3,
+            "comment": [
+                "Target one cyborg to sabotage or self to destroy ",
+                "all sabotaged targets, ignoring defense"]
+        },
+        "stowaway": {
+            "restriction": "neutral",
+            "category": "neutral",
+            "defense": 1,
+            "comment": [
+                "Avoid being killed or executed"]
+        },
+        "blank": {
+            "restriction": "neutral",
+            "category": "neutral",
+            "defense": 1,
+            "comment": [
+                "Target one uploaded cyborg to assume that role ",
+                "and loyalty and win conditions"]
+        },
+        "hacker": {
+            "defense": 1,
+            "category": "malefactor",
+            "restriction": "malefactor",
+            "comment": [
+                "Target two cyborgs - the first will use its ability ",
+                "on the second if possible.  You will learn the role ",
+                "of the first.  Win only if loyalists lose"]
+        },
+        "vendetta": {
+            "defense": 1,
+            "category": "malefactor",
+            "restriction": "malefactor",
+            "comment": [
+                "Win only if a specific loyalist (other than bosun) ",
+                "is executed or if that loyalist killed and loses"]
+        },
+        "overload": {
+            "defense": 1,
+            "category": "malefactor",
+            "restriction": "malefactor",
+            "comment": [
+                "When executed target one guilty judge to be ",
+                "overloaded or one will be chosen automatically. ",
+                "Win only if executed"]
+        }
+    }
+}
