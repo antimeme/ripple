@@ -525,8 +525,8 @@
                     Math.cos(this.direction),
                     Math.sin(this.direction)]);
                 needrads = Math.acos(
-                    ripple.clamp(dirvec.dotp(
-                        this.control.swipe), 1, -1));
+                    ripple.clamp(dirvec.inner(
+                        this.control.swipe).scalar, 1, -1));
                 if (Math.abs(needrads) < 0.05) {
                     // too small a time slice to turn
                 } else if (Math.abs(needrads) > rads) {
@@ -878,9 +878,10 @@
                         mmove = multivec([
                             targets.x - this.tap.x,
                             targets.y - this.tap.y]);
-                        swipe = mmove.norm();
+                        swipe = mmove.normalize();
                         if ((typeof(this.swipe) === 'undefined') ||
-                            (this.swipe && this.swipe.dotp(swipe) >
+                            (this.swipe &&
+                             this.swipe.inner(swipe).scalar >
                                 Math.cos(Math.PI / 3)))
                             this.swipe = swipe;
                         else this.swipe = null;
