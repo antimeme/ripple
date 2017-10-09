@@ -88,6 +88,15 @@
         return [result, sign];
     };
 
+    var polish = function(value) {
+        // Give multivector some helpful values
+        value.scalar = value.components[''] || 0;
+        value.x = value.components['o1'] || 0;
+        value.y = value.components['o2'] || 0;
+        value.z = value.components['o3'] || 0;
+        return value;
+    };
+
     var fromString = function(value) {
         var bsign, basis, sign, termOp = '+', components = {}, m;
         var components = {};
@@ -102,55 +111,45 @@
             termOp = m[6] || '+';
             value = value.slice(m[0].length);
         }
-
         return convert(components);
-    };
-
-    var polish = function(value) {
-        // Give multivector some helpful values
-        value.scalar = value.components[''] || 0;
-        value.x = value.components['o1'] || 0;
-        value.y = value.components['o2'] || 0;
-        value.z = value.components['o3'] || 0;
-        return value;
     };
 
     var convert = function(value) {
         var result;
 
         if (value instanceof multivec)
-            return value; // already a multi-vector
+            result = value; // already a multi-vector
         else if (typeof(value) === 'string')
-            return fromString(value);
-
-        result = Object.create(multivec.prototype);
-        result.components = {};
-        if (!isNaN(value)) {
-            result.components[''] = value;
-            polish(result);
-        } else if (typeof(value) === 'undefined') {
-        } else if (Array.isArray(value)) {
-            value.forEach(function(element, index) {
-                result.components['o' + (index + 1)] = element; });
-            polish(result);
-        } else if (!isNaN(value.theta)) {
-            var factor = isNaN(value.r) ? 1 : value.r;
-            if (!isNaN(value.phi)) {
-                result.components['o3'] = factor * Math.sin(value.phi);
-                factor *= Math.cos(phi);
+            result = fromString(value);
+        else {
+            result = Object.create(multivec.prototype);
+            result.components = {};
+            if (!isNaN(value)) {
+                result.components[''] = value;
+            } else if (typeof(value) === 'undefined') {
+            } else if (Array.isArray(value)) {
+                value.forEach(function(element, index) {
+                    result.components['o' + (index + 1)] = element; });
+            } else if (!isNaN(value.theta)) {
+                var factor = isNaN(value.r) ? 1 : value.r;
+                if (!isNaN(value.phi)) {
+                    result.components['o3'] =
+                        factor * Math.sin(value.phi);
+                    factor *= Math.cos(phi);
+                }
+                result.components['o1'] =
+                    factor * Math.cos(value.theta);
+                result.components['o2'] =
+                    factor * Math.sin(value.theta);
+            } else {
+                Object.keys(value).forEach(function(key) {
+                    var bsign = canonicalizeBasis(key);
+                    if (!zeroish(value[bsign[0]]))
+                        result.components[bsign[0]] =
+                            (result.components[bsign[0]] || 0) +
+                            bsign[1] * value[key];
+                });
             }
-            result.components['o1'] = factor * Math.cos(value.theta);
-            result.components['o2'] = factor * Math.sin(value.theta);
-            polish(result);
-        } else {
-            Object.keys(value).forEach(function(key) {
-                var bsign = canonicalizeBasis(key);
-                if (!zeroish(value[bsign[0]]))
-                    result.components[bsign[0]] =
-                        (result.components[bsign[0]] || 0) +
-                        bsign[1] * value[key];
-            });
-            polish(result);
         }
         return result;
     };
@@ -179,10 +178,10 @@
             } else if (!result) {
                 result += coefficient + key;
             } else if (coefficient >= 0) {
-                result += ' + ' + (zeroish(coefficient - 1) ?
-                                   '' : coefficient) + key;
-            } else result += ' - ' + (zeroish(coefficient + 1) ?
-                                      '' : -coefficient) + key;
+                result += ' + ' + (
+                    zeroish(coefficient - 1) ? '' : coefficient) + key;
+            } else result += ' - ' + (
+                zeroish(coefficient + 1) ? '' : -coefficient) + key;
         }, this);
 
         if (!result.length)
@@ -199,7 +198,8 @@
             if (!zeroish(this.components[key]))
                 result = false;
         }, this);
-        return result; };
+        return result;
+    };
     multivec.zeroish = function() {
         var result = true;
         for (var ii = 0; ii < arguments.length; ++ii)
@@ -208,20 +208,81 @@
         return result;
     };
 
-    var fieldOpBinary = function(fn, a, b) {
+    multivec.prototype.conjugate = function() {
+        var components = {};
+        Object.keys(this.components).forEach(function(key) {
+            var k = key.split('o').length - 1;
+            components[key] = ((((k * (k - 1) / 2) % 2) ? -1 : 1) *
+                this.components[key]);
+        }, this);
+        return polish(convert(components));
+    };
+
+    multivec.prototype.normSquared = function() {
+        // Return the square of the multi-vector norm.  This is
+        // sometimes sufficient and saves a square root operation, for
+        // example to determine whether a vector is greater than a
+        // certain length.  Memoized because multi-vectors are immutable
+        if (isNaN(this.__normSquared))
+            this.__normSquared = this.multiply(this.conjugate()).scalar;
+        return this.__normSquared;
+    };
+
+    multivec.prototype.norm = function() {
+        // Return the Euclidian or 2-norm of a multi-vector.
+        // Memoized because multi-vectors are immutable.
+        if (isNaN(this.__norm))
+            this.__norm = Math.sqrt(this.normSquared());
+        return this.__norm;
+    };
+
+    var scalarMultiply = function(value, coefficient) {
+        var components = {};
+        Object.keys(value.components).forEach(function(key) {
+            components[key] = value.components[key] * coefficient;
+        });
+        return convert(components);
+    };
+
+    multivec.prototype.normalize = function() {
+        // Multi-vectors are immutable outside this library so norm can
+        // be memoized to minimize square roots
+        var scale = this.norm();
+        if (zeroish(scale))
+            throw new RangeError('Zero cannot be normalized');
+        return polish(scalarMultiply(this, 1 / scale));
+    };
+
+    multivec.prototype.inverseAdd = function() {
+        // Returns the additive inverse of a multi-vector.
+        return polish(scalarMultiply(this, -1));
+    };
+    multivec.prototype.negate = multivec.prototype.inverseAdd;
+
+    multivec.prototype.inverseMult = function() {
+        // Returns the multiplicative inverse of a multi-vector,
+        // except for zero which has no inverse and throws an error.
+        var scale = this.normSquared();
+        if (zeroish(scale))
+            throw new RangeError('No multiplicative inverse of zero');
+        return polish(scalarMultiply(this, 1 / scale));
+    };
+
+    var fieldOpBinary = function(add, a, b) {
         // Generic field operations (add, subtract, multiply)
         // Division is excluded because it's a bit complex
         var result = {};
         b = convert(b);
 
-        if (fn) {
+        if (add) {
             Object.keys(a.components).forEach(function(key) {
                 result[key] = 0; });
             Object.keys(b.components).forEach(function(key) {
                 result[key] = 0; });
             Object.keys(result).forEach(function(key) {
-                result[key] = fn((a.components[key] || 0),
-                                 (b.components[key] || 0)); });
+                result[key] = (a.components[key] || 0) +
+                              (b.components[key] || 0);
+            });
         } else Object.keys(a.components).forEach(function(left) {
             Object.keys(b.components).forEach(function(right) {
                 var bsign = canonicalizeBasis(left + right);
@@ -238,104 +299,61 @@
     multivec.prototype.add = function(other) {
         var result;
         if (arguments.length === 1)
-            result = fieldOpBinary(
-                function(a, b) { return a + b }, this, other);
+            result = fieldOpBinary(true, this, other);
         else
             for (var ii = 0, result = this; ii < arguments.length; ++ii)
-                result = result.add(arguments[ii]);
-        return result;
+                result = fieldOpBinary(true, result, arguments[ii]);
+        return polish(result);
     };
     multivec.prototype.plus = multivec.prototype.add;
     multivec.prototype.sum = multivec.prototype.add;
-    multivec.sum = function() { return multivec(0).add(arguments); };
+    multivec.sum = function() {
+        return multivec.prototype.add.apply(multivec(0), arguments);
+    };
 
     multivec.prototype.subtract = function(other) {
         var result;
         if (arguments.length === 1)
             result = fieldOpBinary(
-                function(a, b) { return a - b }, this, other);
+                true, this, scalarMultiply(convert(other), -1));
         else
             for (var ii = 0, result = this; ii < arguments.length; ++ii)
-                result = result.subtract(arguments[ii]);
-        return result;
+                result = fieldOpBinary(
+                    true, result, scalarMultiply(
+                        convert(arguments[ii]), -1));
+        return polish(result);
     };
     multivec.prototype.minus = multivec.prototype.subtract;
 
     multivec.prototype.multiply = function(other) {
         var result;
         if (arguments.length === 1)
-            result = fieldOpBinary(null, this, other);
+            result = fieldOpBinary(false, this, other);
         else {
             result = this;
             for (var ii = 0; ii < arguments.length; ++ii)
-                result = result.multiply(arguments[ii]);
+                result = fieldOpBinary(false, result, arguments[ii]);
         }
-        return result;
+        return polish(result);
     };
     multivec.prototype.product = multivec.prototype.multiply;
     multivec.prototype.times = multivec.prototype.multiply;
     multivec.product = function() {
-        return multivec(1).multiply(arguments); };
+        return multivec.prototype.multiply.apply(
+            multivec(1), arguments);
+    };
 
     multivec.prototype.divide = function(other) {
         var result;
         if (arguments.length === 1)
             result = fieldOpBinary(
-                null, this, convert(other).inverseMult());
+                false, this, convert(other).inverseMult());
         else
             for (var ii = 0, result = this; ii < arguments.length; ++ii)
-                result = result.divide(arguments[ii]);
-        return result;
-    };
-
-    multivec.prototype.conjugate = function() {
-        var components = {};
-        Object.keys(this.components).forEach(function(key) {
-            var k = key.split('o').length - 1;
-            components[key] = ((((k * (k - 1) / 2) % 2) ? -1 : 1) *
-                this.components[key]);
-        }, this);
-        return convert(components);
-    };
-
-    multivec.prototype.inverseAdd = function() {
-        // Returns the addative inverse of a multi-vector.
-        return this.multiply(-1);
-    };
-
-    multivec.prototype.inverseMult = function() {
-        // Returns the multiplicative inverse of a multi-vector,
-        // except for zero which has no inverse and throws an error.
-        var scale = this.multiply(this.conjugate());
-        if (scale.zeroish())
-            throw new TypeError('No multiplicative inverse of zero');
-        return this.multiply(1 / scale);
-    };
-
-    multivec.prototype.norm = function() {
-        // Return the Euclidian or 2-norm of a multi-vector.
-        // Memoized because multi-vectors are immutable.
-        if (isNaN(this.__norm))
-            this.__norm = Math.sqrt(this.normSquared());
-        return this.__norm;
-    };
-
-    multivec.prototype.normSquared = function() {
-        // Return the square of the multi-vector norm.  This is
-        // sometimes sufficient and saves a square root operation, for
-        // example to determine whether a vector is greater than a
-        // certain length.  Memoized because multi-vectors are immutable
-        if (isNaN(this.__normSquared))
-            this.__normSquared = this.multiply(this.conjugate()).scalar;
-        return this.__normSquared;
-    };
-
-    multivec.prototype.normalize = function() {
-        // Multi-vectors are immutable outside this library so norm can
-        // be memoized to minimize square roots
-        if (this.zeroish())
-            throw new TypeError('Zero cannot be normalized');
-        return this.multiply(1 / this.norm());
+                result = fieldOpBinary(
+                    false, result, convert(
+                        arguments[ii]).inverseMult());
+        return polish(result);
     };
 
     var dot = function(a, b) {
@@ -601,20 +619,16 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
 
     tests.forEach(function(test) {
         var mvecs = test.map(multivec);
+        var svecs = mvecs.map(function(a) { return a.toString(); });
         if (!test.length) {
         } else if (test.length === 1) {
-            console.log(mvecs[0].toString());
+            console.log(svecs[0]);
         } else {
-            console.log('SUM  (' + mvecs
-                .map(function(a) { return a.toString(); })
-                .join(') + (') + ') = ' +
-                        mvecs.reduce(function(a, b) {
-                            return a.add(b); }));
-            console.log('PROD (' + mvecs
-                .map(function(a) { return a.toString(); })
-                .join(') * (') + ') = ' +
-                        mvecs.reduce(function(a, b) {
-                            return a.multiply(b); }));
+            console.log(svecs.join(', '));
+            console.log('  SUM  (' + svecs.join(') + (') + ') = ' +
+                        multivec.sum.apply(null, mvecs).toString());
+            console.log('  PROD (' + svecs.join(') * (') + ') = ' +
+                        multivec.product.apply(null, mvecs).toString());
         }
     });
 }
