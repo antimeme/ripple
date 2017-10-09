@@ -8,6 +8,8 @@
 
 (function(whiplash) {
     'use strict';
+    var sprites = 'url(images/whiplash-sprites.svg)';
+
     var debug = !!window.params['debug'];
     var profiling = false;
     var rotateworld = !!window.params['rotateworld'];
@@ -17,10 +19,14 @@
                         window.params['mazeRings'],
                         10), 8), 1) : undefined;
 
+    var squareSize = undefined;
     var setSquareSize = function(thing, size) {
-        thing.css({
-            width: Math.floor(size / 11),
-            height: Math.floor(size / 11) });
+        if (!isNaN(size))
+            squareSize = size;
+        if (!isNaN(squareSize))
+            thing.css({
+                width: Math.floor(squareSize / 11),
+                height: Math.floor(squareSize / 11) });
         return thing;
     };
 
@@ -38,6 +44,103 @@
             .on('mousedown touchstart', function(event) {
                 fn.call(context, arguments);
                 return false; });
+    };
+
+    var createInventory = function($, container, player) {
+        if (!(this instanceof createInventory))
+            return new createInventory($, container, player);
+        this.player = player;
+        this.other = null;
+
+        var give = function(event) {
+            var selected = this.playerPane.find('.selected');
+            if (selected.size()) {
+                var chosen = [];
+                var updated = [];
+                selected.each(function(index, item) {
+                    chosen.push($(item).data('index')); });
+                this.player.inventory.forEach(function(item, index) {
+                    if (index in chosen)
+                        this.other.inventory.push(item);
+                    else updated.push(item);
+                }, this);
+                this.player.inventory = updated;
+                this.populate(this.other);
+            } else this.playerPane.find('button').addClass('selected');
+        };
+
+        var take = function(event) {
+            var selected = this.otherPane.find('.selected');
+            if (selected.size()) {
+                var chosen = [];
+                var updated = [];
+                selected.each(function(index, item) {
+                    chosen.push($(item).data('index')); });
+                this.other.inventory.forEach(function(item, index) {
+                    if (index in chosen)
+                        this.player.inventory.push(item);
+                    else updated.push(item);
+                }, this);
+                this.other.inventory = updated;
+                this.populate(this.other);
+            } else this.otherPane.find('button').addClass('selected');
+        };
+
+        this.pane = $('<div>')
+            .addClass('page').addClass('inventory').hide()
+            .appendTo(container);
+        this.header = $('<div>')
+            .addClass('inventory-header')
+            .append($('<div>')
+                .addClass('bbar')
+                .append(createButton($, sprites, '0 100%', take, this)
+                    .addClass('give-and-take'))
+                .append(createButton($, sprites, '25% 100%', give, this)
+                    .addClass('give-and-take')))
+            .appendTo(this.pane);
+        this.playerPane = $('<div>')
+            .addClass('page-pane')
+            .addClass('inventory-personal')
+            .appendTo(this.pane);
+        this.otherPane = $('<div>')
+            .addClass('page-pane')
+            .addClass('inventory-other')
+            .appendTo(this.pane);
+        this.footer = $('<div>')
+            .addClass('inventory-footer')
+            .appendTo(this.pane);
+        this.populate();
+    };
+    createInventory.prototype.show = function() { this.pane.show(); };
+    createInventory.prototype.hide = function() { this.pane.hide(); };
+    createInventory.prototype.toggle = function() {
+        this.pane.toggle(); };
+    createInventory.prototype.isVisible = function() {
+        return this.pane.is(':visible'); };
+    createInventory.prototype.addItem = function(item, index, isOther) {
+        (isOther ? this.otherPane : this.playerPane).append(
+            createButton(jQuery, sprites, '75% 0', function(event) {
+                jQuery(event[0].target)
+                    .toggleClass('selected'); }, this)
+                .prop('title', item.toString())
+                .data('index', index));
+    };
+    createInventory.prototype.populate = function(other) {
+        this.playerPane.empty();
+        if (this.player)
+            this.player.inventory.forEach(function(item, index) {
+                this.addItem(item, index, false);
+            }, this);
+
+        this.otherPane.empty();
+        this.other = other;
+        if (this.other) {
+            this.other.inventory.forEach(function(item, index) {
+                this.addItem(item, index, true);
+            }, this);
+            jQuery('.give-and-take').show();
+        } else jQuery('.give-and-take').hide();
+        setSquareSize(jQuery('.image-button'));
     };
 
     var createWall = function(wall) {
@@ -96,12 +199,12 @@
         return result;
     };
 
-    var zclamp = function(state, zoom) {
-        if (zoom < state.zoom.min)
-            zoom = state.zoom.min;
-        if (zoom > state.zoom.max)
-            zoom = state.zoom.max;
-        state.zoom.value = zoom;
+    var zclamp = function(settings, zoom) {
+        if (zoom < settings.min)
+            zoom = settings.min;
+        if (zoom > settings.max)
+            zoom = settings.max;
+        settings.value = zoom;
     };
 
     var planners = {
@@ -545,8 +648,6 @@
             itemdefs: data.itemdefs ? data.itemdefs : {},
 
             init: function($, container, viewport) {
-                var sprites = 'url(images/whiplash-sprites.svg)';
-
                 $('<div>') // Left Action Bar
                     .addClass('bbar')
                     .css({ bottom: 0, left: 0 })
@@ -572,58 +673,8 @@
                     .addClass('page').addClass('settings').hide()
                     .append('<h2>Settings</h2>')
                     .appendTo(container);
-
-                this.inventory = {
-                    state: this,
-                    pane: $('<div>')
-                        .addClass('page')
-                        .addClass('inventory')
-                        .hide()
-                        .appendTo(container),
-                    show: function() { this.pane.show(); },
-                    hide: function() { this.pane.hide(); },
-                    toggle: function() { this.pane.toggle(); },
-                    isVisible: function() {
-                        return this.pane.is(':visible'); },
-                    add: function(name, other) {
-                        var collection = (
-                            other ? this.other : this.personal);
-                        collection.append(setSquareSize(createButton(
-                            $, sprites, '75% 0', function(event) {
-                                console.log(name);
-                            }), Math.min(state.width, state.height)));
-                    },
-                    populate: function(player, other) {
-                        this.personal.empty();
-                        player.inventory.forEach(function(item) {
-                            var name = item.type;
-                            this.add(name);
-                        }, this);
-
-                        this.other.empty();
-                        if (other) {
-                            other.inventory.forEach(function(item) {
-                                var name = item.type;
-                                this.add(name, true);
-                            }, this);
-                        }
-                    },
-                };
-                this.inventory.header = $('<div>')
-                    .addClass('inventory-header')
-                    .appendTo(this.inventory.pane);
-                this.inventory.personal = $('<div>')
-                    .addClass('page-pane')
-                    .addClass('inventory-personal')
-                    .appendTo(this.inventory.pane);
-                this.inventory.other = $('<div>')
-                    .addClass('page-pane')
-                    .addClass('inventory-other')
-                    .appendTo(this.inventory.pane);
-                this.inventory.footer = $('<div>')
-                    .addClass('inventory-footer')
-                    .appendTo(this.inventory.pane);
-                this.inventory.populate(this.player);
+                this.inventory = createInventory(
+                    $, container, this.player);
             },
             resize: function(width, height, $) {
                 var size = Math.min(width, height);
@@ -718,36 +769,32 @@
                              this.width / 2, size / 50);
             },
             keydown: function(event, redraw) {
-                // Recognize WASD and arrow keys
-	        if (event.keyCode === 37 || event.keyCode === 65) {
+                redraw();
+                this.update();
+	        if (event.keyCode === 37 /* left */ ||
+                    event.keyCode === 65 /* a */) {
 		    this.player.control.left = true;
                     this.player.control.swipe = null;
-                    this.update();
-	        } else if (event.keyCode === 38 ||
-                           event.keyCode === 87) {
+	        } else if (event.keyCode === 38 /* up */ ||
+                           event.keyCode === 87 /* w */) {
                     this.player.control.up = true;
                     this.player.control.swipe = null;
-                    this.update();
-	        } else if (event.keyCode === 39 ||
-                           event.keyCode === 68) {
+	        } else if (event.keyCode === 39 /* right */ ||
+                           event.keyCode === 68 /* d */) {
 		    this.player.control.right = true;
                     this.player.control.swipe = null;
-                    this.update();
-	        } else if (event.keyCode === 40 ||
-                           event.keyCode === 83) {
+	        } else if (event.keyCode === 40 /* down */ ||
+                           event.keyCode === 83 /* s */) {
 		    this.player.control.down = true;
                     this.player.control.swipe = null;
-                    this.update();
                 } else if (event.keyCode === 81 /* q */) {
 		    this.player.control.sleft = true;
                     this.player.control.swipe = null;
-                    this.update();
-	        } else if (event.keyCode === 90 /* z */) {
-                    this.handRight();
                 } else if (event.keyCode === 69 /* e */) {
 		    this.player.control.sright = true;
                     this.player.control.swipe = null;
-                    this.update();
+	        } else if (event.keyCode === 90 /* z */) {
+                    this.handRight();
 	        } else if (event.keyCode === 67 /* c */) {
                     this.handLeft();
                 } else if (event.keyCode === 73 /* i */ ||
@@ -761,44 +808,37 @@
                         profiling = !profiling;
                     }
 	        } else if (debug) console.log('down', event.keyCode);
-                redraw();
             },
             keyup: function(event, redraw) {
-                // Recognize WASD and arrow keys
+                redraw();
+                this.update();
 	        if (event.keyCode === 37 || event.keyCode === 65) {
 		    this.player.control.left = false;
                     this.player.control.swipe = null;
-                    this.update();
 	        } else if (event.keyCode === 38 ||
                            event.keyCode === 87) {
                     this.player.control.up = false;
                     this.player.control.swipe = null;
-                    this.update();
 	        } else if (event.keyCode === 39 ||
                            event.keyCode === 68) {
 		    this.player.control.right = false;
                     this.player.control.swipe = null;
-                    this.update();
 	        } else if (event.keyCode === 40 ||
                            event.keyCode === 83) {
 		    this.player.control.down = false;
                     this.player.control.swipe = null;
-                    this.update();
                 } else if (event.keyCode === 81 /* q */) {
 		    this.player.control.sleft = false;
                     this.player.control.swipe = null;
-                    this.update();
                 } else if (event.keyCode === 69 /* e */) {
 		    this.player.control.sright = false;
                     this.player.control.swipe = null;
-                    this.update();
 	        } else if (event.keyCode === 90 /* z */) {
 	        } else if (event.keyCode === 67 /* c */) {
                 } else if (event.keyCode === 70 /* i */ ||
                            event.keyCode === 192 /* tilde */) {
                 } else if (event.keyCode === 80 /* p */) {
 	        } else if (debug) console.log('up', event.keyCode);
-                redraw();
             },
             mtdown: function(targets, event, redraw) {
                 this.tap = targets;
@@ -829,7 +869,7 @@
                                 targets.touches[0].y -
                                 targets.touches[1].y
                             ]).normSquared();
-                            zclamp(this, this.zoom.value *
+                            zclamp(this.zoom, this.zoom.value *
                                 Math.sqrt(zoomref /
                                     this.zoom.reference));
                             this.update();
@@ -874,7 +914,7 @@
             },
             mwheel: function(event, redraw) {
                 if (event.deltaY)
-                    zclamp(this, this.zoom.value *
+                    zclamp(this.zoom, this.zoom.value *
                         (1 + (0.1 * (event.deltaY > 0 ? 1 : -1))));
                 redraw();
                 return false;
@@ -934,15 +974,14 @@
                     var closest = null;
                     this.chests.forEach(function(chest) {
                         sqdist = chest.checkAccessible(this.player);
-                        if (isNaN(least) ||  sqdist < least) {
+                        if (chest.accessible &&
+                            (isNaN(least) || sqdist < least)) {
                             closest = chest;
                             least = sqdist;
                         }
                     }, this);
 
-                    state.inventory.populate(
-                        state.player, (closest && closest.accessible) ?
-                        closest : undefined);
+                    state.inventory.populate(closest);
                     state.inventory.show();
                 }
             },
