@@ -109,8 +109,9 @@
 })();
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
+    var ripple = require('./ripple.js');
     var pqueue = exports;
-    var entries = [5, 6, 1, 2, 4, 9];
+    var entries = ripple.shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     var pq = pqueue(entries, pqueue.min);
 
     console.log(entries);
