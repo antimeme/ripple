@@ -199,14 +199,6 @@
         return result;
     };
 
-    var zclamp = function(settings, zoom) {
-        if (zoom < settings.min)
-            zoom = settings.min;
-        if (zoom > settings.max)
-            zoom = settings.max;
-        settings.value = zoom;
-    };
-
     var planners = {
         idle: function(state, now) { /* do nothing */ },
         guard: function(state, now) {
@@ -642,7 +634,17 @@
         //   null - arrow not set
         var state = {
             height: 320, width: 320,
-            zoom: { value: 25, min: 10, max: 100, reference: 0 },
+            zoom: {
+                value: 25, min: 10, max: 100, reference: 0,
+                change: function(value) {
+                    value *= this.value;
+                    if (value < this.min)
+                        value = this.min;
+                    if (value > this.max)
+                        value = this.max;
+                    this.value = value;
+                    return this;
+                }},
             tap: null, mmove: null, swipe: null,
             player: null, update: update,
             itemdefs: data.itemdefs ? data.itemdefs : {},
@@ -869,9 +871,8 @@
                                 targets.touches[0].y -
                                 targets.touches[1].y
                             ]).normSquared();
-                            zclamp(this.zoom, this.zoom.value *
-                                Math.sqrt(zoomref /
-                                    this.zoom.reference));
+                            this.zoom.change(Math.sqrt(zoomref /
+                                this.zoom.reference));
                             this.update();
                         }
                     } else {
@@ -915,8 +916,8 @@
             },
             mwheel: function(event, redraw) {
                 if (event.deltaY)
-                    zclamp(this.zoom, this.zoom.value *
-                        (1 + (0.1 * (event.deltaY > 0 ? 1 : -1))));
+                    this.zoom.change(
+                        1 + (0.1 * (event.deltaY > 0 ? 1 : -1)));
                 redraw();
                 return false;
             },
