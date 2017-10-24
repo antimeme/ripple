@@ -3,58 +3,66 @@
 <meta name="viewport" content="width=device-width, user-scalable=no" />
 <meta name="viewport" content="initial-scale=1, maximum-scale=1" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
-<meta http-equiv="X-UA-Compatible" content="chrome=1">
 <title>Poke!</title>
 <style>
-    html, body { padding: 0; margin: 0; overflow: hidden; }
-    #target canvas {
-      margin: 0 auto 0 auto; display: block;
-      touch-action: none; // Prevents browser default touch events
-    }
-    #log { height: 16em; overflow: scroll; background: lightblue; }
+ html, body { padding: 0; margin: 0; overflow: hidden; }
+ .bbar { position: absolute; bottom: 0; right: 0; }
+ #log {
+     position: absolute; top: 0; bottom: 0; left: 0; right: 0;
+     overflow-x: none; overflow-y: auto; background: lightblue;
+ }
 </style>
-<div id="target">
-    <canvas></canvas>
-</div>
-<button id="clear">Clear</button>
 <div id="log"></div>
+<div class="bbar">
+    <button name="clear">Clear</button>
+</div>    
+
 <script src="lib/jquery.min.js"></script>
 <script src="lib/jquery.mousewheel.js"></script>
-<!--[if lt IE 9]><script>//<![CDATA[
-  jQuery(function($) {
-     $.getScript('http://ajax.googleapis.com/ajax/libs/' +
-                 'chrome-frame/1/CFInstall.min.js',
-                 function() { CFInstall.check(); }); });
-//]]></script><![endif]-->
 <script src="ripple/context.js"></script>
 <script>//<![CDATA[
-jQuery(function($) {
-    var last;
-    $('#target canvas').each(function() {
-        var ctx = this.getContext('2d');
-        ctx.fillStyle = "rgba(0, 0, 200, 0.75)";
-        ctx.fillRect(0, 0, this.width, this.height);
-    });
-    $('#target canvas').on('mousedown mouseup mousemove mousewheel ' +
-                           'mouseenter mouseleave click dblclick ' +
-                           'touchstart touchend touchmove touchcancel',
-                           function(event) {
-        var position = '', p = $.targets(event);
-        if (last && last.type == event.type &&
-            last.count == p.touches.length)
-            $('#log').children(':first').remove();
-        last = {type: event.type, count: p.touches.length};
-        for (var i = 0; i < p.touches.length; i++)
-            position += '(' + Math.floor(p.touches[i].x) + ', ' +
-                        Math.floor(p.touches[i].y) + ')';
-        if (event.type == 'mousewheel')
-            position += '[' + event.deltaX + ', ' + event.deltaY +
-                        ', ' + event.deltaFactor + ']';
-        $('#log').prepend('<div>' + event.type + position + ' ' +
-                          //'target=' + event.target.nodeName + ', ' +
-                          'which=' + event.which + '</div>');
-        return false;
-    });
-    $('#clear').on('click', function(event) { $('#log').empty(); });
-});
-//]]></script>
+ jQuery(function($) {
+     var last;
+
+     $('button[name="clear"]').on(
+         'click', function(event) { $('#log').empty(); });
+     $('#log').on(
+         'mousedown mouseup mousemove mousewheel ' +
+         'mouseenter mouseleave click dblclick ' +
+         'touchstart touchend touchmove touchcancel',
+         function(event) {
+             var p = $.targets(event);
+             var settings = {which: event.which};
+             if (last && last.type == event.type &&
+                 last.count == p.touches.length)
+                 $('#log').children(':first').remove();
+             last = {type: event.type, count: p.touches.length};
+             for (var i = 0; i < p.touches.length; i++) {
+                 settings.x = p.touches[i].x;
+                 settings.y = p.touches[i].y;
+             }
+             if (event.type == 'mousewheel') {
+                 settings.deltaX = event.deltaX;
+                 settings.deltaY = event.deltaY;
+                 settings.deltaFactor = event.deltaFactor;
+             }
+             $('#log').prepend(
+                 '<div>' + event.type +
+                 JSON.stringify(settings) + '</div>');
+             console.log(event);
+             return false;
+         });
+     $(window).on('keyup keydown keypress', function(event) {
+         var settings = {};
+         if ('key' in event)
+             settings.key = event.key;
+         if ('keyCode' in event)
+             settings.keyCode = event.keyCode;
+         if ('which' in event)
+             settings.which = event.which;
+         $('#log').prepend(
+             '<div>' + event.type +
+             JSON.stringify(settings) + '</div>');
+         console.log(event);
+     });
+ }); //]]></script>
