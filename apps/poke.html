@@ -6,6 +6,7 @@
 <title>Poke!</title>
 <style>
  html, body { padding: 0; margin: 0; overflow: hidden; }
+ p { margin: 0 0 0 2em; text-indent: -2em; }
  .bbar { position: absolute; bottom: 0; right: 0; }
  #log {
      position: absolute; top: 0; bottom: 0; left: 0; right: 0;
@@ -19,7 +20,7 @@
 
 <script src="lib/jquery.min.js"></script>
 <script src="lib/jquery.mousewheel.js"></script>
-<script src="ripple/context.js"></script>
+<script src="ripple/gestur.js"></script>
 <script>//<![CDATA[
  jQuery(function($) {
      var last;
@@ -31,24 +32,23 @@
          'mouseenter mouseleave click dblclick ' +
          'touchstart touchend touchmove touchcancel',
          function(event) {
-             var p = $.targets(event);
-             var settings = {which: event.which};
-             if (last && last.type == event.type &&
-                 last.count == p.touches.length)
-                 $('#log').children(':first').remove();
-             last = {type: event.type, count: p.touches.length};
-             for (var i = 0; i < p.touches.length; i++) {
-                 settings.x = p.touches[i].x;
-                 settings.y = p.touches[i].y;
-             }
+             var settings = gestur.createTargets(event);
+             if ('which' in event)
+                 settings.which = event.which;
+
              if (event.type == 'mousewheel') {
                  settings.deltaX = event.deltaX;
                  settings.deltaY = event.deltaY;
                  settings.deltaFactor = event.deltaFactor;
              }
+
+             if (last && last.type == event.type &&
+                 last.count == settings.touches.length)
+                 $('#log').children(':first').remove();
+             last = {type: event.type, count: settings.touches.length};
              $('#log').prepend(
-                 '<div>' + event.type +
-                 JSON.stringify(settings) + '</div>');
+                 '<p>' + event.type +
+                 JSON.stringify(settings) + '</p>');
              console.log(event);
              return false;
          });
@@ -61,8 +61,8 @@
          if ('which' in event)
              settings.which = event.which;
          $('#log').prepend(
-             '<div>' + event.type +
-             JSON.stringify(settings) + '</div>');
+             '<p>' + event.type +
+             JSON.stringify(settings) + '</p>');
          console.log(event);
          last = null;
      });
