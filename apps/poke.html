@@ -5,70 +5,110 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <title>Poke!</title>
 <style>
- html, body { padding: 0; margin: 0; overflow: hidden; }
- p { margin: 0 0 0 2em; text-indent: -2em; }
- .bbar { position: absolute; bottom: 0; right: 0; }
- .screen {
-     position: absolute; overflow: none;
-     top: 0; bottom: 0; left: 0; right: 0;
+ html, body, canvas, div { margin: 0; padding: 0 }
+ body {
+     background-color: lightblue;
+     overflow-x: visible; overflow-y: hidden;
  }
+ canvas { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
  #log {
-     position: absolute; top: 0; bottom: 0; left: 0; right: 0;
-     overflow-x: none; overflow-y: auto; background: lightblue;
+     position: absolute; top: 0, bottom: 0, left: 0, right: 0;
+     text-indent: -2em; margin-left: 2em;
  }
+ button { position: absolute; top: 1%; right: 1%; }
 </style>
+
 <div id="log"></div>
-<div class="screen"></div>
-<div class="bbar">
-    <button name="clear">Clear</button>
-</div>
+<canvas></canvas>
+<button id="clear">CLEAR</button>
 
 <script src="lib/jquery.min.js"></script>
 <script src="lib/jquery.mousewheel.js"></script>
 <script src="ripple/gestur.js"></script>
 <script>//<![CDATA[
  jQuery(function($) {
-     var last;
+     var viewport = $(window);
+     var canvas = $('canvas');
+     var last = null;
+     var post = function(description, details) {
+         if (last && last.description === description)
+             $('#log').children(':first').remove();
+         last = {description: description};
+         $('#log').prepend('<div>' + description +
+                           JSON.stringify(details) + '</div>');  
+     };
+     var resize = function() {
+	 canvas.css({width: viewport.innerWidth(),
+                     height: viewport.innerHeight()});
+ 	 canvas.attr({width: canvas.innerWidth(),
+                      height: canvas.innerHeight()});
 
-     $('button[name="clear"]').on(
-         'click', function(event) { $('#log').empty(); });
-     $('.screen').on(
-         'mousedown mouseup mousemove mousewheel ' +
-         'mouseenter mouseleave click dblclick ' +
-         'touchstart touchend touchmove touchcancel contextmenu',
-         function(event) {
-             var settings = gestur.createTargets(event);
-             if ('which' in event)
-                 settings.which = event.which;
-
-             if (event.type == 'mousewheel') {
-                 settings.deltaX = event.deltaX;
-                 settings.deltaY = event.deltaY;
-                 settings.deltaFactor = event.deltaFactor;
+         canvas.each(function(index, current) {
+             var xx, yy, scale = 100;
+             var ctx = current.getContext('2d');
+             if (!ctx)
+                 return;
+             ctx.clearRect(0, 0, canvas.width, canvas.height);
+             ctx.beginPath();
+             for (xx = 0; xx < current.width; xx += scale) {
+                 ctx.moveTo(xx, 0);
+                 ctx.lineTo(xx, current.height);
              }
-
-             if (last && last.type == event.type &&
-                 last.count == settings.touches.length)
-                 $('#log').children(':first').remove();
-             last = {type: event.type, count: settings.touches.length};
-             $('#log').prepend(
-                 '<p>' + event.type +
-                 JSON.stringify(settings) + '</p>');
-             console.log(event);
-             return false;
+             for (yy = 0; yy < current.height; yy += scale) {
+                 ctx.moveTo(0, yy);
+                 ctx.lineTo(current.width, yy);
+             }
+             ctx.lineWidth = 2;
+             ctx.strokeStyle = 'rgba(16, 16, 64, 0.5)';
+             ctx.stroke();
          });
-     $(window).on('keyup keydown keypress', function(event) {
-         var settings = {};
-         if ('key' in event)
-             settings.key = event.key;
-         if ('keyCode' in event)
-             settings.keyCode = event.keyCode;
-         if ('which' in event)
-             settings.which = event.which;
-         $('#log').prepend(
-             '<p>' + event.type +
-             JSON.stringify(settings) + '</p>');
-         console.log(event);
-         last = null;
+     };
+
+     resize();
+     viewport.on('resize', resize);  
+     viewport.on('keydown keyup keypress', function(event) {
+	 var details = {key: event.key, keyCode: event.keyCode,
+                        which: event.which};
+ 	 post(event.type, details);
+	 return false;
      });
+     $('#clear').on('click', function() { $('#log').empty(); });
+
+     var poke = function(event) {
+         var details = {pageX: event.pageX, pageY: event.pageY,
+                        which: event.which};
+         var getTouches = function(name) {
+  	     var touches, result = [];
+	     if (!event.originalEvent ||
+                 !(touches = event.originalEvent[name]))
+                 return;
+             Object.keys(touches).forEach(function(index) {
+		 var touchlog = {};
+                 ['identifier', 'pageX', 'pageY', 'force',
+                  'rotationAngle', 'radiusX', 'radiusY']
+                     .forEach(function(field) {
+                         var value = touches[index][field];
+                         if (!isNaN(value))
+         		     value = Math.round(value * 1000) / 1000;
+         	         this[field] = value;
+                     }, touchlog);
+                 result.push(touchlog);
+             });
+	     return result;
+	 };
+         ['touches', 'targetTouches', 'changedTouches']
+             .forEach(function(field) {
+                 this[field] = getTouches(field); }, details);
+         if (event.type == 'mousewheel') {
+             details.deltaX = event.deltaX;
+             details.deltaY = event.deltaY;
+             details.deltaFactor = event.deltaFactor;
+         }
+
+         post(event.type, details);
+         return false;
+     };
+     canvas.on('touchstart touchend touchmove touchcancel ' +
+               'mousedown mouseup mousemove mousewheel ' +
+               'mouseenter mouseleave click dblclick', poke);
  }); //]]></script>
