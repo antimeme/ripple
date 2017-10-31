@@ -24,7 +24,6 @@
 
 <script src="lib/jquery.min.js"></script>
 <script src="lib/jquery.mousewheel.js"></script>
-<script src="ripple/gestur.js"></script>
 <script>//<![CDATA[
  jQuery(function($) {
      var viewport = $(window);
@@ -34,13 +33,14 @@
          if (last && last.description === description)
              $('#log').children(':first').remove();
          last = {description: description};
-         $('#log').prepend('<div>' + description +
-                           JSON.stringify(details) + '</div>');  
+         $('#log').prepend(
+             '<div>' + description +
+             JSON.stringify(details).replace(/,/g, ', ') + '</div>');
      };
      var resize = function() {
 	 canvas.css({width: viewport.innerWidth(),
                      height: viewport.innerHeight()});
- 	 canvas.attr({width: canvas.innerWidth(),
+         canvas.attr({width: canvas.innerWidth(),
                       height: canvas.innerHeight()});
 
          canvas.each(function(index, current) {
@@ -65,11 +65,11 @@
      };
 
      resize();
-     viewport.on('resize', resize);  
+     viewport.on('resize', resize);
      viewport.on('keydown keyup keypress', function(event) {
 	 var details = {key: event.key, keyCode: event.keyCode,
                         which: event.which};
- 	 post(event.type, details);
+         post(event.type, details);
 	 return false;
      });
      $('#clear').on('click', function() { $('#log').empty(); });
@@ -78,7 +78,7 @@
          var details = {pageX: event.pageX, pageY: event.pageY,
                         which: event.which};
          var getTouches = function(name) {
-  	     var touches, result = [];
+             var touches, result = [];
 	     if (!event.originalEvent ||
                  !(touches = event.originalEvent[name]))
                  return;
@@ -89,8 +89,8 @@
                      .forEach(function(field) {
                          var value = touches[index][field];
                          if (!isNaN(value))
-         		     value = Math.round(value * 1000) / 1000;
-         	         this[field] = value;
+                             value = Math.round(value * 1000) / 1000;
+                         this[field] = value;
                      }, touchlog);
                  result.push(touchlog);
              });
