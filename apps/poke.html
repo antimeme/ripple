@@ -30,7 +30,8 @@
      var canvas = $('canvas');
      var last = null;
      var post = function(description, details) {
-         if (last && last.description === description)
+         if (last && last.description === description &&
+             description.endsWith("move"))
              $('#log').children(':first').remove();
          last = {description: description};
          $('#log').prepend(
