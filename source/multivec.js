@@ -40,20 +40,29 @@
     var zeroish = function(value) {
         return (!isNaN(value) && value <= epsilon && value >= -epsilon);
     };
-    var termExpStr = '^\\s*([-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?)?' +
-                     '(([oO][1-9][0-9]*)*)(\\s+([+-])\\s+)?';
-    var termExp = new RegExp(termExpStr);
+    var basisNameSign = {};
+    var basisBreakdown = {};
+    var termExp = new RegExp(
+        '^\\s*([-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?)?' +
+        '(([oO][1-9][0-9]*)*)(\\s+([+-])\\s+)?');
     var basisExp = new RegExp(/([oO]([1-9][0-9]*))|[xyzXYZ]/);
 
     var canonicalizeBasis = function(basis) {
         // Converts basis strings to a canonical form to make them
         // comparable.  Returns an array containing the updated
         // basis string as well as the sign (either 1 or -1)
-        var sign = 1, result = "";
-        var b = [], breakdown = {}, m, ii, swap, squeeze = 0;
+        if (basis in basisNameSign)
+            return basisNameSign[basis];
+
+        var result = "";
+        var sign = 1;
+        var b = [];
+        var breakdown = {};
+        var m, ii, swap, current = basis, squeeze = 0;
 
         // Extract basis vectors for further processing
-        while ((m = basis.match(basisExp)) && m[0].length) {
+        for (current = basis; (m = current.match(basisExp)) &&
+             m[0].length; current = current.slice(m[0].length)) {
             if (m[0] === 'x' || m[0] === 'X') {
                 ii = 1;
             } else if (m[0] === 'y' || m[0] === 'Y') {
@@ -64,7 +73,6 @@
 
             b.push(ii);
             breakdown[ii] = (breakdown[ii] || 0) + 1;
-            basis = basis.slice(m[0].length);
         }
 
         do { // Bubble sort basis vectors, flipping sign each swap
@@ -85,6 +93,9 @@
             if (breakdown[key] % 2)
                 result += 'o' + key;
         });
+
+        basisNameSign[basis] = [result, sign];
+        basisBreakdown[basis] = breakdown;
         return [result, sign];
     };
 
