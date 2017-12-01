@@ -40,25 +40,21 @@
     var zeroish = function(value) {
         return (!isNaN(value) && value <= epsilon && value >= -epsilon);
     };
-    var basisNameSign = {};
-    var basisBreakdown = {};
+    var basisCache = {};
+    var basisExp = new RegExp(/([oO]([1-9][0-9]*))|[xyzXYZ]/);
     var termExp = new RegExp(
         '^\\s*([-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?)?' +
         '(([oO][1-9][0-9]*)*)(\\s+([+-])\\s+)?');
-    var basisExp = new RegExp(/([oO]([1-9][0-9]*))|[xyzXYZ]/);
 
     var canonicalizeBasis = function(basis) {
         // Converts basis strings to a canonical form to make them
         // comparable.  Returns an array containing the updated
         // basis string as well as the sign (either 1 or -1)
-        if (basis in basisNameSign)
-            return basisNameSign[basis];
+        if (basis in basisCache)
+            return basisCache[basis];
 
-        var result = "";
-        var sign = 1;
-        var b = [];
-        var breakdown = {};
-        var m, ii, swap, current = basis, squeeze = 0;
+        var result = {label: "", sign: 1, breakdown: {}};
+        var b = [], current = basis, squeeze = 0, m, ii, swap;
 
         // Extract basis vectors for further processing
         for (current = basis; (m = current.match(basisExp)) &&
@@ -72,7 +68,7 @@
             } else ii = parseInt(m[2], 10);
 
             b.push(ii);
-            breakdown[ii] = (breakdown[ii] || 0) + 1;
+            result.breakdown[ii] = (result.breakdown[ii] || 0) + 1;
         }
 
         do { // Bubble sort basis vectors, flipping sign each swap
@@ -83,20 +79,18 @@
                     swap = b[ii];
                     b[ii] = b[ii + 1];
                     b[ii + 1] = swap;
-                    sign *= -1;
+                    result.sign *= -1;
                     m = true;
                 }
         } while (m);
 
         // Collapse adjacent basis vectors
-        Object.keys(breakdown).sort().forEach(function(key) {
-            if (breakdown[key] % 2)
-                result += 'o' + key;
+        Object.keys(result.breakdown).sort().forEach(function(key) {
+            if (result.breakdown[key] % 2)
+                result.label += 'o' + key;
         });
 
-        basisNameSign[basis] = [result, sign];
-        basisBreakdown[basis] = breakdown;
-        return [result, sign];
+        return basisCache[basis] = result;
     };
 
     var polish = function(value) {
@@ -109,16 +103,15 @@
     };
 
     var fromString = function(value) {
-        var bsign, basis, sign, termOp = '+', components = {}, m;
+        var basis, termOp = '+', components = {}, m;
         var components = {};
 
         while ((m = value.match(termExp)) && m[0].length) {
-            bsign = canonicalizeBasis(m[3]);
-            basis = bsign[0]; sign = bsign[1];
-            if (!components[basis])
-                components[basis] = 0;
-            components[basis] += (((termOp === '+') ? 1 : -1) * sign *
-                parseFloat(m[1] || '1'));
+            basis = canonicalizeBasis(m[3]);
+            if (!components[basis.label])
+                components[basis.label] = 0;
+            components[basis.label] += (((termOp === '+') ? 1 : -1) *
+                basis.sign * parseFloat(m[1] || '1'));
             termOp = m[6] || '+';
             value = value.slice(m[0].length);
         }
@@ -154,11 +147,11 @@
                     factor * Math.sin(value.theta);
             } else {
                 Object.keys(value).forEach(function(key) {
-                    var bsign = canonicalizeBasis(key);
-                    if (!zeroish(value[bsign[0]]))
-                        result.components[bsign[0]] =
-                            (result.components[bsign[0]] || 0) +
-                            bsign[1] * value[key];
+                    var basis = canonicalizeBasis(key);
+                    if (!zeroish(value[key]))
+                        result.components[basis.label] =
+                            (result.components[basis.label] || 0) +
+                            basis.sign * value[key];
                 });
             }
         }
@@ -296,11 +289,11 @@
             });
         } else Object.keys(a.components).forEach(function(left) {
             Object.keys(b.components).forEach(function(right) {
-                var bsign = canonicalizeBasis(left + right);
+                var basis = canonicalizeBasis(left + right);
 
-                result[bsign[0]] =
-                    (result[bsign[0]] || 0) +
-                    (bsign[1] * a.components[left] *
+                result[basis.label] =
+                    (result[basis.label] || 0) +
+                    (basis.sign * a.components[left] *
                         b.components[right]);
             });
         });
