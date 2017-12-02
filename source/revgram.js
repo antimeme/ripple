@@ -25,9 +25,23 @@
     revgram.unquote = function(value) {
         return value ? value.replace(/%%/g, '%') : value;
     };
-    revgram.isrule = function(value) {
+
+    var isrule = function(value) {
         return (value.length >= 2) && (value[0] === '%') &&
             (value[1] !== '%');
+    };
+
+    var getWeight = function(element) {
+        return (typeof(element) === 'string' ||
+                !element.length || isNaN(element[0]) ||
+                (typeof(element[0]) === 'string')) ? 1 : element[0];
+    };
+
+    var getRule = function(element) {
+        return (typeof(element) === 'string') ? [element] :
+               element.slice(
+                   (!element.length || isNaN(element[0]) ||
+                    (typeof(element[0]) === 'string')) ? 0 : 1);
     };
 
     revgram.generate = function(rules, start) {
@@ -36,19 +50,21 @@
 
         if (current) {
             current.forEach(function(element, index) {
-                total += element[0]; });
+                total += getWeight(element); });
             choice = Math.random() * total;
             current.forEach(function(element, index) {
+                var weight = getWeight(element);
+
                 if (choice < 0) { // skip
-                } else if (choice < element[0]) {
-                    element.slice(1).forEach(function(component) {
-                        if (revgram.isrule(component))
+                } else if (choice < weight) {
+                    getRule(element).forEach(function(component) {
+                        if (isrule(component))
                             value += revgram.generate(
                                 rules, component.substring(1));
                         else value += revgram.unquote(component);
                     });
                     choice = -1;
-                } else choice -= element[0];
+                } else choice -= weight;
             });
         } else value = 'missing-%' + start;
         return value;
