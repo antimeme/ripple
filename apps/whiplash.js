@@ -776,12 +776,12 @@
             keydown: function(event, redraw) {
                 redraw();
                 this.update();
-                if (event.key === '+') {
+                if (event.key === '+' || event.key === '=') {
                     this.zoom.change(1.1);
                 } else if (event.key === '-') {
                     this.zoom.change(0.9);
                 } else if (event.keyCode === 37 /* left */ ||
-                    event.keyCode === 65 /* a */) {
+                           event.keyCode === 65 /* a */) {
 		    this.player.control.left = true;
                     this.player.control.swipe = null;
 	        } else if (event.keyCode === 38 /* up */ ||
