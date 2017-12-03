@@ -1005,7 +1005,7 @@
 	state.player = makePlayer(
             (data.chardefs && 'player' in data.chardefs) ?
             data.chardefs['player'] : {}, state);
-        state.setStage(window.params['startStage'] || data.startStage);
+        state.setStage(fetchParam('startStage') || data.startStage);
         if (data.disableDebug)
             debug = false;
         ripple.app($, container, viewport, state);
