@@ -68,7 +68,9 @@
             } else ii = parseInt(m[2], 10);
 
             b.push(ii);
-            result.breakdown[ii] = (result.breakdown[ii] || 0) + 1;
+            if (result.breakdown[ii])
+                delete result.breakdown[ii];
+            else result.breakdown[ii] = true;
         }
 
         do { // Bubble sort basis vectors, flipping sign each swap
@@ -86,7 +88,7 @@
 
         // Collapse adjacent basis vectors
         Object.keys(result.breakdown).sort().forEach(function(key) {
-            if (result.breakdown[key] % 2)
+            if (result.breakdown[key])
                 result.label += 'o' + key;
         });
 
@@ -180,7 +182,9 @@
             if (zeroish(coefficient)) {
                 // skip zero coefficient terms
             } else if (!result) {
-                result += coefficient + key;
+                if (!zeroish(coefficient - 1))
+                    result += coefficient;
+                result += key;
             } else if (coefficient >= 0) {
                 result += ' + ' + (
                     zeroish(coefficient - 1) ? '' : coefficient) + key;
@@ -272,29 +276,61 @@
         return polish(scalarMultiply(this, 1 / scale));
     };
 
-    var fieldOpBinary = function(add, a, b) {
+    // Return true iff the basis values commute such that:
+    //     a * l * b * r = b * r * a * l = a * b * l * r
+    // Commutative components apply to the inner product while
+    // anticommutative components apply to the outer product.
+    var checkCommutes = function(left, right) {
+        var result = false, bleft, bright, basis;
+
+        // Multi-vector components commute if one or both are
+        // scalars or if they share no basis components.
+        if (left.length > 0 && right.length > 0) {
+            bleft  = canonicalizeBasis(left);
+            bright = canonicalizeBasis(right);
+
+            Object.keys(bleft.breakdown).forEach(function(key) {
+                if (bleft.breakdown[key] && bright.breakdown[key])
+                    result = true;
+            });
+        } else result = true;
+        return result;
+    };
+
+    var fieldOp = {
+        add: 0,
+        multiply: 1,
+        inner: 2,
+        outer: 3 };
+
+    var fieldOpBinary = function(op, a, b) {
         // Generic field operations (add, subtract, multiply)
         // Division is excluded because it's a bit complex
         var result = {};
         b = convert(b);
 
-        if (add) {
+        if (op === fieldOp.add) {
             Object.keys(a.components).forEach(function(key) {
                 result[key] = 0; });
             Object.keys(b.components).forEach(function(key) {
                 result[key] = 0; });
             Object.keys(result).forEach(function(key) {
                 result[key] = (a.components[key] || 0) +
-                              (b.components[key] || 0);
-            });
+                              (b.components[key] || 0); });
         } else Object.keys(a.components).forEach(function(left) {
             Object.keys(b.components).forEach(function(right) {
-                var basis = canonicalizeBasis(left + right);
+                if (op === fieldOp.inner || op === fieldOp.outer) {
+                    var commutes = checkCommutes(left, right);
+                    if ((op === fieldOp.inner && !commutes) ||
+                        (op === fieldOp.outer && commutes))
+                        return;
+                }
 
+                var basis = canonicalizeBasis(left + right);
                 result[basis.label] =
                     (result[basis.label] || 0) +
-                    (basis.sign * a.components[left] *
-                        b.components[right]);
+                             (basis.sign * a.components[left] *
+                                 b.components[right]);
             });
         });
         return convert(result);
@@ -303,10 +339,11 @@
     multivec.prototype.add = function(other) {
         var result;
         if (arguments.length === 1)
-            result = fieldOpBinary(true, this, other);
+            result = fieldOpBinary(fieldOp.add, this, other);
         else
             for (var ii = 0, result = this; ii < arguments.length; ++ii)
-                result = fieldOpBinary(true, result, arguments[ii]);
+                result = fieldOpBinary(
+                    fieldOp.add, result, arguments[ii]);
         return polish(result);
     };
     multivec.prototype.plus = multivec.prototype.add;
@@ -319,11 +356,11 @@
         var result;
         if (arguments.length === 1)
             result = fieldOpBinary(
-                true, this, scalarMultiply(convert(other), -1));
+                fieldOp.add, this, scalarMultiply(convert(other), -1));
         else
             for (var ii = 0, result = this; ii < arguments.length; ++ii)
                 result = fieldOpBinary(
-                    true, result, scalarMultiply(
+                    fieldOp.add, result, scalarMultiply(
                         convert(arguments[ii]), -1));
         return polish(result);
     };
@@ -332,11 +369,12 @@
     multivec.prototype.multiply = function(other) {
         var result;
         if (arguments.length === 1)
-            result = fieldOpBinary(false, this, other);
+            result = fieldOpBinary(fieldOp.multiply, this, other);
         else {
             result = this;
             for (var ii = 0; ii < arguments.length; ++ii)
-                result = fieldOpBinary(false, result, arguments[ii]);
+                result = fieldOpBinary(
+                    fieldOp.multiply, result, arguments[ii]);
         }
         return polish(result);
     };
@@ -351,46 +389,55 @@
         var result;
         if (arguments.length === 1)
             result = fieldOpBinary(
-                false, this, convert(other).inverseMult());
+                fieldOp.multiply, this, convert(other).inverseMult());
         else
             for (var ii = 0, result = this; ii < arguments.length; ++ii)
                 result = fieldOpBinary(
-                    false, result, convert(
+                    fieldOp.multiply, result, convert(
                         arguments[ii]).inverseMult());
         return polish(result);
     };
 
-    var dot = function(a, b) {
-        // Computes a scalar dot product of this vector with an other.
-        // This assumes that BOTH values are vectors.  The result is
-        // undefined otherwise.  This is a bit of an ugly optimization
-        // since it won't work for generic multivectors.
-        var result = 0;
-        var components = {};
-        Object.keys(a.components).forEach(function(key) {
-            components[key] = 0; });
-        Object.keys(b.components).forEach(function(key) {
-            components[key] = 0; });
-        Object.keys(components).forEach(function(key) {
-            result += ((a.components[key] || 0) *
-                (b.components[key] ||0)) });
-        return result;
-    };
-
     multivec.prototype.inner = function(other) {
-        other = convert(other);
-        var result = this.multiply(other).add(
-            other.multiply(this)).divide(2);
-        return result;
+        var result;
+
+        if (arguments.length === 1)
+            result = fieldOpBinary(fieldOp.inner, this, other);
+        else {
+            result = this;
+            for (var ii = 0; ii < arguments.length; ++ii)
+                result = fieldOpBinary(
+                    fieldOp.inner, result, arguments[ii]);
+        }
+        return polish(result);
+    };
+    multivec.prototype.dot = multivec.prototype.inner;
+    multivec.inner = function() {
+        return multivec.prototype.inner.apply(
+            multivec(1), arguments);
     };
 
     multivec.prototype.wedge = function(other) {
-        other = convert(other);
-        var result = this.multiply(other).subtract(
-            other.multiply(this)).divide(2);
-        return result;
+        var result;
+
+        if (arguments.length === 1)
+            result = fieldOpBinary(fieldOp.outer, this, other);
+        else {
+            result = this;
+            for (var ii = 0; ii < arguments.length; ++ii)
+                result = fieldOpBinary(
+                    fieldOp.outer, result, arguments[ii]);
+        }
+        return polish(result);
     };
     multivec.prototype.outer = multivec.prototype.wedge;
+    multivec.wedge = function() {
+        var result = undefined;
+        for (var ii = 0; ii < arguments.length; ++ii)
+            result = (typeof result === 'undefined') ?
+                     arguments[ii] : result.wedge(arguments[ii]);
+        return result;
+    };
 
     multivec.prototype.reflect = function(v) {
         var result = this;
@@ -467,7 +514,7 @@
         var q2 = segment.normSquared ? segment.normSquared :
                  q.normSquared();
         return v.subtract(segment.s).subtract(
-            q.multiply(dot(v.subtract(segment.s), q) / q2));
+            q.multiply(v.subtract(segment.s).dot(q).divide(q2)));
     };
 
     multivec.collideRadiusRadius = function(s1, e1, r1, s2, e2, r2) {
@@ -484,12 +531,12 @@
         var gap = r1 + r2;
 
         result = quadraticRoots(
-            dot(d1, d1) + dot(d2, d2) -
-            2 * dot(d1, d2),
-            2 * dot(s1, d1) + 2 * dot(s2, d2) -
-            2 * dot(d1, s2) - 2 * dot(d2, s1),
-            dot(s1, s1) + dot(s2, s2) -
-            2 * dot(s1, s2) - gap * gap);
+            d1.dot(d1).scalar + d2.dot(d2).scalar -
+            2 * d1.dot(d2).scalar,
+            2 * s1.dot(d1).scalar + 2 * s2.dot(d2).scalar -
+            2 * d1.dot(s2).scalar - 2 * d2.dot(s1).scalar,
+            s1.dot(s1).scalar + s2.dot(s2).scalar -
+            2 * s1.dot(s2).scalar - gap * gap);
 
         result = result.map(function(v) {
             // Avoids rounding errors that cause missed collisions
@@ -500,7 +547,7 @@
         // Don't report collision when close and moving away
         if (zeroish(result) &&
             (s1.subtract(s2).normSquared() <
-             e1.subtract(e2).normSquared()))
+                e1.subtract(e2).normSquared()))
             result = undefined;
 
         return result;
@@ -531,8 +578,8 @@
         var q2 = segment.normSquared ? segment.normSquared :
                  q.normSquared();
         var width = segment.width ? segment.width : 0;
-        var ps = dot(s.subtract(segment.s), q) / q.norm();
-        var pe = dot(e.subtract(segment.s), q) / q.norm();
+        var ps = s.subtract(segment.s).dot(q).divide(q.norm()).scalar;
+        var pe = e.subtract(segment.s).dot(q).divide(q.norm()).scalar;
         var ds = shortestSegment(s, segment);
         var de = shortestSegment(e, segment);
         var m, n, mq, nq, gap; // line distance computation variables
@@ -560,8 +607,8 @@
         //   (r - width/2)^2
         // Since p is moving, it can be expanded to p = s + (e - s)t
         // Then we break things down in terms of t and find roots
-        m = e.subtract(s); mq = dot(m, q);
-        n = s.subtract(segment.s); nq = dot(n, q);
+        m = e.subtract(s); mq = m.dot(q).scalar;
+        n = s.subtract(segment.s); nq = n.dot(q).scalar;
 
         // Rather than computing square roots, which can be expensive,
         // we compare the square of the distance between point and line
@@ -570,9 +617,9 @@
         // between these values is zero, which are the moments of
         // collison
         result = quadraticRoots(
-            dot(m, m) - mq * mq / q2,
-            2 * dot(m, n) - 2 * mq * nq / q2,
-            dot(n, n) - nq * nq / q2 - gap);
+            m.dot(m).scalar - mq * mq / q2,
+            2 * m.dot(n).scalar - 2 * mq * nq / q2,
+            n.dot(n).scalar - nq * nq / q2 - gap);
         result = result.map(function(v) {
             // Avoids rounding errors that cause missed collisions
             return zeroish(v) ? 0 : v;
@@ -585,18 +632,19 @@
             var ds = shortestSegment(s, segment);
             var de = shortestSegment(e, segment);
             if ((de.normSquared() > ds.normSquared()) &&
-                dot(ds, de) > 0)
+                ds.dot(de).scalar > 0)
                 result = undefined;
         }
 
         if (!isNaN(result)) {
             // Ignore collisions that occur outside the boundaries of
             // the segment -- makes it possible to go around segments
-            var ps = dot(s.subtract(segment.s), q) / q.norm();
-            var pe = dot(e.subtract(segment.s), q) / q.norm();
-            if (ps + r < 0 && pe + r < 0) {
+            var ps = s.subtract(segment.s).dot(q).divide(q.norm());
+            var pe = e.subtract(segment.s).dot(q).divide(q.norm());
+            if (ps.scalar + r < 0 && pe.scalar + r < 0) {
                 result = undefined;
-            } else if (ps - r > q.norm() && pe -r > q.norm()) {
+            } else if (ps.scalar - r > q.norm() &&
+                       pe.scalar -r > q.norm()) {
                 result = undefined;
             }
         }
@@ -619,7 +667,8 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
         [[1, 1], [4, -1], [-3, 0]],
         [' 2o1o2 +  3.14159  - 3o1o2'],
         [{'': 3, 'o1o2': -2}],
-        ['2o1 - o2', 'o2 - 2o1']];
+        ['2o1 - o2', 'o2 - 2o1'],
+        ['o1', 'o2']];
 
     tests.forEach(function(test) {
         var mvecs = test.map(multivec);
@@ -633,6 +682,10 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
                         multivec.sum.apply(null, mvecs).toString());
             console.log('  PROD (' + svecs.join(') * (') + ') = ' +
                         multivec.product.apply(null, mvecs).toString());
+            console.log('  INNER (' + svecs.join(') . (') + ') = ' +
+                        multivec.inner.apply(null, mvecs).toString());
+            console.log('  OUTER (' + svecs.join(') ^ (') + ') = ' +
+                        multivec.wedge.apply(null, mvecs).toString());
         }
     });
 }
