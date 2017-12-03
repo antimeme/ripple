@@ -8,7 +8,6 @@
 
 (function(whiplash) {
     'use strict';
-    var sprites = 'url(images/whiplash-sprites.svg)';
 
     var fetchParam = function(name) {
         return (typeof window !== 'undefined') ?
@@ -33,25 +32,10 @@
         return thing;
     };
 
-    var createButton = function($, sheet, position, fn, context) {
-        // Create a button backed by an image from a sprite sheet.
-        // Page CSS controls the number of sprites on a sheet.
-        // This routine wraps the function and forces a false
-        // return so that events do not propagate
-        return $('<button>')
-            .addClass('image-button')
-            .css({
-                'background-image': sheet,
-                'background-position': position,
-            })
-            .on('mousedown touchstart', function(event) {
-                fn.call(context, arguments);
-                return false; });
-    };
-
-    var createInventory = function($, container, player) {
+    var createInventory = function($, state, container, player) {
         if (!(this instanceof createInventory))
-            return new createInventory($, container, player);
+            return new createInventory($, state, container, player);
+        this.state = state;
         this.player = player;
         this.other = null;
 
@@ -96,9 +80,9 @@
             .addClass('inventory-header')
             .append($('<div>')
                 .addClass('bbar')
-                .append(createButton($, sprites, '0 100%', take, this)
+                .append(state.createButton('take', take, this)
                     .addClass('give-and-take'))
-                .append(createButton($, sprites, '25% 100%', give, this)
+                .append(state.createButton('give', give, this)
                     .addClass('give-and-take')))
             .appendTo(this.pane);
         this.playerPane = $('<div>')
@@ -121,10 +105,18 @@
     createInventory.prototype.isVisible = function() {
         return this.pane.is(':visible'); };
     createInventory.prototype.addItem = function(item, index, isOther) {
+        var icon = item.icon;
+
+        if (!icon) {
+            var itemdef = this.state.itemdefs[item.type];
+            if (itemdef)
+                icon = itemdef.icon;
+        }
         (isOther ? this.otherPane : this.playerPane).append(
-            createButton(jQuery, sprites, '75% 0', function(event) {
+            this.state.createButton(icon, function(event) {
                 jQuery(event[0].target)
-                    .toggleClass('selected'); }, this)
+                    .toggleClass('selected');
+            }, this)
                 .prop('title', item.toString())
                 .data('index', index));
     };
@@ -192,7 +184,7 @@
     var randomLoot = function(chest) {
         var items = [
             'keycard',
-            'flashlight',
+            'knife',
             'cookie'];
         var result = [
             {'type': items[Math.floor(
@@ -651,27 +643,61 @@
             tap: null, mmove: null, swipe: null,
             player: null, update: update,
             itemdefs: data.itemdefs ? data.itemdefs : {},
+            images: data.images, icons: data.icons,
+            createButton: function(config, fn, context) {
+                // This routine wraps the function and forces a false
+                // return so that events do not propagate
+                var imgdef, image, position, backsize;
+                var tempconfig = config;
+
+                // Configuration can be an object, a string reference
+                // to the icon set or undefined for default
+                if (!config)
+                    config = this.icons['default'];
+                else if (typeof config === 'string')
+                    config = this.icons[config];
+
+                imgdef = this.images[config.image || 'default'];
+                image = 'url(' + imgdef.url + ')';
+                backsize = (
+                    (imgdef.size * imgdef.cols) + '% ' +
+                    (imgdef.size * imgdef.rows) + '%');
+                position = (
+                    Math.floor(100 * config.col /
+                        (imgdef.cols - 1)) + '% ' + 
+                    Math.floor(100 * config.row /
+                        (imgdef.rows - 1)) + '%');
+                return $('<button>')
+                    .addClass('image-button')
+                    .css({
+                        'background-image': image,
+                        'background-position': position,
+                        'background-size': backsize })
+                    .on('mousedown touchstart', function(event) {
+                        fn.call(context, arguments);
+                        return false; });
+            },
 
             init: function($, container, viewport) {
                 $('<div>') // Left Action Bar
                     .addClass('bbar')
                     .css({ bottom: 0, left: 0 })
                     .appendTo(container)
-                    .append(createButton(
-                        $, sprites, '25% 0', state.handLeft, state))
-                    .append(createButton(
-                        $, sprites, '50% 0', state.handRight, state));
+                    .append(this.createButton(
+                        'lhand', this.handLeft, this))
+                    .append(this.createButton(
+                        'rhand', this.handRight, this));
 
                 $('<div>') // Create action bar
                     .addClass('bbar')
                     .css({ bottom: 0, right: 0 })
                     .appendTo(container)
-                    .append(createButton(
-                        $, sprites, '75% 0', function(event) {
-                            state.settings.toggle();
-                            state.inventory.hide(); }))
-                    .append(createButton(
-                        $, sprites, '100% 0', function(event) {
+                    .append(this.createButton(
+                        'settings', function(event) {
+                            this.settings.toggle();
+                            this.inventory.hide(); }))
+                    .append(this.createButton(
+                        'interact', function(event) {
                             state.interact(); }));
 
                 this.settings = $('<div>')
@@ -679,7 +705,7 @@
                     .append('<h2>Settings</h2>')
                     .appendTo(container);
                 this.inventory = createInventory(
-                    $, container, this.player);
+                    $, this, container, this.player);
             },
             resize: function(width, height, $) {
                 var size = Math.min(width, height);

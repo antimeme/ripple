@@ -1,11 +1,41 @@
 {
+    "disableDebug": false,
+    "images": {
+        "icons": {
+            "url": "images/whiplash-sprites.svg",
+            "size": 100, "rows": 5, "cols": 5}
+    },
+    "icons": {
+        "default": {"image": "icons", "row": 0, "col": 0},
+        "settings": {"image": "icons", "row": 0, "col": 0},
+        "interact": {"image": "icons", "row": 0, "col": 1},
+        "inventory": {"image": "icons", "row": 0, "col": 2},
+        "lhand": {"image": "icons", "row": 0, "col": 3},
+        "rhand": {"image": "icons", "row": 0, "col": 4},
+        "take": {"image": "icons", "row": 1, "col": 3},
+        "give": {"image": "icons", "row": 1, "col": 4}
+    },
+    "itemdefs": {
+        "keycard": {
+            "weight": 0.02,
+            "icon": {"image": "icons", "row": 4, "col": 0}},
+        "knife": {
+            "weight": 3,
+            "icon": {"image": "icons", "row": 4, "col": 1}},
+        "flashlight": {
+            "weight": 3, "light": {"width": 1, "length": 2},
+            "iconbroken": {"image": "icons"}},
+        "gun": {"weight": 5},
+        "tablet": {"weight": 2},
+        "baton": {"weight": 4}
+    },
     "chardefs": {
         "player": {
             "headColor": "orangered",
             "bodyColor": "orange",
             "eyeColor": "blue",
             "speed": 0.009,
-            "inventory": [{"type": "flashlight"}, {"type": "cookie"}]
+            "inventory": [{"type": "knife"}, {"type": "flashlight"}]
         },
         "guard": {
             "headColor": "blue",
@@ -19,16 +49,7 @@
             "inventory": [{"type": "keycard"}, {"type": "baton"}]
         }
     },
-    "itemdefs": {
-        "flashlight": {"weight": 3, "light": {"width": 1, "length": 2}},
-        "tablet": {"weight": 2},
-        "knife": {"weight": 2},
-        "gun": {"weight": 5},
-        "keycard": {"weight": 0.02},
-        "baton": {"weight": 4}
-    },
 
-    "disableDebug": false,
     "startStage": "start",
     "stages": {
         "start": {
