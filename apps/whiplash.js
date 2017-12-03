@@ -773,7 +773,11 @@
             keydown: function(event, redraw) {
                 redraw();
                 this.update();
-	        if (event.keyCode === 37 /* left */ ||
+                if (event.key === '+') {
+                    this.zoom.change(1.1);
+                } else if (event.key === '-') {
+                    this.zoom.change(0.9);
+                } else if (event.keyCode === 37 /* left */ ||
                     event.keyCode === 65 /* a */) {
 		    this.player.control.left = true;
                     this.player.control.swipe = null;
