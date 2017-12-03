@@ -42,10 +42,12 @@
         var give = function(event) {
             var selected = this.playerPane.find('.selected');
             if (selected.size()) {
-                var chosen = [];
+                var chosen = {};
                 var updated = [];
                 selected.each(function(index, item) {
-                    chosen.push($(item).data('index')); });
+                    var value = $(item).data('index');
+                    if (!isNaN(value))
+                        chosen[parseInt(value, 10)] = true; });
                 this.player.inventory.forEach(function(item, index) {
                     if (index in chosen)
                         this.other.inventory.push(item);
@@ -59,11 +61,14 @@
         var take = function(event) {
             var selected = this.otherPane.find('.selected');
             if (selected.size()) {
-                var chosen = [];
+                var chosen = {};
                 var updated = [];
                 selected.each(function(index, item) {
-                    chosen.push($(item).data('index')); });
+                    var value = $(item).data('index');
+                    if (!isNaN(value))
+                        chosen[parseInt(value, 10)] = true; });
                 this.other.inventory.forEach(function(item, index) {
+                    console.log('DEBUG', index, chosen);
                     if (index in chosen)
                         this.player.inventory.push(item);
                     else updated.push(item);
@@ -183,9 +188,14 @@
 
     var randomLoot = function(chest) {
         var items = [
-            'keycard',
-            'knife',
-            'cookie'];
+            "knife",
+            "gun",
+            "tonfa",
+            "keycard",
+            "tablet",
+            "flashlight",
+            "apple",
+            "cookie"];
         var result = [
             {'type': items[Math.floor(
                 Math.random() * items.length)]},

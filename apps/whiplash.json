@@ -19,15 +19,24 @@
         "keycard": {
             "weight": 0.02,
             "icon": {"image": "icons", "row": 4, "col": 0}},
+        "tablet": {"weight": 4,
+                   "icon": {"image": "icons", "row": 3, "col": 0}},
         "knife": {
             "weight": 3,
             "icon": {"image": "icons", "row": 4, "col": 1}},
+        "gun": {"weight": 5,
+                "icon": {"image": "icons", "row": 4, "col": 2}},
+        "tonfa": {"weight": 2,
+                  "icon": {"image": "icons", "row": 4, "col": 3}},
         "flashlight": {
             "weight": 3, "light": {"width": 1, "length": 2},
-            "iconbroken": {"image": "icons"}},
-        "gun": {"weight": 5},
-        "tablet": {"weight": 2},
-        "baton": {"weight": 4}
+            "icon": {"image": "icons", "row": 3, "col": 1}},
+        "apple": {
+            "weight": 0.5,
+            "icon": {"image": "icons", "row": 2, "col": 3}},
+        "cookie": {
+            "weight": 0.2,
+            "icon": {"image": "icons", "row": 2, "col": 4}}
     },
     "chardefs": {
         "player": {
