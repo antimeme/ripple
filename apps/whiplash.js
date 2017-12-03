@@ -10,14 +10,17 @@
     'use strict';
     var sprites = 'url(images/whiplash-sprites.svg)';
 
-    var debug = !!window.params['debug'];
+    var fetchParam = function(name) {
+        return (typeof window !== 'undefined') ?
+               window.params[name] : process.env[name];
+    };
+
     var profiling = false;
-    var rotateworld = !!window.params['rotateworld'];
-    var mazeType = window.params['mazeType'] || undefined;
-    var mazeRings = ('mazeRings' in window.params) ?
-                    Math.max(Math.min(parseInt(
-                        window.params['mazeRings'],
-                        10), 8), 1) : undefined;
+    var debug = !!fetchParam('debug');
+    var rotateworld = !!fetchParam('rotateworld');
+    var mazeType = fetchParam('mazeType') || undefined;
+    var mazeRings = Math.max(Math.min(parseInt(
+        fetchParam('mazeRings'), 10), 8), 1);
 
     var squareSize = undefined;
     var setSquareSize = function(thing, size) {
@@ -1008,3 +1011,12 @@
         ripple.app($, container, viewport, state);
     };
 })(typeof exports === 'undefined'? this['whiplash'] = {}: exports);
+
+if ((typeof require !== 'undefined') && (require.main === module)) {
+    var fs = require('fs');
+    var path = require('path');
+    var settings = JSON.parse(fs.readFileSync(
+        path.join(__dirname, 'whiplash.json')));
+
+    console.log(settings.startStage);
+}
