@@ -276,27 +276,6 @@
         return polish(scalarMultiply(this, 1 / scale));
     };
 
-    // Return true iff the basis values commute such that:
-    //     a * l * b * r = b * r * a * l = a * b * l * r
-    // Commutative components apply to the inner product while
-    // anticommutative components apply to the outer product.
-    var checkCommutes = function(left, right) {
-        var result = false, bleft, bright, basis;
-
-        // Multi-vector components commute if one or both are
-        // scalars or if they share no basis components.
-        if (left.length > 0 && right.length > 0) {
-            bleft  = canonicalizeBasis(left);
-            bright = canonicalizeBasis(right);
-
-            Object.keys(bleft.breakdown).forEach(function(key) {
-                if (bleft.breakdown[key] && bright.breakdown[key])
-                    result = true;
-            });
-        } else result = true;
-        return result;
-    };
-
     var fieldOp = {
         add: 0,
         multiply: 1,
@@ -319,18 +298,24 @@
                               (b.components[key] || 0); });
         } else Object.keys(a.components).forEach(function(left) {
             Object.keys(b.components).forEach(function(right) {
+                var basis = canonicalizeBasis(left + right);
+
                 if (op === fieldOp.inner || op === fieldOp.outer) {
-                    var commutes = checkCommutes(left, right);
-                    if ((op === fieldOp.inner && !commutes) ||
-                        (op === fieldOp.outer && commutes))
+                    var lbasis = canonicalizeBasis(left);
+                    var rbasis = canonicalizeBasis(right);
+                    var difference = (
+                        (lbasis.label.length + rbasis.label.length) -
+                        basis.label.length);
+
+                    if (((op === fieldOp.outer) && (difference > 0)) ||
+                        ((op === fieldOp.inner) && (difference === 0)))
                         return;
                 }
 
-                var basis = canonicalizeBasis(left + right);
                 result[basis.label] =
                     (result[basis.label] || 0) +
-                             (basis.sign * a.components[left] *
-                                 b.components[right]);
+                               (basis.sign * a.components[left] *
+                                   b.components[right]);
             });
         });
         return convert(result);
@@ -413,8 +398,11 @@
     };
     multivec.prototype.dot = multivec.prototype.inner;
     multivec.inner = function() {
-        return multivec.prototype.inner.apply(
-            multivec(1), arguments);
+        var result = undefined;
+        for (var ii = 0; ii < arguments.length; ++ii)
+            result = (typeof result === 'undefined') ?
+                     arguments[ii] : result.inner(arguments[ii]);
+        return result;
     };
 
     multivec.prototype.wedge = function(other) {
