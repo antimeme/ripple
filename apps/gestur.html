@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>Gestur: Gesture Library Test</title>
+<style>
+ html, body, canvas, div { margin: 0; padding: 0 }
+ body {
+     background-color: lightgreen;
+     overflow-x: visible; overflow-y: hidden;
+ }
+ canvas { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
+ img { position: absolute; right: 0; top: 0; }
+ #log {
+     position: absolute; top: 0, bottom: 0, left: 0, right: 0;
+     text-indent: -2em; margin-left: 2em;
+ }
+ button { position: absolute; top: 1%; right: 1%; }
+</style>
+
+<div id="log"></div>
+<img src="images/gestur.svg" />
+<canvas></canvas>
+<button id="clear">CLEAR</button>
+
+<script src="lib/jquery.min.js"></script>
+<script src="lib/jquery.mousewheel.js"></script>
+<script src="ripple/gestur.js"></script>
+<script>//<![CDATA[
+ jQuery(function($) {
+     var viewport = $(window);
+     var canvas = $('canvas');
+     var last = null;
+     var post = function(description, details) {
+         if (last && last.description === description &&
+             description.endsWith("move"))
+             $('#log').children(':first').remove();
+         last = {description: description};
+         $('#log').prepend(
+             '<div>' + description +
+             JSON.stringify(details).replace(/,/g, ', ') + '</div>');
+     };
+     var resize = function() {
+	 canvas.css({width: viewport.innerWidth(),
+                     height: viewport.innerHeight()});
+         canvas.attr({width: canvas.innerWidth(),
+                      height: canvas.innerHeight()});
+
+         canvas.each(function(index, current) {
+             var xx, yy, scale = 100;
+             var ctx = current.getContext('2d');
+             if (!ctx)
+                 return;
+             ctx.clearRect(0, 0, canvas.width, canvas.height);
+             ctx.beginPath();
+             for (xx = 0; xx < current.width; xx += scale) {
+                 ctx.moveTo(xx, 0);
+                 ctx.lineTo(xx, current.height);
+             }
+             for (yy = 0; yy < current.height; yy += scale) {
+                 ctx.moveTo(0, yy);
+                 ctx.lineTo(current.width, yy);
+             }
+             ctx.lineWidth = 2;
+             ctx.strokeStyle = 'rgba(16, 16, 64, 0.5)';
+             ctx.stroke();
+         });
+     };
+
+     resize();
+     viewport.on('resize', resize);
+     $('#clear').on('click', function() { $('#log').empty(); });
+
+     var g = gestur.create({
+         tap: function(event) {
+             post('tap', {});
+         },
+         doubleTap: function(event) {
+             post('doulbeTap', {});
+         }
+     });
+     g.setTarget(canvas);
+ }); //]]></script>
