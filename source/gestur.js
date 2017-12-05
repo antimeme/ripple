@@ -40,13 +40,13 @@
                          {top: 0, left: 0};
             transform = function(touch) {
                 return {x: touch.x - offset.left,
-                        y: touch.y - offset.top}; };
+                        y: touch.y - offset.top, id: touch.id}; };
         } else if (!transform) // null transform is identity
             transform = function(touch) { return touch; };
         return transform;
     };
 
-    gestur.createTargets = function(event, transform) {
+    gestur.createFingers = function(event, transform) {
         var result = {touches: [], changed: []};
 
         transform = setTransform(event, transform);
@@ -56,8 +56,10 @@
                     transform({id: touch.identifier,
                                x: touch.pageX, y: touch.pageY}));
             });
-        } else result.touches.push(
-            transform({id: 0, x: event.pageX, y: event.pageY}));
+        } else if ((event.type !== 'mouseup') &&
+                   (event.type !== 'touchend'))
+            result.touches.push(
+                transform({id: 0, x: event.pageX, y: event.pageY}));
 
         if (event.originalEvent && event.originalEvent.changedTouches) {
             event.originalEvent.changedTouches.forEach(function(touch) {
@@ -75,51 +77,74 @@
         return result;
     };
 
+    var createTouch = function(touch) {
+        return {id: touch.id, x: touch.x, y: touch.y};
+    };
+
+    var checkLine = function(threshold, start, last, next) {
+        var vLast = {x: last.x - start.x, y: last.y - start.y};
+        var vNext = {x: next.x - start.x, y: next.y - start.y};
+        var dot = function(a, b) { return a.x * b.x + a.y * b.y; };
+
+        return (dot(vLast, vNext) >= threshold *
+            Math.sqrt(dot(vLast, vLast) * dot(vNext, vNext)));
+    };
+
     gestur.create = function(config) {
         if (!(this instanceof gestur.create))
             return new gestur.create(config);
 
         this.config = config;
-        this.state = states.READY;
-        this.touchOne = undefined;
-        this.touchTwo = undefined;
-        this.lastTap = undefined;
         this.doubleThreshold = isNaN(config.doubleThreshold) ? 500 :
                                config.doubleThreshold;
-    };
-
-    gestur.create.prototype.createTouch = function(touch) {
-        return {id: touch.id, x: touch.x, y: touch.y};
+        this.flickThreshold = isNaN(config.flickThreshold) ? 500 :
+                              config.flickThreshold;
+        this.flickAngle = Math.cos(isNaN(config.flickAngle) ?
+                                   (Math.PI / 8) : config.flickAngle);
+        this.reset();
     };
 
     gestur.create.prototype.fireEvent = function(evname) {
-        if (this.config[evname]) {
-            this.config[evname](/* ... */);
-        }
+        if (this.config[evname])
+            this.config[evname].apply(this, arguments);
+    };
+
+    gestur.create.prototype.reset = function() {
+        this.touchOne = undefined;
+        this.touchTwo = undefined;
+        this.lastTap = undefined;
+        this.flick = false;
+        this.drag = undefined;
+        this.startTime = undefined;
+        this.state = states.READY;
     };
 
     gestur.create.prototype.onStart = function(event) {
-        var targets = gestur.createTargets(event);
+        var now = new Date().getTime();
+        var fingers = gestur.createFingers(event);
 
         switch (this.state) {
             case states.READY:
-                if (targets.changed.length >= 2) {
-                    this.touchOne = this.createTouch(
-                        targets.changed[0]);
-                    this.touchTwo = this.createTouch(
-                        targets.changed[1]);
+                this.startTime = now;
+                this.flick = (this.config.flick ? true : false);
+                if (fingers.changed.length >= 2) {
+                    this.touchOne = createTouch(
+                        fingers.changed[0]);
+                    this.touchTwo = createTouch(
+                        fingers.changed[1]);
                     this.state = states.PINCH;
-                } else if (targets.changed.length === 1) {
-                    this.touchOne = this.createTouch(
-                        targets.changed[0]);
+                } else if (fingers.changed.length === 1) {
+                    this.touchOne = createTouch(
+                        fingers.changed[0]);
                     this.touchTwo = undefined;
                     this.state = states.TAP;
-                }
+                } else this.reset();
                 break;
             case states.TAP:
-                if (targets.changed.length >= 1) {
-                    this.touchTwo = this.createTouch(
-                        targets.changed[0]);
+            case states.DRAG:
+                if (fingers.changed.length >= 1) {
+                    this.touchTwo = createTouch(
+                        fingers.changed[0]);
                     this.state = states.PINCH;
                 }
                 break;
@@ -132,9 +157,6 @@
             case states.PDRAG:
                 // ignore?
                 break;
-            case states.DRAG:
-                // ingore?
-                break;
             case states.PINCH:
                 // ignore?
                 break;
@@ -145,17 +167,61 @@
         };
     };
 
+    gestur.create.prototype.onMove = function(event) {
+        var now = new Date().getTime();
+        var fingers = gestur.createFingers(event);
+
+        switch (this.state) {
+            case states.READY: /* ignore */ break;
+            case states.PRESS:
+            case states.TAP:
+                this.drag = this.touchOne;
+                this.state = states.DRAG;
+                // fall though...
+            case states.DRAG:
+                var current = undefined;
+                fingers.changed.forEach(function(touch) {
+                    if (touch.id === this.touchOne.id)
+                        current = createTouch(touch);
+                }, this);
+
+                if (now > this.startTime + this.flickThreshold)
+                    this.flick = false;
+
+                if (this.flick) {
+                    if (!checkLine(this.flickAngle, this.touchOne,
+                                   this.drag, current))
+                        this.flick = false;
+                } else if (current)
+                    this.fireEvent(
+                        'drag', this.touchOne, this.drag, current);
+                this.drag = current;
+                break;
+            case states.PTAP:
+                this.state = states.PDRAG;
+                break;
+            case states.PINCH:
+                // fire pinch event (distance and rotation)
+                break;
+            case states.RESOLV:
+                // check safety threshold
+                this.state = states.DRAG;
+                break;
+            default: // wedged
+        };
+    };
+
     gestur.create.prototype.onEnd = function(event) {
         var now = new Date().getTime();
-        var targets = gestur.createTargets(event);
+        var fingers = gestur.createFingers(event);
 
         switch (this.state) {
             case states.READY: break;
             case states.TAP:
-                this.fireEvent('tap');
+                this.fireEvent('tap', this.touchOne);
                 if (!isNaN(this.lastTap) && now < this.lastTap +
                                             this.doubleThreshold) {
-                    this.fireEvent('doubleTap');
+                    this.fireEvent('doubleTap', this.touchOne);
                     this.lastTap = 0;
                 } else this.lastTap = now;
                 this.state = states.READY;
@@ -165,44 +231,31 @@
                 this.state = states.READY;
                 break;
             case states.PTAP:
+                // this.fireEvent
                 this.state = states.PRESS;
                 break;
-            case states.DRAG:
-                this.state = states.READY;
-                break;
             case states.PINCH:
-                // if one ending
-                this.state = states.RESOLV;
-                // else
-                this.state = states.READY;
+                if (fingers.touches.length > 0)
+                    this.state = states.RESOLV;
+                else this.reset();
                 break;
-            case states.RESOLV: this.state = states.READY; break;
-            default: // wedged
-        };
-    };
+            case states.DRAG:
+                if (now > this.startTime + this.flickThreshold)
+                    this.flick = false;
 
-    gestur.create.prototype.onMove = function(event) {
-        switch (this.state) {
-            case states.READY: break;
-            case states.TAP:
-                this.state = states.DRAG;
-                break;
-            case states.PRESS:
-                this.state = states.DRAG;
-                break;
-            case states.PTAP:
-                this.state = states.PDRAG;
-                break;
-            case states.DRAG:
-                // check for flick
-                // fire drag event
-                break;
-            case states.PINCH:
-                // fire pinch event (distance and rotation)
-                break;
+                if (this.flick) {
+                    var current = undefined;
+                    fingers.changed.forEach(function(touch) {
+                        if (touch.id === this.touchOne.id)
+                            current = createTouch(touch);
+                    }, this);
+                    if (current)
+                        this.fireEvent('flick', this.touchOne, current);
+                }
+                // fall through
             case states.RESOLV:
-                // check safety threshold
-                this.state = states.DRAG;
+                if (fingers.touches.length === 0)
+                    this.reset();
                 break;
             default: // wedged
         };
@@ -225,6 +278,10 @@
             event.data.onMove(event); return false; });
         target.on('mousewheel', this, function(event) {
             event.data.onWheel(event); return false; });
+        target.on('mouseleave touchcancel', this, function(event) {
+            event.data.reset(); return false; });
+
+        return this;
     };
 
 })(typeof exports === 'undefined' ? this['gestur'] = {} : exports);

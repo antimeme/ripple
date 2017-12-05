@@ -34,7 +34,7 @@
      var last = null;
      var post = function(description, details) {
          if (last && last.description === description &&
-             description.endsWith("move"))
+             description === "drag")
              $('#log').children(':first').remove();
          last = {description: description};
          $('#log').prepend(
@@ -73,12 +73,12 @@
      $('#clear').on('click', function() { $('#log').empty(); });
 
      var g = gestur.create({
-         tap: function(event) {
-             post('tap', {});
-         },
-         doubleTap: function(event) {
-             post('doulbeTap', {});
-         }
+         tap: function(name, touch) { post(name, touch); },
+         doubleTap: function(name, touch) { post(name, touch); },
+         flick: function(name, start, end) {
+             post(name, {start: start, end: end}); },
+         drag: function(name, start, last, current) {
+             post(name, {start: start, last: last, current: current}); }
      });
      g.setTarget(canvas);
  }); //]]></script>
