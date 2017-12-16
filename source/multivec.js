@@ -307,7 +307,7 @@
     multivec.prototype.isTrivector =
         function() { return this.isGrade(3); };
 
-    multivec.prototype.conjugate = function() {
+    multivec.prototype.reverse = function() {
         var components = {};
         Object.keys(this.components).forEach(function(key) {
             var k = key.split('o').length - 1;
@@ -323,7 +323,7 @@
         // example to determine whether a vector is greater than a
         // certain length.  Memoized because multi-vectors are immutable
         if (isNaN(this.__normSquared))
-            this.__normSquared = this.multiply(this.conjugate()).scalar;
+            this.__normSquared = this.multiply(this.reverse()).scalar;
         return this.__normSquared;
     };
 
@@ -335,26 +335,18 @@
         return this.__norm;
     };
 
-    var scalarMultiply = function(value, coefficient) {
-        var components = {};
-        Object.keys(value.components).forEach(function(key) {
-            components[key] = value.components[key] * coefficient;
-        });
-        return convert(components);
-    };
-
     multivec.prototype.normalize = function() {
         // Multi-vectors are immutable outside this library so norm can
         // be memoized to minimize square roots
         var scale = this.norm();
         if (zeroish(scale))
             throw new RangeError('Zero cannot be normalized');
-        return polish(scalarMultiply(this, 1 / scale));
+        return this.multiply(1 / scale);
     };
 
     multivec.prototype.inverseAdd = function() {
         // Returns the additive inverse of a multi-vector.
-        return polish(scalarMultiply(this, -1));
+        return this.multiply(-1);
     };
     multivec.prototype.negate = multivec.prototype.inverseAdd;
 
@@ -364,7 +356,7 @@
         var scale = this.normSquared();
         if (zeroish(scale))
             throw new RangeError('No multiplicative inverse of zero');
-        return polish(scalarMultiply(this, 1 / scale));
+        return this.reverse().multiply(1 / scale);
     };
 
     var fieldOp = {
@@ -432,12 +424,12 @@
         var result;
         if (arguments.length === 1)
             result = fieldOpBinary(
-                fieldOp.add, this, scalarMultiply(convert(other), -1));
+                fieldOp.add, this, convert(other).inverseAdd());
         else
             for (var ii = 0, result = this; ii < arguments.length; ++ii)
                 result = fieldOpBinary(
-                    fieldOp.add, result, scalarMultiply(
-                        convert(arguments[ii]), -1));
+                    fieldOp.add, result,
+                    convert(arguments[ii]).inverseAdd());
         return polish(result);
     };
     multivec.prototype.minus = multivec.prototype.subtract;
@@ -746,7 +738,8 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
         [0, [2, 2, 2]], [[2, 1, -1], 5],
         [[1, 1], [4, -1]],  [[1, 1], [4, -1], [-3, 0]],
         ['2o1 - o2', 'o2 - 2o1'],  ['o1', 'o2'],
-        ['o1 + o2', 'o2 + o1']];
+        ['o1 + o2', 'o2 + o1'],
+        ['2o1o2 + 3o3 + 1', '3o3 - 2o1o2 - 1']];
 
     tests.forEach(function(test) {
         var mvecs = test.map(multivec);
