@@ -255,6 +255,58 @@
         return result;
     };
 
+    multivec.prototype.grade = function(homogeneous) {
+        // Returns the grade of the higest grade component in this
+        // multivector (or undefined if homogenous is true and the
+        // multivector is not homogenous)
+        var result = undefined;
+        var mixed = false;
+
+        Object.keys(this.components).forEach(function(key) {
+            if (!zeroish(this.components[key])) {
+                var basis = canonicalizeBasis(key);
+                var current = Object.keys(basis.breakdown).length;
+
+                if (homogeneous) {
+                    if (isNaN(result)) {
+                        if (!mixed)
+                            result = current;
+                    } else if (result !== current) {
+                        result = undefined;
+                        mixed = true;
+                    }
+                } else if (isNaN(result) || result < current)
+                    result = current;
+            }
+        }, this);
+        return result;
+    };
+    multivec.prototype.isHomogeneous =
+        function() { return !isNaN(this.grade(true)); }
+
+    multivec.prototype.isGrade = function(grade) {
+        var result = true;
+
+        Object.keys(this.components).forEach(function(key) {
+            if (result && !zeroish(this.components[key])) {
+                var basis = canonicalizeBasis(key);
+                var current = Object.keys(basis.breakdown).length;
+
+                if (current !== grade)
+                    result = false;
+            }
+        }, this);
+        return result;
+    };
+    multivec.prototype.isScalar =
+        function() { return this.isGrade(0); };
+    multivec.prototype.isVector =
+        function() { return this.isGrade(1); };
+    multivec.prototype.isBivector =
+        function() { return this.isGrade(2); };
+    multivec.prototype.isTrivector =
+        function() { return this.isGrade(3); };
+
     multivec.prototype.conjugate = function() {
         var components = {};
         Object.keys(this.components).forEach(function(key) {
@@ -465,6 +517,7 @@
                      arguments[ii] : result.wedge(arguments[ii]);
         return result;
     };
+    multivec.outer = multivec.wedge;
 
     multivec.prototype.reflect = function(v) {
         var result = this;
@@ -688,22 +741,19 @@
 if ((typeof require !== 'undefined') && (require.main === module)) {
     var multivec = exports;
     var tests = [
-        [0], [[2, 2, 2]], [0, [2, 2, 2]],
-        [[2, 1, -1], 5],
-        [[1, 1], [4, -1]],
-        [[1, 1], [4, -1], [-3, 0]],
-        [' 2o1o2 +  3.14159  - 3o1o2'],
+        [0], [7], [[2, 2, 2]], [' 2o1o2 +  3.14159 - 3o1o2'],
         [{'': 3, 'o1o2': -2}],
-        ['2o1 - o2', 'o2 - 2o1'],
-        ['o1', 'o2'],
-        ['o1 + o2', 'o1 + o2']];
+        [0, [2, 2, 2]], [[2, 1, -1], 5],
+        [[1, 1], [4, -1]],  [[1, 1], [4, -1], [-3, 0]],
+        ['2o1 - o2', 'o2 - 2o1'],  ['o1', 'o2'],
+        ['o1 + o2', 'o2 + o1']];
 
     tests.forEach(function(test) {
         var mvecs = test.map(multivec);
         var svecs = mvecs.map(function(a) { return a.toString(); });
         if (!test.length) {
         } else if (test.length === 1) {
-            console.log(svecs[0]);
+            console.log(svecs[0], 'grade?', mvecs[0].grade());
         } else {
             var eq = multivec.equals.apply(null, mvecs);
             console.log(svecs.join(', '), "eq?", eq);
