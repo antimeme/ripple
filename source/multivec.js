@@ -209,10 +209,49 @@
         return result;
     };
     multivec.zeroish = function() {
+        // Return true iff all supplied mutlivectors are approximately
+        // zero (actual zero not required due to floating point
+        // rounding errors).
         var result = true;
         for (var ii = 0; ii < arguments.length; ++ii)
             if (!convert(arguments[ii]).zeroish())
                 result = false;
+        return result;
+    };
+
+    multivec.prototype.equals = function() {
+        // Return true iff all supplied multivectors are approximately
+        // equal to this one (actual equality not required due to
+        // floating point rounding errors).
+        var result = true;
+
+        for (var ii = 0; ii < arguments.length; ++ii) {
+            var checks = {};
+            var other = convert(arguments[ii]);
+
+            Object.keys(this.components).forEach(function(key) {
+                checks[key] = true; });
+            Object.keys(other.components).forEach(function(key) {
+                checks[key] = true; });
+            Object.keys(checks).forEach(function(key) {
+                if (!zeroish((this.components[key] || 0) -
+                             (other.components[key] || 0)))
+                    result = false; }, this);
+        }
+        return result;
+    };
+    multivec.equals = function() {
+        // Return true iff all supplied multivectors are approximately
+        // equal (actual equality not required due to floating point
+        // rounding errors).
+        var result = true;
+        if (arguments.length > 1) {
+            var first = convert(arguments[0]);
+            for (var ii = 1; ii < arguments.length; ++ii) {
+                if (!first.equals(arguments[ii]))
+                    result = false;
+            }
+        }
         return result;
     };
 
@@ -656,7 +695,8 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
         [' 2o1o2 +  3.14159  - 3o1o2'],
         [{'': 3, 'o1o2': -2}],
         ['2o1 - o2', 'o2 - 2o1'],
-        ['o1', 'o2']];
+        ['o1', 'o2'],
+        ['o1 + o2', 'o1 + o2']];
 
     tests.forEach(function(test) {
         var mvecs = test.map(multivec);
@@ -665,7 +705,8 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
         } else if (test.length === 1) {
             console.log(svecs[0]);
         } else {
-            console.log(svecs.join(', '));
+            var eq = multivec.equals.apply(null, mvecs);
+            console.log(svecs.join(', '), "eq?", eq);
             console.log('  SUM  (' + svecs.join(') + (') + ') = ' +
                         multivec.sum.apply(null, mvecs).toString());
             console.log('  PROD (' + svecs.join(') * (') + ') = ' +
