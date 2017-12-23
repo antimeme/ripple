@@ -16,22 +16,23 @@
 // <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-// A multi-vector library intended to support Geometric Algebra.
-// Each multivector is the sum of zero or more components each
-// of which is a coefficient times zero or more ortho-normal basis
-// vectors.  Objects from this library can represent real numbers,
-// complex numbers, quaternions, vectors and many other kinds of
-// mathematical objects.
+// A multi-vector library intended to support Geometric Algebra,
+// including mixed signature conformal models.  A multivector is the sum
+// of zero or more components each of which is a coefficient times zero
+// or more ortho-normal basis vectors.  Objects from this library can
+// represent real numbers, complex numbers, quaternions, vectors and
+// many other kinds of mathematical objects.
 //
 // Orthonormal basis vectors are represented by strings like 'o1',
 // 'o2', 'o1o2o3' and so on.  The letter 'o' was chosen becuase
 // the more conventional 'e' is also used to represent exponents
-// in IEEE 754 floating point numbers.
+// in IEEE 754 floating point numbers.  Strings like 'i1' are used for
+// negative signature ortho-normal basis vectors.
 //
 // The following invariants should hold for all multivec routines:
 // - multivec values are immutable
-// - multivec basis values are in canonical order (low to high)
-// - multivec components are omitted when within rounding of zero
+// - multivec basis values are in canonical order (low index to high)
+// - multivec components are omitted when within epsilon of zero
 
 (function() {
     'use strict';
@@ -41,56 +42,68 @@
         return (!isNaN(value) && value <= epsilon && value >= -epsilon);
     };
     var basisCache = {};
-    var basisExp = new RegExp(/([oO]([1-9][0-9]*))|[xyzXYZ]/);
+    var basisExp = new RegExp(/(([oOiI])(0|[1-9][0-9]*))|[xyzXYZ]/);
     var termExp = new RegExp(
         '^\\s*([-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?)?' +
-        '(([oO][1-9][0-9]*)*)(\\s+([+-])\\s+)?');
+        '(([oOiI](0|[1-9][0-9]*))*)(\\s+([+-])\\s+)?');
 
     var canonicalizeBasis = function(basis) {
         // Converts basis strings to a canonical form to make them
         // comparable.  Returns an array containing the updated
         // basis string as well as the sign (either 1 or -1)
-        if (basis in basisCache)
+        if (basis in basisCache) // use cached result if possible
             return basisCache[basis];
 
-        var result = {label: "", sign: 1, breakdown: {}};
-        var b = [], current = basis, squeeze = 0, m, ii, swap;
+        var result = {label: "", grade: 0, sign: 1};
+        var b = [], current = basis, m, subscript;
 
         // Extract basis vectors for further processing
         for (current = basis; (m = current.match(basisExp)) &&
              m[0].length; current = current.slice(m[0].length)) {
             if (m[0] === 'x' || m[0] === 'X') {
-                ii = 1;
+                subscript = 1;
             } else if (m[0] === 'y' || m[0] === 'Y') {
-                ii = 2;
+                subscript = 2;
             } else if (m[0] === 'z' || m[0] === 'Z') {
-                ii = 3;
-            } else ii = parseInt(m[2], 10);
+                subscript = 3;
+            } else subscript = parseInt(m[3], 10);
 
-            b.push(ii);
-            if (result.breakdown[ii])
-                delete result.breakdown[ii];
-            else result.breakdown[ii] = true;
+            b.push({
+                signature: (m[2] === 'o' || m2 === 'O') ? 1 : -1,
+                subscript: subscript});
         }
 
-        do { // Bubble sort basis vectors, flipping sign each swap
-            squeeze += 1;
-            m = false;
+        var squeeze, ii, swap, swapped;
+        for (squeeze = 1; squeeze < b.length; ++squeeze) {
+            // Bubble sort basis vectors, flipping sign each swap
+            swapped = false;
             for (ii = 0; ii < b.length - squeeze; ++ii)
-                if (b[ii] > b[ii + 1]) {
+                if ((b[ii].signature > b[ii + 1].signature) ||
+                    (b[ii].subscript > b[ii + 1].subscript)) {
                     swap = b[ii];
                     b[ii] = b[ii + 1];
                     b[ii + 1] = swap;
+
                     result.sign *= -1;
-                    m = true;
+                    swapped = true;
                 }
-        } while (m);
+            if (!swapped)
+                break;
+        };
 
         // Collapse adjacent basis vectors
-        Object.keys(result.breakdown).sort().forEach(function(key) {
-            if (result.breakdown[key])
-                result.label += 'o' + key;
-        });
+        for (ii = 0; ii < b.length; ++ii) {
+            if ((ii + 1 >= b.length) ||
+                (b[ii].signature !== b[ii + 1].signature) ||
+                (b[ii].subscript !== b[ii + 1].subscript)) {
+                result.label += (b[ii].signature > 0 ? 'o' : 'i') +
+                                b[ii].subscript;
+                result.grade += 1;
+            } else {
+                result.sign *= b[ii].signature;
+                ++ii;
+            }
+        }
 
         return basisCache[basis] = result;
     };
@@ -105,18 +118,22 @@
     };
 
     var fromString = function(value) {
-        var basis, termOp = '+', components = {}, m;
+        var basis, termOp = '+', m;
+        var remain = value;
         var components = {};
 
-        while ((m = value.match(termExp)) && m[0].length) {
+        while ((m = remain.match(termExp)) && m[0].length) {
             basis = canonicalizeBasis(m[3]);
             if (!components[basis.label])
                 components[basis.label] = 0;
             components[basis.label] += (((termOp === '+') ? 1 : -1) *
                 basis.sign * parseFloat(m[1] || '1'));
-            termOp = m[6] || '+';
-            value = value.slice(m[0].length);
+            termOp = m[7] || '+';
+            remain = remain.slice(m[0].length);
         }
+        if (remain.length > 0)
+            throw new TypeError(
+                'Unable to parse "' + value + '" as a multivector');
         return convert(components);
     };
 
@@ -182,7 +199,7 @@
             if (zeroish(coefficient)) {
                 // skip zero coefficient terms
             } else if (!result) {
-                if (!zeroish(coefficient - 1))
+                if (!zeroish(coefficient - 1) || !key)
                     result += coefficient;
                 result += key;
             } else if (coefficient >= 0) {
@@ -265,7 +282,7 @@
         Object.keys(this.components).forEach(function(key) {
             if (!zeroish(this.components[key])) {
                 var basis = canonicalizeBasis(key);
-                var current = Object.keys(basis.breakdown).length;
+                var current = basis.grade;
 
                 if (homogeneous) {
                     if (isNaN(result)) {
@@ -285,18 +302,7 @@
         function() { return !isNaN(this.grade(true)); }
 
     multivec.prototype.isGrade = function(grade) {
-        var result = true;
-
-        Object.keys(this.components).forEach(function(key) {
-            if (result && !zeroish(this.components[key])) {
-                var basis = canonicalizeBasis(key);
-                var current = Object.keys(basis.breakdown).length;
-
-                if (current !== grade)
-                    result = false;
-            }
-        }, this);
-        return result;
+        return this.zeroish() || (this.grade(true) === grade);
     };
     multivec.prototype.isScalar =
         function() { return this.isGrade(0); };
@@ -310,7 +316,7 @@
     multivec.prototype.reverse = function() {
         var components = {};
         Object.keys(this.components).forEach(function(key) {
-            var k = key.split('o').length - 1;
+            var k = canonicalizeBasis(key).grade;
             components[key] = ((((k * (k - 1) / 2) % 2) ? -1 : 1) *
                 this.components[key]);
         }, this);
@@ -362,8 +368,10 @@
     var fieldOp = {
         add: 0,
         multiply: 1,
-        inner: 2,
-        outer: 3 };
+        outer: 2,
+        inner: 3,
+        dot: 4,
+        contract: 5};
 
     var fieldOpBinary = function(op, a, b) {
         // Generic field operations (add, subtract, multiply)
@@ -383,22 +391,27 @@
             Object.keys(b.components).forEach(function(right) {
                 var basis = canonicalizeBasis(left + right);
 
-                if (op === fieldOp.inner || op === fieldOp.outer) {
-                    var lbasis = canonicalizeBasis(left);
-                    var rbasis = canonicalizeBasis(right);
-                    var difference = (
-                        (lbasis.label.length + rbasis.label.length) -
-                        basis.label.length);
+                if (op === fieldOp.outer || op === fieldOp.inner ||
+                    op === fieldOp.dot || op === fieldOp.contract) {
+                    var k = canonicalizeBasis(right).grade;
+                    var l = canonicalizeBasis(left).grade;
 
-                    if (((op === fieldOp.outer) && (difference > 0)) ||
-                        ((op === fieldOp.inner) && (difference === 0)))
+                    if (((op === fieldOp.outer) &&
+                         (k + l !== basis.grade)) ||
+                        ((op === fieldOp.inner) &&
+                         (k + l === basis.grade)) ||
+                        ((op === fieldOp.dot) &&
+                         (Math.abs(k - l) !== basis.grade)) ||
+                        ((op === fieldOp.contract) &&
+                         (k - l !== basis.grade))) {
                         return;
+                    }
                 }
 
                 result[basis.label] =
                     (result[basis.label] || 0) +
-                               (basis.sign * a.components[left] *
-                                   b.components[right]);
+                     (basis.sign * a.components[left] *
+                         b.components[right]);
             });
         });
         return convert(result);
@@ -479,12 +492,53 @@
         }
         return polish(result);
     };
-    multivec.prototype.dot = multivec.prototype.inner;
     multivec.inner = function() {
         var result = undefined;
         for (var ii = 0; ii < arguments.length; ++ii)
             result = (typeof result === 'undefined') ?
                      arguments[ii] : result.inner(arguments[ii]);
+        return result;
+    };
+
+    multivec.prototype.dot = function(other) {
+        var result;
+
+        if (arguments.length === 1)
+            result = fieldOpBinary(fieldOp.dot, this, other);
+        else {
+            result = this;
+            for (var ii = 0; ii < arguments.length; ++ii)
+                result = fieldOpBinary(
+                    fieldOp.dot, result, arguments[ii]);
+        }
+        return polish(result);
+    };
+    multivec.dot = function() {
+        var result = undefined;
+        for (var ii = 0; ii < arguments.length; ++ii)
+            result = (typeof result === 'undefined') ?
+                     arguments[ii] : result.dot(arguments[ii]);
+        return result;
+    };
+
+    multivec.prototype.contract = function(other) {
+        var result;
+
+        if (arguments.length === 1)
+            result = fieldOpBinary(fieldOp.contract, this, other);
+        else {
+            result = this;
+            for (var ii = 0; ii < arguments.length; ++ii)
+                result = fieldOpBinary(
+                    fieldOp.contract, result, arguments[ii]);
+        }
+        return polish(result);
+    };
+    multivec.contract = function() {
+        var result = undefined;
+        for (var ii = 0; ii < arguments.length; ++ii)
+            result = (typeof result === 'undefined') ?
+                     arguments[ii] : result.contract(arguments[ii]);
         return result;
     };
 
@@ -738,8 +792,9 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
         [0, [2, 2, 2]], [[2, 1, -1], 5],
         [[1, 1], [4, -1]],  [[1, 1], [4, -1], [-3, 0]],
         ['2o1 - o2', 'o2 - 2o1'],  ['o1', 'o2'],
-        ['o1 + o2', 'o2 + o1'],
-        ['2o1o2 + 3o3 + 1', '3o3 - 2o1o2 - 1']];
+        ['o1 + o2', 'o2 + o1'], ['o1 + o2', '2o2 + 2o1'],
+        ['2o1o2 + 3o3 + 1', '3o3 - 2o1o2 - 1'], ['o0 + o1', 'o1 + o2']
+    ];
 
     tests.forEach(function(test) {
         var mvecs = test.map(multivec);
