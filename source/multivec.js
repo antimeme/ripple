@@ -69,7 +69,7 @@
             } else subscript = parseInt(m[3], 10);
 
             b.push({
-                signature: (m[2] === 'o' || m2 === 'O') ? 1 : -1,
+                signature: (m[2] === 'o' || m[2] === 'O') ? 1 : -1,
                 subscript: subscript});
         }
 
@@ -199,9 +199,8 @@
             if (zeroish(coefficient)) {
                 // skip zero coefficient terms
             } else if (!result) {
-                if (!zeroish(coefficient - 1) || !key)
-                    result += coefficient;
-                result += key;
+                result += ((!key || !zeroish(coefficient - 1)) ?
+                           coefficient : '') + key;
             } else if (coefficient >= 0) {
                 result += ' + ' + (
                     zeroish(coefficient - 1) ? '' : coefficient) + key;
@@ -793,7 +792,8 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
         [[1, 1], [4, -1]],  [[1, 1], [4, -1], [-3, 0]],
         ['2o1 - o2', 'o2 - 2o1'],  ['o1', 'o2'],
         ['o1 + o2', 'o2 + o1'], ['o1 + o2', '2o2 + 2o1'],
-        ['2o1o2 + 3o3 + 1', '3o3 - 2o1o2 - 1'], ['o0 + o1', 'o1 + o2']
+        ['2o1o2 + 3o3 + 1', '3o3 - 2o1o2 - 1'], ['o0 + o1', 'o1 + o2'],
+        ['o0 - i0', 'o0 - i0']
     ];
 
     tests.forEach(function(test) {
