@@ -252,7 +252,7 @@
                     this.flick = false;
 
                 if (this.flick) {
-                    var current = undefined;
+                    var current = this.drag;
                     fingers.changed.forEach(function(touch) {
                         if (touch.id === this.touchOne.id)
                             current = createTouch(touch);
