@@ -11,16 +11,16 @@
      overflow-x: visible; overflow-y: hidden;
  }
  canvas { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
- img { position: absolute; right: 0; top: 0; }
  #log {
      position: absolute; top: 0, bottom: 0, left: 0, right: 0;
      text-indent: -2em; margin-left: 2em;
  }
  button { position: absolute; top: 1%; right: 1%; }
+ img { position: absolute; right: 0; top: 0; }
 </style>
 
 <div id="log"></div>
-<img src="images/gestur.svg" />
+<!-- <img src="images/gestur.svg" /> -->
 <canvas></canvas>
 <button id="clear">CLEAR</button>
 
@@ -72,13 +72,19 @@
      viewport.on('resize', resize);
      $('#clear').on('click', function() { $('#log').empty(); });
 
-     var g = gestur.create({
+     gestur.create({
+         /* debug: function(name, event) {
+          *     if ((event.type === 'touchstart') ||
+          *         (event.type === 'touchend') ||
+          *         (event.type === 'mousedown') ||
+          *         (event.type === 'mouseup'))
+          *         post(event.type, gestur.createFingers(event));
+          * },*/
          tap: function(name, touch) { post(name, touch); },
          doubleTap: function(name, touch) { post(name, touch); },
          flick: function(name, start, end) {
              post(name, {start: start, end: end}); },
          drag: function(name, start, last, current) {
              post(name, {start: start, last: last, current: current}); }
-     });
-     g.setTarget(canvas);
+     }, canvas);
  }); //]]></script>

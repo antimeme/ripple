@@ -48,25 +48,30 @@
 
     gestur.createFingers = function(event, transform) {
         var result = {touches: [], changed: []};
+        var touches, touch, ii;
 
         transform = setTransform(event, transform);
         if (event.originalEvent && event.originalEvent.targetTouches) {
-            event.originalEvent.targetTouches.forEach(function(touch) {
+            touches = event.originalEvent.targetTouches;
+            for (ii = 0; ii < touches.length; ++ii) {
+                touch = touches.item(ii);
                 result.touches.push(
                     transform({id: touch.identifier,
                                x: touch.pageX, y: touch.pageY}));
-            });
+            }
         } else if ((event.type !== 'mouseup') &&
                    (event.type !== 'touchend'))
             result.touches.push(
                 transform({id: 0, x: event.pageX, y: event.pageY}));
 
         if (event.originalEvent && event.originalEvent.changedTouches) {
-            event.originalEvent.changedTouches.forEach(function(touch) {
+            touches = event.originalEvent.targetTouches;
+            for (ii = 0; ii < touches.length; ++ii) {
+                touch = touches.item(ii);
                 result.changed.push(
                     transform({id: touch.identifier,
                                x: touch.pageX, y: touch.pageY}));
-            });
+            }
         } else result.changed.push(
             transform({id: 0, x: event.pageX, y: event.pageY}));
 
@@ -90,9 +95,9 @@
             Math.sqrt(dot(vLast, vLast) * dot(vNext, vNext)));
     };
 
-    gestur.create = function(config) {
+    gestur.create = function(config, target) {
         if (!(this instanceof gestur.create))
-            return new gestur.create(config);
+            return new gestur.create(config, target);
 
         this.config = config;
         this.doubleThreshold = isNaN(config.doubleThreshold) ? 500 :
@@ -102,6 +107,9 @@
         this.flickAngle = Math.cos(isNaN(config.flickAngle) ?
                                    (Math.PI / 8) : config.flickAngle);
         this.reset();
+
+        if (target)
+            this.setTarget(target);
     };
 
     gestur.create.prototype.fireEvent = function(evname) {
@@ -262,6 +270,7 @@
     };
 
     gestur.create.prototype.onWheel = function(event) {
+        // TODO
     };
 
     gestur.create.prototype.setTarget = function(target) {
@@ -270,18 +279,25 @@
         } else if (!(target instanceof jQuery))
             target = jQuery(target);
 
-        target.on('mousedown touchstart', this, function(event) {
-            event.data.onStart(event); return false; });
-        target.on('mouseup touchend', this, function(event) {
-            event.data.onEnd(event); return false; });
-        target.on('mousemove touchmove', this, function(event) {
-            event.data.onMove(event); return false; });
-        target.on('mousewheel', this, function(event) {
-            event.data.onWheel(event); return false; });
-        target.on('mouseleave touchcancel', this, function(event) {
-            event.data.reset(); return false; });
-
-        return this;
-    };
+        target.on('touchstart mousedown', this, function(event) {
+                  event.data.fireEvent('debug', event);
+                  event.data.onStart(event); return false; })
+              .on('touchend mouseup', this, function(event) {
+                  event.data.fireEvent('debug', event);
+                  event.data.onEnd(event); return false; })
+              .on('touchmove mousemove', this, function(event) {
+                  event.data.fireEvent('debug', event);
+                event.data.onMove(event); return false; })
+              .on('touchmove mousemove', this, function(event) {
+                  event.data.fireEvent('debug', event);
+                  event.data.onMove(event); return false; })
+              .on('mousewheel', this, function(event) {
+                  event.data.fireEvent('debug', event);
+                  event.data.onWheel(event); return false; })
+              .on('touchcancel mouseleave', this, function(event) {
+                  event.data.fireEvent('debug', event);
+                  event.data.reset(); return false; });
+    return this;
+};
 
 })(typeof exports === 'undefined' ? this['gestur'] = {} : exports);
