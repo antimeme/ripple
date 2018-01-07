@@ -55,22 +55,21 @@
             return basisCache[basis];
 
         var result = {label: "", grade: 0, sign: 1};
-        var b = [], current = basis, m, subscript;
+        var b = [], current = basis, m, entry;
 
         // Extract basis vectors for further processing
         for (current = basis; (m = current.match(basisExp)) &&
              m[0].length; current = current.slice(m[0].length)) {
             if (m[0] === 'x' || m[0] === 'X') {
-                subscript = 1;
+                entry = {signature: 1, subscript: 1};
             } else if (m[0] === 'y' || m[0] === 'Y') {
-                subscript = 2;
+                entry = {signature: 1, subscript: 2};
             } else if (m[0] === 'z' || m[0] === 'Z') {
-                subscript = 3;
-            } else subscript = parseInt(m[3], 10);
-
-            b.push({
+                entry = {signature: 1, subscript: 3};
+            } else entry = {
                 signature: (m[2] === 'o' || m[2] === 'O') ? 1 : -1,
-                subscript: subscript});
+                subscript: parseInt(m[3], 10)};
+            b.push(entry);
         }
 
         var squeeze, ii, swap, swapped;
