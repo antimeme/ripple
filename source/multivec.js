@@ -1,5 +1,5 @@
 // multivec.js
-// Copyright (C) 2017 by Jeff Gold.
+// Copyright (C) 2017-2018 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -360,7 +360,9 @@
         // except for zero which has no inverse and throws an error.
         var scale = this.normSquared();
         if (zeroish(scale))
-            throw new RangeError('No multiplicative inverse of zero');
+            throw new RangeError(
+                'No multiplicative inverse of ' + this.toString() +
+                ' (normSquared: ' + scale + ')');
         return this.reverse().multiply(1 / scale);
     };
 
@@ -564,7 +566,13 @@
     };
     multivec.outer = multivec.wedge;
 
-    multivec.prototype.reflect = function(v) {
+    multivec.prototype.project = function(space) {
+        return this.inner(space).divide(space); };
+
+    multivec.prototype.reject = function(space) {
+        return this.outer(space).divide(space); };
+
+    multivec.prototype.applyVersor = function() {
         var result = this;
         for (var ii = 0; ii < arguments.length; ++ii) {
             var v = convert(arguments[ii]);
@@ -576,7 +584,98 @@
     multivec.prototype.rotate = function(v, w) {
         // Rotates a vector along the plane defined by vectors v and w
         // by the angle between the two vectors.
-        return this.reflect(v, v.plus(w));
+        return this.applyVersor(v, v.plus(w));
+    };
+
+    multivec.originPoint = multivec({'o0': 0.5, 'i0': 0.5});
+    multivec.infinityPoint = multivec({'o0': -1,  'i0': 1});
+
+    multivec.prototype.createPoint = function() {
+        // Convert a vector to a conformal geometric algebra point
+        return this.plus(multivec.originPoint,
+                         multivec.infinityPoint.times(
+                             this.normSquared(), 0.5));
+    };
+
+    multivec.prototype.normalizePoint = function() {
+        // Normalize a conformal point, usually for conversion
+        // back to a vector
+        return this.divide(multivec.infinityPoint.inner(this), -1);
+    };
+
+    multivec.prototype.vectorizePoint = function() {
+        // Convert a conformal point to a vector representation
+        // (without origin and infinity points)
+        return this.normalizePoint().reject(
+            multivec.originPoint.outer(multivec.infinityPoint));
+    };
+
+    multivec.conformalDistance = function(point1, point2) {
+        // Compute the distance between two conformal points
+        return Math.sqrt(point1.dot(point2).times(-2).scalar);
+    };
+
+    multivec.conformalDual = function(object) {
+        return convert(object).multiply({'i0o0o1o2o3': 1});
+    };
+
+    multivec.createRotation = function(bivector, angle) {
+        // Create a rotation that can be applied as a versor
+        bivector = bivector.divide(bivector.norm());
+        return bivector.times(
+            Math.sin(-angle/2)).plus(Math.cos(-angle/2));
+    };
+
+    var versor = function(mvec, sign) {
+        if (!(this instanceof versor))
+            return new versor(mvec, sign);
+        this.sign = sign || 1;
+        this.value = mvec;
+    };
+    versor.prototype.apply = function(mvec) {
+        return multivec.product(
+            this.sign, this.value, mvec, this.value.inverseMult());
+    };
+    versor.prototype.compose = function(other) {
+        var result;
+
+        if (arguments.length === 1)
+            result = versor(this.value.multiply(other.value),
+                            this.sign * other.sign);
+        else {
+            result = this;
+            for (var ii = 0; ii < arguments.length; ++ii)
+                result = versor(
+                    result.value.multiply(arguments[ii].value),
+                    result.sign * arguments[ii].sign);
+        }
+        return result;
+    };
+    versor.compose = function() {
+        var result = undefined;
+        for (var ii = 0; ii < arguments.length; ++ii)
+            result = (typeof result === 'undefined') ?
+                     arguments[ii] : result.compose(arguments[ii]);
+        return result;
+    };
+
+    multivec.createTranslation = function(vector) {
+        return versor(multivec(1).minus(
+            vector.times(multivec.infinityPoint, 0.5)));
+    };
+
+    multivec.createReflection = function(vector) {
+        return versor(vector, -1);
+    };
+
+    multivec.createDilution = function(scalar) {
+        return versor(multivec.sum(1, multivec.originPoint.outer(
+            multivec.infinityPoint)).times(scalar / 2));
+    };
+
+    multivec.createInvertion = function() {
+        return versor(multivec.originPoint.minus(
+            multivec.infinityPoint.divide(2)), -1);
     };
 
     multivec.prototype.draw = function(ctx, config) {
@@ -785,34 +884,68 @@
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
     var multivec = exports;
-    var tests = [
-        [0], [7], [[2, 2, 2]], [' 2o1o2 +  3.14159 - 3o1o2'],
-        [{'': 3, 'o1o2': -2}],
-        [0, [2, 2, 2]], [[2, 1, -1], 5],
-        [[1, 1], [4, -1]],  [[1, 1], [4, -1], [-3, 0]],
-        ['2o1 - o2', 'o2 - 2o1'],  ['o1', 'o2'],
-        ['o1 + o2', 'o2 + o1'], ['o1 + o2', '2o2 + 2o1'],
-        ['2o1o2 + 3o3 + 1', '3o3 - 2o1o2 - 1'], ['o0 + o1', 'o1 + o2'],
-        ['o0 - i0', 'o0 - i0']
-    ];
+    var tests = {
+        indivdual: {
+            vectors: [
+                [0], [7], [[2, 2, 2]], [' 2o1o2 +  3.14159 - 3o1o2'],
+                [{'': 3, 'o1o2': -2}]] },
+        products: {
+            sum: true, product: true, inner: true, outer: true,
+            vectors: [
+                [0, [2, 2, 2]], [[2, 1, -1], 5],
+                [[1, 1], [4, -1]],  [[1, 1], [4, -1], [-3, 0]],
+                ['2o1 - o2', 'o2 - 2o1'],  ['o1', 'o2'],
+                ['o1 + o2', 'o2 + o1'], ['o1 + o2', '2o2 + 2o1'],
+                ['2o1o2 + 3o3 + 1', '3o3 - 2o1o2 - 1']] },
+        conformal: {
+            inner: true, outer: true,
+            vectors: [
+                [multivec.originPoint, multivec.infinityPoint],
+                [multivec.createTranslation(multivec([1, 1, 1])).value],
+                [multivec.createTranslation(multivec([1, 1, 1])).apply(
+                    multivec([2, 2, 2]).createPoint())],
+                [multivec.createTranslation(multivec([1, 1, 1])).apply(
+                    multivec([2, 2, 2]).createPoint()).vectorizePoint()]
+            ]}};
 
-    tests.forEach(function(test) {
-        var mvecs = test.map(multivec);
-        var svecs = mvecs.map(function(a) { return a.toString(); });
-        if (!test.length) {
-        } else if (test.length === 1) {
-            console.log(svecs[0], 'grade?', mvecs[0].grade());
-        } else {
-            var eq = multivec.equals.apply(null, mvecs);
-            console.log(svecs.join(', '), "eq?", eq);
-            console.log('  SUM  (' + svecs.join(') + (') + ') = ' +
-                        multivec.sum.apply(null, mvecs).toString());
-            console.log('  PROD (' + svecs.join(') * (') + ') = ' +
-                        multivec.product.apply(null, mvecs).toString());
-            console.log('  INNER (' + svecs.join(') . (') + ') = ' +
-                        multivec.inner.apply(null, mvecs).toString());
-            console.log('  OUTER (' + svecs.join(') ^ (') + ') = ' +
-                        multivec.wedge.apply(null, mvecs).toString());
-        }
-    });
+    var conduct = function(name, test) {
+        console.log('===', name);
+        test.vectors.forEach(function(vecs) {
+            var mvecs = vecs.map(multivec);
+            var svecs = mvecs.map(function(a) { return a.toString(); });
+            if (!vecs.length) {
+            } else if (vecs.length === 1) {
+                console.log(svecs[0], 'grade?', mvecs[0].grade());
+            } else {
+                var eq = multivec.equals.apply(null, mvecs);
+                console.log(svecs.join(', '), "eq?", eq);
+                if (test.sum)
+                    console.log('  SUM  (' + svecs.join(') + (') +
+                                ') = ' + multivec.sum.apply(
+                                    null, mvecs).toString());
+                if (test.product)
+                    console.log('  PROD (' + svecs.join(') * (') +
+                                ') = ' + multivec.product.apply(
+                                    null, mvecs).toString());
+                if (test.inner)
+                    console.log('  INNER (' + svecs.join(') . (') +
+                                ') = ' + multivec.inner.apply(
+                                    null, mvecs).toString());
+                if (test.outer)
+                    console.log('  OUTER (' + svecs.join(') ^ (') +
+                                ') = ' + multivec.wedge.apply(
+                                    null, mvecs).toString());
+            }
+        });
+    };
+
+    var chosen = process.argv.slice(2);
+
+    if (chosen.length)
+        chosen.forEach(function(arg) {
+            if (arg in tests)
+                conduct(arg, tests[arg]);
+            else console.log('===', arg, 'MISSING'); });
+    else Object.keys(tests).forEach(function(key) {
+        conduct(key, tests[key]); });
 }
