@@ -20,12 +20,13 @@
 </style>
 
 <div id="log"></div>
-<!-- <img src="images/gestur.svg" /> -->
+<img src="images/gestur.svg" />
 <canvas></canvas>
 <button id="clear">CLEAR</button>
 
 <script src="lib/jquery.min.js"></script>
 <script src="lib/jquery.mousewheel.js"></script>
+<script src="ripple/ripple.js"></script>
 <script src="ripple/gestur.js"></script>
 <script>//<![CDATA[
  jQuery(function($) {
@@ -73,13 +74,6 @@
      $('#clear').on('click', function() { $('#log').empty(); });
 
      gestur.create({
-         /* debug: function(name, event) {
-          *     if ((event.type === 'touchstart') ||
-          *         (event.type === 'touchend') ||
-          *         (event.type === 'mousedown') ||
-          *         (event.type === 'mouseup'))
-          *         post(event.type, gestur.createFingers(event));
-          * },*/
          tap: function(name, touch) { post(name, touch); },
          doubleTap: function(name, touch) { post(name, touch); },
          flick: function(name, start, end) {

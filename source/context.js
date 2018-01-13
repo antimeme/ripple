@@ -151,32 +151,5 @@
             return fse ? jQuery.exitFullscreen() :
                 jQuery.requestFullscreen(elem);
         };
-
-        // Normalize positions in mouse and touch events
-        jQuery.targets = function(event) {
-            var result = {};
-            var offset = jQuery(event.target).offset();
-
-            if (!offset)
-                offset = {left: 0, top: 0};
-
-            if (event.originalEvent.targetTouches) {
-                var touches = event.originalEvent.targetTouches;
-                if (touches.length > 0) {
-                    result.x = touches[0].pageX - offset.left;
-                    result.y = touches[0].pageY - offset.top;
-                }
-                result.touches = [];
-                for (var i = 0; i < touches.length; i++)
-                    result.touches.push({
-                        x: touches[i].pageX - offset.left,
-                        y: touches[i].pageY - offset.top });
-            } else {
-                result.x = event.pageX - offset.left;
-                result.y = event.pageY - offset.top;
-                result.touches = [{x: result.x, y: result.y}];
-            }
-            return result;
-        };
     }
 }());

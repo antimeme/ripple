@@ -68,7 +68,6 @@
                     if (!isNaN(value))
                         chosen[parseInt(value, 10)] = true; });
                 this.other.inventory.forEach(function(item, index) {
-                    console.log('DEBUG', index, chosen);
                     if (index in chosen)
                         this.player.inventory.push(item);
                     else updated.push(item);
@@ -885,34 +884,34 @@
                 } else if (event.keyCode === 80 /* p */) {
 	        } else if (debug) console.log('up', event.keyCode);
             },
-            mtdown: function(targets, event, redraw) {
-                this.tap = targets;
+            mtdown: function(touches, event, redraw) {
+                this.touches = touches;
                 this.swipe = null;
                 this.mmove = null;
-                if (this.tap.touches.length > 1) {
+                if (this.touches.current.length > 1) {
                     this.zoom.reference =
                         multivec([
-                            this.tap.touches[0].x -
-                            this.tap.touches[1].x,
-                            this.tap.touches[0].y -
-                            this.tap.touches[1].y
+                            this.touches.current[0].x -
+                            this.touches.current[1].x,
+                            this.touches.current[0].y -
+                            this.touches.current[1].y
                         ]).normSquared();
                 } else this.swipe = undefined;
                 redraw();
                 return false;
             },
-            mtmove: function(targets, event, redraw) {
+            mtmove: function(touches, event, redraw) {
                 var mmove, swipe, zoomref;
-                if (this.tap) {
+                if (this.touches) {
                     targets = $.targets(event);
                     if (targets.touches.length > 1) {
                         if (this.zoom.reference >
                             Math.min(this.height, this.width) / 100) {
                             zoomref = multivec([
-                                targets.touches[0].x -
-                                targets.touches[1].x,
-                                targets.touches[0].y -
-                                targets.touches[1].y
+                                touches.current[0].x -
+                                touches.current[1].x,
+                                touches.current[0].y -
+                                touches.current[1].y
                             ]).normSquared();
                             this.zoom.change(Math.sqrt(zoomref /
                                 this.zoom.reference));
@@ -920,8 +919,8 @@
                         }
                     } else {
                         mmove = multivec([
-                            targets.x - this.tap.x,
-                            targets.y - this.tap.y]);
+                            touches.x - this.touches.x,
+                            touches.y - this.touches.y]);
                         swipe = mmove.normalize();
                         if ((typeof(this.swipe) === 'undefined') ||
                             (this.swipe &&
@@ -950,7 +949,7 @@
                                     Math.sin(this.player.direction)]));
                     } else this.player.control.swipe = this.swipe;
                 } else this.player.control.swipe = null;
-                this.tap = null;
+                this.touches = null;
                 this.swipe = null;
                 this.mmove = null;
                 this.update();

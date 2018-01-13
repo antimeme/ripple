@@ -224,18 +224,18 @@
                  1 + 0.1 * event.deltaY);
         });
         self.on('mousedown touchstart', function(event) {
-            var targets = $.targets(event);
+            var targets = ripple.createTouches(event);
             var candidate, qnum;
 
             menu.hide();
             if (event.which > 1) {
                 // Reserve right and middle clicks for browser menus
                 return true;
-            } else if (targets.touches.length > 1) {
+            } else if (targets.current.length > 1) {
                 tap = targets;
-                if (targets.touches.length == 2) {
-                    var t0 = targets.touches[0];
-                    var t1 = targets.touches[1];
+                if (targets.current.length == 2) {
+                    var t0 = targets.current[0];
+                    var t1 = targets.current[1];
                     zooming = {
                         diameter: Math.sqrt(sqdist(t0, t1)),
                         x: (t0.x + t1.x) / 2, y: (t0.y + t1.y) / 2,
@@ -288,7 +288,7 @@
         });
         self.on('mousemove touchmove', function(event) {
             if (drag) {
-                tap = $.targets(event);
+                tap = ripple.createTouches(event);
                 var goff = instance.offset();
                 instance.offset(goff.left + tap.x - drag.x,
                                 goff.top + tap.y - drag.y);
@@ -298,11 +298,11 @@
                 drag = tap;
             }
             if (zooming) {
-                var targets = $.targets(event);
+                var targets = ripple.createTargets(event);
                 var factor;
-                if (zooming.diameter && targets.touches.length == 2) {
-                    var t0 = targets.touches[0];
-                    var t1 = targets.touches[1];
+                if (zooming.diameter && targets.current.length == 2) {
+                    var t0 = targets.current[0];
+                    var t1 = targets.current[1];
                     var diameter = Math.sqrt(sqdist(t0, t1));
                     factor = diameter / zooming.diameter;
                 }

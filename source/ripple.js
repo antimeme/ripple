@@ -1,5 +1,5 @@
 // ripple.js
-// Copyright (C) 2014-2017 by Jeff Gold.
+// Copyright (C) 2014-2018 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -20,18 +20,11 @@
 (function(ripple) {
     'use strict';
 
-    var buildBSP = function(walls) {
-        // Creates a Binary Space Partition tree that allows
-        // best-case logarithmic searching for collisions with
-        // a given array of walls.  Each entry in the walls array
-        // must be an object with an 's' and 'e' property, each
-        // of which contains an 'x' and a 'y' property.
-        walls.forEach(function(wall) {
-            // TODO
-        });
-    };
+    // === Pairing Functions
 
-    // http://www.math.drexel.edu/~tolya/cantorpairing.pdf
+    // Represents a reversable transformation from a pair of positive
+    // integers to a single positive integer.
+    //   http://www.math.drexel.edu/~tolya/cantorpairing.pdf
     var cantorPair = {
         name: "Cantor",
         pair: function(x, y) {
@@ -44,7 +37,9 @@
         }
     };
 
-    // http://szudzik.com/ElegantPairing.pdf
+    // Represents a reversable transformation from a pair of positive
+    // integers to a single positive integer.
+    //   http://szudzik.com/ElegantPairing.pdf
     var szudzikPair = {
         name: "Szudzik",
         pair: function(x, y) {
@@ -62,7 +57,7 @@
         var ny = (y >= 0) ? 2 * y : -2 * y - 1;
         return szudzikPair.pair(nx, ny);
     };
-    ripple.unpair = function(z) {
+    ripple.unpair = function(z, pair) {
         var result = szudzikPair.unpair(z);
         if (result.x % 2)
             result.x = -result.x + 1;
@@ -72,6 +67,8 @@
         result.y /= 2;
         return result;
     };
+
+    // === General utilities
 
     // Randomize the order of an array in place, using an optional
     // random number generator
@@ -108,12 +105,93 @@
         return result;
     };
 
+    // Return a value claimped to a minimum and maximum
     ripple.clamp = function(value, max, min) {
         if (value > max)
             value = max;
         else if (value < min)
             value = min;
         return value;
+    };
+
+    // === User interface utilities
+
+    // Starts an application after loading a series of URLs using
+    // jQuery with AJAX
+    ripple.preload = function($, urls, action) {
+        var loaded = false;
+        var count = 0;
+        var go = null;
+        var results = {};
+
+        urls.forEach(function(url) {
+            $.ajax({url: url}).done(function(data) {
+                results[url] = data;
+                ++count;
+                if ((count === urls.length) && go)
+                    go($, results);
+            }).fail(function(jqXHR, err) {
+                console.log(err);
+                alert(err);
+            });
+        });
+        $(function($) {
+            go = action;
+            if (count === urls.length)
+                go($, results);
+        });
+    };
+
+    var setTransform = function(event, transform) {
+        // An undefined transform means we should attempt to remove
+        // the component offset, giving coordinates relative to the
+        // element itself rather than the page as a whole
+        if (typeof(transform) === 'undefined') {
+            var offset = (typeof(jQuery) !== 'undefined') ?
+                         jQuery(event.target).offset() :
+                         {top: 0, left: 0};
+            transform = function(touch) {
+                return {x: touch.x - offset.left,
+                        y: touch.y - offset.top, id: touch.id}; };
+        } else if (!transform) // null transform is identity
+            transform = function(touch) { return touch; };
+        return transform;
+    };
+
+    ripple.createTouches = function(event, transform) {
+        var result = {current: [], changed: []};
+        var touches, touch, ii;
+
+        transform = setTransform(event, transform);
+        if (event.originalEvent && event.originalEvent.targetTouches) {
+            touches = event.originalEvent.targetTouches;
+            for (ii = 0; ii < touches.length; ++ii) {
+                touch = touches.item(ii);
+                result.current.push(
+                    transform({id: touch.identifier,
+                               x: touch.pageX, y: touch.pageY}));
+            }
+        } else if ((event.type !== 'mouseup') &&
+                   (event.type !== 'touchend'))
+            result.current.push(
+                transform({id: 0, x: event.pageX, y: event.pageY}));
+
+        if (event.originalEvent && event.originalEvent.changedTouches) {
+            touches = event.originalEvent.targetTouches;
+            for (ii = 0; ii < touches.length; ++ii) {
+                touch = touches.item(ii);
+                result.changed.push(
+                    transform({id: touch.identifier,
+                               x: touch.pageX, y: touch.pageY}));
+            }
+        } else result.changed.push(
+            transform({id: 0, x: event.pageX, y: event.pageY}));
+
+        if (result.current.length > 0) {
+            result.x = result.current[0].x;
+            result.y = result.current[0].y;
+        }
+        return result;
     };
 
     // Framework for canvas applications
@@ -194,33 +272,60 @@
                 return app.keyup(event, redraw);
 	});
 
+        if (typeof(gestur) !== 'undefined') {
+            var g = gestur.create({
+                next: true,
+                tap: function(name, touch) {
+                    if (app.tap)
+                        return app.tap(touch);
+                },
+                doubleTap: function(name, touch) {
+                    if (app.doubleTap)
+                        return app.doubleTap(touch);
+                },
+                flick: function(name, start, end) {
+                    if (app.flick)
+                        return app.flick(start, end);
+                },
+                drag: function(name, start, last, current) {
+                    if (app.drag)
+                        return app.drag(start, last, current);
+                }
+            });
+            g.setTarget(canvas);
+        }
+
         canvas.on('mousedown touchstart', function(event) {
-            var targets;
+            var touches;
             if (app.mtdown) {
-                targets = $.targets(event);
-                return app.mtdown(targets, event, redraw);
+                touches = ripple.createTouches(event);
+                return app.mtdown(touches, event, redraw);
             }
+            return false;
         });
 
         canvas.on('mousemove touchmove', function(event) {
-            var targets;
+            var touches;
             if (app.mtmove) {
-                targets = $.targets(event);
-                return app.mtmove(targets, event, redraw);
+                touches = ripple.createTouches(event);
+                return app.mtmove(touches, event, redraw);
             }
+            return false;
         });
 
         canvas.on('mouseleave mouseup touchend', function(event) {
-            var targets;
+            var touches;
             if (app.mtup) {
-                targets = $.targets(event);
-                return app.mtup(targets, event, redraw);
+                touches = ripple.createTouches(event);
+                return app.mtup(touches, event, redraw);
             }
+            return false;
         });
 
         canvas.on('mousewheel', function(event) {
             if (app.mwheel)
                 return app.mwheel(event, redraw);
+            return false;
         });
     };
 

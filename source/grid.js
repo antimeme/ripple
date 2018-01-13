@@ -830,11 +830,11 @@
                     }
                 }
                 if (tap) {
-                    for (index = 0; index < tap.touches.length;
+                    for (index = 0; index < tap.current.length;
                          ++index) {
                         ctx.beginPath();
-                        ctx.arc(tap.touches[index].x,
-                                tap.touches[index].y,
+                        ctx.arc(tap.current[index].x,
+                                tap.current[index].y,
                                 20, 0, 2 * Math.PI);
                         ctx.fillStyle = colorTapOuter;
                         ctx.fill();
@@ -1026,16 +1026,16 @@
                  1 + 0.1 * event.deltaY);
         });
         self.on('mousedown touchstart', function(event) {
-            var targets = $.targets(event);
+            var targets = ripple.createTouches(event);
             menu.hide();
             if (event.which > 1) {
                 // Reserve right and middle clicks for browser menus
                 return true;
-            } else if (targets.touches.length > 1) {
+            } else if (targets.current.length > 1) {
                 tap = targets;
-                if (targets.touches.length == 2) {
-                    var t0 = targets.touches[0];
-                    var t1 = targets.touches[1];
+                if (targets.current.length == 2) {
+                    var t0 = targets.current[0];
+                    var t1 = targets.current[1];
                     zooming = {
                         diameter: Math.sqrt(sqdist(t0, t1)),
                         x: (t0.x + t1.x) / 2, y: (t0.y + t1.y) / 2,
@@ -1071,7 +1071,7 @@
         self.on('mousemove touchmove', function(event) {
             if (drag) {
                 animation.stop();
-                tap = $.targets(event);
+                tap = ripple.createTouches(event);
                 var goff = instance.offset();
                 instance.offset(goff.left + tap.x - drag.x,
                                 goff.top + tap.y - drag.y);
@@ -1082,11 +1082,11 @@
             }
             if (zooming) {
                 animation.stop();
-                var targets = $.targets(event);
+                var targets = ripple.createTouches(event);
                 var factor;
-                if (zooming.diameter && targets.touches.length == 2) {
-                    var t0 = targets.touches[0];
-                    var t1 = targets.touches[1];
+                if (zooming.diameter && targets.current.length == 2) {
+                    var t0 = targets.current[0];
+                    var t1 = targets.current[1];
                     var diameter = Math.sqrt(sqdist(t0, t1));
                     factor = diameter / zooming.diameter;
                 }

@@ -290,7 +290,7 @@
                 // Reserve right and middle clicks for browser menus
                 return true;
             } else {
-                point = $.targets(event);
+                point = ripple.createTouches(event);
                 best = -1; selected = null;
                 for (index in players) {
                     player = players[index];
@@ -343,7 +343,7 @@
         self.on('mousemove touchmove', function(event) {
             var point, vec;
             if (selected) {
-                point = $.targets(event);
+                point = ripple.createTouches(event);
                 target = field.position(point.x, point.y);
                 redraw();
             }

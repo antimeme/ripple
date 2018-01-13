@@ -10,25 +10,14 @@
 <script src="lib/jquery.min.js"></script>
 <script src="lib/jquery.mousewheel.js"></script>
 <script src="ripple/context.js"></script>
+<script src="ripple/ripple.js"></script>
+<script src="ripple/gestur.js"></script>
 <script src="ripple/grid.js"></script>
 <script src="ripple/multivec.js"></script>
-<script src="ripple/ripple.js"></script>
 <script src="whiplash.js"></script>
 <script>//<![CDATA[
- var wdata = null, start = null;
- jQuery.ajax({url: 'whiplash.json'}).done(function(data) {
-     wdata = data;
-     if (start)
-         start();
- }).fail(function(jqXHR, err) {
-     console.log(err);
-     alert(err);
- });
- jQuery(function($) {
-     start = function() {
-         whiplash.go($, $('.whiplash'), $(window), wdata);
-     }
-     if (wdata)
-         start();
+ ripple.preload(jQuery, ['whiplash.json'], function($, results) {
+     whiplash.go($, $('.whiplash'), $(window),
+                 results['whiplash.json']);
  });
  //]]></script>

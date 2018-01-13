@@ -30,58 +30,6 @@
         PINCH: 6,
         RESOLV: 7 };
 
-    var setTransform = function(event, transform) {
-        // An undefined transform means we should attempt to remove
-        // the component offset, giving coordinates relative to the
-        // element itself rather than the page as a whole
-        if (typeof(transform) === 'undefined') {
-            var offset = (typeof(jQuery) !== 'undefined') ?
-                         jQuery(event.target).offset() :
-                         {top: 0, left: 0};
-            transform = function(touch) {
-                return {x: touch.x - offset.left,
-                        y: touch.y - offset.top, id: touch.id}; };
-        } else if (!transform) // null transform is identity
-            transform = function(touch) { return touch; };
-        return transform;
-    };
-
-    gestur.createFingers = function(event, transform) {
-        var result = {touches: [], changed: []};
-        var touches, touch, ii;
-
-        transform = setTransform(event, transform);
-        if (event.originalEvent && event.originalEvent.targetTouches) {
-            touches = event.originalEvent.targetTouches;
-            for (ii = 0; ii < touches.length; ++ii) {
-                touch = touches.item(ii);
-                result.touches.push(
-                    transform({id: touch.identifier,
-                               x: touch.pageX, y: touch.pageY}));
-            }
-        } else if ((event.type !== 'mouseup') &&
-                   (event.type !== 'touchend'))
-            result.touches.push(
-                transform({id: 0, x: event.pageX, y: event.pageY}));
-
-        if (event.originalEvent && event.originalEvent.changedTouches) {
-            touches = event.originalEvent.targetTouches;
-            for (ii = 0; ii < touches.length; ++ii) {
-                touch = touches.item(ii);
-                result.changed.push(
-                    transform({id: touch.identifier,
-                               x: touch.pageX, y: touch.pageY}));
-            }
-        } else result.changed.push(
-            transform({id: 0, x: event.pageX, y: event.pageY}));
-
-        if (result.touches.length > 0) {
-            result.x = result.touches[0].x;
-            result.y = result.touches[0].y;
-        }
-        return result;
-    };
-
     var createTouch = function(touch) {
         return {id: touch.id, x: touch.x, y: touch.y};
     };
@@ -100,6 +48,7 @@
             return new gestur.create(config, target);
 
         this.config = config;
+        this.next = config.next || false;
         this.doubleThreshold = isNaN(config.doubleThreshold) ? 500 :
                                config.doubleThreshold;
         this.flickThreshold = isNaN(config.flickThreshold) ? 500 :
@@ -129,30 +78,30 @@
 
     gestur.create.prototype.onStart = function(event) {
         var now = new Date().getTime();
-        var fingers = gestur.createFingers(event);
+        var touches = ripple.createTouches(event);
 
         switch (this.state) {
             case states.READY:
                 this.startTime = now;
                 this.flick = (this.config.flick ? true : false);
-                if (fingers.changed.length >= 2) {
+                if (touches.changed.length >= 2) {
                     this.touchOne = createTouch(
-                        fingers.changed[0]);
+                        touches.changed[0]);
                     this.touchTwo = createTouch(
-                        fingers.changed[1]);
+                        touches.changed[1]);
                     this.state = states.PINCH;
-                } else if (fingers.changed.length === 1) {
+                } else if (touches.changed.length === 1) {
                     this.touchOne = createTouch(
-                        fingers.changed[0]);
+                        touches.changed[0]);
                     this.touchTwo = undefined;
                     this.state = states.TAP;
                 } else this.reset();
                 break;
             case states.TAP:
             case states.DRAG:
-                if (fingers.changed.length >= 1) {
+                if (touches.changed.length >= 1) {
                     this.touchTwo = createTouch(
-                        fingers.changed[0]);
+                        touches.changed[0]);
                     this.state = states.PINCH;
                 }
                 break;
@@ -177,7 +126,7 @@
 
     gestur.create.prototype.onMove = function(event) {
         var now = new Date().getTime();
-        var fingers = gestur.createFingers(event);
+        var touches = ripple.createTouches(event);
 
         switch (this.state) {
             case states.READY: /* ignore */ break;
@@ -188,7 +137,7 @@
                 // fall though...
             case states.DRAG:
                 var current = undefined;
-                fingers.changed.forEach(function(touch) {
+                touches.changed.forEach(function(touch) {
                     if (touch.id === this.touchOne.id)
                         current = createTouch(touch);
                 }, this);
@@ -221,7 +170,7 @@
 
     gestur.create.prototype.onEnd = function(event) {
         var now = new Date().getTime();
-        var fingers = gestur.createFingers(event);
+        var touches = ripple.createTouches(event);
 
         switch (this.state) {
             case states.READY: break;
@@ -243,7 +192,7 @@
                 this.state = states.PRESS;
                 break;
             case states.PINCH:
-                if (fingers.touches.length > 0)
+                if (touches.current.length > 0)
                     this.state = states.RESOLV;
                 else this.reset();
                 break;
@@ -253,7 +202,7 @@
 
                 if (this.flick) {
                     var current = this.drag;
-                    fingers.changed.forEach(function(touch) {
+                    touches.changed.forEach(function(touch) {
                         if (touch.id === this.touchOne.id)
                             current = createTouch(touch);
                     }, this);
@@ -261,7 +210,7 @@
                 }
                 // fall through
             case states.RESOLV:
-                if (fingers.touches.length === 0)
+                if (touches.current.length === 0)
                     this.reset();
                 break;
             default: // wedged
@@ -278,25 +227,32 @@
         } else if (!(target instanceof jQuery))
             target = jQuery(target);
 
-        target.on('touchstart mousedown', this, function(event) {
-                  event.data.fireEvent('debug', event);
-                  event.data.onStart(event); return false; })
-              .on('touchend mouseup', this, function(event) {
-                  event.data.fireEvent('debug', event);
-                  event.data.onEnd(event); return false; })
-              .on('touchmove mousemove', this, function(event) {
-                  event.data.fireEvent('debug', event);
-                event.data.onMove(event); return false; })
-              .on('touchmove mousemove', this, function(event) {
-                  event.data.fireEvent('debug', event);
-                  event.data.onMove(event); return false; })
-              .on('mousewheel', this, function(event) {
-                  event.data.fireEvent('debug', event);
-                  event.data.onWheel(event); return false; })
-              .on('touchcancel mouseleave', this, function(event) {
-                  event.data.fireEvent('debug', event);
-                  event.data.reset(); return false; });
-    return this;
-};
+        target
+            .on('touchstart mousedown', this, function(event) {
+                event.data.fireEvent('debug', event);
+                event.data.onStart(event);
+                return this.next; })
+            .on('touchend mouseup', this, function(event) {
+                event.data.fireEvent('debug', event);
+                event.data.onEnd(event);
+                return this.next; })
+            .on('touchmove mousemove', this, function(event) {
+                event.data.fireEvent('debug', event);
+                  event.data.onMove(event);
+                return this.next; })
+            .on('touchmove mousemove', this, function(event) {
+                event.data.fireEvent('debug', event);
+                event.data.onMove(event);
+                return this.next; })
+            .on('mousewheel', this, function(event) {
+                event.data.fireEvent('debug', event);
+                event.data.onWheel(event);
+                return this.next; })
+            .on('touchcancel mouseleave', this, function(event) {
+                event.data.fireEvent('debug', event);
+                event.data.reset();
+                return this.next; });
+        return this;
+    };
 
 })(typeof exports === 'undefined' ? this['gestur'] = {} : exports);
