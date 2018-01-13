@@ -17,22 +17,54 @@
 //
 // ---------------------------------------------------------------------
 // A multi-vector library intended to support Geometric Algebra,
-// including mixed signature conformal models.  A multivector is the sum
-// of zero or more components each of which is a coefficient times zero
-// or more ortho-normal basis vectors.  Objects from this library can
-// represent real numbers, complex numbers, quaternions, vectors and
-// many other kinds of mathematical objects.
+// including mixed-signature and conformal models.  A multivector is
+// the sum of zero or more components each of which is a coefficient
+// times zero or more ortho-normal basis vectors.  Objects from this
+// library can represent real numbers, complex numbers, quaternions,
+// vectors and many other kinds of mathematical objects.
 //
 // Orthonormal basis vectors are represented by strings like 'o1',
 // 'o2', 'o1o2o3' and so on.  The letter 'o' was chosen becuase
 // the more conventional 'e' is also used to represent exponents
-// in IEEE 754 floating point numbers.  Strings like 'i1' are used for
-// negative signature ortho-normal basis vectors.
+// in IEEE 754 floating point numbers.  Strings such as 'i0' and 'i1'
+// are used for negative signature ortho-normal basis vectors.
 //
 // The following invariants should hold for all multivec routines:
 // - multivec values are immutable
 // - multivec basis values are in canonical order (low index to high)
-// - multivec components are omitted when within epsilon of zero
+// - multivec components are omitted when very close to zero
+//
+// A multi-vector is constructed using the multivec() function, which
+// can accept arguments in a variety of forms:
+// - A number (scalar): multivec(3.14159)
+// - An array (vector): multivec([3, -1, 2])
+// - A string (multi-vector): multivec("2 + o2o1")
+// - An object (multi-vector): multivec({'': 2, o2o1: 1})
+//
+// Operations on multi-vectors must use methods because JavaScript
+// does not support operator overloading.  The following yields true:
+//   multivec([2, 1]).plus(multivec([1, 2])).equals(multivec([3, 3]))
+//
+// Each multi-vector has a .scalar, .x, .y and .z field for ease
+// of integration with other systems.
+//   multivec(Math.PI).scalar === Math.PI // true
+//   multivec([2, 1]).x === 2 // true
+//   multivec("2o1 + o2").x === 2 // true
+//   multivec({x: 2, y: 1}).x === 2 // true
+//
+// Three distinct inner products are offered.  All are equivalent
+// when applied to vectors but they differ substantially for other
+// kinds of multi-vectors -- including scalars.
+// - inner: gemoetric product excluding the outer product
+// - dot: inner product with scalar components
+// - contract: non-associative dual projection
+//
+// Product   | o1, o1 | o1, o2 | 2, 7 | o1o2, o1 | o1, o1o2 | o1o2, o2o3
+//  geometric| 1      | o1o2   | 14   | -o2      | o2       | o1o3
+//  outer    | 0      | o1o2   | 14   | 0        | 0        | 0
+//  inner    | 1      | 0      | 0    | -o2      | o2       | o1o3
+//  dot      | 1      | 0      | 14   | -o2      | o2       | 0
+//  contract | 1      | 0      | 0    | 0        | o2       | 0
 
 (function() {
     'use strict';
@@ -72,9 +104,9 @@
             b.push(entry);
         }
 
+        // Bubble sort basis vectors, flipping sign each swap
         var squeeze, ii, swap, swapped;
         for (squeeze = 1; squeeze < b.length; ++squeeze) {
-            // Bubble sort basis vectors, flipping sign each swap
             swapped = false;
             for (ii = 0; ii < b.length - squeeze; ++ii)
                 if ((b[ii].signature > b[ii + 1].signature) ||
@@ -136,6 +168,11 @@
         return convert(components);
     };
 
+    // Creates a multivec from some other type.  Numbers result
+    // in scalar values.  Arrays become vectors: a[0] * o1 + a[1] * o2
+    // and so on.  Strings are parsed.  Objects have multi-vector
+    // components extracted.  And finally multivec objects are
+    // returned unchanged since they are intended to be immutable.
     var convert = function(value) {
         var result;
 
@@ -176,13 +213,15 @@
         return result;
     };
 
+    // Creates a multi-vector suitable for Geometric Algebra
+    // The value argument can be a number, an array, a string,
+    // an object or a multivec to copy.
     multivec = function(value) {
-        // Represents a multi-vector suitable for Geometric Algebra
         if (!(this instanceof multivec))
             return new multivec(value);
         this.components = {};
-        value = convert(value);
 
+        value = convert(value);
         Object.keys(value.components).forEach(function(key) {
             if (!zeroish(value.components[key]))
                 this.components[key] = value.components[key];
@@ -190,6 +229,7 @@
         polish(this);
     };
 
+    // Returns a string representation of a multi-vector
     multivec.prototype.toString = function() {
         var result = '';
 
@@ -212,10 +252,10 @@
         return result;
     };
 
+    // Return true iff all components of this multi-vector are
+    // approximately zero (actual zero not required due to floating
+    // point rounding errors).
     multivec.prototype.zeroish = function() {
-        // Return true iff all components of this multi-vector are
-        // approximately zero (actual zero not required due to floating
-        // point rounding errors).
         var result = true;
         Object.keys(this.components).forEach(function(key) {
             if (!zeroish(this.components[key]))
@@ -223,10 +263,10 @@
         }, this);
         return result;
     };
+
+    // Return true iff all supplied mutlivectors are approximately zero
+    // (actual zero not required due to floating point rounding errors).
     multivec.zeroish = function() {
-        // Return true iff all supplied mutlivectors are approximately
-        // zero (actual zero not required due to floating point
-        // rounding errors).
         var result = true;
         for (var ii = 0; ii < arguments.length; ++ii)
             if (!convert(arguments[ii]).zeroish())
@@ -234,10 +274,10 @@
         return result;
     };
 
+    // Return true iff all supplied multivectors are approximately equal
+    // to this one (exact equality not required due to floating point
+    // rounding errors).
     multivec.prototype.equals = function() {
-        // Return true iff all supplied multivectors are approximately
-        // equal to this one (actual equality not required due to
-        // floating point rounding errors).
         var result = true;
 
         for (var ii = 0; ii < arguments.length; ++ii) {
@@ -255,10 +295,11 @@
         }
         return result;
     };
+
+    // Return true iff all supplied multivectors are approximately equal
+    // (exact equality not required due to floating point rounding
+    // errors).
     multivec.equals = function() {
-        // Return true iff all supplied multivectors are approximately
-        // equal (actual equality not required due to floating point
-        // rounding errors).
         var result = true;
         if (arguments.length > 1) {
             var first = convert(arguments[0]);
@@ -270,10 +311,10 @@
         return result;
     };
 
+    // Returns the grade of the higest grade component in this
+    // multi-vector (or undefined if homogenous is true and the
+    // multi-vector is not homogenous)
     multivec.prototype.grade = function(homogeneous) {
-        // Returns the grade of the higest grade component in this
-        // multivector (or undefined if homogenous is true and the
-        // multivector is not homogenous)
         var result = undefined;
         var mixed = false;
 
@@ -311,7 +352,10 @@
     multivec.prototype.isTrivector =
         function() { return this.isGrade(3); };
 
-    multivec.prototype.reverse = function() {
+    // Returns a mult-vector which is similar to this one but with
+    // all internal vector products reversed.  This is the conjugate
+    // and is especially useful for taking the norm of blades.
+    multivec.prototype.conjugate = function() {
         var components = {};
         Object.keys(this.components).forEach(function(key) {
             var k = canonicalizeBasis(key).grade;
@@ -321,48 +365,50 @@
         return polish(convert(components));
     };
 
+    // Return the square of the multi-vector norm.  This is sometimes
+    // sufficient and saves a square root operation, for example to
+    // determine whether a vector is greater than a certain length.
+    // Memoized because multi-vectors are immutable.
     multivec.prototype.normSquared = function() {
-        // Return the square of the multi-vector norm.  This is
-        // sometimes sufficient and saves a square root operation, for
-        // example to determine whether a vector is greater than a
-        // certain length.  Memoized because multi-vectors are immutable
         if (isNaN(this.__normSquared))
-            this.__normSquared = this.multiply(this.reverse()).scalar;
+            this.__normSquared = this.multiply(this.conjugate()).scalar;
         return this.__normSquared;
     };
 
+    // Return the Euclidian or 2-norm of a multi-vector.
+    // Memoized because multi-vectors are immutable.
     multivec.prototype.norm = function() {
-        // Return the Euclidian or 2-norm of a multi-vector.
-        // Memoized because multi-vectors are immutable.
         if (isNaN(this.__norm))
             this.__norm = Math.sqrt(this.normSquared());
         return this.__norm;
     };
 
+    // Return a normalized form of this multi-vector.  This is
+    // possible only if the norm is not zero.
     multivec.prototype.normalize = function() {
-        // Multi-vectors are immutable outside this library so norm can
-        // be memoized to minimize square roots
         var scale = this.norm();
         if (zeroish(scale))
             throw new RangeError('Zero cannot be normalized');
         return this.multiply(1 / scale);
     };
 
+    // Returns the additive inverse of a multi-vector.
+    //   m.plus(m.inverseAdd()).zeroish() // true
     multivec.prototype.inverseAdd = function() {
-        // Returns the additive inverse of a multi-vector.
         return this.multiply(-1);
     };
     multivec.prototype.negate = multivec.prototype.inverseAdd;
 
+    // Returns the multiplicative inverse of a multi-vector,
+    // except for zero which has no inverse and throws an error.
+    //   m.times(m.inverseMult()).minus(1).zeroish() // true
     multivec.prototype.inverseMult = function() {
-        // Returns the multiplicative inverse of a multi-vector,
-        // except for zero which has no inverse and throws an error.
         var scale = this.normSquared();
         if (zeroish(scale))
             throw new RangeError(
                 'No multiplicative inverse of ' + this.toString() +
                 ' (normSquared: ' + scale + ')');
-        return this.reverse().multiply(1 / scale);
+        return this.conjugate().multiply(1 / scale);
     };
 
     var fieldOp = {
@@ -373,9 +419,8 @@
         dot: 4,
         contract: 5};
 
+    // Generic field operations used to build more specific operations
     var fieldOpBinary = function(op, a, b) {
-        // Generic field operations (add, subtract, multiply)
-        // Division is excluded because it's a bit complex
         var result = {};
         b = convert(b);
 
@@ -429,9 +474,12 @@
     };
     multivec.prototype.plus = multivec.prototype.add;
     multivec.prototype.sum = multivec.prototype.add;
-    multivec.sum = function() {
+
+    multivec.add = function() {
         return multivec.prototype.add.apply(multivec(0), arguments);
     };
+    multivec.sum = multivec.add;
+    multivec.plus = multivec.add;
 
     multivec.prototype.subtract = function(other) {
         var result;
@@ -586,40 +634,38 @@
         return this.applyVersor(v, v.plus(w));
     };
 
+    // Conformal model support
+
     multivec.originPoint = multivec({'o0': 0.5, 'i0': 0.5});
     multivec.infinityPoint = multivec({'o0': -1,  'i0': 1});
 
+    // Convert a vector to a conformal geometric algebra point
     multivec.prototype.createPoint = function() {
-        // Convert a vector to a conformal geometric algebra point
         return this.plus(multivec.originPoint,
                          multivec.infinityPoint.times(
                              this.normSquared(), 0.5));
     };
 
+    // Normalize a conformal point.  This results in the same point
+    // but in a form that's easier to recogize and convert to a vector
     multivec.prototype.normalizePoint = function() {
-        // Normalize a conformal point, usually for conversion
-        // back to a vector
         return this.divide(multivec.infinityPoint.inner(this), -1);
     };
 
+    // Convert a conformal point to a vector representation suitable
+    // for use with standard model (UNTESTED)
     multivec.prototype.vectorizePoint = function() {
-        // Convert a conformal point to a vector representation
-        // (without origin and infinity points)
         return this.normalizePoint().reject(
             multivec.originPoint.outer(multivec.infinityPoint));
     };
 
+    // Compute the distance between two conformal points
     multivec.conformalDistance = function(point1, point2) {
-        // Compute the distance between two conformal points
         return Math.sqrt(point1.dot(point2).times(-2).scalar);
     };
 
-    multivec.conformalDual = function(object) {
-        return convert(object).multiply({'i0o0o1o2o3': 1});
-    };
-
+    // Create a rotation that can be applied as a versor
     multivec.createRotation = function(bivector, angle) {
-        // Create a rotation that can be applied as a versor
         bivector = bivector.divide(bivector.norm());
         return bivector.times(
             Math.sin(-angle/2)).plus(Math.cos(-angle/2));
@@ -677,9 +723,9 @@
             multivec.infinityPoint.divide(2)), -1);
     };
 
+    // Draw an arrow representing the o1 and o2 components of this
+    // multi-vector (otherwise known as x and y)
     multivec.prototype.draw = function(ctx, config) {
-        // Draw an arrow representing the o1 and o2 components of this
-        // multi-vector (intended for debugging purposes)
         var length = (config && config.length) ? config.length : 1;
         var bar = multivec([-this.y, this.x]).multiply(0.1);
         var lineTo = function(ctx, vector) {
@@ -707,10 +753,10 @@
         ctx.restore();
     };
 
+    // Computes the real roots of a quadradic expression.  Returns
+    // an array with either zero (no real roots) one or two numbers
+    // at which the expression is zero
     var quadraticRoots = function(a, b, c) {
-        // Computes the real roots of a quadradic expression.  Returns
-        // an array with either zero (no real roots) one or two numbers
-        // at which the expression is zero
         var result = [];
         var discriminant;
         if (zeroish(a)) {
@@ -728,11 +774,10 @@
         return result;
     };
 
+    // Returns a vector going from the point represented by this vector
+    // to the closest point on the line.  The output of this method plus
+    // the original vector is the closest point on the line
     var shortestSegment = function(v, segment) {
-        // Returns a vector going from the point represented
-        // by this vector to the closest point on the line.
-        // The output of this method plus the original vector
-        // is the closest point on the line
         var q = segment.q ? segment.q : segment.e.subtract(segment.s);
         var q2 = segment.normSquared ? segment.normSquared :
                  q.normSquared();
@@ -740,14 +785,14 @@
             q.multiply(v.subtract(segment.s).dot(q).divide(q2)));
     };
 
+    // Given the two round objects moving at constant velocity, compute
+    // the earliest time during the interval at which they will collide.
+    // If no collision is possible return undefined.
+    //
+    // A parameterized path is computed for both objects and the
+    // quadratic formula is used to find where that distance is equal to
+    // the sum of the radii, which is where edges touch.
     multivec.collideRadiusRadius = function(s1, e1, r1, s2, e2, r2) {
-        // Given the two round objects moving at constant velocity,
-        // compute the earliest time during the interval at which they
-        // will collide. If no collision is possible return undefined.
-        //
-        // A parameterized path is computed for both objects and the
-        // quadratic formula is used to find where that distance is
-        // equal to the sum of the radii, which is where edges touch.
         var result = undefined;
         var d1 = e1.subtract(s1);
         var d2 = e2.subtract(s2);
@@ -776,26 +821,26 @@
         return result;
     }
 
+    // Given a spherical object moving at constant velocity and a line
+    // segment, this routine computes the time at which the two will
+    // collide.  The object is assumed to be at s (start point) when
+    // t == 0 and at e (end point) when t == 1. If no collision occurs
+    // this routine returns undefined.  The segment is an object with
+    // the following fields expected:
+    //
+    //   segment {
+    //     s: vector representing starting point
+    //     e: vector representing ending point
+    //     q: (optional) vector e - s
+    //     sqlen: (optional) squared length of segment
+    //     width: (optional) width of the segment
+    // thickness.  The distance bewteen the end points is an
+    // optional which can be used to reduce unnecessary steps.
+    //
+    // A parameterized path is computed nad the quadratic formula is
+    // used to find the fraction of the path at which the edges of the
+    // sphere and segment touch
     multivec.collideRadiusSegment = function(s, e, r, segment) {
-        // Given a spherical object moving at constant velocity and a
-        // line segment, this routine computes the time at which the
-        // two will collide.  The object is assumed to be at s (start
-        // point) when t == 0 and at e (end point) when t == 1. If no
-        // collision occurs this routine returns undefined.  The
-        // segment is an object with the following fields expected:
-        //
-        //   segment {
-        //     s: vector representing starting point
-        //     e: vector representing ending point
-        //     q: (optional) vector e - s
-        //     sqlen: (optional) squared length of segment
-        //     width: (optional) width of the segment
-        // thickness.  The distance bewteen the end points is an
-        // optional which can be used to reduce unnecessary steps.
-        //
-        // A parameterized path is computed nad the quadratic formula
-        // is used to find the fraction of the path at which the edges
-        // of the sphere and segment touch
         var result = undefined; // undefined means no collision
         var q = segment.q ? segment.q : segment.e.subtract(segment.s);
         var q2 = segment.normSquared ? segment.normSquared :
@@ -881,6 +926,7 @@
     } else { exports = multivec; }
 })();
 
+// Aumotated testing framework
 if ((typeof require !== 'undefined') && (require.main === module)) {
     var multivec = exports;
     var tests = {
