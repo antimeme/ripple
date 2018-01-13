@@ -498,6 +498,7 @@
         this.player = player;
         this.clear(false);
     };
+
     playerControl.prototype.clear = function(keep) {
         if (!keep)
             this.up = this.down = this.left = this.right =
@@ -507,14 +508,14 @@
         this.dir = null;
         this.turn = null;
     };
+
     playerControl.prototype.setTarget = function(target) {
-        if (!this.arrow) {
-            this.clear();
-            this.target = target;
-            this.turn = multivec(target).minus(
-                this.player.position).normalize();
-        } else this.clear();
+        this.clear();
+        this.target = target;
+        this.turn = multivec(target).minus(
+            this.player.position).normalize();
     };
+
     playerControl.prototype.setArrow = function(turn, start, end) {
         this.clear();
         if (end)
@@ -522,6 +523,13 @@
         else this.arrow = multivec(start);
         this.arrow = this.arrow.normalize();
         this.turn = turn ? this.arrow : null;
+    };
+
+    playerControl.prototype.setLook = function(look) {
+        this.clear();
+        this.turn = multivec(look).minus(
+            this.player.position).normalize();
+        this.target = this.player.position;
     };
 
     var makePlayer = function(config, state) {
@@ -564,10 +572,10 @@
             }
 
             if (this.control.target) {
-                result = this.position.plus(dirvec.times(steps));
-                if (result.minus(this.control.target)
-                          .normSquared() < 0.01)
+                if (this.control.target.minus(this.position)
+                        .normSquared() < 0.01)
                     this.control.clear();
+                else result = this.position.plus(dirvec.times(steps));
             } else if (this.control.arrow) {
                 result = this.position.plus(
                     this.control.arrow.times(steps));
@@ -930,12 +938,17 @@
                     tapped.minus(closest.position).normSquared() < 9) {
                     state.inventory.populate(closest);
                     state.inventory.show();
-                } else this.player.control.setTarget(tapped);
+                } else this.player.control.setArrow(
+                    true, this.player.position, tapped);
             },
+
             doubleTap: function(touch) {
-                this.player.control.setArrow(
-                    true, this.player.position,
+                this.player.control.setTarget(
                     this.toWorldSpace(touch));
+            },
+
+            drag: function(start, drag, current) {
+                this.player.control.setLook(this.toWorldSpace(current));
             },
 
             flick: function(start, end) {

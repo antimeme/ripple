@@ -350,10 +350,10 @@
             case gesturStates.READY: break;
             case gesturStates.TAP:
                 this.fireEvent('tap', this.touchOne);
-                if (!isNaN(this.lastTap) && now < this.lastTap +
-                                            this.doubleThreshold) {
+                if (!isNaN(this.lastTap) &&
+                    (now < this.lastTap + this.doubleThreshold)) {
                     this.fireEvent('doubleTap', this.touchOne);
-                    this.lastTap = 0;
+                    this.lastTap = undefined;
                 } else this.lastTap = now;
                 this.state = gesturStates.READY;
                 break;
