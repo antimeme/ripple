@@ -194,6 +194,241 @@
         return result;
     };
 
+    var gesturStates = {
+        READY: 0,
+        TAP: 1,
+        PRESS: 2,
+        PTAP: 3,
+        PDRAG: 4,
+        DRAG: 5,
+        PINCH: 6,
+        RESOLV: 7 };
+
+    var createTouch = function(touch) {
+        return {id: touch.id, x: touch.x, y: touch.y};
+    };
+
+    var checkLine = function(threshold, start, last, next) {
+        var vLast = {x: last.x - start.x, y: last.y - start.y};
+        var vNext = {x: next.x - start.x, y: next.y - start.y};
+        var dot = function(a, b) { return a.x * b.x + a.y * b.y; };
+
+        return (dot(vLast, vNext) >= threshold *
+            Math.sqrt(dot(vLast, vLast) * dot(vNext, vNext)));
+    };
+
+    ripple.gestur = function(config, target) {
+        if (!(this instanceof ripple.gestur))
+            return new ripple.gestur(config, target);
+
+        this.config = config;
+        this.next = config.next || false;
+        this.doubleThreshold = isNaN(config.doubleThreshold) ? 500 :
+                               config.doubleThreshold;
+        this.flickThreshold = isNaN(config.flickThreshold) ? 500 :
+                              config.flickThreshold;
+        this.flickAngle = Math.cos(isNaN(config.flickAngle) ?
+                                   (Math.PI / 8) : config.flickAngle);
+        this.reset();
+
+        if (target)
+            this.setTarget(target);
+    };
+
+    ripple.gestur.prototype.fireEvent = function(evname) {
+        if (this.config[evname])
+            this.config[evname].apply(this, arguments);
+    };
+
+    ripple.gestur.prototype.reset = function() {
+        this.touchOne = undefined;
+        this.touchTwo = undefined;
+        this.lastTap = undefined;
+        this.flick = false;
+        this.drag = undefined;
+        this.startTime = undefined;
+        this.state = gesturStates.READY;
+    };
+
+    ripple.gestur.prototype.onStart = function(event) {
+        var now = new Date().getTime();
+        var touches = ripple.createTouches(event);
+
+        switch (this.state) {
+            case gesturStates.READY:
+                this.startTime = now;
+                this.flick = (this.config.flick ? true : false);
+                if (touches.changed.length >= 2) {
+                    this.touchOne = createTouch(
+                        touches.changed[0]);
+                    this.touchTwo = createTouch(
+                        touches.changed[1]);
+                    this.state = gesturStates.PINCH;
+                } else if (touches.changed.length === 1) {
+                    this.touchOne = createTouch(
+                        touches.changed[0]);
+                    this.touchTwo = undefined;
+                    this.state = gesturStates.TAP;
+                } else this.reset();
+                break;
+            case gesturStates.TAP:
+            case gesturStates.DRAG:
+                if (touches.changed.length >= 1) {
+                    this.touchTwo = createTouch(
+                        touches.changed[0]);
+                    this.state = gesturStates.PINCH;
+                }
+                break;
+            case gesturStates.PRESS:
+                this.state = gesturStates.PTAP;
+                break;
+            case gesturStates.PTAP:
+                // ignore?
+                break;
+            case gesturStates.PDRAG:
+                // ignore?
+                break;
+            case gesturStates.PINCH:
+                // ignore?
+                break;
+            case gesturStates.RESOLV:
+                // ignore?
+                break;
+            default: // wedged
+        };
+    };
+
+    ripple.gestur.prototype.onMove = function(event) {
+        var now = new Date().getTime();
+        var touches = ripple.createTouches(event);
+
+        switch (this.state) {
+            case gesturStates.READY: /* ignore */ break;
+            case gesturStates.PRESS:
+            case gesturStates.TAP:
+                this.drag = this.touchOne;
+                this.state = gesturStates.DRAG;
+                // fall though...
+            case gesturStates.DRAG:
+                var current = undefined;
+                touches.changed.forEach(function(touch) {
+                    if (touch.id === this.touchOne.id)
+                        current = createTouch(touch);
+                }, this);
+
+                if (now > this.startTime + this.flickThreshold)
+                    this.flick = false;
+
+                if (this.flick) {
+                    if (!checkLine(this.flickAngle, this.touchOne,
+                                   this.drag, current))
+                        this.flick = false;
+                } else if (current)
+                    this.fireEvent(
+                        'drag', this.touchOne, this.drag, current);
+                this.drag = current;
+                break;
+            case gesturStates.PTAP:
+                this.state = gesturStates.PDRAG;
+                break;
+            case gesturStates.PINCH:
+                // fire pinch event (distance and rotation)
+                break;
+            case gesturStates.RESOLV:
+                // check safety threshold
+                this.state = gesturStates.DRAG;
+                break;
+            default: // wedged
+        };
+    };
+
+    ripple.gestur.prototype.onEnd = function(event) {
+        var now = new Date().getTime();
+        var touches = ripple.createTouches(event);
+
+        switch (this.state) {
+            case gesturStates.READY: break;
+            case gesturStates.TAP:
+                this.fireEvent('tap', this.touchOne);
+                if (!isNaN(this.lastTap) && now < this.lastTap +
+                                            this.doubleThreshold) {
+                    this.fireEvent('doubleTap', this.touchOne);
+                    this.lastTap = 0;
+                } else this.lastTap = now;
+                this.state = gesturStates.READY;
+                break;
+            case gesturStates.PRESS:
+                // fire press event (unless dragged?)
+                this.state = gesturStates.READY;
+                break;
+            case gesturStates.PTAP:
+                // this.fireEvent
+                this.state = gesturStates.PRESS;
+                break;
+            case gesturStates.PINCH:
+                if (touches.current.length > 0)
+                    this.state = gesturStates.RESOLV;
+                else this.reset();
+                break;
+            case gesturStates.DRAG:
+                if (now > this.startTime + this.flickThreshold)
+                    this.flick = false;
+
+                if (this.flick) {
+                    var current = this.drag;
+                    touches.changed.forEach(function(touch) {
+                        if (touch.id === this.touchOne.id)
+                            current = createTouch(touch);
+                    }, this);
+                    this.fireEvent('flick', this.touchOne, current);
+                }
+                // fall through
+            case gesturStates.RESOLV:
+                if (touches.current.length === 0)
+                    this.reset();
+                break;
+            default: // wedged
+        };
+    };
+
+    ripple.gestur.prototype.onWheel = function(event) {
+        // TODO
+    };
+
+    ripple.gestur.prototype.setTarget = function(target) {
+        if (typeof(jQuery) === 'undefined') {
+            // TODO fake enough jQuery to make this work
+        } else if (!(target instanceof jQuery))
+            target = jQuery(target);
+
+        target
+            .on('touchstart mousedown', this, function(event) {
+                event.data.fireEvent('debug', event);
+                event.data.onStart(event);
+                return this.next; })
+            .on('touchend mouseup', this, function(event) {
+                event.data.fireEvent('debug', event);
+                event.data.onEnd(event);
+                return this.next; })
+            .on('touchmove mousemove', this, function(event) {
+                event.data.fireEvent('debug', event);
+                event.data.onMove(event);
+                return this.next; })
+            .on('touchmove mousemove', this, function(event) {
+                event.data.fireEvent('debug', event);
+                event.data.onMove(event);
+                return this.next; })
+            .on('mousewheel', this, function(event) {
+                event.data.fireEvent('debug', event);
+                event.data.onWheel(event);
+                return this.next; })
+            .on('touchcancel mouseleave', this, function(event) {
+                event.data.fireEvent('debug', event);
+                event.data.reset();
+                return this.next; });
+        return this;
+    };
+
     // Framework for canvas applications
     // Object passed as the app is expected to have the following:
     //
@@ -273,7 +508,7 @@
 	});
 
         if (typeof(gestur) !== 'undefined') {
-            var g = gestur.create({
+            var g = ripple.gestur({
                 next: true,
                 tap: function(name, touch) {
                     if (app.tap)

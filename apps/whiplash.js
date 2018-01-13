@@ -903,8 +903,7 @@
             mtmove: function(touches, event, redraw) {
                 var mmove, swipe, zoomref;
                 if (this.touches) {
-                    targets = $.targets(event);
-                    if (targets.touches.length > 1) {
+                    if (touches.current.length > 1) {
                         if (this.zoom.reference >
                             Math.min(this.height, this.width) / 100) {
                             zoomref = multivec([

@@ -27,7 +27,6 @@
 <script src="lib/jquery.min.js"></script>
 <script src="lib/jquery.mousewheel.js"></script>
 <script src="ripple/ripple.js"></script>
-<script src="ripple/gestur.js"></script>
 <script>//<![CDATA[
  jQuery(function($) {
      var viewport = $(window);
@@ -73,7 +72,7 @@
      viewport.on('resize', resize);
      $('#clear').on('click', function() { $('#log').empty(); });
 
-     gestur.create({
+     ripple.gestur({
          tap: function(name, touch) { post(name, touch); },
          doubleTap: function(name, touch) { post(name, touch); },
          flick: function(name, start, end) {
