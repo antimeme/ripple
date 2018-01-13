@@ -507,28 +507,26 @@
                 return app.keyup(event, redraw);
 	});
 
-        if (typeof(gestur) !== 'undefined') {
-            var g = ripple.gestur({
-                next: true,
-                tap: function(name, touch) {
-                    if (app.tap)
-                        return app.tap(touch);
-                },
-                doubleTap: function(name, touch) {
-                    if (app.doubleTap)
-                        return app.doubleTap(touch);
-                },
-                flick: function(name, start, end) {
-                    if (app.flick)
-                        return app.flick(start, end);
-                },
-                drag: function(name, start, last, current) {
-                    if (app.drag)
-                        return app.drag(start, last, current);
-                }
-            });
-            g.setTarget(canvas);
-        }
+        var g = ripple.gestur({
+            next: true,
+            tap: function(name, touch) {
+                if (app.tap)
+                    return app.tap(touch);
+            },
+            doubleTap: function(name, touch) {
+                if (app.doubleTap)
+                    return app.doubleTap(touch);
+            },
+            flick: function(name, start, end) {
+                if (app.flick)
+                    return app.flick(start, end);
+            },
+            drag: function(name, start, last, current) {
+                if (app.drag)
+                    return app.drag(start, last, current);
+            }
+        });
+        g.setTarget(canvas);
 
         canvas.on('mousedown touchstart', function(event) {
             var touches;

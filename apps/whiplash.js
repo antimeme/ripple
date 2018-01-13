@@ -492,19 +492,44 @@
         };
     };
 
+    var playerControl = function(player) {
+        if (!(this instanceof playerControl))
+            return new playerControl(player);
+        this.player = player;
+        this.clear(false);
+    };
+    playerControl.prototype.clear = function(keep) {
+        if (!keep)
+            this.up = this.down = this.left = this.right =
+                this.sleft = this.sright = false;
+        this.arrow = null;
+        this.target = null;
+        this.dir = null;
+        this.turn = null;
+    };
+    playerControl.prototype.setTarget = function(target) {
+        if (!this.arrow) {
+            this.clear();
+            this.target = target;
+            this.turn = multivec(target).minus(
+                this.player.position).normalize();
+        } else this.clear();
+    };
+    playerControl.prototype.setArrow = function(turn, start, end) {
+        this.clear();
+        if (end)
+            this.arrow = multivec(end).minus(start);
+        else this.arrow = multivec(start);
+        this.arrow = this.arrow.normalize();
+        this.turn = turn ? this.arrow : null;
+    };
+
     var makePlayer = function(config, state) {
         var result = makeCharacter(config, state);
-        result.control = {
-            up: false, down: false,
-            left: false, right: false,
-            sleft: false, sright: false, swipe: null,
-            clear: function() {
-                this.up = this.down =
-                    this.left = this.right =
-                        this.sleft = this.sright = false; }};
+        result.control = playerControl(result);
 
         result.replan = function(state, now, collide, destination) {
-            this.control.swipe = null;
+            this.control.clear(true);
             return this.position.add(
                 destination.minus(this.position).multiply(collide));
         };
@@ -513,41 +538,40 @@
             var result = undefined;
             var steps = this.speed * (now - this.last);
             var rads = 0.005 * (now - this.last);
-            var dirvec, needrads, swipe;
+            var dirvec, signrads, needrads, swipe;
 
-            if (this.control.swipe) {
-                // Process swipe arrows
-                dirvec = multivec([
-                    Math.cos(this.direction),
-                    Math.sin(this.direction)]);
-                needrads = Math.acos(
-                    ripple.clamp(dirvec.inner(
-                        this.control.swipe).scalar, 1, -1));
-                if (Math.abs(needrads) < 0.05) {
-                    // too small a time slice to turn
-                } else if (Math.abs(needrads) > rads) {
-                    this.direction += (
-                        (dirvec.x * this.control.swipe.y -
-                         dirvec.y * this.control.swipe.x >= 0) ?
-                        1 : -1) * rads;
-                    dirvec = multivec([
-                        Math.cos(this.direction),
-                        Math.sin(this.direction)]);
+            dirvec = multivec({theta: this.direction});
+            if (this.control.turn) {
+                // Work out how much turning is necessary to face
+                // the designated target
+                signrads = (dirvec.times({o2o1: 1}).dot(
+                    this.control.turn).scalar < 0) ? 1 : -1;
+                needrads = Math.acos(ripple.clamp(dirvec.dot(
+                    this.control.turn).scalar, 1, -1));
+
+                // Do as much turning as we can in the time available
+                // and use extra time to take steps
+                if (needrads < 0.05) {
+                    // Close enough for now
+                } else if (needrads > rads) {
+                    this.direction += signrads * rads;
                     steps = 0;
-                } else if (rads > 0.01) {
-                    this.direction += needrads;
-                    dirvec = multivec([
-                        Math.cos(this.direction),
-                        Math.sin(this.direction)]);
-                    steps *= (rads - Math.abs(needrads)) / rads;
+                } else {
+                    this.direction += signrads * needrads;
+                    dirvec = multivec({theta: this.direction});
+                    steps *= (rads - needrads) / rads;
                 }
+            }
 
-                if (steps > 0)
-                    result = multivec([
-                        this.position.x + dirvec.x * steps,
-                        this.position.y + dirvec.y * steps]);
-            } else {
-                // Process WASD and arrow keys
+            if (this.control.target) {
+                result = this.position.plus(dirvec.times(steps));
+                if (result.minus(this.control.target)
+                          .normSquared() < 0.01)
+                    this.control.clear();
+            } else if (this.control.arrow) {
+                result = this.position.plus(
+                    this.control.arrow.times(steps));
+            } else { // implement keyboard controls
                 if (this.control.left && !this.control.right)
                     this.direction -= rads;
                 else if (!this.control.left && this.control.right)
@@ -602,13 +626,11 @@
             }, this);
 
             this.pillars.forEach(function(pillar) {
-                multivec.debug = 1; // DEBUG
                 updateCollide(multivec.collideRadiusRadius(
                     this.player.position,
                     this.player.destination,
                     this.player.size,
                     pillar.p, pillar.p, pillar.r));
-                multivec.debug = 0; // DEBUG
             }, this);
 
             this.chests.forEach(function(chest) {
@@ -649,7 +671,7 @@
                     this.value = value;
                     return this;
                 }},
-            tap: null, mmove: null, swipe: null,
+            tap: null, mmove: null,
             player: null, update: update,
             itemdefs: data.itemdefs ? data.itemdefs : {},
             images: data.images, icons: data.icons,
@@ -703,8 +725,8 @@
                     .appendTo(container)
                     .append(this.createButton(
                         'settings', function(event) {
-                            this.settings.toggle();
-                            this.inventory.hide(); }))
+                            state.settings.toggle();
+                            state.inventory.hide(); }))
                     .append(this.createButton(
                         'interact', function(event) {
                             state.interact(); }));
@@ -746,7 +768,7 @@
                 lineWidth = Math.max(width, height) / 50;
 
                 this.update(now, last);
-                ctx.save(); // use player perspective
+                ctx.save(); // transform to world space
                 ctx.scale(this.zoom.value, this.zoom.value);
                 ctx.translate(width / (2 * this.zoom.value),
                               height / (2 * this.zoom.value));
@@ -760,7 +782,7 @@
                     ctx.rotate(-this.player.direction);
                 }
                 ctx.translate(-this.player.position.x,
-                             -this.player.position.y);
+                              -this.player.position.y);
                 ctx.lineWidth = lineWidth;
 
                 this.characters.forEach(function(character) {
@@ -783,20 +805,17 @@
                         character.drawPost(ctx, this, now);
                 }, this);
 
-                ctx.restore();
+                ctx.restore(); // return to screen space
 
                 size = Math.min(this.height, this.width);
                 if (debug) {
                     if (rotateworld)
-                        multivec([
-                            this.height >= this.width ? 0 : 1,
-                            this.height >= this.width ? -1 : 0])
+                        multivec((this.height >= this.width) ?
+                                 [0, -1] : [1, 0])
                         .draw(ctx, {
                             center: {x: width / 2, y: height / 2},
                             length: size / 4, color: 'black'});
-                    multivec([
-                        Math.cos(this.player.direction),
-                        Math.sin(this.player.direction)])
+                    multivec({theta: this.player.direction})
                         .draw(ctx, {
                             center: {x: width / 2, y: height / 2},
                             length: size / 4, color: 'red'});
@@ -817,26 +836,26 @@
                     this.zoom.change(0.9);
                 } else if (event.keyCode === 37 /* left */ ||
                            event.keyCode === 65 /* a */) {
+                    this.player.control.clear(true);
 		    this.player.control.left = true;
-                    this.player.control.swipe = null;
 	        } else if (event.keyCode === 38 /* up */ ||
                            event.keyCode === 87 /* w */) {
+                    this.player.control.clear(true);
                     this.player.control.up = true;
-                    this.player.control.swipe = null;
 	        } else if (event.keyCode === 39 /* right */ ||
                            event.keyCode === 68 /* d */) {
+                    this.player.control.clear(true);
 		    this.player.control.right = true;
-                    this.player.control.swipe = null;
 	        } else if (event.keyCode === 40 /* down */ ||
                            event.keyCode === 83 /* s */) {
+                    this.player.control.clear(true);
 		    this.player.control.down = true;
-                    this.player.control.swipe = null;
                 } else if (event.keyCode === 81 /* q */) {
+                    this.player.control.clear(true);
 		    this.player.control.sleft = true;
-                    this.player.control.swipe = null;
                 } else if (event.keyCode === 69 /* e */) {
+                    this.player.control.clear(true);
 		    this.player.control.sright = true;
-                    this.player.control.swipe = null;
 	        } else if (event.keyCode === 90 /* z */) {
                     this.handRight();
 	        } else if (event.keyCode === 67 /* c */) {
@@ -857,26 +876,26 @@
                 redraw();
                 this.update();
 	        if (event.keyCode === 37 || event.keyCode === 65) {
+                    this.player.control.clear(true);
 		    this.player.control.left = false;
-                    this.player.control.swipe = null;
 	        } else if (event.keyCode === 38 ||
                            event.keyCode === 87) {
+                    this.player.control.clear(true);
                     this.player.control.up = false;
-                    this.player.control.swipe = null;
 	        } else if (event.keyCode === 39 ||
                            event.keyCode === 68) {
+                    this.player.control.clear(true);
 		    this.player.control.right = false;
-                    this.player.control.swipe = null;
 	        } else if (event.keyCode === 40 ||
                            event.keyCode === 83) {
+                    this.player.control.clear(true);
 		    this.player.control.down = false;
-                    this.player.control.swipe = null;
                 } else if (event.keyCode === 81 /* q */) {
+                    this.player.control.clear(true);
 		    this.player.control.sleft = false;
-                    this.player.control.swipe = null;
                 } else if (event.keyCode === 69 /* e */) {
+                    this.player.control.clear(true);
 		    this.player.control.sright = false;
-                    this.player.control.swipe = null;
 	        } else if (event.keyCode === 90 /* z */) {
 	        } else if (event.keyCode === 67 /* c */) {
                 } else if (event.keyCode === 70 /* i */ ||
@@ -884,81 +903,61 @@
                 } else if (event.keyCode === 80 /* p */) {
 	        } else if (debug) console.log('up', event.keyCode);
             },
-            mtdown: function(touches, event, redraw) {
-                this.touches = touches;
-                this.swipe = null;
-                this.mmove = null;
-                if (this.touches.current.length > 1) {
-                    this.zoom.reference =
-                        multivec([
-                            this.touches.current[0].x -
-                            this.touches.current[1].x,
-                            this.touches.current[0].y -
-                            this.touches.current[1].y
-                        ]).normSquared();
-                } else this.swipe = undefined;
-                redraw();
-                return false;
+
+            // Converts a screen coordinate to world space
+            toWorldSpace: function(point) {
+                return multivec(point)
+                    .subtract([this.width / 2, this.height / 2])
+                    .divide(this.zoom.value)
+                    .add(this.player.position);
             },
-            mtmove: function(touches, event, redraw) {
-                var mmove, swipe, zoomref;
-                if (this.touches) {
-                    if (touches.current.length > 1) {
-                        if (this.zoom.reference >
-                            Math.min(this.height, this.width) / 100) {
-                            zoomref = multivec([
-                                touches.current[0].x -
-                                touches.current[1].x,
-                                touches.current[0].y -
-                                touches.current[1].y
-                            ]).normSquared();
-                            this.zoom.change(Math.sqrt(zoomref /
-                                this.zoom.reference));
-                            this.update();
-                        }
-                    } else {
-                        mmove = multivec([
-                            touches.x - this.touches.x,
-                            touches.y - this.touches.y]);
-                        swipe = mmove.normalize();
-                        if ((typeof(this.swipe) === 'undefined') ||
-                            (this.swipe &&
-                             this.swipe.inner(swipe).scalar >
-                                Math.cos(Math.PI / 3)))
-                            this.swipe = swipe;
-                        else this.swipe = null;
-                        this.mmove = mmove;
-                        this.update();
+
+            tap: function(touch) {
+                var tapped = this.toWorldSpace(touch);
+                var sqdist, angle;
+                var least = NaN;
+                var closest = null;
+                this.chests.forEach(function(chest) {
+                    sqdist = chest.checkAccessible(this.player);
+                    if (chest.accessible &&
+                        (isNaN(least) || sqdist < least)) {
+                        closest = chest;
+                        least = sqdist;
                     }
+                }, this);
+
+                if (closest &&
+                    tapped.minus(closest.position).normSquared() < 9) {
+                    state.inventory.populate(closest);
+                    state.inventory.show();
+                } else this.player.control.setTarget(tapped);
+            },
+            doubleTap: function(touch) {
+                this.player.control.setArrow(
+                    true, this.player.position,
+                    this.toWorldSpace(touch));
+            },
+
+            flick: function(start, end) {
+                var swipe = multivec(end).minus(start);
+                if (rotateworld) {
+                    swipe = swipe.rotate(
+                        multivec((this.height >= this.width) ?
+                                 [0, -1] : [1, 0]),
+                        multivec({theta: this.player.direction}));
                 }
-                redraw();
-                return false;
-            },
-            mtup: function(targets, event, redraw) {
-                var worldvec = multivec([
-                    this.height >= this.width ? 0 : 1,
-                    this.height >= this.width ? -1 : 0]);
-                if (this.swipe) {
-                    if (rotateworld) {
-                        this.player.control.swipe =
-                            this.swipe.rotate(
-                                worldvec,
-                                multivec([
-                                    Math.cos(this.player.direction),
-                                    Math.sin(this.player.direction)]));
-                    } else this.player.control.swipe = this.swipe;
-                } else this.player.control.swipe = null;
+                this.player.control.setArrow(false, swipe);
+
                 this.touches = null;
-                this.swipe = null;
-                this.mmove = null;
                 this.update();
-                redraw();
                 return false;
             },
+
             mwheel: function(event, redraw) {
                 if (event.deltaY)
                     this.zoom.change(
                         1 + (0.1 * (event.deltaY > 0 ? 1 : -1)));
+                console.log('zoom', this.zoom.value); // DEBUG
                 redraw();
                 return false;
             },
