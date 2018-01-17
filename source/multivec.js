@@ -371,7 +371,7 @@
     // Memoized because multi-vectors are immutable.
     multivec.prototype.normSquared = function() {
         if (isNaN(this.__normSquared))
-            this.__normSquared = this.multiply(this.conjugate()).scalar;
+            this.__normSquared = this.conjugate().multiply(this).scalar;
         return this.__normSquared;
     };
 
