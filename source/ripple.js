@@ -208,10 +208,15 @@
         return {id: touch.id, x: touch.x, y: touch.y};
     };
 
+    var dot = function(a, b) {
+        if (typeof(b) === 'undefined')
+            b = a;
+        return a.x * b.x + a.y * b.y;
+    };
+
     var checkLine = function(threshold, start, last, next) {
         var vLast = {x: last.x - start.x, y: last.y - start.y};
         var vNext = {x: next.x - start.x, y: next.y - start.y};
-        var dot = function(a, b) { return a.x * b.x + a.y * b.y; };
 
         return (dot(vLast, vNext) >= threshold *
             Math.sqrt(dot(vLast, vLast) * dot(vNext, vNext)));
@@ -300,6 +305,7 @@
 
     ripple.gestur.prototype.onMove = function(event) {
         var now = new Date().getTime();
+        var current, original, ortho, pinchOne, pinchTwo;
         var touches = ripple.createTouches(event);
 
         switch (this.state) {
@@ -310,7 +316,7 @@
                 this.state = gesturStates.DRAG;
                 // fall though...
             case gesturStates.DRAG:
-                var current = undefined;
+                current = undefined;
                 touches.changed.forEach(function(touch) {
                     if (touch.id === this.touchOne.id)
                         current = createTouch(touch);
@@ -332,7 +338,39 @@
                 this.state = gesturStates.PDRAG;
                 break;
             case gesturStates.PINCH:
-                // fire pinch event (distance and rotation)
+                pinchOne = pinchTwo = null;
+                touches.current.forEach(function(touch) {
+                    if (touch.id === this.touchOne.id)
+                        pinchOne = touch;
+                    else if (touch.id === this.touchTwo.id)
+                        pinchTwo = touch;
+                });
+
+                if (pinchOne && pinchTwo) {
+                    // It's actually mildly annoying to find the angle
+                    // between two vectors.  Yes yes, we all know that
+                    //   cos(theta) = v1 . v2 / (||v1|| ||v2||)
+                    // However, this will give the same result for an
+                    // angle to the left as for an angle to the right.
+                    // To sort this out we first compute the dual of
+                    // one vector and take the dot product of the other
+                    // against it.  The angle should be positive
+                    // exactly when this product is.
+                    current = {
+                        x: pinchTwo.x - pinchOne.x,
+                        y: pinchTwo.y - pinchOne.y};
+                    original = {
+                        x: this.touchTwo.x - this.touchOne.x,
+                        y: this.touchTwo.y - this.touchOne.y};
+                    ortho = {x: -original.y, y: original.x};
+
+                    this.fireEvent(
+                        'pinch', Math.sqrt(
+                            dot(current) / dot(original)),
+                        ((dot(current, ortho) >= 0) ? 1 : -1) *
+                        Math.acos(dot(current, original) /
+                            Math.sqrt(dot(current) * dot(original))));
+                }
                 break;
             case gesturStates.RESOLV:
                 // check safety threshold
@@ -404,24 +442,24 @@
         target
             .on('touchstart mousedown', this, function(event) {
                 event.data.fireEvent('debug', event);
-                event.data.onStart(event);
-                return this.next; })
+                var result = event.data.onStart(event);
+                return this.next ? result : false; })
             .on('touchend mouseup', this, function(event) {
                 event.data.fireEvent('debug', event);
-                event.data.onEnd(event);
-                return this.next; })
+                var result = event.data.onEnd(event);
+                return this.next ? result : false; })
             .on('touchmove mousemove', this, function(event) {
                 event.data.fireEvent('debug', event);
-                event.data.onMove(event);
-                return this.next; })
+                var result = event.data.onMove(event);
+                return this.next ? result : false; })
             .on('touchmove mousemove', this, function(event) {
                 event.data.fireEvent('debug', event);
-                event.data.onMove(event);
-                return this.next; })
+                var result = event.data.onMove(event);
+                return this.next ? result : false; })
             .on('mousewheel', this, function(event) {
                 event.data.fireEvent('debug', event);
-                event.data.onWheel(event);
-                return this.next; })
+                var result = event.data.onWheel(event);
+                return this.next ? result : false; })
             .on('touchcancel mouseleave', this, function(event) {
                 event.data.fireEvent('debug', event);
                 event.data.reset();
@@ -524,7 +562,11 @@
             drag: function(name, start, last, current) {
                 if (app.drag)
                     return app.drag(start, last, current);
-            }
+            },
+            pinch: function(name, length, angle) {
+                if (app.pinch)
+                    return app.pinch(length, angle);
+            },
         });
         g.setTarget(canvas);
 
