@@ -78,6 +78,9 @@
          flick: function(name, start, end) {
              post(name, {start: start, end: end}); },
          drag: function(name, start, last, current) {
-             post(name, {start: start, last: last, current: current}); }
+             post(name, {start: start, last: last,
+                         current: current}); },
+         pinch: function(name, length, angle) {
+             post(name, {length: length, angle: angle}); }
      }, canvas);
  }); //]]></script>
