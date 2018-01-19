@@ -80,6 +80,7 @@
          drag: function(name, start, last, current) {
              post(name, {start: start, last: last,
                          current: current}); },
+         blarg: function(name, p1, p2) { post(name, {pinchOne: p1, pinchTwo: p2}); },
          pinch: function(name, length, angle) {
              post(name, {length: length, angle: angle}); }
      }, canvas);

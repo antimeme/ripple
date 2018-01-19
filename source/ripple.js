@@ -345,6 +345,7 @@
                     else if (touch.id === this.touchTwo.id)
                         pinchTwo = touch;
                 });
+                this.fireEvent('blarg', pinchOne, pinchTwo);
 
                 if (pinchOne && pinchTwo) {
                     // It's actually mildly annoying to find the angle
