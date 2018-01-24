@@ -74,7 +74,7 @@
         return (!isNaN(value) && value <= epsilon && value >= -epsilon);
     };
     var basisCache = {};
-    var basisExp = new RegExp(/(([oOiI])(0|[1-9][0-9]*))|[xyzXYZ]/);
+    var basisExp = new RegExp(/(([oOiInN])(0|[1-9][0-9]*))|[xyzXYZ]/);
     var termExp = new RegExp(
         '^\\s*([-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?)?' +
         '(([oOiI](0|[1-9][0-9]*))*)(\\s+([+-])\\s+)?');
@@ -99,8 +99,9 @@
             } else if (m[0] === 'z' || m[0] === 'Z') {
                 entry = {signature: 1, subscript: 3};
             } else entry = {
-                signature: (m[2] === 'o' || m[2] === 'O') ? 1 : -1,
-                subscript: parseInt(m[3], 10)};
+                signature: (m[2] === 'o' || m[2] === 'O') ? 1 :
+                           ((m[2] === 'i' || m[2] === 'I') ? -1 : 0),
+                subscript: parseInt(m[3], 10) };
             b.push(entry);
         }
 
