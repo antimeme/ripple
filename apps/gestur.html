@@ -10,7 +10,10 @@
      background-color: lightgreen;
      overflow-x: visible; overflow-y: hidden;
  }
- canvas { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
+ canvas {
+     position: absolute; top: 0; bottom: 0; left: 0; right: 0;
+     touch-action: none; /* important! */
+ }
  #log {
      position: absolute; top: 0, bottom: 0, left: 0, right: 0;
      text-indent: -2em; margin-left: 2em;
@@ -80,7 +83,9 @@
          drag: function(name, start, last, current) {
              post(name, {start: start, last: last,
                          current: current}); },
-         blarg: function(name, p1, p2) { post(name, {pinchOne: p1, pinchTwo: p2}); },
+         wheel: function(name, scroll) { post(name, scroll); },
+         pinchStart: function(name, one, two) {
+             post(name, {one: one, two: two}); },
          pinch: function(name, length, angle) {
              post(name, {length: length, angle: angle}); }
      }, canvas);
