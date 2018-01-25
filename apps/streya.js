@@ -248,15 +248,15 @@
         });
         self.on('mousedown touchstart', function(event) {
             var cell, index, neighbors;
-            var targets = $.targets(event);
+            var touches = ripple.createTouches(event);
             if (event.which > 1) {
                 // Reserve right and middle clicks for browser menus
                 return true;
-            } else if (targets.touches.length > 1) {
-                tap = targets;
-                if (targets.touches.length == 2) {
-                    var t0 = targets.touches[0];
-                    var t1 = targets.touches[1];
+            } else if (touches.current.length > 1) {
+                tap = touches;
+                if (touches.current.length == 2) {
+                    var t0 = touches.current[0];
+                    var t1 = touches.current[1];
                     zooming = {
                         diameter: Math.sqrt(sqdist(t0, t1)),
                         x: (t0.x + t1.x) / 2, y: (t0.y + t1.y) / 2,
@@ -265,7 +265,7 @@
                 }
                 if (press) { clearTimeout(press); press = 0; }
             } else {
-                tap = drag = targets;
+                tap = drag = touches;
                 selected = instance.position(tap);
 
                 cell = ship.getCell(selected);
@@ -304,7 +304,7 @@
         });
         self.on('mousemove touchmove', function(event) {
             if (drag) {
-                tap = $.targets(event);
+                tap = $.touches(event);
                 var goff = instance.offset();
                 instance.offset(goff.left + tap.x - drag.x,
                                 goff.top + tap.y - drag.y);
@@ -314,11 +314,11 @@
                 drag = tap;
             }
             if (zooming) {
-                var targets = $.targets(event);
+                var touches = ripple.createTouches(event);
                 var factor;
-                if (zooming.diameter && targets.touches.length == 2) {
-                    var t0 = targets.touches[0];
-                    var t1 = targets.touches[1];
+                if (zooming.diameter && touches.current.length == 2) {
+                    var t0 = touches.current[0];
+                    var t1 = touches.current[1];
                     var diameter = Math.sqrt(sqdist(t0, t1));
                     factor = diameter / zooming.diameter;
                 }
