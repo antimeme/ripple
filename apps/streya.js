@@ -21,7 +21,10 @@
             return this.__cells[ripple.pair(node.row, node.col)];
         },
         setCell: function(node, value) {
-            this.__cells[ripple.pair(node.row, node.col)] = value;
+            if (typeof(value) !== 'undefined')
+                this.__cells[ripple.pair(node.row, node.col)] = value;
+            else if (Object.keys(this.__cells).length > 1)
+                delete this.__cells[ripple.pair(node.row, node.col)];
             return this;
         }
     }
