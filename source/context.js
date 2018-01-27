@@ -124,7 +124,6 @@
                 for (var n = i; !req && n < names.length; ++n)
                     req = elem[vendors[i] + names[n]];
             }
-            console.log("rfs", elem, req);
             if (req) req.apply(elem);
         };
         jQuery.exitFullscreen = function() {
@@ -147,7 +146,6 @@
                 for (var n = i; !fse && n < names.length; ++n)
                     fse = document[vendors[i] + names[n]];
             }
-            console.log(fse);
             return fse ? jQuery.exitFullscreen() :
                 jQuery.requestFullscreen(elem);
         };
