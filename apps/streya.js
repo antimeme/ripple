@@ -4,7 +4,8 @@
     'use strict';
 
     // === Ship representation
-    // A ship consists of a set of connected cells.
+    // A ship consists of a set of connected cells, each of which
+    // may have systems or other furnitrue present.
     var Ship = {
         create: function(config) {
             var result = Object.create(this);
@@ -12,7 +13,7 @@
             if (config && config.cells) {
                 for (key in config.cells)
                     __cells[key] = config.cells[key];
-            } else result.setCell({row: 0, col: 0}, 'empty');
+            } else result.setCell({row: 0, col: 0}, {});
             result.name = (config && config.name) ?
                           config.name : 'Ship';
             return result;
@@ -21,45 +22,55 @@
             return this.__cells[ripple.pair(node.row, node.col)];
         },
         setCell: function(node, value) {
-            if (typeof(value) !== 'undefined')
-                this.__cells[ripple.pair(node.row, node.col)] = value;
-            else if (Object.keys(this.__cells).length > 1)
-                delete this.__cells[ripple.pair(node.row, node.col)];
-            return this;
-        }
-    }
+            var id = ripple.pair(node.row, node.col);
 
-    streya.setup = function($) {
-        $.ajax({
-            url: 'streya.json',
-            dataType: 'json',
-            cache: false,
-            beforeSend: function(xhr) {
-                // Without this browsers give confusing warnings about
-                // content type mismatches when using a file:// URL.
-                if (xhr.overrideMimeType) {
-                    xhr.overrideMimeType("application/json");
+            if (typeof(value) !== 'undefined')
+                this.__cells[id] = value;
+            else if (Object.keys(this.__cells).length > 1)
+                delete this.__cells[id];
+            return this;
+        },
+
+        __connected(node) {
+            var entries = {};
+            var queue = [];
+
+            node.id = ripple.pair(node.row, node.col);
+            queue.push(node);
+
+            while (queue.length > 0) {
+                node = queue.pop();
+
+                if (this.__cells[node.id]) {
+                    entries[node.id] = true;
+                    grid.neighbors(node).forEach(function(neigh) {
+                        neigh.id = ripple.pair(neigh.row, neigh.col);
+                        if (this.__cells[neigh.id] &&
+                            !entries[neigh.id])
+                            queue.push(neigh);
+                    }, this);
                 }
             }
-        }).done(function(data) {
-            console.log(data);
-        });
-        return $;
-    };
+            return Object.keys(entries).length;
+        },
 
-    streya.game = function($, parent, viewport) {
+        getData: function() {}
+    }
+
+    streya.game = function($, parent, viewport, data) {
         var self = $('<canvas>')
-            .css({position: 'relative', 'z-order': 1})
+            .css({position: 'relative', 'z-order': 1,
+                  'touch-action': 'none'})
             .appendTo(parent);
 
-        var ship = Ship.create();
+        var state = {grid: null};
+        var ship = Ship.create(state);
 
         var colorTapInner = 'rgba(45, 45, 128, 0.8)';
         var colorTapOuter = 'rgba(128, 255, 128, 0.6)';
         var colorSelected = 'rgba(192, 192, 0, 0.2)';
         var colorNeighbor = 'rgba(128, 128, 0, 0.4)';
         var lineWidth = 0, lineFactor = 40;
-        var instance;
         var tap, selected, drag, zooming, gesture, press = 0;
 
         var draw_id = 0;
@@ -77,11 +88,11 @@
                 ctx.fillRect(0, 0, width, height);
 
                 // Draw the ship
-                instance.map(width, height, function(node) {
+                state.grid.map(width, height, function(node) {
                     var index, points, last;
                     var cell = ship.getCell(node);
                     if (cell) {
-                        points = instance.points(node);
+                        points = state.grid.points(node);
                         ctx.beginPath();
                         ctx.lineWidth = lineWidth;
                         if (points.length) {
@@ -100,8 +111,8 @@
                     // Coordinates of the selected square must be
                     // updated in case the grid offsets have moved
                     // since the last draw call.
-                    selected = instance.coordinate(selected);
-                    points = instance.points(selected);
+                    selected = state.grid.coordinate(selected);
+                    points = state.grid.points(selected);
 
                     ctx.beginPath();
                     if (points.length) {
@@ -113,7 +124,7 @@
                     } else {
                         ctx.moveTo(selected.x, selected.y);
                         ctx.arc(selected.x, selected.y,
-                                instance.size() / 2, 0, 2 * Math.PI);
+                                state.grid.size() / 2, 0, 2 * Math.PI);
                     }
                     ctx.fillStyle = colorSelected;
                     ctx.fill();
@@ -143,10 +154,10 @@
         };
         viewport.resize(resize);
         resize();
-        instance = grid.create({type: 'hex',
-                                width: self.width(),
-                                height: self.height()});
-        lineWidth = instance.size() / lineFactor;
+        state.grid = grid.create({type: 'hex',
+                                  width: self.width(),
+                                  height: self.height()});
+        lineWidth = state.grid.size() / lineFactor;
 
         // Populate menu with available grid types
         var menu = $('<ul>')
@@ -166,54 +177,45 @@
         //.menu li:hover { background: #55e; }
 
         var mode = $('<select>')
-            .on('change', function(event) {
-                console.log('DEBUG', mode.val());
-            })
+            .on('change', function(event) {})
+            .append('<option>Structures</option>')
             .append('<option>Extend</option>')
             .append('<option>Remove</option>');
 
         menu.append($('<li data-action="mode">').append(mode));
         menu.append('<li data-action="full-screen">Full Screen</li>');
-        menu.on('click', 'li', function(event) {
-            var gtype = this.getAttribute('data-grid-type');
-            if (gtype) {
-                tap = undefined; selected = undefined;
-                var options = JSON.parse(
-                    this.getAttribute('data-grid-options'));
-                if (!options)
-                    options = {type: gtype};
-                options.width  = self.width();
-                options.height = self.height();
-                instance = grid.create(options);
-                lineWidth = instance.size() / lineFactor;
-                redraw();
-            }
 
+        menu.on('click', 'li', function(event) {
             switch (this.getAttribute('data-action')) {
                 case 'full-screen': {
                     $.toggleFullscreen(self.parent().get(0));
                     resize();
                 } break;
-                case 'colors': {
-                    var foreground = self.css('color');
-                    var background = self.css('background-color');
-                    self.css({color: background,
-                              "background-color": foreground});
-                    redraw();
-                } break;
             }
         });
 
         menu.append('<hr />');
-        grid.canonical.forEach(function (entry) {
-            var name = entry[0];
-            var options = JSON.stringify(entry[1]);
-            menu.append('<li data-grid-type="' + name +
-                          (options ? '" data-grid-options="' +
-                                     options.replace(/"/g, '&#34;').
-                                             replace(/'/g, '&#39;') : '') +
-                        '">' + name + '</li>');
+        var gtype = $('<select>')
+            .on('change', function(event) {
+                var options = JSON.parse(gtype.val());
+                tap = undefined; selected = undefined;
+                options.width  = self.width();
+                options.height = self.height();
+                state.grid = grid.create(options);
+                lineWidth = state.grid.size() / lineFactor;
+                redraw();
+            });
+        grid.canonical.forEach(function(entry) {
+            var selected = (entry.type === 'hex' &&
+                            entry.orient === 'point') ?
+                           'selected=selected ' : '';
+            gtype.append('<option ' + selected + 'value="' +
+                         JSON.stringify(entry)
+                             .replace(/"/g, '&#34;')
+                             .replace(/'/g, '&#39;') + '">' +
+                         entry.name + '</option>');
         });
+        menu.append($('<li>').append(gtype));
 
         // Show grid menu at event location
         var menuate = function(tap) {
@@ -230,10 +232,10 @@
         var zoom = function(left, top, size, x, y, factor) {
             if (factor && factor > 0) {
                 if (size * factor > 50) {
-                    instance.offset((left - x) * factor + x,
-                                    (top - y)  * factor + y);
-                    instance.size(size * factor);
-                    lineWidth = instance.size() / lineFactor;
+                    state.grid.offset((left - x) * factor + x,
+                                      (top - y)  * factor + y);
+                    state.grid.size(size * factor);
+                    lineWidth = state.grid.size() / lineFactor;
                 }
                 redraw();
             }
@@ -241,12 +243,12 @@
 
         // Process mouse and touch events on grid itself
         self.on('mousewheel', function(event) {
-            var offset = instance.offset();
+            var offset = state.grid.offset();
             var x, y;
             if (tap) {
                 x = tap.x; y = tap.y;
             } else { x = self.width() / 2; y = self.height() / 2; }
-            zoom(offset.left, offset.top, instance.size(), x, y,
+            zoom(offset.left, offset.top, state.grid.size(), x, y,
                  1 + 0.1 * event.deltaY);
         });
         self.on('mousedown touchstart', function(event) {
@@ -263,21 +265,21 @@
                     zooming = {
                         diameter: Math.sqrt(sqdist(t0, t1)),
                         x: (t0.x + t1.x) / 2, y: (t0.y + t1.y) / 2,
-                        size: instance.size(),
-                        offset: instance.offset()};
+                        size: state.grid.size(),
+                        offset: state.grid.offset()};
                 }
                 if (press) { clearTimeout(press); press = 0; }
             } else {
                 tap = drag = touches;
-                selected = instance.position(tap);
+                selected = state.grid.position(tap);
 
                 cell = ship.getCell(selected);
                 if (mode.val() === 'Extend' && !cell) {
-                    neighbors = instance.neighbors(
+                    neighbors = state.grid.neighbors(
                         selected, {coordinates: true, points: true});
                     for (index in neighbors) {
                         if (ship.getCell(neighbors[index])) {
-                            ship.setCell(selected, 'empty');
+                            ship.setCell(selected, {});
                             break;
                         }
                     }
@@ -307,10 +309,10 @@
         });
         self.on('mousemove touchmove', function(event) {
             if (drag) {
-                tap = $.touches(event);
-                var goff = instance.offset();
-                instance.offset(goff.left + tap.x - drag.x,
-                                goff.top + tap.y - drag.y);
+                tap = ripple.createTouches(event);
+                var goff = state.grid.offset();
+                state.grid.offset(goff.left + tap.x - drag.x,
+                                  goff.top + tap.y - drag.y);
                 if ((sqdist(drag, tap) > 125) && press)
                     clearTimeout(press);
                 redraw();
@@ -337,7 +339,5 @@
             if (press) { clearTimeout(press); press = 0; }
             return false;
         });
-
-        streya.setup($);
     };
 })(typeof exports === 'undefined'? this['streya'] = {}: exports);
