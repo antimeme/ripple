@@ -677,13 +677,13 @@
     // each list is the grid name.  The second, if present, is the
     // option structure which creates that grid type.
     var canonical = [
-        ["Square(strict)", {type: "square"}],
-        ["Square(diagonal)", {type: "square", diagonal: true}],
-        ["Hex(point)", {type: "hex", orient: "point"}],
-        ["Hex(edge)", {type: "hex", orient: "edge"}],
-        ["Triangle"],
-        ["Right(regular)", {type: "rtriangle", regular: true}],
-        ["Right(diamond)", {type: "rtriangle", regular: false}]];
+        {name: "Square(strict)", type: "square"},
+        {name: "Square(diagonal)", type: "square", diagonal: true},
+        {name: "Hex(point)", type: "hex", orient: "point"},
+        {name: "Hex(edge)", type: "hex", orient: "edge"},
+        {name: "Triangle", type: "triangle"},
+        {name: "Right(regular)", type: "rtriangle", regular: true},
+        {name: "Right(diamond)", type: "rtriangle", regular: false}];
 
     // Create a new grid based on an options object.  The type field
     // of the options is a string which gets translated to a grid type
@@ -933,13 +933,12 @@
         var menu = $('<ul class="menu"></ul>').hide();
         menu.appendTo(self.parent());
         grid.canonical.forEach(function (entry) {
-            var name = entry[0];
-            var options = JSON.stringify(entry[1]);
-            menu.append('<li data-grid-type="' + name +
-                        (options ? '" data-grid-options="' +
-                         options.replace(/"/g, '&#34;').  // "
-                                 replace(/'/g, '&#39;') : '') +
-                        '">' + name + '</li>');
+            var options = JSON.stringify(entry);
+            menu.append('<li data-grid-type="' + entry.name +
+                        '" data-grid-options="' +
+                        (options.replace(/"/g, '&#34;')
+                                .replace(/'/g, '&#39;')) +
+                        '">' + entry.name + '</li>');
         });
         menu.append('<hr />');
         menu.append('<li data-action="animation">' +
