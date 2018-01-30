@@ -312,6 +312,19 @@
         return result;
     };
 
+    // Returns a mult-vector which is similar to this one but with
+    // all internal vector products reversed.  This is the conjugate
+    // and is especially useful for taking the norm of blades.
+    multivec.prototype.conjugate = function() {
+        var components = {};
+        Object.keys(this.components).forEach(function(key) {
+            var k = canonicalizeBasis(key).grade;
+            components[key] = ((((k * (k - 1) / 2) % 2) ? -1 : 1) *
+                this.components[key]);
+        }, this);
+        return polish(convert(components));
+    };
+
     // Returns the grade of the higest grade component in this
     // multi-vector (or undefined if homogenous is true and the
     // multi-vector is not homogenous)
@@ -353,31 +366,38 @@
     multivec.prototype.isTrivector =
         function() { return this.isGrade(3); };
 
-    // Returns a mult-vector which is similar to this one but with
-    // all internal vector products reversed.  This is the conjugate
-    // and is especially useful for taking the norm of blades.
-    multivec.prototype.conjugate = function() {
-        var components = {};
-        Object.keys(this.components).forEach(function(key) {
-            var k = canonicalizeBasis(key).grade;
-            components[key] = ((((k * (k - 1) / 2) % 2) ? -1 : 1) *
-                this.components[key]);
+    // Returns true iff this multi-vector is an even, unit versor
+    // with an inverse equal to its conjugate
+    multivec.prototype.isRotor = function() {
+        var result = this.conjugate().multiply(this).equals(1);
+        if (result && !zeroish(this.norm() - 1))
+            result = false; // Rotors are unit versors
+        else Object.keys(this.components).forEach(function(key) {
+            var basis = canonicalizeBasis(key);
+            if (basis.grade % 0)
+                result = false; // Rotors are even versors
+            return result;
         }, this);
-        return polish(convert(components));
+        return result;
     };
 
     // Return the square of the multi-vector norm.  This is sometimes
     // sufficient and saves a square root operation, for example to
     // determine whether a vector is greater than a certain length.
-    // Memoized because multi-vectors are immutable.
+    // Memoized because multi-vectors are intended to be immutable.
     multivec.prototype.normSquared = function() {
-        if (isNaN(this.__normSquared))
-            this.__normSquared = this.conjugate().multiply(this).scalar;
+        if (isNaN(this.__normSquared)) {
+            var conjprod = this.conjugate().multiply(this);
+            if (!conjprod.isScalar())
+                throw new RangeError(
+                    'No norm possible for: ' + this.toString());
+            this.__normSquared = conjprod.scalar;
+        }
         return this.__normSquared;
     };
 
     // Return the Euclidian or 2-norm of a multi-vector.
-    // Memoized because multi-vectors are immutable.
+    // Memoized because multi-vectors are intended to be immutable.
     multivec.prototype.norm = function() {
         if (isNaN(this.__norm))
             this.__norm = Math.sqrt(this.normSquared());
@@ -385,20 +405,15 @@
     };
 
     // Return a normalized form of this multi-vector.  This is
-    // possible only if the norm is not zero.
+    // possible only if the norm is scalar and not zero.
     multivec.prototype.normalize = function() {
         var scale = this.norm();
         if (zeroish(scale))
-            throw new RangeError('Zero cannot be normalized');
+            throw new RangeError(
+                'Cannot normalize null multi-vector: ' +
+                this.toString());
         return this.multiply(1 / scale);
     };
-
-    // Returns the additive inverse of a multi-vector.
-    //   m.plus(m.inverseAdd()).zeroish() // true
-    multivec.prototype.inverseAdd = function() {
-        return this.multiply(-1);
-    };
-    multivec.prototype.negate = multivec.prototype.inverseAdd;
 
     // Returns the multiplicative inverse of a multi-vector,
     // except for zero which has no inverse and throws an error.
@@ -411,6 +426,13 @@
                 ' (normSquared: ' + scale + ')');
         return this.conjugate().multiply(1 / scale);
     };
+
+    // Returns the additive inverse of a multi-vector.
+    //   m.plus(m.inverseAdd()).zeroish() // true
+    multivec.prototype.inverseAdd = function() {
+        return this.multiply(-1);
+    };
+    multivec.prototype.negate = multivec.prototype.inverseAdd;
 
     var fieldOp = {
         add: 0,
@@ -432,7 +454,7 @@
                 result[key] = 0; });
             Object.keys(result).forEach(function(key) {
                 result[key] = (a.components[key] || 0) +
-                              (b.components[key] || 0); });
+                               (b.components[key] || 0); });
         } else Object.keys(a.components).forEach(function(left) {
             Object.keys(b.components).forEach(function(right) {
                 var basis = canonicalizeBasis(left + right);
@@ -456,8 +478,8 @@
 
                 result[basis.label] =
                     (result[basis.label] || 0) +
-                     (basis.sign * a.components[left] *
-                         b.components[right]);
+                      (basis.sign * a.components[left] *
+                          b.components[right]);
             });
         });
         return convert(result);
@@ -495,6 +517,17 @@
         return polish(result);
     };
     multivec.prototype.minus = multivec.prototype.subtract;
+
+    multivec.subtract = function() {
+        var result = undefined;
+        if (arguments.length > 0) {
+            result = arguments[0];
+            for (var ii = 1; ii < arguments.length; ++ii)
+                result = result.subtract(arguments[ii]);
+        }
+        return result;
+    };
+    multivec.minus = multivec.subtract;
 
     multivec.prototype.multiply = function(other) {
         var result;
@@ -585,9 +618,11 @@
     };
     multivec.contract = function() {
         var result = undefined;
-        for (var ii = 0; ii < arguments.length; ++ii)
-            result = (typeof result === 'undefined') ?
-                     arguments[ii] : result.contract(arguments[ii]);
+        if (arguments.length > 0) {
+            result = arguments[0];
+            for (var ii = 1; ii < arguments.length; ++ii)
+                result = result.contract(arguments[ii]);
+        }
         return result;
     };
 
@@ -615,16 +650,31 @@
     multivec.outer = multivec.wedge;
 
     multivec.prototype.project = function(space) {
-        return this.inner(space).divide(space); };
+        return this.contract(space).divide(space); };
 
     multivec.prototype.reject = function(space) {
-        return this.outer(space).divide(space); };
+        return this.wedge(space).divide(space); };
 
     multivec.prototype.applyVersor = function() {
         var result = this;
         for (var ii = 0; ii < arguments.length; ++ii) {
             var v = convert(arguments[ii]);
-            result = v.multiply(result).multiply(v.inverseMult());
+            result = v.multiply(result).divide(v);
+        }
+        return result;
+    };
+
+    // Apply one or more rotors to this multi-vector.  This is
+    // essentially the same as the applyVersor method but this
+    // one uses the conjugate instead of the multiplicative
+    // inverse and therefore may be more effient in some
+    // circumstances.  The caller is responsible for ensuring that the
+    // arguments are all valid rotors.
+    multivec.prototype.applyRotor = function() {
+        var result = this;
+        for (var ii = 0; ii < arguments.length; ++ii) {
+            var v = convert(arguments[ii]);
+            result = v.multiply(result).multiply(v.conjugate());
         }
         return result;
     };
@@ -632,7 +682,41 @@
     multivec.prototype.rotate = function(v, w) {
         // Rotates a vector along the plane defined by vectors v and w
         // by the angle between the two vectors.
-        return this.applyVersor(v, v.plus(w));
+        var versor;
+
+        v = convert(v);
+        if (typeof(w) !== 'undefined') {
+            var vgrade = v.grade();
+            var wgrade;
+
+            w = convert(w);
+            wgrade = w.grade();
+            if (vgrade === 1 && wgrade === 1)
+                versor = v.times(v.plus(w));
+            else if (vgrade === 2 && wgrade === 0)
+                versor = v.times(Math.sin(w.scalar)).plus(
+                    Math.cos(w.scalar));
+            else if (vgrade === 0 && wgrade === 2)
+                versor = w.times(Math.sin(v.scalar)).plus(
+                    Math.cos(v.scalar));
+        } else { // Assume a blade and exponentiate
+            var vnorm;
+            var vsquared = v.times(v);
+            if (!vsquared.isScalar())
+                throw new RangeError('This is not a blade!');
+            else if (zeroish(vsquared.scalar)) {
+                versor = v.plus(1);
+            } else if (vsquared.scalar < 0) {
+                vnorm = Math.sqrt(-vsquared.scalar);
+                versor = v.times(Math.sin(vnorm) / vnorm).plus(
+                    Math.cos(vnorm));
+            } else {
+                vnorm = Math.sqrt(vsquared.scalar);
+                versor = v.times(Math.sinh(vnorm) / vnorm).plus(
+                    Math.cosh(vnorm));
+            }
+        }
+        return this.applyVersor(versor);
     };
 
     // Conformal model support
@@ -648,7 +732,8 @@
     };
 
     // Normalize a conformal point.  This results in the same point
-    // but in a form that's easier to recogize and convert to a vector
+    // but in a form that's easier to recogize and convert to a
+    // non-conformal position -- just use the x, y and z fields.
     multivec.prototype.normalizePoint = function() {
         return this.divide(multivec.infinityPoint.inner(this), -1);
     };
@@ -672,56 +757,23 @@
             Math.sin(-angle/2)).plus(Math.cos(-angle/2));
     };
 
-    var versor = function(mvec, sign) {
-        if (!(this instanceof versor))
-            return new versor(mvec, sign);
-        this.sign = sign || 1;
-        this.value = mvec;
-    };
-    versor.prototype.apply = function(mvec) {
-        return multivec.product(
-            this.sign, this.value, mvec, this.value.inverseMult());
-    };
-    versor.prototype.compose = function(other) {
-        var result;
-
-        if (arguments.length === 1)
-            result = versor(this.value.multiply(other.value),
-                            this.sign * other.sign);
-        else {
-            result = this;
-            for (var ii = 0; ii < arguments.length; ++ii)
-                result = versor(
-                    result.value.multiply(arguments[ii].value),
-                    result.sign * arguments[ii].sign);
-        }
-        return result;
-    };
-    versor.compose = function() {
-        var result = undefined;
-        for (var ii = 0; ii < arguments.length; ++ii)
-            result = (typeof result === 'undefined') ?
-                     arguments[ii] : result.compose(arguments[ii]);
-        return result;
-    };
-
     multivec.createTranslation = function(vector) {
-        return versor(multivec(1).minus(
-            vector.times(multivec.infinityPoint, 0.5)));
+        //return versor(multivec(1).minus(
+        //    vector.times(multivec.infinityPoint, 0.5)));
     };
 
     multivec.createReflection = function(vector) {
-        return versor(vector, -1);
+        //return versor(vector, -1);
     };
 
     multivec.createDilution = function(scalar) {
-        return versor(multivec.sum(1, multivec.originPoint.outer(
-            multivec.infinityPoint)).times(scalar / 2));
+        //return versor(multivec.sum(1, multivec.originPoint.outer(
+        //    multivec.infinityPoint)).times(scalar / 2));
     };
 
     multivec.createInvertion = function() {
-        return versor(multivec.originPoint.minus(
-            multivec.infinityPoint.divide(2)), -1);
+        //return versor(multivec.originPoint.minus(
+        //    multivec.infinityPoint.divide(2)), -1);
     };
 
     // Draw an arrow representing the o1 and o2 components of this
