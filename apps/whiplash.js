@@ -84,10 +84,14 @@
             .addClass('inventory-header')
             .append($('<div>')
                 .addClass('bbar')
+                .append(state.createButton('close', function(event) {
+                    state.inventory.hide();
+                }, this)
+                             .addClass('close'))
                 .append(state.createButton('take', take, this)
-                    .addClass('give-and-take'))
+                             .addClass('give-and-take'))
                 .append(state.createButton('give', give, this)
-                    .addClass('give-and-take')))
+                             .addClass('give-and-take')))
             .appendTo(this.pane);
         this.playerPane = $('<div>')
             .addClass('page-pane')
@@ -700,7 +704,7 @@
                 image = 'url(' + imgdef.url + ')';
                 backsize = (
                     (imgdef.size * imgdef.cols) + '% ' +
-                    (imgdef.size * imgdef.rows) + '%');
+                     (imgdef.size * imgdef.rows) + '%');
                 position = (
                     Math.floor(100 * config.col /
                         (imgdef.cols - 1)) + '% ' + 
@@ -790,7 +794,7 @@
                     ctx.rotate(-this.player.direction);
                 }
                 ctx.translate(-this.player.position.x,
-                              -this.player.position.y);
+                             -this.player.position.y);
                 ctx.lineWidth = lineWidth;
 
                 this.characters.forEach(function(character) {
@@ -1004,7 +1008,7 @@
                     g.walls.forEach(function(wall) {
                         this.walls.push(
                             createWall({s: wall.points[0],
-                                         e: wall.points[1]}));
+                                        e: wall.points[1]}));
                     }, this);
 
                     g.nodes.forEach(function(node) {

@@ -12,6 +12,7 @@
         "inventory": {"image": "icons", "row": 0, "col": 2},
         "lhand": {"image": "icons", "row": 0, "col": 3},
         "rhand": {"image": "icons", "row": 0, "col": 4},
+        "close": {"image": "icons", "row": 1, "col": 2},
         "take": {"image": "icons", "row": 1, "col": 3},
         "give": {"image": "icons", "row": 1, "col": 4}
     },
