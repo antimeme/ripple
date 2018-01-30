@@ -942,12 +942,12 @@
                     tapped.minus(closest.position).normSquared() < 9) {
                     state.inventory.populate(closest);
                     state.inventory.show();
-                } else this.player.control.setArrow(
-                    true, this.player.position, tapped);
+                } else this.player.control.setTarget(tapped);
             },
 
             doubleTap: function(touch) {
-                this.player.control.setTarget(
+                this.player.control.setArrow(
+                    true, this.player.position,
                     this.toWorldSpace(touch));
             },
 
