@@ -1,0 +1,16 @@
+{
+    "name": "@PACKAGE@",
+    "version": "@VERSION@",
+    "description": "Ripple is an eclectic set of tools and libraries",
+    "main": "apps/whiplash.js",
+    "scripts": {
+        "start": "electron ."
+    },
+    "repository": "https://github.com/electron/electron-quick-start",
+    "keywords": ["Ripple", "electron" ],
+    "author": "Jeff Gold <jgold@esclat.net>",
+    "license": "GPL-3.0-or-later",
+    "devDependencies": {
+        "electron": "~1.7.8"
+    }
+}

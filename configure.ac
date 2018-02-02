@@ -89,6 +89,7 @@ fi
 
 AC_CONFIG_FILES([
     Makefile
+    package.json
     scripts/ripple.spec
     scripts/ripple.dpkg
     source/__init__.py

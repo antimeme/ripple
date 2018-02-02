@@ -21,6 +21,7 @@ libtool
 ltmain.sh
 missing
 test-driver
+package.json
 Makefile
 Makefile.in
 include/ripple/config.h
