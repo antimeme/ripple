@@ -1,20 +1,28 @@
 {
-    "disableDebug": false,
+    "schema": { "version": 0.1, "disableDebug": false },
     "images": {
+        "comments": [
+            "This section gives names to a set of images for use as",
+            "sprite sheets.  Each file has a URL and some parameters",
+            "for determining how to find sprites.  A set of icon",
+            "names is provided to more specifically identify sprites."
+        ],
+        "files": {
+            "icons": {
+                "url": "images/whiplash-sprites.svg",
+                "size": 100, "rows": 5, "cols": 5}
+        },
         "icons": {
-            "url": "images/whiplash-sprites.svg",
-            "size": 100, "rows": 5, "cols": 5}
-    },
-    "icons": {
-        "default": {"image": "icons", "row": 0, "col": 0},
-        "settings": {"image": "icons", "row": 0, "col": 0},
-        "interact": {"image": "icons", "row": 0, "col": 1},
-        "inventory": {"image": "icons", "row": 0, "col": 2},
-        "lhand": {"image": "icons", "row": 0, "col": 3},
-        "rhand": {"image": "icons", "row": 0, "col": 4},
-        "close": {"image": "icons", "row": 1, "col": 2},
-        "take": {"image": "icons", "row": 1, "col": 3},
-        "give": {"image": "icons", "row": 1, "col": 4}
+            "default": {"image": "icons", "row": 0, "col": 0},
+            "settings": {"image": "icons", "row": 0, "col": 0},
+            "interact": {"image": "icons", "row": 0, "col": 1},
+            "inventory": {"image": "icons", "row": 0, "col": 2},
+            "lhand": {"image": "icons", "row": 0, "col": 3},
+            "rhand": {"image": "icons", "row": 0, "col": 4},
+            "close": {"image": "icons", "row": 1, "col": 2},
+            "take": {"image": "icons", "row": 1, "col": 3},
+            "give": {"image": "icons", "row": 1, "col": 4}
+        }
     },
     "itemdefs": {
         "keycard": {

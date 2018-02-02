@@ -1,5 +1,5 @@
 // whiplash.js
-// Copyright (C) 2016-2017 by Simon Gold and Jeff Gold.
+// Copyright (C) 2016-2018 by Jeff Gold.
 //
 // Whiplash Paradox is a game about time travel
 // TODO click to target move
@@ -686,7 +686,7 @@
             tap: null, mmove: null,
             player: null, update: update,
             itemdefs: data.itemdefs ? data.itemdefs : {},
-            images: data.images, icons: data.icons,
+            images: data.images.files, icons: data.images.icons,
             createButton: function(config, fn, context) {
                 // This routine wraps the function and forces a false
                 // return so that events do not propagate
@@ -1056,17 +1056,35 @@
             (data.chardefs && 'player' in data.chardefs) ?
             data.chardefs['player'] : {}, state);
         state.setStage(fetchParam('startStage') || data.startStage);
-        if (data.disableDebug)
+        if (data.schema.disableDebug)
             debug = false;
         ripple.app($, container, viewport, state);
     };
 })(typeof exports === 'undefined'? this['whiplash'] = {}: exports);
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
-    var fs = require('fs');
-    var path = require('path');
-    var settings = JSON.parse(fs.readFileSync(
-        path.join(__dirname, 'whiplash.json')));
+    const electron = require('electron');
+    const path = require('path');
+    const url = require('url');
+    let mainWindow;
 
-    console.log(settings.startStage);
+    electron.app.on('ready', function() {
+        mainWindow = new electron.BrowserWindow(
+            {width: 800, height: 600});
+        mainWindow.loadURL(url.format({
+            pathname: path.join(__dirname, 'whiplash.html'),
+            protocol: 'file:',
+            slashes: true }));
+        // mainWindow.webContents.openDevTools()
+
+        mainWindow.on('closed', function () { mainWindow = null; });
+    });
+    electron.app.on('window-all-closed', function () {
+        if (process.platform !== 'darwin')
+            electron.app.quit()
+    });
+    electron.app.on('activate', function () {
+        if (mainWindow === null)
+            createWindow();
+    })
 }
