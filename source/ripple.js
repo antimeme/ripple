@@ -16,7 +16,6 @@
 // <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-
 (function(ripple) {
     'use strict';
 
@@ -126,6 +125,11 @@
 
         urls.forEach(function(url) {
             $.ajax({url: url}).done(function(data) {
+                // For some reason AJAX data gets parsed in browsers
+                // but not in electron.  Hack hackity hack hack...
+                if (typeof(data) === 'string')
+                    data = JSON.parse(data);
+
                 results[url] = data;
                 ++count;
                 if ((count === urls.length) && go)
@@ -688,8 +692,7 @@ if (typeof require !== 'undefined') (function(ripple) {
         for (index = 0; index < arguments.length; ++index)
             arguments[index];
     };
-
-})(typeof exports === 'undefined' ? this['ripple'] = {} : exports);
+})(typeof exports === 'undefined' ? this.ripple = {} : exports);
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
     var ripple = exports;

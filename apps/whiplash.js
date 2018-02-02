@@ -1068,23 +1068,23 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
     const url = require('url');
     let mainWindow;
 
-    electron.app.on('ready', function() {
-        mainWindow = new electron.BrowserWindow(
-            {width: 800, height: 600});
-        mainWindow.loadURL(url.format({
-            pathname: path.join(__dirname, 'whiplash.html'),
-            protocol: 'file:',
-            slashes: true }));
-        // mainWindow.webContents.openDevTools()
-
-        mainWindow.on('closed', function () { mainWindow = null; });
-    });
-    electron.app.on('window-all-closed', function () {
-        if (process.platform !== 'darwin')
-            electron.app.quit()
-    });
-    electron.app.on('activate', function () {
-        if (mainWindow === null)
-            createWindow();
-    })
+    electron.app
+            .on('ready', function() {
+                mainWindow = new electron.BrowserWindow(
+                    {width: 800, height: 600,
+                     webPreferences: { nodeIntegration: false }});
+                mainWindow.loadURL(url.format({
+                    pathname: path.join(__dirname, 'whiplash.html'),
+                    protocol: 'file:',
+                    slashes: true }));
+                //mainWindow.webContents.openDevTools();
+                mainWindow.on('closed', function () {
+                    mainWindow = null; });
+            })
+            .on('window-all-closed', function () {
+                if (process.platform !== 'darwin')
+                    electron.app.quit(); })
+            .on('activate', function () {
+                if (mainWindow === null)
+                    createWindow(); });
 }
