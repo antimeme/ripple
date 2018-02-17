@@ -6,16 +6,21 @@
     // === Ship representation
     // A ship consists of a set of connected cells, each of which
     // may have systems or other furnitrue present.
-    var Ship = {
+    streya.Ship = {
         create: function(config) {
             var result = Object.create(this);
+
+            // Extract cells from configuration if possible
             result.__cells = {};
             if (config && config.cells) {
                 for (key in config.cells)
                     __cells[key] = config.cells[key];
             } else result.setCell({row: 0, col: 0}, {});
+
             result.name = (config && config.name) ?
                           config.name : 'Ship';
+            result.grid = grid.create({type: 'hex'});
+
             return result;
         },
         getCell: function(node) {
@@ -43,7 +48,7 @@
 
                 if (this.__cells[node.id]) {
                     entries[node.id] = true;
-                    grid.neighbors(node).forEach(function(neigh) {
+                    this.grid.neighbors(node).forEach(function(neigh) {
                         neigh.id = ripple.pair(neigh.row, neigh.col);
                         if (this.__cells[neigh.id] &&
                             !entries[neigh.id])
@@ -54,7 +59,16 @@
             return Object.keys(entries).length;
         },
 
-        getData: function() {}
+        weight: function() {
+            var result = 0;
+            Object.keys(this.__cells).forEach(function(id) {
+            }, this);
+            return result;
+        },
+        save: function() {
+            var result = {};
+            return result;
+        }
     }
 
     streya.game = function($, parent, viewport, data) {
@@ -63,13 +77,10 @@
                   'touch-action': 'none'})
             .appendTo(parent);
 
-        var state = {grid: null};
-        var ship = Ship.create(state);
+        var state = {data: data};
+        var ship = streya.Ship.create(state);
 
-        var colorTapInner = 'rgba(45, 45, 128, 0.8)';
-        var colorTapOuter = 'rgba(128, 255, 128, 0.6)';
         var colorSelected = 'rgba(192, 192, 0, 0.2)';
-        var colorNeighbor = 'rgba(128, 128, 0, 0.4)';
         var lineWidth = 0, lineFactor = 40;
         var tap, selected, drag, zooming, gesture, press = 0;
 
@@ -88,11 +99,11 @@
                 ctx.fillRect(0, 0, width, height);
 
                 // Draw the ship
-                state.grid.map(width, height, function(node) {
+                ship.grid.map(width, height, function(node) {
                     var index, points, last;
                     var cell = ship.getCell(node);
                     if (cell) {
-                        points = state.grid.points(node);
+                        points = ship.grid.points(node);
                         ctx.beginPath();
                         ctx.lineWidth = lineWidth;
                         if (points.length) {
@@ -104,6 +115,16 @@
                         }
                         ctx.fillStyle = 'rgb(160, 160, 160)';
                         ctx.fill();
+
+                        if (cell.sigil) {
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.font = 'bold ' + Math.round(
+                                Math.min(width, height) / 20) +
+                                       'px sans';
+                            ctx.fillStyle = 'rgb(48, 48, 48)';
+                            ctx.fillText(cell.sigil, node.x, node.y);
+                        }
                     }
                 });
 
@@ -111,8 +132,8 @@
                     // Coordinates of the selected square must be
                     // updated in case the grid offsets have moved
                     // since the last draw call.
-                    selected = state.grid.coordinate(selected);
-                    points = state.grid.points(selected);
+                    selected = ship.grid.coordinate(selected);
+                    points = ship.grid.points(selected);
 
                     ctx.beginPath();
                     if (points.length) {
@@ -124,7 +145,7 @@
                     } else {
                         ctx.moveTo(selected.x, selected.y);
                         ctx.arc(selected.x, selected.y,
-                                state.grid.size() / 2, 0, 2 * Math.PI);
+                                state.ship.size() / 2, 0, 2 * Math.PI);
                     }
                     ctx.fillStyle = colorSelected;
                     ctx.fill();
@@ -149,44 +170,76 @@
             self.attr("width", self.innerWidth());
             self.attr("height", self.innerHeight());
 
+            ship.grid.center(self.width(), self.height());
+            lineWidth = ship.grid.size() / lineFactor;
+
             zooming = drag = undefined;
             redraw();
         };
         viewport.resize(resize);
         resize();
-        state.grid = grid.create({type: 'hex',
-                                  width: self.width(),
-                                  height: self.height()});
-        lineWidth = state.grid.size() / lineFactor;
 
         // Populate menu with available grid types
-        var menu = $('<ul>')
+        var menu = $('<ul>');
+        var menuframe = $('<fieldset>')
             .attr('class', 'menu')
-            .css({
-                position: 'absolute', top: 10, left: 25,
-                'z-order': 2,
-                padding: '0.5em',
-                background: '#333', color: 'white',
-                border: '2px solid white',
-                'border-radius': '5px',
-                'list-style-type': 'none',
-                'list-style-position': 'outside'})
+            .css({ position: 'absolute', top: 10, left: 25,
+                   'z-order': 2})
+            .append($('<legend>Steya Menu</legend>').on(
+                'click', function() {
+                    menu.toggle(); }))
+            .append(menu)
             .appendTo(self.parent());
         //.menu a { text-decoration: none; color: white; }
         //.menu li { padding: 0.5em; border-radius: 5px; }
         //.menu li:hover { background: #55e; }
 
+        var modeParam = $('<select>')
         var mode = $('<select>')
-            .on('change', function(event) {})
-            .append('<option>Structures</option>')
+            .on('change', function(event) {
+                var shipElements = data.shipElements;
+                modeParam.empty();
+                modeParam.hide();
+                if (mode.val() === 'sys') {
+                    modeParam.show();
+                    Object.keys(shipElements).forEach(function(key) {
+                        if (shipElements[key].internal ||
+                            shipElements[key].disable ||
+                            shipElements[key].boundary)
+                            return;
+                        modeParam.append(
+                            '<option value="' +
+                            shipElements[key].sigil +'">' + key +
+                            '</option>');
+                    });
+                } else if (mode.val() === 'bound') {
+                    modeParam.show();
+                    Object.keys(shipElements).forEach(function(key) {
+                        if (shipElements[key].internal ||
+                            shipElements[key].disable ||
+                            !shipElements[key].boundary)
+                            return;
+                        modeParam.append(
+                            '<option>' + key +
+                            '</option>');
+                    });
+                }
+            })
             .append('<option>Extend</option>')
-            .append('<option>Remove</option>');
+            .append('<option>Remove</option>')
+            .append('<option value="sys">System</option>')
+            .append('<option value="bound">Boundary</option>');
+        modeParam.hide();
 
         menu.append($('<li data-action="mode">').append(mode));
+        menu.append($('<li>').append(modeParam));
+        menu.append('<li data-action="export">Export</li>');
         menu.append('<li data-action="full-screen">Full Screen</li>');
-
         menu.on('click', 'li', function(event) {
             switch (this.getAttribute('data-action')) {
+                case 'export': {
+                    // How to create a data file to save?
+                } break;
                 case 'full-screen': {
                     $.toggleFullscreen(self.parent().get(0));
                     resize();
@@ -201,8 +254,8 @@
                 tap = undefined; selected = undefined;
                 options.width  = self.width();
                 options.height = self.height();
-                state.grid = grid.create(options);
-                lineWidth = state.grid.size() / lineFactor;
+                ship.grid = grid.create(options);
+                lineWidth = ship.grid.size() / lineFactor;
                 redraw();
             });
         grid.canonical.forEach(function(entry) {
@@ -232,10 +285,10 @@
         var zoom = function(left, top, size, x, y, factor) {
             if (factor && factor > 0) {
                 if (size * factor > 50) {
-                    state.grid.offset((left - x) * factor + x,
+                    ship.grid.offset((left - x) * factor + x,
                                       (top - y)  * factor + y);
-                    state.grid.size(size * factor);
-                    lineWidth = state.grid.size() / lineFactor;
+                    ship.grid.size(size * factor);
+                    lineWidth = ship.grid.size() / lineFactor;
                 }
                 redraw();
             }
@@ -243,12 +296,12 @@
 
         // Process mouse and touch events on grid itself
         self.on('mousewheel', function(event) {
-            var offset = state.grid.offset();
+            var offset = ship.grid.offset();
             var x, y;
             if (tap) {
                 x = tap.x; y = tap.y;
             } else { x = self.width() / 2; y = self.height() / 2; }
-            zoom(offset.left, offset.top, state.grid.size(), x, y,
+            zoom(offset.left, offset.top, ship.grid.size(), x, y,
                  1 + 0.1 * event.deltaY);
         });
         self.on('mousedown touchstart', function(event) {
@@ -265,17 +318,17 @@
                     zooming = {
                         diameter: Math.sqrt(sqdist(t0, t1)),
                         x: (t0.x + t1.x) / 2, y: (t0.y + t1.y) / 2,
-                        size: state.grid.size(),
-                        offset: state.grid.offset()};
+                        size: ship.grid.size(),
+                        offset: ship.grid.offset()};
                 }
                 if (press) { clearTimeout(press); press = 0; }
             } else {
                 tap = drag = touches;
-                selected = state.grid.position(tap);
+                selected = ship.grid.position(tap);
 
                 cell = ship.getCell(selected);
                 if (mode.val() === 'Extend' && !cell) {
-                    neighbors = state.grid.neighbors(
+                    neighbors = ship.grid.neighbors(
                         selected, {coordinates: true, points: true});
                     for (index in neighbors) {
                         if (ship.getCell(neighbors[index])) {
@@ -284,7 +337,13 @@
                         }
                     }
                 } else if (mode.val() === 'Remove' && cell) {
-                    ship.setCell(selected, undefined);
+                    if (cell.system)
+                        ship.setCell(selected, {});
+                    else ship.setCell(selected, undefined);
+                } else if (mode.val() === 'sys' && cell) {
+                    ship.setCell(selected, {
+                        system: modeParam.text(),
+                        sigil: modeParam.val() });
                 }
 
                 // Show a menu on either double tap or long press.
@@ -310,9 +369,9 @@
         self.on('mousemove touchmove', function(event) {
             if (drag) {
                 tap = ripple.createTouches(event);
-                var goff = state.grid.offset();
-                state.grid.offset(goff.left + tap.x - drag.x,
-                                  goff.top + tap.y - drag.y);
+                var goff = ship.grid.offset();
+                ship.grid.offset(goff.left + tap.x - drag.x,
+                                 goff.top + tap.y - drag.y);
                 if ((sqdist(drag, tap) > 125) && press)
                     clearTimeout(press);
                 redraw();

@@ -47,77 +47,82 @@
         "Pistol": {"parent": "Marksman", "cost": 10},
         "Rifle": {"parent": "Marksman", "cost": 10}
     },
-    "components": {
+    "shipElements": {
         "Structure": {
             "comment": [
                 "Each active cell in a ship is a structure.",
                 "Structure includes conduits for power and resources"],
-            "mass": 500},
+            "mass": 500, "internal": true},
         "Bulkhead": {
             "comment": ["Separates two cells as a wall"],
             "mass": 75, "boundary": true},
-        "Doorframe": {
+        "Archway": {
+            "comment": ["Separates two cells with an open passage"],
+            "mass": 70, "boundary": true},
+        "Manual Door": {
+            "comment": ["Allows controlled passage between cells"],
+            "mass": 110, "boundary": true},
+        "Automatic Door": {
             "comment": ["Allows controlled passage between cells"],
             "mass": 100, "power": 1, "boundary": true},
         "Reactor": {
             "comment": ["Generates power for a ship"],
-            "mass": 2000},
+            "mass": 2000, "sigil": "R"},
         "Mainframe": {
             "comment": ["Computer node for controlling ship systems"],
-            "mass": 100, "power": 100},
+            "mass": 100, "sigil": "M", "power": 100},
         "Console": {
             "comment": ["Terminal for interacting with ship computer"],
-            "mass": 25, "power": 1},
+            "mass": 25, "sigil": "C", "power": 1},
         "Helm": {
             "comment": [
                 "Ship navigation and primary weapon control"],
-            "mass": 500, "power": 1},
+            "mass": 500, "sigil": "H", "power": 1},
         "Sensors": {
             "comment": ["Detect other ships and hazards"],
-            "mass": 500, "power": 50},
-        "Life": {
+            "mass": 500, "sigil": "S", "power": 50},
+        "Life Support": {
             "comment": [
                 "Support for oxygen generation, waste collection, ",
                 "personal cleansing and water recycling"],
-            "mass": 1000, "power": 100},
+            "mass": 1000, "sigil": "O", "power": 100},
         "Engine": {
             "comment": ["Generates thrust to move ship"],
-            "mass": 1500, "power": 200},
+            "mass": 1500, "sigil": "E", "power": 200},
         "Cargo": {
             "comment": ["Storage compartments and rigging"],
-            "mass": 50},
+            "mass": 50, "sigil": "G"},
         "PodBay": {
             "comment": ["Support for a single escape pod"],
-            "mass": 100, "external": true},
+            "mass": 100, "sigil": "P", "external": true},
         "Airlock": {
             "comment": ["Support for docking with other ships and ",
                         "stations"],
-            "mass": 200, "external": true},
+            "mass": 200, "sigil": "A", "external": true},
         "Cabin": {
             "comment": ["Living quarters for a person or couple"],
-            "mass": 100, "power": 1},
+            "mass": 100, "sigil": "B", "power": 1},
         "Bunks": {
             "comment": ["Living quarters for up to 5 people"],
-            "mass": 100, "power": 1},
+            "mass": 100, "sigil": "K", "power": 1},
         "Recreation": {
             "comment": ["Equipment for exercise and entertainment"],
-            "mass": 200, "power": 2},
-        "Workspace": {
+            "mass": 200, "sigil": "Y", "power": 2},
+        "Workshop": {
             "comment": ["Work space for up to two engineers"],
-            "mass": 500, "power": 5},
+            "mass": 500, "sigil": "W", "power": 5},
         "Laboratory": {
             "comment": ["Work space for up to two scientists"],
-            "mass": 200, "power": 5},
+            "mass": 200, "sigil": "L", "power": 5},
 
-        "MiningRig": {"external": true},
-        "Robotorium": {"external": true},
-        "Fabrication": {"external": true},
+        "MiningRig": {"disable": true, "external": true},
+        "Robotorium": {"disable": true, "external": true},
+        "Fabrication": {"disable": true, "external": true},
         "Garden": {"disable": true},
         "Weapons": {"disable": true},
         "Medical": {"disable": true},
         "Shields": {"disable": true},
-        "FoodCourt?": {"disable": true},
-        "[END]": {"disable": true}
+        "FoodCourt?": {"disable": true}
     },
     "gear": {
         "Repair Parts": {"storage": "Cargo"},
