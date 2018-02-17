@@ -55,16 +55,16 @@
             "mass": 500, "internal": true},
         "Bulkhead": {
             "comment": ["Separates two cells as a wall"],
-            "mass": 75, "boundary": true},
-        "Archway": {
+            "mass": 75, "boundary": "wall"},
+        "Passage": {
             "comment": ["Separates two cells with an open passage"],
-            "mass": 70, "boundary": true},
+            "mass": 70, "boundary": "pass"},
         "Manual Door": {
             "comment": ["Allows controlled passage between cells"],
-            "mass": 110, "boundary": true},
+            "mass": 110, "boundary": "door"},
         "Automatic Door": {
             "comment": ["Allows controlled passage between cells"],
-            "mass": 100, "power": 1, "boundary": true},
+            "mass": 100, "power": 1, "boundary": "door"},
         "Reactor": {
             "comment": ["Generates power for a ship"],
             "mass": 2000, "sigil": "R"},

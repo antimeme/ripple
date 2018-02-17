@@ -16,6 +16,7 @@
                 for (key in config.cells)
                     __cells[key] = config.cells[key];
             } else result.setCell({row: 0, col: 0}, {});
+            result.__bounds = [];
 
             result.name = (config && config.name) ?
                           config.name : 'Ship';
@@ -24,15 +25,32 @@
             return result;
         },
         getCell: function(node) {
-            return this.__cells[ripple.pair(node.row, node.col)];
+            return this.__cells[ripple.pair(node.col, node.row)];
         },
         setCell: function(node, value) {
-            var id = ripple.pair(node.row, node.col);
+            var id = ripple.pair(node.col, node.row);
 
             if (typeof(value) !== 'undefined')
                 this.__cells[id] = value;
             else if (Object.keys(this.__cells).length > 1)
                 delete this.__cells[id];
+            return this;
+        },
+        setBoundary: function(node, nnode, value) {
+            // TODO replace existing boundaries
+            var index;
+            var cell = this.getCell(node);
+            var ncell = this.getCell(nnode);
+            if (cell && ncell) {
+                var neighbors = this.grid.neighbors(node);
+                for (index in neighbors) {
+                    if (nnode &&
+                        (neighbors[index].row === nnode.row) &&
+                        (neighbors[index].col === nnode.col)) {
+                        this.__bounds.push([node, nnode, value]);
+                    }
+                }
+            } else {} // silent failure :-(
             return this;
         },
 
@@ -49,7 +67,7 @@
                 if (this.__cells[node.id]) {
                     entries[node.id] = true;
                     this.grid.neighbors(node).forEach(function(neigh) {
-                        neigh.id = ripple.pair(neigh.row, neigh.col);
+                        neigh.id = ripple.pair(neigh.col, neigh.row);
                         if (this.__cells[neigh.id] &&
                             !entries[neigh.id])
                             queue.push(neigh);
@@ -65,7 +83,81 @@
             }, this);
             return result;
         },
-        save: function() {
+        cost: function() { // TODO
+            var result = 0;
+            return result;
+        },
+        walls: function() { // TODO
+            var result = [];
+
+            Object.keys(this.__cells).forEach(function(id) {
+                var unpair = ripple.unpair(id);
+
+                var neighbors = this.grid.neighbors(
+                    {row: unpair.y, col: unpair.x}, {points: true});
+                var index;
+
+                for (index in neighbors) {
+                    if (!this.getCell(neighbors[index]) &&
+                        neighbors[index].points.length > 1)
+                        result.push({
+                            start: neighbors[index].points[0],
+                            end: neighbors[index].points[1],
+                            width: 3 });
+                }
+            }, this);
+            this.__bounds.forEach(function(bound) {
+                var node = bound[0];
+                var nnode = bound[1];
+                var value = bound[2];
+                var index, found;
+                var neighbors = this.grid.neighbors(
+                    node, {points: true});
+                for (index in neighbors) {
+                    if ((neighbors[index].row === nnode.row) &&
+                        (neighbors[index].col === nnode.col)) {
+                        found = neighbors[index];
+                    }
+                }
+
+                var frame = function(points, fraction, width, result) {
+                    var start = points[0];
+                    var end = points[1];
+                    var middle;
+
+                    if (isNaN(fraction) || fraction > 0.4 ||
+                        fraction < 0)
+                        fraction = 0.25;
+                    middle = {x: start.x + fraction * (end.x - start.x),
+                              y: start.y + fraction * (end.y - start.y)};
+                    result.push({start: start, end: middle,
+                                 width: width});
+                    console.log("DEBUG frame", fraction, width);
+
+                    fraction = 1 - fraction;
+                    middle = {x: start.x + fraction * (end.x - start.x),
+                              y: start.y + fraction * (end.y - start.y)};
+                    result.push({start: middle, end: end,
+                                 width: width});
+;
+                };
+
+                if (found && found.points.length > 1) {
+                    if (value === 'wall')
+                        result.push({start: found.points[0],
+                                     end: found.points[1], width: 5});
+                    else if (value === 'pass')
+                        frame(found.points, 0.2, 5, result);
+                    else if (value === 'door') {
+                        result.push({start: found.points[0],
+                                     end: found.points[1], width: 1});
+                        frame(found.points, 0.2, 5, result);
+                    }
+                }
+            }, this);
+            return result;
+        },
+        save: function() { // TODO
             var result = {};
             return result;
         }
@@ -150,6 +242,17 @@
                     ctx.fillStyle = colorSelected;
                     ctx.fill();
                 }
+
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = 'blue';
+                ship.walls().forEach(function(wall) {
+                    ctx.beginPath();
+                    ctx.lineWidth = lineWidth * wall.width;
+                    ctx.moveTo(wall.start.x, wall.start.y);
+                    ctx.lineTo(wall.end.x, wall.end.y);
+                    ctx.stroke();
+                }, this);
+
                 ctx.restore();
             }
             draw_id = 0;
@@ -220,15 +323,16 @@
                             !shipElements[key].boundary)
                             return;
                         modeParam.append(
-                            '<option>' + key +
+                            '<option value="' +
+                            shipElements[key].boundary + '">' + key +
                             '</option>');
                     });
                 }
             })
-            .append('<option>Extend</option>')
-            .append('<option>Remove</option>')
-            .append('<option value="sys">System</option>')
-            .append('<option value="bound">Boundary</option>');
+            .append('<option value="extend">Extend Hull</option>')
+            .append('<option value="remove">Remove Hull</option>')
+            .append('<option value="sys">Add System</option>')
+            .append('<option value="bound">Add Boundary</option>');
         modeParam.hide();
 
         menu.append($('<li data-action="mode">').append(mode));
@@ -279,14 +383,14 @@
         // Calculate square distance
         var sqdist = function(node1, node2) {
             return ((node2.x - node1.x) * (node2.x - node1.x) +
-                    (node2.y - node1.y) * (node2.y - node1.y));
+                     (node2.y - node1.y) * (node2.y - node1.y));
         };
 
         var zoom = function(left, top, size, x, y, factor) {
             if (factor && factor > 0) {
                 if (size * factor > 50) {
                     ship.grid.offset((left - x) * factor + x,
-                                      (top - y)  * factor + y);
+                                     (top - y)  * factor + y);
                     ship.grid.size(size * factor);
                     lineWidth = ship.grid.size() / lineFactor;
                 }
@@ -305,7 +409,7 @@
                  1 + 0.1 * event.deltaY);
         });
         self.on('mousedown touchstart', function(event) {
-            var cell, index, neighbors;
+            var cell, index, neighbors, oldtap, oldcell;
             var touches = ripple.createTouches(event);
             if (event.which > 1) {
                 // Reserve right and middle clicks for browser menus
@@ -323,11 +427,12 @@
                 }
                 if (press) { clearTimeout(press); press = 0; }
             } else {
+                oldtap = tap;
                 tap = drag = touches;
                 selected = ship.grid.position(tap);
 
                 cell = ship.getCell(selected);
-                if (mode.val() === 'Extend' && !cell) {
+                if (mode.val() === 'extend' && !cell) {
                     neighbors = ship.grid.neighbors(
                         selected, {coordinates: true, points: true});
                     for (index in neighbors) {
@@ -336,7 +441,7 @@
                             break;
                         }
                     }
-                } else if (mode.val() === 'Remove' && cell) {
+                } else if (mode.val() === 'remove' && cell) {
                     if (cell.system)
                         ship.setCell(selected, {});
                     else ship.setCell(selected, undefined);
@@ -344,22 +449,10 @@
                     ship.setCell(selected, {
                         system: modeParam.text(),
                         sigil: modeParam.val() });
-                }
-
-                // Show a menu on either double tap or long press.
-                // There are some advantages to using a native double
-                // click event on desktop platforms (for example, the
-                // timing can be linked to operating system
-                // accessibility) but here testing is what matters.
-                var now = new Date().getTime();
-                if (gesture && gesture.time > now &&
-                    sqdist(tap, gesture) < 225) {
-                    gesture = undefined;
-                    menuate(tap);
-                } else {
-                    gesture = {time: now + 600, x: tap.x, y: tap.y};
-                    press = setTimeout(function() { menuate(tap); },
-                                       1000);
+                } else if (mode.val() === 'bound' && cell && oldtap) {
+                    ship.setBoundary(
+                        selected, ship.grid.position(oldtap),
+                        modeParam.val());
                 }
             }
 
