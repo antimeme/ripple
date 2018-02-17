@@ -52,16 +52,16 @@
     };
 
     ripple.pair = function(x, y) {
-        var nx = (x >= 0) ? 2 * x : -2 * x - 1;
-        var ny = (y >= 0) ? 2 * y : -2 * y - 1;
+        var nx = (x >= 0) ? (2 * x) : (-2 * x - 1);
+        var ny = (y >= 0) ? (2 * y) : (-2 * y - 1);
         return szudzikPair.pair(nx, ny);
     };
     ripple.unpair = function(z, pair) {
         var result = szudzikPair.unpair(z);
         if (result.x % 2)
-            result.x = -result.x + 1;
+            result.x = -(result.x + 1);
         if (result.y % 2)
-            result.y = -result.y + 1;
+            result.y = -(result.y + 1);
         result.x /= 2;
         result.y /= 2;
         return result;
