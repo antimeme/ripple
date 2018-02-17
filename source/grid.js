@@ -605,21 +605,24 @@
         // which the cartesian coordinate (x and y) is contained.  The
         // return value will have an x and y value for the hex center.
         var halfsize = this._size / 2;
-        var row = Math.floor((node[this.beta] + halfsize) /
-                              (3 * halfsize));
-        var beta_band = (node[this.beta] + halfsize) / halfsize;
-        if (!((Math.floor(beta_band) + 1) % 3)) {
-            var alpha_band = node[this.alpha] * 2 / this.hexw;
-            if ((Math.floor(alpha_band) + Math.floor(beta_band)) % 2) {
-                if ((beta_band - Math.ceil(beta_band)) +
-                    (alpha_band - Math.floor(alpha_band)) > 0)
+        var alpha_band = node[this.alpha] * 2 / this.hexw;
+        var beta_band  = node[this.beta] / halfsize;
+        var row = Math.floor((beta_band + 1) / 3);
+        var col = Math.floor((alpha_band + (row % 2 ? 0 : 1)) / 2);
+
+        if ((Math.floor(beta_band) + 2) % 3 === 0) {
+            var alpha_fraction = ((alpha_band % 1) + 1) % 1;
+            var beta_fraction = ((beta_band % 1) + 1) % 1;
+            if (Math.floor(alpha_band + (row % 2 ? 0 : 1)) % 2) {
+                if (alpha_fraction + beta_fraction > 1) {
                     row += 1;
-            } else if ((beta_band - Math.floor(beta_band)) -
-                       (alpha_band - Math.floor(alpha_band)) > 0)
+                    col += (row % 2) ? 0 : 1;
+                }
+            } else if (beta_fraction > alpha_fraction) { // downslant
                 row += 1;
+                col -= (row % 2) ? 1 : 0;
+            }
         }
-        var col = Math.floor(((Math.abs((row + 1) % 2) * this.hexw / 2) +
-                              node[this.alpha]) / this.hexw);
         var result = {};
         result[this.row] = row;
         result[this.col] = col;
@@ -1045,7 +1048,6 @@
             } else {
                 tap = drag = targets;
                 selected = instance.position(tap);
-                console.log('selected', selected);
 
                 // Show a menu on either double tap or long press.
                 // There are some advantages to using a native double
