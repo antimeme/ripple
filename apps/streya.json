@@ -61,10 +61,10 @@
             "mass": 70, "boundary": "pass"},
         "Manual Door": {
             "comment": ["Allows controlled passage between cells"],
-            "mass": 110, "boundary": "door"},
+            "mass": 110, "boundary": "wheel"},
         "Automatic Door": {
             "comment": ["Allows controlled passage between cells"],
-            "mass": 100, "power": 1, "boundary": "door"},
+            "mass": 100, "power": 1, "boundary": "auto"},
         "Reactor": {
             "comment": ["Generates power for a ship"],
             "mass": 2000, "sigil": "R"},

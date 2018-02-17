@@ -87,7 +87,7 @@
             var result = 0;
             return result;
         },
-        walls: function() { // TODO
+        walls: function() {
             var result = [];
 
             Object.keys(this.__cells).forEach(function(id) {
@@ -120,38 +120,47 @@
                     }
                 }
 
-                var frame = function(points, fraction, width, result) {
-                    var start = points[0];
-                    var end = points[1];
-                    var middle;
-
-                    if (isNaN(fraction) || fraction > 0.4 ||
-                        fraction < 0)
-                        fraction = 0.25;
-                    middle = {x: start.x + fraction * (end.x - start.x),
-                              y: start.y + fraction * (end.y - start.y)};
-                    result.push({start: start, end: middle,
-                                 width: width});
-                    console.log("DEBUG frame", fraction, width);
-
-                    fraction = 1 - fraction;
-                    middle = {x: start.x + fraction * (end.x - start.x),
-                              y: start.y + fraction * (end.y - start.y)};
-                    result.push({start: middle, end: end,
-                                 width: width});
-;
+                var segment = function(start, end, width,
+                                       sfrac, efrac) {
+                    return {
+                        width: width,
+                        start: {x: start.x + sfrac * (end.x - start.x),
+                                y: start.y + sfrac * (end.y - start.y)},
+                        end: { x: start.x + efrac * (end.x - start.x),
+                               y: start.y + efrac * (end.y - start.y)}};
                 };
 
                 if (found && found.points.length > 1) {
                     if (value === 'wall')
                         result.push({start: found.points[0],
                                      end: found.points[1], width: 5});
-                    else if (value === 'pass')
-                        frame(found.points, 0.2, 5, result);
-                    else if (value === 'door') {
-                        result.push({start: found.points[0],
-                                     end: found.points[1], width: 1});
-                        frame(found.points, 0.2, 5, result);
+                    else if (value === 'pass') {
+                        result.push(segment(
+                            found.points[0], found.points[1],
+                            5, 0, 0.25));
+                        result.push(segment(
+                            found.points[0], found.points[1],
+                            5, 0.75, 1));
+                    } else if (value === 'auto') {
+                        result.push(segment(
+                            found.points[0], found.points[1],
+                            3, 0.2, 0.8));
+                        result.push(segment(
+                            found.points[0], found.points[1],
+                            5, 0, 0.25));
+                        result.push(segment(
+                            found.points[0], found.points[1],
+                            5, 0.75, 1));
+                    } else if (value === 'wheel') {
+                        result.push(segment(
+                            found.points[0], found.points[1],
+                            8, 0.2, 0.8));
+                        result.push(segment(
+                            found.points[0], found.points[1],
+                            5, 0, 0.25));
+                        result.push(segment(
+                            found.points[0], found.points[1],
+                            5, 0.75, 1));
                     }
                 }
             }, this);
@@ -212,8 +221,7 @@
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'middle';
                             ctx.font = 'bold ' + Math.round(
-                                Math.min(width, height) / 20) +
-                                       'px sans';
+                                ship.grid.size() / 2) + 'px sans';
                             ctx.fillStyle = 'rgb(48, 48, 48)';
                             ctx.fillText(cell.sigil, node.x, node.y);
                         }
@@ -288,7 +296,7 @@
             .attr('class', 'menu')
             .css({ position: 'absolute', top: 10, left: 25,
                    'z-order': 2})
-            .append($('<legend>Steya Menu</legend>').on(
+            .append($('<legend>Streya Menu</legend>').on(
                 'click', function() {
                     menu.toggle(); }))
             .append(menu)
@@ -350,29 +358,6 @@
                 } break;
             }
         });
-
-        menu.append('<hr />');
-        var gtype = $('<select>')
-            .on('change', function(event) {
-                var options = JSON.parse(gtype.val());
-                tap = undefined; selected = undefined;
-                options.width  = self.width();
-                options.height = self.height();
-                ship.grid = grid.create(options);
-                lineWidth = ship.grid.size() / lineFactor;
-                redraw();
-            });
-        grid.canonical.forEach(function(entry) {
-            var selected = (entry.type === 'hex' &&
-                            entry.orient === 'point') ?
-                           'selected=selected ' : '';
-            gtype.append('<option ' + selected + 'value="' +
-                         JSON.stringify(entry)
-                             .replace(/"/g, '&#34;')
-                             .replace(/'/g, '&#39;') + '">' +
-                         entry.name + '</option>');
-        });
-        menu.append($('<li>').append(gtype));
 
         // Show grid menu at event location
         var menuate = function(tap) {
