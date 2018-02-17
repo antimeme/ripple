@@ -588,10 +588,12 @@
         this.hexw = _sqrt3 * this._size;
     };
 
+    // Return a node with a cartesian coordinate (x and y) for the
+    // center of the hexagon in the row and column specified within
+    // node.  The return value will have the given row and column.
     HexGrid.prototype._coordinate = function(node) {
-        // Return a node with a cartesian coordinate (x and y) for the
-        // center of the hexagon in the row and column specified within
-        // node.  The return value will have the given row and column.
+        // At the origin is the center of the 0, 0 hexagon.  Others
+        // are tessellated around it in all directions.
         var result = {row: node.row, col: node.col};
         result[this.alpha] = (node[this.col] * this.hexw +
                               this.hexw / 2 *
@@ -600,10 +602,15 @@
         return result;
     };
 
+    // Return a node with the row and column of the hexagon in
+    // which the cartesian coordinate (x and y) is contained.  The
+    // return value will have an x and y value for the hex center.
     HexGrid.prototype._position = function(node) {
-        // Return a node with the row and column of the hexagon in
-        // which the cartesian coordinate (x and y) is contained.  The
-        // return value will have an x and y value for the hex center.
+        // Divide the space up into alpha and beta bands which
+        // form a rectangular grid.  A hexagon spans two alpha
+        // bands and three beta bands.  Four of the six bands
+        // are simple but the last two have to be corrected if the
+        // position crosses a diagonal boundary.
         var halfsize = this._size / 2;
         var alpha_band = node[this.alpha] * 2 / this.hexw;
         var beta_band  = node[this.beta] / halfsize;
@@ -614,14 +621,10 @@
             var alpha_fraction = ((alpha_band % 1) + 1) % 1;
             var beta_fraction = ((beta_band % 1) + 1) % 1;
             if (Math.floor(alpha_band + (row % 2 ? 0 : 1)) % 2) {
-                if (alpha_fraction + beta_fraction > 1) {
-                    row += 1;
-                    col += (row % 2) ? 0 : 1;
-                }
-            } else if (beta_fraction > alpha_fraction) { // downslant
-                row += 1;
-                col -= (row % 2) ? 1 : 0;
-            }
+                if (alpha_fraction + beta_fraction > 1)
+                    col += (++row % 2) ? 0 : 1;
+            } else if (beta_fraction > alpha_fraction)
+                col -= (++row % 2) ? 1 : 0;
         }
         var result = {};
         result[this.row] = row;
@@ -679,7 +682,7 @@
     // Exposes grid types for use in user menus.  The first element of
     // each list is the grid name.  The second, if present, is the
     // option structure which creates that grid type.
-    var canonical = [
+    grid.canonical = [
         {name: "Square(strict)", type: "square"},
         {name: "Square(diagonal)", type: "square", diagonal: true},
         {name: "Hex(point)", type: "hex", orient: "point"},
@@ -693,7 +696,7 @@
     // if possible.  If width and height fields are present these are
     // used to center the (0, 0) grid cell.  Other options are passed
     // through to the grid itself.
-    var create = function(options) {
+    grid.create = function(options) {
         var result;
         if (options && options.type &&
             types[options.type.toLowerCase()])
@@ -703,9 +706,6 @@
             result.center(options.width || 0, options.height || 0);
         return result;
     };
-
-    grid.canonical = canonical;
-    grid.create = create;
 
     grid.test = function($, parent, viewport) {
         var self = $('<canvas></canvas>').appendTo(parent);
