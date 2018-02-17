@@ -1006,8 +1006,12 @@
         };
 
         var zoom = function(left, top, size, x, y, factor) {
+
             if (factor && factor > 0) {
-                if (size * factor > 50) {
+                var screenSize = Math.min(
+                    self.attr('width'), self.attr('height'));
+                if ((size * factor > (screenSize / 50)) &&
+                    (size * factor < screenSize)) {
                     instance.offset((left - x) * factor + x,
                                     (top - y)  * factor + y);
                     instance.size(size * factor);
