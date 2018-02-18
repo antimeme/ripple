@@ -7,6 +7,10 @@
     // A ship consists of a set of connected cells, each of which
     // may have systems or other furnitrue present.
     streya.Ship = {
+        // Invariants:
+        // - A ship has at least one active cell
+        // - Active cells are connected by neighbor relationships
+
         create: function(config) {
             var result = Object.create(this);
 
@@ -24,18 +28,22 @@
 
             return result;
         },
+
         getCell: function(node) {
             return this.__cells[ripple.pair(node.col, node.row)];
         },
+
         setCell: function(node, value) {
             var id = ripple.pair(node.col, node.row);
+            var value;
 
             if (typeof(value) !== 'undefined')
                 this.__cells[id] = value;
-            else if (Object.keys(this.__cells).length > 1)
+            else if (this.__safeDelete(id))
                 delete this.__cells[id];
             return this;
         },
+
         setBoundary: function(node, nnode, value) {
             // TODO replace existing boundaries
             var index;
@@ -54,30 +62,7 @@
             return this;
         },
 
-        __connected(node) {
-            var entries = {};
-            var queue = [];
-
-            node.id = ripple.pair(node.row, node.col);
-            queue.push(node);
-
-            while (queue.length > 0) {
-                node = queue.pop();
-
-                if (this.__cells[node.id]) {
-                    entries[node.id] = true;
-                    this.grid.neighbors(node).forEach(function(neigh) {
-                        neigh.id = ripple.pair(neigh.col, neigh.row);
-                        if (this.__cells[neigh.id] &&
-                            !entries[neigh.id])
-                            queue.push(neigh);
-                    }, this);
-                }
-            }
-            return Object.keys(entries).length;
-        },
-
-        weight: function() {
+        weight: function() { // TODO
             var result = 0;
             Object.keys(this.__cells).forEach(function(id) {
             }, this);
@@ -85,6 +70,10 @@
         },
         cost: function() { // TODO
             var result = 0;
+            return result;
+        },
+        save: function() { // TODO
+            var result = {};
             return result;
         },
         walls: function() {
@@ -166,8 +155,50 @@
             }, this);
             return result;
         },
-        save: function() { // TODO
-            var result = {};
+
+        // Return true iff deleting the ship cell with the given
+        // identifier will not result in a broken ship
+        __safeDelete(id) {
+            // Need to enforce the following invariants:
+            // - At least once cell is active after delete
+            // - All cells are connected after delete
+            // We can depend on the fact that these are all true
+            // before the delete, so every cell has at least one
+            // neighbor if there's more than one.
+            var result = false;
+            var queue = [], visited = {}, current;
+            var target = ripple.unpair(id);
+            var count = Object.keys(this.__cells).length;
+
+            target.row = target.y;
+            target.col = target.x;
+            if ((count > 1) && (id in this.__cells) &&
+                this.grid.neighbors(target).some(
+                    function(neigh) {
+                        neigh.id = ripple.pair(neigh.col, neigh.row);
+                        if (neigh.id in this.__cells) {
+                            queue.push(neigh);
+                            return true;
+                        } else return false; }, this)) {
+                while (queue.length > 0) {
+                    current = queue.pop();
+                    if (current.id in visited)
+                        continue;
+                    visited[current.id] = true;
+
+                    this.grid.neighbors(current).forEach(
+                        function(neigh) {
+                            neigh.id = ripple.pair(
+                                neigh.col, neigh.row);
+                            if (!(this.id in visited) &&
+                                (neigh.id !== id) &&
+                                (neigh.id in this.__cells))
+                                queue.push(neigh);
+                        }, this);
+                }
+                if (Object.keys(visited).length + 1 == count)
+                    result = true;
+            }
             return result;
         }
     }
