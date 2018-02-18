@@ -14,12 +14,16 @@
                window.params[name] : process.env[name];
     };
 
-    var profiling = false;
-    var debug = !!fetchParam('debug');
-    var rotateworld = !!fetchParam('rotateworld');
-    var mazeType = fetchParam('mazeType') || undefined;
-    var mazeRings = Math.max(Math.min(parseInt(
-        fetchParam('mazeRings'), 10), 8), 1);
+    var browserSettings = {
+        debug: !!fetchParam('debug'),
+        profiling: false,
+        rotateworld: !!fetchParam('rotateworld'),
+        mazeType: fetchParam('mazeType') || undefined,
+        mazeRings: Math.max(Math.min(parseInt(
+            fetchParam('mazeRings'), 10), 8), 1),
+        startStage: fetchParam('startStage'),
+        mode: fetchParam('mode')
+    };
 
     var squareSize = undefined;
     var setSquareSize = function(thing, size) {
@@ -84,13 +88,13 @@
             .addClass('inventory-header')
             .append($('<div>')
                 .addClass('bbar')
-                .append(state.createButton('close', function(event) {
+                .append(state.createButton($, 'close', function(event) {
                     state.inventory.hide();
                 }, this)
                              .addClass('close'))
-                .append(state.createButton('take', take, this)
+                .append(state.createButton($, 'take', take, this)
                              .addClass('give-and-take'))
-                .append(state.createButton('give', give, this)
+                .append(state.createButton($, 'give', give, this)
                              .addClass('give-and-take')))
             .appendTo(this.pane);
         this.playerPane = $('<div>')
@@ -121,7 +125,7 @@
                 icon = itemdef.icon;
         }
         (isOther ? this.otherPane : this.playerPane).append(
-            this.state.createButton(icon, function(event) {
+            this.state.createButton($, icon, function(event) {
                 jQuery(event[0].target)
                     .toggleClass('selected');
             }, this)
@@ -666,11 +670,16 @@
     };
 
     whiplash.go = function($, container, viewport, data) {
-        // State arrow can be either:
-        //   {x, y} - unit vector indicating direction
-        //   undefined - arrow in process of being set
-        //   null - arrow not set
+        if (data.schema.disableDebug)
+            browserSettings.debug = false;
+
         var state = {
+            debug: browserSettings.debug,
+            rotateworld: browserSettings.rotateworld,
+            mazeRings: browserSettings.mazeRings,
+            mazeType: browserSettings.mazeType,
+            startStage: browserSettings.startStage || data.startStage,
+
             height: 320, width: 320,
             zoom: {
                 value: 25, min: 10, max: 100, reference: 0,
@@ -687,7 +696,7 @@
             player: null, update: update,
             itemdefs: data.itemdefs ? data.itemdefs : {},
             images: data.images.files, icons: data.images.icons,
-            createButton: function(config, fn, context) {
+            createButton: function($, config, fn, context) {
                 // This routine wraps the function and forces a false
                 // return so that events do not propagate
                 var imgdef, image, position, backsize;
@@ -704,7 +713,7 @@
                 image = 'url(' + imgdef.url + ')';
                 backsize = (
                     (imgdef.size * imgdef.cols) + '% ' +
-                     (imgdef.size * imgdef.rows) + '%');
+                       (imgdef.size * imgdef.rows) + '%');
                 position = (
                     Math.floor(100 * config.col /
                         (imgdef.cols - 1)) + '% ' + 
@@ -727,20 +736,20 @@
                     .css({ bottom: 0, left: 0 })
                     .appendTo(container)
                     .append(this.createButton(
-                        'lhand', this.handLeft, this))
+                        $, 'lhand', this.handLeft, this))
                     .append(this.createButton(
-                        'rhand', this.handRight, this));
+                        $, 'rhand', this.handRight, this));
 
                 $('<div>') // Create action bar
                     .addClass('bbar')
                     .css({ bottom: 0, right: 0 })
                     .appendTo(container)
                     .append(this.createButton(
-                        'settings', function(event) {
+                        $, 'settings', function(event) {
                             state.settings.toggle();
                             state.inventory.hide(); }))
                     .append(this.createButton(
-                        'interact', function(event) {
+                        $, 'interact', function(event) {
                             state.interact(); }));
 
                 this.settings = $('<div>')
@@ -781,10 +790,9 @@
 
                 this.update(now, last);
                 ctx.save(); // transform to world space
+                ctx.translate(width / 2, height / 2); // center origin
                 ctx.scale(this.zoom.value, this.zoom.value);
-                ctx.translate(width / (2 * this.zoom.value),
-                              height / (2 * this.zoom.value));
-                if (rotateworld) {
+                if (this.rotateworld) {
                     if (height >= width) {
                         ctx.translate(
                             0, 0.4 * height / this.zoom.value);
@@ -820,8 +828,8 @@
                 ctx.restore(); // return to screen space
 
                 size = Math.min(this.height, this.width);
-                if (debug) {
-                    if (rotateworld)
+                if (this.debug) {
+                    if (this.rotateworld)
                         multivec((this.height >= this.width) ?
                                  [0, -1] : [1, 0])
                         .draw(ctx, {
@@ -882,7 +890,8 @@
                         else console.profile();
                         profiling = !profiling;
                     }
-	        } else if (debug) console.log('down', event.keyCode);
+	        } else if (this.debug)
+                    console.log('down', event.keyCode);
             },
             keyup: function(event, redraw) {
                 redraw();
@@ -913,7 +922,7 @@
                 } else if (event.keyCode === 70 /* i */ ||
                            event.keyCode === 192 /* tilde */) {
                 } else if (event.keyCode === 80 /* p */) {
-	        } else if (debug) console.log('up', event.keyCode);
+	        } else if (this.debug) console.log('up', event.keyCode);
             },
 
             // Converts a screen coordinate to world space
@@ -940,8 +949,8 @@
 
                 if (closest &&
                     tapped.minus(closest.position).normSquared() < 9) {
-                    state.inventory.populate(closest);
-                    state.inventory.show();
+                    this.inventory.populate(closest);
+                    this.inventory.show();
                 } else this.player.control.setTarget(tapped);
             },
 
@@ -957,7 +966,7 @@
 
             flick: function(start, end) {
                 var swipe = multivec(end).minus(start);
-                if (rotateworld) {
+                if (this.rotateworld) {
                     swipe = swipe.rotate(
                         multivec((this.height >= this.width) ?
                                  [0, -1] : [1, 0]),
@@ -980,7 +989,7 @@
             },
             stages: data.stages,
             chardefs: data.chardefs,
-            setStage: function(stageName, config) {
+            setStage: function(stageName) {
                 var g, stage;
 
                 this.characters = [this.player];
@@ -997,13 +1006,13 @@
                         this.characters.push(makeCharacter(
                             ripple.mergeConfig(
                                 character.position,
-                                this.chardefs[character.type]), state));
+                                this.chardefs[character.type]), this));
                     }, this);
                 if (stage.maze) {
-                    if (mazeType)
-                        stage.maze.type = mazeType;
-                    if (mazeRings)
-                        stage.maze.rings = mazeRings;
+                    if (this.mazeType)
+                        stage.maze.type = this.mazeType;
+                    if (this.mazeRings)
+                        stage.maze.rings = this.mazeRings;
                     g = grid.create(stage.maze).createMaze(stage.maze);
                     g.walls.forEach(function(wall) {
                         this.walls.push(
@@ -1023,10 +1032,10 @@
                 }
             },
             interact: function() {
-                if (state.inventory.isVisible()) {
-                    state.inventory.hide();
-                } else if (state.settings.is(':visible')) {
-                    state.settings.hide();
+                if (this.inventory.isVisible()) {
+                    this.inventory.hide();
+                } else if (this.settings.is(':visible')) {
+                    this.settings.hide();
                 } else {
                     var sqdist, angle;
                     var least = NaN;
@@ -1040,8 +1049,8 @@
                         }
                     }, this);
 
-                    state.inventory.populate(closest);
-                    state.inventory.show();
+                    this.inventory.populate(closest);
+                    this.inventory.show();
                 }
             },
             handRight: function(event) {
@@ -1055,36 +1064,37 @@
 	state.player = makePlayer(
             (data.chardefs && 'player' in data.chardefs) ?
             data.chardefs['player'] : {}, state);
-        state.setStage(fetchParam('startStage') || data.startStage);
-        if (data.schema.disableDebug)
-            debug = false;
+        state.setStage(state.startStage);
         ripple.app($, container, viewport, state);
     };
 })(typeof exports === 'undefined'? this['whiplash'] = {}: exports);
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
+    // Stand alone desktop application mode for whiplash
+    //   $ npm run-script whiplash
     const electron = require('electron');
     const path = require('path');
     const url = require('url');
-    let mainWindow;
+    var mainWindow;
 
-    electron.app
-            .on('ready', function() {
-                mainWindow = new electron.BrowserWindow(
-                    {width: 800, height: 600,
-                     webPreferences: { nodeIntegration: false }});
-                mainWindow.loadURL(url.format({
-                    pathname: path.join(__dirname, 'whiplash.html'),
-                    protocol: 'file:',
-                    slashes: true }));
-                //mainWindow.webContents.openDevTools();
-                mainWindow.on('closed', function () {
-                    mainWindow = null; });
-            })
-            .on('window-all-closed', function () {
-                if (process.platform !== 'darwin')
-                    electron.app.quit(); })
-            .on('activate', function () {
-                if (mainWindow === null)
-                    createWindow(); });
+    electron
+        .app
+        .on('ready', function() {
+            mainWindow = new electron.BrowserWindow(
+                {width: 800, height: 600,
+                 webPreferences: { nodeIntegration: false }});
+            mainWindow.loadURL(url.format({
+                pathname: path.join(__dirname, 'whiplash.html'),
+                protocol: 'file:',
+                slashes: true }));
+            //mainWindow.webContents.openDevTools();
+            mainWindow.setMenu(null);
+            mainWindow.on('closed', function () {
+                    mainWindow = null; }); })
+        .on('window-all-closed', function () {
+            if (process.platform !== 'darwin')
+                electron.app.quit(); })
+        .on('activate', function () {
+            if (mainWindow === null)
+                createWindow(); });
 }

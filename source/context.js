@@ -32,6 +32,22 @@
         Array.prototype.forEach = function(fn, self) {
             for (var index = 0; index < this.length; index++)
                 fn.call(self, this[index], index, this); };
+    if (typeof Array.prototype.some === 'undefined')
+        Array.prototype.some = function(fn, self) {
+            var result = false;
+            for (var index = 0; index < this.length; index++) {
+                result = fn.call(self, this[index], index, this);
+                if (result)
+                    break; }
+            return result; };
+    if (typeof Array.prototype.every === 'undefined')
+        Array.prototype.every = function(fn, self) {
+            var result = true;
+            for (var index = 0; index < this.length; index++) {
+                result = fn.call(self, this[index], index, this);
+                if (!result)
+                    break; }
+            return result; };
 
     // Browser vendors sometimes introduce features before standards
     // are agreed upon, but with prefixes.  We'll search for these
@@ -75,7 +91,7 @@
         // Adapted from Erik Möller's blog post (http://goo.gl/qVfYlu).
         var lastTime = 0;
         for (var index = 0; typeof window.requestAnimationFrame ===
-             'undefined' && index < vendors.length; ++index) {
+            'undefined' && index < vendors.length; ++index) {
             window.requestAnimationFrame =
                 window[vendors[index] + 'RequestAnimationFrame'];
             window.cancelAnimationFrame =
@@ -128,7 +144,7 @@
         };
         jQuery.exitFullscreen = function() {
             var efs = document.exitFullscreen ||
-                document.exitFullScreen;
+                      document.exitFullScreen;
             var names = ["ExitFullscreen", "ExitFullScreen",
                          "CancelFullScreen"];
             for (var i = 0; !efs && i < vendors.length; ++i) {
@@ -140,7 +156,7 @@
         };
         jQuery.toggleFullscreen = function(elem) {
             var fse = document.fullscreenElement ||
-                document.fullScreenElement;
+                      document.fullScreenElement;
             var names = ["FullscreenElement", "FullScreenElement"];
             for (var i = 0; !fse && i < vendors.length; ++i) {
                 for (var n = i; !fse && n < names.length; ++n)
