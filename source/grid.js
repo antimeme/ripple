@@ -131,6 +131,13 @@
                 col: Math.floor(node.x / this._size)};
     };
 
+    BaseGrid.prototype.adjacent = function(nodeA, nodeB) {
+        return this._neighbors(nodeA).some(function(neigh) {
+            return ((neigh.row === nodeB.row) &&
+                    (neigh.col === nodeB.col));
+        });
+    };
+
     BaseGrid.prototype.neighbors = function(node, options) {
         // Return a list of neighboring nodes.  The following options
         // are recognized:
@@ -162,17 +169,23 @@
                 {row: node.row - 1, col: node.col}];
     };
 
-    BaseGrid.prototype._pairpoints = function(node1, node2) {
-        var midpoint = {x: (node2.x - node1.x) / 2,
-                        y: (node2.y - node1.y) / 2};
-        var rotated = {x: (node1.y - node2.y) / 2,
-                       y: (node2.x - node1.x) / 2};
+    BaseGrid.prototype._pairpoints = function(nodeA, nodeB) {
+        var midpoint = {x: (nodeB.x - nodeA.x) / 2,
+                        y: (nodeB.y - nodeA.y) / 2};
+        var rotated = {x: (nodeA.y - nodeB.y) / 2,
+                       y: (nodeB.x - nodeA.x) / 2};
         var factor = this._size / (2 * magnitude(rotated.x, rotated.y));
         var scaled = {x: rotated.x * factor, y: rotated.y * factor};
-        return [{x: node1.x + midpoint.x + scaled.x,
-                 y: node1.y + midpoint.y + scaled.y},
-                {x: node1.x + midpoint.x - scaled.x,
-                 y: node1.y + midpoint.y - scaled.y}];
+        return [{x: nodeA.x + midpoint.x + scaled.x,
+                 y: nodeA.y + midpoint.y + scaled.y},
+                {x: nodeA.x + midpoint.x - scaled.x,
+                 y: nodeA.y + midpoint.y - scaled.y}];
+    };
+
+    BaseGrid.prototype.pairpoints = function(nodeA, nodeB) {
+        return this.adjacent(nodeA, nodeB) ?
+               this._pairpoints(this.coordinate(nodeA),
+                                this.coordinate(nodeB)) : [];
     };
 
     BaseGrid.prototype.points = function(node) {
@@ -378,14 +391,14 @@
                 {row: node.row - 1, col: node.col - 1, cost: _sqrt2}]);
         return result;
     };
-    SquareGrid.prototype._pairpoints = function(node1, node2) {
+    SquareGrid.prototype._pairpoints = function(nodeA, nodeB) {
         // Diagonal neighbors need special treatment because the base
         // implemenation assumes two points
-        return (((node1.row - node2.row) * (node1.row - node2.row) +
-                 (node1.col - node2.col) * (node1.col - node2.col) > 1) ?
-                [{x: node1.x + (node2.x - node1.x) / 2,
-                  y: node1.y + (node2.y - node1.y) / 2}] :
-                BaseGrid.prototype._pairpoints.call(this, node1, node2));
+        return (((nodeA.row - nodeB.row) * (nodeA.row - nodeB.row) +
+                 (nodeA.col - nodeB.col) * (nodeA.col - nodeB.col) > 1) ?
+                [{x: nodeA.x + (nodeB.x - nodeA.x) / 2,
+                  y: nodeA.y + (nodeB.y - nodeA.y) / 2}] :
+                BaseGrid.prototype._pairpoints.call(this, nodeA, nodeB));
     };
     SquareGrid.prototype.points = function(node) {
         // Given a node with the coordinates for the center of a square,
@@ -523,17 +536,17 @@
                 {row: node.row + rmod, col: node.col + cmod}];
     };
 
-    RTriangleGrid.prototype._pairpoints = function(node1, node2) {
-        if ((node1.row !== node2.row) ||
-            (node1.col + (node1.col % 2 ? -1 : 1) !== node2.col)) {
-            var sign = (this.regular || ((node1.row < 0) ===
-                                         (node1.col < 0)));
-            var points = this.points(node1);
-            return [points[0], ((node1.row !== node2.row) ===
-                                (node1.col % 2 ? !sign : sign)) ?
+    RTriangleGrid.prototype._pairpoints = function(nodeA, nodeB) {
+        if ((nodeA.row !== nodeB.row) ||
+            (nodeA.col + (nodeA.col % 2 ? -1 : 1) !== nodeB.col)) {
+            var sign = (this.regular || ((nodeA.row < 0) ===
+                                         (nodeA.col < 0)));
+            var points = this.points(nodeA);
+            return [points[0], ((nodeA.row !== nodeB.row) ===
+                                (nodeA.col % 2 ? !sign : sign)) ?
                     points[1] : points[2]];
         }
-        return BaseGrid.prototype._pairpoints.call(this, node1, node2);
+        return BaseGrid.prototype._pairpoints.call(this, nodeA, nodeB);
     };
 
     RTriangleGrid.prototype.points = function(node) {
@@ -1000,9 +1013,9 @@
         };
 
         // Calculate square distance
-        var sqdist = function(node1, node2) {
-            return ((node2.x - node1.x) * (node2.x - node1.x) +
-                    (node2.y - node1.y) * (node2.y - node1.y));
+        var sqdist = function(nodeA, nodeB) {
+            return ((nodeB.x - nodeA.x) * (nodeB.x - nodeA.x) +
+                    (nodeB.y - nodeA.y) * (nodeB.y - nodeA.y));
         };
 
         var zoom = function(left, top, size, x, y, factor) {

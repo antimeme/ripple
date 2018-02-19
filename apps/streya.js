@@ -4,13 +4,14 @@
     'use strict';
 
     // === Ship representation
-    // A ship consists of a set of connected cells, each of which
-    // may have systems or other furnitrue present.
+    // A ship consists of one or more connected cells, each of which
+    // may have systems present.
     streya.Ship = {
         // Invariants:
         // - A ship has at least one active cell
-        // - Active cells are connected by neighbor relationships
+        // - Active cells and neighbors form a connected graph
 
+        // Returns a new ship
         create: function(config) {
             var result = Object.create(this);
 
@@ -20,7 +21,7 @@
                 for (key in config.cells)
                     __cells[key] = config.cells[key];
             } else result.setCell({row: 0, col: 0}, {});
-            result.__bounds = [];
+            result.__boundaries = {};
 
             result.name = (config && config.name) ?
                           config.name : 'Ship';
@@ -30,35 +31,37 @@
         },
 
         getCell: function(node) {
-            return this.__cells[ripple.pair(node.col, node.row)];
+            return this.__cells[this.__indexCell(node)];
         },
 
         setCell: function(node, value) {
-            var id = ripple.pair(node.col, node.row);
-            var value;
+            var id = this.__indexCell(node);
 
-            if (typeof(value) !== 'undefined')
+            if (value)
                 this.__cells[id] = value;
-            else if (this.__safeDelete(id))
+            else if (this.__safeDelete(id)) {
+                this.grid.neighbors(node).forEach(function(neigh) {
+                    this.setBoundary(node, neigh); }, this);
                 delete this.__cells[id];
+            }
             return this;
         },
 
-        setBoundary: function(node, nnode, value) {
-            // TODO replace existing boundaries
-            var index;
-            var cell = this.getCell(node);
-            var ncell = this.getCell(nnode);
-            if (cell && ncell) {
-                var neighbors = this.grid.neighbors(node);
-                for (index in neighbors) {
-                    if (nnode &&
-                        (neighbors[index].row === nnode.row) &&
-                        (neighbors[index].col === nnode.col)) {
-                        this.__bounds.push([node, nnode, value]);
-                    }
-                }
-            } else {} // silent failure :-(
+        getBoundary: function(nodeA, nodeB) {
+            return this.__boundaries[
+                this.__indexBoundary(nodeA, nodeB)];
+        },
+
+        setBoundary: function(nodeA, nodeB, value) {
+            var id = this.__indexBoundary(nodeA, nodeB);
+
+            if ((this.__indexCell(nodeA) in this.__cells) &&
+                (this.__indexCell(nodeB) in this.__cells) &&
+                this.grid.adjacent(nodeA, nodeB)) {
+                if (value)
+                    this.__boundaries[id] = value;
+                else delete this.__boundaries[id];
+            }
             return this;
         },
 
@@ -83,7 +86,7 @@
                 var unpair = ripple.unpair(id);
 
                 var neighbors = this.grid.neighbors(
-                    {row: unpair.y, col: unpair.x}, {points: true});
+                    this.__unindexCell(id), {points: true});
                 var index;
 
                 for (index in neighbors) {
@@ -95,87 +98,84 @@
                             width: 3 });
                 }
             }, this);
-            this.__bounds.forEach(function(bound) {
-                var node = bound[0];
-                var nnode = bound[1];
-                var value = bound[2];
-                var index, found;
-                var neighbors = this.grid.neighbors(
-                    node, {points: true});
-                for (index in neighbors) {
-                    if ((neighbors[index].row === nnode.row) &&
-                        (neighbors[index].col === nnode.col)) {
-                        found = neighbors[index];
-                    }
-                }
+            Object.keys(this.__boundaries).forEach(function(id) {
+                var boundary = this.__unindexBoundary(id);
+                var value = this.__boundaries[id];
+                var points = this.grid.pairpoints(
+                    boundary.nodeA, boundary.nodeB);
 
-                var segment = function(start, end, width,
-                                       sfrac, efrac) {
+                var segment = function(points, width, sfrac, efrac) {
+                    var s = points[0];
+                    var e = points[1];
                     return {
                         width: width,
-                        start: {x: start.x + sfrac * (end.x - start.x),
-                                y: start.y + sfrac * (end.y - start.y)},
-                        end: { x: start.x + efrac * (end.x - start.x),
-                               y: start.y + efrac * (end.y - start.y)}};
+                        start: { x: s.x + sfrac * (e.x - s.x),
+                                 y: s.y + sfrac * (e.y - s.y) },
+                        end: { x: s.x + efrac * (e.x - s.x),
+                               y: s.y + efrac * (e.y - s.y) } };
                 };
 
-                if (found && found.points.length > 1) {
+                if (points.length > 1) {
                     if (value === 'wall')
-                        result.push({start: found.points[0],
-                                     end: found.points[1], width: 5});
+                        result.push(segment(points, 5, 0, 1));
                     else if (value === 'pass') {
-                        result.push(segment(
-                            found.points[0], found.points[1],
-                            5, 0, 0.25));
-                        result.push(segment(
-                            found.points[0], found.points[1],
-                            5, 0.75, 1));
+                        result.push(segment(points, 5, 0, 0.25));
+                        result.push(segment(points, 5, 0.75, 1));
                     } else if (value === 'auto') {
-                        result.push(segment(
-                            found.points[0], found.points[1],
-                            3, 0.2, 0.8));
-                        result.push(segment(
-                            found.points[0], found.points[1],
-                            5, 0, 0.25));
-                        result.push(segment(
-                            found.points[0], found.points[1],
-                            5, 0.75, 1));
+                        result.push(segment(points, 3, 0.2, 0.8));
+                        result.push(segment(points, 5, 0, 0.25));
+                        result.push(segment(points, 5, 0.75, 1));
                     } else if (value === 'wheel') {
-                        result.push(segment(
-                            found.points[0], found.points[1],
-                            8, 0.2, 0.8));
-                        result.push(segment(
-                            found.points[0], found.points[1],
-                            5, 0, 0.25));
-                        result.push(segment(
-                            found.points[0], found.points[1],
-                            5, 0.75, 1));
+                        result.push(segment(points, 8, 0.2, 0.8));
+                        result.push(segment(points, 5, 0, 0.25));
+                        result.push(segment(points, 5, 0.75, 1));
                     }
                 }
             }, this);
             return result;
         },
 
-        // Return true iff deleting the ship cell with the given
-        // identifier will not result in a broken ship
+        __indexCell: function(node) {
+            return ripple.pair(node.col, node.row);
+        },
+        __unindexCell: function(id) {
+            var pair = ripple.unpair(id);
+            return {row: pair.y, col: pair.x};
+        },
+        __indexBoundary: function(nodeA, nodeB) {
+            var indexA = this.__indexCell(nodeA);
+            var indexB = this.__indexCell(nodeB);
+            var swap;
+
+            if (indexA > indexB) {
+                swap = indexA;
+                indexA = indexB;
+                indexB = swap;
+            }
+            return ripple.pair(indexA, indexB);
+        },
+        __unindexBoundary: function(id) {
+            var pair = ripple.unpair(id);
+            return {nodeA: this.__unindexCell(pair.x),
+                    nodeB: this.__unindexCell(pair.y)};
+        },
+
         __safeDelete(id) {
-            // Need to enforce the following invariants:
-            // - At least once cell is active after delete
-            // - All cells are connected after delete
-            // We can depend on the fact that these are all true
-            // before the delete, so every cell has at least one
-            // neighbor if there's more than one.
+            // Return true iff deleting the specified cell would
+            // preserve the following invariants:
+            // - At least once cell is active
+            // - All cells are connected by a chain of neighbors
+            // We can assume these hold before and must guarantee
+            // that they hold after deletion when returning true
             var result = false;
             var queue = [], visited = {}, current;
-            var target = ripple.unpair(id);
+            var target = this.__unindexCell(id);
             var count = Object.keys(this.__cells).length;
 
-            target.row = target.y;
-            target.col = target.x;
             if ((count > 1) && (id in this.__cells) &&
                 this.grid.neighbors(target).some(
                     function(neigh) {
-                        neigh.id = ripple.pair(neigh.col, neigh.row);
+                        neigh.id = this.__indexCell(neigh);
                         if (neigh.id in this.__cells) {
                             queue.push(neigh);
                             return true;
@@ -188,8 +188,7 @@
 
                     this.grid.neighbors(current).forEach(
                         function(neigh) {
-                            neigh.id = ripple.pair(
-                                neigh.col, neigh.row);
+                            neigh.id = this.__indexCell(neigh);
                             if (!(this.id in visited) &&
                                 (neigh.id !== id) &&
                                 (neigh.id in this.__cells))
@@ -343,19 +342,23 @@
                 modeParam.empty();
                 modeParam.hide();
                 if (mode.val() === 'sys') {
-                    modeParam.show();
+                    modeParam.append('<option value="">Clear</option>');
                     Object.keys(shipElements).forEach(function(key) {
-                        if (shipElements[key].internal ||
-                            shipElements[key].disable ||
-                            shipElements[key].boundary)
+                        var element = shipElements[key];
+
+                        if (element.internal || element.disable ||
+                            element.boundary)
                             return;
                         modeParam.append(
                             '<option value="' +
-                            shipElements[key].sigil +'">' + key +
+                            element.sigil +'">' + key + (
+                                element.sigil ? (
+                                    ' (' + element.sigil + ')') : '') +
                             '</option>');
                     });
-                } else if (mode.val() === 'bound') {
                     modeParam.show();
+                } else if (mode.val() === 'bound') {
+                    modeParam.append('<option value="">Clear</option>');
                     Object.keys(shipElements).forEach(function(key) {
                         if (shipElements[key].internal ||
                             shipElements[key].disable ||
@@ -366,6 +369,7 @@
                             shipElements[key].boundary + '">' + key +
                             '</option>');
                     });
+                    modeParam.show();
                 }
             })
             .append('<option value="extend">Extend Hull</option>')
@@ -463,7 +467,8 @@
                     else ship.setCell(selected, undefined);
                 } else if (mode.val() === 'sys' && cell) {
                     ship.setCell(selected, {
-                        system: modeParam.text(),
+                        system: modeParam.val() ?
+                                modeParam.text() : undefined,
                         sigil: modeParam.val() });
                 } else if (mode.val() === 'bound' && cell && oldtap) {
                     ship.setBoundary(
