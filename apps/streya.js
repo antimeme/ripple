@@ -341,7 +341,13 @@
                 var shipElements = data.shipElements;
                 modeParam.empty();
                 modeParam.hide();
-                if (mode.val() === 'sys') {
+                if (mode.val() === 'extend') {
+                    [1, 2, 3].forEach(function(key) {
+                        modeParam.append(
+                            '<option value="' + key + '">' +
+                            'Radius ' + key + '</option>'); });
+                    modeParam.show();
+                } if (mode.val() === 'sys') {
                     modeParam.append('<option value="">Clear</option>');
                     Object.keys(shipElements).forEach(function(key) {
                         var element = shipElements[key];
@@ -376,7 +382,7 @@
             .append('<option value="remove">Remove Hull</option>')
             .append('<option value="sys">Add System</option>')
             .append('<option value="bound">Add Boundary</option>');
-        modeParam.hide();
+        mode.change();
 
         menu.append($('<li data-action="mode">').append(mode));
         menu.append($('<li>').append(modeParam));
@@ -453,13 +459,31 @@
 
                 cell = ship.getCell(selected);
                 if (mode.val() === 'extend' && !cell) {
-                    neighbors = ship.grid.neighbors(
-                        selected, {coordinates: true, points: true});
-                    for (index in neighbors) {
-                        if (ship.getCell(neighbors[index])) {
-                            ship.setCell(selected, {});
-                            break;
+                    if (ship.grid.neighbors(selected, {
+                        coordinates: true, points: true })
+                            .some(function(neigh) {
+                                return ship.getCell(neigh); })) {
+                        var current, queue = [];
+                        selected.radius = parseInt(
+                            modeParam.val(), 10);
+                        queue.push(selected);
+
+                        while (queue.length > 0) {
+                            current = queue.pop();
+                            if (!ship.getCell(current))
+                                ship.setCell(current, {});
+                            if (isNaN(current.radius) ||
+                                current.radius <= 1)
+                                continue;
+                            ship.grid.neighbors(current)
+                                .forEach(function(neigh) {
+                                    neigh.radius =
+                                        current.radius - 1;
+                                    queue.push(neigh);
+                                });
                         }
+
+                        ship.setCell(selected, {});
                     }
                 } else if (mode.val() === 'remove' && cell) {
                     if (cell.system)
