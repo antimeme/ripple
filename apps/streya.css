@@ -8,6 +8,7 @@ canvas.streya { display: block; cursor: crosshair; }
 }
 
 .menu legend {
+    background: #333;
     border: 2px solid white;
     border-radius: 10%;
 }
@@ -16,4 +17,14 @@ canvas.streya { display: block; cursor: crosshair; }
     list-style-type: none;
     list-style-position: outside;
     padding: 0; margin: 0;
+}
+.menu li {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently
+                          supported by Chrome and Opera */
+    padding-top: 0.5em;
 }

@@ -25,7 +25,7 @@
 
             result.name = (config && config.name) ?
                           config.name : 'Ship';
-            result.grid = grid.create({type: 'hex'});
+            result.grid = grid.create({type: 'square'});
 
             return result;
         },
@@ -75,6 +75,56 @@
             var result = 0;
             return result;
         },
+
+        dimensions: function() {
+            var result = { width: 0, height: 0, cols: 1, rows: 1 };
+            var extents = { sx: undefined, sy: undefined,
+                            ex: undefined, ex: undefined,
+                            scol: undefined, ecol: undefined,
+                            srow: undefined, erow: undefined };
+            Object.keys(this.__cells).forEach(function(id) {
+                var node = this.grid.coordinate(this.__unindexCell(id));
+
+                if (!isNaN(extents.ex) && !isNaN(extents.sx)) {
+                    if (node.x > extents.ex)
+                        extents.ex = node.x;
+                    else if (node.x < extents.sx)
+                        extents.sx = node.x;
+                } else { extents.ex = extents.sx = node.x }
+
+                if (!isNaN(extents.ey) && !isNaN(extents.sy)) {
+                    if (node.y > extents.ey)
+                        extents.ey = node.y;
+                    else if (node.y < extents.sy)
+                        extents.sy = node.y;
+                } else { extents.ey = extents.sy = node.y }
+
+                if (!isNaN(extents.scol) && !isNaN(extents.ecol)) {
+                    if (node.col > extents.ecol)
+                        extents.ecol = node.col;
+                    else if (node.col < extents.scol)
+                        extents.scol = node.col;
+                } else { extents.ecol = extents.scol = node.col }
+
+                if (!isNaN(extents.erow) && !isNaN(extents.srow)) {
+                    if (node.row > extents.erow)
+                        extents.erow = node.row;
+                    else if (node.row < extents.srow)
+                        extents.srow = node.row;
+                } else { extents.erow = extents.srow = node.row; }
+            }, this);
+
+            if (!isNaN(extents.sx) && !isNaN(extents.ex))
+                result.width = extents.ex - extents.sx;
+            if (!isNaN(extents.sy) && !isNaN(extents.ey))
+                result.height = extents.ey - extents.sy;
+            if (!isNaN(extents.scol) && !isNaN(extents.ecol))
+                result.cols = extents.ecol - extents.scol + 1;
+            if (!isNaN(extents.sy) && !isNaN(extents.ey))
+                result.rows = extents.erow - extents.srow + 1;
+            return result;
+        },
+
         save: function() { // TODO
             var result = {};
             return result;
@@ -386,12 +436,27 @@
 
         menu.append($('<li data-action="mode">').append(mode));
         menu.append($('<li>').append(modeParam));
-        menu.append('<li data-action="export">Export</li>');
+        menu.append('<li data-action="save">Save Ship</li>');
+        menu.append('<li data-action="center">Center View</li>');
         menu.append('<li data-action="full-screen">Full Screen</li>');
         menu.on('click', 'li', function(event) {
+            var dimensions;
+
             switch (this.getAttribute('data-action')) {
-                case 'export': {
+                case 'save': {
                     // How to create a data file to save?
+                } break;
+                case 'center': {
+                    dimensions = ship.dimensions();
+                    ship.grid.offset(
+                        (self.width() + dimensions.cols /
+                            self.width()) / 2,
+                        (self.height() + dimensions.rows /
+                            self.width()) / 2);
+                    ship.grid.size(self.width() /
+                        (dimensions.cols + 2));
+                    lineWidth = ship.grid.size() / lineFactor;
+                    redraw();
                 } break;
                 case 'full-screen': {
                     $.toggleFullscreen(self.parent().get(0));
@@ -399,12 +464,6 @@
                 } break;
             }
         });
-
-        // Show grid menu at event location
-        var menuate = function(tap) {
-            //menu.show();
-            drag = undefined;
-        };
 
         // Calculate square distance
         var sqdist = function(node1, node2) {
