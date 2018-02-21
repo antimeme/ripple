@@ -480,9 +480,9 @@
     };
 
     ripple.transform = function(width, height) {
-        if (!(this instanceof transform))
-            return new transform(width, height);
-        this.resize(width, heigh);
+        if (!(this instanceof ripple.transform))
+            return new ripple.transform(width, height);
+        this.resize(width, height);
         this.reset();
     };
     ripple.transform.prototype.resize = function(width, height) {

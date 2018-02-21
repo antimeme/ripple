@@ -78,7 +78,7 @@
             return result;
         },
 
-        dimensions: function() {
+        dimensions: function() { // TODO kill this with fire
             var result = { width: 0, height: 0, cols: 1, rows: 1 };
             var extents = { sx: undefined, sy: undefined,
                             ex: undefined, ex: undefined,
@@ -128,7 +128,17 @@
         },
 
         save: function() { // TODO
-            var result = {};
+            var result = {
+                name: this.name,
+                grid: {
+                    type: 'hex', // FIXME
+                    size: this.grid.size()},
+                cells: {}, boundaries: {},
+            };
+            Object.keys(this.__cells).forEach(function(id) {
+                result.cells[id] = this.__cells[id]; }, this);
+            Object.keys(this.__boundaries).forEach(function(id) {
+                result.boundaries[id] = this.__boundaries[id]; }, this);
             return result;
         },
         walls: function() {
@@ -259,7 +269,7 @@
                   'touch-action': 'none'})
             .appendTo(parent);
 
-        var state = {data: data};
+        var state = {data: data, transform: ripple.transform()};
         var ship = streya.Ship.create(state);
 
         var colorSelected = 'rgba(192, 192, 0, 0.2)';
@@ -476,6 +486,7 @@
             switch (this.getAttribute('data-action')) {
                 case 'save': {
                     // How to create a data file to save?
+                    console.log(JSON.stringify(ship.save()));
                 } break;
                 case 'center': {
                     dimensions = ship.dimensions();
@@ -582,7 +593,8 @@
                 } else if (mode.val() === 'sys' && cell) {
                     ship.setCell(selected, {
                         system: modeParam.val() ?
-                                modeParam.text() : undefined,
+                                modeParam.find(
+                                    'option:selected').text() : undefined,
                         sigil: modeParam.val() });
                 } else if (mode.val() === 'bound' && cell && oldtap) {
                     ship.setBoundary(
