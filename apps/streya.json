@@ -129,5 +129,17 @@
         "Escape Pod": {"storage": "Escape"},
         "Boarding Shuttle": {"storage": "Landing"},
         "Shuttle": {"storage": "Landing"}
+    },
+
+    "shipDesigns": {
+        "Example": {
+            "schema": { "version": "0.0.1" },
+            "grid": {"type": "hex", "size": 10},
+            "name": "Example",
+            "cells": {
+                "0": {},
+                "1": {"system": "Helm", "sigil": "H"}
+            }
+        }
     }
 }

@@ -479,6 +479,59 @@
         return this;
     };
 
+    ripple.transform = function(width, height) {
+        if (!(this instanceof transform))
+            return new transform(width, height);
+        this.resize(width, heigh);
+        this.reset();
+    };
+    ripple.transform.prototype.resize = function(width, height) {
+        this.width  = width;
+        this.height = height;
+    };
+    ripple.transform.prototype.reset = function() {
+        this.zoom = 1;
+        this.x = 0;
+        this.y = 0;
+        this.radians = 0;
+    };
+    ripple.transform.prototype.pan = function(vector) {
+        this.x += vector.x;
+        this.y += vector.y;
+    };
+    ripple.transform.prototype.rotate = function(radians) {
+        this.radians += radians;
+    };
+    ripple.transform.prototype.zoom = function(factor) {
+        this.zoom *= factor;
+    };
+    ripple.transform.prototype.toScreenFromWorld = function(point) {
+        var place = { x: point.x, y: point.y };
+        place.x = (place.x - this.width / 2) / zoom;
+        place.y = (place.y - this.height / 2) / zoom;
+        // TODO reverse rotation
+        place.x += this.x;
+        place.y += this.y;
+        return place;
+    };
+    ripple.transform.prototype.toWorldFromScreen = function(place) {
+        var point = { x: place.x, y: place.y };
+        point.x -= this.x;
+        point.y -= this.y;
+        // TODO rotation
+        point.x *= zoom;
+        point.y *= zoom;
+        point.x += this.width / 2;
+        point.y += this.height / 2;
+        return point;
+    };
+    ripple.transform.prototype.setupContext = function(ctx) {
+        ctx.translate(this.width / 2, this.height / 2);
+        ctx.scale(zoom);
+        ctx.rotate(this.angle);
+        ctx.translate(-x, -y);
+    };
+
     // Framework for canvas applications
     // Object passed as the app is expected to have the following:
     //
@@ -705,17 +758,4 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
     for (index = 0; index < tests.length; ++index)
         console.log(JSON.stringify(tests[index]) + ' -> ' +
                     ripple.eval.apply(ripple.eval, tests[index]));
-
-    var p, z, zz, methods = [ripple.cantorPair, ripple.szudzikPair];
-    for (index = 0; index < methods.length; ++index) {
-        console.log(methods[index].name, "pairs:");
-        for (z = 0; z < 1000; ++z) {
-            p = methods[index].unpair(z);
-            zz = methods[index].pair(p.x, p.y);
-            if (z != zz)
-                console.log("FAIL: " + z + " != " + zz);
-            else if (!(z && z % 100))
-                console.log(z + " <=> " + p.x + ", " + p.y);
-        }
-    }
 }

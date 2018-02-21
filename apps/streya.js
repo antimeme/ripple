@@ -25,7 +25,9 @@
 
             result.name = (config && config.name) ?
                           config.name : 'Ship';
-            result.grid = grid.create({type: 'square'});
+            result.grid = grid.create(
+                (config && config.grid) ? config.grid :
+                { type: 'hex', size: 10 });
 
             return result;
         },
@@ -134,7 +136,6 @@
 
             Object.keys(this.__cells).forEach(function(id) {
                 var unpair = ripple.unpair(id);
-
                 var neighbors = this.grid.neighbors(
                     this.__unindexCell(id), {points: true});
                 var index;
@@ -436,6 +437,36 @@
 
         menu.append($('<li data-action="mode">').append(mode));
         menu.append($('<li>').append(modeParam));
+
+        var regrid = function() {
+            ship = streya.Ship.create({
+                grid: JSON.parse(gtype.val()),
+                size: parseInt(gsize.val(), 10) });
+            redraw();
+        };
+        var gtype = $('<select>')
+            .on('change', regrid)
+            .css({display: 'inline-block'});
+        [{name: "Hex(point)", type: "hex", orient: "point"},
+         {name: "Hex(edge)", type: "hex", orient: "edge"},
+         {name: "Square", type: "square"},
+         {name: "Triangle", type: "triangle"}].forEach(function(g) {
+             var value = JSON.stringify(g)
+                             .replace(/"/g, '&#34;')
+                             .replace(/'/g, '&#39;');
+             gtype.append('<option value="' + value + '">' +
+                          g.name + '</option>');
+         });
+
+        var gsize = $('<select>')
+            .on('change', regrid)
+            .css({display: 'inline-block'});
+        gsize.append('<option>10</option>');
+        gsize.append('<option>20</option>');
+        gsize.append('<option>30</option>');
+        menu.append($('<li>').append(gtype).append(gsize));
+
+        menu.append('<hr />');
         menu.append('<li data-action="save">Save Ship</li>');
         menu.append('<li data-action="center">Center View</li>');
         menu.append('<li data-action="full-screen">Full Screen</li>');
