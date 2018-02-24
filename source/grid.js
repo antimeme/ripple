@@ -79,7 +79,7 @@
     };
 
     BaseGrid.prototype.size = function(value) {
-        if ((typeof value !== 'undefined') && (value > 0)) {
+        if (!isNaN(value) && (value > 0)) {
             this._size = value;
             this._update();
         }
@@ -88,18 +88,18 @@
 
     BaseGrid.prototype.offset = function(left, top) {
         this._offset_init();
-        if (typeof left !== 'undefined')
+        if (!isNaN(left))
             this._offset.left = left;
-        if (typeof top !== 'undefined')
+        if (!isNaN(top))
             this._offset.top = top;
         return {top: this._offset.top, left: this._offset.left};
     };
 
     BaseGrid.prototype.adjust = function(node, invert) {
         this._offset_init();
-        if (typeof node.x !== 'undefined')
+        if (!isNaN(node.x))
             node.x += (invert ? -1 : 1) * this._offset.left;
-        if (typeof node.y !== 'undefined')
+        if (!isNaN(node.y))
             node.y += (invert ? -1 : 1) * this._offset.top;
         return node;
     };
@@ -153,7 +153,7 @@
                 neigh = this.coordinate(neigh);
             if (options && options.points)
                 neigh.points = this._pairpoints(node, neigh);
-            if (typeof neigh.cost == 'undefined')
+            if (isNaN(neigh.cost))
                 neigh.cost = 1;
             result.push(neigh);
         }, this);
@@ -204,7 +204,7 @@
         } else if (points.length === 1) {
             ctx.moveTo(points[0].x, points[0].y);
             ctx.arc(points[0].x, points[0].y,
-                    this.size.size() / 2, 0, 2 * Math.PI);
+                    this.size() / 2, 0, 2 * Math.PI);
         }
     };
 
