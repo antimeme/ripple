@@ -201,6 +201,10 @@
             for (index in points)
                 ctx.lineTo(points[index].x,
                            points[index].y);
+        } else if (points.length === 1) {
+            ctx.moveTo(points[0].x, points[0].y);
+            ctx.arc(points[0].x, points[0].y,
+                    this.size.size() / 2, 0, 2 * Math.PI);
         }
     };
 

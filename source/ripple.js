@@ -234,6 +234,8 @@
         this.next = config.next || false;
         this.doubleThreshold = isNaN(config.doubleThreshold) ? 500 :
                                config.doubleThreshold;
+        this.doubleDistance = isNaN(config.doubleDistance) ? 400 : (
+            config.doubleThreshold * config.doubleThreshold);
         this.flickThreshold = isNaN(config.flickThreshold) ? 500 :
                               config.flickThreshold;
         this.flickAngle = Math.cos(isNaN(config.flickAngle) ?
@@ -396,12 +398,20 @@
             case gesturStates.READY: break;
             case gesturStates.TAP:
                 this.fireEvent('tap', this.touchOne);
-                if (!isNaN(this.lastTap) &&
-                    (now < this.lastTap + this.doubleThreshold)) {
+                if (lastTap && !isNaN(this.lastTap.when) &&
+                    (now < this.lastTap.when + this.doubleThreshold) &&
+                    (dot({x: this.touchOne.x - this.lastTap.x,
+                          y: this.touchOne.y - this.lastTap.y}) <
+                        this.doubleDistance)) {
                     this.fireEvent('doubleTap', this.touchOne);
-                    this.lastTap = undefined;
-                } else this.lastTap = now;
-                this.state = gesturStates.READY;
+                    this.reset();
+                } else {
+                    this.lastTap = {
+                        when: now,
+                        x: this.touchOne.x,
+                        y: this.touchone.y};
+                    this.state = gesturStates.READY;
+                }
                 break;
             case gesturStates.PRESS:
                 // fire press event (unless dragged?)
@@ -485,12 +495,16 @@
         this.resize(width, height);
         this.reset();
     };
+    ripple.transform.prototype.log = function() {
+        console.log('transform', this.width, this.height,
+                    this.scale, this.x, this.y);
+    };
     ripple.transform.prototype.resize = function(width, height) {
         this.width  = width;
         this.height = height;
     };
     ripple.transform.prototype.reset = function() {
-        this.zoom = 1;
+        this.scale = 1;
         this.x = 0;
         this.y = 0;
         this.radians = 0;
@@ -502,34 +516,37 @@
     ripple.transform.prototype.rotate = function(radians) {
         this.radians += radians;
     };
-    ripple.transform.prototype.zoom = function(factor) {
-        this.zoom *= factor;
+    ripple.transform.prototype.zoom = function(factor, min, max) {
+        var scale = this.scale * factor;
+        if (!isNaN(max) && (scale > max))
+            scale = max;
+        if (!isNaN(min) && (scale < min))
+            scale = min;
+        this.scale = scale;
     };
     ripple.transform.prototype.toScreenFromWorld = function(point) {
         var place = { x: point.x, y: point.y };
-        place.x = (place.x - this.width / 2) / zoom;
-        place.y = (place.y - this.height / 2) / zoom;
-        // TODO reverse rotation
-        place.x += this.x;
-        place.y += this.y;
+        place.x -= this.x;
+        place.y -= this.y;
+        // TODO reverse rotate
+        place.x = place.x * this.scale + this.width / 2;
+        place.y = place.y * this.scale + this.height / 2;
         return place;
     };
     ripple.transform.prototype.toWorldFromScreen = function(place) {
         var point = { x: place.x, y: place.y };
-        point.x -= this.x;
-        point.y -= this.y;
-        // TODO rotation
-        point.x *= zoom;
-        point.y *= zoom;
-        point.x += this.width / 2;
-        point.y += this.height / 2;
+        point.x = (point.x - this.width / 2) / this.scale;
+        point.y = (point.y - this.height / 2) / this.scale;
+        // TODO rotate!
+        point.x += this.x;
+        point.y += this.y;
         return point;
     };
     ripple.transform.prototype.setupContext = function(ctx) {
         ctx.translate(this.width / 2, this.height / 2);
-        ctx.scale(zoom);
+        ctx.scale(this.scale, this.scale);
         ctx.rotate(this.angle);
-        ctx.translate(-x, -y);
+        ctx.translate(-this.x, -this.y);
     };
 
     // Framework for canvas applications
