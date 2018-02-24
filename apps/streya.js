@@ -1,5 +1,13 @@
 // Streya is a game of space trading, ship construction, crew
 // management and combat.
+//
+// TODO ship design
+// - undo
+// - save/load ship file
+// - save/load ship localStorage
+//     https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API
+// - compute weight and thrust
+// - compute cost and apply budget
 (function(streya) {
     'use strict';
 
@@ -13,11 +21,16 @@
 
             // Extract cells from configuration if possible
             result.__cells = {};
-            if (config && config.cells) {
-                for (key in config.cells)
-                    __cells[key] = config.cells[key];
-            } else result.setCell({row: 0, col: 0}, {});
+            if (config && config.cells)
+                Object.keys(config.cells).forEach(function(key) {
+                    result.__cells[key] = config.cells[key];
+                });
+            else result.setCell({row: 0, col: 0}, {});
             result.__boundaries = {};
+            if (config && config.boundaries)
+                Object.keys(config.boundaries).forEach(function(key) {
+                    result.__boundaries[key] = config.boundaries[key];
+                });
 
             result.name = (config && config.name) ?
                           config.name : 'Ship';
@@ -35,11 +48,14 @@
         setCell: function(node, value) {
             var id = this.__indexCell(node);
 
-            if (value)
+            if (value) {
+                if (!(id in this.__cells))
+                    this.__extents = undefined;
                 this.__cells[id] = value;
-            else if (this.__safeDelete(id)) {
+            } else if (this.__safeDelete(id)) {
                 this.grid.neighbors(node).forEach(function(neigh) {
                     this.setBoundary(node, neigh); }, this);
+                this.__extents = undefined;
                 delete this.__cells[id];
             }
             return this;
@@ -115,6 +131,7 @@
                             width: 1 });
                 }
             }, this);
+
             Object.keys(this.__boundaries).forEach(function(id) {
                 var boundary = this.__unindexBoundary(id);
                 var value = this.__boundaries[id];
@@ -153,22 +170,28 @@
         },
 
         extents: function() {
-            var result = { sx: undefined, sy: undefined,
-                           ex: undefined, ey: undefined };
-            this.mapCells(function(node) {
-                this.grid.points(this.grid.coordinate(node)).forEach(
-                    function(point) {
-                        if (isNaN(result.sx) || point.x < result.sx)
-                            result.sx = point.x;
-                        if (isNaN(result.ex) || point.x > result.ex)
-                            result.ex = point.x;
-                        if (isNaN(result.sy) || point.y < result.sy)
-                            result.sy = point.y;
-                        if (isNaN(result.ey) || point.y > result.ey)
-                            result.ey = point.y;
+            if (!this.__extents) {
+                this.__extents = { sx: undefined, sy: undefined,
+                                   ex: undefined, ey: undefined };
+                this.mapCells(function(node) {
+                    node = this.grid.coordinate(node);
+                    this.grid.points(node).forEach(function(point) {
+                        if (isNaN(this.__extents.sx) ||
+                            point.x < this.__extents.sx)
+                            this.__extents.sx = point.x;
+                        if (isNaN(this.__extents.ex) ||
+                            point.x > this.__extents.ex)
+                            this.__extents.ex = point.x;
+                        if (isNaN(this.__extents.sy) ||
+                            point.y < this.__extents.sy)
+                            this.__extents.sy = point.y;
+                        if (isNaN(this.__extents.ey) ||
+                            point.y > this.__extents.ey)
+                            this.__extents.ey = point.y;
                     }, this);
-            }, this);
-            return result;
+                }, this);
+            }
+            return this.__extents;
         },
 
         __indexCell: function(node) {
@@ -350,6 +373,7 @@
                 state.redraw();
             },
 
+            // Move the center of the screen within limts
             pan: function(vector) {
                 var extents = ship.extents();
                 if (this.tform.x + vector.x < extents.sx)
@@ -363,6 +387,7 @@
                 this.tform.pan(vector);
             },
 
+            // Change the magnification within limits
             zoom: function(factor) {
                 var extents = ship.extents();
                 var max = Math.min(
@@ -374,6 +399,7 @@
                 this.redraw();
             },
 
+            // Center the ship to get a good overall view
             center: function() {
                 var extents = ship.extents();
                 var max = Math.min(
@@ -489,6 +515,23 @@
         menu.append($('<li>').append(gtype).append(gsize));
 
         menu.append('<hr />');
+
+        if (data.shipDesigns) {
+            var designs = $('<select>');
+            designs.append('<option>-</options>');
+            Object.keys(data.shipDesigns).forEach(function(key) {
+                designs.append('<option>' + key + '</option>');
+            });
+            designs.on('change', function(event) {
+                if (designs.val() !== '-') {
+                    console.log(data.shipDesigns[designs.val()]);
+                    ship = streya.Ship.create(
+                        data.shipDesigns[designs.val()]);
+                    state.redraw();
+                }
+            });
+            menu.append($('<li>').append(designs));
+        }
         menu.append('<li data-action="save">Save Ship</li>');
         menu.append('<li data-action="center">Center View</li>');
         menu.append('<li data-action="full-screen">Full Screen</li>');
@@ -513,7 +556,7 @@
         // Calculate square distance
         var sqdist = function(node1, node2) {
             return ((node2.x - node1.x) * (node2.x - node1.x) +
-                      (node2.y - node1.y) * (node2.y - node1.y));
+                       (node2.y - node1.y) * (node2.y - node1.y));
         };
 
         // Process mouse and touch events on grid itself
