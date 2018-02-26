@@ -398,7 +398,7 @@
             case gesturStates.READY: break;
             case gesturStates.TAP:
                 this.fireEvent('tap', this.touchOne);
-                if (lastTap && !isNaN(this.lastTap.when) &&
+                if (this.lastTap && !isNaN(this.lastTap.when) &&
                     (now < this.lastTap.when + this.doubleThreshold) &&
                     (dot({x: this.touchOne.x - this.lastTap.x,
                           y: this.touchOne.y - this.lastTap.y}) <
@@ -408,8 +408,7 @@
                 } else {
                     this.lastTap = {
                         when: now,
-                        x: this.touchOne.x,
-                        y: this.touchone.y};
+                        x: this.touchOne.x, y: this.touchOne.y };
                     this.state = gesturStates.READY;
                 }
                 break;
