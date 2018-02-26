@@ -792,9 +792,9 @@
                     ctx.fillStyle = colorNeighbor;
                     ctx.fill();
 
-                    var colors = ['red', 'green', 'blue',
-                                  'cyan', 'magenta', 'yellow',
-                                  'black', 'white'];
+                    var colors = [
+                        'red', 'green', 'blue', 'cyan', 'magenta',
+                        'yellow', 'black', 'white'];
                     neighbors.forEach(function(neighbor, index) {
                         var points = neighbor.points;
 
@@ -820,7 +820,7 @@
 
                         ctx.strokeStyle = colors[index % colors.length];
                         ctx.stroke();
-                    }
+                    });
                 }
                 if (tap) {
                     for (index = 0; index < tap.current.length;
@@ -1099,6 +1099,6 @@
         });
     };
 
-})(typeof exports === 'undefined' ?
-   (this.grid = {}) : ((typeof module !== undefined) ?
-                     (module.exports = exports) : exports));
+}).call(this, typeof exports === 'undefined' ?
+        (this.grid = {}) : ((typeof module !== undefined) ?
+                            (module.exports = exports) : exports));

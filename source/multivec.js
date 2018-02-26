@@ -977,7 +977,7 @@
     if (typeof exports === 'undefined') {
         window['multivec'] = multivec;
     } else { exports = multivec; }
-})();
+}).call(this);
 
 // Aumotated testing framework
 if ((typeof require !== 'undefined') && (require.main === module)) {
