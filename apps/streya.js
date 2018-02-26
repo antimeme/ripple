@@ -10,6 +10,10 @@
 // - compute cost and apply budget
 (function(streya) {
     'use strict';
+    if (typeof require !== 'undefined') {
+        this.multivec = require('./ripple/multivec.js');
+        this.skycam = require('./ripple/skycam.js');
+    }
 
     // === Ship representation
     // A ship consists of one or more connected cells, each of which
@@ -268,14 +272,14 @@
                 'z-order': 1,
                 'touch-action': 'none'})
             .appendTo(parent);
+        var tform = ripple.transform();
 
-        var colorSelected = 'rgba(192, 192, 0, 0.2)';
+            var colorSelected = 'rgba(192, 192, 0, 0.2)';
         var tap, selected, drag, zooming, gesture;
+        var ship = streya.Ship.create();
+        var player = skycam.makePlayer();
 
-        var ship = streya.Ship.create(data);
         var state = {
-            tform: ripple.transform(),
-            data: data,
 
             draw_id: 0,
             draw: function() {
@@ -288,7 +292,7 @@
                     ctx.save();
                     ctx.fillStyle = 'rgb(32, 32, 32)';
                     ctx.fillRect(0, 0, this.width, this.height);
-                    this.tform.setupContext(ctx);
+                    tform.setupContext(ctx);
 
                     // Draw the ship cells
                     ctx.beginPath();
@@ -368,22 +372,22 @@
 
                 state.width = canvas.width();
                 state.height = canvas.height();
-                state.tform.resize(state.width, state.height);
+                tform.resize(state.width, state.height);
                 state.redraw();
             },
 
             // Move the center of the screen within limts
             pan: function(vector) {
                 var extents = ship.extents();
-                if (this.tform.x + vector.x < extents.sx)
-                    vector.x = extents.sx - this.tform.x;
-                if (this.tform.x + vector.x > extents.ex)
-                    vector.x = extents.ex - this.tform.x;
-                if (this.tform.y + vector.y < extents.sy)
-                    vector.y = extents.sy - this.tform.y;
-                if (this.tform.y + vector.y > extents.ey)
-                    vector.y = extents.ey - this.tform.y;
-                this.tform.pan(vector);
+                if (tform.x + vector.x < extents.sx)
+                    vector.x = extents.sx - tform.x;
+                if (tform.x + vector.x > extents.ex)
+                    vector.x = extents.ex - tform.x;
+                if (tform.y + vector.y < extents.sy)
+                    vector.y = extents.sy - tform.y;
+                if (tform.y + vector.y > extents.ey)
+                    vector.y = extents.ey - tform.y;
+                tform.pan(vector);
             },
 
             // Change the magnification within limits
@@ -394,17 +398,17 @@
                 var min = Math.min(
                     this.width / (extents.ex - extents.sx),
                     this.height / (extents.ey - extents.sy));
-                this.tform.zoom(factor, min / 2, max);
+                tform.zoom(factor, min / 2, max);
                 this.redraw();
             },
 
             // Center the ship to get a good overall view
             center: function() {
                 var extents = ship.extents();
-                this.tform.reset();
-                this.tform.pan({ x: (extents.sx + extents.ex) / 2,
-                                 y: (extents.sy + extents.ey) / 2 });
-                this.tform.zoom(Math.min(
+                tform.reset();
+                tform.pan({ x: (extents.sx + extents.ex) / 2,
+                            y: (extents.sy + extents.ey) / 2 });
+                tform.zoom(Math.min(
                     this.width / (extents.ex - extents.sx),
                     this.height / (extents.ey - extents.sy)) / 2);
                 this.redraw();
@@ -528,9 +532,10 @@
             });
             menu.append($('<li>').append(designs));
         }
-        menu.append('<li data-action="save">Save Ship</li>');
         menu.append('<li data-action="center">Center View</li>');
         menu.append('<li data-action="full-screen">Full Screen</li>');
+        menu.append('<li data-action="save">Save Ship</li>');
+        menu.append('<li data-action="tour">Tour Ship</li>');
         menu.on('click', 'li', function(event) {
             var dimensions;
 
@@ -539,9 +544,7 @@
                     // How to create a data file to save?
                     console.log(JSON.stringify(ship.save()));
                 } break;
-                case 'center': {
-                    state.center();
-                } break;
+                case 'center': { state.center(); } break;
                 case 'full-screen': {
                     $.toggleFullscreen(canvas.parent().get(0));
                     state.resize();
@@ -577,7 +580,7 @@
                 oldtap = tap;
                 tap = drag = touches;
                 selected = ship.grid.position(
-                    state.tform.toWorldFromScreen(tap));
+                    tform.toWorldFromScreen(tap));
 
                 cell = ship.getCell(selected);
                 if (mode.val() === 'extend' && !cell) {
@@ -620,7 +623,7 @@
                 } else if (mode.val() === 'bound' && cell && oldtap) {
                     ship.setBoundary(
                         selected, ship.grid.position(
-                            state.tform.toWorldFromScreen(oldtap)),
+                            tform.toWorldFromScreen(oldtap)),
                         modeParam.val());
                 }
             }
@@ -632,8 +635,8 @@
             var touches = ripple.createTouches(event);
 
             if (drag) {
-                var wtap = state.tform.toWorldFromScreen(touches);
-                var wdrag = state.tform.toWorldFromScreen(drag);
+                var wtap = tform.toWorldFromScreen(touches);
+                var wdrag = tform.toWorldFromScreen(drag);
                 state.pan({ x: wdrag.x - wtap.x, y: wdrag.y - wtap.y});
                 state.redraw();
                 tap = touches;
@@ -657,4 +660,8 @@
             return false;
         });
     };
-})(typeof exports === 'undefined'? this['streya'] = {}: exports);
+
+}).call(this, typeof exports === 'undefined'?
+        (this.streya = {}):
+        ((typeof module !== undefined) ?
+         (module.exports = exports) : exports));

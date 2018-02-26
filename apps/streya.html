@@ -4,25 +4,22 @@
 <meta name="viewport" content="width=device-width, user-scalable=no" />
 <meta name="viewport" content="initial-scale=1, maximum-scale=1" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
-<meta http-equiv="X-UA-Compatible" content="chrome=1">
 <link href="streya.css" rel="stylesheet" title="Default" />
 
 <script src="lib/jquery.min.js"></script>
 <script src="lib/jquery.mousewheel.js"></script>
-<!--[if lt IE 9]><script>//<![CDATA[
-    jQuery(function($) {
-       $.getScript('http://ajax.googleapis.com/ajax/libs/' +
-                   'chrome-frame/1/CFInstall.min.js',
-                   function() { CFInstall.check(); }); });
-//]]></script><![endif]-->
 <script src="ripple/context.js"></script>
-<script src="ripple/ripple.js"></script>
+<script src="ripple/multivec.js"></script>
 <script src="ripple/grid.js"></script>
+<script src="ripple/ripple.js"></script>
 <script src="ripple/pathf.js"></script>
+<script src="ripple/skycam.js"></script>
 <script src="streya.js"></script>
 <script>//<![CDATA[
  jQuery(function($) {
-     ripple.preload($, ['streya.json'], function($, results) {
+     ripple.preload($, [
+         'streya.json'
+     ], function($, results) {
          streya.game($, $('body'), $(window),
                      results['streya.json']); });
  });
