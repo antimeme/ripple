@@ -102,7 +102,7 @@
             var result = {
                 name: this.name,
                 grid: {
-                    type: 'hex', // FIXME
+                    type: 'hex', // TODO set this correctly
                     size: this.grid.size()},
                 cells: {}, boundaries: {},
             };
@@ -290,27 +290,26 @@
                     ctx.fillRect(0, 0, this.width, this.height);
                     this.tform.setupContext(ctx);
 
-                    // Draw the ship
+                    // Draw the ship cells
+                    ctx.beginPath();
                     ship.mapCells(function(node, cell) {
-                        var index, points, last;
-                        if (cell) {
-                            ctx.beginPath();
-                            node = ship.grid.coordinate(node);
-                            ship.grid.draw(ctx, node);
-                            ctx.fillStyle = 'rgb(160, 160, 160)';
-                            ctx.fill();
+                        ship.grid.draw(ctx, ship.grid.coordinate(node));
+                    }, this);
+                    ctx.fillStyle = 'rgb(160, 160, 160)';
+                    ctx.fill();
 
-                            if (cell.sigil) {
-                                ctx.textAlign = 'center';
-                                ctx.textBaseline = 'middle';
-                                ctx.font = 'bold ' + Math.round(
-                                    ship.grid.size() / 2) + 'px sans';
-                                ctx.fillStyle = 'rgb(48, 48, 48)';
-                                ctx.fillText(
-                                    cell.sigil, node.x, node.y);
-                            }
-                        }
-                    });
+                    // Draw ship systems
+                    ctx.beginPath();
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.font = 'bold ' + Math.round(
+                        ship.grid.size() / 2) + 'px sans';
+                    ctx.fillStyle = 'rgb(48, 48, 48)';
+                    ship.mapCells(function(node, cell) {
+                        node = ship.grid.coordinate(node);
+                        if (cell && cell.sigil)
+                            ctx.fillText(cell.sigil, node.x, node.y);
+                    }, this);
 
                     if (selected) {
                         // Coordinates of the selected square must be
@@ -402,15 +401,12 @@
             // Center the ship to get a good overall view
             center: function() {
                 var extents = ship.extents();
-                var max = Math.min(
-                    this.width, this.height) / ship.grid.size();
-                var min = Math.min(
-                    this.width / (extents.ex - extents.sx),
-                    this.height / (extents.ey - extents.sy));
                 this.tform.reset();
                 this.tform.pan({ x: (extents.sx + extents.ex) / 2,
                                  y: (extents.sy + extents.ey) / 2 });
-                this.tform.zoom(min / 2);
+                this.tform.zoom(Math.min(
+                    this.width / (extents.ex - extents.sx),
+                    this.height / (extents.ey - extents.sy)) / 2);
                 this.redraw();
             },
         };
