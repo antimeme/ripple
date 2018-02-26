@@ -1,5 +1,5 @@
 // grid.js
-// Copyright (C) 2013-2015 by Jeff Gold.
+// Copyright (C) 2013-2018 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -399,7 +399,7 @@
         // Diagonal neighbors need special treatment because the base
         // implemenation assumes two points
         return (((nodeA.row - nodeB.row) * (nodeA.row - nodeB.row) +
-                 (nodeA.col - nodeB.col) * (nodeA.col - nodeB.col) > 1) ?
+                  (nodeA.col - nodeB.col) * (nodeA.col - nodeB.col) > 1) ?
                 [{x: nodeA.x + (nodeB.x - nodeA.x) / 2,
                   y: nodeA.y + (nodeB.y - nodeA.y) / 2}] :
                 BaseGrid.prototype._pairpoints.call(this, nodeA, nodeB));
@@ -434,7 +434,7 @@
         // within node.  The return value will have the given row and
         // column as well.
         var offset = ((node.row + node.col) % 2) ?
-                   -this.centerh : 0;
+                    -this.centerh : 0;
         return {x: node.col * this._size / 2,
                 y: (node.row * this.rowh) + offset,
                 row: node.row, col: node.col};
@@ -452,7 +452,7 @@
         var yfrac = (node.y + this.radius) / this.rowh;
         if ((row + col) % 2) {
             if ((yfrac - Math.ceil(yfrac)) +
-                (xfrac - Math.floor(xfrac)) > 0)
+                 (xfrac - Math.floor(xfrac)) > 0)
                 col += 1;
         } else if ((yfrac - Math.floor(yfrac)) -
                    (xfrac - Math.floor(xfrac)) < 0)
@@ -466,7 +466,7 @@
         return [{row: node.row, col: node.col + 1},
                 {row: node.row, col: node.col - 1},
                 {row: node.row +
-                 (((node.row + node.col) % 2) ? -1 : 1 ), col: node.col}];
+                  (((node.row + node.col) % 2) ? -1 : 1 ), col: node.col}];
     };
 
     TriangleGrid.prototype.points = function(node) {
@@ -544,10 +544,10 @@
         if ((nodeA.row !== nodeB.row) ||
             (nodeA.col + (nodeA.col % 2 ? -1 : 1) !== nodeB.col)) {
             var sign = (this.regular || ((nodeA.row < 0) ===
-                                         (nodeA.col < 0)));
+                (nodeA.col < 0)));
             var points = this.points(nodeA);
             return [points[0], ((nodeA.row !== nodeB.row) ===
-                                (nodeA.col % 2 ? !sign : sign)) ?
+                (nodeA.col % 2 ? !sign : sign)) ?
                     points[1] : points[2]];
         }
         return BaseGrid.prototype._pairpoints.call(this, nodeA, nodeB);
@@ -560,8 +560,8 @@
         var fifth = this._size / 5;
         var x_sign = (node.col % 2) ? 1 : -1;
         var y_sign = x_sign *
-            ((!this.regular && ((node.row < 0) ^ (node.col < 0))) ?
-             -1 : 1);
+        ((!this.regular && ((node.row < 0) ^ (node.col < 0))) ?
+        -1 : 1);
         var corner = Math.abs(node.col % 2) * this._size;
         var x = node.x - (halfsize + x_sign * fifth);
         var y = node.y - (halfsize + y_sign * fifth);
@@ -586,7 +586,7 @@
         this.size(options && options.size ? options.size : 60);
 
         var orient = (options && options.orient) ?
-            options.orient : "point";
+                     options.orient : "point";
         if (orient == "point") {
             this.alpha = "x";
             this.beta  = "y";
@@ -614,7 +614,7 @@
         var result = {row: node.row, col: node.col};
         result[this.alpha] = (node[this.col] * this.hexw +
                               this.hexw / 2 *
-                              Math.abs(node[this.row] % 2));
+            Math.abs(node[this.row] % 2));
         result[this.beta] = node[this.row] * this._size * 3 / 2;
         return result;
     };
@@ -659,9 +659,9 @@
             {row: node.row, col: node.col - 1}];
         if (this.alpha == 'x') {
             result.push({row: node.row - 1, col: node.col +
-                         ((node.row % 2) ? 1 : -1)});
+                          ((node.row % 2) ? 1 : -1)});
             result.push({row: node.row + 1, col: node.col +
-                         ((node.row % 2) ? 1 : -1)});
+                          ((node.row % 2) ? 1 : -1)});
         } else {
             result.push({row: node.row + (node.col % 2 ? 1 : -1),
                          col: node.col - 1});
@@ -746,7 +746,7 @@
                 width = self.width();
                 height = self.height();
                 color = (self.css('color') == 'transparent' ?
-                             'white' : self.css('color'));
+                         'white' : self.css('color'));
                 ctx.save();
                 ctx.clearRect(0, 0, width, height);
 
@@ -756,8 +756,7 @@
                 ctx.textAlign = 'center';
                 ctx.font = 'bold ' + 12 + 'pt sans-serif';
                 instance.map(width, height, function(node) {
-                    instance.draw(ctx, node);
-                });
+                    instance.draw(ctx, node); });
                 ctx.fillStyle = self.css('background-color');
                 ctx.fill();
                 ctx.strokeStyle = color;
@@ -780,52 +779,26 @@
                     // Coordinates of the selected square must be
                     // updated in case the grid offsets have moved
                     // since the last draw call.
-                    selected = instance.coordinate(selected);
-                    points = instance.points(selected);
-
                     ctx.beginPath();
-                    if (points.length) {
-                        last = points[points.length - 1];
-                        ctx.moveTo(last.x, last.y);
-                        for (index in points)
-                            ctx.lineTo(points[index].x,
-                                       points[index].y);
-                    } else {
-                        ctx.moveTo(selected.x, selected.y);
-                        ctx.arc(selected.x, selected.y,
-                                instance.size() / 2, 0, 2 * Math.PI);
-                    }
+                    instance.draw(ctx, instance.coordinate(selected));
                     ctx.fillStyle = colorSelected;
                     ctx.fill();
 
                     neighbors = instance.neighbors(
                         selected, {coordinates: true, points: true});
                     ctx.beginPath();
-                    for (index in neighbors) {
-                        points = instance.points(neighbors[index]);
-                        if (points.length) {
-                            last = points[points.length - 1];
-                            ctx.moveTo(last.x, last.y);
-                            for (index in points)
-                                ctx.lineTo(points[index].x,
-                                           points[index].y);
-                        } else {
-                            ctx.moveTo(neighbors[index].x,
-                                       neighbors[index].y);
-                            ctx.arc(
-                                neighbors[index].x, neighbors[index].y,
-                                instance.size() / 2, 0, 2 * Math.PI);
-                        }
-                    }
+                    neighbors.forEach(function(neighbor) {
+                        instance.draw(ctx, neighbor); });
                     ctx.fillStyle = colorNeighbor;
                     ctx.fill();
 
                     var colors = ['red', 'green', 'blue',
                                   'cyan', 'magenta', 'yellow',
                                   'black', 'white'];
-                    for (index in neighbors) {
+                    neighbors.forEach(function(neighbor, index) {
+                        var points = neighbor.points;
+
                         ctx.beginPath();
-                        points = neighbors[index].points;
                         if (points.length > 1) {
                             vector = {x: points[1].x - points[0].x,
                                       y: points[1].y - points[0].y};
@@ -840,9 +813,9 @@
                             ctx.arc(points[0].x, points[0].y,
                                     radius, 0, 2 * Math.PI);
                         }
-                        ctx.moveTo(neighbors[index].x + lineWidth * 2,
-                                   neighbors[index].y);
-                        ctx.arc(neighbors[index].x, neighbors[index].y,
+                        ctx.moveTo(neighbor.x + lineWidth * 2,
+                                   neighbor.y);
+                        ctx.arc(neighbor.x, neighbor.y,
                                 lineWidth * 2, 0, 2 * Math.PI);
 
                         ctx.strokeStyle = colors[index % colors.length];
@@ -902,30 +875,30 @@
             this.start = function() {
                 var now = new Date().getTime();
                 if (!current)
-                   current = now;
+                    current = now;
                 do {
                     if (!stop) {
-                       var offset = instance.offset();
-                       var angle = 2 * Math.PI * Math.random();
-                       var magnitude = 100 + choose(50);
+                        var offset = instance.offset();
+                        var angle = 2 * Math.PI * Math.random();
+                        var magnitude = 100 + choose(50);
 
-                       if (now - current > limit)
-                           current = now - limit;
-                       start = {left: offset.left, top: offset.top,
-                                time: current};
-                       stop = {left: offset.left + magnitude *
-                                     Math.cos(angle),
-                               top:  offset.top  + magnitude *
-                                     Math.sin(angle),
-                               time: current + choose(5000) + 2500};
+                        if (now - current > limit)
+                            current = now - limit;
+                        start = {left: offset.left, top: offset.top,
+                                 time: current};
+                        stop = {left: offset.left + magnitude *
+                            Math.cos(angle),
+                                top:  offset.top  + magnitude *
+                            Math.sin(angle),
+                                time: current + choose(5000) + 2500};
                     }
                     var portion = Math.min(1.0, (now - start.time) /
-                                           (stop.time - start.time));
+                        (stop.time - start.time));
                     instance.offset(
                         Math.floor(start.left + portion *
-                                   (stop.left - start.left)),
+                            (stop.left - start.left)),
                         Math.floor(start.top + portion *
-                                   (stop.top - start.top)));
+                            (stop.top - start.top)));
                     if (stop.time < now) {
                         current = stop.time;
                         stop = undefined;
@@ -956,8 +929,8 @@
             var options = JSON.stringify(entry);
             menu.append('<li data-grid-type="' + entry.name +
                         '" data-grid-options="' +
-                        (options.replace(/"/g, '&#34;')
-                                .replace(/'/g, '&#39;')) +
+                         (options.replace(/"/g, '&#34;')
+                                 .replace(/'/g, '&#39;')) +
                         '">' + entry.name + '</li>');
         });
         menu.append('<hr />');
@@ -976,7 +949,7 @@
                 var options = JSON.parse(
                     this.getAttribute('data-grid-options'));
                 if (!options)
-                   options = {type: gtype};
+                    options = {type: gtype};
                 options.width  = self.width();
                 options.height = self.height();
                 instance = grid.create(options);
@@ -985,28 +958,28 @@
             }
 
             switch (this.getAttribute('data-action')) {
-            case 'full-screen': {
-                $.toggleFullscreen(self.parent().get(0));
-                resize();
-            } break;
-            case 'animation': {
-                animation.toggle();
-            } break;
-            case 'numbers': {
-                if (combined) {
-                    numbers = combined = false;
-                } else if (numbers)
-                    combined = true;
-                else numbers = true;
-                redraw();
-            } break;
-            case 'colors': {
-                var foreground = self.css('color');
-                var background = self.css('background-color');
-                self.css({color: background,
-                          "background-color": foreground});
-                redraw();
-            } break;
+                case 'full-screen': {
+                    $.toggleFullscreen(self.parent().get(0));
+                    resize();
+                } break;
+                case 'animation': {
+                    animation.toggle();
+                } break;
+                case 'numbers': {
+                    if (combined) {
+                        numbers = combined = false;
+                    } else if (numbers)
+                        combined = true;
+                    else numbers = true;
+                    redraw();
+                } break;
+                case 'colors': {
+                    var foreground = self.css('color');
+                    var background = self.css('background-color');
+                    self.css({color: background,
+                              "background-color": foreground});
+                    redraw();
+                } break;
             }
         });
 
@@ -1125,4 +1098,7 @@
             return false;
         });
     };
-})(typeof exports === 'undefined'? this['grid'] = {} : exports);
+
+})(typeof exports === 'undefined' ?
+   (this.grid = {}) : ((typeof module !== undefined) ?
+                     (module.exports = exports) : exports));
