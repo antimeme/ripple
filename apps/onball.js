@@ -178,7 +178,7 @@
         });
 
         self.on('mousemove touchmove', function(event) {
-            var tap = $.targets(event);
+            var tap = ripple.createTouches(event);
             var deltaMove = {
                 x: tap.x - previousMousePosition.x,
                 y: tap.y - previousMousePosition.y
