@@ -301,6 +301,18 @@
         ctx.fill();
 
         ctx.beginPath();
+        ctx.moveTo(0, head.y);
+        ctx.lineTo(0, waste.y);
+        ctx.moveTo(neck.x / 2, neck.y);
+        ctx.lineTo(-neck.x / 2, neck.y);
+        ctx.moveTo(foot.x, (shoulder.y + armpit.y) / 2);
+        ctx.lineTo(foot.x - foot.radius, (shoulder.y + armpit.y) / 2);
+        ctx.lineWidth = 0.01;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = 'black';
+        ctx.stroke();
+
+        ctx.beginPath();
         ctx.arc(head.x, head.y, head.radius, 0, 2 * Math.PI);
         ctx.moveTo(hand.x, hand.y);
         ctx.arc(hand.x, hand.y, hand.radius, 0, 2 * Math.PI);
@@ -673,6 +685,7 @@
                 var width = canvas.innerWidth();
                 var height = canvas.innerHeight();
                 var size = Math.min(width, height);
+                var margin = 0.05;
                 var ctx;
 
                 canvas.attr('width', Math.floor(canvas.innerWidth()));
@@ -681,17 +694,20 @@
                 ctx = canvas.get(0).getContext('2d');
                 ctx.clearRect(0, 0, width, height);
                 ctx.save();
-                ctx.translate(width / 2, height - (height - size) / 2);
-                ctx.scale(size, -size);
+                ctx.translate(
+                    width / 2, height - (height - (1 - margin) * size) / 2);
+                ctx.scale((1 - margin) * size, -(1 - margin) * size);
                 self.player.drawPortrait(ctx, Date.now());
                 ctx.restore();
 
             }
             if (!self.other)
                 self.__drawPortraitID = requestAnimationFrame(draw);
+            else self.__drawPortraitID = 0;
         };
 
-        draw();
+        if (!self.__drawPortraitID)
+            draw();
         return this;
     };
 
