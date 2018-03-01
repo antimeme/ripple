@@ -237,21 +237,6 @@
         ctx.restore();
     };
 
-    var drawLimb = function(ctx, start, end) {
-        var limb = multivec(end).minus(start);
-        var compliment = limb.divide({'o1o2': 1}).normalize();
-        var s1 = multivec(start).plus(compliment.times(start.r));
-        var s2 = multivec(start).minus(compliment.times(start.r));
-        var e1 = multivec(end).plus(compliment.times(end.r));
-        var e2 = multivec(end).minus(compliment.times(end.r));
-
-        ctx.moveTo(s1.x, s1.y);
-        ctx.lineTo(s2.x, s2.y);
-        ctx.lineTo(e1.x, e1.y);
-        ctx.lineTo(e2.x, e2.y);
-        ctx.lineTo(s1.x, s1.y);
-    };
-
     fascia.drawCharacterPortrait = function(ctx, character, now) {
         var head = {x: 0, y: 9/10, radius: 1/10};
         var hand = {x: 1/3, y: 1/2, radius: 1/25};
@@ -375,11 +360,12 @@
             direction: config.direction || 0,
             size: config.size || 1,
             speed: config.speed || 0.005,
+            turnSpeed: config.turnsSpeed || 0.005,
             destination: null,
 
-            headColor: config.headColor || 'darkgray',
-            bodyColor: config.bodyColor || 'black',
-            eyeColor: config.eyeColor || 'white',
+            headColor: config.headColor || '#666',
+            bodyColor: config.bodyColor || '#333',
+            eyeColor: config.eyeColor || '#eee',
             blinkFreq: config.blinkFreq || 4000,
             blinkLength: config.blinkLength || 250,
             blinkPhase: config.blinkPhase || (Math.random() * 1000),
@@ -443,44 +429,42 @@
 
         result.plan = function(now) {
             var result = undefined;
+            var needrads, signrads, tgtvec;
+            var rads = this.turnSpeed * (now - this.last);
             var steps = this.speed * (now - this.last);
-            var rads = 0.005 * (now - this.last);
-            var dirvec, signrads, needrads, swipe;
+            var dirvec = multivec({theta: this.direction});
 
-            if (this.control.target)
-                console.log('DEBUG-a', steps);
-            dirvec = multivec({theta: this.direction});
             if (this.control.turn) {
                 // Work out how much turning is necessary to face
                 // the designated target
                 signrads = (dirvec.times({o2o1: 1}).dot(
                     this.control.turn).scalar < 0) ? 1 : -1;
                 needrads = Math.acos(ripple.clamp(dirvec.dot(
-                    this.control.turn).scalar, 1, -1));
+                    this.control.turn).scalar, -1, 1));
 
                 // Do as much turning as we can in the time available
                 // and use extra time to take steps
-                if (needrads < 0.05) {
+                if (needrads < 0.01) {
                     // Close enough for now
                 } else if (needrads > rads) {
                     this.direction += signrads * rads;
                     steps = 0;
-                    if (this.control.target)
-                        console.log('DEBUG-b', steps, needrads, rads);
                 } else {
                     this.direction += signrads * needrads;
                     dirvec = multivec({theta: this.direction});
                     steps *= (rads - needrads) / rads;
-                    if (this.control.target)
-                        console.log('DEBUG-c', steps);
+                    this.control.turn = null;
                 }
             }
 
             if (this.control.target) {
-                if (this.control.target.minus(this.position)
-                        .normSquared() < 0.01)
+                tgtvec = this.control.target.minus(this.position);
+
+                if (tgtvec.normSquared() < (steps * steps)) {
+                    result = this.control.target;
                     this.control.clear();
-                else result = this.position.plus(dirvec.times(steps));
+                } else if (steps > 0)
+                    result = this.position.plus(dirvec.times(steps));
             } else if (this.control.arrow) {
                 result = this.position.plus(
                     this.control.arrow.times(steps));

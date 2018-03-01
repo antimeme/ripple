@@ -53,6 +53,7 @@
             "bodyColor": "orange",
             "eyeColor": "blue",
             "speed": 0.009,
+            "turnSpeed": 0.005,
             "inventory": [{"type": "knife"}, {"type": "flashlight"}]
         },
         "guard": {

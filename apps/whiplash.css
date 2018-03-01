@@ -21,11 +21,11 @@ h1, h2, h3 {
     position: fixed;
     display: block; z-index: 2;
     margin: 1%; border-radius: 10 }
+.bbar div { display: inline-block; height: 100% }
 .bbar button:first-child {
     border-top-left-radius: 15px;
     border-bottom-left-radius: 15px;
 }
-.bbar div { display: inline-block; height: 100% }
 .bbar button:last-child {
     border-top-right-radius: 15px;
     border-bottom-right-radius: 15px;

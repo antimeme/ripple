@@ -106,10 +106,12 @@
 
     // Return a value claimped to a minimum and maximum
     ripple.clamp = function(value, min, max) {
-        if (value > max)
-            value = max;
-        else if (value < min)
-            value = min;
+        if (min < max) {
+            if (value > max)
+                value = max;
+            else if (value < min)
+                value = min;
+        }
         return value;
     };
 
