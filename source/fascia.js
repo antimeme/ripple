@@ -237,18 +237,34 @@
         ctx.restore();
     };
 
+    var drawLimb = function(ctx, start, end) {
+        var limb = multivec(end).minus(start);
+        var compliment = limb.divide({'o1o2': 1}).normalize();
+        var s1 = multivec(start).plus(compliment.times(start.r));
+        var s2 = multivec(start).minus(compliment.times(start.r));
+        var e1 = multivec(end).plus(compliment.times(end.r));
+        var e2 = multivec(end).minus(compliment.times(end.r));
+
+        ctx.moveTo(s1.x, s1.y);
+        ctx.lineTo(s2.x, s2.y);
+        ctx.lineTo(e1.x, e1.y);
+        ctx.lineTo(e2.x, e2.y);
+        ctx.lineTo(s1.x, s1.y);
+    };
+
     fascia.drawCharacterPortrait = function(ctx, character, now) {
         var head = {x: 0, y: 9/10, radius: 1/10};
         var hand = {x: 1/3, y: 1/2, radius: 1/25};
         var eye = {x: 1/30, y: 9/10, radius: 1/75};
+        var foot = {x: 3/32, y: 0, radius: 1/20};
         var neck = {x: 1/20, y: 31/40, radius: 0};
         var shoulder = {x: 3/20, y: 30/40, radius: 1/20};
-        var armpit = {x: 13/100, y: 27/40, radius: 1/20};
+        var armpit = {x: 12/100, y: 26/40, radius: 1/20};
         var elbow = {x: 5/24, y: 12/20, radius: 1/30};
         var waste = {x: 1/10, y: 26/50, radius: 0};
         var hip = {x: 7/60, y: 9/20, radius: 0};
         var knee = {x: 3/32, y: 9/40, radius: 1/20};
-        var ankle = {x: 3/32, y: 1/20, radius: 1/20};
+        var ankle = {x: 3/32, y: 1/50, radius: 1/20};
         var groin = {x: 0, y: 16/40, radius: 0};
 
         ctx.beginPath();
@@ -257,7 +273,7 @@
         ctx.lineTo(shoulder.x, shoulder.y);
         ctx.lineTo(elbow.x + elbow.radius, elbow.y);
         ctx.lineTo(hand.x + hand.radius / 2, hand.y);
-        ctx.lineTo(hand.x - hand.radius / 2, hand.y);
+        ctx.lineTo(hand.x - hand.radius / 2, hand.y - hand.radius / 2);
         ctx.lineTo(elbow.x - elbow.radius, elbow.y - elbow.radius);
         ctx.lineTo(armpit.x, armpit.y);
         ctx.lineTo(waste.x, waste.y);
@@ -275,7 +291,7 @@
         ctx.lineTo(-waste.x, waste.y);
         ctx.lineTo(-armpit.x, armpit.y);
         ctx.lineTo(-elbow.x + elbow.radius, elbow.y - elbow.radius);
-        ctx.lineTo(-hand.x + hand.radius / 2, hand.y);
+        ctx.lineTo(-hand.x + hand.radius / 2, hand.y - hand.radius / 2);
         ctx.lineTo(-hand.x - hand.radius / 2, hand.y);
         ctx.lineTo(-elbow.x - elbow.radius, elbow.y);
         ctx.lineTo(-shoulder.x, shoulder.y);
@@ -287,9 +303,13 @@
         ctx.beginPath();
         ctx.arc(head.x, head.y, head.radius, 0, 2 * Math.PI);
         ctx.moveTo(hand.x, hand.y);
-        ctx.arc(hand.x, hand.y, hand.radius, 0, 2 * Math.PI); // left
+        ctx.arc(hand.x, hand.y, hand.radius, 0, 2 * Math.PI);
         ctx.moveTo(-hand.x, hand.y);
-        ctx.arc(-hand.x, hand.y, hand.radius, 0, 2 * Math.PI); // right
+        ctx.arc(-hand.x, hand.y, hand.radius, 0, 2 * Math.PI);
+        ctx.moveTo(foot.x, foot.y);
+        ctx.arc(foot.x, foot.y, foot.radius, 0, Math.PI);
+        ctx.moveTo(-foot.x, foot.y);
+        ctx.arc(-foot.x, foot.y, foot.radius, 0, Math.PI);
         ctx.fillStyle = character.headColor;
         ctx.fill();
 
@@ -659,10 +679,9 @@
                 canvas.attr('height', Math.floor(canvas.innerHeight()));
 
                 ctx = canvas.get(0).getContext('2d');
-                ctx.fillStyle = 'rgb(224, 224, 224)';
-                ctx.fillRect(0, 0, width, height);
+                ctx.clearRect(0, 0, width, height);
                 ctx.save();
-                ctx.translate(width / 2, height);
+                ctx.translate(width / 2, height - (height - size) / 2);
                 ctx.scale(size, -size);
                 self.player.drawPortrait(ctx, Date.now());
                 ctx.restore();

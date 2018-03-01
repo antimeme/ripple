@@ -66,7 +66,7 @@ h1, h2, h3 {
 }
 .inventory-portrait {
     right: 0; top: 0; width: 50%; height: 100%;
-    background-color: rgba(48, 144, 48, 0.5);
+    background-color: #ddd;
     border-top-right-radius: 15px;
     border-bottom-right-radius: 15px;
 }
