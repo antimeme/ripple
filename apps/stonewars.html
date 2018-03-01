@@ -17,16 +17,17 @@
 <script src="lib/jquery.mousewheel.js"></script>
 <script src="lib/three.min.js"></script>
 <!--[if lt IE 9]><script>//<![CDATA[
-  jQuery(function($) {
-     $.getScript('http://ajax.googleapis.com/ajax/libs/' +
-                 'chrome-frame/1/CFInstall.min.js',
-                 function() { CFInstall.check(); }); });
-//]]></script><![endif]-->
+    jQuery(function($) {
+    $.getScript('http://ajax.googleapis.com/ajax/libs/' +
+    'chrome-frame/1/CFInstall.min.js',
+    function() { CFInstall.check(); }); });
+    //]]></script><![endif]-->
 <script src="ripple/context.js"></script>
 <script src="ripple/ripple.js"></script>
+<script src="ripple/fascia.js"></script>
 <script src="ripple/grid.js"></script>
 <script src="stonewars.js"></script>
 <script>//<![CDATA[
- jQuery(function($) { ripple.app($, $('#stuff'), $(window),
+ jQuery(function($) { fascia.app($, $('#stuff'), $(window),
                                  stonewars.app); });
 //]]></script>

@@ -7,7 +7,7 @@ h1, h2, h3 {
     color: rgba(0, 0, 0, 0.5);
 }
 
-.ripple-app {
+.fascia-app {
     position: absolute; top: 0; bottom: 0; right: 0; left: 0;
     display: block; margin: 0; border: 0; z-index: 1;
     background-color: #ddd; color: #222; }

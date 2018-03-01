@@ -91,10 +91,10 @@
     ripple.mergeConfig = function() {
         var result = {}, index, config;
 
-        for (index = 0; index < arguments.length; ++index) {
-            if (arguments[index] &&
-                typeof(arguments[index]) === 'object') {
-                config = arguments[index];
+        for (index = arguments.length; index > 0; --index) {
+            if (arguments[index - 1] &&
+                typeof(arguments[index - 1]) === 'object') {
+                config = arguments[index - 1];
                 Object.keys(config).forEach(function(key) {
                     if (!(key in result))
                         result[key] = config[key];
@@ -105,7 +105,7 @@
     };
 
     // Return a value claimped to a minimum and maximum
-    ripple.clamp = function(value, max, min) {
+    ripple.clamp = function(value, min, max) {
         if (value > max)
             value = max;
         else if (value < min)
@@ -546,143 +546,6 @@
         ctx.scale(this.scale, this.scale);
         ctx.rotate(this.angle);
         ctx.translate(-this.x, -this.y);
-    };
-
-    // Framework for canvas applications
-    // Object passed as the app is expected to have the following:
-    //
-    // app.init($, container, viewport)
-    // app.draw(ctx, width, height, now)
-    // app.resize(width, height)
-    // app.keydown(event, redraw)
-    // app.keyup(event, redraw)
-    // app.mtdown(targets, event, redraw)
-    // app.mtup(targets, event, redraw)
-    // app.mtmove(targets, event, redraw)
-    // app.isActive() // return falsy if redraw not needed
-    // app.color
-    // app.background
-    ripple.app = function($, container, viewport, app) {
-        var canvas = $('<canvas>')
-            .attr('class', 'ripple-app')
-            .appendTo(container);
-
-        if (app.init)
-            app.init($, container, viewport);
-
-        var draw_id = 0, draw_last = 0;
-        var draw = function() {
-            var ii, ctx, width, height;
-            var now = new Date().getTime();
-            draw_id = 0;
-
-            if (canvas.get(0).getContext) {
-                width = canvas.innerWidth();
-                height = canvas.innerHeight();
-                ctx = canvas[0].getContext('2d');
-                ctx.clearRect(0, 0, width, height);
-                if (app.draw)
-                    app.draw(ctx, width, height, now, draw_last);
-            }
-            draw_last = now;
-            if (!app.isActive || app.isActive())
-                redraw();
-        };
-
-        var redraw = function()
-        { if (!draw_id) draw_id = requestAnimationFrame(draw); };
-
-        var resize = function(event) {
-            var width = viewport.width();
-            var height = viewport.height();
-            var size = Math.min(width, height);
-
-            canvas.width(width);
-	    canvas.height(height);
-            if (app.resize)
-                app.resize(
-                    canvas.innerWidth(), canvas.innerHeight(), $);
-
-            // A canvas has a height and a width that are part of the
-            // document object model but also separate height and
-            // width attributes which determine how many pixels are
-            // part of the canvas itself.  Keeping the two in sync
-            // is essential to avoid ugly stretching effects.
-            canvas.attr("width",  Math.floor(canvas.innerWidth()));
-            canvas.attr("height", Math.floor(canvas.innerHeight()));
-            redraw();
-        };
-
-        viewport.resize(resize);
-        resize();
-
-	viewport.on('keydown', function(event) {
-            if (app.keydown)
-                return app.keydown(event, redraw);
-	});
-
-	viewport.on('keyup', function(event) {
-            if (app.keyup)
-                return app.keyup(event, redraw);
-	});
-
-        var g = ripple.gestur({
-            next: true,
-            tap: function(name, touch) {
-                if (app.tap)
-                    return app.tap(touch);
-            },
-            doubleTap: function(name, touch) {
-                if (app.doubleTap)
-                    return app.doubleTap(touch);
-            },
-            flick: function(name, start, end) {
-                if (app.flick)
-                    return app.flick(start, end);
-            },
-            drag: function(name, start, last, current) {
-                if (app.drag)
-                    return app.drag(start, last, current);
-            },
-            pinch: function(name, length, angle) {
-                if (app.pinch)
-                    return app.pinch(length, angle);
-            },
-        });
-        g.setTarget(canvas);
-
-        canvas.on('mousedown touchstart', function(event) {
-            var touches;
-            if (app.mtdown) {
-                touches = ripple.createTouches(event);
-                return app.mtdown(touches, event, redraw);
-            }
-            return false;
-        });
-
-        canvas.on('mousemove touchmove', function(event) {
-            var touches;
-            if (app.mtmove) {
-                touches = ripple.createTouches(event);
-                return app.mtmove(touches, event, redraw);
-            }
-            return false;
-        });
-
-        canvas.on('mouseleave mouseup touchend', function(event) {
-            var touches;
-            if (app.mtup) {
-                touches = ripple.createTouches(event);
-                return app.mtup(touches, event, redraw);
-            }
-            return false;
-        });
-
-        canvas.on('mousewheel', function(event) {
-            if (app.mwheel)
-                return app.mwheel(event, redraw);
-            return false;
-        });
     };
 
 })(typeof exports === 'undefined' ? window['ripple'] = {} : exports);

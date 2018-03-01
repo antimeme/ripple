@@ -11,7 +11,7 @@
     if (typeof require !== 'undefined') {
         this.multivec = require('./ripple/multivec.js');
         this.ripple = require('./ripple/ripple.js');
-        this.skycam = require('./ripple/skycam.js');
+        this.fascia = require('./ripple/fascia.js');
     }
 
     var fetchParam = function(name) {
@@ -84,7 +84,7 @@
         return result;
     };
 
-    var randomLoot = function(chest) {
+    var randomLoot = function(itemSystem) {
         var items = [
             "knife",
             "gun",
@@ -95,10 +95,10 @@
             "apple",
             "cookie"];
         var result = [
-            {'type': items[Math.floor(
-                Math.random() * items.length)]},
-            {'type': items[Math.floor(
-                Math.random() * items.length)]}];
+            itemSystem.createItem({'type': items[Math.floor(
+                Math.random() * items.length)]}),
+            itemSystem.createItem({'type': items[Math.floor(
+                Math.random() * items.length)]})];
         return result;
     };
 
@@ -130,7 +130,7 @@
         });
     };
 
-    var drawChest = function(ctx, chest, state, now) {
+    var drawChest = function(ctx, chest, now) {
         var x = Math.cos(Math.PI/5) * chest.size;
         var y = Math.sin(Math.PI/5) * chest.size;
         ctx.save();
@@ -161,10 +161,10 @@
     var update = function(now) {
         // Called to advance the game state
         if (isNaN(now))
-            now = new Date().getTime();
+            now = Date.now();
 	this.characters.forEach(function(character) {
             if (character.plan)
-                character.destination = character.plan(this, now);
+                character.destination = character.plan(now);
             else character.destination = null;
         }, this);
 
@@ -202,22 +202,19 @@
 
             if (!isNaN(collide))
                 this.player.destination = this.player.replan(
-                    this, now, collide, this.player.destination);
+                    now, collide, this.player.destination);
         }
 
         this.characters.forEach(function(character) {
-            character.update(this, now); }, this);
+            character.update(now); }, this);
 
         this.chests.forEach(function(chest) {
             chest.checkAccessible(this.player); }, this);
     };
 
-    whiplash.go = function($, container, viewport, data) {
-        if (data.schema.disableDebug)
-            browserSettings.debug = false;
-
-        var state = {
-            debug: browserSettings.debug,
+    whiplash.game = function($, data) {
+        return {
+            debug: browserSettings.debug && !data.schema.disableDebug,
             rotateworld: browserSettings.rotateworld,
             mazeRings: browserSettings.mazeRings,
             mazeType: browserSettings.mazeType,
@@ -227,88 +224,63 @@
             zoom: {
                 value: 25, min: 10, max: 100, reference: 0,
                 change: function(value) {
-                    value *= this.value;
-                    if (value < this.min)
-                        value = this.min;
-                    if (value > this.max)
-                        value = this.max;
-                    this.value = value;
+                    this.value = ripple.clamp(
+                        this.value * value, this.min, this.max);
                     return this;
                 }},
             tap: null, mmove: null,
             player: null, update: update,
-            itemdefs: data.itemdefs ? data.itemdefs : {},
-            images: data.images.files, icons: data.images.icons,
-            createButton: function($, config, fn, context) {
-                // This routine wraps the function and forces a false
-                // return so that events do not propagate
-                var imgdef, image, position, backsize;
-                var tempconfig = config;
-
-                // Configuration can be an object, a string reference
-                // to the icon set or undefined for default
-                if (!config)
-                    config = this.icons['default'];
-                else if (typeof config === 'string')
-                    config = this.icons[config];
-
-                imgdef = this.images[config.image || 'default'];
-                image = 'url(' + imgdef.url + ')';
-                backsize = (
-                    (imgdef.size * imgdef.cols) + '% ' +
-                        (imgdef.size * imgdef.rows) + '%');
-                position = (
-                    Math.floor(100 * config.col /
-                        (imgdef.cols - 1)) + '% ' + 
-                    Math.floor(100 * config.row /
-                        (imgdef.rows - 1)) + '%');
-                var result = $('<button>')
-                    .addClass('image-button')
-                    .css({
-                        'background-image': image,
-                        'background-position': position,
-                        'background-size': backsize })
-                    .on('mousedown touchstart', function(event) {
-                        fn.call(context, arguments);
-                        return false; });
-                return result;
-            },
+            itemSystem: fascia.itemSystem(data.itemdefs),
+            imageSystem: fascia.imageSystem(data.images, $),
 
             init: function($, container, viewport) {
+                var self = this;
+
                 $('<div>') // Left Action Bar
                     .addClass('bbar')
                     .css({ bottom: 0, left: 0 })
                     .appendTo(container)
-                    .append(this.createButton(
-                        $, 'lhand', this.handLeft, this))
-                    .append(this.createButton(
-                        $, 'rhand', this.handRight, this));
+                    .append(this.imageSystem.createButton(
+                        'lhand', $, this.handLeft, this))
+                    .append(this.imageSystem.createButton(
+                        'rhand', $, this.handRight, this));
 
                 $('<div>') // Create action bar
                     .addClass('bbar')
                     .css({ bottom: 0, right: 0 })
                     .appendTo(container)
-                    .append(this.createButton(
-                        $, 'settings', function(event) {
-                            state.settings.toggle();
-                            state.inventory.hide(); }))
-                    .append(this.createButton(
-                        $, 'interact', function(event) {
-                            state.interact(); }));
+                    .append(this.imageSystem.createButton(
+                        'settings', $, function(event) {
+                            self.settings.toggle();
+                            self.inventory.hide(); }))
+                    .append(this.imageSystem.createButton(
+                        'interact', $, function(event) {
+                            self.interact(); }));
+
+	        this.player = fascia.createPlayer(
+                    ripple.mergeConfig(
+                        (data.chardefs && 'player' in data.chardefs) ?
+                        data.chardefs['player'] : {},
+                        {itemSystem: this.itemSystem,
+                         interact: function() {
+                             self.interact(); }}));
 
                 this.settings = $('<div>')
                     .addClass('page').addClass('settings').hide()
                     .append('<h2>Settings</h2>')
                     .appendTo(container);
-                this.inventory = skycam.createInventory(
-                    $, this, container, this.player);
+                this.inventory = fascia.inventoryPane(
+                    $, container, this.player,
+                    this.itemSystem, this.imageSystem);
+
+                this.setStage(this.startStage);
             },
             resize: function(width, height, $) {
                 var size = Math.min(width, height);
                 this.width = width;
                 this.height = height;
 
-                setSquareSize($('.image-button'), size);
+                this.imageSystem.resize(width, height, $);
                 $('.page').css({
                     'border-width': Math.floor(size / 100),
                     'border-radius': Math.floor(size / 25),
@@ -356,17 +328,17 @@
 
                 drawBackground(ctx, this, now);
                 (this.chests || []).forEach(function(chest) {
-                    drawChest(ctx, chest, this, now);
+                    drawChest(ctx, chest, now);
                 }, this);
 
                 this.characters.forEach(function(character) {
                     if (character.draw)
-                        character.draw(ctx, this, now);
+                        character.draw(ctx, now);
                 }, this);
 
                 this.characters.forEach(function(character) {
                     if (character.drawPost)
-                        character.drawPost(ctx, this, now);
+                        character.drawPost(ctx, now);
                 }, this);
 
                 ctx.restore(); // return to screen space
@@ -398,35 +370,7 @@
                     this.zoom.change(1.1);
                 } else if (event.key === '-') {
                     this.zoom.change(0.9);
-                } else if (event.keyCode === 37 /* left */ ||
-                           event.keyCode === 65 /* a */) {
-                    this.player.control.clear(true);
-		    this.player.control.left = true;
-	        } else if (event.keyCode === 38 /* up */ ||
-                           event.keyCode === 87 /* w */) {
-                    this.player.control.clear(true);
-                    this.player.control.up = true;
-	        } else if (event.keyCode === 39 /* right */ ||
-                           event.keyCode === 68 /* d */) {
-                    this.player.control.clear(true);
-		    this.player.control.right = true;
-	        } else if (event.keyCode === 40 /* down */ ||
-                           event.keyCode === 83 /* s */) {
-                    this.player.control.clear(true);
-		    this.player.control.down = true;
-                } else if (event.keyCode === 81 /* q */) {
-                    this.player.control.clear(true);
-		    this.player.control.sleft = true;
-                } else if (event.keyCode === 69 /* e */) {
-                    this.player.control.clear(true);
-		    this.player.control.sright = true;
-	        } else if (event.keyCode === 90 /* z */) {
-                    this.handRight();
-	        } else if (event.keyCode === 67 /* c */) {
-                    this.handLeft();
-                } else if (event.keyCode === 73 /* i */ ||
-                           event.keyCode === 192 /* tilde */) {
-                    this.interact();
+                } else if (this.player.control.keydown(event)) {
                 } else if (event.keyCode === 80 /* p */) {
                     if (debug) {
                         if (profiling)
@@ -440,33 +384,10 @@
             keyup: function(event, redraw) {
                 redraw();
                 this.update();
-	        if (event.keyCode === 37 || event.keyCode === 65) {
-                    this.player.control.clear(true);
-		    this.player.control.left = false;
-	        } else if (event.keyCode === 38 ||
-                           event.keyCode === 87) {
-                    this.player.control.clear(true);
-                    this.player.control.up = false;
-	        } else if (event.keyCode === 39 ||
-                           event.keyCode === 68) {
-                    this.player.control.clear(true);
-		    this.player.control.right = false;
-	        } else if (event.keyCode === 40 ||
-                           event.keyCode === 83) {
-                    this.player.control.clear(true);
-		    this.player.control.down = false;
-                } else if (event.keyCode === 81 /* q */) {
-                    this.player.control.clear(true);
-		    this.player.control.sleft = false;
-                } else if (event.keyCode === 69 /* e */) {
-                    this.player.control.clear(true);
-		    this.player.control.sright = false;
-	        } else if (event.keyCode === 90 /* z */) {
-	        } else if (event.keyCode === 67 /* c */) {
-                } else if (event.keyCode === 70 /* i */ ||
-                           event.keyCode === 192 /* tilde */) {
-                } else if (event.keyCode === 80 /* p */) {
-	        } else if (this.debug) console.log('up', event.keyCode);
+                if (event.keyCode === 80 /* p */) {
+                } else if (this.player.control.keyup(event)) {
+	        } else if (this.debug)
+                    console.log('up', event.keyCode);
             },
 
             // Converts a screen coordinate to world space
@@ -527,7 +448,6 @@
                 if (event.deltaY)
                     this.zoom.change(
                         1 + (0.1 * (event.deltaY > 0 ? 1 : -1)));
-                console.log('zoom', this.zoom.value); // DEBUG
                 redraw();
                 return false;
             },
@@ -569,7 +489,7 @@
                             this.chests.push(createChest({
                                 position: { x: node.x, y: node.y },
                                 direction: Math.random() * 2 * Math.PI,
-                                inventory: randomLoot()
+                                inventory: randomLoot(this.itemSystem)
                             }));
                         }
                     }, this);
@@ -597,27 +517,14 @@
                     this.inventory.show();
                 }
             },
-            handRight: function(event) {
-                this.player.punchRight =
-                    new Date().getTime(); },
-            handLeft: function(event) {
-                this.player.punchLeft =
-                    new Date().getTime(); },
             postPopulate: function() {
                 setSquareSize($('.image-button'));
             }
         };
-
-	state.player = skycam.makePlayer(
-            (data.chardefs && 'player' in data.chardefs) ?
-            data.chardefs['player'] : {}, state);
-        state.setStage(state.startStage);
-        ripple.app($, container, viewport, state);
     };
 }).call(this, typeof exports === 'undefined' ?
-        (this.whiplash = {}) :
-        ((typeof module !== undefined) ?
-         (module.exports = exports) : exports));
+        (this.whiplash = {}) : ((typeof module !== undefined) ?
+                                (module.exports = exports) : exports));
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
     const electron = require('electron');

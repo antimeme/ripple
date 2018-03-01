@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-// Lightweight polyfill and utility features for web apps.
+// A lightweight polyfill for JavaScript features
 (function() {
     "use strict";
 
@@ -28,10 +28,15 @@
             var Intermediate = function() {};
             Intermediate.prototype = parent;
             return new Intermediate(); };
+
+    if (typeof Date.now === 'undefined')
+        Date.now = function() { return new Date().getTime(); };
+
     if (typeof Array.prototype.forEach === 'undefined')
         Array.prototype.forEach = function(fn, self) {
             for (var index = 0; index < this.length; index++)
                 fn.call(self, this[index], index, this); };
+
     if (typeof Array.prototype.some === 'undefined')
         Array.prototype.some = function(fn, self) {
             var result = false;
@@ -40,6 +45,7 @@
                 if (result)
                     break; }
             return result; };
+
     if (typeof Array.prototype.every === 'undefined')
         Array.prototype.every = function(fn, self) {
             var result = true;

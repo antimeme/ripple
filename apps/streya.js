@@ -12,7 +12,7 @@
     'use strict';
     if (typeof require !== 'undefined') {
         this.multivec = require('./ripple/multivec.js');
-        this.skycam = require('./ripple/skycam.js');
+        this.fascia = require('./ripple/fascia.js');
     }
 
     // === Ship representation
@@ -277,10 +277,9 @@
             var colorSelected = 'rgba(192, 192, 0, 0.2)';
         var tap, selected, drag, zooming, gesture;
         var ship = streya.Ship.create();
-        var player = skycam.makePlayer();
+        var player = fascia.createPlayer();
 
         var state = {
-
             draw_id: 0,
             draw: function() {
                 var neighbors, vector, radius;
