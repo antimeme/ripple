@@ -2,7 +2,6 @@
 // Copyright (C) 2016-2018 by Jeff Gold.
 //
 // Whiplash Paradox is a game about time travel
-// TODO click to target move
 // TODO click to access inventory
 // TODO event to register punch
 
@@ -28,17 +27,6 @@
             fetchParam('mazeRings'), 10), 8), 1),
         startStage: fetchParam('startStage'),
         mode: fetchParam('mode')
-    };
-
-    var squareSize = undefined;
-    var setSquareSize = function(thing, size) {
-        if (!isNaN(size))
-            squareSize = size;
-        if (!isNaN(squareSize))
-            thing.css({
-                width: Math.floor(squareSize / 11),
-                height: Math.floor(squareSize / 11) });
-        return thing;
     };
 
     var createWall = function(wall) {
@@ -102,7 +90,7 @@
         return result;
     };
 
-    var drawBackground = function(ctx, state, now) {
+    var drawEnvironment = function(ctx, state, now) {
         var first = true;
         var lineWidth = undefined;
 
@@ -241,9 +229,13 @@
                     .css({ bottom: 0, left: 0 })
                     .appendTo(container)
                     .append(this.imageSystem.createButton(
-                        'lhand', $, this.handLeft, this))
+                        'lhand', $, function() {
+                            this.player.punchLeft = Date.now();
+                        }, this))
                     .append(this.imageSystem.createButton(
-                        'rhand', $, this.handRight, this));
+                        'rhand', $, function() {
+                            this.player.punchRight = Date.now();
+                        }, this));
 
                 $('<div>') // Create action bar
                     .addClass('bbar')
@@ -295,9 +287,6 @@
                     height: Math.floor(size * 2 / 11) });
                 $('.inventory-footer').css({
                     height: Math.floor(size * 2 / 11) });
-                $('.slot-group').css({
-                    width: Math.floor(size * 4 / 11),
-                    height: Math.floor(size * 2 / 11) });
             },
             draw: function(ctx, width, height, now, last) {
                 var size;
@@ -326,7 +315,7 @@
                         character.drawPre(ctx, this, now);
                 });
 
-                drawBackground(ctx, this, now);
+                drawEnvironment(ctx, this, now);
                 (this.chests || []).forEach(function(chest) {
                     drawChest(ctx, chest, now);
                 }, this);
@@ -414,7 +403,7 @@
 
                 if (closest &&
                     tapped.minus(closest.position).normSquared() < 9) {
-                    this.inventory.populate(closest);
+                    this.inventory.populate($, closest);
                     this.inventory.show();
                 } else this.player.control.setTarget(tapped);
             },
@@ -513,13 +502,10 @@
                         }
                     }, this);
 
-                    this.inventory.populate(closest);
+                    this.inventory.populate($, closest);
                     this.inventory.show();
                 }
             },
-            postPopulate: function() {
-                setSquareSize($('.image-button'));
-            }
         };
     };
 }).call(this, typeof exports === 'undefined' ?

@@ -17,7 +17,6 @@ h1, h2, h3 {
     background-color: rgba(255,255,255,0.8);
 }
 .selected { background-color: rgba(192,192,255,0.8); }
-.give-and-take { margin-left: auto; margin-right: auto; }
 .bbar {
     position: fixed;
     display: block; z-index: 2;
@@ -39,7 +38,8 @@ h1, h2, h3 {
     border-width: 5px;
     box-sizing: border-box;
 }
-.page-pane {
+
+.inventory-pane {
     position: absolute;
     box-sizing: border-box;
     overflow-y: auto;
@@ -64,15 +64,9 @@ h1, h2, h3 {
     right: 0; width: 50%;
     background-color: rgba(48, 144, 48, 0.5);
 }
-
-.slot-group {
-    display: inline-block;
-    background-repeat: no-repeat;
-    background-color: rgba(255,255,255,0.8);
-    background-size: 500% 500%;
-}
-.active {
-    border-color: white;
-    border-width: 5px;
-    border-radius: 5px;
+.inventory-portrait {
+    right: 0; top: 0; width: 50%; height: 100%;
+    background-color: rgba(48, 144, 48, 0.5);
+    border-top-right-radius: 15px;
+    border-bottom-right-radius: 15px;
 }

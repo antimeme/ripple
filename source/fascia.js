@@ -87,16 +87,13 @@
 	if (event.keyCode === 37 || event.keyCode === 65) {
             this.clear(true);
 	    this.left = false;
-	} else if (event.keyCode === 38 ||
-                   event.keyCode === 87) {
+	} else if (event.keyCode === 38 || event.keyCode === 87) {
             this.clear(true);
             this.up = false;
-	} else if (event.keyCode === 39 ||
-                   event.keyCode === 68) {
+	} else if (event.keyCode === 39 || event.keyCode === 68) {
             this.clear(true);
 	    this.right = false;
-	} else if (event.keyCode === 40 ||
-                   event.keyCode === 83) {
+	} else if (event.keyCode === 40 || event.keyCode === 83) {
             this.clear(true);
 	    this.down = false;
         } else if (event.keyCode === 81 /* q */) {
@@ -240,25 +237,59 @@
         ctx.restore();
     };
 
-    fascia.drawPortrait = function(ctx, character, now) {
-        // TODO
-        var size = character.size;
-        var fraction;
-        ctx.save();
-        ctx.translate(character.position.x, character.position.y);
-        ctx.rotate(character.direction);
+    fascia.drawCharacterPortrait = function(ctx, character, now) {
+        var head = {x: 0, y: 9/10, radius: 1/10};
+        var hand = {x: 1/3, y: 1/2, radius: 1/25};
+        var eye = {x: 1/30, y: 9/10, radius: 1/75};
+        var neck = {x: 1/20, y: 31/40, radius: 0};
+        var shoulder = {x: 3/20, y: 30/40, radius: 1/20};
+        var armpit = {x: 13/100, y: 27/40, radius: 1/20};
+        var elbow = {x: 5/24, y: 12/20, radius: 1/30};
+        var waste = {x: 1/10, y: 26/50, radius: 0};
+        var hip = {x: 7/60, y: 9/20, radius: 0};
+        var knee = {x: 3/32, y: 9/40, radius: 1/20};
+        var ankle = {x: 3/32, y: 1/20, radius: 1/20};
+        var groin = {x: 0, y: 16/40, radius: 0};
 
-        ctx.scale(0.8, 1);
         ctx.beginPath();
-        ctx.moveTo(size, 0);
-        ctx.arc(0, 0, size, 0, Math.PI * 2);
+        ctx.moveTo(head.x, head.y);
+        ctx.lineTo(neck.x, neck.y);
+        ctx.lineTo(shoulder.x, shoulder.y);
+        ctx.lineTo(elbow.x + elbow.radius, elbow.y);
+        ctx.lineTo(hand.x + hand.radius / 2, hand.y);
+        ctx.lineTo(hand.x - hand.radius / 2, hand.y);
+        ctx.lineTo(elbow.x - elbow.radius, elbow.y - elbow.radius);
+        ctx.lineTo(armpit.x, armpit.y);
+        ctx.lineTo(waste.x, waste.y);
+        ctx.lineTo(hip.x, hip.y);
+        ctx.lineTo(knee.x + knee.radius, knee.y);
+        ctx.lineTo(ankle.x + ankle.radius, ankle.y);
+        ctx.lineTo(ankle.x - ankle.radius, ankle.y);
+        ctx.lineTo(knee.x - knee.radius, knee.y);
+        ctx.lineTo(groin.x, groin.y);
+        ctx.lineTo(-knee.x + knee.radius, knee.y);
+        ctx.lineTo(-ankle.x + ankle.radius, ankle.y);
+        ctx.lineTo(-ankle.x - ankle.radius, ankle.y);
+        ctx.lineTo(-knee.x - knee.radius, knee.y);
+        ctx.lineTo(-hip.x, hip.y);
+        ctx.lineTo(-waste.x, waste.y);
+        ctx.lineTo(-armpit.x, armpit.y);
+        ctx.lineTo(-elbow.x + elbow.radius, elbow.y - elbow.radius);
+        ctx.lineTo(-hand.x + hand.radius / 2, hand.y);
+        ctx.lineTo(-hand.x - hand.radius / 2, hand.y);
+        ctx.lineTo(-elbow.x - elbow.radius, elbow.y);
+        ctx.lineTo(-shoulder.x, shoulder.y);
+        ctx.lineTo(-neck.x, neck.y);
+        ctx.moveTo(-head.x, head.y);
         ctx.fillStyle = character.bodyColor;
         ctx.fill();
 
-        ctx.scale(1.25, 1);
         ctx.beginPath();
-        ctx.moveTo(size, 0);
-        ctx.arc(0, 0, size * 0.75, 0, Math.PI * 2);
+        ctx.arc(head.x, head.y, head.radius, 0, 2 * Math.PI);
+        ctx.moveTo(hand.x, hand.y);
+        ctx.arc(hand.x, hand.y, hand.radius, 0, 2 * Math.PI); // left
+        ctx.moveTo(-hand.x, hand.y);
+        ctx.arc(-hand.x, hand.y, hand.radius, 0, 2 * Math.PI); // right
         ctx.fillStyle = character.headColor;
         ctx.fill();
 
@@ -266,18 +297,12 @@
             ((now + character.blinkPhase) % character.blinkFreq) >
             character.blinkLength) {
             ctx.beginPath();
-            ctx.arc(size * 0.2, size * -0.2,
-                    size * 0.1, 0, Math.PI * 2);
-            ctx.fillStyle = character.eyeColor;
-            ctx.fill();
-            ctx.beginPath();
-            ctx.moveTo(size, 0);
-            ctx.arc(size * 0.2, size * 0.2,
-                    size * 0.1, 0, Math.PI * 2);
+            ctx.arc(eye.x, eye.y, eye.radius, 0, 2 * Math.PI);
+            ctx.moveTo(-eye.x, eye.y);
+            ctx.arc(-eye.x, eye.y, eye.radius, 0, 2 * Math.PI);
             ctx.fillStyle = character.eyeColor;
             ctx.fill();
         }
-        ctx.restore();
     };
 
     /**
@@ -363,6 +388,10 @@
 
             draw: config.draw || function(ctx, now) {
                 fascia.drawCharacter(ctx, this, now);
+            },
+
+            drawPortrait: config.draw || function(ctx, now) {
+                fascia.drawCharacterPortrait(ctx, this, now);
             }
         };
     };
@@ -386,6 +415,8 @@
             var rads = 0.005 * (now - this.last);
             var dirvec, signrads, needrads, swipe;
 
+            if (this.control.target)
+                console.log('DEBUG-a', steps);
             dirvec = multivec({theta: this.direction});
             if (this.control.turn) {
                 // Work out how much turning is necessary to face
@@ -402,10 +433,14 @@
                 } else if (needrads > rads) {
                     this.direction += signrads * rads;
                     steps = 0;
+                    if (this.control.target)
+                        console.log('DEBUG-b', steps, needrads, rads);
                 } else {
                     this.direction += signrads * needrads;
                     dirvec = multivec({theta: this.direction});
                     steps *= (rads - needrads) / rads;
+                    if (this.control.target)
+                        console.log('DEBUG-c', steps);
                 }
             }
 
@@ -479,7 +514,7 @@
 
     fascia.imageSystem.prototype.resize = function(width, height, $) {
         this.size = Math.floor(Math.min(width, height) / 11);
-        $('.image-system').css({width: this.size, height: this.size});
+        $('.image-button').css({width: this.size, height: this.size});
     };
 
     fascia.imageSystem.prototype.createButton = function(
@@ -532,6 +567,7 @@
         this.itemSystem = itemSystem;
         this.player = player;
         this.other = null;
+        this.__drawPortraitID = 0;
 
         var give = function(event) {
             var selected = this.playerPane.find('.selected');
@@ -548,7 +584,7 @@
                     else updated.push(item);
                 }, this);
                 this.player.inventory = updated;
-                this.populate(this.other);
+                this.populate($, this.other);
             } else this.playerPane.find('button').addClass('selected');
         };
         
@@ -567,7 +603,7 @@
                     else updated.push(item);
                 }, this);
                 this.other.inventory = updated;
-                this.populate(this.other);
+                this.populate($, this.other);
             } else this.otherPane.find('button').addClass('selected');
         };
         
@@ -581,26 +617,63 @@
                 .append(this.imageSystem.createButton(
                     'close', $, function(event) {
                         this.hide();
-                    }, this).addClass('close'))
+                    }, this).addClass('inventory-close'))
                 .append(this.imageSystem.createButton(
                     'take', $, take, this)
-                            .addClass('give-and-take'))
+                            .addClass('inventory-givetake'))
                 .append(this.imageSystem.createButton(
                     'give', $, give, this)
-                            .addClass('give-and-take')))
+                            .addClass('inventory-givetake')))
             .appendTo(this.pane);
         this.playerPane = $('<div>')
-            .addClass('page-pane')
+            .addClass('inventory-pane')
             .addClass('inventory-personal')
             .appendTo(this.pane);
         this.otherPane = $('<div>')
-            .addClass('page-pane')
+            .addClass('inventory-pane')
             .addClass('inventory-other')
+            .appendTo(this.pane);
+        this.portraitPane = $('<canvas>')
+            .addClass('inventory-pane')
+            .addClass('inventory-portrait')
             .appendTo(this.pane);
         this.footer = $('<div>')
             .addClass('inventory-footer')
             .appendTo(this.pane);
-        this.populate();
+        this.populate($);
+    };
+
+    fascia.inventoryPane.prototype.showPortrait = function() {
+        var self = this;
+        var draw = function() {
+            var canvas = self.portraitPane;
+
+            if (self.isVisible() && canvas.size() &&
+                canvas.get(0).getContext) {
+                var width = canvas.innerWidth();
+                var height = canvas.innerHeight();
+                var size = Math.min(width, height);
+                var ctx;
+
+                canvas.attr('width', Math.floor(canvas.innerWidth()));
+                canvas.attr('height', Math.floor(canvas.innerHeight()));
+
+                ctx = canvas.get(0).getContext('2d');
+                ctx.fillStyle = 'rgb(224, 224, 224)';
+                ctx.fillRect(0, 0, width, height);
+                ctx.save();
+                ctx.translate(width / 2, height);
+                ctx.scale(size, -size);
+                self.player.drawPortrait(ctx, Date.now());
+                ctx.restore();
+
+            }
+            if (!self.other)
+                self.__drawPortraitID = requestAnimationFrame(draw);
+        };
+
+        draw();
+        return this;
     };
 
     fascia.inventoryPane.prototype.show = function() {
@@ -616,21 +689,20 @@
         return this.pane.is(':visible'); };
 
     fascia.inventoryPane.prototype.addItem = function(
-        item, index, itemPane) {
+        $, item, index, itemPane) {
         itemPane.append(this.imageSystem.createButton(
             item.icon, $, function(event) {
-                jQuery(event[0].target).toggleClass('selected');
-            }, this)
+                $(event[0].target).toggleClass('selected');  }, this)
                             .prop('title', item.toString())
                             .data('index', index));
         return this;
     };
 
-    fascia.inventoryPane.prototype.populate = function(other) {
+    fascia.inventoryPane.prototype.populate = function($, other) {
         this.playerPane.empty();
         if (this.player) {
             this.player.inventory.forEach(function(item, index) {
-                this.addItem(item, index, this.playerPane);
+                this.addItem($, item, index, this.playerPane);
             }, this);
         }
 
@@ -638,10 +710,15 @@
         this.other = other;
         if (this.other) {
             this.other.inventory.forEach(function(item, index) {
-                this.addItem(item, index, this.otherPane);
+                this.addItem($, item, index, this.otherPane);
             }, this);
-            jQuery('.give-and-take').show();
-        } else jQuery('.give-and-take').hide();
+            $('.inventory-portrait').hide();
+            $('.inventory-givetake').show();
+        } else {
+            $('.inventory-givetake').hide();
+            $('.inventory-portrait').show();
+            this.showPortrait();
+        }
     };
 
     // Framework for canvas applications
@@ -672,10 +749,10 @@
             var now = new Date().getTime();
             draw_id = 0;
 
-            if (canvas.get(0).getContext) {
+            if (canvas.size() && canvas.get(0).getContext) {
                 width = canvas.innerWidth();
                 height = canvas.innerHeight();
-                ctx = canvas[0].getContext('2d');
+                ctx = canvas.get(0).getContext('2d');
                 ctx.clearRect(0, 0, width, height);
                 if (app.draw)
                     app.draw(ctx, width, height, now, draw_last);
