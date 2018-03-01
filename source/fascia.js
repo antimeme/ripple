@@ -419,7 +419,7 @@
 
         result.control = fascia.playerControl(result);
 
-        result.interact = config.interact || function() {};
+        result.interact = (config && config.interact) || function() {};
 
         result.replan = function(now, collide, destination) {
             this.control.clear(true);
