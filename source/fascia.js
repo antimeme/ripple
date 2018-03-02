@@ -111,10 +111,14 @@
     };
 
     fascia.playerControl.prototype.setTarget = function(target) {
+        var diff;
+
         this.clear();
-        this.target = target;
-        this.turn = multivec(target).minus(
-            this.player.position).normalize();
+        target = multivec(target);
+        if (!(diff = target.minus(this.player.position)).zeroish()) {
+            this.target = target;
+            this.turn = diff.normalize();
+        }
     };
 
     fascia.playerControl.prototype.setArrow = function(turn, start, end) {
@@ -523,8 +527,8 @@
         if (!(this instanceof fascia.imageSystem))
             return new fascia.imageSystem(config);
 
-        this.images = config.files;
-        this.icons = config.icons;
+        this.images = (config && config.files) || {};
+        this.icons = (config && config.icons) || {};
         this.size = 45;
     };
 
@@ -541,9 +545,9 @@
         var image;
 
         if (!config)
-            config = this.icons['default'];
+            config = this.icons['default'] || {};
         else if (typeof config === 'string')
-            config = this.icons[config];
+            config = this.icons[config] || {};
 
         imgdef = this.images[config.image || 'default'];
         if (imgdef) {
@@ -554,7 +558,7 @@
                         imgdef.size * imgdef.rows) + '%');
                 position = (
                     Math.floor(100 * config.col /
-                        (imgdef.cols - 1)) + '% ' + 
+                        (imgdef.cols - 1)) + '% ' +
                     Math.floor(100 * config.row /
                         (imgdef.rows - 1)) + '%');
             }
@@ -603,7 +607,7 @@
                 this.populate($, this.other);
             } else this.playerPane.find('button').addClass('selected');
         };
-        
+
         var take = function(event) {
             var selected = this.otherPane.find('.selected');
             if (selected.size()) {
@@ -622,7 +626,7 @@
                 this.populate($, this.other);
             } else this.otherPane.find('button').addClass('selected');
         };
-        
+
         this.pane = $('<div>')
             .addClass('page').addClass('inventory').hide()
             .appendTo(container);
