@@ -831,11 +831,13 @@
     // to the closest point on the line.  The output of this method plus
     // the original vector is the closest point on the line
     var shortestSegment = function(v, segment) {
-        var q = segment.q ? segment.q : segment.e.subtract(segment.s);
+        var sege = multivec(segment.end || segment.e);
+        var segs = multivec(segment.start || segment.s);
+        var q = segment.q ? segment.q : sege.subtract(segs);
         var q2 = segment.normSquared ? segment.normSquared :
                  q.normSquared();
-        return v.subtract(segment.s).subtract(
-            q.multiply(v.subtract(segment.s).dot(q).divide(q2)));
+        return v.subtract(segs).subtract(
+            q.multiply(v.subtract(segs).dot(q).divide(q2)));
     };
 
     // Given the two round objects moving at constant velocity, compute
@@ -895,12 +897,14 @@
     // sphere and segment touch
     multivec.collideRadiusSegment = function(s, e, r, segment) {
         var result = undefined; // undefined means no collision
-        var q = segment.q ? segment.q : segment.e.subtract(segment.s);
+        var sege = multivec(segment.end || segment.e);
+        var segs = multivec(segment.start || segment.s);
+        var q = segment.q ? segment.q : sege.subtract(segs);
         var q2 = segment.normSquared ? segment.normSquared :
                  q.normSquared();
         var width = segment.width ? segment.width : 0;
-        var ps = s.subtract(segment.s).dot(q).divide(q.norm()).scalar;
-        var pe = e.subtract(segment.s).dot(q).divide(q.norm()).scalar;
+        var ps = s.subtract(segs).dot(q).divide(q.norm()).scalar;
+        var pe = e.subtract(segs).dot(q).divide(q.norm()).scalar;
         var ds = shortestSegment(s, segment);
         var de = shortestSegment(e, segment);
         var m, n, mq, nq, gap; // line distance computation variables
@@ -909,27 +913,27 @@
         // so treat it as a round object instead
         if (zeroish(q2))
             return multivec.collideRadiusRadius(
-                s, e, r, segment.s, segment.e, width / 2);
+                s, e, r, segs, sege, width / 2);
         gap = r + width / 2;
         gap *= gap;
 
         if (ds.normSquared() < gap) {
             if (ps < 0)
                 return multivec.collideRadiusRadius(
-                    s, e, r, segment.s, segment.s, width / 2);
+                    s, e, r, segs, segs, width / 2);
             else if (ps > q.norm())
                 return multivec.collideRadiusRadius(
-                    s, e, r, segment.e, segment.e, width / 2);
+                    s, e, r, sege, sege, width / 2);
         }
 
         // Distance squared is
-        //   (p - segment.s) - ((p - segment.s) . q)q/q^2)^2
+        //   (p - segs) - ((p - segs) . q)q/q^2)^2
         // A collision happens when this value is less than
         //   (r - width/2)^2
         // Since p is moving, it can be expanded to p = s + (e - s)t
         // Then we break things down in terms of t and find roots
         m = e.subtract(s); mq = m.dot(q).scalar;
-        n = s.subtract(segment.s); nq = n.dot(q).scalar;
+        n = s.subtract(segs); nq = n.dot(q).scalar;
 
         // Rather than computing square roots, which can be expensive,
         // we compare the square of the distance between point and line
@@ -960,8 +964,8 @@
         if (!isNaN(result)) {
             // Ignore collisions that occur outside the boundaries of
             // the segment -- makes it possible to go around segments
-            var ps = s.subtract(segment.s).dot(q).divide(q.norm());
-            var pe = e.subtract(segment.s).dot(q).divide(q.norm());
+            var ps = s.subtract(segs).dot(q).divide(q.norm());
+            var pe = e.subtract(segs).dot(q).divide(q.norm());
             if (ps.scalar + r < 0 && pe.scalar + r < 0) {
                 result = undefined;
             } else if (ps.scalar - r > q.norm() &&
