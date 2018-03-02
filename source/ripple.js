@@ -514,6 +514,10 @@
         this.x += vector.x;
         this.y += vector.y;
     };
+    ripple.transform.prototype.position = function(vector) {
+        this.x = vector.x;
+        this.y = vector.y;
+    };
     ripple.transform.prototype.rotate = function(radians) {
         this.radians += radians;
     };
