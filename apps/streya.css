@@ -1,30 +1,82 @@
 html, body { padding: 0; margin: 0; overflow: hidden; }
 canvas.streya { display: block; cursor: crosshair; }
 
-.menu {
+.streya-menu {
+    position: absolute; top: 10; left: 25; z-order: 2;
     background: #333; color: white;
     border: 2px solid white;
     border-radius: 10%;
 }
 
-.menu legend {
+.streya-menu legend {
     background: #333;
     border: 2px solid white;
     border-radius: 10%;
 }
 
-.menu ul {
+.streya-menu ul {
     list-style-type: none;
     list-style-position: outside;
     padding: 0; margin: 0;
 }
-.menu li {
+.streya-menu li {
     -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
     -khtml-user-select: none; /* Konqueror HTML */
     -moz-user-select: none; /* Firefox */
     -ms-user-select: none; /* Internet Explorer/Edge */
-    user-select: none; /* Non-prefixed version, currently
-                          supported by Chrome and Opera */
+    user-select: none;
     padding-top: 0.5em;
+}
+.streya-menu li:hover { background: #55e; }
+
+.image-button {
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-color: rgba(255,255,255,0.8);
+}
+.bbar {
+    position: fixed;
+    display: block; z-index: 2;
+    margin: 1%; border-radius: 10 }
+.bbar div { display: inline-block; height: 100% }
+.bbar button:first-child {
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+}
+.bbar button:last-child {
+    border-top-right-radius: 15px;
+    border-bottom-right-radius: 15px;
+}
+
+.inventory-pane {
+    position: absolute;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+.inventory-header {
+    top: 0; left: 0; right: 0;
+    background-color: rgba(48, 48, 144, 0.5);
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+.inventory-footer {
+    bottom: 0; left: 0; right: 0;
+    background-color: rgba(48, 144, 144, 0.5);
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+}
+.inventory-personal {
+    left: 0; width: 50%;
+    background-color: rgba(144, 48, 48, 0.5);
+}
+.inventory-other {
+    right: 0; width: 50%;
+    background-color: rgba(48, 144, 48, 0.5);
+}
+.inventory-portrait {
+    right: 0; top: 0; width: 50%; height: 100%;
+    background-color: #ddd;
+    border-top-right-radius: 15px;
+    border-bottom-right-radius: 15px;
 }

@@ -1,5 +1,62 @@
 {
     "schema": { "version": "0.0.1" },
+    "imageSystem": {
+        "comments": [
+            "This section gives names to a set of images for use as",
+            "sprite sheets.  Each file has a URL and some parameters",
+            "for determining how to find sprites.  A set of icon",
+            "names is provided to more specifically identify sprites."
+        ],
+        "files": {
+            "icons": {
+                "url": "images/whiplash-sprites.svg",
+                "size": 100, "rows": 5, "cols": 5}
+        },
+        "icons": {
+            "default": {"image": "icons", "row": 0, "col": 0},
+            "settings": {"image": "icons", "row": 0, "col": 0},
+            "interact": {"image": "icons", "row": 0, "col": 1},
+            "inventory": {"image": "icons", "row": 0, "col": 2},
+            "lhand": {"image": "icons", "row": 0, "col": 3},
+            "rhand": {"image": "icons", "row": 0, "col": 4},
+            "close": {"image": "icons", "row": 1, "col": 2},
+            "take": {"image": "icons", "row": 1, "col": 3},
+            "give": {"image": "icons", "row": 1, "col": 4}
+        }
+    },
+    "itemSystem": {
+        "keycard": {
+            "weight": 0.02,
+            "icon": {"image": "icons", "row": 4, "col": 0}},
+        "tablet": {"weight": 4,
+                   "icon": {"image": "icons", "row": 3, "col": 0}},
+        "knife": {
+            "weight": 3,
+            "icon": {"image": "icons", "row": 4, "col": 1}},
+        "gun": {"weight": 5,
+                "icon": {"image": "icons", "row": 4, "col": 2}},
+        "tonfa": {"weight": 2,
+                  "icon": {"image": "icons", "row": 4, "col": 3}},
+        "flashlight": {
+            "weight": 3, "light": {"width": 1, "length": 2},
+            "icon": {"image": "icons", "row": 3, "col": 1}},
+        "apple": {
+            "weight": 0.5,
+            "icon": {"image": "icons", "row": 2, "col": 3}},
+        "cookie": {
+            "weight": 0.2,
+            "icon": {"image": "icons", "row": 2, "col": 4}}
+    },
+    "characterDefinitions": {
+        "player": {
+            "headColor": "rgb(198,134,66)",
+            "bodyColor": "rgb(64, 64, 224)",
+            "eyeColor": "rgb(32, 32, 224)",
+            "speed": 0.009,
+            "turnSpeed": 0.005,
+            "inventory": [{"type": "keycard"}]
+        }
+    },
     "skills": {
         "Repair": {
             "cost": 5,
@@ -166,6 +223,14 @@
                 "498": "wall", "696": "wall", "920": "wall",
                 "1184":"wall", "1312": "wall", "1478": "wall",
                 "2138":"wall","2340":"wall","2962":"wall","3166":"wall","3418":"wall","4956":"wall","5824":"wall","6122":"wall","6476":"wall","6802":"wall","10886":"wall","11294":"wall","11768":"wall","12206":"wall","18038":"wall","18576":"wall","19178":"wall","19736":"wall","29010":"wall","29692":"wall","43404":"wall","44238":"wall"}
+        },
+        "Opal": {
+            "name": "Opal",
+            "grid": { "type": "hex", "size": 10 },
+            "cells":{
+                "0":{"system":"Mainframe (M)","sigil":"M"},"1":{},"2":{"sigil":""},"3":{},"4":{"sigil":""},"5":{"sigil":""},"6":{"sigil":""},"7":{"system":"Airlock (A)","sigil":"A"},"8":{"system":"Life Support (O)","sigil":"O"},"9":{"system":"Helm (H)","sigil":"H"},"12":{"system":"Cabin (B)","sigil":"B"},"13":{"system":"Airlock (A)","sigil":"A"},"14":{"system":"Life Support (O)","sigil":"O"},"16":{"system":"Reactor (R)","sigil":"R"},"17":{"system":"Engine (E)","sigil":"E"},"18":{"system":"Engine (E)","sigil":"E"},"20":{"system":"Bunks (K)","sigil":"K"}},
+            "boundaries": {
+                "4":"pass","16":"pass","36":"pass","64":"pass","100":"pass","144":"pass","198":"auto","208":"wall","264":"wall","268":"auto","580":"auto","680":"wall","682":"auto","700":"wall","788":"auto","794":"wall","808":"wall","1032":"auto","1034":"auto","1166":"wall","1184":"wall","1304":"wall","1312":"wall","1612":"auto","1614":"wall","1616":"wall"}
         }
     }
 }
