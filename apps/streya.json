@@ -189,13 +189,282 @@
     },
 
     "shipDesigns": {
-        "Blip": {
-            "schema": { "version": "0.0.1" }, "name": "Blip",
-            "grid": {"type": "hex", "size": 10},
-            "name": "Example",
-            "cells": {
-                "0": {},
-                "1": {"system": "Helm", "sigil": "H"}
+        "Tortuna": {
+            "name":"Tortuna",
+            "grid": { "type":"hex", "size":10 },
+            "cells":{
+                "0": { "system":"Bunks (K)", "sigil":"K" },
+                "1":{
+                    "system":"Bunks (K)",
+                    "sigil":"K"
+                },
+                "2":{
+                    "sigil":""
+                },
+                "3":{
+                    "system":"Bunks (K)",
+                    "sigil":"K"
+                },
+                "4":{
+
+                },
+                "5":{
+
+                },
+                "6":{
+
+                },
+                "7":{
+                    "system":"Cargo (G)",
+                    "sigil":"G"
+                },
+                "8":{
+
+                },
+                "9":{
+                    "system":"Life Support (O)",
+                    "sigil":"O"
+                },
+                "10":{
+                    "sigil":""
+                },
+                "11":{
+                    "system":"Airlock (A)",
+                    "sigil":"A"
+                },
+                "12":{
+                    "system":"Cargo (G)",
+                    "sigil":"G"
+                },
+                "13":{
+                    "system":"Cargo (G)",
+                    "sigil":"G"
+                },
+                "14":{
+                    "sigil":""
+                },
+                "16":{
+
+                },
+                "17":{
+
+                },
+                "18":{
+
+                },
+                "19":{
+
+                },
+                "20":{
+                    "system":"Cargo (G)",
+                    "sigil":"G"
+                },
+                "22":{
+                    "system":"Recreation (Y)",
+                    "sigil":"Y"
+                },
+                "24":{
+
+                },
+                "25":{
+                    "system":"Reactor (R)",
+                    "sigil":"R"
+                },
+                "26":{
+                    "system":"Sensors (S)",
+                    "sigil":"S"
+                },
+                "32":{
+                    "system":"Workshop (W)",
+                    "sigil":"W"
+                },
+                "34":{
+                    "system":"Mainframe (M)",
+                    "sigil":"M"
+                },
+                "38":{
+
+                },
+                "39":{
+                    "system":"Laboratory (L)",
+                    "sigil":"L"
+                },
+                "40":{
+                    "system":"Engine (E)",
+                    "sigil":"E"
+                },
+                "41":{
+                    "system":"Engine (E)",
+                    "sigil":"E"
+                },
+                "46":{
+                    "system":"Cargo (G)",
+                    "sigil":"G"
+                },
+                "48":{
+                    "system":"Cargo (G)",
+                    "sigil":"G"
+                },
+                "49":{
+                    "system":"Helm (H)",
+                    "sigil":"H"
+                },
+                "62":{
+                    "system":"PodBay (P)",
+                    "sigil":"P"
+                }
+            },
+            "boundaries":{
+                "16":"wall",
+                "40":"wheel",
+                "64":"wall",
+                "100":"wall",
+                "144":"wall",
+                "146":"wheel",
+                "198":"wheel",
+                "208":"wall",
+                "326":"wall",
+                "330":"wheel",
+                "406":"wall",
+                "418":"wheel",
+                "486":"wall",
+                "498":"wheel",
+                "502":"wheel",
+                "580":"wall",
+                "680":"wall",
+                "682":"wall",
+                "696":"wheel",
+                "808":"wall",
+                "1612":"wall",
+                "1616":"wall",
+                "1952":"wheel",
+                "1976":"wall",
+                "2348":"wall",
+                "2518":"wall",
+                "2522":"wheel",
+                "2722":"wheel",
+                "2724":"wall",
+                "2754":"wheel",
+                "4120":"wheel",
+                "4124":"wheel",
+                "4134":"wheel",
+                "4662":"wheel",
+                "4688":"wheel",
+                "6118":"wall",
+                "6122":"wheel",
+                "6448":"wall",
+                "6476":"wall",
+                "6762":"wheel",
+                "6792":"wall",
+                "6802":"wheel",
+                "8508":"wheel",
+                "8512":"wheel",
+                "8544":"wall",
+                "9296":"wall",
+                "9308":"wheel",
+                "9654":"wheel",
+                "9656":"wheel",
+                "15444":"wheel",
+                "15458":"wheel"
+            }
+        },
+        "Opal": {
+            "name":"Opal",
+            "grid":{
+                "type":"hex",
+                "size":10
+            },
+            "cells":{
+                "0":{
+                    "system":"Mainframe (M)",
+                    "sigil":"M"
+                },
+                "1":{
+
+                },
+                "2":{
+                    "sigil":""
+                },
+                "3":{
+
+                },
+                "4":{
+                    "sigil":""
+                },
+                "5":{
+                    "sigil":""
+                },
+                "6":{
+                    "sigil":""
+                },
+                "7":{
+                    "system":"Airlock (A)",
+                    "sigil":"A"
+                },
+                "8":{
+                    "system":"Life Support (O)",
+                    "sigil":"O"
+                },
+                "9":{
+                    "system":"Helm (H)",
+                    "sigil":"H"
+                },
+                "12":{
+                    "system":"Cabin (B)",
+                    "sigil":"B"
+                },
+                "13":{
+                    "system":"Airlock (A)",
+                    "sigil":"A"
+                },
+                "14":{
+                    "system":"Life Support (O)",
+                    "sigil":"O"
+                },
+                "16":{
+                    "system":"Reactor (R)",
+                    "sigil":"R"
+                },
+                "17":{
+                    "system":"Engine (E)",
+                    "sigil":"E"
+                },
+                "18":{
+                    "system":"Engine (E)",
+                    "sigil":"E"
+                },
+                "20":{
+                    "system":"Bunks (K)",
+                    "sigil":"K"
+                }
+            },
+            "boundaries":{
+                "4":"pass",
+                "16":"pass",
+                "36":"pass",
+                "64":"pass",
+                "100":"pass",
+                "144":"pass",
+                "198":"auto",
+                "208":"wall",
+                "264":"wall",
+                "268":"auto",
+                "580":"auto",
+                "680":"wall",
+                "682":"auto",
+                "700":"wall",
+                "788":"auto",
+                "794":"wall",
+                "808":"wall",
+                "1032":"auto",
+                "1034":"auto",
+                "1166":"wall",
+                "1184":"wall",
+                "1304":"wall",
+                "1312":"wall",
+                "1612":"auto",
+                "1614":"wall",
+                "1616":"wall"
             }
         },
         "Donut": {
@@ -223,14 +492,6 @@
                 "498": "wall", "696": "wall", "920": "wall",
                 "1184":"wall", "1312": "wall", "1478": "wall",
                 "2138":"wall","2340":"wall","2962":"wall","3166":"wall","3418":"wall","4956":"wall","5824":"wall","6122":"wall","6476":"wall","6802":"wall","10886":"wall","11294":"wall","11768":"wall","12206":"wall","18038":"wall","18576":"wall","19178":"wall","19736":"wall","29010":"wall","29692":"wall","43404":"wall","44238":"wall"}
-        },
-        "Opal": {
-            "name": "Opal",
-            "grid": { "type": "hex", "size": 10 },
-            "cells":{
-                "0":{"system":"Mainframe (M)","sigil":"M"},"1":{},"2":{"sigil":""},"3":{},"4":{"sigil":""},"5":{"sigil":""},"6":{"sigil":""},"7":{"system":"Airlock (A)","sigil":"A"},"8":{"system":"Life Support (O)","sigil":"O"},"9":{"system":"Helm (H)","sigil":"H"},"12":{"system":"Cabin (B)","sigil":"B"},"13":{"system":"Airlock (A)","sigil":"A"},"14":{"system":"Life Support (O)","sigil":"O"},"16":{"system":"Reactor (R)","sigil":"R"},"17":{"system":"Engine (E)","sigil":"E"},"18":{"system":"Engine (E)","sigil":"E"},"20":{"system":"Bunks (K)","sigil":"K"}},
-            "boundaries": {
-                "4":"pass","16":"pass","36":"pass","64":"pass","100":"pass","144":"pass","198":"auto","208":"wall","264":"wall","268":"auto","580":"auto","680":"wall","682":"auto","700":"wall","788":"auto","794":"wall","808":"wall","1032":"auto","1034":"auto","1166":"wall","1184":"wall","1304":"wall","1312":"wall","1612":"auto","1614":"wall","1616":"wall"}
         }
     }
 }
