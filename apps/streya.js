@@ -291,7 +291,7 @@
                     menu.toggle(); }))
             .append(menu)
             .appendTo(canvas.parent());
-        var state, tap, selected, drag, zooming, gesture;
+        var game, tap, selected, drag, zooming, gesture;
 
         var colorSelected = 'rgba(192, 192, 0, 0.2)';
         var tform = ripple.transform();
@@ -321,7 +321,7 @@
                     bbarLeft.hide();
                     bbarRight.hide();
                     menuframe.show();
-                    state.redraw();
+                    game.redraw();
                 },
                 touch: function(touches) {
                     var cell, oldtap;
@@ -407,7 +407,7 @@
                     bbarLeft.show();
                     bbarRight.show();
                     menuframe.hide();
-                    state.redraw();
+                    game.redraw();
                 },
                 keydown: function(event) {
                     player.control.keydown(event);
@@ -541,7 +541,7 @@
                 gconfig.size = parseInt(gsize.val());
                 ship = streya.Ship.create({ grid: gconfig });
                 selected = ship.grid.coordinate(selected);
-                state.redraw();
+                game.redraw();
             })
             .css({display: 'inline-block'});
         [{name: "Hex(point)", type: "hex", orient: "point"},
@@ -561,7 +561,7 @@
                 var gconfig = JSON.parse(gtype.val());
                 ship.grid.size(parseInt(gsize.val()));
                 selected = ship.grid.coordinate(selected);
-                state.redraw();
+                game.redraw();
             })
             .css({display: 'inline-block'});
         gsize.append('<option>10</option>');
@@ -581,7 +581,7 @@
                 if (designs.val() !== '-') {
                     ship = streya.Ship.create(
                         data.shipDesigns[designs.val()]);
-                    state.redraw();
+                    game.redraw();
                 }
             });
             menu.append($('<li>').append(designs));
@@ -598,7 +598,7 @@
                     // How to create a data file to save?
                     console.log(JSON.stringify(ship.save()));
                 } break;
-                case 'center': { state.center(); } break;
+                case 'center': { game.center(); } break;
                 case 'tour': {
                     system = systems.tour;
                     if (system.start)
@@ -606,12 +606,12 @@
                 } break;
                 case 'full-screen': {
                     $.toggleFullscreen(canvas.parent().get(0));
-                    state.resize();
+                    game.resize();
                 } break;
             }
         });
 
-        var state = {
+        var game = {
             draw_id: 0,
             draw: function() {
                 var neighbors, vector, radius;
@@ -681,9 +681,9 @@
             },
 
             resize: function(event) {
-                var state = this;
+                var game = this;
                 if (event && event.data)
-                    state = event.data;
+                    game = event.data;
                 zooming = drag = undefined;
 
                 // Consume enough space to fill the viewport.
@@ -698,10 +698,10 @@
                 canvas.attr("width", canvas.innerWidth());
                 canvas.attr("height", canvas.innerHeight());
 
-                state.width = canvas.width();
-                state.height = canvas.height();
-                tform.resize(state.width, state.height);
-                state.redraw();
+                game.width = canvas.width();
+                game.height = canvas.height();
+                tform.resize(game.width, game.height);
+                game.redraw();
             },
 
             // Move the center of the screen within limts
@@ -736,9 +736,9 @@
 
         };
 
-        viewport.on('resize', state, state.resize);
-        state.resize();
-        state.center();
+        viewport.on('resize', game, game.resize);
+        game.resize();
+        game.center();
         system = systems.edit;
         if (system.start)
             system.start();
@@ -751,8 +751,8 @@
 
         // Process mouse and touch events on grid itself
         canvas.on('mousewheel', function(event) {
-            state.zoom(1 + 0.1 * event.deltaY);
-            state.redraw();
+            game.zoom(1 + 0.1 * event.deltaY);
+            game.redraw();
         });
         canvas.on('mousedown touchstart', function(event) {
             var touches = ripple.createTouches(event);
@@ -772,7 +772,7 @@
                 tap = drag = touches;
             }
 
-            state.redraw();
+            game.redraw();
             return false;
         });
         canvas.on('mousemove touchmove', function(event) {
@@ -781,7 +781,7 @@
             if (drag) {
                 var wtap = tform.toWorldFromScreen(touches);
                 var wdrag = tform.toWorldFromScreen(drag);
-                state.pan({ x: wdrag.x - wtap.x, y: wdrag.y - wtap.y});
+                game.pan({ x: wdrag.x - wtap.x, y: wdrag.y - wtap.y});
                 tap = touches;
                 drag = tap;
             }
@@ -794,7 +794,7 @@
                     factor = diameter / zooming.diameter;
                 }
                 if (factor && factor > 0)
-                    state.zoom(factor);
+                    game.zoom(factor);
             }
             return false;
         });
@@ -810,6 +810,8 @@
             if (system.keyup)
                 system.keyup(event);
         });
+
+        return game;
     };
 
 }).call(this, typeof exports === 'undefined'?
