@@ -13,20 +13,15 @@
         this.fascia = require('./ripple/fascia.js');
     }
 
-    var fetchParam = function(name) {
-        return (typeof window !== 'undefined') ?
-               window.params[name] : process.env[name];
-    };
-
     var browserSettings = {
-        debug: !!fetchParam('debug'),
+        debug: !!ripple.fetchParam('debug'),
         profiling: false,
-        rotateworld: !!fetchParam('rotateworld'),
-        mazeType: fetchParam('mazeType') || undefined,
+        rotateworld: !!ripple.fetchParam('rotateworld'),
+        mazeType: ripple.fetchParam('mazeType') || undefined,
         mazeRings: Math.max(Math.min(parseInt(
-            fetchParam('mazeRings'), 10), 8), 1),
-        startStage: fetchParam('startStage'),
-        mode: fetchParam('mode')
+            ripple.fetchParam('mazeRings'), 10), 8), 1),
+        startStage: ripple.fetchParam('startStage'),
+        mode: ripple.fetchParam('mode')
     };
 
     var createWall = function(wall) {

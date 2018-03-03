@@ -16,6 +16,11 @@
         this.fascia = require('./ripple/fascia.js');
     }
 
+    var browserSettings = {
+        debug: !!ripple.fetchParam('debug'),
+        ship: ripple.fetchParam('ship')
+    };
+
     // === Ship representation
     // A ship consists of one or more connected cells, each of which
     // may have systems present, and a set of boundaries which connect
@@ -290,7 +295,10 @@
 
         var colorSelected = 'rgba(192, 192, 0, 0.2)';
         var tform = ripple.transform();
-        var ship = streya.Ship.create();
+        var ship = streya.Ship.create(
+            (browserSettings.ship &&
+             browserSettings.ship in data.shipDesigns) ?
+            data.shipDesigns[browserSettings.ship] : undefined);
         var player = fascia.createPlayer(
             ripple.mergeConfig(
                 (data.characterDefinitions &&

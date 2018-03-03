@@ -69,6 +69,11 @@
 
     // === General utilities
 
+    ripple.fetchParam = function(name) {
+        return (typeof window !== 'undefined') ?
+               window.params[name] : process.env[name];
+    };
+
     // Randomize the order of an array in place, using an optional
     // random number generator
     ripple.shuffle = function(elements, rand) {
