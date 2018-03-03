@@ -403,19 +403,49 @@
                 },
                 keydown: function(event) {
                     player.control.keydown(event);
-                    state.update();
+                    this.update();
                 },
                 keyup: function(event) {
                     player.control.keyup(event);
-                    state.update();
+                    this.update();
                 },
                 touch: function(touches) {
-                    state.update();
+                    this.update();
                     player.control.setTarget(
                         tform.toWorldFromScreen(touches));
                 },
                 draw: function(ctx, now) {
                     player.draw(ctx, now);
+                },
+                update: function(now) {
+                    if (isNaN(now))
+                        now = Date.now();
+
+                    player.destination = player.plan(now);
+                    if (player.destination) {
+                        var collide = undefined;
+                        var updateCollide = function(current) {
+                            if (!isNaN(current) &&
+                                (isNaN(collide) || current < collide))
+                                collide = current;
+                        };
+
+                        ship.walls().forEach(function(wall) {
+                            if (!wall.pass)
+                                updateCollide(
+                                    multivec.collideRadiusSegment(
+                                        player.position,
+                                        player.destination,
+                                        player.size, wall));
+                        }, this);
+
+                        if (!isNaN(collide))
+                            player.destination = player.replan(
+                                now, collide, player.destination);
+                    }
+
+                    player.update(now);
+                    tform.position(player.position);
                 }
             },
         };
@@ -497,28 +527,34 @@
         menu.append($('<li data-action="mode">').append(mode));
         menu.append($('<li>').append(modeParam));
 
-        var regrid = function() {
-            ship = streya.Ship.create({
-                grid: JSON.parse(gtype.val()),
-                size: parseInt(gsize.val(), 10) });
-            state.redraw();
-        };
         var gtype = $('<select>')
-            .on('change', regrid)
+            .on('change', function() {
+                var gconfig = JSON.parse(gtype.val());
+                gconfig.size = parseInt(gsize.val());
+                ship = streya.Ship.create({ grid: gconfig });
+                selected = ship.grid.coordinate(selected);
+                state.redraw();
+            })
             .css({display: 'inline-block'});
         [{name: "Hex(point)", type: "hex", orient: "point"},
          {name: "Hex(edge)", type: "hex", orient: "edge"},
          {name: "Square", type: "square"},
-         {name: "Triangle", type: "triangle"}].forEach(function(g) {
-             var value = JSON.stringify(g)
+         {name: "Triangle", type: "triangle"}
+        ].forEach(function(g) {
+            gtype.append('<option value="' +
+                         JSON.stringify(g)
                              .replace(/"/g, '&#34;')
-                             .replace(/'/g, '&#39;');
-             gtype.append('<option value="' + value + '">' +
-                          g.name + '</option>');
-         });
+                             .replace(/'/g, '&#39;') + '">' +
+                         g.name + '</option>');
+        });
 
         var gsize = $('<select>')
-            .on('change', regrid)
+            .on('change', function() {
+                var gconfig = JSON.parse(gtype.val());
+                ship.grid.size(parseInt(gsize.val()));
+                selected = ship.grid.coordinate(selected);
+                state.redraw();
+            })
             .css({display: 'inline-block'});
         gsize.append('<option>10</option>');
         gsize.append('<option>20</option>');
@@ -574,7 +610,8 @@
                 var points, last, index;
                 var now = Date.now();
 
-                this.update(now);
+                if (system.update)
+                    system.update(now);
 
                 if (canvas[0].getContext) {
                     var ctx = canvas[0].getContext('2d');
@@ -661,16 +698,8 @@
 
             // Move the center of the screen within limts
             pan: function(vector) {
-                var extents = ship.extents();
-                if (tform.x + vector.x < extents.sx)
-                    vector.x = extents.sx - tform.x;
-                if (tform.x + vector.x > extents.ex)
-                    vector.x = extents.ex - tform.x;
-                if (tform.y + vector.y < extents.sy)
-                    vector.y = extents.sy - tform.y;
-                if (tform.y + vector.y > extents.ey)
-                    vector.y = extents.ey - tform.y;
                 tform.pan(vector);
+                this.redraw();
             },
 
             // Change the magnification within limits
@@ -697,34 +726,6 @@
                 this.redraw();
             },
 
-            update: function(now) {
-                if (isNaN(now))
-                    now = Date.now();
-
-                player.destination = player.plan(now);
-                if (player.destination) {
-                    var collide = undefined;
-                    var updateCollide = function(current) {
-                        if (!isNaN(current) &&
-                            (isNaN(collide) || current < collide))
-                            collide = current;
-                    };
-
-                    ship.walls().forEach(function(wall) {
-                        if (!wall.pass)
-                            updateCollide(multivec.collideRadiusSegment(
-                                player.position, player.destination,
-                                player.size, wall));
-                    }, this);
-
-                    if (!isNaN(collide))
-                        player.destination = player.replan(
-                            now, collide, player.destination);
-                }
-
-                player.update(now);
-                tform.position(player.position);
-            }
         };
 
         viewport.on('resize', state, state.resize);
@@ -737,7 +738,7 @@
         // Calculate square distance
         var sqdist = function(node1, node2) {
             return ((node2.x - node1.x) * (node2.x - node1.x) +
-                         (node2.y - node1.y) * (node2.y - node1.y));
+                          (node2.y - node1.y) * (node2.y - node1.y));
         };
 
         // Process mouse and touch events on grid itself
@@ -773,7 +774,6 @@
                 var wtap = tform.toWorldFromScreen(touches);
                 var wdrag = tform.toWorldFromScreen(drag);
                 state.pan({ x: wdrag.x - wtap.x, y: wdrag.y - wtap.y});
-                state.redraw();
                 tap = touches;
                 drag = tap;
             }
