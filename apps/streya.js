@@ -274,13 +274,10 @@
         }
     }
 
-    streya.game = function($, parent, viewport, data) {
-        var canvas = $('<canvas>')
-            .css({
-                position: 'relative',
-                'z-order': 1,
-                'touch-action': 'none'})
-            .appendTo(parent);
+    streya.game = function($, data) {
+        var game, tap, selected, drag, zooming, gesture;
+
+        var colorSelected = 'rgba(192, 192, 0, 0.2)';
         var menu = $('<ul>');
         var menuframe = $('<fieldset>')
             .addClass('streya-menu')
@@ -289,11 +286,7 @@
             .append($('<legend>Streya Menu</legend>').on(
                 'click', function() {
                     menu.toggle(); }))
-            .append(menu)
-            .appendTo(canvas.parent());
-        var game, tap, selected, drag, zooming, gesture;
-
-        var colorSelected = 'rgba(192, 192, 0, 0.2)';
+            .append(menu);
         var tform = ripple.transform();
         var ship = streya.Ship.create(
             (browserSettings.ship &&
@@ -312,8 +305,7 @@
                          } }}));
         var itemSystem = fascia.itemSystem(data.itemSystem);
         var imageSystem = fascia.imageSystem(data.imageSystem);
-        var inventoryPane = fascia.inventoryPane(
-            $, parent, player, itemSystem, imageSystem);
+        var inventoryPane;
 
         var system, systems = {
             edit: {
@@ -321,7 +313,6 @@
                     bbarLeft.hide();
                     bbarRight.hide();
                     menuframe.show();
-                    game.redraw();
                 },
                 touch: function(touches) {
                     var cell, oldtap;
@@ -379,11 +370,6 @@
                 },
                 draw: function(ctx, now) {
                     if (selected) {
-                        // Coordinates of the selected square must be
-                        // updated in case the grid offsets have moved
-                        // since the last draw call?
-                        //selected = ship.grid.coordinate(selected);
-
                         ctx.beginPath();
                         ship.grid.draw(ctx, selected);
                         ctx.fillStyle = colorSelected;
@@ -407,7 +393,6 @@
                     bbarLeft.show();
                     bbarRight.show();
                     menuframe.hide();
-                    game.redraw();
                 },
                 keydown: function(event) {
                     player.control.keydown(event);
@@ -461,7 +446,6 @@
         var bbarLeft = $('<div>')
             .addClass('bbar').hide()
             .css({ bottom: 0, left: 0 })
-            .appendTo(parent)
             .append(imageSystem.createButton(
                 'lhand', $, function() {
                     player.punchLeft = Date.now();
@@ -473,7 +457,6 @@
         var bbarRight = $('<div>')
             .addClass('bbar').hide()
             .css({ bottom: 0, right: 0 })
-            .appendTo(parent)
             .append(imageSystem.createButton(
                 'settings', $, function(event) {
                     inventoryPane.hide();
@@ -541,7 +524,6 @@
                 gconfig.size = parseInt(gsize.val());
                 ship = streya.Ship.create({ grid: gconfig });
                 selected = ship.grid.coordinate(selected);
-                game.redraw();
             })
             .css({display: 'inline-block'});
         [{name: "Hex(point)", type: "hex", orient: "point"},
@@ -561,7 +543,6 @@
                 var gconfig = JSON.parse(gtype.val());
                 ship.grid.size(parseInt(gsize.val()));
                 selected = ship.grid.coordinate(selected);
-                game.redraw();
             })
             .css({display: 'inline-block'});
         gsize.append('<option>10</option>');
@@ -581,7 +562,6 @@
                 if (designs.val() !== '-') {
                     ship = streya.Ship.create(
                         data.shipDesigns[designs.val()]);
-                    game.redraw();
                 }
             });
             menu.append($('<li>').append(designs));
@@ -605,15 +585,15 @@
                         system.start();
                 } break;
                 case 'full-screen': {
-                    $.toggleFullscreen(canvas.parent().get(0));
-                    game.resize();
+                    $.toggleFullscreen(
+                        $('.fascia-canvas').parent().get(0));
+                    // TODO redraw
                 } break;
             }
         });
 
         var game = {
-            draw_id: 0,
-            draw: function() {
+            draw: function(ctx, width, height, now) {
                 var neighbors, vector, radius;
                 var points, last, index;
                 var now = Date.now();
@@ -621,93 +601,89 @@
                 if (system.update)
                     system.update(now);
 
-                if (canvas[0].getContext) {
-                    var ctx = canvas[0].getContext('2d');
+                ctx.save();
+                ctx.fillStyle = 'rgb(32, 32, 32)';
+                ctx.fillRect(0, 0, this.width, this.height);
+                tform.setupContext(ctx);
 
-                    ctx.save();
-                    ctx.fillStyle = 'rgb(32, 32, 32)';
-                    ctx.fillRect(0, 0, this.width, this.height);
-                    tform.setupContext(ctx);
+                // Draw the ship cells
+                ctx.beginPath();
+                ship.mapCells(function(node, cell) {
+                    ship.grid.draw(ctx, ship.grid.coordinate(node));
+                }, this);
+                ctx.fillStyle = 'rgb(160, 160, 176)';
+                ctx.fill();
 
-                    // Draw the ship cells
+                // Draw ship systems
+                ctx.beginPath();
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = 'bold ' + Math.round(
+                    ship.grid.size() / 2) + 'px sans';
+                ctx.fillStyle = 'rgb(48, 48, 96)';
+                ship.mapCells(function(node, cell) {
+                    node = ship.grid.coordinate(node);
+                    if (cell && cell.sigil)
+                        ctx.fillText(cell.sigil, node.x, node.y);
+                }, this);
+
+                if (system.draw)
+                    system.draw(ctx, now);
+
+                // Draw the walls
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = 'rgb(96, 96, 240)';
+                ship.walls().forEach(function(wall, index) {
                     ctx.beginPath();
-                    ship.mapCells(function(node, cell) {
-                        ship.grid.draw(ctx, ship.grid.coordinate(node));
-                    }, this);
-                    ctx.fillStyle = 'rgb(160, 160, 176)';
-                    ctx.fill();
+                    ctx.lineWidth = wall.width;
+                    ctx.moveTo(wall.start.x, wall.start.y);
+                    ctx.lineTo(wall.end.x, wall.end.y);
+                    ctx.stroke();
+                }, this);
 
-                    // Draw ship systems
-                    ctx.beginPath();
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.font = 'bold ' + Math.round(
-                        ship.grid.size() / 2) + 'px sans';
-                    ctx.fillStyle = 'rgb(48, 48, 96)';
-                    ship.mapCells(function(node, cell) {
-                        node = ship.grid.coordinate(node);
-                        if (cell && cell.sigil)
-                            ctx.fillText(cell.sigil, node.x, node.y);
-                    }, this);
-
-                    if (system.draw)
-                        system.draw(ctx, now);
-
-                    // Draw the walls
-                    ctx.lineCap = 'round';
-                    ctx.strokeStyle = 'rgb(96, 96, 240)';
-                    ship.walls().forEach(function(wall, index) {
-                        ctx.beginPath();
-                        ctx.lineWidth = wall.width;
-                        ctx.moveTo(wall.start.x, wall.start.y);
-                        ctx.lineTo(wall.end.x, wall.end.y);
-                        ctx.stroke();
-                    }, this);
-
-                    ctx.restore();
-                }
-
-                this.draw_id = 0;
-                if (system.active && system.active())
-                    this.redraw();
+                ctx.restore();
             },
 
-            redraw: function() {
-                if (!this.draw_id) {
-                    var self = this;
-                    this.draw_id = requestAnimationFrame(
-                        function() { self.draw(); });
-                }
+            isActive: function() {
+                return system.active && system.active();
             },
 
-            resize: function(event) {
-                var game = this;
-                if (event && event.data)
-                    game = event.data;
+            resize: function(width, height, $) {
+                var size = Math.min(width, height);
+                this.width = width;
+                this.height = height;
+
+                tform.resize(width, height);
+                imageSystem.resize(width, height, $);
+
+                $('.page').css({
+                    'border-width': Math.floor(size / 100),
+                    'border-radius': Math.floor(size / 25),
+                    top: Math.floor(size / 50),
+                    left: Math.floor(size / 50),
+                    width: width - Math.floor(size / 20),
+                    height: height - Math.floor(
+                        size / 20 + size / 11)
+                });
+                $('.inventory-header').css({
+                    height: Math.floor(size * 2 / 11) });
+                $('.inventory-footer').css({
+                    height: Math.floor(size * 2 / 11) });
                 zooming = drag = undefined;
+            },
 
-                // Consume enough space to fill the viewport.
-                canvas.height(viewport.height());
-                canvas.width(viewport.width());
-
-                // A canvas has a height and a width that are part of
-                // the document object model but also separate height
-                // and width attributes which determine how many pixels
-                // are part of the canvas itself.  Keeping the two in
-                // sync is essential to avoid ugly stretching effects.
-                canvas.attr("width", canvas.innerWidth());
-                canvas.attr("height", canvas.innerHeight());
-
-                game.width = canvas.width();
-                game.height = canvas.height();
-                tform.resize(game.width, game.height);
-                game.redraw();
+            keydown: function(event, redraw) {
+                if (system.keydown)
+                    system.keydown(event);
+            },
+            keyup: function(event, redraw) {
+                if (system.keyup)
+                    system.keyup(event);
             },
 
             // Move the center of the screen within limts
             pan: function(vector) {
                 tform.pan(vector);
-                this.redraw();
             },
 
             // Change the magnification within limits
@@ -719,7 +695,6 @@
                     this.width / (extents.ex - extents.sx),
                     this.height / (extents.ey - extents.sy));
                 tform.zoom(factor, min / 2, max);
-                this.redraw();
             },
 
             // Center the ship to get a good overall view
@@ -731,85 +706,88 @@
                 tform.zoom(Math.min(
                     this.width / (extents.ex - extents.sx),
                     this.height / (extents.ey - extents.sy)) / 2);
-                this.redraw();
             },
 
-        };
+            mwheel: function(event, redraw) {
+                this.zoom(1 + 0.1 * event.deltaY);
+                redraw();
+            },
 
-        viewport.on('resize', game, game.resize);
-        game.resize();
-        game.center();
-        system = systems.edit;
-        if (system.start)
-            system.start();
+            mtdown: function(touches, event, redraw) {
+                if (event.which > 1) {
+                    // Reserve right and middle clicks for browser menus
+                    return true;
+                } else if (touches.current.length > 1) {
+                    tap = touches;
+                    if (touches.current.length == 2) {
+                        var t0 = touches.current[0];
+                        var t1 = touches.current[1];
+                        zooming = {
+                            diameter: Math.sqrt(sqdist(t0, t1)) };
+                    }
+                } else {
+                    if (system.touch)
+                        system.touch(touches);
+                    tap = drag = touches;
+                }
+
+                redraw();
+                return false;
+            },
+
+            mtmove: function(touches, event, redraw) {
+                if (drag) {
+                    var wtap = tform.toWorldFromScreen(touches);
+                    var wdrag = tform.toWorldFromScreen(drag);
+                    game.pan({ x: wdrag.x - wtap.x,
+                               y: wdrag.y - wtap.y });
+                    tap = touches;
+                    drag = tap;
+                }
+                if (zooming) {
+                    var factor;
+                    if (zooming.diameter &&
+                        touches.current.length == 2) {
+                        var t0 = touches.current[0];
+                        var t1 = touches.current[1];
+                        var diameter = Math.sqrt(sqdist(t0, t1));
+                        factor = diameter / zooming.diameter;
+                    }
+                    if (factor && factor > 0)
+                        game.zoom(factor);
+                }
+                redraw();
+                return false;
+            },
+
+            mtup: function(event) {
+                drag = zooming = undefined;
+                return false;
+            },
+
+            init: function($, container, viewport) {
+                inventoryPane = fascia.inventoryPane(
+                    $, container, player, itemSystem, imageSystem);
+                container
+                    .append(menuframe)
+                    .append(bbarLeft)
+                    .append(bbarRight)
+                    //.append(systemPane) // TODO
+                    //.append(settingsPane) // TODO
+                    .append(inventoryPane);
+
+                this.center();
+                system = systems.edit;
+                if (system.start)
+                    system.start();
+            }
+        };
 
         // Calculate square distance
         var sqdist = function(node1, node2) {
             return ((node2.x - node1.x) * (node2.x - node1.x) +
-                          (node2.y - node1.y) * (node2.y - node1.y));
+                           (node2.y - node1.y) * (node2.y - node1.y));
         };
-
-        // Process mouse and touch events on grid itself
-        canvas.on('mousewheel', function(event) {
-            game.zoom(1 + 0.1 * event.deltaY);
-            game.redraw();
-        });
-        canvas.on('mousedown touchstart', function(event) {
-            var touches = ripple.createTouches(event);
-            if (event.which > 1) {
-                // Reserve right and middle clicks for browser menus
-                return true;
-            } else if (touches.current.length > 1) {
-                tap = touches;
-                if (touches.current.length == 2) {
-                    var t0 = touches.current[0];
-                    var t1 = touches.current[1];
-                    zooming = { diameter: Math.sqrt(sqdist(t0, t1)) };
-                }
-            } else {
-                if (system.touch)
-                    system.touch(touches);
-                tap = drag = touches;
-            }
-
-            game.redraw();
-            return false;
-        });
-        canvas.on('mousemove touchmove', function(event) {
-            var touches = ripple.createTouches(event);
-
-            if (drag) {
-                var wtap = tform.toWorldFromScreen(touches);
-                var wdrag = tform.toWorldFromScreen(drag);
-                game.pan({ x: wdrag.x - wtap.x, y: wdrag.y - wtap.y});
-                tap = touches;
-                drag = tap;
-            }
-            if (zooming) {
-                var factor;
-                if (zooming.diameter && touches.current.length == 2) {
-                    var t0 = touches.current[0];
-                    var t1 = touches.current[1];
-                    var diameter = Math.sqrt(sqdist(t0, t1));
-                    factor = diameter / zooming.diameter;
-                }
-                if (factor && factor > 0)
-                    game.zoom(factor);
-            }
-            return false;
-        });
-        canvas.on('mouseleave mouseup touchend', function(event) {
-            drag = zooming = undefined;
-            return false;
-        });
-        viewport.on('keydown', function(event) {
-            if (system.keydown)
-                system.keydown(event);
-        });
-        viewport.on('keyup', function(event) {
-            if (system.keyup)
-                system.keyup(event);
-        });
 
         return game;
     };

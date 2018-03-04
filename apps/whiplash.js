@@ -344,9 +344,9 @@
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'top';
                 ctx.font = 'bold ' + Math.round(size / 20) + 'px sans';
-                ctx.fillText('Whiplash Paradox',
-                             this.width / 2, size / 50);
+                ctx.fillText(this.text, this.width / 2, size / 50);
             },
+            text: 'Whiplash Paradox',
             keydown: function(event, redraw) {
                 redraw();
                 this.update();

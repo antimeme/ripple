@@ -760,11 +760,8 @@
     // app.background
     fascia.app = function($, container, viewport, app) {
         var canvas = $('<canvas>')
-            .attr('class', 'fascia-app')
+            .attr('class', 'fascia-canvas')
             .appendTo(container);
-
-        if (app.init)
-            app.init($, container, viewport);
 
         var draw_id = 0, draw_last = 0;
         var draw = function() {
@@ -810,6 +807,9 @@
         };
 
         viewport.resize(resize);
+        resize();
+        if (app.init)
+            app.init($, container, viewport);
         resize();
 
 	viewport.on('keydown', function(event) {
@@ -871,6 +871,12 @@
                 touches = ripple.createTouches(event);
                 return app.mtup(touches, event, redraw);
             }
+            return false;
+        });
+
+        canvas.on('mouseleave', function(event) {
+            if (app.mleave)
+                return app.mleave(event, redraw);
             return false;
         });
 

@@ -501,38 +501,42 @@
         this.resize(width, height);
         this.reset();
     };
-    ripple.transform.prototype.log = function() {
-        console.log('transform', this.width, this.height,
-                    this.scale, this.x, this.y);
-    };
-    ripple.transform.prototype.resize = function(width, height) {
-        this.width  = width;
-        this.height = height;
-    };
     ripple.transform.prototype.reset = function() {
         this.scale = 1;
         this.x = 0;
         this.y = 0;
         this.radians = 0;
+        return this;
+    };
+    ripple.transform.prototype.resize = function(width, height) {
+        this.width  = width;
+        this.height = height;
+        return this;
     };
     ripple.transform.prototype.pan = function(vector) {
         this.x += vector.x;
         this.y += vector.y;
+        return this;
     };
     ripple.transform.prototype.position = function(vector) {
         this.x = vector.x;
         this.y = vector.y;
+        return this;
     };
     ripple.transform.prototype.rotate = function(radians) {
         this.radians += radians;
+        return this;
     };
     ripple.transform.prototype.zoom = function(factor, min, max) {
         var scale = this.scale * factor;
-        if (!isNaN(max) && (scale > max))
-            scale = max;
-        if (!isNaN(min) && (scale < min))
-            scale = min;
-        this.scale = scale;
+        if (!isNaN(scale)) {
+            if (!isNaN(max) && (scale > max))
+                scale = max;
+            if (!isNaN(min) && (scale < min))
+                scale = min;
+            this.scale = scale;
+        }
+        return this;
     };
     ripple.transform.prototype.toScreenFromWorld = function(point) {
         var place = { x: point.x, y: point.y };
