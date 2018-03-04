@@ -123,9 +123,13 @@
 
     fascia.playerControl.prototype.setArrow = function(turn, start, end) {
         this.clear();
-        if (end)
-            this.arrow = multivec(end).minus(start);
-        else this.arrow = multivec(start);
+
+        if (start) {
+            if (end)
+                this.arrow = multivec(end).minus(start);
+            else this.arrow = multivec(start);
+        } else this.arrow = turn;
+
         this.arrow = this.arrow.normalize();
         this.turn = turn ? this.arrow : null;
     };
