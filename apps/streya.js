@@ -275,7 +275,7 @@
     }
 
     streya.game = function($, data) {
-        var game, tap, selected, drag, zooming, gesture;
+        var game, redraw, tap, selected, drag, zooming, gesture;
 
         var colorSelected = 'rgba(192, 192, 0, 0.2)';
         var menu = $('<ul>');
@@ -292,10 +292,14 @@
             (browserSettings.ship &&
              browserSettings.ship in data.shipDesigns) ?
             data.shipDesigns[browserSettings.ship] : undefined);
+        var imageSystem = fascia.imageSystem(data.imageSystem);
+        var itemSystem = fascia.itemSystem(data.itemSystem);
         var player = fascia.createPlayer(
             ripple.mergeConfig(
                 (data.characterDefinitions &&
                  data.characterDefinitions.player) || null, {
+                     position: {x: 0, y: 0},
+                     itemSystem: itemSystem,
                      interact: function() {
                          if (inventoryPane.isVisible())
                              inventoryPane.hide();
@@ -303,8 +307,6 @@
                              inventoryPane.populate($);
                              inventoryPane.show();
                          } }}));
-        var itemSystem = fascia.itemSystem(data.itemSystem);
-        var imageSystem = fascia.imageSystem(data.imageSystem);
         var inventoryPane;
 
         var system, systems = {
@@ -313,6 +315,22 @@
                     bbarLeft.hide();
                     bbarRight.hide();
                     menuframe.show();
+                },
+                keydown: function(event) {
+                    if (event.key === 't') {
+                        system = systems.tour;
+                        system.start();
+                    } else if (event.key === 'c') {
+                        game.center();
+                    } else if (event.key === 'f') {
+                        $.toggleFullscreen(
+                            $('.fascia-canvas').parent().get(0));
+                    } else if ((event.key === '+') ||
+                               (event.key === '=')) {
+                        game.zoom(1.1);
+                    } else if (event.key === '-') {
+                        game.zoom(0.909);
+                    }
                 },
                 touch: function(touches) {
                     var cell, oldtap;
@@ -381,14 +399,22 @@
             tour: {
                 active: function() { return true; },
                 start: function() {
-                    var startNode;
-                    ship.mapCells(function(node, cell) {
-                        if (!startNode)
-                            startNode = node;
-                    });
-                    if (startNode)
-                        player.position =
-                            multivec(ship.grid.coordinate(startNode));
+                    var startNode = ship.grid.position(player.position);
+                    var candidate = null;
+                    if (!ship.getCell(startNode)) {
+                        ship.mapCells(function(node, cell) {
+                            node = multivec(
+                                ship.grid.coordinate(node));
+                            if (!candidate ||
+                                (player.position.minus(candidate)
+                                    .normSquared() >
+                                    player.position.minus(node)
+                                          .normSquared()))
+                                candidate = node;
+                        });
+                        if (candidate)
+                            player.position = candidate;
+                    }
 
                     bbarLeft.show();
                     bbarRight.show();
@@ -524,6 +550,7 @@
                 gconfig.size = parseInt(gsize.val());
                 ship = streya.Ship.create({ grid: gconfig });
                 selected = ship.grid.coordinate(selected);
+                redraw();
             })
             .css({display: 'inline-block'});
         [{name: "Hex(point)", type: "hex", orient: "point"},
@@ -543,6 +570,7 @@
                 var gconfig = JSON.parse(gtype.val());
                 ship.grid.size(parseInt(gsize.val()));
                 selected = ship.grid.coordinate(selected);
+                redraw();
             })
             .css({display: 'inline-block'});
         gsize.append('<option>10</option>');
@@ -563,6 +591,7 @@
                     ship = streya.Ship.create(
                         data.shipDesigns[designs.val()]);
                 }
+                redraw();
             });
             menu.append($('<li>').append(designs));
         }
@@ -578,16 +607,16 @@
                     // How to create a data file to save?
                     console.log(JSON.stringify(ship.save()));
                 } break;
-                case 'center': { game.center(); } break;
+                case 'center': { game.center(); redraw(); } break;
                 case 'tour': {
                     system = systems.tour;
                     if (system.start)
                         system.start();
+                    redraw();
                 } break;
                 case 'full-screen': {
                     $.toggleFullscreen(
                         $('.fascia-canvas').parent().get(0));
-                    // TODO redraw
                 } break;
             }
         });
@@ -675,10 +704,12 @@
             keydown: function(event, redraw) {
                 if (system.keydown)
                     system.keydown(event);
+                redraw();
             },
             keyup: function(event, redraw) {
                 if (system.keyup)
                     system.keyup(event);
+                redraw();
             },
 
             // Move the center of the screen within limts
@@ -765,7 +796,7 @@
                 return false;
             },
 
-            init: function($, container, viewport) {
+            init: function($, container, viewport, fasciaRedraw) {
                 inventoryPane = fascia.inventoryPane(
                     $, container, player, itemSystem, imageSystem);
                 container
@@ -780,6 +811,7 @@
                 system = systems.edit;
                 if (system.start)
                     system.start();
+                redraw = fasciaRedraw;
             }
         };
 

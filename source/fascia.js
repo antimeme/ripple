@@ -647,18 +647,18 @@
             .appendTo(this.pane);
         this.playerPane = $('<div>')
             .addClass('inventory-pane')
-            .addClass('inventory-personal')
+            .addClass('inventory-self')
             .appendTo(this.pane);
         this.otherPane = $('<div>')
             .addClass('inventory-pane')
             .addClass('inventory-other')
             .appendTo(this.pane);
+        this.footer = $('<div>')
+            .addClass('inventory-footer')
+            .appendTo(this.pane);
         this.portraitPane = $('<canvas>')
             .addClass('inventory-pane')
             .addClass('inventory-portrait')
-            .appendTo(this.pane);
-        this.footer = $('<div>')
-            .addClass('inventory-footer')
             .appendTo(this.pane);
         this.populate($);
     };
@@ -809,7 +809,7 @@
         viewport.resize(resize);
         resize();
         if (app.init)
-            app.init($, container, viewport);
+            app.init($, container, viewport, redraw);
         resize();
 
 	viewport.on('keydown', function(event) {

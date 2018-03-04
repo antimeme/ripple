@@ -51,7 +51,7 @@ h1, h2, h3 {
     border-top-right-radius: 15px;
 }
 .inventory-footer {
-    bottom: 0; left: 0; right: 0;
+    position: absolute; bottom: 0; left: 0; right: 0;
     background-color: rgba(48, 144, 144, 0.5);
     border-bottom-left-radius: 15px;
     border-bottom-right-radius: 15px;
