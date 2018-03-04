@@ -332,7 +332,7 @@
                         game.zoom(0.909);
                     }
                 },
-                touch: function(touches) {
+                singleTap: function(touches) {
                     var cell, oldtap;
 
                     oldtap = tap;
@@ -428,10 +428,16 @@
                     player.control.keyup(event);
                     this.update();
                 },
-                touch: function(touches) {
+                singleTap: function(touches) {
                     this.update();
                     player.control.setTarget(
                         tform.toWorldFromScreen(touches));
+                },
+                doubleTap: function(touch) {
+                    this.update();
+                    player.control.setArrow(
+                        true, player.position,
+                        tform.toWorldFromScreen(touch));
                 },
                 draw: function(ctx, now) {
                     player.draw(ctx, now);
@@ -775,8 +781,6 @@
                             diameter: Math.sqrt(sqdist(t0, t1)) };
                     }
                 } else {
-                    if (system.touch)
-                        system.touch(touches);
                     tap = drag = touches;
                 }
 
@@ -814,10 +818,16 @@
                 return false;
             },
 
-            doubleTap: function(touch) {
-                player.control.setArrow(
-                    true, player.position,
-                    tform.toWorldFromScreen(touch));
+            tap: function(touch, redraw) {
+                if (system.singleTap)
+                    system.singleTap(touch);
+                redraw();
+            },
+
+            doubleTap: function(touch, redraw) {
+                if (system.doubleTap)
+                    system.doubleTap(touch);
+                redraw();
             }
         };
 

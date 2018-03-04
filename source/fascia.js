@@ -830,15 +830,15 @@
             next: true,
             tap: function(name, touch) {
                 if (app.tap)
-                    return app.tap(touch);
+                    return app.tap(touch, redraw);
             },
             doubleTap: function(name, touch) {
                 if (app.doubleTap)
-                    return app.doubleTap(touch);
+                    return app.doubleTap(touch, redraw);
             },
             flick: function(name, start, end) {
                 if (app.flick)
-                    return app.flick(start, end);
+                    return app.flick(start, end, redraw);
             },
             drag: function(name, start, last, current) {
                 if (app.drag)
