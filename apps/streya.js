@@ -622,6 +622,52 @@
         });
 
         var game = {
+            init: function($, container, viewport, fasciaRedraw) {
+                inventoryPane = fascia.inventoryPane(
+                    $, container, player, itemSystem, imageSystem);
+                container
+                    .append(menuframe)
+                    .append(bbarLeft)
+                    .append(bbarRight)
+                //.append(systemPane) // TODO
+                //.append(settingsPane) // TODO
+                    .append(inventoryPane);
+
+                this.center();
+                system = systems.edit;
+                if (system.start)
+                    system.start();
+                redraw = fasciaRedraw;
+            },
+
+            isActive: function() {
+                return system.active && system.active();
+            },
+
+            resize: function(width, height, $) {
+                var size = Math.min(width, height);
+                this.width = width;
+                this.height = height;
+
+                tform.resize(width, height);
+                imageSystem.resize(width, height, $);
+
+                $('.page').css({
+                    'border-width': Math.floor(size / 100),
+                    'border-radius': Math.floor(size / 25),
+                    top: Math.floor(size / 50),
+                    left: Math.floor(size / 50),
+                    width: width - Math.floor(size / 20),
+                    height: height - Math.floor(
+                        size / 20 + size / 11)
+                });
+                $('.inventory-header').css({
+                    height: Math.floor(size * 2 / 11) });
+                $('.inventory-footer').css({
+                    height: Math.floor(size * 2 / 11) });
+                zooming = drag = undefined;
+            },
+
             draw: function(ctx, width, height, now) {
                 var neighbors, vector, radius;
                 var points, last, index;
@@ -671,34 +717,6 @@
                 }, this);
 
                 ctx.restore();
-            },
-
-            isActive: function() {
-                return system.active && system.active();
-            },
-
-            resize: function(width, height, $) {
-                var size = Math.min(width, height);
-                this.width = width;
-                this.height = height;
-
-                tform.resize(width, height);
-                imageSystem.resize(width, height, $);
-
-                $('.page').css({
-                    'border-width': Math.floor(size / 100),
-                    'border-radius': Math.floor(size / 25),
-                    top: Math.floor(size / 50),
-                    left: Math.floor(size / 50),
-                    width: width - Math.floor(size / 20),
-                    height: height - Math.floor(
-                        size / 20 + size / 11)
-                });
-                $('.inventory-header').css({
-                    height: Math.floor(size * 2 / 11) });
-                $('.inventory-footer').css({
-                    height: Math.floor(size * 2 / 11) });
-                zooming = drag = undefined;
             },
 
             keydown: function(event, redraw) {
@@ -796,22 +814,10 @@
                 return false;
             },
 
-            init: function($, container, viewport, fasciaRedraw) {
-                inventoryPane = fascia.inventoryPane(
-                    $, container, player, itemSystem, imageSystem);
-                container
-                    .append(menuframe)
-                    .append(bbarLeft)
-                    .append(bbarRight)
-                    //.append(systemPane) // TODO
-                    //.append(settingsPane) // TODO
-                    .append(inventoryPane);
-
-                this.center();
-                system = systems.edit;
-                if (system.start)
-                    system.start();
-                redraw = fasciaRedraw;
+            doubleTap: function(touch) {
+                player.control.setArrow(
+                    true, player.position,
+                    tform.toWorldFromScreen(touch));
             }
         };
 
