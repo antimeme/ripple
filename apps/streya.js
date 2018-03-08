@@ -333,9 +333,9 @@
                     }
                 },
                 singleTap: function(touches) {
-                    var cell, oldtap;
+                    var cell, previous;
 
-                    oldtap = tap;
+                    previous = selected;
                     selected = ship.grid.position(
                         tform.toWorldFromScreen(touches));
 
@@ -379,10 +379,9 @@
                                     undefined,
                             sigil: modeParam.val() });
                     } else if (mode.val() === 'bound' &&
-                               cell && oldtap) {
+                               cell && previous) {
                         ship.setBoundary(
-                            selected, ship.grid.position(
-                                tform.toWorldFromScreen(oldtap)),
+                            selected, previous,
                             modeParam.val());
                     }
                 },
