@@ -2,15 +2,13 @@ html, body
 { position: absolute; padding: 0; margin: 0; overflow: hidden; }
 
 .streya-menu {
-    position: absolute; top: 10; left: 25; z-order: 2;
+    position: absolute; top: 10; left: 25; z-index: 2;
     background: #333; color: white;
     border: 2px solid white;
-    border-radius: 10%;
 }
 .streya-menu legend {
     background: #333;
     border: 2px solid white;
-    border-radius: 10%;
 }
 .streya-menu ul {
     list-style-type: none;
@@ -28,11 +26,6 @@ html, body
 }
 .streya-menu li:hover { background: #55e; }
 
-.image-button {
-    display: inline-block;
-    background-repeat: no-repeat;
-    background-color: rgba(255,255,255,0.8);
-}
 .bbar {
     position: fixed;
     display: block; z-index: 2;
@@ -47,6 +40,11 @@ html, body
     border-bottom-right-radius: 15px;
 }
 
+.fascia-button {
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-color: rgba(255,255,255,0.8);
+}
 .page {
     position: absolute; top: 0; left: 0; z-index: 3;
     border: 5px solid rgb(96, 69, 240);

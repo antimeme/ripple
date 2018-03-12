@@ -262,12 +262,12 @@
 
                 this.setStage(this.startStage);
             },
+
             resize: function(width, height, $) {
                 var size = Math.min(width, height);
                 this.width = width;
                 this.height = height;
 
-                this.imageSystem.resize(width, height, $);
                 $('.page').css({
                     'border-width': Math.floor(size / 100),
                     'border-radius': Math.floor(size / 25),
@@ -278,11 +278,10 @@
                         size / 20 + size / 11)
                 });
 
-                $('.inventory-header').css({
-                    height: Math.floor(size * 2 / 11) });
-                $('.inventory-footer').css({
-                    height: Math.floor(size * 2 / 11) });
+                this.imageSystem.resize($, width, height);
+                this.inventory.resize($, width, height);
             },
+
             draw: function(ctx, width, height, now, last) {
                 var size;
                 var lineWidth;

@@ -638,7 +638,7 @@
                 //.append(settingsPane) // TODO
                     .append(inventoryPane);
 
-                this.center();
+                this.center(); // TODO relies on prior resize call
                 system = systems.edit;
                 if (system.start)
                     system.start();
@@ -654,9 +654,8 @@
                 this.width = width;
                 this.height = height;
 
-                tform.resize(width, height);
-                imageSystem.resize(width, height, $);
-
+                $('.streya-menu, .streya-menu legend').css({
+                    'border-radius': Math.floor(size / 50) });
                 $('.page').css({
                     'border-width': Math.floor(size / 100),
                     'border-radius': Math.floor(size / 25),
@@ -666,10 +665,10 @@
                     height: height - Math.floor(
                         size / 20 + size / 11)
                 });
-                $('.inventory-header').css({
-                    height: Math.floor(size * 2 / 11) });
-                $('.inventory-footer').css({
-                    height: Math.floor(size * 2 / 11) });
+
+                tform.resize(width, height);
+                imageSystem.resize($, width, height);
+                inventoryPane.resize($, width, height);
                 zooming = drag = undefined;
             },
 

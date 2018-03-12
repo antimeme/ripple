@@ -11,7 +11,7 @@ h1, h2, h3 {
     position: absolute; top: 0; bottom: 0; right: 0; left: 0;
     display: block; margin: 0; border: 0; z-index: 1;
     background-color: #ddd; color: #222; }
-.image-button {
+.fascia-button {
     display: inline-block;
     background-repeat: no-repeat;
     background-color: rgba(255,255,255,0.8);

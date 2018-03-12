@@ -536,9 +536,9 @@
         this.size = 45;
     };
 
-    fascia.imageSystem.prototype.resize = function(width, height, $) {
-        this.size = Math.floor(Math.min(width, height) / 11);
-        $('.image-button').css({width: this.size, height: this.size});
+    fascia.imageSystem.prototype.resize = function($, width, height) {
+        this.size = Math.floor(Math.min(width, height) * 2 / 11);
+        $('.fascia-button').css({width: this.size, height: this.size});
     };
 
     fascia.imageSystem.prototype.createButton = function(
@@ -587,6 +587,7 @@
         if (!(this instanceof fascia.inventoryPane))
             return new fascia.inventoryPane(
                 $, container, player, itemSystem, imageSystem);
+
         this.imageSystem = imageSystem;
         this.itemSystem = itemSystem;
         this.player = player;
@@ -667,6 +668,27 @@
         this.populate($);
     };
 
+    fascia.inventoryPane.prototype.resize = function($, width, height) {
+        var size = Math.min(width, height);
+        $('.inventory-header').css({
+            height: Math.floor(size * 2 / 11) });
+        $('.inventory-footer').css({
+            height: Math.floor(size * 2 / 11) });
+        return this;
+    };
+
+    fascia.inventoryPane.prototype.show = function() {
+        this.pane.show(); return this; };
+
+    fascia.inventoryPane.prototype.hide = function() {
+        this.pane.hide(); return this; };
+
+    fascia.inventoryPane.prototype.toggle = function() {
+        this.pane.toggle(); return this; };
+
+    fascia.inventoryPane.prototype.isVisible = function() {
+        return this.pane.is(':visible'); };
+
     fascia.inventoryPane.prototype.showPortrait = function() {
         var self = this;
         var draw = function() {
@@ -687,7 +709,8 @@
                 ctx.clearRect(0, 0, width, height);
                 ctx.save();
                 ctx.translate(
-                    width / 2, height - (height - (1 - margin) * size) / 2);
+                    width / 2, height -
+                    (height - (1 - margin) * size) / 2);
                 ctx.scale((1 - margin) * size, -(1 - margin) * size);
                 self.player.drawPortrait(ctx, Date.now());
                 ctx.restore();
@@ -702,18 +725,6 @@
             draw();
         return this;
     };
-
-    fascia.inventoryPane.prototype.show = function() {
-        this.pane.show(); return this; };
-
-    fascia.inventoryPane.prototype.hide = function() {
-        this.pane.hide(); return this; };
-
-    fascia.inventoryPane.prototype.toggle = function() {
-        this.pane.toggle(); return this; };
-
-    fascia.inventoryPane.prototype.isVisible = function() {
-        return this.pane.is(':visible'); };
 
     fascia.inventoryPane.prototype.addItem = function(
         $, item, index, itemPane) {
@@ -810,21 +821,10 @@
             redraw();
         };
 
-        viewport.resize(resize);
-        resize();
         if (app.init)
             app.init($, container, viewport, redraw);
+        viewport.resize(resize);
         resize();
-
-	viewport.on('keydown', function(event) {
-            if (app.keydown)
-                return app.keydown(event, redraw);
-	});
-
-	viewport.on('keyup', function(event) {
-            if (app.keyup)
-                return app.keyup(event, redraw);
-	});
 
         var g = ripple.gestur({
             next: true,
@@ -889,6 +889,16 @@
                 return app.mwheel(event, redraw);
             return false;
         });
+
+	viewport.on('keydown', function(event) {
+            if (app.keydown)
+                return app.keydown(event, redraw);
+	});
+
+	viewport.on('keyup', function(event) {
+            if (app.keyup)
+                return app.keyup(event, redraw);
+	});
     };
 
 }).call(this, typeof exports === 'undefined' ?
