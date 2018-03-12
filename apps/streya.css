@@ -1,3 +1,5 @@
+@import url('fascia.css');
+
 html, body
 { position: absolute; padding: 0; margin: 0; overflow: hidden; }
 
@@ -40,11 +42,6 @@ html, body
     border-bottom-right-radius: 15px;
 }
 
-.fascia-button {
-    display: inline-block;
-    background-repeat: no-repeat;
-    background-color: rgba(255,255,255,0.8);
-}
 .page {
     position: absolute; top: 0; left: 0; z-index: 3;
     border: 5px solid rgb(96, 69, 240);
@@ -52,35 +49,4 @@ html, body
     border-radius: 20px;
     border-width: 5px;
     box-sizing: border-box;
-}
-.inventory-pane {
-    position: absolute;
-    box-sizing: border-box;
-    overflow-y: auto;
-}
-.inventory-header {
-    top: 0; left: 0; right: 0;
-    background-color: rgba(48, 48, 144, 0.5);
-    border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
-}
-.inventory-footer {
-    position: absolute; bottom: 0; left: 0; right: 0;
-    background-color: rgba(48, 144, 144, 0.5);
-    border-bottom-left-radius: 15px;
-    border-bottom-right-radius: 15px;
-}
-.inventory-self {
-    left: 0; width: 50%;
-    background-color: rgba(144, 48, 48, 0.5);
-}
-.inventory-other {
-    right: 0; width: 50%;
-    background-color: rgba(48, 144, 48, 0.5);
-}
-.inventory-portrait {
-    right: 0; top: 0; width: 50%; height: 100%;
-    background-color: #ddd;
-    border-top-right-radius: 15px;
-    border-bottom-right-radius: 15px;
 }

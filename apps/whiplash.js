@@ -300,8 +300,8 @@
                         -0.4 * width / this.zoom.value, 0);
                     ctx.rotate(-this.player.direction);
                 }
-                ctx.translate(-this.player.position.x,
-                             -this.player.position.y);
+                ctx.translate((-1) * this.player.position.x,
+                              (-1) * this.player.position.y);
                 ctx.lineWidth = lineWidth;
 
                 this.characters.forEach(function(character) {
