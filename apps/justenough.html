@@ -1,21 +1,56 @@
 <!DOCTYPE html>
 <title>Just Enough Math</title>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, user-scalable=no" />
-<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
 <link rel="stylesheet" href="lib/sakura.css" type="text/css">
 <style>
+ h1, h2, h3 { text-align: center; }
+ .key {
+     position: relative; float: right;
+     background-color: #ddd;
+     border-radius: 15px;
+     font-size: 60%;
+ }
 </style>
 <script src="lib/jquery.min.js"></script>
 <script src="lib/jquery.mousewheel.js"></script>
 
 <h1>Just Enough Math</h1>
+
+<p>
+    This is an attempt to build a useful collection of mathematical
+    tools from simple components.
+</p>
+
 <div class="script">
     <section>
-        <h2>Nothing But Set</h2>
+        <h2>Chapter 1: Nothing But Set</h2>
+        <div class="key">
+            <h2>Notation</h2>
+            <table>
+                <tr><td>=</td><td>equals</td></tr>
+                <tr><td>&#x2260;</td><td>not equal</td></tr>
+                <tr><td>&#x2200;</td><td>for all</td></tr>
+                <tr><td>&#x2203;</td><td>there exists</td></tr>
+                <tr><td>&#x2208;</td><td>is a member of</td></tr>
+                <tr><td>&#x2209;</td><td>is not a member of</td></tr>
+                <tr><td>&#x2227;</td><td>and</td></tr>
+                <tr><td>&#x2228;</td><td>or</td></tr>
+                <tr><td>&#x27f9;</td><td>implies</td></tr>
+                <tr><td>&#x27fa;</td><td>is equivalent to</td></tr>
+                <tr><td>&#x2286;</td><td>is a subset of</td></tr>
+                <tr><td>&#x2282;</td><td>is a proper subset of</td></tr>
+                <tr><td>&#x222a;</td><td>union</td></tr>
+                <tr><td>&#x2229;</td><td>intersection</td></tr>
+                <tr><td></td><td></td></tr>
+            </table>
+        </div>
 
-        <h3>Basic Set Theory</h3>
+        <h3>Naive Set Theory</h3>
+        <p>
+            A set is as simple structure defined by the members it
+            contains.  Let's see what we can construct with informal
+            definitions.
+        </p>
         <ul>
             <li>Empty: {} &#x225d; &#x2200;a : a &#x2209; {}</li>
             <li>Union: S&#x222a;T &#x225d;
@@ -38,102 +73,15 @@
                         (S = T) &#x27fa; (T = S)</li>
                     <li>Transitive: &#x2200;S,T,U :
                         (S=U &#x2227; T=U) &#x27f9; (S = T)</li>
-                    <li>Unordered: &#x2200;a,b : {a, b} = {b, a}</li>
-                    <li>Repetition: &#x2200;a : {a, a} = {a}</li>
                 </ul>
             </li>
-        </ul>
-
-        <h3>Natural Numbers (&#x2115;)</h3>
-        <ul>
-            <li>succ(a) &#x225d; a &#x222a; {a}</li>
-            <li>&#x2115; &#x225d; { &#x2200;a : a = {} &#x2228;
-                (&#x2203;b&#x2208;&#x2115; : a = succ(b)) }</li>
-            <li>Labels:
-                <ul>
-                    <li>0 &#x225d; {} </li>
-                    <li>1 &#x225d; succ(0) = {0} = {{}}</li>
-                    <li>2 &#x225d; succ(1) = {0, 1} = {{}, {{}}}</li>
-                    <li>3 &#x225d; succ(2) = {0, 1, 2} =
-                        {{}, {{}}, {{}, {{}}}}</li>
-                    <li>...</li>
-                </ul></li>
-        </ul>
-
-        <h3>Cardinality</h3>
-        <ul>
-            <li>Given f : X &#x27f6; Y
-                <ul>
-                    <li>Injection: &#x2200;a,b&#x2208;X :
-                        f(a) = f(b) &#x27f9; a = b</li>
-                    <li>Surjection: &#x2200;a&#x2208;Y
-                        &#x2203;b&#x2208;X : b = f(a)</li>
-                    <li>Bijection: injection and surjection</li>
-                </ul></li>
-            <li>Two sets with a bijection have the same cardinality</li>
-            <li>Example: sets with 3 elements have a bijection
-                with 3&#x2115;</li>
-        </ul>
-
-        <h3>Addition &#x2115;</h3>
-        <ul>
-            <li>Definition:
-                <ul>
-                    <li>Base: a + 0 &#x225d; a</li>
-                    <li>Induction: a + succ(b) &#x225d; succ(a + b)</li>
-                </ul></li>
-            <li>Example: 3 + 2
-                <ul>
-                    <li>3 + succ(1) = 3 + succ(succ(0)) =
-                        succ(succ(3 + 0))</li>
-                    <li>succ(succ(3)) = succ(4) = 5</li>
-                </ul>
-            </li>
-            <li>Closure: &#x2200;a,b&#x2208;&#x2115; :
-                a + b &#x2208;&#x2115;</li>
-            <li>Associative: &#x2200;a,b,c&#x2208;&#x2115; :
-                (a + b) + c = a + (b + c)</li>
-            <li>Commutative: &#x2200;a,b&#x2208;&#x2115; :
-                a + b = b + a</li>
-            <li>Identity: &#x2200;a&#x2208;&#x2115; a + 0 = a</li>
-        </ul>
-
-
-        <h3>Multiplication &#x2115;</h3>
-        <ul>
-            <li>Definition:
-                <ul>
-                    <li>a &#x00d7; 0 &#x225d; 0</li>
-                    <li>a &#x00d7; succ(b) &#x225d;
-                        a + (a &#x00d7; b)</li>
-                </ul></li>
-            <li>Example: 3 &#x00d7; 2
-                <ul>
-                    <li>3 &#x00d7; succ(1) = 3 &#x00d7; succ(succ(0))
-                    </li>
-                    <li>3 + 3 + (3 &#x00d7; 0) =  3 + 3 = 6</li>
-                </ul>
-            </li>
-            <li>Closure: &#x2200;a,b&#x2208;&#x2115; :
-                a &#x00d7; b &#x2208;&#x2115;</li>
-            <li>Associative: &#x2200;a,b,c&#x2208;&#x2115; :
-                (a &#x00d7; b) &#x00d7; c = a &#x00d7; (b &#x00d7; c)
-            </li>
-            <li>Commutative: &#x2200;a,b&#x2208;&#x2115; :
-                a &#x00d7; b = b &#x00d7; a</li>
-            <li>Identity: &#x2200;a&#x2208;&#x2115;
-                a &#x00d7; 1 = a</li>
-            <li>Distributive:  &#x2200;a,b,c&#x2208;&#x2115; :<br />
-                (a &#x00d7; (b + c) =
-                (a &#x00d7; b) + (a &#x00d7; c)) &#x2227;<br />
-                ((b + c) &#x00d7; a =
-                (b &#x00d7; a) + (c &#x00d7; a))</li>
+            <li>Repetition: &#x2200;a : {a, a} = {a}</li>
         </ul>
 
         <h3>Ordered Pairs</h3>
         <p>
-            A set has no meaningful order, but order can be useful.
-            Fortunately we can construct order using unordered sets.
+            Sets have no order.  &#x2200;a,b : {a, b} = {b, a}
+            Creating order with sets requires some creativity.
         </p>
         <ul>
             <li>Kuratowski 1921: (a, b) &#x225d; {{a}, {a, b}}</li>
@@ -151,7 +99,323 @@
                 {{a}, {a, b}} &#x2260; {{b}, {a, b}}</li>
         </ul>
 
-        <h3>Integers (&#x2124;)</h3>
+        <h3>Natural Numbers &#x2115;</h3>
+        <ul>
+            <li>Von Neumann 1923: succ(a) &#x225d; a &#x222a; {a}</li>
+            <li>&#x2115; &#x225d; ({}&#x2208;&#x2115;) &#x2227;
+                (&#x2200;a&#x2208;&#x2115; : succ(a)&#x2208;&#x2115;)
+            </li>
+            <li>Define Numbers:
+                <ul>
+                    <li>0 &#x225d; {} </li>
+                    <li>1 &#x225d; succ(0) = {0} = {{}}</li>
+                    <li>2 &#x225d; succ(1) = {0, 1} = {{}, {{}}}</li>
+                    <li>3 &#x225d; succ(2) = {0, 1, 2} =
+                        {{}, {{}}, {{}, {{}}}}</li>
+                    <li>4 &#x225d; succ(3) = {0, 1, 2, 3} =
+                        {{}, {{}}, {{}, {{}}},
+                        {{}, {{}}, {{}, {{}}}}}</li>
+                    <li>...</li>
+                </ul></li>
+        </ul>
+
+        <h3>Cardinality</h3>
+        <ul>
+            <li>Relation: (r : D &#x27f6; R) &#x225d;
+                { (a, b) :  a&#x2208;D,b&#x2208;R }</li>
+            <li>Application: r(a) = b &#x27fa; (a, b)&#x2208;r</li>
+            <li>Given relation r : D &#x27f6; R
+                <ul>
+                    <li>Injection: &#x2200;a,b&#x2208;D :
+                        r(a) = r(b) &#x27f9; a = b</li>
+                    <li>Surjection: &#x2200;a&#x2208;R
+                        &#x2203;b&#x2208;D : r(b) = a</li>
+                    <li>Bijection: injection and surjection</li>
+                </ul></li>
+            <li>Two sets with a bijection have the same cardinality</li>
+            <li>Example: sets with 3 elements have a bijection
+                with 3&#x2115;</li>
+        </ul>
+
+        <h3>Addition &#x2115;</h3>
+        <ul>
+            <li>Definition:
+                <ul>
+                    <li>Base: &#x2200;a&#x2208;&#x2115;
+                        a + 0 &#x225d; a</li>
+                    <li>Step: &#x2200;a,b&#x2208;&#x2115;
+                        a + succ(b) &#x225d; succ(a + b)</li>
+                </ul></li>
+            <li>Example: 3 + 2
+                <ul>
+                    <li>3 + 2 = 3 + succ(1) :: Definition of 2</li>
+                    <li>3 + 2 = 3 + succ(succ(0))
+                        :: Definition of 1</li>
+                    <li>3 + 2 = succ(3 + succ(0))
+                        :: Definition Step</li>
+                    <li>3 + 2 = succ(succ(3 + 0))
+                        :: Definition Step</li>
+                    <li>3 + 2 = succ(succ(3)) :: Definition Base</li>
+                    <li>3 + 2 = succ(4) :: Successor</li>
+                    <li>3 + 2 = 5 :: Successor</li>
+                </ul>
+            </li>
+            <li>Closed: &#x2200;a,b&#x2208;&#x2115; :
+                a + b &#x2208;&#x2115;</li>
+            <li>Identity: &#x2200;a&#x2208;&#x2115;
+                a + 0 = a = 0 + a
+                <ul>
+                    <li>0 + 0 = 0 :: Definition Base</li>
+                    <li>0 + a = a :: Assumption</li>
+                    <li>0 + succ(a) = succ(0 + a)
+                        :: Definition Step</li>
+                    <li>0 + succ(a) = succ(a) :: Induction</li>
+                </ul>
+            </li>
+            <li>Associative: &#x2200;a,b,c&#x2208;&#x2115; :
+                (a + b) + c = a + (b + c)
+                <ul>
+                    <li>(a + b) + 0 = a + b = a + (b + 0)
+                        (Definition Base)</li>
+                    <li>(a + b) + c = a + (b + c)
+                        (Assumption)</li>
+                    <li>(a + b) + succ(c) = succ((a + b) + c)
+                        (Definition Step)</li>
+                    <li>(a + b) + succ(c) = succ(a + (b + c))
+                        (Induction)</li>
+                    <li>(a + b) + succ(c) = a + succ(b + c)
+                        (Definition Step)</li>
+                    <li>(a + b) + succ(c) = a + (b + succ(c))
+                        (Definition Step)</li>
+                </ul>
+            </li>
+            <li>Commutative: &#x2200;a,b&#x2208;&#x2115; :
+                a + b = b + a
+                <ul>
+                    <li>Successor + 1: &#x2200;a&#x2208;&#x2115;
+                        succ(a) = a + 1
+                        <ul>
+                            <li>succ(a) = succ(a + 0)
+                                (Definition Base)</li>
+                            <li>succ(a) = a + succ(0)
+                                (Definition Step)</li>
+                            <li>succ(a) = a + 1 (Definition of 1)</li>
+                        </ul>
+                    </li>
+                    <li>Commutativity of 1: &#x2200;a&#x2208;&#x2115;
+                        a + 1 = 1 + a
+                        <ul>
+                            <li>0 + 1 = 1 + 0 (Identity)</li>
+                            <li>a + 1 = 1 + a (Assumption)</li>
+                            <li>succ(a) + 1 = succ(a) + succ(0)
+                                (Definition of 1)</li>
+                            <li>succ(a) + 1 = succ(succ(a) + 0)
+                                (Defintion Step)</li>
+                            <li>succ(a) + 1 = succ((a + 1) + 0)
+                                (Successor + 1)</li>
+                            <li>succ(a) + 1 = succ(a + 1)
+                                (Defintion Base)</li>
+                            <li>succ(a) + 1 = succ(1 + a)
+                                (Induction)</li>
+                            <li>succ(a) + 1 = 1 + succ(a)
+                                (Definition Step)</li>
+                        </ul>
+                        <li>a + b = b + a (Assumption)</li>
+                        <li>a + succ(b) = a + (b + 1) (Successor + 1)</li>
+                        <li>a + succ(b) = (a + b) + 1 (Associativity)</li>
+                        <li>a + succ(b) = (b + a) + 1 (Induction)</li>
+                        <li>a + succ(b) = b + (a + 1) (Associativity)</li>
+                        <li>a + succ(b) = b + (1 + a)
+                            (Commutativity of 1)</li>
+                        <li>a + succ(b) = (b + 1) + a (Associativity)</li>
+                        <li>a + succ(b) = succ(b) + a (Successor + 1)</li>
+                </ul>
+                    </li>
+        </ul>
+
+
+        <h3>Multiplication &#x2115;</h3>
+        <ul>
+            <li>Definition:
+                <ul>
+                    <li>Base: &#x2200;a&#x2208;&#x2115;
+                        a &#x00d7; 0 &#x225d; 0</li>
+                    <li>Step: &#x2200;a,b&#x2208;&#x2115;
+                        a &#x00d7; succ(b) &#x225d;
+                        a + (a &#x00d7; b)</li>
+                </ul></li>
+            <li>Example: 3 &#x00d7; 2
+                <ul>
+                    <li>3 &#x00d7; 2 = 3 &#x00d7; succ(1)
+                        :: Definition of 2</li>
+                    <li>3 &#x00d7; 2 = 3 &#x00d7; succ(succ(0))
+                        :: Definition of 1</li>
+                    <li>3 &#x00d7; 2 = 3 + (3 &#x00d7; succ(0))
+                        :: Definition Step</li>
+                    <li>3 &#x00d7; 2 = 3 + (3 + (3 &#x00d7; 0))
+                        :: Definition Step</li>
+                    <li>3 &#x00d7; 2 = 3 + (3 + 0)
+                        :: Definition Base</li>
+                    <li>3 &#x00d7; 2 = 3 + 3 :: Addition</li>
+                    <li>3 &#x00d7; 2 = 6 :: Addition</li>
+                </ul>
+            </li>
+            <li>Closed: &#x2200;a,b&#x2208;&#x2115; :
+                a &#x00d7; b &#x2208;&#x2115;</li>
+            <li>Identity: &#x2200;a&#x2208;&#x2115;
+                a &#x00d7; 1 = a = 1 &#x00d7; a
+                <ul>
+                    <li>a &#x00d7; 1 = a &#x00d7; succ(0) ::
+                        Definition of 1</li>
+                    <li>a &#x00d7; 1 = a + (a &#x00d7; 0) ::
+                        Definition Step</li>
+                    <li>a &#x00d7; 1 = a + 0 :: Definition Base</li>
+                    <li>a &#x00d7; 1 = a :: Definition Addition</li>
+                    <li>1 &#x00d7; 0 = 0 :: Definition Base</li>
+                    <li>1 &#x00d7; a = a :: Assumption</li>
+                    <li>1 &#x00d7; succ(a) = 1 + (1 &#x00d7; a) ::
+                        Definition Step</li>
+                    <li>1 &#x00d7; succ(a) = 1 + a ::
+                        Induction</li>
+                    <li>1 &#x00d7; succ(a) = succ(a) ::
+                        Addition</li>
+                </ul>
+            </li>
+            <li>Right Distributive:
+                &#x2200;a,b,c&#x2208;&#x2115; :<br />
+                (a + b) &#x00d7; c = (a &#x00d7; c) + (b &#x00d7; c)
+                <ul>
+                    <li>(a + b) &#x00d7; 0 =
+                        (a &#x00d7; 0) + (b &#x00d7; 0)
+                        <ul>
+                            <li>(a + b) &#x00d7; 0 = 0 ::
+                                Definition Base</li>
+                            <li>(a + b) &#x00d7; 0 = 0 + 0 ::
+                                Definition Addition</li>
+                            <li>(a + b) &#x00d7; 0 =
+                                (a &#x00d7; 0) + (b &#x00d7; 0) ::
+                                Definition Base</li>
+                        </ul>
+                    </li>
+                    <li>((a + b) &#x00d7; c =
+                        (a &#x00d7; c) + (b &#x00d7; c))
+                        :: Assumption</li>
+                    <li>((a + b) &#x00d7; succ(c) =
+                        (a + b) + ((a + b) &#x00d7; c)
+                        :: Definition Step </li>
+                    <li>((a + b) &#x00d7; succ(c) =
+                        (a + b) + ((a &#x00d7; c) + (b &#x00d7; c))
+                        :: Induction</li>
+                    <li>((a + b) &#x00d7; succ(c) =
+                        (a + (a &#x00d7; c)) + (b + (b &#x00d7; c))
+                        :: Associative and Commutative Addition</li>
+                    <li>((a + b) &#x00d7; succ(c) =
+                        (a &#x00d7; succ(c)) + (b &#x00d7; succ(c))
+                        :: Definition Step</li>
+                </ul>
+            </li>
+            <li>Left Distributive:  &#x2200;a,b,c&#x2208;&#x2115; :<br />
+                c &#x00d7; (a + b) = (c &#x00d7; a) + (c &#x00d7; b)
+                <ul>
+                    <li>c &#x00d7; (a + 0) =
+                        (c &#x00d7; a) + (c &#x00d7; 0)
+                        <ul>
+                            <li>c &#x00d7; (a + 0) = c &#x00d7; a
+                                :: Definition Addition</li>
+                            <li>c &#x00d7; (a + 0) = (c &#x00d7; a) + 0
+                                :: Definition Addition</li>
+                            <li>c &#x00d7; (a + 0) =
+                                (c &#x00d7; a) + (c &#x00d7; 0)
+                                :: Definition Base</li>
+                        </ul></li>
+                    <li>c &#x00d7; (a + b) = (c &#x00d7; a) +
+                        (c &#x00d7; b) :: Assumption</li>
+                    <li>c &#x00d7; (a + succ(b)) =
+                        c &#x00d7; succ(a + b)
+                        :: Definition Addition</li>
+                    <li>c &#x00d7; (a + succ(b)) =
+                        c + (c &#x00d7; (a + b)) :: Definition Step</li>
+                    <li>c &#x00d7; (a + succ(b)) =
+                        c + ((c &#x00d7; a) + (c &#x00d7; b)) ::
+                        Induction</li>
+                    <li>c &#x00d7; (a + succ(b)) =
+                        (c &#x00d7; a) + (c + (c &#x00d7; b)) ::
+                        Associative and Commutative Addition</li>
+                    <li>c &#x00d7; (a + succ(b)) =
+                        (c &#x00d7; a) + (c &#x00d7; succ(b)) ::
+                        Definition Step</li>
+                </ul>
+            </li>
+            <li>
+                Distributive:<br />
+                ((a + b) &#x00d7; c =
+                (a &#x00d7; c) + (b &#x00d7; c)) &#x2227;<br />
+                (c &#x00d7; (a + b) =
+                (c &#x00d7; a) + (c &#x00d7; b))
+            </li>
+            <li>Associative: &#x2200;a,b,c&#x2208;&#x2115; :
+                (a &#x00d7; b) &#x00d7; c = a &#x00d7; (b &#x00d7; c)
+                <ul>
+                    <li>(a &#x00d7; b) &#x00d7; 0 =
+                        a &#x00d7; (b &#x00d7; 0)
+                        <ul>
+                            <li>(a &#x00d7; b) &#x00d7; 0 = 0
+                                :: Definition Base</li>
+                            <li>(a &#x00d7; b) &#x00d7; 0 = a &#x00d7; 0
+                                :: Definition Base</li>
+                            <li>(a &#x00d7; b) &#x00d7; 0 =
+                                a &#x00d7; (b &#x00d7; 0)
+                                :: Definition Base</li>
+                        </ul></li>
+                    <li>(a &#x00d7; b) &#x00d7; c =
+                        a &#x00d7; (b &#x00d7; c) :: Assumption</li>
+                    <li>(a &#x00d7; b) &#x00d7; succ(c) =
+                        (a &#x00d7; b) + ((a &#x00d7; b) &#x00d7; c)
+                        :: Definition Step</li>
+                    <li>(a &#x00d7; b) &#x00d7; succ(c) =
+                        (a &#x00d7; b) + (a &#x00d7; (b &#x00d7; c))
+                        :: Induction</li>
+                    <li>(a &#x00d7; b) &#x00d7; succ(c) =
+                        a &#x00d7; (b + (b &#x00d7; c))
+                        :: Left Distributive</li>
+                    <li>(a &#x00d7; b) &#x00d7; succ(c) =
+                        a &#x00d7; (b &#x00d7; succ(c))
+                        :: Definition Step</li>
+                </ul>
+            </li>
+            <li>Commutative: &#x2200;a,b&#x2208;&#x2115; :
+                a &#x00d7; b = b &#x00d7; a
+                <ul>
+                    <li>a &#x00d7; 0 = 0 &#x00d7; a
+                        <ul>
+                            <li>0 &#x00d7; 0 = 0 :: Definition Base</li>
+                            <li>0 &#x00d7; a = 0 :: Assumption</li>
+                            <li>0 &#x00d7; succ(a) = 0 + (0 &#x00d7; a)
+                                :: Definition Step</li>
+                            <li>0 &#x00d7; succ(a) = 0 + 0
+                                :: Induction</li>
+                            <li>0 &#x00d7; succ(a) = 0
+                                :: Addition</li>
+                        </ul>
+                    </li>
+                    <li>a &#x00d7; b = b &#x00d7; a :: Assumption</li>
+                    <li>a &#x00d7; succ(b) = a + (a &#x00d7; b) ::
+                        Definition Step</li>
+                    <li>a &#x00d7; succ(b) = a + (b &#x00d7; a) ::
+                        Induction</li>
+                    <li>a &#x00d7; succ(b) = (b &#x00d7; a) + a::
+                        Commutative Addition</li>
+                    <li>a &#x00d7; succ(b) = (b &#x00d7; a) +
+                        (1 &#x00d7; a):: Identity</li>
+                    <li>a &#x00d7; succ(b) = (b + 1) &#x00d7; a ::
+                        Left Distributive</li>
+                    <li>a &#x00d7; succ(b) = succ(b) &#x00d7; a ::
+                        Successor + 1</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Integers &#x2124;</h3>
         <ul>
             <li>
                 &#x2124; &#x225d; {
@@ -159,16 +423,19 @@
             </li>
             <li>Equality: &#x2200;a,b&#x2208;&#x2124;
                 (a =&#x2124; b) &#x225d;
-                &#x2203;c&#x2208;&#x2115; :
-                ((a<sub>1</sub> + c, a<sub>2</sub> + c) =
-                (b<sub>1</sub>, b<sub>2</sub>))
-                &#x2228; ((a<sub>1</sub>, a<sub>2</sub>) =
-                (b<sub>1</sub> + c, b<sub>2</sub> + c)))</li>
+                a<sub>1</sub> + b<sub>2</sub> =
+                a<sub>2</sub> + b<sub>1</sub></li>
             <li>[a - b] &#x225d; {&#x2200;c&#x2208;&#x2124; :
                 c =&#x2124; (a, b)}</li>
-            <li>Example: -4 = (0, 4) =
+            <li>Example: -4 = (0, 4) = {{0}, {0, 4}} =
                 {{{}}, {{}, {
                 {}, {{}}, {{}, {{}}}, {{}, {{}}, {{}, {{}}}}}}}</li>
+            <li>Example: -4 = (2, 6) = {{2}, {2, 6}} =
+                {{{{}, {{}}}}, {{{}, {{}}}, {
+                {}, {{}}, {{}, {{}}}, {{}, {{}}, {{}, {{}}}},
+                {{}, {{}}, {{}, {{}}}, {{}, {{}}, {{}, {{}}}}},
+                {{}, {{}}, {{}, {{}}}, {{}, {{}}, {{}, {{}}}},
+                {{}, {{}}, {{}, {{}}}, {{}, {{}}, {{}, {{}}}}}}}}}</li>
         </ul>
 
         <h3>Addition &#x2124;</h3>
@@ -179,7 +446,7 @@
                 [(a<sub>1</sub> + b<sub>1</sub>) -
                 (a<sub>2</sub> + b<sub>2</sub>)]
             </li>
-            <li>Closure: &#x2200;a,b&#x2208;&#x2124; :
+            <li>Closed: &#x2200;a,b&#x2208;&#x2124; :
                 a + b &#x2208;&#x2124;</li>
             <li>Associative: &#x2200;a,b,c&#x2208;&#x2124; :
                 (a + b) + c = a + (b + c)</li>
@@ -205,7 +472,7 @@
                 (a<sub>2</sub> &#x00d7; b<sub>1</sub> +
                 a<sub>1</sub> &#x00d7; b<sub>2</sub>)]
             </li>
-            <li>Closure: &#x2200;a,b&#x2208;&#x2124; :
+            <li>Closed: &#x2200;a,b&#x2208;&#x2124; :
                 a &#x00d7; b &#x2208;&#x2124;</li>
             <li>Associative: &#x2200;a,b,c&#x2208;&#x2124; :
                 (a &#x00d7; b) &#x00d7; c = a &#x00d7; (b &#x00d7; c)
@@ -221,15 +488,101 @@
                 a &#x00d7; 1 = a</li>
         </ul>
 
-        <h3>Groups (G, &#x2218;)</h3>
+        <h3>Rational Numbers &#x211a;</h3>
+        <ul>
+            <li>&#x211a; &#x225d; {
+                &#x2200;a&#x2208;&#x2124;,b&#x2260;0&#x2208;&#x2124; :
+                (a, b) }</li>
+            <li>Equality: &#x2200;a,b&#x2208;&#x211a; (a =&#x211a; b)
+                &#x225d;
+                a<sub>1</sub> &#x00d7; b<sub>2</sub> =
+                b<sub>1</sub> &#x00d7; a<sub>2</sub>
+            </li>
+            <li>[a / b] &#x225d; {&#x2200;c&#x2208;&#x211a; :
+                c =&#x211a; (a, b)}</li>
+            <li>Example: -4/3 = (-4, 3) = {{-4}, {-4, 3}} =
+                {{(0, 4)}, {(0, 4), (3, 0)}} =
+                {{{{{}}, {{}, {{}, {{}}, {{}, {{}}},
+                {{}, {{}}, {{}, {{}}}}}}}}, {{{{}},
+                {{}, {{}, {{}}, {{}, {{}}}, {{}, {{}},
+                {{}, {{}}}}}}}, {{}, {{}}, {{}, {{}}}}}}</li>
+        </ul>
 
+        <h3>Addition &#x211a;</h3>
+        <ul>
+            <li>Definition: &#x2200;a,b&#x2208;&#x211a; a + b  &#x225d;
+                (a<sub>1</sub>, a<sub>2</sub>) +
+                (b<sub>1</sub>, b<sub>2</sub>) = <br />
+                ((a<sub>1</sub> &#x00d7; b<sub>2</sub> +
+                b<sub>1</sub> &#x00d7; a<sub>2</sub>),
+                (a<sub>2</sub> &#x00d7; b<sub>2</sub>))
+            </li>
+            <li>Closed: &#x2200;a,b&#x2208;&#x211a; :
+                a + b &#x2208;&#x211a;</li>
+            <li>Associative: &#x2200;a,b,c&#x2208;&#x211a; :
+                (a + b) + c = a + (b + c)</li>
+            <li>Commutative: &#x2200;a,b&#x2208;&#x211a; :
+                a + b = b + a</li>
+            <li>Identity: &#x2200;a&#x2208;&#x211a; a + 0 = a</li>
+            <li>Inverses:
+                &#x2200;a&#x2208;&#x211a; :
+                -a &#x225d; (-a<sub>1</sub>, a<sub>2</sub>) :
+                a = (a<sub>1</sub>, a<sub>2</sub>) &#x2227;
+                a + (-a) = 0
+            </li>
+        </ul>
+
+        <h3>Multiplication &#x211a;</h3>
+        <ul>
+            <li>Definition: &#x2200;a,b&#x2208;&#x211a;
+                a &#x00d7; b  &#x225d;
+                (a<sub>1</sub>, a<sub>2</sub>) &#x00d7;
+                (b<sub>1</sub>, b<sub>2</sub>) =
+                (a<sub>1</sub> &#x00d7; b<sub>1</sub>,
+                a<sub>2</sub> &#x00d7; b<sub>2</sub>)
+            </li>
+            <li>Closed: &#x2200;a,b&#x2208;&#x211a; :
+                a &#x00d7; b &#x2208;&#x211a;</li>
+            <li>Associative: &#x2200;a,b,c&#x2208;&#x211a; :
+                (a &#x00d7; b) &#x00d7; c = a &#x00d7; (b &#x00d7; c)
+            </li>
+            <li>Commutative: &#x2200;a,b&#x2208;&#x211a; :
+                a &#x00d7; b = b &#x00d7; a</li>
+            <li>Distributive:  &#x2200;a,b,c&#x2208;&#x211a; :<br />
+                (a &#x00d7; (b + c) =
+                (a &#x00d7; b) + (a &#x00d7; c)) &#x2227;<br />
+                ((b + c) &#x00d7; a =
+                (b &#x00d7; a) + (c &#x00d7; a))</li>
+            <li>Identity: &#x2200;a&#x2208;&#x211a;
+                a &#x00d7; 1 = a</li>
+            <li>Inverses: &#x2200;a&#x2209;[0 / 1]&#x2208;&#x211a; :
+                a<sup>-1</sup> &#x225d; (a<sub>2</sub>, a<sub>1</sub>) :
+                a = (a<sub>1</sub>, a<sub>2</sub>) &#x2227;
+                a &#x00d7; a<sup>-1</sup> = 1
+            </li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Chapter 2: Abstract Algebra</h2>
+
+        <h3>Magma (M, &#x2218;)</h3>
+        <p>
+            A magma is a set M and a binary operation M &#x2218; M
+            &#x27f9 M with one important property:
+        </p>
+        <ul>
+            <li>Closed: &#x2200;a,b&#x2208;M :
+                a &#x2218; b &#x2208;M</li>
+        </ul>
+
+        <h3>Groups (G, &#x2218;)</h3>
         <p>
             A group is a set G and a binary operation G &#x2218; G
             &#x27f9 G with four properties:
         </p>
-
         <ul>
-            <li>Closure: &#x2200;a,b&#x2208;G :
+            <li>Closed: &#x2200;a,b&#x2208;G :
                 a &#x2218; b &#x2208;G</li>
             <li>Associative: (a &#x2218; b) &#x2218; c =
                 a &#x2218; (b &#x2218; c)</li>
@@ -307,7 +660,7 @@
 
         <ul>
             <li>(R, &#x2218) is an abelian group</li>
-            <li>Closure: &#x2200;a,b&#x2208;R :
+            <li>Closed: &#x2200;a,b&#x2208;R :
                 a &#x229a; b &#x2208; R</li>
             <li>Associative: (a &#x229a; b) &#x229a;c =
                 a &#x229a; (b &#x229a; c)</li>
@@ -343,82 +696,6 @@
             ring (&#x2124;, +, &#x00d7;).
         </p>
 
-        <h3>Rational Numbers (&#x211a;)</h3>
-        <ul>
-            <li>&#x211a; &#x225d; {
-                &#x2200;a&#x2208;&#x2124;,b&#x2260;0&#x2208;&#x2124; :
-                (a, b) }</li>
-            <li>Equality: ((a<sub>1</sub>, a<sub>2</sub>) =&#x211a;
-                (b<sub>1</sub>, b<sub>2</sub>)) &#x225d;
-                &#x2203;c&#x2260;0&#x2208;&#x2124; :
-                ((a<sub>1</sub> &#x00d7; c, a<sub>2</sub> &#x00d7; c) =
-                (b<sub>1</sub>, b<sub>2</sub>))
-                &#x2228; ((a<sub>1</sub>, a<sub>2</sub>) =
-                (b<sub>1</sub> &#x00d7; c, b<sub>2</sub> &#x00d7; c)))
-            </li>
-            <li>[a / b] &#x225d; {&#x2200;c&#x2208;&#x211a; :
-                c =&#x211a; (a, b)}</li>
-            <li>Example: -4/3 = (-4, 3) = {{-4}, {-4, 3}} =
-                {{{{{}}, {{}, {{}, {{}}, {{}, {{}}},
-                {{}, {{}}, {{}, {{}}}}}}}}, {{{{}},
-                {{}, {{}, {{}}, {{}, {{}}}, {{}, {{}},
-                {{}, {{}}}}}}}, {{}, {{}}, {{}, {{}}}}}}</li>
-        </ul>
-
-        <h3>Addition &#x211a;</h3>
-        <ul>
-            <li>Definition: &#x2200;a,b&#x2208;&#x211a; a + b  &#x225d;
-                (a<sub>1</sub>, a<sub>2</sub>) +
-                (b<sub>1</sub>, b<sub>2</sub>) = <br />
-                ((a<sub>1</sub> &#x00d7; b<sub>2</sub> +
-                b<sub>1</sub> &#x00d7; a<sub>2</sub>),
-                (a<sub>2</sub> &#x00d7; b<sub>2</sub>))
-            </li>
-            <li>Closure: &#x2200;a,b&#x2208;&#x211a; :
-                a + b &#x2208;&#x211a;</li>
-            <li>Associative: &#x2200;a,b,c&#x2208;&#x211a; :
-                (a + b) + c = a + (b + c)</li>
-            <li>Commutative: &#x2200;a,b&#x2208;&#x211a; :
-                a + b = b + a</li>
-            <li>Identity: &#x2200;a&#x2208;&#x211a; a + 0 = a</li>
-            <li>Inverses:
-                &#x2200;a&#x2208;&#x211a; :
-                -a &#x225d; (-a<sub>1</sub>, a<sub>2</sub>) :
-                a = (a<sub>1</sub>, a<sub>2</sub>) &#x2227;
-                a + (-a) = 0
-            </li>
-        </ul>
-
-        <h3>Multiplication &#x211a;</h3>
-        <ul>
-            <li>Definition: &#x2200;a,b&#x2208;&#x211a;
-                a &#x00d7; b  &#x225d;
-                (a<sub>1</sub>, a<sub>2</sub>) &#x00d7;
-                (b<sub>1</sub>, b<sub>2</sub>) =
-                (a<sub>1</sub> &#x00d7; b<sub>1</sub>,
-                a<sub>2</sub> &#x00d7; b<sub>2</sub>)
-            </li>
-            <li>Closure: &#x2200;a,b&#x2208;&#x211a; :
-                a &#x00d7; b &#x2208;&#x211a;</li>
-            <li>Associative: &#x2200;a,b,c&#x2208;&#x211a; :
-                (a &#x00d7; b) &#x00d7; c = a &#x00d7; (b &#x00d7; c)
-            </li>
-            <li>Commutative: &#x2200;a,b&#x2208;&#x211a; :
-                a &#x00d7; b = b &#x00d7; a</li>
-            <li>Distributive:  &#x2200;a,b,c&#x2208;&#x211a; :<br />
-                (a &#x00d7; (b + c) =
-                (a &#x00d7; b) + (a &#x00d7; c)) &#x2227;<br />
-                ((b + c) &#x00d7; a =
-                (b &#x00d7; a) + (c &#x00d7; a))</li>
-            <li>Identity: &#x2200;a&#x2208;&#x211a;
-                a &#x00d7; 1 = a</li>
-            <li>Inverses: &#x2200;a&#x2209;[0 / 1]&#x2208;&#x211a; :
-                a<sup>-1</sup> &#x225d; (a<sub>2</sub>, a<sub>1</sub>) :
-                a = (a<sub>1</sub>, a<sub>2</sub>) &#x2227;
-                a &#x00d7; a<sup>-1</sup> = 1
-            </li>
-        </ul>
-
         <h3>Fields (F, &#x2218;, &#x229a;)</h3>
 
         <p>
@@ -442,7 +719,8 @@
     </section>
 
     <section>
-        <h2>Geometric Algebra</h2>
+        <h2>Chapter 3: Geometric Algebra</h2>
+        <h3>Metric Spaces</h3>
         <h3>Spanning Spaces and Basis Vectors</h3>
         <h3>Ortho-normal Basis</h3>
         <h3>Anti-commutative Basis Vectors</h3>
@@ -455,25 +733,5 @@
         <h3>Blade Norms</h3>
         <h3>Versors</h3>
         <h3>Conformal Model</h3>
-    </section>
-
-    <section>
-        <h2>Definitions</h2>
-        <dl>
-            <dt>&#x2200;</dt><dd>for all elements</dd>
-            <dt>&#x2203;</dt><dd>there exists an element</dd>
-            <dt>&#x2208;</dt><dd>is contained in</dd>
-            <dt>&#x2209;</dt><dd>is not contained in</dd>
-            <dt>&#x2227;</dt><dd>and</dd>
-            <dt>&#x2228;</dt><dd>or</dd>
-            <dt>&#x27f9;</dt><dd>implies</dd>
-            <dt>&#x27fa;</dt><dd>is equivalent to</dd>
-            <dt>&#x2286;</dt><dd>is a subset of</dd>
-            <dt>&#x2282;</dt><dd>is a proper subset of</dd>
-            <dt>=</dt><dd>equals</dd>
-            <dt>&#x2260;</dt><dd>is not equal to</dd>
-            <dt></dt><dd></dd>
-            
-        </dl>
     </section>
 </div>
