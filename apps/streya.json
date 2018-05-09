@@ -1,5 +1,7 @@
 {
-    "schema": { "version": "0.0.1" },
+    "schema": {
+        "version": "0.0.1"
+    },
     "imageSystem": {
         "comments": [
             "This section gives names to a set of images for use as",
@@ -57,52 +59,136 @@
             "inventory": [{"type": "keycard"}]
         }
     },
-    "skills": {
-        "Repair": {
-            "cost": 5,
-            "desc": "Bring damaged systems back into operation"
+    "abilities": {
+        "Perception": {
+            "comment": [
+                "Represents the ability to understand and effectively ",
+                "respond to complex situations"],
+            "Skills": {
+                "Skirmish": {
+                    "comment": "battle field awareness"},
+                "Insight": {
+                    "comment": "detecting or selling lies"},
+                "Streetwise": {
+                    "comment": [
+                        "detect being followed or pick pocketed"]},
+                "Negotiate": {}
+            }
         },
-        "Engineering": {
-            "cost": 5,
-            "desc": "Operate engines to give a bonus"
+        "Intellect": {
+            "comment": [
+                "Represents the ability to apply complex reasoning "
+                "to abstract problems"],
+            "Skills": {
+                "Literacy": {},
+                "Research": {
+                    "comment": "discover new technology",
+                    "Skills": {
+                        "Shields": {},
+                        "Engines": {}
+                    }
+                },
+                "Engineering": {
+                    "comment": "build technology",
+                    "Skills": {
+                        "Shields": {},
+                        "Engines": {}
+                    }
+                },
+                "Blacksmith": {
+                    "comment": [
+                        "working with metal to construct things"],
+                    "Skills": {
+                        "Utility": {},
+                        "Weapons": {},
+                        "Armor": {}
+                    }
+                },
+                "Optimize": {
+                    "comment": "optimize technology systems",
+                    "Skills": {
+                        "Shields": {},
+                        "Engines": {}
+                    }
+                }
+            }
         },
-        "Shields": {
-            "cost": 5,
-            "desc": "Make shields more effective"
+        "Will": {
+            "comment": [
+                "Represents the ability to overcome ",
+                "instincts and endure pain"],
+            "Skills": {
+                "Presence": {
+                    "comment": "intimidate or charm"}
+                "Morale": {
+                    "comment": "resist fear and panic"},
+                "Formation": {
+                    "comment": "cooperative fighting"},
+                "Heal": {
+                    "comment": [
+                        "apply treatments for wounds and illness"]}
+            }
         },
-        "Target": {
-            "cost": 5,
-            "desc": "Make weapons more accurate"
+        "Agility": {
+            "comment": [
+                "Represents the ability to coordinate ",
+                "actions and respond quickly"],
+            "Skills": {
+                "Dodge": {},
+                "Stealth": {},
+                "Acrobatics": {},
+                "Prestidigitation": {},
+                "Aim": {
+                    "Skills": {
+                        "Throw": {},
+                        "Bow": {},
+                        "Crossbow": {},
+                        "Pistol": {},
+                        "Rifle": {}
+                    }
+                },
+                "Target": {
+                    "comment": "aim large weapons",
+                },
+                "Riding": {},
+                "Pilot": {
+                    "comment": "control a vehicle"
+                    "Skills": {
+                        "Car": {},
+                        "Plane": {},
+                        "Starship": {}
+                    }
+                }
+            }
         },
-
-        "Pilot": {
-            "cost": 5,
-            "desc": "Steer a vehicle"
-        },
-        "Pilot3D": {"parent": "Pilot", "cost": 10},
-        "Pilot2D": {"parent": "Pilot", "cost": 10},
-
-        "Brawl": {
-            "cost": 5,
-            "desc": "Hand-to-hand combat"
-        },
-        "Skirmish": {
-            "cost": 5,
-            "desc": "Battlefield awareness"
-        },
-        "Discipline": {
-            "cost": 5,
-            "desc": "Ability to fight in formation"
-        },
-
-        "Marksman": {
-            "cost": 5,
-            "desc": ""
-        },
-        "Bow": {"parent": "Marksman", "cost": 10},
-        "Crossbow": {"parent": "Marksman", "cost": 10},
-        "Pistol": {"parent": "Marksman", "cost": 10},
-        "Rifle": {"parent": "Marksman", "cost": 10}
+        "Brawn": {
+            "comment": [
+                "Represents the ability of a character to overpower ",
+                "problems with muscle"],
+            "Skills": {
+                "Melee": {
+                    "Skills": {
+                        "Brawl": {},
+                        "Spear": {},
+                        "Poleaxe": {},
+                        "Dagger": {},
+                        "Sword": {},
+                        "Club": {}
+                    }
+                },
+                "Grapple": {},
+                "Armor": {
+                    "Gambison": {},
+                    "Leathers": {},
+                    "Mail": {},
+                    "Plate": {},
+                    "Flak": {},
+                    "Mech": {}
+                },
+                "Swim": {},
+                "Climb": {}
+            }
+        }
     },
     "shipElements": {
         "Structure": {
