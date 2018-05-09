@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<title>Just Enough Math</title>
+<title>Math From Scratch</title>
 <meta charset="utf-8" />
 <link rel="stylesheet" href="lib/sakura.css" type="text/css">
 <style>
@@ -14,11 +14,14 @@
 <script src="lib/jquery.min.js"></script>
 <script src="lib/jquery.mousewheel.js"></script>
 
-<h1>Just Enough Math</h1>
+<h1>Math From Scratch</h1>
 
 <p>
     This is an attempt to build a useful collection of mathematical
-    tools from simple components.
+    tools from simple components.  This will not be a completely
+    rigorous treatement but attempts to strike a balance between
+    clarity and correctness.  Forget everything you know about math
+    for the moment.
 </p>
 
 <article>
@@ -44,6 +47,29 @@
                 <tr><td></td><td></td></tr>
             </table>
         </div>
+
+        <h3>Set Theory</h3>
+        <p>
+            Explaination needed (Zermelo-Fraenkel 1908-1921)
+        </p>
+        <ul>
+            <li>Extensionality:
+                &#x2200;a,b : &#x2200;c
+                (c &#x2208; a &#x27fa; c &#x2208; b) &#x27f9; a = b
+                <br />
+                Two sets are equal if they contain the same elements
+            </li>
+            <li>Regularity:
+                &#x2200;a &#x2203;b&#x2208;a &#x27f9;
+            </li>
+            <li>Specification</li>
+            <li>Pairing</li>
+            <li>Union</li>
+            <li>Infinity</li>
+            <li>Replacement</li>
+            <li>Power Set</li>
+            <li>Choice</li>
+        </ul>
 
         <h3>Naive Set Theory</h3>
         <p>
@@ -446,10 +472,13 @@
             </li>
             <li>Equivalence: [a - b] &#x225d;
                 {&#x2200;c&#x2208;&#x2124; : c =&#x2124; (a, b)}</li>
-            <li>Example: -4 = (0, 4) = {{0}, {0, 4}} =
+            <li>Example: 3&#x2124; = (3, 0) = {{3}, {3, 0}} =
+                {{{{}, {{}}, {{}, {{}}}}}, {{{}, {{}},
+                {{}, {{}}}}, {}}}</li>
+            <li>Example: -4&#x2124; = (0, 4) = {{0}, {0, 4}} =
                 {{{}}, {{}, {{}, {{}},
                 {{}, {{}}}, {{}, {{}}, {{}, {{}}}}}}}</li>
-            <li>Example: -4 = (2, 6) = {{2}, {2, 6}} =
+            <li>Example: -4&#x2124; = (2, 6) = {{2}, {2, 6}} =
                 {{{{}, {{}}}}, {{{}, {{}}}, {{}, {{}}, {{}, {{}}},
                 {{}, {{}}, {{}, {{}}}}, {{}, {{}}, {{}, {{}}},
                 {{}, {{}}, {{}, {{}}}}}, {{}, {{}}, {{}, {{}}},
@@ -467,45 +496,79 @@
                 (a<sub>1</sub> + b<sub>1</sub>,
                 a<sub>2</sub> + b<sub>2</sub>)
             </li>
+            <li>Example: 3&#x2124; + 2&#x2124; = (3, 0) + (5, 3) =
+                (3 + 5, 0 + 3) = (8, 3) = 5&#x2124;</li>
             <li>Closed: &#x2200;a,b&#x2208;&#x2124; :
                 a + b &#x2208;&#x2124;</li>
             <li>Associative: &#x2200;a,b,c&#x2208;&#x2124; :
                 (a + b) + c = a + (b + c)
                 <ul>
-                    <li>((a<sub>1</sub> + b<sub>1</sub>) +
+                    <li>((a<sub>1</sub>, a<sub>2</sub>) +
+                        (b<sub>1</sub>, b<sub>2</sub>)) +
+                        (c<sub>1</sub>, c<sub>2</sub>) =
+                        ((a<sub>1</sub> + b<sub>1</sub>) +
                         c<sub>1</sub>,
                         (a<sub>2</sub> + b<sub>2</sub>) +
-                        c<sub>2</sub>) =
+                        c<sub>2</sub>) :: Definition
+                    </li>
+                    <li>((a<sub>1</sub>, a<sub>2</sub>) +
+                        (b<sub>1</sub>, b<sub>2</sub>)) +
+                        (c<sub>1</sub>, c<sub>2</sub>) =
                         (a<sub>1</sub> + (b<sub>1</sub> +
                         c<sub>1</sub>),
                         a<sub>2</sub> + (b<sub>2</sub> +
                         c<sub>2</sub>)) ::
                         Associative Addition &#x2115;</li>
+                    <li>((a<sub>1</sub>, a<sub>2</sub>) +
+                        (b<sub>1</sub>, b<sub>2</sub>)) +
+                        (c<sub>1</sub>, c<sub>2</sub>) =
+                        (a<sub>1</sub>, a<sub>2</sub>) +
+                        ((b<sub>1</sub>, b<sub>2</sub>) +
+                        (c<sub>1</sub>, c<sub>2</sub>)) :: Definition
+                    </li>
                 </ul>
             </li>
             <li>Identity: &#x2200;a&#x2208;&#x2124;
                 a + 0 = a = 0 + a
                 <ul>
-                    <li>(a<sub>1</sub> + 0, a<sub>2</sub> + 0) =
-                        (a<sub>1</sub>, a<sub>2</sub>) =
+                    <li>(a<sub>1</sub>, a<sub>2</sub>) + (0, 0) =
+                        (a<sub>1</sub> + 0, a<sub>2</sub> + 0) ::
+                        Definition</li>
+                    <li>(a<sub>1</sub>, a<sub>2</sub>) + (0, 0) =
+                        (a<sub>1</sub>, a<sub>2</sub>) ::
+                        Addition Identity &#x2115;</li>
+                    <li>(a<sub>1</sub>, a<sub>2</sub>) + (0, 0) =
                         (0 + a<sub>1</sub>, 0 + a<sub>2</sub>) ::
-                        Identity Addition &#x2115;</li>
+                        Addition Identity &#x2115;</li>
+                    <li>(a<sub>1</sub>, a<sub>2</sub>) + (0, 0) =
+                        (0, 0) + (a<sub>1</sub>, a<sub>2</sub>) ::
+                        Definition</li>
                 </ul>
             </li>
             <li>Commutative: &#x2200;a,b&#x2208;&#x2124; :
                 a + b = b + a
                 <ul>
-                    <li>(a<sub>1</sub> + b<sub>1</sub>,
-                        a<sub>2</sub> + b<sub>2</sub>) =
+                    <li>(a<sub>1</sub>, a<sub>2</sub>) +
+                        (b<sub>1</sub>, b<sub>2</sub>) =
+                        (a<sub>1</sub> + b<sub>1</sub>,
+                        a<sub>2</sub> + b<sub>2</sub>) ::
+                        Definition</li>
+                    <li>(a<sub>1</sub>, a<sub>2</sub>) +
+                        (b<sub>1</sub>, b<sub>2</sub>) =
                         (b<sub>1</sub> + a<sub>1</sub>,
                         b<sub>2</sub> + a<sub>2</sub>) ::
                         Commutative Addition &#x2115;</li>
+                    <li>(a<sub>1</sub>, a<sub>2</sub>) +
+                        (b<sub>1</sub>, b<sub>2</sub>) =
+                        (b<sub>1</sub>, b<sub>2</sub>) +
+                        (a<sub>1</sub>, a<sub>2</sub>) ::
+                        Definition</li>
                 </ul>
             </li>
             <li>Inverses:
-                &#x2200;(a<sub>1</sub>, a<sub>2</sub>)&#x2208;&#x2124; :
+                &#x2200;(a<sub>1</sub>, a<sub>2</sub>)&#x2208;&#x2124;
                 -(a<sub>1</sub>, a<sub>2</sub>) &#x225d;
-                (a<sub>2</sub>, a<sub>1</sub>)
+                (a<sub>2</sub>, a<sub>1</sub>) : a + (-a) = 0
                 <ul>
                     <li>(a<sub>1</sub>, a<sub>2</sub>) +
                         (a<sub>2</sub>, a<sub>1</sub>) =
@@ -526,29 +589,102 @@
 
         <h3>Multiplication &#x2124;</h3>
         <ul>
-            <li>Definition: &#x2200; a,b&#x2208;&#x2124;
-                a &#x00d7; b &#x225d;
-                [a<sub>1</sub> − a<sub>2</sub>] &#x00d7;
-                [b<sub>1</sub> − b<sub>2</sub>] = <br />
-                [(a<sub>1</sub> &#x00d7; b<sub>1</sub> +
-                a<sub>2</sub> &#x00d7; b<sub>2</sub>) −
-                (a<sub>2</sub> &#x00d7; b<sub>1</sub> +
-                a<sub>1</sub> &#x00d7; b<sub>2</sub>)]
+            <li>Definition: &#x2200;
+                (a<sub>1</sub>,a<sub>2</sub>)&#x2208;&#x2124;,
+                (b<sub>1</sub>,b<sub>2</sub>)&#x2208;&#x2124;<br />
+                (a<sub>1</sub>, a<sub>2</sub>) &#x00d7;
+                (b<sub>1</sub>, b<sub>2</sub>) &#x225d;
+                ((a<sub>1</sub> &#x00d7; b<sub>1</sub> +
+                a<sub>2</sub> &#x00d7; b<sub>2</sub>),
+                (a<sub>1</sub> &#x00d7; b<sub>2</sub> +
+                a<sub>2</sub> &#x00d7; b<sub>1</sub>))
             </li>
+            <li>Example: 3&#x2124; &#x00d7; 2&#x2124; =
+                (3, 0) &#x00d7; (4, 2) =
+                (3 &#x00d7; 4 + 0 &#x00d7; 2,
+                3 &#x00d7; 2 + 0 &#x00d7; 4) =
+                (12 + 0, 6 + 0) = (12, 6) = 6&#x2124;</li>
             <li>Closed: &#x2200;a,b&#x2208;&#x2124; :
                 a &#x00d7; b &#x2208;&#x2124;</li>
             <li>Associative: &#x2200;a,b,c&#x2208;&#x2124; :
                 (a &#x00d7; b) &#x00d7; c = a &#x00d7; (b &#x00d7; c)
+                <ul>
+                    <li>((a<sub>1</sub>,a<sub>2</sub>) &#x00d7;
+                        (b<sub>1</sub>,b<sub>2</sub>)) &#x00d7;
+                        (c<sub>1</sub>,c<sub>2</sub>) =
+                        ((a<sub>1</sub> &#x00d7; b<sub>1</sub> +
+                        a<sub>2</sub> &#x00d7; b<sub>2</sub>) &#x00d7;
+                        c<sub>1</sub> + (a<sub>1</sub> &#x00d7;
+                        b<sub>2</sub> + a<sub>2</sub> &#x00d7;
+                        b<sub>1</sub>) &#x00d7; c<sub>2</sub>,
+                        (a<sub>1</sub> &#x00d7; b<sub>1</sub> +
+                        a<sub>2</sub> &#x00d7; b<sub>2</sub>) &#x00d7;
+                        c<sub>2</sub> + (a<sub>1</sub> &#x00d7;
+                        b<sub>2</sub> + a<sub>2</sub> &#x00d7;
+                        b<sub>1</sub>) &#x00d7; c<sub>1</sub>) ::
+                        Definition</li>
+                    <li>((a<sub>1</sub>,a<sub>2</sub>) &#x00d7;
+                        (b<sub>1</sub>,b<sub>2</sub>)) &#x00d7;
+                        (c<sub>1</sub>,c<sub>2</sub>) =
+                        (a<sub>1</sub> &#x00d7; (b<sub>1</sub> &#x00d7;
+                        c<sub>1</sub> + b<sub>2</sub> &#x00d7;
+                        c<sub>2</sub>) + a<sub>2</sub> &#x00d7;
+                        (b<sub>1</sub> &#x00d7; c<sub>2</sub> +
+                        b<sub>2</sub> &#x00d7; c<sub>1</sub>),
+                        a<sub>1</sub> &#x00d7; (b<sub>1</sub> &#x00d7;
+                        c<sub>2</sub> + b<sub>2</sub> &#x00d7;
+                        c<sub>1</sub>) + a<sub>2</sub> &#x00d7;
+                        (b<sub>1</sub> &#x00d7; c<sub>1</sub> +
+                        b<sub>2</sub> &#x00d7; c<sub>2</sub>))
+                        :: Associativity, Distributivity and Commutivity
+                        &#x2115;
+                    </li>
+                    <li>((a<sub>1</sub>,a<sub>2</sub>) &#x00d7;
+                        (b<sub>1</sub>,b<sub>2</sub>)) &#x00d7;
+                        (c<sub>1</sub>,c<sub>2</sub>) =
+                        (a<sub>1</sub>,a<sub>2</sub>) &#x00d7;
+                        ((b<sub>1</sub>,b<sub>2</sub>) &#x00d7;
+                        (c<sub>1</sub>,c<sub>2</sub>)) ::
+                        Definition</li>
+                </ul>
             </li>
             <li>Identity: &#x2200;a&#x2208;&#x2124;
-                a &#x00d7; 1 = a</li>
+                a &#x00d7; 1 = a = 1 &#x00d7; a
+                <ul>
+                    <li>
+                        (a1, a2) &#x00d7; (1, 0) =
+                        (a1 &#x00d7; 1 + a2 &#x00d7; 0,
+                        a1 &#x00d7; 0 + a2 &#x00d7; 1) :: Definition
+                    </li>
+                    <li>(a1, a2) &#x00d7; (1, 0) = (a1 + 0, 0 + a2)
+                        :: Multiplication &#x2115;</li>
+                    <li>(a1, a2) &#x00d7; (1, 0) = (a1, a2)
+                        :: Addition &#x2115;</li>
+                    <li>(a1, a2) &#x00d7; (1, 0) = (0 + a1, a2 + 0)
+                        :: Addition &#x2115;</li>
+                    <li>(a1, a2) &#x00d7; (1, 0) =
+                        (1 &#x00d7 a1 + 0 &#x00d7; a2,
+                        0 &#x00d7 a1 + 1 &#x00d7 a2)
+                        :: Multiplication &#x2115;</li>
+                    <li>(a1, a2) &#x00d7; (1, 0) =
+                        (1, 0) &#x00d7; (a1, a2)
+                        :: Definition</li>
+                </ul>
+            </li>
             <li>Commutative: &#x2200;a,b&#x2208;&#x2124; :
-                a &#x00d7; b = b &#x00d7; a</li>
+                a &#x00d7; b = b &#x00d7; a
+                <ul>
+                    <li>TODO</li>
+                </ul>
+            </li>
             <li>Distributive:  &#x2200;a,b,c&#x2208;&#x2124; :<br />
                 (a &#x00d7; (b + c) =
                 (a &#x00d7; b) + (a &#x00d7; c)) &#x2227;<br />
-                ((b + c) &#x00d7; a =
-                (b &#x00d7; a) + (c &#x00d7; a))</li>
+                ((b + c) &#x00d7; a = (b &#x00d7; a) + (c &#x00d7; a))
+                <ul>
+                    <li>TODO</li>
+                </ul>
+            </li>
         </ul>
 
         <h3>Rational Numbers &#x211a;</h3>
