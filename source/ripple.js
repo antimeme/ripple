@@ -293,13 +293,15 @@
                 break;
             case gesturStates.TAP:
             case gesturStates.DRAG:
-                if (touches.current.length >= 2) {
-                    this.touchTwo = createTouch(
-                        touches.current[0]);
-                    this.state = gesturStates.PINCH;
-                    this.fireEvent('pinchStart',
-                                   this.touchOne, this.touchTwo);
-                }
+                touches.current.forEach(function(touch) {
+                    if (touch.id !== this.touchOne.id) {
+                        this.touchTwo = createTouch(touch);
+                        this.state = gesturStates.PINCH;
+                        this.fireEvent('pinchStart',
+                                       this.touchOne,
+                                       this.touchTwo);
+                    }
+                }, this);
                 break;
             case gesturStates.PRESS:
                 this.state = gesturStates.PTAP;
@@ -361,8 +363,7 @@
                         pinchOne = touch;
                     else if (touch.id === this.touchTwo.id)
                         pinchTwo = touch;
-                });
-
+                }, this);
                 if (pinchOne && pinchTwo) {
                     // It's actually mildly annoying to find the angle
                     // between two vectors.  Yes yes, we all know that
@@ -382,7 +383,7 @@
                     ortho = {x: -original.y, y: original.x};
 
                     this.fireEvent(
-                        'pinch', Math.sqrt(
+                        'pinchMove', Math.sqrt(
                             dot(current) / dot(original)),
                         ((dot(current, ortho) >= 0) ? 1 : -1) *
                         Math.acos(dot(current, original) /

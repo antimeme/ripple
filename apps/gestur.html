@@ -23,7 +23,7 @@
 </style>
 
 <div id="log"></div>
-<img src="images/gestur.svg" />
+<!-- <img src="images/gestur.svg" /> -->
 <canvas></canvas>
 <button id="clear">CLEAR</button>
 
@@ -86,7 +86,10 @@
          wheel: function(name, scroll) { post(name, scroll); },
          pinchStart: function(name, one, two) {
              post(name, {one: one, two: two}); },
-         pinch: function(name, length, angle) {
-             post(name, {length: length, angle: angle}); }
+         pinchMove: function(name, length, angle) {
+             post(name, {length: length, angle: angle}); },
+         pinchDebug: function(name, value) {
+             post(name, value);
+         }
      }, canvas);
  }); //]]></script>
