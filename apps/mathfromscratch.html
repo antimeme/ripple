@@ -16,17 +16,28 @@
 
 <h1>Math From Scratch</h1>
 
+<blockquote>
+    "If you want to make an apple pie from scratch, you must first
+    create the universe." — Carl Sagan
+</blockquote>
 <p>
-    This is an attempt to build a useful collection of mathematical
-    tools from simple components.  This will not be a completely
-    rigorous treatement but attempts to strike a balance between
-    clarity and correctness.  Forget everything you know about math
-    for the moment.
+    Mathematics has no generally accepted definition.  We could
+    describe it as a collection of tools for understanding patterns
+    and for studying structure and change.  People have studied
+    mathematics for centuries and found applications for it in every
+    field of science and technology.
+</p>
+
+<p>
+    This is an attempt to build the most important parts of math from
+    the simplest possible foundations.  An attempt will be made to
+    balance clarity with rigor.  Forget everything you know about math
+    and let's begin at the beginning.
 </p>
 
 <article>
     <section>
-        <h2>Chapter 1: Nothing But Set</h2>
+        <h2>Nothing But Set</h2>
         <div class="key">
             <h2>Notation</h2>
             <table>
@@ -34,6 +45,7 @@
                 <tr><td>&#x2260;</td><td>not equal</td></tr>
                 <tr><td>&#x2200;</td><td>for all</td></tr>
                 <tr><td>&#x2203;</td><td>there exists</td></tr>
+                <tr><td>&#x2204;</td><td>there does not exist</td></tr>
                 <tr><td>&#x2208;</td><td>is a member of</td></tr>
                 <tr><td>&#x2209;</td><td>is not a member of</td></tr>
                 <tr><td>&#x2227;</td><td>and</td></tr>
@@ -48,19 +60,33 @@
             </table>
         </div>
 
-        <h3>Set Theory</h3>
         <p>
-            Explaination needed (Zermelo-Fraenkel 1908-1921)
+            Elegance is the quality of being ingenious and simple.  We
+            can build most of the familiar mathematical tools using a
+            small set of axioms as a foundation.  We will use the
+            axioms created by Zermelo and Fraenkel from 1908 to 1921.
         </p>
+
+        <h3>Set Axioms</h3>
         <ul>
-            <li>Extensionality:
-                &#x2200;a,b : &#x2200;c
-                (c &#x2208; a &#x27fa; c &#x2208; b) &#x27f9; a = b
-                <br />
-                Two sets are equal if they contain the same elements
+            <li>Extensionality: two sets are equal if they contain the
+                same elements.<br />
+                &#x2200;a,b : &#x2200;c (c &#x2208; a
+                &#x27fa; c &#x2208; b) &#x27f9; a = b
+                <ul>
+                    <li>Reflexive: &#x2200;a : a = a</li>
+                    <li>Symmetric: &#x2200;a,b :
+                        (a = b) &#x27fa; (b = a)</li>
+                    <li>Transitive: &#x2200;a,b,c :
+                        (a=c &#x2227; b=c) &#x27f9; (a = b)</li>
+                </ul>
             </li>
-            <li>Regularity:
+            <li>Regularity: every set is either empty or contains
+                an element that shares no elements with the set itself.
+                <br />
                 &#x2200;a &#x2203;b&#x2208;a &#x27f9;
+                &#x2203;c&#x2208;a
+                &#x2204;d (d&#x2208;a &#x2227; d&#x2208;c)
             </li>
             <li>Specification</li>
             <li>Pairing</li>
@@ -104,6 +130,22 @@
             <li>Repetition: &#x2200;a : {a, a} = {a}</li>
         </ul>
 
+        <h3>Cardinality</h3>
+        <ul>
+            <li>Relation: (r : D &#x27f6; R) &#x225d;
+                { (a, b) :  a&#x2208;D,b&#x2208;R }</li>
+            <li>Application: r(a) = b &#x27fa; (a, b)&#x2208;r</li>
+            <li>Given relation r : D &#x27f6; R
+                <ul>
+                    <li>Injection: &#x2200;a,b&#x2208;D :
+                        r(a) = r(b) &#x27f9; a = b</li>
+                    <li>Surjection: &#x2200;a&#x2208;R
+                        &#x2203;b&#x2208;D : r(b) = a</li>
+                    <li>Bijection: injection and surjection</li>
+                </ul></li>
+            <li>Two sets with a bijection have the same cardinality</li>
+        </ul>
+
         <h3>Ordered Pairs</h3>
         <p>
             Sets have no order.  &#x2200;a,b : {a, b} = {b, a}
@@ -143,24 +185,8 @@
                         {{}, {{}}, {{}, {{}}}}}</li>
                     <li>...</li>
                 </ul></li>
-        </ul>
-
-        <h3>Cardinality</h3>
-        <ul>
-            <li>Relation: (r : D &#x27f6; R) &#x225d;
-                { (a, b) :  a&#x2208;D,b&#x2208;R }</li>
-            <li>Application: r(a) = b &#x27fa; (a, b)&#x2208;r</li>
-            <li>Given relation r : D &#x27f6; R
-                <ul>
-                    <li>Injection: &#x2200;a,b&#x2208;D :
-                        r(a) = r(b) &#x27f9; a = b</li>
-                    <li>Surjection: &#x2200;a&#x2208;R
-                        &#x2203;b&#x2208;D : r(b) = a</li>
-                    <li>Bijection: injection and surjection</li>
-                </ul></li>
-            <li>Two sets with a bijection have the same cardinality</li>
-            <li>Example: sets with 3 elements have a bijection
-                with 3&#x2115;</li>
+            <li>Order: &#x2200;a,b&#x2208;&#x2115;
+                a &lt; b &#x27f9; a &#x2208; b</li>
         </ul>
 
         <h3>Addition &#x2115;</h3>
@@ -192,17 +218,17 @@
                 (a + b) + c = a + (b + c)
                 <ul>
                     <li>(a + b) + 0 = a + b = a + (b + 0)
-                        (Definition Base)</li>
+                        :: Definition Base</li>
                     <li>(a + b) + c = a + (b + c)
-                        (Assumption)</li>
+                        :: Assumption</li>
                     <li>(a + b) + succ(c) = succ((a + b) + c)
-                        (Definition Step)</li>
+                        :: Definition Step</li>
                     <li>(a + b) + succ(c) = succ(a + (b + c))
-                        (Induction)</li>
+                        :: Induction</li>
                     <li>(a + b) + succ(c) = a + succ(b + c)
-                        (Definition Step)</li>
+                        :: Definition Step</li>
                     <li>(a + b) + succ(c) = a + (b + succ(c))
-                        (Definition Step)</li>
+                        :: Definition Step</li>
                 </ul>
             </li>
             <li>Identity: &#x2200;a&#x2208;&#x2115;
@@ -470,20 +496,27 @@
                     <li>Transitive: TODO</li>
                 </ul>
             </li>
-            <li>Equivalence: [a - b] &#x225d;
-                {&#x2200;c&#x2208;&#x2124; : c =&#x2124; (a, b)}</li>
-            <li>Example: 3&#x2124; = (3, 0) = {{3}, {3, 0}} =
-                {{{{}, {{}}, {{}, {{}}}}}, {{{}, {{}},
-                {{}, {{}}}}, {}}}</li>
-            <li>Example: -4&#x2124; = (0, 4) = {{0}, {0, 4}} =
-                {{{}}, {{}, {{}, {{}},
-                {{}, {{}}}, {{}, {{}}, {{}, {{}}}}}}}</li>
-            <li>Example: -4&#x2124; = (2, 6) = {{2}, {2, 6}} =
-                {{{{}, {{}}}}, {{{}, {{}}}, {{}, {{}}, {{}, {{}}},
-                {{}, {{}}, {{}, {{}}}}, {{}, {{}}, {{}, {{}}},
-                {{}, {{}}, {{}, {{}}}}}, {{}, {{}}, {{}, {{}}},
-                {{}, {{}}, {{}, {{}}}}, {{}, {{}}, {{}, {{}}},
-                {{}, {{}}, {{}, {{}}}}}}}}}</li>
+            <li>Order:
+                &#x2200; (a<sub>1</sub>,a<sub>2</sub>)&#x2208;&#x2124;,
+                (b<sub>1</sub>,b<sub>2</sub>)&#x2208;&#x2124;<br />
+                ((a<sub>1</sub>,a<sub>2</sub>) &lt;
+                (b<sub>1</sub>,b<sub>2</sub>)) &#x225d;
+                a<sub>1</sub> + b<sub>2</sub> <
+                a<sub>2</sub> + b<sub>1</sub>
+                <li>Equivalence: [a - b] &#x225d;
+                    {&#x2200;c&#x2208;&#x2124; : c =&#x2124; (a, b)}</li>
+                <li>Example: 3&#x2124; = (3, 0) = {{3}, {3, 0}} =
+                    {{{{}, {{}}, {{}, {{}}}}}, {{{}, {{}},
+                    {{}, {{}}}}, {}}}</li>
+                <li>Example: -4&#x2124; = (0, 4) = {{0}, {0, 4}} =
+                    {{{}}, {{}, {{}, {{}},
+                    {{}, {{}}}, {{}, {{}}, {{}, {{}}}}}}}</li>
+                <li>Example: -4&#x2124; = (2, 6) = {{2}, {2, 6}} =
+                    {{{{}, {{}}}}, {{{}, {{}}}, {{}, {{}}, {{}, {{}}},
+                    {{}, {{}}, {{}, {{}}}}, {{}, {{}}, {{}, {{}}},
+                    {{}, {{}}, {{}, {{}}}}}, {{}, {{}}, {{}, {{}}},
+                    {{}, {{}}, {{}, {{}}}}, {{}, {{}}, {{}, {{}}},
+                    {{}, {{}}, {{}, {{}}}}}}}}}</li>
         </ul>
 
         <h3>Addition &#x2124;</h3>
@@ -716,7 +749,14 @@
                     <li>Transitive: TODO</li>
                 </ul>
             </li>
-            <li>Equivalence: [a<sub>1</sub> / a<sub>2</sub>] &#x225d;
+            <li>Order:
+                &#x2200; (a<sub>1</sub>,a<sub>2</sub>)&#x2208;&#x211a;,
+                (b<sub>1</sub>,b<sub>2</sub>)&#x2208;&#x211a;<br />
+                ((a<sub>1</sub>,a<sub>2</sub>) &lt;
+                (b<sub>1</sub>,b<sub>2</sub>)) &#x225d;
+                a<sub>1</sub> &#x00d7; b<sub>2</sub> <
+                a<sub>2</sub> &#x00d7; b<sub>1</sub>
+                <li>Equivalence: [a<sub>1</sub> / a<sub>2</sub>] &#x225d;
                 {&#x2200;b&#x2208;&#x211a; :
                 b =&#x211a; (a<sub>1</sub>, a<sub>2</sub>)}</li>
             <li>Example: -4/3 = (-4, 3) = ((0, 4), (3, 0)) =
@@ -794,6 +834,24 @@
                 a &#x00d7; a<sup>-1</sup> = 1
             </li>
         </ul>
+
+        <h3>Real Numbers &#x211d;</h3>
+        <ul>
+            <li>Definition: A real number is a cut (Dedekind
+                1858-1862) which separates all rational numbers into
+                one of two sets.
+            </li>
+            <li>
+                There are more real numbers than natural numbers,
+                integers or rational numbers (Cantor diagonalization)
+            </li>
+            <li>
+                Real numbers can be manipulated if convertable to
+                rational numbers but otherwise we just have to carry
+                them around (&#960; + 2)
+            </li>
+        </ul>
+
     </section>
 
     <section>
