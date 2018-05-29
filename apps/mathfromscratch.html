@@ -17,8 +17,8 @@
 <h1>Math From Scratch</h1>
 
 <blockquote>
-    "If you want to make an apple pie from scratch, you must first
-    create the universe." — Carl Sagan
+    <q>If you want to make an apple pie from scratch, you must first
+        create the universe.</q> — Carl Sagan
 </blockquote>
 <p>
     Mathematics has no generally accepted definition.  We could
@@ -30,9 +30,8 @@
 
 <p>
     This is an attempt to build the most important parts of math from
-    the simplest possible foundations.  An attempt will be made to
-    balance clarity with rigor.  Forget everything you know about math
-    and let's begin at the beginning.
+    the simplest possible foundations.  Forget everything you know
+    about math and let's begin at the beginning.
 </p>
 
 <article>
@@ -97,74 +96,56 @@
             <li>Choice</li>
         </ul>
 
-        <h3>Naive Set Theory</h3>
+        <h3>Ordered Pairs</h3>
         <p>
-            A set is as simple structure defined by the members it
-            contains.  Let's see what we can construct with informal
-            definitions.
+            Sets have no order.  &#x2200;a,b : {a, b} = {b, a}
+            So let's impose some order on them.
         </p>
         <ul>
-            <li>Empty: {} &#x225d; &#x2200;a : a &#x2209; {}</li>
-            <li>Union: S&#x222a;T &#x225d;
-                { &#x2200;a : a&#x2208;S &#x2228; a&#x2208;T }<br />
-                Example: {a, b}&#x222a;{b, c} = {a, b, c}
+            <li>Kuratowski 1921: (a, b) &#x225d; {{a}, {a, b}}</li>
+            <li>a is the first element of (a, b) &#x225d;
+                &#x2200;c&#x2208;(a, b) : a&#x2208;c</li>
+            <li>b is the second element of (a, b) &#x225d;<br />
+                (&#x2203;c&#x2208;(a, b) : b&#x2208;c) &#x2227;
+                (&#x2200;c,d&#x2208;(a, b) :
+                c &#x2260; d &#x27f9;
+                b&#x2260;c &#x2227;
+                b&#x2260;d)
             </li>
-            <li>Intersection: S&#x2229;T &#x225d;
-                { &#x2200;a : a&#x2208;S &#x2227; a&#x2208;T }<br />
-                Example: {a, b}&#x2229;{b, c} = {b}
-            </li>
-            <li>Subset: S&#x2286;T &#x225d;
-                &#x2200;a&#x2208;S : a &#x2208; T<br />
-                Example: {a, b}&#x2286;{a, b, c}&#x2286;{a, b, c}
-            </li>
-            <li>Equality: S=T &#x225d;
-                (S&#x2286;T &#x2227; T&#x2286;S)
-                <ul>
-                    <li>Reflexive: &#x2200;S : S = S</li>
-                    <li>Symmetric: &#x2200;S,T :
-                        (S = T) &#x27fa; (T = S)</li>
-                    <li>Transitive: &#x2200;S,T,U :
-                        (S=U &#x2227; T=U) &#x27f9; (S = T)</li>
-                </ul>
-            </li>
-            <li>Repetition: &#x2200;a : {a, a} = {a}</li>
+            <li>Not reversible (unlike sets):
+                &#x2200;a,b (a &#x2260; b) &#x27f9;
+                ((a, b) &#x2260; (b, a))<br />
+                {{a}, {a, b}} &#x2260; {{b}, {a, b}}</li>
         </ul>
 
         <h3>Cardinality</h3>
         <ul>
             <li>Relation: (r : D &#x27f6; R) &#x225d;
-                { (a, b) :  a&#x2208;D,b&#x2208;R }</li>
+                { (a, b) :  a&#x2208;D,b&#x2208;R }
+                <ul>
+                    <li>D is the Domain of the Relation</li>
+                    <li>R is the Range of the Relation</li>
+                </ul>
+            </li>
             <li>Application: r(a) = b &#x27fa; (a, b)&#x2208;r</li>
             <li>Given relation r : D &#x27f6; R
                 <ul>
                     <li>Injection: &#x2200;a,b&#x2208;D :
-                        r(a) = r(b) &#x27f9; a = b</li>
+                        r(a) = r(b) &#x27f9; a = b<br />
+                        No two elements of D map the the same element
+                        of R
+                    </li>
                     <li>Surjection: &#x2200;a&#x2208;R
-                        &#x2203;b&#x2208;D : r(b) = a</li>
+                        &#x2203;b&#x2208;D : r(b) = a<br />
+                        Every element of R can be reached by at
+                        least one element of D
+                    </li>
                     <li>Bijection: injection and surjection</li>
                 </ul></li>
-            <li>Two sets with a bijection have the same cardinality</li>
-        </ul>
-
-        <h3>Ordered Pairs</h3>
-        <p>
-            Sets have no order.  &#x2200;a,b : {a, b} = {b, a}
-            Creating order with sets requires some creativity.
-        </p>
-        <ul>
-            <li>Kuratowski 1921: (a, b) &#x225d; {{a}, {a, b}}</li>
-            <li>a is the first element of p:
-                &#x2200;S&#x2208;p : a&#x2208;S</li>
-            <li>b is the second element of p:<br />
-                (&#x2203;S&#x2208;p : b&#x2208S) &#x2227;
-                (&#x2200;S<sub>1</sub>,S<sub>2</sub>&#x2208;p :
-                S<sub>1</sub> &#x2260; S<sub>2</sub> &#x27f9;
-                b&#x2260;S<sub>1</sub> &#x2227;
-                b&#x2260;S<sub>2</sub>)
+            <li>Two sets with a bijection have the same cardinality
+                <br />#{a, b, c} = #{d, e, f}<br />
+                r = {(a, d), (b, e), (d, f)}
             </li>
-            <li>&#x2200;a,b (a &#x2260; b) &#x27f9;
-                ((a, b) &#x2260; (b, a))<br />
-                {{a}, {a, b}} &#x2260; {{b}, {a, b}}</li>
         </ul>
 
         <h3>Natural Numbers &#x2115;</h3>
@@ -188,10 +169,15 @@
             <li>Order: &#x2200;a,b&#x2208;&#x2115;
                 a &lt; b &#x27f9; a &#x2208; b</li>
         </ul>
+        <p>
+            Natural numbers give cardinality a more convenient form:
+            We can say a set has three elements if its cardinality is
+            the same as the set which is the natural number 3.
+        </p>
 
         <h3>Addition &#x2115;</h3>
         <ul>
-            <li>Definition:
+            <li>Definition (Grassman 1861):
                 <ul>
                     <li>Base: &#x2200;a&#x2208;&#x2115;
                         a + 0 &#x225d; a</li>
@@ -219,7 +205,9 @@
                 <ul>
                     <li>(a + b) + 0 = a + b = a + (b + 0)
                         :: Definition Base</li>
-                    <li>(a + b) + c = a + (b + c)
+                    <li>&#x2203;c&#x2208;&#x2115;
+                        &#x2200;a,b&#x2208;&#x2115; :
+                        (a + b) + c = a + (b + c)
                         :: Assumption</li>
                     <li>(a + b) + succ(c) = succ((a + b) + c)
                         :: Definition Step</li>
@@ -235,7 +223,8 @@
                 a + 0 = a = 0 + a
                 <ul>
                     <li>0 + 0 = 0 :: Definition Base</li>
-                    <li>0 + a = a :: Assumption</li>
+                    <li>&#x2203;a&#x2208;&#x2115; :
+                        0 + a = a :: Assumption</li>
                     <li>0 + succ(a) = succ(0 + a)
                         :: Definition Step</li>
                     <li>0 + succ(a) = succ(a) :: Induction</li>
@@ -257,30 +246,38 @@
                     <li>Commutativity of 1: &#x2200;a&#x2208;&#x2115;
                         a + 1 = 1 + a
                         <ul>
-                            <li>0 + 1 = 1 + 0 (Identity)</li>
-                            <li>a + 1 = 1 + a (Assumption)</li>
+                            <li>0 + 1 = 1 + 0 :: Identity</li>
+                            <li>&#x2203;a&#x2208;&#x2115; :
+                                a + 1 = 1 + a :: Assumption</li>
                             <li>succ(a) + 1 = succ(a) + succ(0)
-                                (Definition of 1)</li>
+                                :: Definition of 1</li>
                             <li>succ(a) + 1 = succ(succ(a) + 0)
-                                (Defintion Step)</li>
+                                :: Defintion Step</li>
                             <li>succ(a) + 1 = succ((a + 1) + 0)
-                                (Successor + 1)</li>
+                                :: Successor + 1</li>
                             <li>succ(a) + 1 = succ(a + 1)
-                                (Defintion Base)</li>
+                                :: Defintion Base</li>
                             <li>succ(a) + 1 = succ(1 + a)
-                                (Induction)</li>
+                                :: Induction</li>
                             <li>succ(a) + 1 = 1 + succ(a)
-                                (Definition Step)</li>
+                                :: Definition Step</li>
                         </ul>
-                        <li>a + b = b + a (Assumption)</li>
-                        <li>a + succ(b) = a + (b + 1) (Successor + 1)</li>
-                        <li>a + succ(b) = (a + b) + 1 (Associativity)</li>
-                        <li>a + succ(b) = (b + a) + 1 (Induction)</li>
-                        <li>a + succ(b) = b + (a + 1) (Associativity)</li>
+                        <li>&#x2203;b&#x2208;&#x2115;
+                            &#x2200;a&#x2208;&#x2115; :
+                            a + b = b + a :: Assumption</li>
+                        <li>a + succ(b) = a + (b + 1)
+                            :: Successor + 1</li>
+                        <li>a + succ(b) = (a + b) + 1
+                            :: Associativity</li>
+                        <li>a + succ(b) = (b + a) + 1 :: Induction</li>
+                        <li>a + succ(b) = b + (a + 1)
+                            :: Associativity</li>
                         <li>a + succ(b) = b + (1 + a)
-                            (Commutativity of 1)</li>
-                        <li>a + succ(b) = (b + 1) + a (Associativity)</li>
-                        <li>a + succ(b) = succ(b) + a (Successor + 1)</li>
+                            :: Commutativity of 1</li>
+                        <li>a + succ(b) = (b + 1) + a
+                            :: Associativity</li>
+                        <li>a + succ(b) = succ(b) + a
+                            :: Successor + 1</li>
                 </ul>
                     </li>
         </ul>
@@ -288,7 +285,7 @@
 
         <h3>Multiplication &#x2115;</h3>
         <ul>
-            <li>Definition:
+            <li>Definition (Grassman 1861):
                 <ul>
                     <li>Base: &#x2200;a&#x2208;&#x2115;
                         a &#x00d7; 0 &#x225d; 0</li>
@@ -330,7 +327,9 @@
                                 Definition Base</li>
                         </ul>
                     </li>
-                    <li>((a + b) &#x00d7; c =
+                    <li>&#x2203;c&#x2208;&#x2115;
+                        &#x2200;a,b&#x2208;&#x2115; :
+                        ((a + b) &#x00d7; c =
                         (a &#x00d7; c) + (b &#x00d7; c))
                         :: Assumption</li>
                     <li>((a + b) &#x00d7; succ(c) =
@@ -361,7 +360,9 @@
                                 (c &#x00d7; a) + (c &#x00d7; 0)
                                 :: Definition Base</li>
                         </ul></li>
-                    <li>c &#x00d7; (a + b) = (c &#x00d7; a) +
+                    <li>&#x2203;c&#x2208;&#x2115;
+                        &#x2200;a,b&#x2208;&#x2115; :
+                        c &#x00d7; (a + b) = (c &#x00d7; a) +
                         (c &#x00d7; b) :: Assumption</li>
                     <li>c &#x00d7; (a + succ(b)) =
                         c &#x00d7; succ(a + b)
@@ -400,7 +401,9 @@
                                 a &#x00d7; (b &#x00d7; 0)
                                 :: Definition Base</li>
                         </ul></li>
-                    <li>(a &#x00d7; b) &#x00d7; c =
+                    <li>&#x2203;c&#x2208;&#x2115;
+                        &#x2200;a,b&#x2208;&#x2115; :
+                        (a &#x00d7; b) &#x00d7; c =
                         a &#x00d7; (b &#x00d7; c) :: Assumption</li>
                     <li>(a &#x00d7; b) &#x00d7; succ(c) =
                         (a &#x00d7; b) + ((a &#x00d7; b) &#x00d7; c)
@@ -426,7 +429,8 @@
                     <li>a &#x00d7; 1 = a + 0 :: Definition Base</li>
                     <li>a &#x00d7; 1 = a :: Definition Addition</li>
                     <li>1 &#x00d7; 0 = 0 :: Definition Base</li>
-                    <li>1 &#x00d7; a = a :: Assumption</li>
+                    <li>&#x2203;a&#x2208;&#x2115;
+                        1 &#x00d7; a = a :: Assumption</li>
                     <li>1 &#x00d7; succ(a) = 1 + (1 &#x00d7; a) ::
                         Definition Step</li>
                     <li>1 &#x00d7; succ(a) = 1 + a ::
@@ -441,7 +445,8 @@
                     <li>a &#x00d7; 0 = 0 &#x00d7; a
                         <ul>
                             <li>0 &#x00d7; 0 = 0 :: Definition Base</li>
-                            <li>0 &#x00d7; a = 0 :: Assumption</li>
+                            <li>&#x2203;a&#x2208;&#x2115;
+                                0 &#x00d7; a = 0 :: Assumption</li>
                             <li>0 &#x00d7; succ(a) = 0 + (0 &#x00d7; a)
                                 :: Definition Step</li>
                             <li>0 &#x00d7; succ(a) = 0 + 0
@@ -450,15 +455,17 @@
                                 :: Addition</li>
                         </ul>
                     </li>
-                    <li>a &#x00d7; b = b &#x00d7; a :: Assumption</li>
+                    <li>&#x2203;b&#x2208;&#x2115;
+                        &#x2200;a&#x2208;&#x2115; :
+                        a &#x00d7; b = b &#x00d7; a :: Assumption</li>
                     <li>a &#x00d7; succ(b) = a + (a &#x00d7; b) ::
                         Definition Step</li>
                     <li>a &#x00d7; succ(b) = a + (b &#x00d7; a) ::
                         Induction</li>
-                    <li>a &#x00d7; succ(b) = (b &#x00d7; a) + a::
+                    <li>a &#x00d7; succ(b) = (b &#x00d7; a) + a ::
                         Commutative Addition</li>
                     <li>a &#x00d7; succ(b) = (b &#x00d7; a) +
-                        (1 &#x00d7; a):: Identity</li>
+                        (1 &#x00d7; a) :: Identity</li>
                     <li>a &#x00d7; succ(b) = (b + 1) &#x00d7; a ::
                         Left Distributive</li>
                     <li>a &#x00d7; succ(b) = succ(b) &#x00d7; a ::
@@ -468,6 +475,13 @@
         </ul>
 
         <h3>Integers &#x2124;</h3>
+        <p>
+            Natural numbers are useful but they don't have additive or
+            multiplicative inverses.  There's no natural number we can
+            add to 2 in order to get zero.  This makes them unsuitable
+            to represent concepts like debt.  We can create extended
+            numbers that support values less than zero.
+        </p>
         <ul>
             <li>
                 &#x2124; &#x225d; {
@@ -721,6 +735,12 @@
         </ul>
 
         <h3>Rational Numbers &#x211a;</h3>
+        <p>
+            Integers are useful but have no multiplicative inverses.
+            There is no integer we can multiply 2 by to get 1.
+            They can only represent discrete quantities.  We can
+            extend numbers again to support fractional values.
+        </p>
         <ul>
             <li>&#x211a; &#x225d; {
                 &#x2200;a&#x2208;&#x2124;,b&#x2260;0&#x2208;&#x2124; :
@@ -836,6 +856,11 @@
         </ul>
 
         <h3>Real Numbers &#x211d;</h3>
+        <p>
+            Rational numbers are useful but there are quantities that
+            they can't represent.  There is no rational number that
+            can be multiplied by itself to get 2, for exmaple.
+        </p>
         <ul>
             <li>Definition: A real number is a cut (Dedekind
                 1858-1862) which separates all rational numbers into
@@ -848,8 +873,24 @@
             <li>
                 Real numbers can be manipulated if convertable to
                 rational numbers but otherwise we just have to carry
-                them around (&#960; + 2)
+                them around (examples: 2&#960; + 1)
             </li>
+        </ul>
+
+        <h3>Convergent Series</h3>
+        <p>
+            Many real numbers can be represented as a sum of an
+            infinite number of rational numbers.  No one has time to
+            add these all up but we can compute a rational number
+            arbitrarily close to the real number by adding enough
+            terms from the series.
+        </p>
+        <ul>
+            <li>&#960; = &#x2211;<sub>k=0</sub><sup>&#x221E;</sup>
+                (8 / ((4k + 1)(4k + 3))) (Leibniz)
+            <li>e<sup>x</sup></li>
+            <li>sin(x)</li>
+            <li>cos(x)</li>
         </ul>
 
     </section>
