@@ -35,6 +35,19 @@
 </p>
 
 <article>
+
+    <section style="display: none;">
+        <h2>Logic</h2>
+        <blockquote>
+            <q>In the beginning was the Word, and the Word was with
+            God, and the Word was God.</q> — John 1:1
+        </blockquote>
+        <ul>
+            <li>Formal System</li>
+            <li>Predicate</li>
+        </ul>
+    </section>
+
     <section>
         <h2>Nothing But Set</h2>
         <div class="key">
@@ -60,13 +73,12 @@
         </div>
 
         <p>
-            Elegance is the quality of being ingenious and simple.  We
-            can build most of the familiar mathematical tools using a
-            small set of axioms as a foundation.  We will use the
-            axioms created by Zermelo and Fraenkel from 1908 to 1921.
+            We need a foundation on which to build so we'll use one
+            created by Zermelo and Fraenkel from 1908 to 1921.  Let's
+            suppose that an object called a set exists.  Sets can
+            contain other sets and they obey the following axioms:
         </p>
 
-        <h3>Set Axioms</h3>
         <ul>
             <li>Extensionality: two sets are equal if they contain the
                 same elements.<br />
@@ -79,28 +91,60 @@
                     <li>Transitive: &#x2200;a,b,c :
                         (a=c &#x2227; b=c) &#x27f9; (a = b)</li>
                 </ul>
+                This means sets have no order because, for example,
+                {a, b} and {b, a} have the same elements and therefore
+                are the same set.
             </li>
-            <li>Regularity: every set is either empty or contains
-                an element that shares no elements with the set itself.
+            <li>Pairing: for any two sets there is a third set which
+                contains only those two as members<br />
+                &#x2200;a,b &#x2203;{a, b} &#x2200;c
+                (c&#x2208;{a, b} &#x27f9; (c = a &#x2228; c = b))
+            </li>
+            <li>Union: for any set there eixsts a set which contains
+                all members found within the members of the set.<br />
+                &#x2200;a &#x2203;b &#x2200;c
+                (c&#x2208;b &#x27f9; &#x2203;d&#x2208;a : c&#x2208;d)
                 <br />
+                For example, if the set {{a, b}, {b, c}} exists then
+                the union of its members, &#x222a;{{a, b}, {b, c}}
+                which is {a, b, c}, also exists.
+            </li>
+            <li>Power Set: for any set there exists another set which
+                contains all subsets of that set.<br />
+                &#x2200;a &#x2203;b &#x2200;c
+                c&#x2208;b &#x27f9; c&#x2286;a<br />
+                So if the set {a, b, c} exists then a power set
+                containing all subsets of it, which is {{}, {a}, {b},
+                {c}, {a, b}, {b, c}, {a, c}, {a, b, c}}, also exists.
+            </li>
+            <li>Regularity: if a set contains any elements then it
+                contains at least one element that shares no members
+                with itself.<br />
                 &#x2200;a &#x2203;b&#x2208;a &#x27f9;
                 &#x2203;c&#x2208;a
-                &#x2204;d (d&#x2208;a &#x2227; d&#x2208;c)
+                &#x2204;d (d&#x2208;a &#x2227; d&#x2208;c)<br />
+                No set can contain itself because of this.
             </li>
-            <li>Specification</li>
-            <li>Pairing</li>
-            <li>Union</li>
-            <li>Infinity</li>
+            <li>Specification: given a set and a predicate the subset
+                containing only elements for which the predicate is
+                true exists.<br />
+                &#x2200;a &#x2203;b&#x2286;a &#x2200;c
+                (c&#x2208;b &#x27fa; &#x2203;d :
+                d&#x2208;a &#x2227; f(d))
+            </li>
             <li>Replacement</li>
-            <li>Power Set</li>
+            <li>Infinity</li>
             <li>Choice</li>
         </ul>
 
         <h3>Ordered Pairs</h3>
         <p>
-            Sets have no order.  &#x2200;a,b : {a, b} = {b, a}
-            So let's impose some order on them.
+            Extensionality means that two sets which contain the same
+            elements are the same set, so members of a set have no
+            meaningful order.
         </p>
+        <p>&#x2200;a,b : {a, b} = {b, a}</p>
+        <p>Let's impose some order on them.</p>
         <ul>
             <li>Kuratowski 1921: (a, b) &#x225d; {{a}, {a, b}}</li>
             <li>a is the first element of (a, b) &#x225d;
@@ -116,6 +160,7 @@
                 &#x2200;a,b (a &#x2260; b) &#x27f9;
                 ((a, b) &#x2260; (b, a))<br />
                 {{a}, {a, b}} &#x2260; {{b}, {a, b}}</li>
+            <li>Extend by nesting: ((a, b), c)</li>
         </ul>
 
         <h3>Cardinality</h3>
@@ -171,11 +216,20 @@
         </ul>
         <p>
             Natural numbers give cardinality a more convenient form:
-            We can say a set has three elements if its cardinality is
-            the same as the set which is the natural number 3.
+            We can say a set <q>has three elements</q> if its
+            cardinality is the same as the set which is the natural
+            number 3.
         </p>
 
         <h3>Addition &#x2115;</h3>
+        <p>
+            So far there's nothing we can do with natural numbers
+            except to compare cardinality with other sets.  Let's
+            define a binary operation which maps a pair of natural
+            numbers to another natural number.  We will call this
+            operation <q>addition</q> and represent it with a + sign
+            between two natural numbers like this: a + b
+        </p>
         <ul>
             <li>Definition (Grassman 1861):
                 <ul>
@@ -183,7 +237,8 @@
                         a + 0 &#x225d; a</li>
                     <li>Step: &#x2200;a,b&#x2208;&#x2115;
                         a + succ(b) &#x225d; succ(a + b)</li>
-                </ul></li>
+                </ul>
+            </li>
             <li>Example: 3 + 2
                 <ul>
                     <li>3 + 2 = 3 + succ(1) :: Definition of 2</li>
@@ -284,6 +339,14 @@
 
 
         <h3>Multiplication &#x2115;</h3>
+        <p>
+            Adding natural numbers is useful but we will define another
+            binary operation called <q>multiplication</q> which is
+            also a binary operation.  It maps a pair of natural numbers
+            to another natural number, just like addition but is
+            defined differently.  We will represent it with a &#x00d7;
+            sign between two natural numbers like this: a &#x00d7; b
+        </p>
         <ul>
             <li>Definition (Grassman 1861):
                 <ul>
@@ -478,9 +541,19 @@
         <p>
             Natural numbers are useful but they don't have additive or
             multiplicative inverses.  There's no natural number we can
-            add to 2 in order to get zero.  This makes them unsuitable
-            to represent concepts like debt.  We can create extended
-            numbers that support values less than zero.
+            add to 2 in order to get zero, which means we can't undo
+            an operation.  This makes natural numbers unsuitable for
+            representing concepts like debt.  We can create extended
+            numbers that support values less than zero.  We'll call
+            these numbers <q>integers</q> and use the &#x2124; symbol
+            to represent the set of all integers.
+        </p>
+        <p>
+            An integers is an ordered pair of natural numbers.  Unlike
+            natural numbers which are unique sets, there are an
+            infinite number of ordered pairs of natural numbers which
+            can represent the same integer.  This means we need a new
+            notion of equality which is different from set equality.
         </p>
         <ul>
             <li>
@@ -534,6 +607,13 @@
         </ul>
 
         <h3>Addition &#x2124;</h3>
+        <p>
+            We defined addition for natural numbers but we would like
+            to be able to add integers as well.  We can define integer
+            addition in terms of addition of the natural numbers that
+            compose integers.  Unlike natural number addition, integer
+            addition has an inverses.
+        </p>
         <ul>
             <li>Definition: &#x2200;
                 (a<sub>1</sub>,a<sub>2</sub>)&#x2208;&#x2124;,
@@ -635,6 +715,16 @@
         </ul>
 
         <h3>Multiplication &#x2124;</h3>
+        <p>
+            We defined multiplication for natural numbers but we would
+            like to be able to multiply integers as well.  We can
+            define integer multiplication in terms of multiplication
+            of the natural numbers that compose integers.
+            Unfortunately, integers are not powerful enough to support
+            multiplicative inverses; there's still now way to find an
+            integer which can multiply 2 to get the multiplicative
+            identity.
+        </p>
         <ul>
             <li>Definition: &#x2200;
                 (a<sub>1</sub>,a<sub>2</sub>)&#x2208;&#x2124;,
@@ -736,10 +826,24 @@
 
         <h3>Rational Numbers &#x211a;</h3>
         <p>
-            Integers are useful but have no multiplicative inverses.
-            There is no integer we can multiply 2 by to get 1.
-            They can only represent discrete quantities.  We can
-            extend numbers again to support fractional values.
+            Integers are a useful extension of natural numbers, but
+            while they introduce additive inverses they don't have
+            multiplicative inverses.  Rational numbers have inverses
+            for both addition and multiplication with one important
+            exception.  The additive identity has no multiplicative
+            inverse.  This happens because all rational numbers
+            multiplied by zero collapse into zero.  There's no way to
+            reverese this since the information about which number was
+            multiplied by zero has been lost.
+        </p>
+        <p>
+            A rational number is an ordered pair of natural numbers.
+            Just as there are an infinite number of ordered pairs of
+            natural numbers which represent the same integer, there
+            are an infinite number of ordered pairs of integers which
+            represent the same natural number.  Once again we need a
+            new notion of equality, which is different from integer
+            equality.
         </p>
         <ul>
             <li>&#x211a; &#x225d; {
@@ -777,31 +881,37 @@
                 a<sub>1</sub> &#x00d7; b<sub>2</sub> <
                 a<sub>2</sub> &#x00d7; b<sub>1</sub>
                 <li>Equivalence: [a<sub>1</sub> / a<sub>2</sub>] &#x225d;
-                {&#x2200;b&#x2208;&#x211a; :
-                b =&#x211a; (a<sub>1</sub>, a<sub>2</sub>)}</li>
-            <li>Example: -4/3 = (-4, 3) = ((0, 4), (3, 0)) =
-                {{(0, 4)}, {(0, 4), (3, 0)}} =
-                {{{{0}, {0, 4}}}, {{{0}, {0, 4}}, {{3}, {3, 0}}}} =
-                {{{{{}}, {{}, {{}, {{}}, {{}, {{}}}, {{}, {{}},
-                {{}, {{}}}}}}}}, {{{{}}, {{}, {{}, {{}}, {{},
-                {{}}}, {{}, {{}}, {{}, {{}}}}}}}, {{{{}, {{}},
-                {{}, {{}}}}}, {{{}, {{}}, {{}, {{}}}}, {}}}}}</li>
-            <li>Example: 2/1 = (2, 1) = {{2}, {2, 1}} =
-                {{(2, 0)}, {(2, 0), (1, 0)}} =
-                {{{{2}, {2, 0}}}, {{{2}, {2, 0}}, {{1}, {1, 0}}}} =
-                {{{{{{}, {{}}}}, {{{}, {{}}}, {}}}}, {{{{{}, {{}}}},
-                {{{}, {{}}}, {}}}, {{{{}}}, {{{}}, {}}}}}</li>
-            <li>Example: 4/2 = (4, 2) = {{4}, {4, 2}} =
-                {{(4, 0)}, {(4, 0), (2, 0)}} =
-                {{{{4}, {4, 0}}}, {{{4}, {4, 0}}, {{2}, {2, 0}}}} =
-                {{{{{{}, {{}}, {{}, {{}}}, {{}, {{}}, {{}, {{}}}}}},
-                {{{}, {{}}, {{}, {{}}}, {{}, {{}}, {{}, {{}}}}}, {}}}},
-                {{{{{}, {{}}, {{}, {{}}}, {{}, {{}}, {{}, {{}}}}}},
-                {{{}, {{}}, {{}, {{}}}, {{}, {{}}, {{}, {{}}}}}, {}}},
-                {{{{}, {{}}}}, {{{}, {{}}}, {}}}}}</li>
+                    {&#x2200;b&#x2208;&#x211a; :
+                    b =&#x211a; (a<sub>1</sub>, a<sub>2</sub>)}</li>
+                <li>Example: -4/3 = (-4, 3) = ((0, 4), (3, 0)) =
+                    {{(0, 4)}, {(0, 4), (3, 0)}} =
+                    {{{{0}, {0, 4}}}, {{{0}, {0, 4}}, {{3}, {3, 0}}}} =
+                    {{{{{}}, {{}, {{}, {{}}, {{}, {{}}}, {{}, {{}},
+                    {{}, {{}}}}}}}}, {{{{}}, {{}, {{}, {{}}, {{},
+                    {{}}}, {{}, {{}}, {{}, {{}}}}}}}, {{{{}, {{}},
+                    {{}, {{}}}}}, {{{}, {{}}, {{}, {{}}}}, {}}}}}</li>
+                <li>Example: 2/1 = (2, 1) = {{2}, {2, 1}} =
+                    {{(2, 0)}, {(2, 0), (1, 0)}} =
+                    {{{{2}, {2, 0}}}, {{{2}, {2, 0}}, {{1}, {1, 0}}}} =
+                    {{{{{{}, {{}}}}, {{{}, {{}}}, {}}}}, {{{{{}, {{}}}},
+                    {{{}, {{}}}, {}}}, {{{{}}}, {{{}}, {}}}}}</li>
+                <li>Example: 4/2 = (4, 2) = {{4}, {4, 2}} =
+                    {{(4, 0)}, {(4, 0), (2, 0)}} =
+                    {{{{4}, {4, 0}}}, {{{4}, {4, 0}}, {{2}, {2, 0}}}} =
+                    {{{{{{}, {{}}, {{}, {{}}}, {{}, {{}}, {{}, {{}}}}}},
+                    {{{}, {{}}, {{}, {{}}}, {{}, {{}}, {{}, {{}}}}}, {}}}},
+                    {{{{{}, {{}}, {{}, {{}}}, {{}, {{}}, {{}, {{}}}}}},
+                    {{{}, {{}}, {{}, {{}}}, {{}, {{}}, {{}, {{}}}}}, {}}},
+                    {{{{}, {{}}}}, {{{}, {{}}}, {}}}}}</li>
         </ul>
 
         <h3>Addition &#x211a;</h3>
+        <p>
+            We will extend addition to the rational numbers by adding
+            the integers that make up the rational numbers being
+            added.  All of the properties of integers addition will be
+            preserved, including inverses.
+        </p>
         <ul>
             <li>Definition: &#x2200;a,b&#x2208;&#x211a; a + b  &#x225d;
                 (a<sub>1</sub>, a<sub>2</sub>) +
@@ -826,6 +936,16 @@
         </ul>
 
         <h3>Multiplication &#x211a;</h3>
+        <p>
+            We will extend multiplication to the rational numbers by
+            multiplying the integers that make up the rational numbers
+            in question.  All of the properties of integers
+            multiplication will be preserved.  Unlike integers,
+            rational number multiplication has invereses.  The
+            exception is zero, which is the additive inverse.  Because
+            multiplication by zero takes all numbers to zero there's
+            no way to go backwards from zero.
+        </p>
         <ul>
             <li>Definition: &#x2200;a,b&#x2208;&#x211a;
                 a &#x00d7; b  &#x225d;
@@ -857,23 +977,100 @@
 
         <h3>Real Numbers &#x211d;</h3>
         <p>
-            Rational numbers are useful but there are quantities that
-            they can't represent.  There is no rational number that
-            can be multiplied by itself to get 2, for exmaple.
+            Rational numbers can represent most quantities that are
+            important but there are some important exceptions.  These
+            exceptions are called <q>irrational numbers</q> because
+            they are not rational.
+        </p>
+
+        <p>
+            Irrational numbers include almost all roots.  Roots are
+            numbers which can be multiplied by themselves some number
+            of times to produce rational numbers.  Some roots are
+            rational.  For example, 2 &#x00d7; 2 = 4, which means that
+            2 is the square root of 4.  Similarly, 3 &#x00d7; 3
+            &#x00d7; 3 = 27, which means 3 is the cube root of 27.
+            However, there is no rational number that can be
+            multiplied by itself to get 2.
+        </p>
+        <p>
+            Suppose this was not true.  If there is a rational number
+            which when multiplied by itself results in the rational
+            numbers 2, which can be represented by a pair of integers
+            such as (2, 1) or (416, 208).  This means there is a pair
+            of integers, (a, b), such that (a &#x00d7; a, b &#x00d7;
+            b) is equal to (2, 1).
+        </p>
+        <p>
+            All integers are either even or odd.  If an integer a is
+            even then there is another integer a' which can be
+            multiplied by 2 to produce a.  For example, 6 is even and
+            3 can be multiplied by 2 to produce 6.  Given a rational
+            number (a, b) which when multiplied by itself equals
+            rational number 2 then we can ask whether a and b are even
+            or odd.  If both a and b are even, then we can replace
+            them with a' and b' such that a' &#x00d7; a' = a and b'
+            &#x00d7; b' = b.  (a', b') = (a, b) so (a', b') &#x00d7;
+            (a', b') = (2, 1).  We can repeat this until either a or b
+            is odd.
+        </p>
+        <p>
+            According to the definition of rational number
+            multiplication, integers a &#x00d7; a = 2 &#x00d7; b
+            &#x00d7; b; This means a &#x00d7; a must be even, since b
+            &#x00d7; b multiplied by 2 is equal to it.  Any odd number
+            multiplied by an odd number is odd, so a must also be
+            even.  That means there is an integer a' which when
+            multiplied by 2 is a.  So we can replace a with 2 &#x00d7;
+            a': (2 &#x00d7; a') &#x00d7; (2 &#x00d7; a') = 2 &#x00d7;
+            b &#x00d7; b; Multiplication is commutative so: 2 &#x00d7;
+            2 &#x00d7; a' &#x00d7; a' = 2 &#x00d7; b &#x00d7; b; We
+            can cancel 2 from both sides so: 2 &#x00d7; a' &#x00d7; a'
+            = b &#x00d7; b.  This means b &#x00d7; b is even, which
+            means b is even.  So a and b are both even, despite what
+            we did earlier to ensure that at least one is odd.  This
+            is a contradiction so there can't be a rational number
+            that satisfies this equation.
+        </p>
+        <p>
+            No rational number can be the root of 2 but we can get
+            arbitrarily close.  Let's start with 1.  1 &#x00d7; 1 = 1,
+            which is smaller than 2.  We can multiply 2 by 2, but this
+            is 4 which is larger than 2.  We can try (3, 2) which
+            squares to (9, 4) but that's larger than (8, 4) which is
+            equal to 2.  So we could try (5, 4) which squares to (25,
+            16) but that's smaller than (32, 16), which is equal to 2.
+            We can continue like this indefinitely.  We'll never reach
+            2 exactly but we'll get closer and closer.  In fact we can
+            separate the rational numbers into all the numbers larger
+            than the square root of 2 and all the numbers smaller.
+            This is called a Dedekind cut.
         </p>
         <ul>
             <li>Definition: A real number is a cut (Dedekind
                 1858-1862) which separates all rational numbers into
-                one of two sets.
+                one of two sets.  One set contains all the rational
+                numbers equal to or larger than the number we're
+                looking for.  The other contains all rational numbers
+                smaller than it.  Every rational number can be
+                represented by a real number, but every irrational
+                number can also be represented this way.
             </li>
             <li>
                 There are more real numbers than natural numbers,
-                integers or rational numbers (Cantor diagonalization)
+                integers or rational numbers (TODO describe Cantor
+                diagonalization)
             </li>
             <li>
-                Real numbers can be manipulated if convertable to
-                rational numbers but otherwise we just have to carry
-                them around (examples: 2&#960; + 1)
+                Unlike other kinds of numbers we've described we will
+                not be able to explicitly manipulate real numbers.
+                We can manipulate the rational parts using addition
+                and multiplication but the irrational parts must be
+                carried around.  For example, we could talk about
+                1 + &#x221a;2.  We can't simplify this any further.
+                However, if we multiply it by 1 - &#x221a;2 we get
+                1 + &#x221a;2 &#x00d7; &#x221a;2 which is
+                1 + 2 = 3.
             </li>
         </ul>
 
