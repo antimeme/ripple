@@ -1,341 +1,556 @@
 <!DOCTYPE html>
 <title>Math From Scratch</title>
 <meta charset="utf-8" />
-<link rel="stylesheet" href="lib/sakura.css" type="text/css">
-<style>
- h1, h2, h3 { text-align: center; }
- .key {
-     position: relative; float: right;
-     background-color: #ddd;
-     border-radius: 15px;
-     font-size: 60%;
- }
-</style>
-<script src="lib/jquery.min.js"></script>
-<script src="lib/jquery.mousewheel.js"></script>
+<link rel="stylesheet" href="lib/reveal.css">
+<link rel="stylesheet" href="lib/sky.css">
 
-<h1>Math From Scratch</h1>
+<div class="reveal">
+  <div class="slides">
+    <section>
+      <section>
+        <h1>Math From Scratch</h1>
 
-<blockquote>
-    <q>If you want to make an apple pie from scratch, you must first
-        create the universe.</q> — Carl Sagan
-</blockquote>
-<p>
-    Mathematics has no generally accepted definition.  We could
-    describe it as a collection of tools for understanding patterns
-    and for studying structure and change.  People have studied
-    mathematics for centuries and found applications for it in every
-    field of science and technology.
-</p>
-
-<p>
-    This is an attempt to build the most important parts of math from
-    the simplest possible foundations.  Forget everything you know
-    about math and let's begin at the beginning.
-</p>
-
-<article>
-
-    <section style="display: none;">
-        <h2>Logic</h2>
         <blockquote>
-            <q>In the beginning was the Word, and the Word was with
-            God, and the Word was God.</q> — John 1:1
+          <q>If you want to make an apple pie from scratch, you must
+            first create the universe.</q> — Carl Sagan
         </blockquote>
-        <ul>
-            <li>Formal System</li>
-            <li>Predicate</li>
-        </ul>
+      </section>
+      <section>
+        <p>
+          Mathematics has no generally accepted definition.  We could
+          describe it as a collection of tools for understanding
+          patterns and for studying structure and change.  People have
+          studied mathematics for centuries and found applications for
+          it in every field of science and technology.
+        </p>
+
+        <p>
+          This is an attempt to build the most important parts of math
+          from the simplest possible foundations.  Forget everything you
+          know about math and let's begin at the beginning.
+        </p>
+      </section>
     </section>
 
     <section>
-        <h2>Nothing But Set</h2>
-        <div class="key">
-            <h2>Notation</h2>
-            <table>
-                <tr><td>=</td><td>equals</td></tr>
-                <tr><td>&#x2260;</td><td>not equal</td></tr>
-                <tr><td>&#x2200;</td><td>for all</td></tr>
-                <tr><td>&#x2203;</td><td>there exists</td></tr>
-                <tr><td>&#x2204;</td><td>there does not exist</td></tr>
-                <tr><td>&#x2208;</td><td>is a member of</td></tr>
-                <tr><td>&#x2209;</td><td>is not a member of</td></tr>
-                <tr><td>&#x2227;</td><td>and</td></tr>
-                <tr><td>&#x2228;</td><td>or</td></tr>
-                <tr><td>&#x27f9;</td><td>implies</td></tr>
-                <tr><td>&#x27fa;</td><td>is equivalent to</td></tr>
-                <tr><td>&#x2286;</td><td>is a subset of</td></tr>
-                <tr><td>&#x2282;</td><td>is a proper subset of</td></tr>
-                <tr><td>&#x222a;</td><td>union</td></tr>
-                <tr><td>&#x2229;</td><td>intersection</td></tr>
-                <tr><td></td><td></td></tr>
-            </table>
-        </div>
-
+      <section>
+        <h2>Notation</h2>
         <p>
-            We need a foundation on which to build so we'll use one
-            created by Zermelo and Fraenkel from 1908 to 1921.  Let's
-            suppose that an object called a set exists.  Sets can
-            contain other sets and they obey the following axioms:
+          We will use some symbols as shortcuts to make statements
+          more compact.
         </p>
+      </section>
 
-        <ul>
-            <li>Extensionality: two sets are equal if they contain the
-                same elements.<br />
-                &#x2200;a,b : &#x2200;c (c &#x2208; a
-                &#x27fa; c &#x2208; b) &#x27f9; a = b
-                <ul>
-                    <li>Reflexive: &#x2200;a : a = a</li>
-                    <li>Symmetric: &#x2200;a,b :
-                        (a = b) &#x27fa; (b = a)</li>
-                    <li>Transitive: &#x2200;a,b,c :
-                        (a=c &#x2227; b=c) &#x27f9; (a = b)</li>
-                </ul>
-                This means sets have no order because, for example,
-                {a, b} and {b, a} have the same elements and therefore
-                are the same set.
-            </li>
-            <li>Pairing: for any two sets there is a third set which
-                contains only those two as members<br />
-                &#x2200;a,b &#x2203;{a, b} &#x2200;c
-                (c&#x2208;{a, b} &#x27f9; (c = a &#x2228; c = b))
-            </li>
-            <li>Union: for any set there eixsts a set which contains
-                all members found within the members of the set.<br />
-                &#x2200;a &#x2203;b &#x2200;c
-                (c&#x2208;b &#x27f9; &#x2203;d&#x2208;a : c&#x2208;d)
-                <br />
-                For example, if the set {{a, b}, {b, c}} exists then
-                the union of its members, &#x222a;{{a, b}, {b, c}}
-                which is {a, b, c}, also exists.
-            </li>
-            <li>Power Set: for any set there exists another set which
-                contains all subsets of that set.<br />
-                &#x2200;a &#x2203;b &#x2200;c
-                c&#x2208;b &#x27f9; c&#x2286;a<br />
-                So if the set {a, b, c} exists then a power set
-                containing all subsets of it, which is {{}, {a}, {b},
-                {c}, {a, b}, {b, c}, {a, c}, {a, b, c}}, also exists.
-            </li>
-            <li>Regularity: if a set contains any elements then it
-                contains at least one element that shares no members
-                with itself.<br />
-                &#x2200;a &#x2203;b&#x2208;a &#x27f9;
-                &#x2203;c&#x2208;a
-                &#x2204;d (d&#x2208;a &#x2227; d&#x2208;c)<br />
-                No set can contain itself because of this.
-            </li>
-            <li>Specification: given a set and a predicate the subset
-                containing only elements for which the predicate is
-                true exists.<br />
-                &#x2200;a &#x2203;b&#x2286;a &#x2200;c
-                (c&#x2208;b &#x27fa; &#x2203;d :
-                d&#x2208;a &#x2227; f(d))
-            </li>
-            <li>Replacement</li>
-            <li>Infinity</li>
-            <li>Choice</li>
-        </ul>
+      <section>
+        <table>
+          <tr><td>=</td><td>equals</td></tr>
+          <tr><td>&#x2260;</td><td>not equal</td></tr>
+          <tr><td>&#x2227;</td><td>and</td></tr>
+          <tr><td>&#x2228;</td><td>or</td></tr>
+          <tr><td>&#x27f9;</td><td>implies</td></tr>
+          <tr><td>&#x27fa;</td><td>is equivalent to</td></tr>
+        </table>
+      </section>
 
-        <h3>Ordered Pairs</h3>
+      <section>
+        <table>
+          <tr><td>&#x2200;</td><td>for all</td></tr>
+          <tr><td>&#x2203;</td><td>there exists</td></tr>
+          <tr><td>&#x2204;</td><td>there does not exist</td></tr>
+
+        </table>
+      </section>
+
+      <section>
+        <table>
+          <tr><td>&#x2208;</td><td>is a member of</td></tr>
+          <tr><td>&#x2209;</td><td>is not a member of</td></tr>
+          <tr><td>&#x222a;</td><td>union</td></tr>
+          <tr><td>&#x2229;</td><td>intersection</td></tr>
+          <tr><td>&#x2286;</td><td>is a subset of</td></tr>
+          <tr><td>&#x2282;</td><td>is a proper subset of</td></tr>
+        </table>
+      </section>
+    </section>
+
+    <section>
+      <section>
+        <h2>Nothing But Set</h2>
         <p>
-            Extensionality means that two sets which contain the same
-            elements are the same set, so members of a set have no
-            meaningful order.
+          We will use eight axioms defined by Zermelo and Fraenkel
+          between 1908 to 1921, plus one more added later, as a
+          foundation.
+        </p>
+      </section>
+      <section>
+        <table>
+          <tr>
+            <td>Extensionality</td><td>Same members, same set</td>
+          </tr>
+          <tr><td>Pairing</td><td>Any two elements make a set</td></tr>
+          <tr><td>Union</td><td>Sets can be merged</td></tr>
+          <tr><td>Power Set</td><td>Sets of subsets exist</td></tr>
+          <tr>
+            <td>Regularity</td><td>Sets can't contain themselves</td>
+          </tr>
+          <tr>
+            <td>Specification</td><td>We can make subsets with rules</td>
+          </tr>
+          <tr><td>Replacement</td><td>We can translate sets</td></tr>
+          <tr>
+            <td>Infinity</td><td>There is at least one infinite set</td>
+          </tr>
+          <tr><td>Choice?</td><td>It's complicated...</td></tr>
+        </table>
+      </section>
+
+      <section>
+        <h2>Extensionality</h2>
+        <p>
+          &#x2200;a,b : &#x2200;c (c &#x2208; a
+          &#x27fa; c &#x2208; b) &#x27f9; a = b
+        </p>
+        <p>Two sets that contain the same elements are the same set.</p>
+        <ul>
+          <li>Reflexive: &#x2200;a : a = a</li>
+          <li>Symmetric: &#x2200;a,b :
+            (a = b) &#x27fa; (b = a)</li>
+          <li>Transitive: &#x2200;a,b,c :
+            (a=c &#x2227; b=c) &#x27f9; (a = b)</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Pairing</h2>
+        <p>
+          &#x2200;a,b &#x2203;{a, b} &#x2200;c
+          (c&#x2208;{a, b} &#x27f9; (c = a &#x2228; c = b))
+        </p>
+        <p>
+          Any two sets can be used to create a third set which
+          contains only those two sets as members.
+        </p>
+      </section>
+
+      <section>
+        <h2>Union</h2>
+        <p>
+          &#x2200;a &#x2203;b : &#x2200;c&#x2208;b
+          (&#x2203;d&#x2208;a : c&#x2208;d)
+        </p>
+        <p>
+          Any set can be used to create a set by combining all the
+          members of its members.
+        </p>
+        <p>
+          For example, given the set {{a, b}, {b, c}} the union of its
+          members is:
+        </p>
+        &#x222a;{{a, b}, {b, c}} = {a, b, c}
+      </section>
+
+      <section>
+        <h2>Power Set</h2>
+        <p>
+          &#x2200;a &#x2203;b &#x2200;c
+          (c&#x2208;b &#x27fa; c&#x2286;a)
+        </p>
+        <p>Any set can be used to create a set of its subsets.</p>
+        <p>
+          For example, {a, b, c} has the following power set:
+          {{}, {a}, {b}, {c}, {a, b}, {b, c}, {a, c}, {a, b, c}}
+        </p>
+      </section>
+
+      <section>
+        <h2>Regularity</h2>
+        <p>
+          &#x2200;a &#x2203;b&#x2208;a &#x27f9;
+          &#x2203;c&#x2208;a :
+          &#x2204;d (d&#x2208;a &#x2227; d&#x2208;c)
+        </p>
+        <p>
+          A set that contains any members must contain at least
+          one member that does not share any members with itself.
+        </p>
+        <p>
+          No set can contain itself.
+        </p>
+      </section>
+
+      <section>
+        <h2>Specification</h2>
+        <p>[Insert clever explanation here]</p>
+        <p></p>
+      </section>
+
+      <section>
+        <h2>Replacement</h2>
+        <p>[Insert clever explanation here]</p>
+        <p></p>
+      </section>
+
+      <section>
+        <h2>Infinity</h2>
+        <p>
+          &#x2203;a : ({}&#x2208;a) &#x2227; (&#x2200;b&#x2208;a
+          b&#x222a;{b} &#x2208; a)
+        </p>
+        <p>
+          A set with infinitely many distinct members exists.
+          Specifically the set containing the empty set and all sets
+          we can get by taking the union of any member with the set
+          containing itself exists.
+        </p>
+      </section>
+
+      <section>
+        <h2>Choice</h2>
+        <p>[Insert clever explanation here]</p>
+        <p></p>
+      </section>
+
+    </section>
+
+    <section>
+      <section>
+        <h2>Setting the Stage</h2>
+        <p>
+          Sets are simple building blocks.  We will use them to build
+          some additional tools.
+        </p>
+      </section>
+
+      <section>
+        <p>
+          Extensionality says two sets with the same members are the
+          same set, so members of a set have no meaningful order.
         </p>
         <p>&#x2200;a,b : {a, b} = {b, a}</p>
-        <p>Let's impose some order on them.</p>
-        <ul>
-            <li>Kuratowski 1921: (a, b) &#x225d; {{a}, {a, b}}</li>
-            <li>a is the first element of (a, b) &#x225d;
-                &#x2200;c&#x2208;(a, b) : a&#x2208;c</li>
-            <li>b is the second element of (a, b) &#x225d;<br />
-                (&#x2203;c&#x2208;(a, b) : b&#x2208;c) &#x2227;
-                (&#x2200;c,d&#x2208;(a, b) :
-                c &#x2260; d &#x27f9;
-                b&#x2260;c &#x2227;
-                b&#x2260;d)
-            </li>
-            <li>Not reversible (unlike sets):
-                &#x2200;a,b (a &#x2260; b) &#x27f9;
-                ((a, b) &#x2260; (b, a))<br />
-                {{a}, {a, b}} &#x2260; {{b}, {a, b}}</li>
-            <li>Extend by nesting: ((a, b), c)</li>
-        </ul>
+        <p>Let's impose some order on them!</p>
+      </section>
 
-        <h3>Cardinality</h3>
-        <ul>
-            <li>Relation: (r : D &#x27f6; R) &#x225d;
-                { (a, b) :  a&#x2208;D,b&#x2208;R }
-                <ul>
-                    <li>D is the Domain of the Relation</li>
-                    <li>R is the Range of the Relation</li>
-                </ul>
-            </li>
-            <li>Application: r(a) = b &#x27fa; (a, b)&#x2208;r</li>
-            <li>Given relation r : D &#x27f6; R
-                <ul>
-                    <li>Injection: &#x2200;a,b&#x2208;D :
-                        r(a) = r(b) &#x27f9; a = b<br />
-                        No two elements of D map the the same element
-                        of R
-                    </li>
-                    <li>Surjection: &#x2200;a&#x2208;R
-                        &#x2203;b&#x2208;D : r(b) = a<br />
-                        Every element of R can be reached by at
-                        least one element of D
-                    </li>
-                    <li>Bijection: injection and surjection</li>
-                </ul></li>
-            <li>Two sets with a bijection have the same cardinality
-                <br />#{a, b, c} = #{d, e, f}<br />
-                r = {(a, d), (b, e), (d, f)}
-            </li>
-        </ul>
-
-        <h3>Natural Numbers &#x2115;</h3>
-        <ul>
-            <li>Von Neumann 1923: succ(a) &#x225d; a &#x222a; {a}</li>
-            <li>&#x2115; &#x225d; ({}&#x2208;&#x2115;) &#x2227;
-                (&#x2200;a&#x2208;&#x2115; : succ(a)&#x2208;&#x2115;)
-            </li>
-            <li>Define Numbers:
-                <ul>
-                    <li>0 &#x225d; {} </li>
-                    <li>1 &#x225d; succ(0) = {0} = {{}}</li>
-                    <li>2 &#x225d; succ(1) = {0, 1} = {{}, {{}}}</li>
-                    <li>3 &#x225d; succ(2) = {0, 1, 2} =
-                        {{}, {{}}, {{}, {{}}}}</li>
-                    <li>4 &#x225d; succ(3) = {0, 1, 2, 3} =
-                        {{}, {{}}, {{}, {{}}},
-                        {{}, {{}}, {{}, {{}}}}}</li>
-                    <li>...</li>
-                </ul></li>
-            <li>Order: &#x2200;a,b&#x2208;&#x2115;
-                a &lt; b &#x27f9; a &#x2208; b</li>
-        </ul>
+      <section> 
+        <h2>Ordered Pairs</h2>
         <p>
-            Natural numbers give cardinality a more convenient form:
+          Kuratowski 1921: (a, b) &#x225d; {{a}, {a, b}}
+        </p>
+        <ul>
+          <li>a is first in (a, b) &#x225d;
+            &#x2200;c&#x2208;(a, b) : a&#x2208;c</li>
+          <li>b is second in (a, b) &#x225d;
+            (&#x2203;c&#x2208;(a, b) : b&#x2208;c) &#x2227;
+            (&#x2200;c,d&#x2208;(a, b) :
+            c &#x2260; d &#x27f9;
+            b&#x2260;c &#x2227;
+            b&#x2260;d)
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Ordered Pairs</h2>
+        <ul>
+          <li>Unlike sets, order matters:<br />
+            &#x2200;a,b (a &#x2260; b) &#x27f9;
+            ((a, b) &#x2260; (b, a))<br />
+            &#x2200;a,b (a &#x2260; b) &#x27f9;
+            {{a}, {a, b}} &#x2260; {{b}, {a, b}}</li>
+          <li>We can make ordered triples and so on by nesting:
+            (a, b, c) &#x225d; (a, (b, c))</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Relation</h2>
+        <p>
+          A relation maps members of one set to another.  A relation
+          is a set of course!
+        </p>
+        <p>
+          (r : D &#x27f6; R) &#x225d;
+          { (a, b) :  a&#x2208;D,b&#x2208;R }
+        </p>
+        <ul>
+          <li>D is the Domain of the Relation</li>
+          <li>R is the Range of the Relation</li>
+          <li>Application: r(a) = b &#x27fa; (a, b)&#x2208;r</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Meet the Jections</h2>
+        <p>
+          Given relation r : D &#x27f6; R
+        </p>
+        <ul>
+          <li>Injection: &#x2200;a,b&#x2208;D :
+            r(a) = r(b) &#x27f9; a = b<br />
+            No two members of D relate to the same member of R
+          </li>
+          <li>Surjection: &#x2200;a&#x2208;R
+            &#x2203;b&#x2208;D : r(b) = a<br />
+            Every member of R relates from at least one member of D
+          </li>
+          <li>Bijection: both an injection and a surjection</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Cardinality</h2>
+        <p>
+          Any two sets for which at least one bijection exists have
+          the same cardinality.
+        </p>
+        <p>D = {a, b, c}</p>
+        <p>R = {d, e, f}</p>
+        <p>r : D &#x27f6; R = {(a, d), (b, e), (d, f)}</p>
+        <p>#D = #R (#{a, b, c} = #{d, e, f})</p>
+      </section>
+    </section>
+
+    <section>
+      <section>
+        <h2>Natural Numbers &#x2115;</h2>
+        <p>Von Neumann 1923</p>
+        <p>succ(a) &#x225d; a &#x222a; {a}</p>
+        <p>
+          &#x2115; &#x225d; ({}&#x2208;&#x2115;) &#x2227;
+          (&#x2200;a&#x2208;&#x2115; : succ(a)&#x2208;&#x2115;)
+        </p>
+      </section>
+      <section>
+        <h2>Natural Numbers &#x2115;</h2>
+        <ul>
+          <li>0 &#x225d; {} </li>
+          <li>1 &#x225d; succ(0) = {0} = {{}}</li>
+          <li>2 &#x225d; succ(1) = {0, 1} = {{}, {{}}}</li>
+          <li>3 &#x225d; succ(2) = {0, 1, 2} =
+            {{}, {{}}, {{}, {{}}}}</li>
+          <li>4 &#x225d; succ(3) = {0, 1, 2, 3} = ...</li>
+        </ul>
+      </section>
+      <section>
+        <h2>Natural Numbers &#x2115;</h2>
+        <p>
             We can say a set <q>has three elements</q> if its
-            cardinality is the same as the set which is the natural
-            number 3.
+            cardinality is the same as the set {{}, {{}}, {{}, {{}}}}
+            which is the natural number 3.
         </p>
+      </section>
+      <section>
+        <h2>Natural Numbers &#x2115;</h2>
+        <ul>
+          <li>
+            &#x2200;a,b&#x2208;&#x2115;
+            a &lt; b &#x225d; a &#x2208; b
+          </li>
+          <li>
+            &#x2200;a,b&#x2208;&#x2115;
+            a &#x2a7d; b &#x225d; (a = b) &#x2228; (a &#x2208; b)
+          </li>
+          <li>
+            &#x2200;a,b&#x2208;&#x2115;
+            a &gt; b &#x225d; b &#x2208; a
+          </li>
+          <li>
+            &#x2200;a,b&#x2208;&#x2115;
+            a &#x2a7e; b &#x225d; (a = b) &#x2228; (b &#x2208; a)
+          </li>
+        </ul>
+      </section>
 
-        <h3>Addition &#x2115;</h3>
+      <section>
+        <h2>Addition &#x2115;</h2>
         <p>
-            So far there's nothing we can do with natural numbers
-            except to compare cardinality with other sets.  Let's
-            define a binary operation which maps a pair of natural
-            numbers to another natural number.  We will call this
-            operation <q>addition</q> and represent it with a + sign
-            between two natural numbers like this: a + b
+          Let's define <q>addition</q> which maps two natural numbers
+          to another natural number.  We will represent it with a + sign
+          between two natural numbers: a + b
+        </p>
+        <p>Definition (Grassman 1861):</p>
+        <ul>
+          <li>Base: &#x2200;a&#x2208;&#x2115;
+            a + 0 &#x225d; a</li>
+          <li>Step: &#x2200;a,b&#x2208;&#x2115;
+            a + succ(b) &#x225d; succ(a + b)</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Addition &#x2115;: 3 + 2</h2>
+        <ul>
+          <li>3 + 2 = 3 + succ(1) :: Definition of 2</li>
+          <li>3 + 2 = 3 + succ(succ(0))
+            :: Definition of 1</li>
+          <li>3 + 2 = succ(3 + succ(0))
+            :: Definition Step</li>
+          <li>3 + 2 = succ(succ(3 + 0))
+            :: Definition Step</li>
+          <li>3 + 2 = succ(succ(3)) :: Definition Base</li>
+          <li>3 + 2 = succ(4) :: Successor</li>
+          <li>3 + 2 = 5 :: Successor</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Addition &#x2115;: Closed</h2>
+        <p>
+          &#x2200;a,b&#x2208;&#x2115; :
+          a + b &#x2208;&#x2115;
+        </p>
+        <p>
+          Addition is constructed entirely from successor operations.
+          Since the successor of any natural number is also a natural
+          number, addition is closed.
+        </p>
+      </section>
+
+      <section>
+        <h2>Addition &#x2115;: Associative</h2>
+        <p>&#x2200;a,b,c&#x2208;&#x2115; :
+          (a + b) + c = a + (b + c)</p>
+        <ul>
+          <li>(a + b) + 0 = a + b = a + (b + 0)
+            :: Base +</li>
+          <li>&#x2203;c&#x2208;&#x2115;
+            &#x2200;a,b&#x2208;&#x2115; :
+            (a + b) + c = a + (b + c)</li>
+          <li>(a + b) + succ(c) = succ((a + b) + c) :: Step +</li>
+          <li>(a + b) + succ(c) = succ(a + (b + c)) :: Induction</li>
+          <li>(a + b) + succ(c) = a + succ(b + c) :: Step +</li>
+          <li>(a + b) + succ(c) = a + (b + succ(c)) :: Step +</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Addition &#x2115;: Identity</h2>
+        <p>
+          &#x2200;a&#x2208;&#x2115;
+          a + 0 = a = 0 + a
         </p>
         <ul>
-            <li>Definition (Grassman 1861):
-                <ul>
-                    <li>Base: &#x2200;a&#x2208;&#x2115;
-                        a + 0 &#x225d; a</li>
-                    <li>Step: &#x2200;a,b&#x2208;&#x2115;
-                        a + succ(b) &#x225d; succ(a + b)</li>
-                </ul>
-            </li>
-            <li>Example: 3 + 2
-                <ul>
-                    <li>3 + 2 = 3 + succ(1) :: Definition of 2</li>
-                    <li>3 + 2 = 3 + succ(succ(0))
-                        :: Definition of 1</li>
-                    <li>3 + 2 = succ(3 + succ(0))
-                        :: Definition Step</li>
-                    <li>3 + 2 = succ(succ(3 + 0))
-                        :: Definition Step</li>
-                    <li>3 + 2 = succ(succ(3)) :: Definition Base</li>
-                    <li>3 + 2 = succ(4) :: Successor</li>
-                    <li>3 + 2 = 5 :: Successor</li>
-                </ul>
-            </li>
-            <li>Closed: &#x2200;a,b&#x2208;&#x2115; :
-                a + b &#x2208;&#x2115;</li>
-            <li>Associative: &#x2200;a,b,c&#x2208;&#x2115; :
-                (a + b) + c = a + (b + c)
-                <ul>
-                    <li>(a + b) + 0 = a + b = a + (b + 0)
-                        :: Definition Base</li>
-                    <li>&#x2203;c&#x2208;&#x2115;
-                        &#x2200;a,b&#x2208;&#x2115; :
-                        (a + b) + c = a + (b + c)
-                        :: Assumption</li>
-                    <li>(a + b) + succ(c) = succ((a + b) + c)
-                        :: Definition Step</li>
-                    <li>(a + b) + succ(c) = succ(a + (b + c))
-                        :: Induction</li>
-                    <li>(a + b) + succ(c) = a + succ(b + c)
-                        :: Definition Step</li>
-                    <li>(a + b) + succ(c) = a + (b + succ(c))
-                        :: Definition Step</li>
-                </ul>
-            </li>
-            <li>Identity: &#x2200;a&#x2208;&#x2115;
-                a + 0 = a = 0 + a
-                <ul>
-                    <li>0 + 0 = 0 :: Definition Base</li>
-                    <li>&#x2203;a&#x2208;&#x2115; :
-                        0 + a = a :: Assumption</li>
-                    <li>0 + succ(a) = succ(0 + a)
-                        :: Definition Step</li>
-                    <li>0 + succ(a) = succ(a) :: Induction</li>
-                </ul>
-            </li>
-            <li>Commutative: &#x2200;a,b&#x2208;&#x2115; :
-                a + b = b + a
-                <ul>
-                    <li>Successor + 1: &#x2200;a&#x2208;&#x2115;
-                        succ(a) = a + 1
-                        <ul>
-                            <li>succ(a) = succ(a + 0)
-                                (Definition Base)</li>
-                            <li>succ(a) = a + succ(0)
-                                (Definition Step)</li>
-                            <li>succ(a) = a + 1 (Definition of 1)</li>
-                        </ul>
-                    </li>
-                    <li>Commutativity of 1: &#x2200;a&#x2208;&#x2115;
-                        a + 1 = 1 + a
-                        <ul>
-                            <li>0 + 1 = 1 + 0 :: Identity</li>
-                            <li>&#x2203;a&#x2208;&#x2115; :
-                                a + 1 = 1 + a :: Assumption</li>
-                            <li>succ(a) + 1 = succ(a) + succ(0)
-                                :: Definition of 1</li>
-                            <li>succ(a) + 1 = succ(succ(a) + 0)
-                                :: Defintion Step</li>
-                            <li>succ(a) + 1 = succ((a + 1) + 0)
-                                :: Successor + 1</li>
-                            <li>succ(a) + 1 = succ(a + 1)
-                                :: Defintion Base</li>
-                            <li>succ(a) + 1 = succ(1 + a)
-                                :: Induction</li>
-                            <li>succ(a) + 1 = 1 + succ(a)
-                                :: Definition Step</li>
-                        </ul>
-                        <li>&#x2203;b&#x2208;&#x2115;
-                            &#x2200;a&#x2208;&#x2115; :
-                            a + b = b + a :: Assumption</li>
-                        <li>a + succ(b) = a + (b + 1)
-                            :: Successor + 1</li>
-                        <li>a + succ(b) = (a + b) + 1
-                            :: Associativity</li>
-                        <li>a + succ(b) = (b + a) + 1 :: Induction</li>
-                        <li>a + succ(b) = b + (a + 1)
-                            :: Associativity</li>
-                        <li>a + succ(b) = b + (1 + a)
-                            :: Commutativity of 1</li>
-                        <li>a + succ(b) = (b + 1) + a
-                            :: Associativity</li>
-                        <li>a + succ(b) = succ(b) + a
-                            :: Successor + 1</li>
-                </ul>
-                    </li>
+          <li>0 + 0 = 0 :: Base +</li>
+          <li>&#x2203;a&#x2208;&#x2115; :
+            0 + a = a :: Assumption</li>
+          <li>0 + succ(a) = succ(0 + a)
+            :: Step +</li>
+          <li>0 + succ(a) = succ(a) :: Induction</li>
         </ul>
+      </section>
+
+      <section>
+        <h2>Addition &#x2115;: Commutative</h2>
+        <p>
+          &#x2200;a,b&#x2208;&#x2115; :
+          a + b = b + a
+        </p>
+        <ul>
+          <li>Successor + 1: &#x2200;a&#x2208;&#x2115;
+          succ(a) = a + 1</li>
+          <li>Commutative 1: &#x2200;a&#x2208;&#x2115;
+          a + 1 = 1 + a</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Addition &#x2115;: Successor + 1</h2>
+        <p>
+          &#x2200;a&#x2208;&#x2115; succ(a) = a + 1
+        </p>
+        <ul>
+          <li>succ(a) = succ(a + 0) :: Base +</li>
+          <li>succ(a) = a + succ(0) :: Step +</li>
+          <li>succ(a) = a + 1 :: Definition of 1</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>Addition &#x2115;: Commutative 1</h3>
+        <p>&#x2200;a&#x2208;&#x2115; a + 1 = 1 + a</p>
+        <ul>
+          <li>0 + 1 = 1 + 0 :: Identity +</li>
+          <li>&#x2203;a&#x2208;&#x2115; :
+            a + 1 = 1 + a :: Assumption</li>
+          <li>succ(a) + 1 = succ(a) + succ(0)
+            :: Definition of 1</li>
+          <li>succ(a) + 1 = succ(succ(a) + 0) :: Step +</li>
+          <li>succ(a) + 1 = succ((a + 1) + 0)
+            :: Successor + 1</li>
+          <li>succ(a) + 1 = succ(a + 1) :: Base +</li>
+          <li>succ(a) + 1 = succ(1 + a) :: Induction</li>
+          <li>succ(a) + 1 = 1 + succ(a) :: Step +</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>Addition &#x2115;: Commutative</h3>
+        <p>
+          &#x2200;a,b&#x2208;&#x2115; : a + b = b + a
+        </p>
+        <ul>
+          <li>&#x2203;b&#x2208;&#x2115;
+            &#x2200;a&#x2208;&#x2115; :
+            a + b = b + a :: Assumption</li>
+          <li>a + succ(b) = a + (b + 1)
+            :: Successor + 1</li>
+          <li>a + succ(b) = (a + b) + 1
+            :: Associativity</li>
+          <li>a + succ(b) = (b + a) + 1 :: Induction</li>
+          <li>a + succ(b) = b + (a + 1)
+            :: Associativity</li>
+          <li>a + succ(b) = b + (1 + a)
+            :: communtative 1</li>
+          <li>a + succ(b) = (b + 1) + a
+            :: Associativity</li>
+          <li>a + succ(b) = succ(b) + a
+            :: Successor + 1</li>
+        </ul>
+      </section>
+
+      <section>
+      </section>
+
+      <section>
+      </section>
+
+      <section>
+      </section>
+
+      <section>
+      </section>
+
+      <section>
+      </section>
+
+      <section>
+      </section>
+    </section>
+
+    <section>
+    </section>
+
+  </div>
+</div>
+<script src="lib/reveal.js"></script>
+<script>
+  var link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.type = 'text/css';
+  link.href = window.location.search.match(/print-pdf/gi) ?
+      'lib/pdf.css' : 'lib/paper.css';
+  document.getElementsByTagName('head')[0].appendChild( link );
+  Reveal.initialize();
+  Reveal.configure({
+      slideNumber: 'h.v',
+      transition: 'convex'
+  });
+</script>
+
+<article>
+    <section>
+
+
+
 
 
         <h3>Multiplication &#x2115;</h3>
