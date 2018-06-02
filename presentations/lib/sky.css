@@ -199,7 +199,9 @@ body {
   vertical-align: super; }
 
 .reveal sub {
-  vertical-align: sub; }
+  vertical-align: sub;
+  font-size: 50%;
+}
 
 .reveal small {
   display: inline-block;
