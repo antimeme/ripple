@@ -16,32 +16,35 @@
         </blockquote>
         <aside class="notes">
             Creating the universe is rather a tall order.  We'll
-            settle for creating all of mathematics.  We'll do that by
-            stealing the best ideas invented by smart mathematicians
-            over thousands of years.
+            settle for creating all of mathematics.
         </aside>
       </section>
       <section>
-        <p>
-            Mathematics has no generally accepted definition.  We
-            could describe it as a collection of tools for
-            understanding patterns and for studying structure and
-            change.  People have studied mathematics for centuries and
-            found applications for it in every field of science and
-            technology.
-        </p>
-
-        <p>
-            This is an attempt to build the most important parts of
-            math from the simplest possible foundations.  Forget
-            everything you know about math and let's begin at the
-            beginning.
-        </p>
-
-        <aside class="notes">
-            For the purpose of this presentation, forget everything
-            you know about math.
-        </aside>
+          <p>
+              Mathematics has no generally accepted definition.  We
+              could describe it as a collection of tools for
+              understanding patterns and for studying structure and
+              change.  People have studied mathematics for centuries and
+              found applications for it in every field of science and
+              technology.
+          </p>
+          <aside class="notes">
+              We'll do that by
+              stealing the best ideas invented by smart mathematicians
+              over thousands of years.
+          </aside>
+      </section>
+      <section>
+          <p>
+              This is an attempt to build the most important parts of
+              math from the simplest possible foundations.  Forget
+              everything you know about math and let's begin at the
+              beginning.
+          </p>
+          <aside class="notes">
+              For the purpose of this presentation, forget everything
+              you know about math.
+          </aside>
       </section>
     </section>
 
@@ -152,220 +155,220 @@
             <p>
                 An inductive proof is one that has a base case and a
                 step.  The base case shows that the predicate is true
-              for some value and the step shows that if the predicate
-              is true for some value then it is also true for a
-              success of that value.
-          </p>
-      </section>
+                for some value and the step shows that if the predicate
+                is true for some value then it is also true for a
+                success of that value.
+            </p>
+        </section>
 
 
     </section>
 
     <section>
-      <section>
-        <h2>Nothing But Set</h2>
-        <p>
-            The only objects we will consider are sets.  The only
-            thing a set can do is contain things as members.  We will
-            use eight axioms defined by Zermelo and Fraenkel between
-            1908 to 1921, plus one more added later, as a foundation.
-        </p>
-      </section>
-      <section>
-        <table>
-          <tr>
-            <td>Extensionality</td><td>Same members, same set</td>
-          </tr>
-          <tr><td>Pairing</td><td>Any two elements make a set</td></tr>
-          <tr><td>Union</td><td>Sets can be merged</td></tr>
-          <tr><td>Power Set</td><td>Sets of subsets exist</td></tr>
-          <tr>
-            <td>Regularity</td><td>Sets can't contain themselves</td>
-          </tr>
-          <tr>
-            <td>Specification</td><td>We can make subsets with rules</td>
-          </tr>
-          <tr><td>Replacement</td><td>We can translate sets</td></tr>
-          <tr>
-            <td>Infinity</td><td>There is at least one infinite set</td>
-          </tr>
-          <tr><td>Choice?</td><td>It's complicated...</td></tr>
-        </table>
+        <section>
+            <h2>Nothing But Set</h2>
+            <p>
+                The only objects we will consider are sets.  The only
+                thing a set can do is contain things as members.  We will
+                use eight axioms defined by Zermelo and Fraenkel between
+                1908 to 1921, plus one more added later, as a foundation.
+            </p>
+        </section>
+        <section>
+            <table>
+                <tr>
+                    <td>Extensionality</td><td>Same members, same set</td>
+                </tr>
+                <tr><td>Pairing</td><td>Any two elements make a set</td></tr>
+                <tr><td>Union</td><td>Sets can be merged</td></tr>
+                <tr><td>Power Set</td><td>Sets of subsets exist</td></tr>
+                <tr>
+                    <td>Regularity</td><td>Sets can't contain themselves</td>
+                </tr>
+                <tr>
+                    <td>Specification</td><td>We can make subsets with rules</td>
+                </tr>
+                <tr><td>Replacement</td><td>We can translate sets</td></tr>
+                <tr>
+                    <td>Infinity</td><td>There is at least one infinite set</td>
+                </tr>
+                <tr><td>Choice?</td><td>It's complicated...</td></tr>
+            </table>
 
-        <aside class="notes">
-            These are the axioms of Zermelo-Fraenkel set theory,
-            described briefly.  We'll go through each in detail.
-        </aside>
-      </section>
+            <aside class="notes">
+                These are the axioms of Zermelo-Fraenkel set theory,
+                described briefly.  We'll go through each in detail.
+            </aside>
+        </section>
 
-      <section>
-        <h2>Extensionality</h2>
-        <p>
-          &#x2200;a,b : &#x2200;c (c &#x2208; a
-          &#x27fa; c &#x2208; b) &#x27f9; a = b
-        </p>
-        <p>Two sets that contain the same elements are the same set.</p>
-        <ul>
-          <li>Reflexive: &#x2200;a : a = a</li>
-          <li>Symmetric: &#x2200;a,b :
-            (a = b) &#x27fa; (b = a)</li>
-          <li>Transitive: &#x2200;a,b,c :
-            (a=c &#x2227; b=c) &#x27f9; (a = b)</li>
-        </ul>
-      </section>
+        <section>
+            <h2>Extensionality</h2>
+            <p>
+                &#x2200;a,b : &#x2200;c (c &#x2208; a
+                &#x27fa; c &#x2208; b) &#x27f9; a = b
+            </p>
+            <p>Two sets that contain the same elements are the same set.</p>
+            <ul>
+                <li>Reflexive: &#x2200;a : a = a</li>
+                <li>Symmetric: &#x2200;a,b :
+                    (a = b) &#x27fa; (b = a)</li>
+                <li>Transitive: &#x2200;a,b,c :
+                    (a=c &#x2227; b=c) &#x27f9; (a = b)</li>
+            </ul>
+        </section>
 
-      <section>
-        <h2>Pairing</h2>
-        <p>
-          &#x2200;a,b &#x2203;{a, b} &#x2200;c
-          (c&#x2208;{a, b} : &#x27f9; (c = a &#x2228; c = b))
-        </p>
-        <p>
-          Any two sets can be used to create a third set which
-          contains only those two sets as members.  The two sets might
-          be equal in which case we can create a set containing a
-          single member.
-        </p>
-      </section>
+        <section>
+            <h2>Pairing</h2>
+            <p>
+                &#x2200;a,b &#x2203;{a, b} &#x2200;c
+                (c&#x2208;{a, b} : &#x27f9; (c = a &#x2228; c = b))
+            </p>
+            <p>
+                Any two sets can be used to create a third set which
+                contains only those two sets as members.  The two sets might
+                be equal in which case we can create a set containing a
+                single member.
+            </p>
+        </section>
 
-      <section>
-        <h2>Union</h2>
-        <p>
-          &#x2200;a &#x2203;b : &#x2200;c&#x2208;b
-          (&#x2203;d&#x2208;a : c&#x2208;d)
-        </p>
-        <p>
-          Any set can be used to create a set by combining all the
-          members of its members.
-        </p>
-        <p>
-          Given the set {{a, b}, {b, c}} the union of its members is:
-        </p>
-        &#x222a;{{a, b}, {b, c}} = {a, b, c}
-      </section>
-
-      <section>
-        <h2>Power Set</h2>
-        <p>
-          &#x2200;a &#x2203;b &#x2200;c
-          (c&#x2208;b &#x27fa; c&#x2286;a)
-        </p>
-        <p>Any set can be used to create a set of its subsets.</p>
-        <p>
-          For example, {a, b, c} has the following power set:
-          {{}, {a}, {b}, {c}, {a, b}, {b, c}, {a, c}, {a, b, c}}
-        </p>
-      </section>
-
-      <section>
-        <h2>Regularity</h2>
-        <p>
-          &#x2200;a &#x2203;b&#x2208;a &#x27f9;
-          &#x2203;c&#x2208;a :
-          &#x2204;d (d&#x2208;a &#x2227; d&#x2208;c)
-        </p>
-        <p>
-          A set that contains any members must contain at least one
-          member that does not share any members with itself.  No set
-          can contain itself.
-        </p>
-      </section>
-
-      <section>
-        <h2>Specification</h2>
-        <p>[Insert clever explanation here]</p>
-        <p></p>
-      </section>
-
-      <section>
-        <h2>Replacement</h2>
-        <p>[Insert clever explanation here]</p>
-        <p></p>
-      </section>
-
-      <section>
-        <h2>Infinity</h2>
-        <p>
-          &#x2203;a : ({}&#x2208;a) &#x2227; (&#x2200;b&#x2208;a
-          b&#x222a;{b} &#x2208; a)
-        </p>
-        <p>
-          A set with infinitely many distinct members exists.
-          Specifically the set containing the empty set and all sets
-          we can get by taking the union of any member with the set
-          containing itself exists.
-        </p>
-      </section>
-
-      <section>
-        <h2>Choice</h2>
-        <p>[Insert clever explanation here]</p>
-        <p></p>
-      </section>
-      <section>
-        <table>
-          <tr>
-            <td>Extensionality</td>
-            <td><small>
-              &#x2200;a,b : &#x2200;c (c &#x2208; a
-              &#x27fa; c &#x2208; b) &#x27f9; a = b
-            </small></td>
-          </tr>
-          <tr><td>Pairing</td>
-            <td><small>
-              &#x2200;a,b &#x2203;{a, b} &#x2200;c
-              (c&#x2208;{a, b} : &#x27f9; (c = a &#x2228; c = b))
-            </small></td>
-          </tr>
-          <tr>
-            <td>Union</td>
-            <td><small>
+        <section>
+            <h2>Union</h2>
+            <p>
                 &#x2200;a &#x2203;b : &#x2200;c&#x2208;b
                 (&#x2203;d&#x2208;a : c&#x2208;d)
-            </small></td>
-          </tr>
-          <tr>
-            <td>Power Set</td>
-            <td><small>
+            </p>
+            <p>
+                Any set can be used to create a set by combining all the
+                members of its members.
+            </p>
+            <p>
+                Given the set {{a, b}, {b, c}} the union of its members is:
+            </p>
+            &#x222a;{{a, b}, {b, c}} = {a, b, c}
+        </section>
+
+        <section>
+            <h2>Power Set</h2>
+            <p>
                 &#x2200;a &#x2203;b &#x2200;c
                 (c&#x2208;b &#x27fa; c&#x2286;a)
-            </small></td>
-          </tr>
-          <tr>
-            <td>Regularity</td>
-            <td><small>
+            </p>
+            <p>Any set can be used to create a set of its subsets.</p>
+            <p>
+                For example, {a, b, c} has the following power set:
+                {{}, {a}, {b}, {c}, {a, b}, {b, c}, {a, c}, {a, b, c}}
+            </p>
+        </section>
+
+        <section>
+            <h2>Regularity</h2>
+            <p>
                 &#x2200;a &#x2203;b&#x2208;a &#x27f9;
                 &#x2203;c&#x2208;a :
                 &#x2204;d (d&#x2208;a &#x2227; d&#x2208;c)
-            </small></td>
-          </tr>
-          <tr>
-            <td>Specification</td>
-            <td><small>
-                [Insert clever formula here]
-            </small></td>
-          </tr>
-          <tr>
-            <td>Replacement</td>
-            <td><small>
-                [Insert clever formula here]
-            </small></td>
-          </tr>
-          <tr>
-            <td>Infinity</td>
-            <td><small>
+            </p>
+            <p>
+                A set that contains any members must contain at least one
+                member that does not share any members with itself.  No set
+                can contain itself.
+            </p>
+        </section>
+
+        <section>
+            <h2>Specification</h2>
+            <p>[Insert clever explanation here]</p>
+            <p></p>
+        </section>
+
+        <section>
+            <h2>Replacement</h2>
+            <p>[Insert clever explanation here]</p>
+            <p></p>
+        </section>
+
+        <section>
+            <h2>Infinity</h2>
+            <p>
                 &#x2203;a : ({}&#x2208;a) &#x2227; (&#x2200;b&#x2208;a
                 b&#x222a;{b} &#x2208; a)
-            </small></td>
-          </tr>
-          <tr>
-            <td>Choice?</td>
-            <td><small>
-                [Insert clever formula here]
-            </small></td>
-          </tr>
-        </table>
-      </section>
+            </p>
+            <p>
+                A set with infinitely many distinct members exists.
+                Specifically the set containing the empty set and all sets
+                we can get by taking the union of any member with the set
+                containing itself exists.
+            </p>
+        </section>
+
+        <section>
+            <h2>Choice</h2>
+            <p>[Insert clever explanation here]</p>
+            <p></p>
+        </section>
+        <section>
+            <table>
+                <tr>
+                    <td>Extensionality</td>
+                    <td><small>
+                        &#x2200;a,b : &#x2200;c (c &#x2208; a
+                        &#x27fa; c &#x2208; b) &#x27f9; a = b
+                    </small></td>
+                </tr>
+                <tr><td>Pairing</td>
+                    <td><small>
+                        &#x2200;a,b &#x2203;{a, b} &#x2200;c
+                        (c&#x2208;{a, b} : &#x27f9; (c = a &#x2228; c = b))
+                    </small></td>
+                </tr>
+                <tr>
+                    <td>Union</td>
+                    <td><small>
+                        &#x2200;a &#x2203;b : &#x2200;c&#x2208;b
+                        (&#x2203;d&#x2208;a : c&#x2208;d)
+                    </small></td>
+                </tr>
+                <tr>
+                    <td>Power Set</td>
+                    <td><small>
+                        &#x2200;a &#x2203;b &#x2200;c
+                        (c&#x2208;b &#x27fa; c&#x2286;a)
+                    </small></td>
+                </tr>
+                <tr>
+                    <td>Regularity</td>
+                    <td><small>
+                        &#x2200;a &#x2203;b&#x2208;a &#x27f9;
+                        &#x2203;c&#x2208;a :
+                        &#x2204;d (d&#x2208;a &#x2227; d&#x2208;c)
+                    </small></td>
+                </tr>
+                <tr>
+                    <td>Specification</td>
+                    <td><small>
+                        [Insert clever formula here]
+                    </small></td>
+                </tr>
+                <tr>
+                    <td>Replacement</td>
+                    <td><small>
+                        [Insert clever formula here]
+                    </small></td>
+                </tr>
+                <tr>
+                    <td>Infinity</td>
+                    <td><small>
+                        &#x2203;a : ({}&#x2208;a) &#x2227; (&#x2200;b&#x2208;a
+                        b&#x222a;{b} &#x2208; a)
+                    </small></td>
+                </tr>
+                <tr>
+                    <td>Choice?</td>
+                    <td><small>
+                        [Insert clever formula here]
+                    </small></td>
+                </tr>
+            </table>
+        </section>
 
     </section>
     <section>
@@ -1063,104 +1066,104 @@
     </section>
 
     <section>
-      <section>
-        <h2>Integers &#x2124;</h2>
-        <p>
-          &#x2124; &#x225d; {
-          &#x2200;a,b&#x2208;&#x2115; : &#x27e8;a, b&#x27e9; }
-        </p>
-        <p>
-          &#x2200;a,b&#x2208;&#x2115; [a - b] &#x225d;
-          {&#x2200;&#x27e8;c<sub>1</sub>,
-          c<sub>2</sub>&#x27e9;&#x2208;&#x2124; :
-          c<sub>1</sub> + b = c<sub>2</sub> + a}
-        </p>
-        <p>
-          Integers extend the natural numbers.  They introduce
-          inverses for addition and negative numbers which can
-          represent concepts like debt.
-        </p>
-      </section>
+        <section>
+            <h2>Integers &#x2124;</h2>
+            <p>
+                &#x2124; &#x225d; {
+                &#x2200;a,b&#x2208;&#x2115; : &#x27e8;a, b&#x27e9; }
+            </p>
+            <p>
+                &#x2200;a,b&#x2208;&#x2115; [a - b] &#x225d;
+                {&#x2200;&#x27e8;c<sub>1</sub>,
+                c<sub>2</sub>&#x27e9;&#x2208;&#x2124; :
+                c<sub>1</sub> + b = c<sub>2</sub> + a}
+            </p>
+            <p>
+                Integers extend the natural numbers.  They introduce
+                inverses for addition and negative numbers which can
+                represent concepts like debt.
+            </p>
+        </section>
 
-      <section>
-        <h3>Integers &#x2124;: Equality</h3>
-        <p>
-          &#x2200;&#x27e8;a<sub>1</sub>,
-          a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
-          b<sub>2</sub>&#x27e9;&#x2208;&#x2124;
-          <br />
-          (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; =&#x2124;
-          &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) &#x225d;
-          a<sub>1</sub> + b<sub>2</sub> =
-          a<sub>2</sub> + b<sub>1</sub>
-          <ul>
-            <li>Reflexive: &#x2200;&#x27e8;a<sub>1</sub>,
-              a<sub>2</sub>&#x27e9;&#x2208;&#x2124; :
-              a<sub>1</sub> + a<sub>2</sub> =
-              a<sub>1</sub> + a<sub>2</sub></li>
-            <li>Symmetric: &#x2200;&#x27e8;a<sub>1</sub>,
-              a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
-              b<sub>2</sub>&#x27e9;&#x2208;&#x2124; :
-              <br />a<sub>1</sub> + b<sub>2</sub> =
-              b<sub>1</sub> + a<sub>2</sub> &#x27fa;
-              b<sub>1</sub> + a<sub>2</sub> =
-              a<sub>1</sub> + b<sub>2</sub>
-            </li>
-            <li>Transitive: &#x2200;&#x27e8;a<sub>1</sub>,
-              a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
-              b<sub>2</sub>&#x27e9;,&#x27e8;c<sub>1</sub>,
-              c<sub>2</sub>&#x27e9;&#x2208;&#x2124; :
-              <br />
-              (a<sub>1</sub> + c<sub>2</sub> =
-              c<sub>1</sub> + a<sub>2</sub>) &#x2227;
-              (b<sub>1</sub> + c<sub>2</sub> =
-              c<sub>1</sub> + b<sub>2</sub>)
-              &#x27fa;<br />
-              a<sub>1</sub> + b<sub>2</sub> =
-              a<sub>2</sub> + b<sub>1</sub></li>
-          </ul>
-        </p>
-      </section>
+        <section>
+            <h3>Integers &#x2124;: Equality</h3>
+            <p>
+                &#x2200;&#x27e8;a<sub>1</sub>,
+                a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
+                b<sub>2</sub>&#x27e9;&#x2208;&#x2124;
+                <br />
+                (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; =&#x2124;
+                &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) &#x225d;
+                a<sub>1</sub> + b<sub>2</sub> =
+                a<sub>2</sub> + b<sub>1</sub>
+                <ul>
+                    <li>Reflexive: &#x2200;&#x27e8;a<sub>1</sub>,
+                        a<sub>2</sub>&#x27e9;&#x2208;&#x2124; :
+                        a<sub>1</sub> + a<sub>2</sub> =
+                        a<sub>1</sub> + a<sub>2</sub></li>
+                    <li>Symmetric: &#x2200;&#x27e8;a<sub>1</sub>,
+                        a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
+                        b<sub>2</sub>&#x27e9;&#x2208;&#x2124; :
+                        <br />a<sub>1</sub> + b<sub>2</sub> =
+                        b<sub>1</sub> + a<sub>2</sub> &#x27fa;
+                        b<sub>1</sub> + a<sub>2</sub> =
+                        a<sub>1</sub> + b<sub>2</sub>
+                    </li>
+                    <li>Transitive: &#x2200;&#x27e8;a<sub>1</sub>,
+                        a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
+                        b<sub>2</sub>&#x27e9;,&#x27e8;c<sub>1</sub>,
+                        c<sub>2</sub>&#x27e9;&#x2208;&#x2124; :
+                        <br />
+                        (a<sub>1</sub> + c<sub>2</sub> =
+                        c<sub>1</sub> + a<sub>2</sub>) &#x2227;
+                        (b<sub>1</sub> + c<sub>2</sub> =
+                        c<sub>1</sub> + b<sub>2</sub>)
+                        &#x27fa;<br />
+                        a<sub>1</sub> + b<sub>2</sub> =
+                        a<sub>2</sub> + b<sub>1</sub></li>
+                </ul>
+            </p>
+        </section>
 
-      <section>
-        <h3>Integers &#x2124;: Order</h3>
-        <p>
-          &#x2200;&#x27e8;a<sub>1</sub>,
-          a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
-          b<sub>2</sub>&#x27e9;&#x2208;&#x2124;<br />
-          (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; &lt;
-          &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) &#x225d;
-          a<sub>1</sub> + b<sub>2</sub> &lt;
-          a<sub>2</sub> + b<sub>1</sub>
-        </p>
-        <p>
-          Order for integers is defined in terms of the order of
-          the underlying natural numbers.
-        </p>
-      </section>
+        <section>
+            <h3>Integers &#x2124;: Order</h3>
+            <p>
+                &#x2200;&#x27e8;a<sub>1</sub>,
+                a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
+                b<sub>2</sub>&#x27e9;&#x2208;&#x2124;<br />
+                (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; &lt;
+                &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) &#x225d;
+                a<sub>1</sub> + b<sub>2</sub> &lt;
+                a<sub>2</sub> + b<sub>1</sub>
+            </p>
+            <p>
+                Order for integers is defined in terms of the order of
+                the underlying natural numbers.
+            </p>
+        </section>
 
-      <section>
-        <h3>Integers &#x2124;: Examples</h3>
-        <ul>
-            <li>3&#x2124; = &#x27e8;3, 0&#x27e9; =
-                {{3}, {3, 0}} = {{{{}, {{}}, {{}, {{}}}}}, {{{}, {{}},
-                {{}, {{}}}}, {}}}
-            </li>
-            <li>3&#x2124; = &#x27e8;5, 2&#x27e9; =
-                {{5}, {5, 2}} =
-                {{{{}, {{}}, {{{}, {{}}}}, {{{}, {{}}, {{{}, {{}}}}}},
-                {{{}, {{}}, {{{}, {{}}}},
-                {{{}, {{}}, {{{}, {{}}}}}}}}}},
-                {{{}, {{}}, {{{}, {{}}}}, {{{}, {{}}, {{{}, {{}}}}}},
-                {{{}, {{}}, {{{}, {{}}}}, {{{}, {{}}, {{{}, {{}}}}}}}}},
-                {{{}, {{}}}}}} <em>(Notice: 5 + 0 = 3 + 2)</em>
-            </li>
-            <li>-4&#x2124; = &#x27e8;0, 4&#x27e9; =
-                {{0}, {0, 4}} = {{{}}, {{}, {{}, {{}},
-                {{}, {{}}}, {{}, {{}}, {{}, {{}}}}}}}
-            </li>
-        </ul>
-      </section>
+        <section>
+            <h3>Integers &#x2124;: Examples</h3>
+            <ul>
+                <li>3&#x2124; = &#x27e8;3, 0&#x27e9; =
+                    {{3}, {3, 0}} = {{{{}, {{}}, {{}, {{}}}}}, {{{}, {{}},
+                    {{}, {{}}}}, {}}}
+                </li>
+                <li>3&#x2124; = &#x27e8;5, 2&#x27e9; =
+                    {{5}, {5, 2}} =
+                    {{{{}, {{}}, {{{}, {{}}}}, {{{}, {{}}, {{{}, {{}}}}}},
+                    {{{}, {{}}, {{{}, {{}}}},
+                    {{{}, {{}}, {{{}, {{}}}}}}}}}},
+                    {{{}, {{}}, {{{}, {{}}}}, {{{}, {{}}, {{{}, {{}}}}}},
+                    {{{}, {{}}, {{{}, {{}}}}, {{{}, {{}}, {{{}, {{}}}}}}}}},
+                    {{{}, {{}}}}}} <em>(Notice: 5 + 0 = 3 + 2)</em>
+                </li>
+                <li>-4&#x2124; = &#x27e8;0, 4&#x27e9; =
+                    {{0}, {0, 4}} = {{{}}, {{}, {{}, {{}},
+                    {{}, {{}}}, {{}, {{}}, {{}, {{}}}}}}}
+                </li>
+            </ul>
+        </section>
     </section>
 
     <section>
@@ -1201,12 +1204,12 @@
                 <li>
                     3&#x2124; + 2&#x2124; = 5&#x2124;
                 </li>
-        </p>
-        <aside class="notes">
-            We can reduce an integer to its simplest form by
-            finding the predecessor of each member of the ordered
-            pair until one or the other is zero.
-        </aside>
+          </p>
+          <aside class="notes">
+              We can reduce an integer to its simplest form by
+              finding the predecessor of each member of the ordered
+              pair until one or the other is zero.
+          </aside>
         </section>
         <section>
             <h3>Addition &#x2124; Example: 3 + (-2)</h3>
@@ -1691,6 +1694,16 @@
         </section>
     </section>
 
+    <section>
+        <h2>Acknowledgements</h2>
+        <ul>
+            <li>
+                Slides made with Reveal.js<br />
+                <a href="https://github.com/hakimel/reveal.js/"
+                >https://github.com/hakimel/reveal.js/</a>
+            </li>
+        </ul>
+    </section>
   </div>
 </div>
 <script src="lib/reveal.js"></script>
@@ -2148,4 +2161,5 @@
         <h3>Versors</h3>
         <h3>Conformal Model</h3>
     </section>
+
 </article>
