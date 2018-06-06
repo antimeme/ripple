@@ -5,159 +5,171 @@
 <link rel="stylesheet" href="lib/sky.css">
 
 <div class="reveal">
-  <div class="slides">
-    <section>
-      <section>
-        <h1>Math From Scratch</h1>
-
-        <blockquote>
-          <q>If you want to make an apple pie from scratch, you must
-            first create the universe.</q> — Carl Sagan
-        </blockquote>
-        <aside class="notes">
-            Creating the universe is rather a tall order.  We'll
-            settle for creating all of mathematics.
-        </aside>
-      </section>
-      <section>
-          <p>
-              Mathematics has no generally accepted definition.  We
-              could describe it as a collection of tools for
-              understanding patterns and for studying structure and
-              change.  People have studied mathematics for centuries and
-              found applications for it in every field of science and
-              technology.
-          </p>
-          <aside class="notes">
-              We'll do that by
-              stealing the best ideas invented by smart mathematicians
-              over thousands of years.
-          </aside>
-      </section>
-      <section>
-          <p>
-              This is an attempt to build the most important parts of
-              math from the simplest possible foundations.  Forget
-              everything you know about math and let's begin at the
-              beginning.
-          </p>
-          <aside class="notes">
-              For the purpose of this presentation, forget everything
-              you know about math.
-          </aside>
-      </section>
-    </section>
-
-    <section>
+    <div class="slides">
         <section>
-            <h2>Foundation</h2>
-            <p>
-                We will need a few ideas to build upon.
-            </p>
-            <ul>
-                <li>Predicates</li>
-                <li>Notation</li>
-                <li>Induction</li>
-            </ul>
+            <section>
+                <h1>Math From Scratch</h1>
+
+                <blockquote>
+                    <q>If you want to make an apple pie from scratch,
+                        you must first create the universe.</q>
+                    — Carl Sagan
+                </blockquote>
+                <aside class="notes">
+                    Creating the universe is rather a tall order.
+                    We'll settle for creating all of mathematics.
+                </aside>
+            </section>
+            <section>
+                <p>
+                    Mathematics has no generally accepted definition.
+                    We could describe it as a collection of tools for
+                    understanding patterns and for studying structure
+                    and change.  People have studied mathematics for
+                    centuries and found applications for it in every
+                    field of science and technology.
+                </p>
+                <aside class="notes">
+                    We'll do that by stealing the best ideas invented
+                    by smart mathematicians over thousands of years.
+                </aside>
+            </section>
+            <section>
+                <p>
+                    This is an attempt to build the most important
+                    parts of math from the simplest possible
+                    foundations.  Forget everything you know about
+                    math and let's begin at the beginning.
+                </p>
+                <aside class="notes">
+                    For the purpose of this presentation, forget
+                    everything you know about math.
+                </aside>
+            </section>
         </section>
 
         <section>
-            <h2>Predicates</h2>
-            <p>
-                A predicate is a statement that may be true or false
-                based on the value of its variables.
-            </p>
-        </section>
+            <section>
+                <h2>Foundation</h2>
+                <p>
+                    We will need a few ideas to build upon.
+                </p>
+                <ul>
+                    <li>Predicate</li>
+                    <li>Mapping</li>
+                    <li>Induction</li>
+                </ul>
+            </section>
 
-        <section>
-            <h2>Notation</h2>
-            <p>
-                We will use symbols to make statements more compact.
-            </p>
-        </section>
+            <section>
+                <h2>Predicate</h2>
+                <p>
+                    A predicate is a statement that may be true or
+                    false based on the value of its variables.
+                </p>
+            </section>
 
-        <section>
-            <table>
-                <tr><td>=</td><td>is equal to</td></tr>
-                <tr><td>&#x2260;</td><td>is not equal to</td></tr>
-                <tr><td>&lt;</td><td>is less than</td></tr>
-                <tr>
+            <section>
+                <h2>Notation</h2>
+                <p>
+                    We will use symbols to make statements more
+                    compact.
+                </p>
+            </section>
+
+            <section>
+                <table>
+                    <tr><td>=</td><td>is equal to</td></tr>
+                    <tr><td>&#x2260;</td><td>is not equal to</td></tr>
+                    <tr><td>&lt;</td><td>is less than</td></tr>
+                    <tr>
                     <td>&#x2a7d;</td><td>is less than or equal to</td>
-                </tr>
-                <tr><td>&gt;</td><td>is greater than</td></tr>
-                <tr>
-                    <td>&#x2a7e;</td>
-                    <td>is greater than or equal to</td>
-                </tr>
-            </table>
+                    </tr>
+                    <tr><td>&gt;</td><td>is greater than</td></tr>
+                    <tr>
+                        <td>&#x2a7e;</td>
+                        <td>is greater than or equal to</td>
+                    </tr>
+                </table>
 
-            <aside class="notes">
-                We will use these symbols to compare expressions.  Equals
-                means the expressions on both sides are the same.  Not
-                equals means they're different.  If there is some notion
-                of order, the <q>less than</q> and related symbols
-                describe how the expressions on the left and right relate.
-            </aside>
-        </section>
+                <aside class="notes">
+                    We will use these symbols to compare expressions.
+                    Equals means the expressions on both sides are the
+                    same.  Not equals means they're different.  If
+                    there is some notion of order, the <q>less than</q>
+                    and related symbols describe how the expressions
+                    on the left and right relate.
+                </aside>
+            </section>
 
-        <section>
-            <table>
-                <tr><td>&#x2200;</td><td>for all</td></tr>
-                <tr><td>&#x2203;</td><td>there exists</td></tr>
-                <tr><td>&#x2204;</td><td>there does not exist</td></tr>
-                <tr><td>&#x2227;</td><td>and</td></tr>
-                <tr><td>&#x2228;</td><td>or</td></tr>
-                <tr><td>&#x27f9;</td><td>implies</td></tr>
-                <tr><td>&#x27fa;</td><td>is equivalent to</td></tr>
-            </table>
+            <section>
+                <table>
+                    <tr><td>&#x2200;</td><td>for all</td></tr>
+                    <tr><td>&#x2203;</td><td>there exists</td></tr>
+                    <tr>
+                        <td>&#x2204;</td><td>there does not exist</td>
+                    </tr>
+                    <tr><td>&#x2227;</td><td>and</td></tr>
+                    <tr><td>&#x2228;</td><td>or</td></tr>
+                    <tr><td>&#x27f9;</td><td>implies</td></tr>
+                    <tr><td>&#x27fa;</td><td>is equivalent to</td></tr>
+                </table>
 
-            <aside class="notes">
-                These symbols express logical ideas.  The upside down A
-                means that the expression to follow is true for all
-                qualified things.  The backwards E means that there is some
-                qualified thing for which the epression is true.  Backwards
-                E with a slash means there isn't.  <q>And</q> means the
-                expressions on both sides are true.  <q>Or</q> means at
-                least one of them is true.  Implies means that if the
-                expression on the left is true then the one on the right
-                is too.  Equivalence is a kind of double sided
-                <q>implies</q>; the expression on the right is true
-                whenever the one on the left is, and vice versa.
-            </aside>
-        </section>
+                <aside class="notes">
+                    These symbols express logical ideas.  The upside
+                    down A means that the expression to follow is true
+                    for all qualified things.  The backwards E means
+                    that there is some qualified thing for which the
+                    epression is true.  Backwards E with a slash means
+                    there isn't.  <q>And</q> means the expressions on
+                    both sides are true.  <q>Or</q> means at least one
+                    of them is true.  Implies means that if the
+                    expression on the left is true then the one on the
+                    right is too.  Equivalence is a kind of double
+                    sided <q>implies</q>; the expression on the right is
+                    true whenever the one on the left is, and vice
+                    versa.
+                </aside>
+            </section>
 
-        <section>
-            <table>
-                <tr><td>&#x2208;</td><td>is a member of</td></tr>
-                <tr><td>&#x2209;</td><td>is not a member of</td></tr>
-                <tr><td>&#x222a;</td><td>union</td></tr>
-                <tr><td>&#x2229;</td><td>intersection</td></tr>
-                <tr><td>&#x2286;</td><td>is a subset of</td></tr>
-                <tr><td>&#x2282;</td><td>is a proper subset of</td></tr>
-            </table>
+            <section>
+                <table>
+                    <tr><td>&#x2208;</td><td>is a member of</td></tr>
+                    <tr>
+                        <td>&#x2209;</td><td>is not a member of</td>
+                    </tr>
+                    <tr><td>&#x222a;</td><td>union</td></tr>
+                    <tr><td>&#x2229;</td><td>intersection</td></tr>
+                    <tr><td>&#x2286;</td><td>is a subset of</td></tr>
+                    <tr>
+                        <td>&#x2282;</td><td>is a proper subset of</td>
+                    </tr>
+                </table>
 
-            <aside class="notes">
-                These symbols are used describe relationships for sets.
-                The member symbol means the expression on the left is
-                contained in the set described on the right.  The U
-                symbol refers to the combination of elements from sets
-                on both sides.  The upside-down U refers to the set of
-                elements that appear in both sets on either side.
-                Subset means that all members of the set on the left are
-                also part of the set on the right.  Proper subset is the
-                same, except that there is at least one member of the
-                set on the right that isn't in the set on the left.
-            </aside>
-        </section>
+                <aside class="notes">
+                    These symbols are used describe relationships for
+                    sets.  The member symbol means the expression on
+                    the left is contained in the set described on the
+                    right.  The U symbol refers to the combination of
+                    elements from sets on both sides.  The upside-down
+                    U refers to the set of elements that appear in
+                    both sets on either side.  Subset means that all
+                    members of the set on the left are also part of
+                    the set on the right.  Proper subset is the same,
+                    except that there is at least one member of the
+                    set on the right that isn't in the set on the
+                    left.
+                </aside>
+            </section>
 
         <section>
             <h2>Induction</h2>
             <p>
                 An inductive proof is one that has a base case and a
                 step.  The base case shows that the predicate is true
-                for some value and the step shows that if the predicate
-                is true for some value then it is also true for a
-                success of that value.
+                for some value and the step shows that if the
+                predicate is true for some value then it is also true
+                for a success of that value.
             </p>
         </section>
 
@@ -169,28 +181,40 @@
             <h2>Nothing But Set</h2>
             <p>
                 The only objects we will consider are sets.  The only
-                thing a set can do is contain things as members.  We will
-                use eight axioms defined by Zermelo and Fraenkel between
-                1908 to 1921, plus one more added later, as a foundation.
+                thing a set can do is contain things as members.  We
+                will use eight axioms defined by Zermelo and Fraenkel
+                between 1908 to 1921, plus one more added later, as a
+                foundation.
             </p>
         </section>
         <section>
             <table>
                 <tr>
-                    <td>Extensionality</td><td>Same members, same set</td>
+                    <td>Extensionality</td>
+                    <td>Same members, same set</td>
                 </tr>
-                <tr><td>Pairing</td><td>Any two elements make a set</td></tr>
+                <tr>
+                    <td>Pairing</td><td>Any two elements make a set</td>
+                </tr>
                 <tr><td>Union</td><td>Sets can be merged</td></tr>
-                <tr><td>Power Set</td><td>Sets of subsets exist</td></tr>
                 <tr>
-                    <td>Regularity</td><td>Sets can't contain themselves</td>
+                    <td>Power Set</td><td>Sets of subsets exist</td>
                 </tr>
                 <tr>
-                    <td>Specification</td><td>We can make subsets with rules</td>
+                    <td>Regularity</td>
+                    <td>Sets can't contain themselves</td>
                 </tr>
-                <tr><td>Replacement</td><td>We can translate sets</td></tr>
                 <tr>
-                    <td>Infinity</td><td>There is at least one infinite set</td>
+                    <td>Specification</td>
+                    <td>A subset exists for any predicate</td>
+                </tr>
+                <tr>
+                    <td>Replacement</td>
+                    <td>A set exists for any mapping</td>
+                </tr>
+                <tr>
+                    <td>Infinity</td>
+                    <td>There is at least one infinite set</td>
                 </tr>
                 <tr><td>Choice?</td><td>It's complicated...</td></tr>
             </table>
@@ -207,7 +231,10 @@
                 &#x2200;a,b : &#x2200;c (c &#x2208; a
                 &#x27fa; c &#x2208; b) &#x27f9; a = b
             </p>
-            <p>Two sets that contain the same elements are the same set.</p>
+            <p>
+                Two sets that contain the same elements are the same
+                set.
+            </p>
             <ul>
                 <li>Reflexive: &#x2200;a : a = a</li>
                 <li>Symmetric: &#x2200;a,b :
@@ -225,9 +252,9 @@
             </p>
             <p>
                 Any two sets can be used to create a third set which
-                contains only those two sets as members.  The two sets might
-                be equal in which case we can create a set containing a
-                single member.
+                contains only those two sets as members.  The two sets
+                might be equal in which case we can create a set
+                containing a single member.
             </p>
         </section>
 
@@ -242,9 +269,10 @@
                 members of its members.
             </p>
             <p>
-                Given the set {{a, b}, {b, c}} the union of its members is:
+                Given the set {{a, b}, {b, c}} the union of its
+                members is:
             </p>
-            &#x222a;{{a, b}, {b, c}} = {a, b, c}
+            <p>&#x222a;{{a, b}, {b, c}} = {a, b, c}</p>
         </section>
 
         <section>
@@ -268,22 +296,36 @@
                 &#x2204;d (d&#x2208;a &#x2227; d&#x2208;c)
             </p>
             <p>
-                A set that contains any members must contain at least one
-                member that does not share any members with itself.  No set
-                can contain itself.
+                A set that contains any members must contain at least
+                one member that does not share any members with
+                itself.  No set can contain itself.
             </p>
         </section>
 
         <section>
             <h2>Specification</h2>
-            <p>[Insert clever explanation here]</p>
-            <p></p>
+            <p>
+                &#x2200;a,p&#x2203;b : &#x2200;c
+                c&#x2208;b &#x27fa; (c&#x2208;a &#x2227; p(c))
+            </p>
+            <p>
+                Given a set and a predicate there is another set
+                which contains all members of the set for which
+                the predicate is true.
+            </p>
         </section>
 
         <section>
             <h2>Replacement</h2>
-            <p>[Insert clever explanation here]</p>
-            <p></p>
+            <p>
+                &#x2200;a,f&#x2203;b : &#x2200;c
+                c&#x2208;b &#x27fa; &#x2203;d&#x2208;a f(c) = d
+            </p>
+            <p>
+                Given a set and a mapping from that set to some other
+                set there is a set which contains all the mapping
+                results for all members of the original set.
+            </p>
         </section>
 
         <section>
@@ -345,20 +387,22 @@
                 <tr>
                     <td>Specification</td>
                     <td><small>
-                        [Insert clever formula here]
+                        &#x2200;a,p&#x2203;b : &#x2200;c
+                        c&#x2208;b &#x27fa; (c&#x2208;a &#x2227; p(c))
                     </small></td>
                 </tr>
                 <tr>
                     <td>Replacement</td>
                     <td><small>
-                        [Insert clever formula here]
+                        &#x2200;a,f&#x2203;b : &#x2200;c
+                        c&#x2208;b &#x27fa; &#x2203;d&#x2208;a f(c) = d
                     </small></td>
                 </tr>
                 <tr>
                     <td>Infinity</td>
                     <td><small>
-                        &#x2203;a : ({}&#x2208;a) &#x2227; (&#x2200;b&#x2208;a
-                        b&#x222a;{b} &#x2208; a)
+                        &#x2203;a : ({}&#x2208;a) &#x2227;
+                        (&#x2200;b&#x2208;a b&#x222a;{b} &#x2208; a)
                     </small></td>
                 </tr>
                 <tr>
