@@ -63,44 +63,49 @@
                     clear to everyone, let's go over a few things.
                 </aside>
             </section>
-
             <section>
                 <h2>Predicate</h2>
                 <p>
                     A predicate is a statement that may be true or
                     false based on the value of its variables.
                 </p>
+                <ul>
+                    <li>Predicate: _____ is a fruit</li>
+                    <li>An apple is a fruit (true)</li>
+                    <li>An egg is a fruit (false)</li>
+            </section>
+            <section>
+                <h2>Formula</h2>
                 <p>
-                    Predicate: <em>&lt;variable&gt; is a vowel</em>
+                    If P and Q are predicates then:
                 </p>
                 <ul>
-                    <li>True for &lt;variable&gt; <q>a</q></li>
-                    <li>False for &lt;variable&gt; <q>b</q></li>
+                    <li>&not;P is a predicate (not P)</li>
+                    <li>(P &and; Q) is a predicate (P and Q)</li>
+                    <li>(P &or; Q) is a predicate (P or Q)</li>
+                    <li>(P &#x27f9; Q) is a predicate (if P then Q)</li>
+                    <li>
+                        (P &#x27fa; Q) is a predicate (if and only if)
+                    </li>
                 </ul>
             </section>
             <section>
-                <h2>Logic Notation</h2>
+                <h2>Bound Variables</h2>
+                <p>
+                    If P is a predicate with variable a then:
+                </p>
                 <table>
-                    <tr><td>&#x2200;</td><td>for all</td></tr>
-                    <tr><td>&#x2203;</td><td>there exists</td></tr>
                     <tr>
-                        <td>&#x2204;</td><td>there does not exist</td>
+                        <td>&#x2200;a P</td>
+                        <td>P is true for all values of a</td>
                     </tr>
                     <tr>
-                        <td>&#x2227;</td>
-                        <td>and (both predicates true)</td>
+                        <td>&#x2203;a P</td>
+                        <td>P is true for some value of a</td>
                     </tr>
                     <tr>
-                        <td>&#x2228;</td>
-                        <td>or (at least one is true)</td>
-                    </tr>
-                    <tr>
-                        <td>&#x27f9;</td>
-                        <td>implies (if left then right)</td>
-                    </tr>
-                    <tr>
-                        <td>&#x27fa;</td>
-                        <td>is equivalent to (if and only if)</td>
+                        <td>&#x2204;a P</td>
+                        <td>P is false for all values of a</td>
                     </tr>
                 </table>
 
@@ -122,19 +127,59 @@
             </section>
 
             <section>
+                <h2>Deduction</h2>
+                <ul>
+                    <li>Modus ponens:
+                        (P &#x27f9; Q &and; P) &#x27f9; Q
+                    </li>
+                    <li>Modus tollens:
+                        (P &#x27f9; Q &and; &not;Q) &#x27f9; &not;P
+                    </li>
+                    <li>Syllogism:
+                        (P &#x27f9; Q &and; Q &#x27f9; R) &#x27f9;
+                        (P &#x27f9; R)
+                    </li>
+                </ul>
+            </section>
+            <section>
+                <h2>Equality</h2>
+                <table>
+                    <tr><td>=</td><td>is equal to</td></tr>
+                    <tr><td>&ne;</td><td>is not equal to</td></tr>
+                </table>
+                <p>
+                    When two things are equal we can replace one with
+                    the other without changing anything.
+                </p>
+            </section>
+            <section>
+                <h2>Equivalence</h2>
+                <p>
+                    We need the following properties from equivalence:
+                </p>
+                <ul>
+                    <li>Reflexive: &#x2200;a (a = a)</li>
+                    <li>Symmetric: &#x2200;a,b
+                        (a = b) &#x27fa; (b = a)</li>
+                    <li>Transitive: &#x2200;a,b,c
+                        (a=c &and; b=c) &#x27f9; (a = b)</li>
+                </ul>
+            </section>
+            <section>
                 <h2>Equality</h2>
                 <table>
                     <tr><td>=</td><td>is equal to</td></tr>
                     <tr><td>&ne;</td><td>is not equal to</td></tr>
                 </table>
                 <ul>
-                    <li>Reflexive: &#x2200;a : a = a</li>
-                    <li>Symmetric: &#x2200;a,b :
+                    <li>Reflexive: &#x2200;a (a = a)</li>
+                    <li>Symmetric: &#x2200;a,b
                         (a = b) &#x27fa; (b = a)</li>
-                    <li>Transitive: &#x2200;a,b,c :
-                        (a=c &#x2227; b=c) &#x27f9; (a = b)</li>
+                    <li>Transitive: &#x2200;a,b,c
+                        (a=c &and; b=c) &#x27f9; (a = b)</li>
                 </ul>
             </section>
+
             <section>
                 <h2>Order</h2>
                 <table>
@@ -145,7 +190,7 @@
                     <tr>
                         <td>&le;</td>
                         <td>is less than or equal to</td>
-                        <td>(a &lt; b) &#x2228; (a = b)</td>
+                        <td>(a &lt; b) &or; (a = b)</td>
                     </tr>
                     <tr>
                         <td>&gt;</td><td>is greater than</td>
@@ -154,24 +199,9 @@
                     <tr>
                         <td>&ge;</td>
                         <td>is greater than or equal to</td>
-                        <td>(a &gt; b) &#x2228; (a = b)</td>
+                        <td>(a &gt; b) &or; (a = b)</td>
                     </tr>
                 </table>
-            </section>
-            <section>
-                <h2>Deduction</h2>
-                <ul>
-                    <li>Modus ponens:
-                        (P &#x27f9; Q &#x2227; P) &#x27f9; Q
-                    </li>
-                    <li>Modus tollens:
-                        (P &#x27f9; Q &#x2227; !Q) &#x27f9; !P
-                    </li>
-                    <li>Syllogism:
-                        (P &#x27f9; Q &#x2227; Q &#x27f9; R) &#x27f9;
-                        (P &#x27f9; R)
-                    </li>
-                </ul>
             </section>
             <section>
                 <h2>Induction</h2>
@@ -185,6 +215,16 @@
             </section>
             <section>
                 <h2>Mapping</h2>
+                <p>
+                    A mapping takes one kind of thing and produces
+                    some other kind of thing.
+                </p>
+                <p>
+                    m(a) = b
+                </p>
+                <p>
+                    We will intentionally leave this vague for now.
+                </p>
             </section>
         </section>
 
@@ -290,7 +330,7 @@
                 <h2>Pairing</h2>
                 <p>
                     &#x2200;a,b &#x2203;{a, b} &#x2200;c
-                    (c&#x2208;{a, b} &#x27fa; (c = a &#x2228; c = b))
+                    (c&#x2208;{a, b} &#x27fa; (c = a &or; c = b))
                 </p>
                 <p>
                     Any two sets can be used to create a third set
@@ -334,7 +374,7 @@
                 <p>
                     &#x2200;a &#x2203;b&#x2208;a &#x27f9;
                     &#x2203;c&#x2208;a
-                    &#x2204;d (d&#x2208;a &#x2227; d&#x2208;c)
+                    &#x2204;d (d&#x2208;a &and; d&#x2208;c)
                 </p>
                 <p>
                     A set that contains any members must contain at
@@ -345,7 +385,7 @@
             <section>
                 <h2>Infinity</h2>
                 <p>
-                    &#x2203;a ({}&#x2208;a) &#x2227;
+                    &#x2203;a ({}&#x2208;a) &and;
                     (&#x2200;b&#x2208;a b&#x222a;{b} &#x2208; a)
                 </p>
                 <p>
@@ -360,7 +400,7 @@
                 <h2>Specification</h2>
                 <p>
                     &#x2200;a,p&#x2203;b &#x2200;c
-                    c&#x2208;b &#x27fa; (c&#x2208;a &#x2227; p(c))
+                    c&#x2208;b &#x27fa; (c&#x2208;a &and; p(c))
                 </p>
                 <p>
                     Given a set and a predicate there is another set
@@ -410,7 +450,7 @@
                         <td><small>
                             &#x2200;a,b &#x2203;{a, b} &#x2200;c
                             (c&#x2208;{a, b} &#x27fa;
-                            (c = a &#x2228; c = b))
+                            (c = a &or; c = b))
                         </small></td>
                     </tr>
                     <tr>
@@ -432,13 +472,13 @@
                         <td><small>
                             &#x2200;a &#x2203;b&#x2208;a &#x27f9;
                             &#x2203;c&#x2208;a
-                            &#x2204;d (d&#x2208;a &#x2227; d&#x2208;c)
+                            &#x2204;d (d&#x2208;a &and; d&#x2208;c)
                         </small></td>
                     </tr>
                     <tr>
                         <td>Infinity</td>
                         <td><small>
-                            &#x2203;a ({}&#x2208;a) &#x2227;
+                            &#x2203;a ({}&#x2208;a) &and;
                             (&#x2200;b&#x2208;a b&#x222a;{b} &#x2208; a)
                         </small></td>
                     </tr>
@@ -447,7 +487,7 @@
                         <td><small>
                             &#x2200;a,p&#x2203;b &#x2200;c
                             c&#x2208;b &#x27fa;
-                            (c&#x2208;a &#x2227; p(c))
+                            (c&#x2208;a &and; p(c))
                         </small></td>
                     </tr>
                     <tr>
@@ -475,7 +515,7 @@
                 <h2>Natural Numbers &#x2115;</h2>
                 <p>Von Neumann 1923: succ(a) &#x225d; a &#x222a; {a}</p>
                 <p>
-                    &#x2115; &#x225d; ({}&#x2208;&#x2115;) &#x2227;
+                    &#x2115; &#x225d; ({}&#x2208;&#x2115;) &and;
                     (&#x2200;a&#x2208;&#x2115; : succ(a)&#x2208;&#x2115;)
                 </p>
                 <p>
@@ -821,7 +861,7 @@
                 <h3>Multiplication &#x2115;: Distributive</h3>
                 <p>
                     &#x2200;a,b,c&#x2208;&#x2115; ((a + b) &#x00d7; c =
-                    (a &#x00d7; c) + (b &#x00d7; c)) &#x2227;<br />
+                    (a &#x00d7; c) + (b &#x00d7; c)) &and;<br />
                     (c &#x00d7; (a + b) =
                     (c &#x00d7; a) + (c &#x00d7; b))
                 </p>
@@ -1067,7 +1107,7 @@
                     <li>
                         Distributive:
                         ((a + b) &#x00d7; c =
-                        (a &#x00d7; c) + (b &#x00d7; c)) &#x2227;<br />
+                        (a &#x00d7; c) + (b &#x00d7; c)) &and;<br />
                         (c &#x00d7; (a + b) =
                         (c &#x00d7; a) + (c &#x00d7; b))
                     </li>
@@ -1107,10 +1147,10 @@
                     <li>
                         b is second in &#x27e8;a, b&#x27e9; &#x225d;
                         (&#x2203;c&#x2208;&#x27e8;a, b&#x27e9; :
-                        b&#x2208;c) &#x2227;
+                        b&#x2208;c) &and;
                         (&#x2200;c,d&#x2208;&#x27e8;a, b&#x27e9; :
                         c &ne; d &#x27f9; b&#x2209;c
-                        &#x2228; b&#x2209;d)
+                        &or; b&#x2209;d)
                     </li>
                     <li>
                         &#x2200;a,b (a &ne; b) &#x27fa;
@@ -1146,9 +1186,9 @@
                 <p>
                     (f : D &#x27f6; R) &#x225d;
                     &#x2200;a&#x2208;D (&#x2203;b&#x2208;R
-                    &#x27e8;a, b&#x27e9;&#x2208;f) &#x2227;<br />
+                    &#x27e8;a, b&#x27e9;&#x2208;f) &and;<br />
                     (&#x2200;b,c&#x2208;R
-                    (&#x27e8;a, b&#x27e9;&#x2208;f &#x2227;
+                    (&#x27e8;a, b&#x27e9;&#x2208;f &and;
                     &#x27e8;a, c&#x27e9;&#x2208;f)
                     &#x27f9; b = c)
                 </p>
@@ -1252,7 +1292,7 @@
                         c<sub>2</sub>&#x27e9;&#x2208;&#x2124;
                         <br />
                         (a<sub>1</sub> + c<sub>2</sub> =
-                        c<sub>1</sub> + a<sub>2</sub>) &#x2227;
+                        c<sub>1</sub> + a<sub>2</sub>) &and;
                         (b<sub>1</sub> + c<sub>2</sub> =
                         c<sub>1</sub> + b<sub>2</sub>)
                         &#x27fa;<br />
@@ -1751,7 +1791,7 @@
             <p>
                 &#x2200;a,b,c&#x2208;&#x2124;<br />
                 (a &#x00d7; (b + c) =
-                (a &#x00d7; b) + (a &#x00d7; c)) &#x2227;<br />
+                (a &#x00d7; b) + (a &#x00d7; c)) &and;<br />
                 ((b + c) &#x00d7; a = (b &#x00d7; a) + (c &#x00d7; a))
             </p>
             <ul>
@@ -1805,7 +1845,7 @@
                 <li>
                     Distributive: &#x2200;a,b,c&#x2208;&#x2124; :<br />
                     (a &#x00d7; (b + c) =
-                    (a &#x00d7; b) + (a &#x00d7; c)) &#x2227;<br />
+                    (a &#x00d7; b) + (a &#x00d7; c)) &and;<br />
                     ((b + c) &#x00d7; a =
                     (b &#x00d7; a) + (c &#x00d7; a))
                 </li>
@@ -1868,7 +1908,7 @@
                     c<sub>2</sub>&#x27e9;&#x2208;&#x211a;
                     <br />
                     (a<sub>1</sub> &#x00d7; c<sub>2</sub> =
-                    c<sub>1</sub> &#x00d7; a<sub>2</sub>) &#x2227;
+                    c<sub>1</sub> &#x00d7; a<sub>2</sub>) &and;
                     (b<sub>1</sub> &#x00d7; c<sub>2</sub> =
                     c<sub>1</sub> &#x00d7; b<sub>2</sub>)
                     &#x27fa;<br />
@@ -1947,7 +1987,7 @@
                 <li>Inverses:
                     &#x2200;a&#x2208;&#x211a; :
                     -a &#x225d; (-a<sub>1</sub>, a<sub>2</sub>) :
-                    a = (a<sub>1</sub>, a<sub>2</sub>) &#x2227;
+                    a = (a<sub>1</sub>, a<sub>2</sub>) &and;
                     a + (-a) = 0
                 </li>
             </ul>
@@ -1983,14 +2023,14 @@
                     a &#x00d7; b = b &#x00d7; a</li>
                 <li>Distributive:  &#x2200;a,b,c&#x2208;&#x211a; :<br />
                     (a &#x00d7; (b + c) =
-                    (a &#x00d7; b) + (a &#x00d7; c)) &#x2227;<br />
+                    (a &#x00d7; b) + (a &#x00d7; c)) &and;<br />
                     ((b + c) &#x00d7; a =
                     (b &#x00d7; a) + (c &#x00d7; a))</li>
                 <li>Identity: &#x2200;a&#x2208;&#x211a;
                     a &#x00d7; 1 = a</li>
                 <li>Inverses: &#x2200;a&#x2209;[0 / 1]&#x2208;&#x211a; :
                     a<sup>-1</sup> &#x225d; (a<sub>2</sub>, a<sub>1</sub>) :
-                    a = (a<sub>1</sub>, a<sub>2</sub>) &#x2227;
+                    a = (a<sub>1</sub>, a<sub>2</sub>) &and;
                     a &#x00d7; a<sup>-1</sup> = 1
                 </li>
             </ul>
@@ -2000,6 +2040,11 @@
     <section>
         <section>
             <h2>Algebra</h2>
+            <blockquote> 
+                <q>Algebra: from Arabic <q>al-jabr</q>, literally
+                meaning <q>reunion of broken parts</q></q>
+                — Oxford English Dictionary
+            </blockquote>
         </section>
         <section>
             <h3>Magma (M, &#x2218;)</h3>
@@ -2109,7 +2154,7 @@
                     a &#x229a; (b &#x229a; c)</li>
                 <li>Distributive: &#x2200;a,b,c&#x2208;R :<br />
                     (a &#x229a; (b &#x2218; c) =
-                    (a &#x229a; b) &#x2218; (a &#x229a; c)) &#x2227;<br />
+                    (a &#x229a; b) &#x2218; (a &#x229a; c)) &and;<br />
                     ((b &#x2218; c) &#x229a; a =
                     (b &#x229a; a) &#x2218; (c &#x229a; a))</li>
             </ul>
@@ -2147,11 +2192,14 @@
             <h3>Fields (F, &#x2218;, &#x229a;)</h3>
 
             <p>
-                A field is a unitary ring with inverses:
+                A field is a commutative, unitary ring with inverses:
             </p>
 
             <ul>
-                <li>(F, &#x2218, &#x229a;) is a unitary ring</li>
+                <li>
+                    (F, &#x2218, &#x229a;) is a unitary, commutative
+                    ring
+                </li>
                 <li>Inverses: &#x2200;a&#x2208;U a &ne;
                     e<sup>&#x2218;</sup>
                     &#x27f9; &#x2203;a<sup>-1</sup>&#x2208;U :
@@ -2355,9 +2403,16 @@
         <h2>Acknowledgements</h2>
         <ul>
             <li>
-                Slides made with Reveal.js<br />
+                Reveal.js for slide technology<br />
                 <a href="https://github.com/hakimel/reveal.js/"
                 >https://github.com/hakimel/reveal.js/</a>
+            </li>
+            <li>
+                Special thanks to Euclid, al-Kwarizmi, Georg Cantor,
+                Hermann Grassman, Emmy Noether, John von Neumann,
+                Abraham Fraenkel, Ernst Zermello, Thoraf Skolem,
+                Kazimierz Kuratowski and an apparently infinite set of
+                mathematical minds who made this work possible.
             </li>
         </ul>
     </section>
