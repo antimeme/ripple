@@ -2023,7 +2023,7 @@
             </ul>
         </section>
         <section>
-            <h2>Rational Numbers &#x211a;: Order</h2>
+            <h3>Rational Numbers &#x211a;: Order</h3>
             <p>
                 &#x2200;&#x27e8;a<sub>1</sub>,
                 a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
@@ -2205,17 +2205,6 @@
             </blockquote>
         </section>
         <section>
-            <h3>Magma (M, &#x2218;)</h3>
-            <p>
-                A magma is a set M and a binary operation M &#x2218; M
-                &#x27f9 M with one important property:
-            </p>
-            <ul>
-                <li>Closed: &#x2200;a,b&#x2208;M :
-                    a &#x2218; b &#x2208;M</li>
-            </ul>
-        </section>
-        <section>
             <h3>Groups (G, &#x2218;)</h3>
             <p>
                 A group is a set G and a binary operation G &#x2218; G
@@ -2224,38 +2213,46 @@
             <ul>
                 <li>Closed: &#x2200;a,b&#x2208;G :
                     a &#x2218; b &#x2208;G</li>
-                <li>Associative: (a &#x2218; b) &#x2218; c =
+                <li>Associative: &#x2200;a,b,c&#x2208;G
+                    (a &#x2218; b) &#x2218; c =
                     a &#x2218; (b &#x2218; c)</li>
-                <li>Identity: &#x2203;e&#x2208;G :
+                <li>Identity: &#x2203;e&#x2208;G
                     &#x2200;a&#x2208;G a &#x2218; e = a</li>
                 <li>Inverses: &#x2200;a&#x2208;G
-                    &#x2203;a<sup>-1</sup>&#x2208;G :
+                    &#x2203;a<sup>-1</sup>&#x2208;G
                     a &#x2218; a<sup>-1</sup> = e</li>
             </ul>
         </section>
         <section>
             <p>
-                The definition of a group requires that the identity and
-                inverses work when applied from the right.  Without
-                knowing anything else about the group we can prove that
-                these values work from the left as well.
+                By definition identity and inverses work when applied
+                from the right.  Group axioms are enough to prove
+                that these also work from the left.
             </p>
             <ul>
                 <li>e = a<sup>-1</sup> &#x2218;
-                    (a<sup>-1</sup>)<sup>-1</sup> (Inverses)</li>
-                <li>e = (a<sup>-1</sup> &#x2218; e) &#x2218;
-                    (a<sup>-1</sup>)<sup>-1</sup> (Identity)</li>
-                <li>e = (a<sup>-1</sup> &#x2218;
+                    (a<sup>-1</sup>)<sup>-1</sup> :: Inverses
+                </li><li>
+                    e = (a<sup>-1</sup> &#x2218; e) &#x2218;
+                    (a<sup>-1</sup>)<sup>-1</sup> :: Identity
+                </li><li>
+                    e = (a<sup>-1</sup> &#x2218;
                     (a &#x2218; a<sup>-1</sup>)) &#x2218;
-                    (a<sup>-1</sup>)<sup>-1</sup> (Inverses)</li>
-                <li>e = ((a<sup>-1</sup> &#x2218;
+                    (a<sup>-1</sup>)<sup>-1</sup> :: Inverses
+                </li><li>
+                    e = ((a<sup>-1</sup> &#x2218;
                     a) &#x2218; a<sup>-1</sup>) &#x2218;
-                    (a<sup>-1</sup>)<sup>-1</sup> (Associativity)</li>
-                <li>e = (a<sup>-1</sup> &#x2218;
+                    (a<sup>-1</sup>)<sup>-1</sup> :: Associativity
+                </li><li>
+                    e = (a<sup>-1</sup> &#x2218;
                     a) &#x2218; (a<sup>-1</sup> &#x2218;
-                    (a<sup>-1</sup>)<sup>-1</sup>) (Associativity)</li>
-                <li>e = (a<sup>-1</sup> &#x2218;
-                    a) &#x2218; e (Identity)</li>
+                    (a<sup>-1</sup>)<sup>-1</sup>) :: Associativity
+                </li><li>
+                    e = (a<sup>-1</sup> &#x2218;
+                    a) &#x2218; e :: Inverses
+                </li><li>
+                    e = (a<sup>-1</sup> &#x2218; a) :: Identity
+                </li>
             </ul>
         </section>
         <section>
@@ -2265,11 +2262,11 @@
             </p>
             <ul>
                 <li>e &#x2218; a = (a &#x2218; a<sup>-1</sup>)
-                    &#x2218; a (Inverses)</li>
+                    &#x2218; a :: Inverses</li>
                 <li>e &#x2218; a = a &#x2218; (a<sup>-1</sup>
-                    &#x2218; a) (Associativity)</li>
-                <li>e &#x2218; a = a &#x2218; e (Inverses)</li>
-                <li>e &#x2218; a = a (Identity)</li>
+                    &#x2218; a) :: Associativity</li>
+                <li>e &#x2218; a = a &#x2218; e :: Inverses</li>
+                <li>e &#x2218; a = a :: Identity</li>
             </ul>
         </section>
         <section>
@@ -2277,24 +2274,36 @@
             <p>
                 A group is the simplest mathematical structure that
                 allows algebra.  Suppose we have know
-                a, b and x &#x2218; a = b:
+                a, b and <br />(x &#x2218; a = b):
             </p>
             <ul>
-                <li>(x &#x2218; a) &#x2218; a<sup>-1</sup> =
-                    b &#x2218; a<sup>-1</sup> (Transitive Equality)</li>
-                <li>x &#x2218; (a &#x2218; a<sup>-1</sup>) =
-                    b &#x2218; a<sup>-1</sup> (Associativity)</li>
-                <li>x &#x2218; e = b &#x2218; a<sup>-1</sup> (Inverses)</li>
-                <li>x = b &#x2218; a<sup>-1</sup> (Identity)</li>
+                <li>
+                    (x &#x2218; a) &#x2218; a<sup>-1</sup> =
+                    b &#x2218; a<sup>-1</sup> :: Equality
+                </li><li>
+                    x &#x2218; (a &#x2218; a<sup>-1</sup>) =
+                    b &#x2218; a<sup>-1</sup> :: Associativity
+                </li><li>
+                    x &#x2218; e = b &#x2218; a<sup>-1</sup>
+                    :: Inverses
+                </li><li>
+                    x = b &#x2218; a<sup>-1</sup> :: Identity
+                </li>
             </ul>
         </section>
         <section>
-            <h3>Abelian Groups</h3>
-
+            <h3>Abelian Group (G, &#x2218)</h3>
             <p>
-                An abelian group is a group with a commutative operation.
-                Integers with addition form an abelian group: (&#x2124;, +).
+                An abelian group is a group with a commutative
+                operation.  Integers with addition form an abelian
+                group: (&#x2124;, +).
             </p>
+            <ul>
+                <li>(G, &#x2218) is a group</li>
+                <li>Commutative: &#x2200;a,b,c&#x2208;G
+                    (a &#x2218; b) = (b &#x2218; a)
+                </li>
+            </ul>
 
         </section>
         <section>
@@ -2310,7 +2319,7 @@
                     a &#x229a; b &#x2208; R</li>
                 <li>Associative: (a &#x229a; b) &#x229a;c =
                     a &#x229a; (b &#x229a; c)</li>
-                <li>Distributive: &#x2200;a,b,c&#x2208;R :<br />
+                <li>Distributive: &#x2200;a,b,c&#x2208;R<br />
                     (a &#x229a; (b &#x2218; c) =
                     (a &#x229a; b) &#x2218; (a &#x229a; c)) &and;<br />
                     ((b &#x2218; c) &#x229a; a =
@@ -2319,11 +2328,18 @@
         </section>
         <section>
             <h3>Commutative Rings</h3>
-
             <p>
                 A commutative ring is a with a commutative operations.
-                Integers with addition and multiplication form a commutative
-                ring (&#x2124;, +, &#x00d7;).
+            </p>
+            <ul>
+                <li>(R, &#x2218, &#x229a;) is a ring</li>
+                <li>Commutative: &#x2200;a,b,c&#x2208;R
+                    (a &#x229a; b) = (b &#x229a; a)
+                </li>
+            </ul>
+            <p>
+                Integers with addition and multiplication form a
+                commutative ring (&#x2124;, +, &#x00d7;).
             </p>
         </section>
         <section>
@@ -2337,7 +2353,7 @@
             <ul>
                 <li>(U, &#x2218, &#x229a;) is a ring</li>
                 <li>Identity: &#x2203;e&#x2208;U
-                    &#x2200;a&#x2208;U : a &#x229a; e = a</li>
+                    &#x2200;a&#x2208;U a &#x229a; e = a</li>
             </ul>
 
             <p>
@@ -2360,7 +2376,7 @@
                 </li>
                 <li>Inverses: &#x2200;a&#x2208;U a &ne;
                     e<sup>&#x2218;</sup>
-                    &#x27f9; &#x2203;a<sup>-1</sup>&#x2208;U :
+                    &#x27f9; &#x2203;a<sup>-1</sup>&#x2208;U
                     a &#x229a; a<sup>-1</sup> =
                     e<sup>&#x229a;</sup></li>
             </ul>
@@ -2368,6 +2384,55 @@
             <p>
                 An example of a field is rational numbers with addition
                 and multiplication: (&#x211a;, +, &#x00d7;)
+            </p>
+        </section>
+    </section>
+
+    <section>
+        <section>
+            <h2>Tuples</h2>
+            <p>
+                Ordered pairs can be used to build general tuples
+                that can order an aribtrary number of members
+            </p>
+            <ul>
+                <li>() = {}</li>
+                <li>(a) = &#x27e8;a, {}&#x27e9;</li>
+                <li>(a, b) = &#x27e8;a, &#x27e8;b,
+                    {}&#x27e9;&#x27e9;</li>
+                <li>
+                    (a, b, c) = &#x27e8;a, &#x27e8;b, &#x27e8;c,
+                    {}&#x27e9;&#x27e9;&#x27e9;
+                </li>
+                <li>...</li>
+            </ul>
+        </section>
+    </section>
+
+    <section>
+        <section>
+            <h2>Fundamental Theorem of Arithmetic</h2>
+        </section>
+        <section>
+            <h3>Irreducible Element</h3>
+        </section>
+        <section>
+            <h3>Prime Element</h3>
+        </section>
+        <section>
+            <h3>Zero Divisors</h3>
+        </section>
+        <section>
+            <h3>No Zero Divisors Implies Prime = Irreducible</h3>
+        </section>
+        <section>
+            <h3>Integers No Zero Divisors</h3>
+        </section>
+        <section>
+            <h2>Fundamental Theorem of Arithmetic</h2>
+            <p>
+                All integers can be represented as tuple consisting
+                of 1 or -1 followed by an ordered list of primes.
             </p>
         </section>
     </section>
@@ -2447,59 +2512,9 @@
                 x<sup>2</sup> - 2 = 0
             </p>
             <p>
-                Are all algebraic numbers rational?  No.  There is no
-                rational number that can solve this equation.
-            </p>
-        </section>
-        <section>
-            <h3>Algebraic Numbers: Irrational</h3>
-            <p>
-                Suppose that was a rational number &#x27e8;a, b&#x27e9;
-                that multiplied itself to get 2.
-            </p>
-            <ul>
-                <li>&#x27e8;a, b&#x27e9;<sup>2</sup> = 2</li>
-                <li>a<sup>2</sup> = 2b<sup>2</sup></li>
-            </ul>
-            <p>
-                The product of two odd numbers is odd, but our
-                a<sup>2</sup> is even, since there is an integer
-                b<sup>2</sup> which can be multiplied by 2 to
-                reach it. So a must be even.
-            </p>
-        </section>
-        <section>
-            <h3>Algebraic Numbers: Irrational</h3>
-            <p>
-                Since a is even, we can replace it with two times
-                some integer a'.
-            </p>
-            <ul>
-                <li>a<sup>2</sup> = 2b<sup>2</sup></li>
-                <li>(2a')<sup>2</sup> = 2b<sup>2</sup></li>
-                <li>4a'<sup>2</sup> = 2b<sup>2</sup></li>
-                <li>2a'<sup>2</sup> = b<sup>2</sup></li>
-            </ul>
-            <p>
-                This shows that b is even, using the same reasoning
-                we used for a.
-            </p>
-        </section>
-        <section>
-            <h3>Algebraic Numbers: Irrational</h3>
-            <p>
-                Since b is even we can replace it with 2b' but the
-                product must also equal 2:
-            </p>
-            <ul>
-                <li>(2a') &#x00d7; (b') = (a') &#x00d7; (2b')</li>
-                <li>2(a' &#x00d7; b') = 2(a' &#x00d7; 2b')</li>
-            </ul>
-            <p>
-                We can now do this excerices over again and show
-                that a and b are multiplied by 2 an unlimited
-                number of times.  Both must be infinitely large!
-                That's a contradiction since integers are finite.
+                Are all algebraic numbers rational?  There is no
+                rational number that can solve this equation.  (TODO:
+                use fundamental theorem of arithmetic to prove this)
             </p>
         </section>
     </section>
@@ -2513,102 +2528,50 @@
                 defined by convergant infinite series.
             </p>
         </section>
-        <section>
-            <h3>Real Numbers &#x211d;</h3>
+        <p>
+            No rational number can be the root of 2 but we can get
+            arbitrarily close.  Let's start with 1.  1 &#x00d7; 1 = 1,
+            which is smaller than 2.  We can multiply 2 by 2, but this
+            is 4 which is larger than 2.  We can try (3, 2) which
+            squares to (9, 4) but that's larger than (8, 4) which is
+            equal to 2.  So we could try (5, 4) which squares to (25,
+            16) but that's smaller than (32, 16), which is equal to 2.
+            We can continue like this indefinitely.  We'll never reach
+            2 exactly but we'll get closer and closer.  In fact we can
+            separate the rational numbers into all the numbers larger
+            than the square root of 2 and all the numbers smaller.
+            This is called a Dedekind cut.
+        </p>
+        <ul>
+            <li>Definition: A real number is a cut (Dedekind
+                1858-1862) which separates all rational numbers into
+                one of two sets.  One set contains all the rational
+                numbers equal to or larger than the number we're
+                looking for.  The other contains all rational numbers
+                smaller than it.  Every rational number can be
+                represented by a real number, but every irrational
+                number can also be represented this way.
+            </li>
+            <li>
+                There are more real numbers than natural numbers,
+                integers or rational numbers (TODO describe Cantor
+                diagonalization)
+            </li>
+            <li>
+                Unlike other kinds of numbers we've described we will
+                not be able to explicitly manipulate real numbers.
+                We can manipulate the rational parts using addition
+                and multiplication but the irrational parts must be
+                carried around.  For example, we could talk about
+                1 + &#x221a;2.  We can't simplify this any further.
+                However, if we multiply it by 1 - &#x221a;2 we get
+                1 + &#x221a;2 &#x00d7; &#x221a;2 which is
+                1 + 2 = 3.
+            </li>
+        </ul>
 
-            <p>
-                Irrational numbers include almost all roots.  Roots are
-                numbers which can be multiplied by themselves some number
-                of times to produce rational numbers.  Some roots are
-                rational.  For example, 2 &#x00d7; 2 = 4, which means that
-                2 is the square root of 4.  Similarly, 3 &#x00d7; 3
-                &#x00d7; 3 = 27, which means 3 is the cube root of 27.
-                However, there is no rational number that can be
-                multiplied by itself to get 2.
-            </p>
-            <p>
-                Suppose this was not true.  If there is a rational number
-                which when multiplied by itself results in the rational
-                numbers 2, which can be represented by a pair of integers
-                such as (2, 1) or (416, 208).  This means there is a pair
-                of integers, (a, b), such that (a &#x00d7; a, b &#x00d7;
-                b) is equal to (2, 1).
-            </p>
-            <p>
-                All integers are either even or odd.  If an integer a is
-                even then there is another integer a' which can be
-                multiplied by 2 to produce a.  For example, 6 is even and
-                3 can be multiplied by 2 to produce 6.  Given a rational
-                number (a, b) which when multiplied by itself equals
-                rational number 2 then we can ask whether a and b are even
-                or odd.  If both a and b are even, then we can replace
-                them with a' and b' such that a' &#x00d7; a' = a and b'
-                &#x00d7; b' = b.  (a', b') = (a, b) so (a', b') &#x00d7;
-                (a', b') = (2, 1).  We can repeat this until either a or b
-                is odd.
-            </p>
-            <p>
-                According to the definition of rational number
-                multiplication, integers a &#x00d7; a = 2 &#x00d7; b
-                &#x00d7; b; This means a &#x00d7; a must be even, since b
-                &#x00d7; b multiplied by 2 is equal to it.  Any odd number
-                multiplied by an odd number is odd, so a must also be
-                even.  That means there is an integer a' which when
-                multiplied by 2 is a.  So we can replace a with 2 &#x00d7;
-                a': (2 &#x00d7; a') &#x00d7; (2 &#x00d7; a') = 2 &#x00d7;
-                b &#x00d7; b; Multiplication is commutative so: 2 &#x00d7;
-                2 &#x00d7; a' &#x00d7; a' = 2 &#x00d7; b &#x00d7; b; We
-                can cancel 2 from both sides so: 2 &#x00d7; a' &#x00d7; a'
-                = b &#x00d7; b.  This means b &#x00d7; b is even, which
-                means b is even.  So a and b are both even, despite what
-                we did earlier to ensure that at least one is odd.  This
-                is a contradiction so there can't be a rational number
-                that satisfies this equation.
-            </p>
-            <p>
-                No rational number can be the root of 2 but we can get
-                arbitrarily close.  Let's start with 1.  1 &#x00d7; 1 = 1,
-                which is smaller than 2.  We can multiply 2 by 2, but this
-                is 4 which is larger than 2.  We can try (3, 2) which
-                squares to (9, 4) but that's larger than (8, 4) which is
-                equal to 2.  So we could try (5, 4) which squares to (25,
-                16) but that's smaller than (32, 16), which is equal to 2.
-                We can continue like this indefinitely.  We'll never reach
-                2 exactly but we'll get closer and closer.  In fact we can
-                separate the rational numbers into all the numbers larger
-                than the square root of 2 and all the numbers smaller.
-                This is called a Dedekind cut.
-            </p>
-            <ul>
-                <li>Definition: A real number is a cut (Dedekind
-                    1858-1862) which separates all rational numbers into
-                    one of two sets.  One set contains all the rational
-                    numbers equal to or larger than the number we're
-                    looking for.  The other contains all rational numbers
-                    smaller than it.  Every rational number can be
-                    represented by a real number, but every irrational
-                    number can also be represented this way.
-                </li>
-                <li>
-                    There are more real numbers than natural numbers,
-                    integers or rational numbers (TODO describe Cantor
-                    diagonalization)
-                </li>
-                <li>
-                    Unlike other kinds of numbers we've described we will
-                    not be able to explicitly manipulate real numbers.
-                    We can manipulate the rational parts using addition
-                    and multiplication but the irrational parts must be
-                    carried around.  For example, we could talk about
-                    1 + &#x221a;2.  We can't simplify this any further.
-                    However, if we multiply it by 1 - &#x221a;2 we get
-                    1 + &#x221a;2 &#x00d7; &#x221a;2 which is
-                    1 + 2 = 3.
-                </li>
-            </ul>
-
-            <h3>Convergent Series</h3>
-            <p>
+        <h3>Convergent Series</h3>
+        <p>
                 Many real numbers can be represented as a sum of an
                 infinite number of rational numbers.  No one has time to
                 add these all up but we can compute a rational number
@@ -2621,27 +2584,6 @@
                 <li>e<sup>x</sup></li>
                 <li>sin(x)</li>
                 <li>cos(x)</li>
-            </ul>
-        </section>
-    </section>
-
-    <section>
-        <section>
-            <h2>Tuples</h2>
-            <p>
-                Ordered pairs can be used to build general tuples
-                that can order an aribtrary number of members
-            </p>
-            <ul>
-                <li>() = {}</li>
-                <li>(a) = &#x27e8;a, {}&#x27e9;</li>
-                <li>(a, b) = &#x27e8;a, &#x27e8;b,
-                    {}&#x27e9;&#x27e9;</li>
-                <li>
-                    (a, b, c) = &#x27e8;a, &#x27e8;b, &#x27e8;c,
-                    {}&#x27e9;&#x27e9;&#x27e9;
-                </li>
-                <li>...</li>
             </ul>
         </section>
     </section>
