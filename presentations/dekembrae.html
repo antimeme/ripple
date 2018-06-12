@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="lib/sakura.css">
+<title>Dekembr&aelig;</title>
+<h1>Dekembr&aelig;</h1>
+
+<p>
+    Dekembr&aelig; is a role playing game system intended to support
+    table top and computer games with a variety of genres.
+</p>
+
+<h3>Problems</h3>
+<p>
+    Role playing games have been around for many decades but most
+    have serious problems that undermine story telling.
+</p>
+
+<h4>Rolling Dice for Abilities</h4>
+<p>
+    In the earliest role playing games players rolled dice to
+    determine character abilities.  This can be exciting but it
+    creates important problems.  First, players lose the power to
+    choose important aspects of their characters.  Second, the dice
+    make it difficult to know whether a player cheated.  Finally,
+    different players can have characters with substantial differences
+    in power through no virtue or fault of their own.
+</p>
+
+<h4>Character Classes</h4>
+<p>
+    Most role playing games make players choose a character class as
+    one of the earliest steps.  This simplifies the game for players,
+    which is helpful.  However, in most games this constrains the
+    player choices so much that the designers feel compelled to add
+    a multi-class system -- usually a cumbersome one.
+</p>
+
+<h4>Escalating Physical Toughness</h4>
+<p>
+    As characters gain experience, they usually gain some form of hit
+    points.  This makes experienced characters more difficult to kill
+    but despite sometimes explicit explanations in source books, most
+    game masters interpret this as a kind of physical resistance to
+    damage.  This strains the story telling as characters endure
+    increasingly absurd amounts of physical punishment.
+</p>
+
+<h4>Frequent Fumbles</h4>
+<p>
+    Most role playing games use flat probability distributions, in
+    contrast to real world systems where bell curves are far more
+    common.  This creates strange situations, such as experienced
+    characters who fumble even basic tasks one time in twenty.
+</p>
+
+<h4>Awkward Balancing Mechanics</h4>
+<p>
+    Games in which characters can use powerful systems like fantasy
+    magic must balance these abilities so that characters without such
+    abilities still have important roles to play.  Unfortunately many
+    role playing systems use implausible and poorly constructed
+    balancing mechanisms, such as limiting powers to a small number of
+    uses per day.  This strains credibility and undermines story
+    telling when there are better alternatives available.
+</p>
+
+<h4>Experience Points for Kills</h4>
+<p>
+    The earliest role playing games rewareded characters with
+    experience points for killing monsters.  This is a simple and
+    direct mechanic, but it creates a structural incentive to solve as
+    many problems as possible with violence.  Players who consider
+    bribing or sneaking past enemies are forced to consider the loss
+    of game mechanic rewards that have no direct role in the story.
+</p>
+
+<h4>Deterministic Character Speed</h4>
+<p>
+    In some role playing games characters have a fixed speed at which
+    they can move.  This makes chase scenes predictable.
+</p>
+
+<h3>Goals</h3>
+<ul>
+    <li>Bell curve distributions</li>
+    <li>Deterministic character creation</li>
+    <li>Flexible character creation</li>
+    <li>Story friendly mechancis</li>
+    <li>Plausible combat and balance</li>
+    <li>Universal system for many genres</li>
+</ul>
+
+<h3>Character Abilities</h3>
+
+<ul>
+    <li>Brawn: physical toughness and strength</li>
+    <li>Agility: coordination and flexibility</li>
+    <li>Perception: managing complex sensory input</li>
+    <li>Intellect: abstract problem solving</li>
+    <li>Will: perserverance and determination</li>
+</ul>
+
+<p>
+    Characters start with a score of 3 in all abilities.  Each can be
+    increased by one point at a cost equal to the current value plus
+    one.  A score of 4 for an ability is average.  Heroic characters
+    get 50 points to spend.  Other kinds of characters may get fewer
+    points to spend.
+</p>
+
+<table>
+    <caption>Cost to Achieve a Given Score</caption>
+    <tr><th>Score</th><th>Cost</th></tr>
+    <tr><td>3</td><td>0</td></tr>
+    <tr><td>4</td><td>4</td></tr>
+    <tr><td>5</td><td>9</td></tr>
+    <tr><td>6</td><td>15</td></tr>
+    <tr><td>7</td><td>22</td></tr>
+    <tr><td>8</td><td>30</td></tr>
+    <tr><td>9</td><td>39</td></tr>
+</table>
+
+<table>
+    <caption>Possible Score Distributions (50 Points)</caption>
+    <tr>
+        <th>S</th><th>S</th><th>S</th><th>S</th><th>S</th>
+        <th>Total</th>
+    </tr>
+    <tr>
+        <td>5</td><td>5</td><td>5</td><td>5</td><td>5</td>
+        <td>25</td>
+    </tr>
+    <tr>
+        <td>6</td><td>5</td><td>5</td><td>5</td><td>4</td>
+        <td>25</td>
+    </tr>
+    <tr>
+        <td>6</td><td>6</td><td>5</td><td>4</td><td>4</td>
+        <td>25</td>
+    </tr>
+    <tr>
+        <td>6</td><td>6</td><td>5</td><td>5</td><td>3</td>
+        <td>25</td>
+    </tr>
+    <tr>
+        <td>6</td><td>6</td><td>6</td><td>3</td><td>3</td>
+        <td>25</td>
+    </tr>
+    <tr>
+        <td>7</td><td>5</td><td>5</td><td>5</td><td>3</td>
+        <td>25</td>
+    </tr>
+    <tr>
+        <td>7</td><td>6</td><td>4</td><td>4</td><td>4</td>
+        <td>25</td>
+    </tr>
+    <tr>
+        <td>7</td><td>7</td><td>4</td><td>3</td><td>3</td>
+        <td>24</td>
+    </tr>
+    <tr>
+        <td>8</td><td>4</td><td>4</td><td>4</td><td>4</td>
+        <td>24</td>
+    </tr>
+    <tr>
+        <td>8</td><td>5</td><td>4</td><td>4</td><td>3</td>
+        <td>24</td>
+    </tr>
+    <tr>
+        <td>9</td><td>5</td><td>3</td><td>3</td><td>3</td>
+        <td>23</td>
+    </tr>
+</table>
+
+<p>
+    Every skill has a base ability and a cost.  Characters spend skill
+    points which are multiplied by the value of the base ability to
+    get the effective skill level.  To determine how many skill
+    points are needed to achieve <code>r</code> in a skill that costs
+    <code>c</code> points with a base ability <code>b</code>
+    compute <code>c(r + 1)r/2b</code> (round up) Given a number of
+    skill points <code>s</code>, base ability score <code>b</code> and
+    cost <code>c</code> of ranks is:
+    <code>(&radic;(8sb/c + 1) - 1) / 2</code> (round down)
+</p>
+
+<table>
+    <tr>
+        <th>Ranks</th>
+        <th>Cost(2/25)</th>
+        <th>Cost(5/25)</th>
+        <th>Cost(7/25)</th>
+    </tr>
+    <tr><td>1</td><td>13</td><td>5</td><td>4</td></tr>
+    <tr><td>2</td><td>38</td><td>15</td><td>11</td></tr>
+    <tr><td>3</td><td>75</td><td>30</td><td>22</td></tr>
+    <tr><td>4</td><td>125</td><td>50</td><td>36</td></tr>
+    <tr><td>5</td><td>188</td><td>75</td><td>54</td></tr>
+</table>
+
+<table>
+    <caption>Skills Applicable to Most Settings</caption>
+    <tr>
+        <th>Skill</th><th>Base</th><th>Cost</th>
+        <th>Description</th>
+    </tr>
+    <tr><td>Insight</td><td>Perception</td><td>25</td></tr>
+    <tr><td>Skirmish</td><td>Perception</td><td>25</td></tr>
+    <tr><td>Streetwise</td><td>Perception</td><td>25</td></tr>
+    <tr><td>Ettiquete</td><td>Perception</td><td>25</td></tr>
+    <tr><td>Negotiate</td><td>Perception</td><td>25</td></tr>
+    <tr><td>Appraise</td><td>Perception</td><td>25</td></tr>
+    <tr><td>Forgery</td><td>Perception</td><td>25</td></tr>
+    <tr><td>Literacy</td><td>Intellect</td><td>25</td></tr>
+    <tr><td>Engineering</td><td>Intellect</td><td>25</td></tr>
+    <tr><td>Blacksmith</td><td>Intellect</td><td>25</td></tr>
+    <tr><td>Optimize</td><td>Intellect</td><td>25</td></tr>
+    <tr><td>Presence</td><td>Will</td><td>25</td></tr>
+    <tr><td>Morale</td><td>Will</td><td>25</td></tr>
+    <tr><td>Formation</td><td>Will</td><td>25</td></tr>
+    <tr><td>Heal</td><td>Will</td><td>25</td></tr>
+    <tr><td>Dodge</td><td>Agility</td><td>25</td></tr>
+    <tr><td>Stealth</td><td>Agility</td><td>25</td></tr>
+    <tr><td>Acrobatics</td><td>Agility</td><td>25</td></tr>
+    <tr><td>Prestidigitation</td><td>Agility</td><td>25</td></tr>
+    <tr><td>Aim</td><td>Agility</td><td>25</td></tr>
+    <tr><td>Throw</td><td>Agility</td><td>25</td></tr>
+    <tr><td>Target</td><td>Agility</td><td>25</td></tr>
+    <tr><td>Pilot</td><td>Agility</td><td>25</td></tr>
+    <tr><td>Strike</td><td>Brawn</td><td>25</td></tr>
+    <tr><td>Throw</td><td>Brawn</td><td>25</td></tr>
+    <tr><td>Grapple</td><td>Brawn</td><td>25</td></tr>
+    <tr><td>Armor</td><td>Brawn</td><td>25</td></tr>
+    <tr><td>Run</td><td>Brawn</td><td>25</td></tr>
+    <tr><td>Swim</td><td>Brawn</td><td>25</td></tr>
+    <tr><td>Jump</td><td>Brawn</td><td>25</td></tr>
+    <tr><td>Climb</td><td>Brawn</td><td>25</td></tr>
+</table>
+
+<h3>Skill Rolls</h3>
+<p>
+    Characters make skill rolls by determining the number of ranks
+    available.  This is usually the number of ranks in one or a small
+    number of skills.  At this point the character may sacrifice ranks
+    in order to active special abilities.  The remaining ranks are
+    converted into dice.  If the number of dice is greater than nine,
+    all dice beyond the first nine are converted to the value 3 and
+    added together.  The attacker may choose to replace some or all of
+    the dice above six with the value 5 instead of rolling.
+</p>
+
+<p>
+    The remaining dice are resolved by rolling according to the d10*
+    process.  Results of 0 through 8 are converted to their face
+    value.  Results of 9 are converted to 9 plus the result of another
+    d10* process.
+</p>
+
+<p>
+    For example, suppose a character has 8 ranks in a skill.  She
+    chooses to use a special ability that costs one rank, leaving 7
+    ranks.  She decides to convert one die to a 5 and roll the
+    remaining six.  The face value of the dice are: 5, 3, 9, 2, 7.
+    Since one of the dice was a 9 she rolls one more, which comes up
+    0.  The result of the skill role is 5 + 5 + 3 + 9 + 2 + 7 + 0,
+    which is 31.  This is slightly below the expected value 7 dice,
+    which would be 35.  The character was a little unlucky.
+</p>
+
+<h3>Combat</h3>
+
+<p>
+    Combat can take place either in a discrete or continuous context.
+    Discrete combat is divided into five second rounds and is well
+    suited for table top play.  Continuous combat is well suited for
+    real-time computer games.
+</p>
+
+<p>
+    At any moment each character has a stamina and fatigue score.
+    Stamina can never be greater than brawn times will minus fatigue.
+    At the start of each round, if a character has not engaged in
+    any strenuous activity one twenty fifth of maximum stamina is
+    restored.  This is not rounded.  Stamina values less than one
+    are effectively zero.
+</p>
+
+<h4>Status</h4>
+<p>
+    At any moment a character is in one of the following states:
+</p>
+<ul>
+    <li>Helpless/Unconscious: no passive dodge, no active dodge</li>
+    <li>Casual/Bound: no passive dodge, active dodge</li>
+    <li>Ready: passive dodge, active dodge</li>
+</ul>
+
+<h4>Attacking</h4>
+<p>
+    Attacks are resolved with the following system.  The attacker
+    begins with the number of ranks in a base skill such as strike,
+    throw or aim.  To this the attacker adds any ranks in an category
+    skill such as blades or polearms.  Then the attacker adds specific
+    skills such as dagger or halbard.  The total number is the number
+    of ranks available.  This is used to make a skill roll which
+    determines the attack score.
+</p>
+
+<p>
+    Each possible weapon attack has a difficulty value.  If the attack
+    score is less than this value then the attack was an embarrassing
+    fumble.  Otherwise, subtract the difficulty from the attack score
+    and continue.
+</p>
+
+<p>
+    Every character has a passive dodge score equal to the sum of
+    agility and dodge skill ranks.  When a defender is conscious and
+    aware of the attacker, compare the current attack score to this
+    passive dodge value.  If the attack score is smaller, the defender
+    steps aside effortlessly.  Otherwise subtract the passive dodge
+    score and continue.
+</p>
+
+<p>
+    If the attack score is still more than zero and the defender is
+    conscious and able to move, the defender active dodge must be
+    resolved.  Active dodge uses stamina to reduce the attack score.
+    Each point of stamina can reduce the attack by the defender
+    agility.  If the defender has enough stamina to reduce the attack
+    to zero or below then that many points are spent and the attack
+    is narrowly avoided.  If not, the defender loses only a single
+    point of stamina and the attack continues.
+</p>
+
+<p>
+    Note that even if the attack is avoided in this way, the weapon
+    still contacts the defender and may draw blood unless completely
+    absorbed by defender armor.  A defender in defensive mode adds
+    another five points to the attack score and spends enough stamina
+    to reduce this to zero if possible.  This may be important if
+    effects like poison are in play.
+</p>
+
+<p>
+    Determine the region in which the attack lands.  (FIXME: How?)  If
+    the attack score is lower than the armor coverage for that region
+    then the attack strikes the armor, which will absorb some portion
+    of the damage.  If not the attacker has found a gap in the armor
+    and the defender takes full damage from the weapon.
+</p>
+
+<h3>Reach</h3>
+<p>???</p>
+
+<h3>Parry</h3>
+<p>???</p>
+
+<h3>Armor</h3>
+<p>???</p>
+
+<h3>Shields</h3>
+<p>???</p>
+
+<h3>Regions</h3>
+<p>
+    Every character has hit regions.  For humans these regions are:
+</p>
+
+<table>
+    <tr><th>Region</th><th></th></tr>
+    <tr><td>Head</td></tr>
+    <tr><td>Body</td></tr>
+    <tr><td>Right Arm</td></tr>
+    <tr><td>Left Arm</td></tr>
+    <tr><td>Right Leg</td></tr>
+    <tr><td>Left Leg</td></tr>
+</table>
+
+<h3></h3>
+
+<h4>Grappling</h4>
+<p>???</p>
+
+<h4>Movement</h4>
+<p>???</p>
+<h5>Running</h5>
+<h5>Climbing</h5>
+<h5>Swimming</h5>
+
+<h4>Wounds</h4>
+<p>
+    Wounds come in three forms: critical, serious and minor.  The
+    wounded character must make a brawn roll.  A wound less than a
+    fifth of this roll (rounded up) is a minor wound.  A wound less
+    than this roll is serious and reduces stamina by one point at the
+    start of each round until treated.  A wound greater than this is
+    critical and reduces stamina by two points per round until
+    treated.  An arm or leg with a critical wound or two serious
+    wounds cannot be used until treated.  A critical wound to the body
+    renders the character helpless.  A critical wound or two serious
+    wounds to the head renders the character unconscious.
+</p>
+<p>
+    Critical wounds leave permanent scars and may instantly kill
+    non-player characters.  A critical wound to the body or head will
+    kill a character in a number of rounds equal to brawn ranks unless
+    the character is stabilized.  (FIXME: how to stabilize?)
+</p>
+
+<h2>Personality</h2>
+<p>
+    Non-player characters have a personality which is described
+    by five variables, each of which has one of five values:
+</p>
+<ul>
+    <li>Openness</li>
+    <li>Conscientiousness</li>
+    <li>Extraversion</li>
+    <li>Agreeableness</li>
+    <li>Neuroticism</li>
+</ul>
+<p>
+    Each variable has one of the following values:
+</p>
+<ol>
+    <li>imperceptible (0.1)</li>
+    <li>limited (0.25)</li>
+    <li>typical (0.3)</li>
+    <li>pronounced (0.25)</li>
+    <li>extreme (0.1)</li>
+</ol>
+
+<p>
+    There are 5 x 5 x 5 x 5 x 5 = 3,125 personality possibilities,
+    though some are more common than others.
+</p>
+
