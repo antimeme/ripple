@@ -314,23 +314,21 @@
 </p>
 
 <p>
-    Every character has a passive dodge score equal to the sum of
-    agility and dodge skill ranks.  When a defender is conscious and
-    aware of the attacker, compare the current attack score to this
-    passive dodge value.  If the attack score is smaller, the defender
-    steps aside effortlessly.  Otherwise subtract the passive dodge
-    score and continue.
+    When a defender is conscious and aware of the attacker, compare
+    the current attack score to the agility of the defender.  If the
+    attack score is smaller, the defender steps aside effortlessly.
+    Otherwise subtract the passive dodge score and continue.
 </p>
 
 <p>
     If the attack score is still more than zero and the defender is
-    conscious and able to move, the defender active dodge must be
-    resolved.  Active dodge uses stamina to reduce the attack score.
+    conscious and able to move, the defender active defense must be
+    resolved.  Active defense uses stamina to reduce the attack score.
     Each point of stamina can reduce the attack by the defender
     agility.  If the defender has enough stamina to reduce the attack
-    to zero or below then that many points are spent and the attack
-    is narrowly avoided.  If not, the defender loses only a single
-    point of stamina and the attack continues.
+    to zero or below then that many points are spent and the attack is
+    narrowly avoided.  If not, the defender loses only a single point
+    of stamina and the attack continues.
 </p>
 
 <p>
@@ -343,23 +341,82 @@
 </p>
 
 <p>
-    Determine the region in which the attack lands.  (FIXME: How?)  If
-    the attack score is lower than the armor coverage for that region
-    then the attack strikes the armor, which will absorb some portion
-    of the damage.  If not the attacker has found a gap in the armor
-    and the defender takes full damage from the weapon.
+    Determine the region in which the attack lands.  The probability
+    of the attack affecting a region is proportional to it's weight
+    relative to the sum of all region weights.  If the attack score is
+    lower than the armor coverage for that region then the attack
+    strikes the armor, which will absorb some portion of the damage.
+    If not the attacker has found a gap in the armor and the defender
+    takes full damage from the weapon.
 </p>
+
+<p>
+</p>
+
+<p>
+    Attack options:
+</p>
+<ul>
+    <li>
+        Parry: use weapon ranks in place of dodge skill, stamina cost
+        limited to damage dice on attacking weapon
+    </li>
+    <li>
+        Threatening attack: spend one rank, successful attack is not
+        resolved until defender tries to move or attack (attacker can
+        opt to convert to training attack).
+    </li>
+    <li>
+        Training attack: spend one rank, successful does no damage
+        if attacker can succeed on a second attack role against
+        difficulty and passive defense
+    </li>
+    <li>
+        Region attack: spend two ranks, any successful attack hits the
+        selected region.
+    </li>
+    <li>
+        Disarm: spend one rank plus a number of additional ranks, on
+        successful attack against defender passive defense, defender
+        must succeed on attack role against attackers passive dodge
+        minus additional ranks spent by attacker.
+    </li>
+    <li>
+        Off Hand: characters have a dominant hand, using the other
+        doubles difficulty and does not allow parry to add to first
+        point of stamina
+    </li>
+</ul>
 
 <h3>Reach</h3>
 <p>???</p>
 
+<h3>Stun</h3>
+<p>???</p>
+
 <h3>Parry</h3>
+<p>
+    On their turn a character may choose to enter parry mode.  When
+    a character is in parry mode two things change.  First, instead
+    of adding dodge skill to agility for reducing attack scores, the
+    total ranks the character has with one of the weapons in hand
+    is used instead.  Active defense can cost no more than the number
+    of damage dice done by the attacking weapon.
+</p>
+
+<p>???</p>
+<p>
+    (So why can't we parry a spear with a dagger?  Can we parry a
+    dagger with a spear?  Maybe large reach differences reduce the
+    parry effectiveness?  Maybe there's a per-weapon parry stat that
+    affects the ability?  This could be a way to make shields more
+    useful...)
+</p>
+
+<h3>Shields</h3>
 <p>???</p>
 
 <h3>Armor</h3>
-<p>???</p>
-
-<h3>Shields</h3>
 <p>???</p>
 
 <h3>Regions</h3>
@@ -368,14 +425,21 @@
 </p>
 
 <table>
-    <tr><th>Region</th><th></th></tr>
-    <tr><td>Head</td></tr>
-    <tr><td>Body</td></tr>
-    <tr><td>Right Arm</td></tr>
-    <tr><td>Left Arm</td></tr>
-    <tr><td>Right Leg</td></tr>
-    <tr><td>Left Leg</td></tr>
+    <tr><th>Region</th><th>Weight</th></tr>
+    <tr><td>Head</td><td>10</td></tr>
+    <tr><td>Body</td><td>30</td></tr>
+    <tr><td>Right Arm</td><td>15</td></tr>
+    <tr><td>Left Arm</td><td>15</td></tr>
+    <tr><td>Right Leg</td><td>15</td></tr>
+    <tr><td>Left Leg</td><td>15</td></tr>
 </table>
+
+<p>
+    Some special attacks can target a region.  Otherwise the region
+    hit is determined at random according to the relative weights.
+    Non-human characters may have different region maps (for instance
+    there may be a tail region).
+</p>
 
 <h3></h3>
 
@@ -390,7 +454,7 @@
 
 <h4>Wounds</h4>
 <p>
-    Wounds come in three forms: critical, serious and minor.  The
+    Wounds come in three forms: minor, serious and critical.  The
     wounded character must make a brawn roll.  A wound less than a
     fifth of this roll (rounded up) is a minor wound.  A wound less
     than this roll is serious and reduces stamina by one point at the
@@ -402,10 +466,19 @@
     wounds to the head renders the character unconscious.
 </p>
 <p>
+    A character with a serious leg wound suffers a movement penalty.
+    A character with a critical leg wound or two serious wounds to the
+    same leg can't stand up and has no passive defense.  A character
+    with a serious arm wound must treat that arm as an off hand.  A
+    character with two serious wounds or one critical wound to an arm
+    cannot use that arm at all.
+</p>
+<p>
     Critical wounds leave permanent scars and may instantly kill
     non-player characters.  A critical wound to the body or head will
     kill a character in a number of rounds equal to brawn ranks unless
-    the character is stabilized.  (FIXME: how to stabilize?)
+    the character is stabilized.  (FIXME: how to stabilize? how long
+    to heal?  convert critical to serious to minor?)
 </p>
 
 <h2>Personality</h2>
@@ -424,15 +497,14 @@
     Each variable has one of the following values:
 </p>
 <ol>
-    <li>imperceptible (0.1)</li>
-    <li>limited (0.25)</li>
-    <li>typical (0.3)</li>
-    <li>pronounced (0.25)</li>
-    <li>extreme (0.1)</li>
+    <li>Imperceptible (0.1)</li>
+    <li>Limited (0.25)</li>
+    <li>Typical (0.3)</li>
+    <li>Pronounced (0.25)</li>
+    <li>Extreme (0.1)</li>
 </ol>
 
 <p>
     There are 5 x 5 x 5 x 5 x 5 = 3,125 personality possibilities,
     though some are more common than others.
 </p>
-
