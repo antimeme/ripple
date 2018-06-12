@@ -72,7 +72,10 @@
                 "Streetwise": {
                     "comment": [
                         "detect being followed or pick pocketed"]},
-                "Negotiate": {}
+                "Etiquette": {},
+                "Negotiate": {},
+                "Appraise": {},
+                "Forgery": {}
             }
         },
         "Intellect": {
@@ -166,26 +169,21 @@
                 "Represents the ability of a character to overpower ",
                 "problems with muscle"],
             "Skills": {
-                "Melee": {
+                "Strike": {
+                    "comment": [
+                        "Used to strike opponents with hands or hand",
+                        "held weapons."],
                     "Skills": {
                         "Brawl": {},
-                        "Spear": {},
-                        "Poleaxe": {},
-                        "Dagger": {},
-                        "Sword": {},
-                        "Club": {}
+                        "Unarmed": {}
                     }
                 },
+                "Throw": {},
                 "Grapple": {},
-                "Armor": {
-                    "Gambison": {},
-                    "Leathers": {},
-                    "Mail": {},
-                    "Plate": {},
-                    "Flak": {},
-                    "Mech": {}
-                },
+                "Armor": {},
+                "Run": {},
                 "Swim": {},
+                "Jump": {},
                 "Climb": {}
             }
         }
