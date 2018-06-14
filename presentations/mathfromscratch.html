@@ -230,7 +230,7 @@
                     inference.  Axioms are the fundamental properties
                     of the system.  We must accept them as true
                     because they define the sytem.  Rules of inference
-                    allow us to combine axioms to prove theorums,
+                    allow us to combine axioms to prove theorems,
                     which like axioms we accept as true as long as the
                     rules of inference are followed.
                 </p>
@@ -2481,15 +2481,66 @@
     <section>
         <section>
             <h2>Fundamental Theorem of Arithmetic</h2>
+            <p>
+                Every integer except zero can be represented by a
+                unique tuple consisting of 1 or -1 followed by an
+                ordered list of primes.
+            </p>
+            <ul>
+                <li>2 = 1 &#x00d7; 2</li>
+                <li>-12 = -1 &#x00d7; 2 &#x00d7; 2 &#x00d7; 3</li>
+                <li>33 = 1 &#x00d7; 3 &#x00d7; 11</li>
+            </ul>
         </section>
         <section>
-            <h3>Irreducible Element</h3>
+            <h3>Divides</h3>
+            <p>
+                &#x2200;a,b&#x2208;R a|b &#x225d;
+                &#x2203;c&#x2208;R (a &#x229a; c = b)
+            </p>
+            <p>
+                One member of a ring divides another if there is
+                a third member that can be multiplied by the first
+                to get the second.  The multplicative identity
+                divides everything.
+            </p>
         </section>
         <section>
             <h3>Prime Element</h3>
+            <p>
+                &#x2200;a&#x2208;R (a is prime) &#x225d;<br />
+                &#x2200;b,c&#x2208;R
+                a|(b &#x229a; c) &#x27fa; (a|b &or; a|c)
+            </p>
+            <p>
+                A prime element of a ring is one that divides at least
+                one of the terms if it divides a product.
+            </p>
         </section>
         <section>
             <h3>Zero Divisors</h3>
+            <p>
+                &#x2200;a&#x2208;R (a is a zero divisor)
+                &#x225d;<br />
+                &#x2203;b&ne;0&#x2208;R a &#x229a; b = 0
+            </p>
+            <p>
+                A zero divisor is a member of a field that can
+                multiply something other than the additive identity
+                to reach the additive identity.
+            </p>
+        </section>
+        <section>
+            <h3>Irreducible Element</h3>
+            <p>
+                &#x2200;a&#x2208;R (a is irreducible) &#x225d;<br />
+                &#x2200;b,c&#x2208;R (a = b &#x229a; c) &#x27fa;
+                (b = e &or; c = e)
+            </p>
+            <p>
+                An irreducible element is a member of a ring that is
+                not the product of any non-unit.
+            </p>
         </section>
         <section>
             <h3>No Zero Divisors Implies Prime = Irreducible</h3>
