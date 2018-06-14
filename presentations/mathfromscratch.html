@@ -81,31 +81,43 @@
                     Given predicates P and Q the following are
                     also predicates:
                 </p>
-                <ul>
-                    <li>&not;P : not P</li>
-                    <li>(P &and; Q) : both P and Q</li>
-                    <li>(P &or; Q) : P or Q (at least one)</li>
-                    <li>(P &#x27f9; Q) : if P then Q</li>
-                    <li>
-                        (P &#x27fa; Q) : if and only if P then Q
-                    </li>
-                </ul>
+                <table>
+                    <tr>
+                        <td>&not;P</td>
+                        <td>not P (P is false)</td>
+                    </tr><tr>
+                        <td>(P &and; Q)</td>
+                        <td>both P and Q are true</td>
+                    </tr><tr>
+                        <td>(P &or; Q)</td>
+                        <td>at least one of P and Q are true</td>
+                    </tr><tr>
+                        <td>(P &#x27f9; Q)</td>
+                        <td>if P is true then Q is true</td>
+                    </tr><tr>
+                        <td>(P &#x27fa; Q)</td>
+                        <td>if and only if P is true then Q is true</td>
+                    </tr>
+                </table>
             </section>
             <section>
-                <h2>Bound Variable Predicates</h2>
+                <h3>Bound Variable Predicates</h3>
                 <p>
                     If P is a predicate with variable a then the
                     following are also predicates:
                 </p>
-                <ul>
-                    <li>
-                        &#x2200;a P : P is true for all values of a
-                    </li><li>
-                        &#x2203;a P : P is true for some value of a
-                    </li><li>
-                        &#x2204;a P : P is false for all values of a
-                    </li>
-                </ul>
+                <table>
+                    <tr>
+                        <td>&#x2200;a P</td>
+                        <td>P is true for all values of a</td>
+                    </tr><tr>
+                        <td>&#x2203;a P</td>
+                        <td>P is true for some value of a</td>
+                    </tr><tr>
+                        <td>&#x2204;a P</td>
+                        <td>P is false for all values of a</td>
+                    </tr>
+                </table>
                 <aside class="notes">
                 </aside>
             </section>
@@ -150,11 +162,11 @@
                 <table>
                     <tr>
                         <td>=</td><td>is equal to</td>
-                        <td>a = b</td>
+                        <td>(a = b) &#x27f9; P(a) = P(b)</td>
                     </tr>
                     <tr>
                         <td>&ne;</td><td>is not equal to</td>
-                        <td>a &ne; b</td>
+                        <td>(a &ne; b) &#x225d; &not;(a = b)</td>
                     </tr>
                 </table>
                 <p>
@@ -211,6 +223,18 @@
                     a mapping might require two (binary) or more.
                 </p>
             </section>
+            <section>
+                <h2>Formal Systems</h2>
+                <p>
+                    A formal system consist of axioms and rules of
+                    inference.  Axioms are the fundamental properties
+                    of the system.  We must accept them as true
+                    because they define the sytem.  Rules of inference
+                    allow us to combine axioms to prove theorums,
+                    which like axioms we accept as true as long as the
+                    rules of inference are followed.
+                </p>
+            </section>
         </section>
 
         <section>
@@ -226,19 +250,30 @@
                 <h2>Set Predicates</h2>
                 <table>
                     <tr>
-                        <td>&#x2208;</td><td>is a member of</td>
+                        <td>&#x2208;</td><td>member of</td>
                         <td>a &#x2208; {a, b, c}</td>
                     </tr>
                     <tr>
-                        <td>&#x2209;</td><td>is not a member of</td>
-                        <td>a &#x2209; {b, c}</td>
+                        <td>&#x2209;</td>
+                        <td>
+                            not a member of<br />
+                            (a &#x2209; b) &#x225d; &not;(a &#x2208; b)
+                        </td>
+                        <td>
+                            a &#x2209; {b, c}
+                        </td>
                     </tr>
                     <tr>
-                        <td>&#x2286;</td><td>is a subset of</td>
+                        <td>&#x2286;</td><td>subset of</td>
                         <td>{a} &#x2286; {a, b} &#x2286; {a, b}</td>
                     </tr>
                     <tr>
-                        <td>&#x2282;</td><td>is a proper subset of</td>
+                        <td>&#x2282;</td>
+                        <td>
+                            proper subset of<br />
+                            (a &#x2282; b) &#x225d;<br />
+                            ((a &#x2286; b) &and; (a &ne; b))
+                        </td>
                         <td>{a} &#x2282; {a, b}</td>
                     </tr>
                 </table>
@@ -295,10 +330,12 @@
                 <p>
                     &#x2200;a,b,c (c &#x2208; a
                     &#x27fa; c &#x2208; b) &#x27f9; a = b
-                </p>
-                <p>
-                    Two sets that contain the same elements are the same
-                    set.
+                </p><p>
+                    (a = b) &#x225d; ((a &#x2286; b) &and;
+                    (b &#x2286; a))
+                </p><p>
+                    Two sets that contain the same elements are the
+                    same set.
                 </p>
             </section>
             <section>
@@ -372,10 +409,10 @@
                 </p>
             </section>
             <section>
-                <h2>Specification</h2>
+                <h2>Specification (Schema)</h2>
                 <p>
                     &#x2200;a,p&#x2203;b &#x2200;c
-                    c&#x2208;b &#x27fa; (c&#x2208;a &and; p(c))
+                    c&#x2208;b &#x27fa; (c&#x2208;a &and; P(c))
                 </p>
                 <p>
                     Given a set and a predicate there is another set
@@ -386,7 +423,7 @@
                 </p>
             </section>
             <section>
-                <h2>Replacement</h2>
+                <h2>Replacement (Schema)</h2>
                 <p>
                     &#x2200;a,f&#x2203;b &#x2200;c
                     c&#x2208;b &#x27fa; &#x2203;d&#x2208;a f(c) = d
@@ -458,15 +495,15 @@
                         </small></td>
                     </tr>
                     <tr>
-                        <td>Specification</td>
+                        <td>Specification (S)</td>
                         <td><small>
                             &#x2200;a,p&#x2203;b &#x2200;c
                             c&#x2208;b &#x27fa;
-                            (c&#x2208;a &and; p(c))
+                            (c&#x2208;a &and; P(c))
                         </small></td>
                     </tr>
                     <tr>
-                        <td>Replacement</td>
+                        <td>Replacement (S)</td>
                         <td><small>
                             &#x2200;a,f&#x2203;b &#x2200;c
                             c&#x2208;b &#x27fa;
@@ -502,17 +539,20 @@
             <section>
                 <h3>Natural Numbers &#x2115;:</h3>
                 <ul>
-                    <li>0&#x2115; &#x225d; {} </li>
-                    <li>1&#x2115; &#x225d; succ(0) = {0} = {{}}</li>
-                    <li>
+                    <li>0&#x2115; &#x225d; {}
+                    </li><li>
+                        1&#x2115; &#x225d; succ(0) = {0} = {{}}
+                    </li><li>
                         2&#x2115; &#x225d; succ(1) = {0, 1} = {{}, {{}}}
-                    </li>
-                    <li>
+                    </li><li>
                         3&#x2115; &#x225d; succ(2) = {0, 1, 2} =
                         {{}, {{}}, {{}, {{}}}}
-                    </li>
-                    <li>
-                        4&#x2115; &#x225d; succ(3) = {0, 1, 2, 3} = ...
+                    </li><li>
+                        4&#x2115; &#x225d; succ(3) = {0, 1, 2, 3} =
+                        <br />
+                        {{}, {{}}, {{}, {{}}}, {{{}, {{}}, {{}, {{}}}}}}
+                    </li><li>
+                        ...
                     </li>
                 </ul>
 
@@ -899,9 +939,13 @@
                 <p>Consider the special case where c = 0:</p>
                 <ul>
                     <li>(a + b) &#x00d7; 0 = 0 :: Base &#x00d7;</li>
-                    <li>(a + b) &#x00d7; 0 = 0 + 0 :: Addition &#x2115;</li>
-                    <li>(a + b) &#x00d7; 0 = (a &#x00d7; 0) + (b &#x00d7; 0)
-                        :: Base &#x00d7;</li>
+                    <li>
+                        (a + b) &#x00d7; 0 = 0 + 0 :: Addition &#x2115;
+                    </li>
+                    <li>
+                        (a + b) &#x00d7; 0 = (a &#x00d7; 0) +
+                        (b &#x00d7; 0) :: Base &#x00d7;
+                    </li>
                 </ul>
             </section>
 
@@ -938,9 +982,7 @@
                     &#x2200;a,b,c&#x2208;&#x2115;
                     c &#x00d7; (a + b) = (c &#x00d7; a) + (c &#x00d7; b)
                 </p>
-                <p>
-                    Consider the special case where b = 0:
-                </p>
+                <p>Consider the special case where b = 0:</p>
                 <ul>
                     <li>
                         c &#x00d7; (a + 0) = c &#x00d7; a
@@ -1204,15 +1246,17 @@
                 <ul>
                     <li>Injection: &#x2200;a,b&#x2208;D
                         f(a) = f(b) &#x27f9; a = b<br />
-                        No two members of D are mapped to the same member
-                        of R
+                        No two members of D are mapped to the same
+                        member of R
                     </li>
                     <li>Surjection: &#x2200;a&#x2208;R
                         &#x2203;b&#x2208;D f(b) = a<br />
                         Every member of R is mapped from at least one
                         member of D
                     </li>
-                    <li>Bijection: both an injection and a surjection</li>
+                    <li>
+                        Bijection: both an injection and a surjection
+                    </li>
                 </ul>
 
             </section>
@@ -1264,40 +1308,40 @@
                     a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
                     b<sub>2</sub>&#x27e9;&#x2208;&#x2124;
                     <br />
-                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; =&#x2124;
-                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) &#x225d;
-                    a<sub>1</sub> + b<sub>2</sub> =
-                    a<sub>2</sub> + b<sub>1</sub>
-                    <ul>
-                        <li>
-                            Reflexive: &#x2200;&#x27e8;a<sub>1</sub>,
-                            a<sub>2</sub>&#x27e9;&#x2208;&#x2124;
-                            a<sub>1</sub> + a<sub>2</sub> =
-                            a<sub>1</sub> + a<sub>2</sub>
-                        </li><li>
-                            Symmetric: &#x2200;&#x27e8;a<sub>1</sub>,
-                            a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
-                            b<sub>2</sub>&#x27e9;&#x2208;&#x2124;
-                            <br />a<sub>1</sub> + b<sub>2</sub> =
-                            b<sub>1</sub> + a<sub>2</sub> &#x27fa;
-                            b<sub>1</sub> + a<sub>2</sub> =
-                            a<sub>1</sub> + b<sub>2</sub>
-                        </li><li>
-                            Transitive: &#x2200;&#x27e8;a<sub>1</sub>,
-                            a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
-                            b<sub>2</sub>&#x27e9;,&#x27e8;c<sub>1</sub>,
-                            c<sub>2</sub>&#x27e9;&#x2208;&#x2124;
-                            <br />
-                            (a<sub>1</sub> + c<sub>2</sub> =
-                            c<sub>1</sub> + a<sub>2</sub>) &and;
-                            (b<sub>1</sub> + c<sub>2</sub> =
-                            c<sub>1</sub> + b<sub>2</sub>)
-                            &#x27fa;<br />
-                            (a<sub>1</sub> + b<sub>2</sub> =
-                            a<sub>2</sub> + b<sub>1</sub>)
-                        </li>
-                    </ul>
+                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
+                    =&#x2124; &#x27e8;b<sub>1</sub>,
+                    b<sub>2</sub>&#x27e9;) &#x225d; a<sub>1</sub> +
+                    b<sub>2</sub> = a<sub>2</sub> + b<sub>1</sub>
                 </p>
+                <ul>
+                    <li>
+                        Reflexive: &#x2200;&#x27e8;a<sub>1</sub>,
+                        a<sub>2</sub>&#x27e9;&#x2208;&#x2124;
+                        a<sub>1</sub> + a<sub>2</sub> =
+                        a<sub>1</sub> + a<sub>2</sub>
+                    </li><li>
+                        Symmetric: &#x2200;&#x27e8;a<sub>1</sub>,
+                        a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
+                        b<sub>2</sub>&#x27e9;&#x2208;&#x2124;
+                        <br />a<sub>1</sub> + b<sub>2</sub> =
+                        b<sub>1</sub> + a<sub>2</sub> &#x27fa;
+                        b<sub>1</sub> + a<sub>2</sub> =
+                        a<sub>1</sub> + b<sub>2</sub>
+                    </li><li>
+                        Transitive: &#x2200;&#x27e8;a<sub>1</sub>,
+                        a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
+                        b<sub>2</sub>&#x27e9;,&#x27e8;c<sub>1</sub>,
+                        c<sub>2</sub>&#x27e9;&#x2208;&#x2124;
+                        <br />
+                        (a<sub>1</sub> + c<sub>2</sub> =
+                        c<sub>1</sub> + a<sub>2</sub>) &and;
+                            (b<sub>1</sub> + c<sub>2</sub> =
+                        c<sub>1</sub> + b<sub>2</sub>)
+                        &#x27fa;<br />
+                        (a<sub>1</sub> + b<sub>2</sub> =
+                        a<sub>2</sub> + b<sub>1</sub>)
+                    </li>
+                </ul>
             </section>
 
             <section>
@@ -1316,21 +1360,21 @@
                     the underlying natural numbers.
                 </p>
             </section>
-
             <section>
                 <h3>Integers &#x2124;: Examples</h3>
                 <ul>
                     <li>3&#x2124; = &#x27e8;3, 0&#x27e9; =
-                        {{3}, {3, 0}} = {{{{}, {{}}, {{}, {{}}}}}, {{{}, {{}},
-                        {{}, {{}}}}, {}}}
+                        {{3}, {3, 0}} = {{{{}, {{}}, {{}, {{}}}}},
+                        {{{}, {{}}, {{}, {{}}}}, {}}}
                     </li>
                     <li>3&#x2124; = &#x27e8;5, 2&#x27e9; =
                         {{5}, {5, 2}} =
-                        {{{{}, {{}}, {{{}, {{}}}}, {{{}, {{}}, {{{}, {{}}}}}},
-                        {{{}, {{}}, {{{}, {{}}}},
+                        {{{{}, {{}}, {{{}, {{}}}}, {{{}, {{}},
+                        {{{}, {{}}}}}}, {{{}, {{}}, {{{}, {{}}}},
                         {{{}, {{}}, {{{}, {{}}}}}}}}}},
-                        {{{}, {{}}, {{{}, {{}}}}, {{{}, {{}}, {{{}, {{}}}}}},
-                        {{{}, {{}}, {{{}, {{}}}}, {{{}, {{}}, {{{}, {{}}}}}}}}},
+                        {{{}, {{}}, {{{}, {{}}}}, {{{}, {{}},
+                        {{{}, {{}}}}}}, {{{}, {{}}, {{{}, {{}}}},
+                        {{{}, {{}}, {{{}, {{}}}}}}}}},
                         {{{}, {{}}}}}} <em>(Notice: 5 + 0 = 3 + 2)</em>
                     </li>
                     <li>-4&#x2124; = &#x27e8;0, 4&#x27e9; =
@@ -1338,6 +1382,27 @@
                         {{}, {{}}}, {{}, {{}}, {{}, {{}}}}}}}
                     </li>
                 </ul>
+            </section>
+            <section>
+                <h3>Integers &#x2124;: Cardinality</h3>
+                <p>
+                    How many integers are there?  A bijectdion
+                    exists between integers and natural numbers.
+                </p>
+                <ul>
+                    <li>0&#x2115; : 0&#x2124;</li>
+                    <li>1&#x2115; : 1&#x2124;</li>
+                    <li>2&#x2115; : -1&#x2124;</li>
+                    <li>3&#x2115; : 2&#x2124;</li>
+                    <li>4&#x2115; : -2&#x2124;</li>
+                    <li>...</li>
+                </ul>
+                <aside class="notes">
+                    Every natural number appears on this list exactly
+                    once.  Every integer appears on this list exactly
+                    once.  This means there are the same number of
+                    each.  This is a surprising property of infinity.
+                </aside>
             </section>
         </section>
 
@@ -1348,7 +1413,7 @@
                     Let's define <q>addition</q> which maps two
                     integers to another integer.  As with natural
                     numbers we will represent this with a + sign
-                    between two integers: a + b
+                    between two integers:<br /> a + b
                 </p>
                 <p>
                     &#x2200;&#x27e8;a<sub>1</sub>,
@@ -1958,242 +2023,246 @@
             </section>
         </section>
 
-    <section>
         <section>
-            <h2>Rational Numbers &#x211a;</h2>
-            <p>
-                &#x211a; &#x225d; {
-                &#x2200;a&#x2208;&#x2124;,b&ne;0&#x2208;&#x2124; :
-                &#x27e8;a, b&#x27e9; }
-            </p>
-            <p>
-                &#x2200;a&#x2208;&#x2124;,b&ne;0&#x2208;&#x2124;
-                [a / b] &#x225d;
-                { &#x27e8;c<sub>1</sub>,
-                c<sub>2</sub>&#x27e9;&#x2208;&#x211a; :
-                c<sub>1</sub> &#x00d7; b = c<sub>2</sub> &#x00d7; a }
-            </p>
-            <p>
-                Rational numbers extend the integers.  They introduce
-                inverses for multiplication and can represent
-                fractional quantities.
-            </p>
-        </section>
-        <section>
-            <h3>Rational Numbers &#x211a;: Equality</h3>
-            <p>
-                &#x2200;&#x27e8;a<sub>1</sub>,
-                a<sub>2</sub>&#x27e9;&#x2208;&#x211a;,
-                &#x27e8;b<sub>1</sub>,
-                b<sub>2</sub>&#x27e9;&#x2208;&#x211a;<br />
-                (&#x27e8;a<sub>1</sub>,a<sub>2</sub>&#x27e9; =&#x211a;
-                &#x27e8;b<sub>1</sub>,b<sub>2</sub>&#x27e9;)
-                &#x225d;
-                (a<sub>1</sub> &#x00d7; b<sub>2</sub> =
-                b<sub>1</sub> &#x00d7; a<sub>2</sub>)
-            </p>
-            <ul>
-                <li>
-                    Reflexive: &#x2200;&#x27e8;a<sub>1</sub>,
-                    a<sub>2</sub>&#x27e9;&#x2208;&#x211a;
-                    a<sub>1</sub> &#x00d7; a<sub>2</sub> =
-                    a<sub>1</sub> &#x00d7; a<sub>2</sub>
-                </li><li>
-                    Symmetric: &#x2200;&#x27e8;a<sub>1</sub>,
-                    a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
+            <section>
+                <h2>Rational Numbers &#x211a;</h2>
+                <p>
+                    &#x211a; &#x225d; {
+                    &#x2200;a&#x2208;&#x2124;,b&ne;0&#x2208;&#x2124; :
+                    &#x27e8;a, b&#x27e9; }
+                </p>
+                <p>
+                    &#x2200;a&#x2208;&#x2124;,b&ne;0&#x2208;&#x2124;
+                    [a / b] &#x225d;
+                    { &#x27e8;c<sub>1</sub>,
+                    c<sub>2</sub>&#x27e9;&#x2208;&#x211a; :
+                    c<sub>1</sub> &#x00d7; b =
+                    c<sub>2</sub> &#x00d7; a }
+                </p>
+                <p>
+                    Rational numbers extend the integers.  They
+                    introduce inverses for multiplication and can
+                    represent fractional quantities.
+                </p>
+            </section>
+            <section>
+                <h3>Rational Numbers &#x211a;: Equality</h3>
+                <p>
+                    &#x2200;&#x27e8;a<sub>1</sub>,
+                    a<sub>2</sub>&#x27e9;&#x2208;&#x211a;,
+                    &#x27e8;b<sub>1</sub>,
                     b<sub>2</sub>&#x27e9;&#x2208;&#x211a;<br />
-                    a<sub>1</sub> &#x00d7; b<sub>2</sub> =
-                    b<sub>1</sub> &#x00d7; a<sub>2</sub> &#x27fa;
-                    b<sub>1</sub> &#x00d7; a<sub>2</sub> =
-                    a<sub>1</sub> &#x00d7; b<sub>2</sub>
-                </li><li>
-                    Transitive: &#x2200;&#x27e8;a<sub>1</sub>,
-                    a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
-                    b<sub>2</sub>&#x27e9;,&#x27e8;c<sub>1</sub>,
-                    c<sub>2</sub>&#x27e9;&#x2208;&#x211a;
-                    <br />
-                    (a<sub>1</sub> &#x00d7; c<sub>2</sub> =
-                    c<sub>1</sub> &#x00d7; a<sub>2</sub>) &and;
-                    (b<sub>1</sub> &#x00d7; c<sub>2</sub> =
-                    c<sub>1</sub> &#x00d7; b<sub>2</sub>)
-                    &#x27fa;<br />
-                    (a<sub>1</sub> &#x00d7; b<sub>2</sub> =
-                    a<sub>2</sub> &#x00d7; b<sub>1</sub>)
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h3>Rational Numbers &#x211a;: Order</h3>
-            <p>
-                &#x2200;&#x27e8;a<sub>1</sub>,
-                a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
-                b<sub>2</sub>&#x27e9;&#x2208;&#x2124;<br />
-                (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; &lt;
-                &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) &#x225d;
-                a<sub>1</sub> &#x00d7; b<sub>2</sub> &lt;
-                a<sub>2</sub> &#x00d7; b<sub>1</sub>
-            </p>
-            <p>
-                Order for rational numbers is defined in terms of the
-                order of the underlying integers. (FIXME: tihs doesn't
-                work when a<sub>2</sub> or b<sub>2</sub> is less than
-                zero!)
-            </p>
-        </section>
-        <section>
-            <h3>Rational Numbers &#x211a; Example</h3>
-            <p>
-                -4/3&#x211a; = &#x27e8;-4&#x2124;, 3&#x2124;&#x27e9; =
-                &#x27e8;&#x27e8;0, 4&#x27e9;,
-                &#x27e8;3, 0&#x27e9;&#x27e9; =<br/>
-                {{&#x27e8;0, 4&#x27e9;},
-                {&#x27e8;0, 4&#x27e9;, &#x27e8;3, 0&#x27e9;}} =
-                <br />
-                {{{{0}, {0, 4}}}, {{{0}, {0, 4}}, {{3}, {3, 0}}}} =
-                <br />
-                {{{{{}}, {{}, {{}, {{}}, {{}, {{}}}, {{}, {{}},
-                {{}, {{}}}}}}}}, {{{{}}, {{}, {{}, {{}}, {{},
-                {{}}}, {{}, {{}}, {{}, {{}}}}}}}, {{{{}, {{}},
-                {{}, {{}}}}}, {{{}, {{}}, {{}, {{}}}}, {}}}}}
-            </p>
-        </section>
-        <section>
-            <h3>Rational Numbers &#x211a; Example</h3>
-            <p>
-                2&#x211a; = 2/1&#x211a; =
-                &#x27e8;2&#x2124;, 1&#x2124;&#x27e9; =
-                &#x27e8;&#x27e8;2, 0&#x27e9;,
-                &#x27e8;1, 0&#x27e9;&#x27e9; =<br />
-                {{&#x27e8;2, 0&#x27e9;}, {&#x27e8;2, 0&#x27e9;,
-                &#x27e8;1, 0&#x27e9;}} =<br />
-                {{{{2}, {2, 0}}}, {{{2}, {2, 0}}, {{1}, {1, 0}}}} =
-                <br />
-                {{{{{{}, {{}}}}, {{{}, {{}}}, {}}}}, {{{{{}, {{}}}},
-                {{{}, {{}}}, {}}}, {{{{}}}, {{{}}, {}}}}}
-            </p>
-        </section>
-        <section>
-            <h3>Rational Numbers &#x211a; Example</h3>
-            <p><small>
-                (&#x27e8;4&#x2124;, 2&#x2124;&#x27e9; =&#x211a;
-                &#x27e8;2&#x2124;, 1&#x2124;&#x27e9;) &#x27f9;
-                (4&#x2124; &#x00d7; 1&#x2124; =&#x2124;
-                2&#x2124; &#x00d7; 2&#x2124;) &#x27f9;
-                (4&#x2124; =&#x2124; 4&#x2124;)
-            </small></p>
-            <p>
-                2&#x211a; = 4/2&#x211a; =
-                &#x27e8;4&#x2124;, 2&#x2124;&#x27e9; =
-                &#x27e8;&#x27e8;4, 0&#x27e9;,
-                &#x27e8;2, 0&#x27e9;&#x27e9; =<br />
-                {{&#x27e8;4, 0&#x27e9;}, {&#x27e8;4, 0&#x27e9;,
-                &#x27e8;2, 0&#x27e9;}} =<br />
-                {{{{4}, {4, 0}}}, {{{4}, {4, 0}}, {{2}, {2, 0}}}} =
-                <br />
-                {{{{{{}, {{}}, {{{}, {{}}}}, {{{}, {{}},
-                {{{}, {{}}}}}}}}, {{{}, {{}}, {{{}, {{}}}},
-                {{{}, {{}}, {{{}, {{}}}}}}}, {}}}}, {{{{{}, {{}},
-                {{{}, {{}}}}, {{{}, {{}}, {{{}, {{}}}}}}}},
-                {{{}, {{}}, {{{}, {{}}}}, {{{}, {{}}, {{{}, {{}}}}}}},
-                {}}}, {{{{}, {{}}}}, {{{}, {{}}}, {}}}}}
-            </p>
-        </section>
-    </section>
-    <section>
-        <section>
-            <h3>Addition &#x211a;</h3>
-            <p>
-                Let's define <q>addition</q> which maps two rational
-                numbers to another.  This will preserve all properties
-                of integer addition, including inverses.  As with
-                integers we will represent this with a + sign between
-                two rational numbers: a + b
-            </p>
-            <p>&#x2200;a,b&#x2208;&#x211a; a + b  &#x225d;
-                &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
-                &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; =<br />
-                &#x27e8;(a<sub>1</sub> &#x00d7; b<sub>2</sub>) +
-                (b<sub>1</sub> &#x00d7; a<sub>2</sub>),
-                a<sub>2</sub> &#x00d7; b<sub>2</sub>&#x27e9;
-            </p>
-        </section>
-        <section>
-            <ul>
-                <li>
-                    Definition: &#x2200;a,b&#x2208;&#x211a; a + b
+                    (&#x27e8;a<sub>1</sub>,a<sub>2</sub>&#x27e9;
+                    =&#x211a;
+                    &#x27e8;b<sub>1</sub>,b<sub>2</sub>&#x27e9;)
                     &#x225d;
-                    (a<sub>1</sub>, a<sub>2</sub>) +
-                    (b<sub>1</sub>, b<sub>2</sub>) = <br />
-                    ((a<sub>1</sub> &#x00d7; b<sub>2</sub> +
-                    b<sub>1</sub> &#x00d7; a<sub>2</sub>),
-                    (a<sub>2</sub> &#x00d7; b<sub>2</sub>))
-                </li>
-                <li>Closed: &#x2200;a,b&#x2208;&#x211a; :
-                    a + b &#x2208;&#x211a;</li>
-                <li>Associative: &#x2200;a,b,c&#x2208;&#x211a; :
-                    (a + b) + c = a + (b + c)</li>
-                <li>Commutative: &#x2200;a,b&#x2208;&#x211a; :
-                    a + b = b + a</li>
-                <li>Identity: &#x2200;a&#x2208;&#x211a; a + 0 = a</li>
-                <li>Inverses:
-                    &#x2200;a&#x2208;&#x211a; :
-                    -a &#x225d; (-a<sub>1</sub>, a<sub>2</sub>) :
-                    a = (a<sub>1</sub>, a<sub>2</sub>) &and;
-                    a + (-a) = 0
-                </li>
-            </ul>
+                    (a<sub>1</sub> &#x00d7; b<sub>2</sub> =
+                    b<sub>1</sub> &#x00d7; a<sub>2</sub>)
+                </p>
+                <ul>
+                    <li>
+                        Reflexive: &#x2200;&#x27e8;a<sub>1</sub>,
+                        a<sub>2</sub>&#x27e9;&#x2208;&#x211a;
+                        a<sub>1</sub> &#x00d7; a<sub>2</sub> =
+                        a<sub>1</sub> &#x00d7; a<sub>2</sub>
+                    </li><li>
+                        Symmetric: &#x2200;&#x27e8;a<sub>1</sub>,
+                        a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
+                        b<sub>2</sub>&#x27e9;&#x2208;&#x211a;<br />
+                        a<sub>1</sub> &#x00d7; b<sub>2</sub> =
+                        b<sub>1</sub> &#x00d7; a<sub>2</sub> &#x27fa;
+                        b<sub>1</sub> &#x00d7; a<sub>2</sub> =
+                        a<sub>1</sub> &#x00d7; b<sub>2</sub>
+                    </li><li>
+                        Transitive: &#x2200;&#x27e8;a<sub>1</sub>,
+                        a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
+                        b<sub>2</sub>&#x27e9;,&#x27e8;c<sub>1</sub>,
+                        c<sub>2</sub>&#x27e9;&#x2208;&#x211a;
+                        <br />
+                        (a<sub>1</sub> &#x00d7; c<sub>2</sub> =
+                        c<sub>1</sub> &#x00d7; a<sub>2</sub>) &and;
+                        (b<sub>1</sub> &#x00d7; c<sub>2</sub> =
+                        c<sub>1</sub> &#x00d7; b<sub>2</sub>)
+                        &#x27fa;<br />
+                        (a<sub>1</sub> &#x00d7; b<sub>2</sub> =
+                        a<sub>2</sub> &#x00d7; b<sub>1</sub>)
+                    </li>
+                </ul>
+            </section>
+            <section>
+                <h3>Rational Numbers &#x211a;: Order</h3>
+                <p>
+                    &#x2200;&#x27e8;a<sub>1</sub>,
+                    a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
+                    b<sub>2</sub>&#x27e9;&#x2208;&#x2124;<br />
+                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; &lt;
+                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) &#x225d;
+                    a<sub>1</sub> &#x00d7; b<sub>2</sub> &lt;
+                    a<sub>2</sub> &#x00d7; b<sub>1</sub>
+                </p>
+                <p>
+                    Order for rational numbers is defined in terms of
+                    the order of the underlying integers. (FIXME: tihs
+                    doesn't work when a<sub>2</sub> or b<sub>2</sub> is
+                    less than zero!)
+                </p>
+            </section>
+            <section>
+                <h3>Rational Numbers &#x211a; Example</h3>
+                <p>
+                    -4/3&#x211a; = &#x27e8;-4&#x2124;, 3&#x2124;&#x27e9; =
+                    &#x27e8;&#x27e8;0, 4&#x27e9;,
+                    &#x27e8;3, 0&#x27e9;&#x27e9; =<br/>
+                    {{&#x27e8;0, 4&#x27e9;},
+                    {&#x27e8;0, 4&#x27e9;, &#x27e8;3, 0&#x27e9;}} =
+                    <br />
+                    {{{{0}, {0, 4}}}, {{{0}, {0, 4}}, {{3}, {3, 0}}}} =
+                    <br />
+                    {{{{{}}, {{}, {{}, {{}}, {{}, {{}}}, {{}, {{}},
+                    {{}, {{}}}}}}}}, {{{{}}, {{}, {{}, {{}}, {{},
+                    {{}}}, {{}, {{}}, {{}, {{}}}}}}}, {{{{}, {{}},
+                    {{}, {{}}}}}, {{{}, {{}}, {{}, {{}}}}, {}}}}}
+                </p>
+            </section>
+            <section>
+                <h3>Rational Numbers &#x211a; Example</h3>
+                <p>
+                    2&#x211a; = 2/1&#x211a; =
+                    &#x27e8;2&#x2124;, 1&#x2124;&#x27e9; =
+                    &#x27e8;&#x27e8;2, 0&#x27e9;,
+                    &#x27e8;1, 0&#x27e9;&#x27e9; =<br />
+                    {{&#x27e8;2, 0&#x27e9;}, {&#x27e8;2, 0&#x27e9;,
+                    &#x27e8;1, 0&#x27e9;}} =<br />
+                    {{{{2}, {2, 0}}}, {{{2}, {2, 0}}, {{1}, {1, 0}}}} =
+                    <br />
+                    {{{{{{}, {{}}}}, {{{}, {{}}}, {}}}}, {{{{{}, {{}}}},
+                    {{{}, {{}}}, {}}}, {{{{}}}, {{{}}, {}}}}}
+                </p>
+            </section>
+            <section>
+                <h3>Rational Numbers &#x211a; Example</h3>
+                <p><small>
+                    (&#x27e8;4&#x2124;, 2&#x2124;&#x27e9; =&#x211a;
+                    &#x27e8;2&#x2124;, 1&#x2124;&#x27e9;) &#x27f9;
+                    (4&#x2124; &#x00d7; 1&#x2124; =&#x2124;
+                    2&#x2124; &#x00d7; 2&#x2124;) &#x27f9;
+                    (4&#x2124; =&#x2124; 4&#x2124;)
+                </small></p>
+                <p>
+                    2&#x211a; = 4/2&#x211a; =
+                    &#x27e8;4&#x2124;, 2&#x2124;&#x27e9; =
+                    &#x27e8;&#x27e8;4, 0&#x27e9;,
+                    &#x27e8;2, 0&#x27e9;&#x27e9; =<br />
+                    {{&#x27e8;4, 0&#x27e9;}, {&#x27e8;4, 0&#x27e9;,
+                    &#x27e8;2, 0&#x27e9;}} =<br />
+                    {{{{4}, {4, 0}}}, {{{4}, {4, 0}}, {{2}, {2, 0}}}} =
+                    <br />
+                    {{{{{{}, {{}}, {{{}, {{}}}}, {{{}, {{}},
+                    {{{}, {{}}}}}}}}, {{{}, {{}}, {{{}, {{}}}},
+                    {{{}, {{}}, {{{}, {{}}}}}}}, {}}}}, {{{{{}, {{}},
+                    {{{}, {{}}}}, {{{}, {{}}, {{{}, {{}}}}}}}},
+                    {{{}, {{}}, {{{}, {{}}}}, {{{}, {{}}, {{{}, {{}}}}}}},
+                    {}}}, {{{{}, {{}}}}, {{{}, {{}}}, {}}}}}
+                </p>
+            </section>
         </section>
-    </section>
-    <section>
         <section>
-            <h3>Multiplication &#x211a;</h3>
-            <p>
-                Let's define <q>multiplication</q> which maps two
-                rational numbers to another.  This will presearve all
-                properties of integer multiplication and will add
-                inverses for everything except zero. As with integers
-                we will represent this with a &#x00d7; sign between
-                two rational numbers: a &#x00d7; b
-            </p>
-            <li>&#x2200;a,b&#x2208;&#x211a;
-                a &#x00d7; b &#x225d;
-                &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; &#x00d7;
-                &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; =
-                &#x27e8;a<sub>1</sub> &#x00d7; b<sub>1</sub>,
-                a<sub>2</sub> &#x00d7; b<sub>2</sub>&#x27e9;
-            </li>
+            <section>
+                <h3>Addition &#x211a;</h3>
+                <p>
+                    Let's define <q>addition</q> which maps two rational
+                    numbers to another.  This will preserve all properties
+                    of integer addition, including inverses.  As with
+                    integers we will represent this with a + sign between
+                    two rational numbers: a + b
+                </p>
+                <p>&#x2200;a,b&#x2208;&#x211a; a + b  &#x225d;
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; =<br />
+                    &#x27e8;(a<sub>1</sub> &#x00d7; b<sub>2</sub>) +
+                    (b<sub>1</sub> &#x00d7; a<sub>2</sub>),
+                    a<sub>2</sub> &#x00d7; b<sub>2</sub>&#x27e9;
+                </p>
+            </section>
+            <section>
+                <ul>
+                    <li>
+                        Definition: &#x2200;a,b&#x2208;&#x211a; a + b
+                        &#x225d;
+                        (a<sub>1</sub>, a<sub>2</sub>) +
+                        (b<sub>1</sub>, b<sub>2</sub>) = <br />
+                        ((a<sub>1</sub> &#x00d7; b<sub>2</sub> +
+                        b<sub>1</sub> &#x00d7; a<sub>2</sub>),
+                        (a<sub>2</sub> &#x00d7; b<sub>2</sub>))
+                    </li>
+                    <li>Closed: &#x2200;a,b&#x2208;&#x211a; :
+                        a + b &#x2208;&#x211a;</li>
+                    <li>Associative: &#x2200;a,b,c&#x2208;&#x211a; :
+                        (a + b) + c = a + (b + c)</li>
+                    <li>Commutative: &#x2200;a,b&#x2208;&#x211a; :
+                        a + b = b + a</li>
+                    <li>Identity: &#x2200;a&#x2208;&#x211a; a + 0 = a</li>
+                    <li>Inverses:
+                        &#x2200;a&#x2208;&#x211a; :
+                        -a &#x225d; (-a<sub>1</sub>, a<sub>2</sub>) :
+                        a = (a<sub>1</sub>, a<sub>2</sub>) &and;
+                        a + (-a) = 0
+                    </li>
+                </ul>
+            </section>
         </section>
         <section>
-            <ul>
-                <li>Definition: &#x2200;a,b&#x2208;&#x211a;
-                    a &#x00d7; b  &#x225d;
-                    (a<sub>1</sub>, a<sub>2</sub>) &#x00d7;
-                    (b<sub>1</sub>, b<sub>2</sub>) =
-                    (a<sub>1</sub> &#x00d7; b<sub>1</sub>,
-                    a<sub>2</sub> &#x00d7; b<sub>2</sub>)
-                </li>
-                <li>Closed: &#x2200;a,b&#x2208;&#x211a; :
-                    a &#x00d7; b &#x2208;&#x211a;</li>
-                <li>Associative: &#x2200;a,b,c&#x2208;&#x211a; :
-                    (a &#x00d7; b) &#x00d7; c = a &#x00d7; (b &#x00d7; c)
-                </li>
-                <li>Commutative: &#x2200;a,b&#x2208;&#x211a; :
-                    a &#x00d7; b = b &#x00d7; a</li>
-                <li>Distributive:  &#x2200;a,b,c&#x2208;&#x211a; :<br />
-                    (a &#x00d7; (b + c) =
-                    (a &#x00d7; b) + (a &#x00d7; c)) &and;<br />
-                    ((b + c) &#x00d7; a =
-                    (b &#x00d7; a) + (c &#x00d7; a))</li>
-                <li>Identity: &#x2200;a&#x2208;&#x211a;
-                    a &#x00d7; 1 = a</li>
-                <li>Inverses: &#x2200;a&#x2209;[0 / 1]&#x2208;&#x211a; :
-                    a<sup>-1</sup> &#x225d; (a<sub>2</sub>, a<sub>1</sub>) :
-                    a = (a<sub>1</sub>, a<sub>2</sub>) &and;
-                    a &#x00d7; a<sup>-1</sup> = 1
-                </li>
-            </ul>
+            <section>
+                <h3>Multiplication &#x211a;</h3>
+                <p>
+                    Let's define <q>multiplication</q> which maps two
+                    rational numbers to another.  This will presearve
+                    all properties of integer multiplication and will
+                    add inverses for everything except zero. As with
+                    integers we will represent this with a &#x00d7;
+                    sign between two rational numbers: a &#x00d7; b
+                </p>
+                <p>
+                    &#x2200;a,b&#x2208;&#x211a;
+                    a &#x00d7; b &#x225d;
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
+                    &#x00d7; &#x27e8;b<sub>1</sub>,
+                    b<sub>2</sub>&#x27e9; = &#x27e8;a<sub>1</sub>
+                    &#x00d7; b<sub>1</sub>, a<sub>2</sub> &#x00d7;
+                    b<sub>2</sub>&#x27e9;
+                </p>
+            </section>
+            <section>
+                <ul>
+                    <li>Definition: &#x2200;a,b&#x2208;&#x211a;
+                        a &#x00d7; b  &#x225d;
+                        (a<sub>1</sub>, a<sub>2</sub>) &#x00d7;
+                        (b<sub>1</sub>, b<sub>2</sub>) =
+                        (a<sub>1</sub> &#x00d7; b<sub>1</sub>,
+                        a<sub>2</sub> &#x00d7; b<sub>2</sub>)
+                    </li>
+                    <li>Closed: &#x2200;a,b&#x2208;&#x211a; :
+                        a &#x00d7; b &#x2208;&#x211a;</li>
+                    <li>Associative: &#x2200;a,b,c&#x2208;&#x211a; :
+                        (a &#x00d7; b) &#x00d7; c = a &#x00d7; (b &#x00d7; c)
+                    </li>
+                    <li>Commutative: &#x2200;a,b&#x2208;&#x211a; :
+                        a &#x00d7; b = b &#x00d7; a</li>
+                    <li>Distributive:  &#x2200;a,b,c&#x2208;&#x211a; :<br />
+                        (a &#x00d7; (b + c) =
+                        (a &#x00d7; b) + (a &#x00d7; c)) &and;<br />
+                        ((b + c) &#x00d7; a =
+                        (b &#x00d7; a) + (c &#x00d7; a))</li>
+                    <li>Identity: &#x2200;a&#x2208;&#x211a;
+                        a &#x00d7; 1 = a</li>
+                    <li>Inverses: &#x2200;a&#x2209;[0 / 1]&#x2208;&#x211a; :
+                        a<sup>-1</sup> &#x225d; (a<sub>2</sub>, a<sub>1</sub>) :
+                        a = (a<sub>1</sub>, a<sub>2</sub>) &and;
+                        a &#x00d7; a<sup>-1</sup> = 1
+                    </li>
+                </ul>
+            </section>
         </section>
-    </section>
 
     <section>
         <section>
@@ -2655,12 +2724,14 @@
  var link = document.createElement('link');
  link.rel = 'stylesheet';
  link.type = 'text/css';
- link.href = window.location.search.match(/print-pdf/gi) ?
+ link.href = window.location.search.match(/document/gi) ?
              'lib/pdf.css' : 'lib/paper.css';
  document.getElementsByTagName('head')[0].appendChild( link );
  Reveal.initialize();
  Reveal.configure({
      slideNumber: 'h.v',
-     transition: 'convex'
+     transition: 'convex',
+     showNotes: window.location.search.match(/shownotes/gi) ?
+                true : false
  });
 </script>
