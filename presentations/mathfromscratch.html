@@ -324,8 +324,17 @@
                 <p>
                     We attempt to define a formal system in which the
                     only objects are sets and the only thing a set can
-                    do is contain other sets.
+                    do is contain other sets. (Zermelo-Fraenkel
+                    1908-1922)
                 </p>
+                <aside class="notes">
+                    The formal system we're going to create is called
+                    set theory.  In this theory the only objects are
+                    sets and the only thing sets can do is contain
+                    other sets.  The axioms described here were first
+                    developed by Ernst Zermelo, Abraham Fraenkel and
+                    Thorlaf Skolem.
+                </aside>
             </section>
             <section>
                 <h2>Set Predicates</h2>
@@ -360,8 +369,11 @@
                 </table>
 
                 <aside class="notes">
-                    But first we need to understand a few symbols
-                    used to describe relationships between sets.
+                    But first we need to understand a few symbols used
+                    to describe relationships between sets.  We use a
+                    symbol that resembles a lower case letter e to
+                    denote set membership.  We'll cross it out to mean
+                    that something isn't a member of a set.
                 </aside>
             </section>
             <section>
@@ -420,11 +432,16 @@
                 </p>
                 <ul>
                     <li>Reflexive: &#x2200;a (a &#x2286; a)</li>
-                    <li>Symmetric: &#x2200;a,b
+                    <li>
+                        Symmetric: &#x2200;a,b
                         ((a &#x2286; b) &and; (b &#x2286; a)) &#x27fa;
-                        ((b &#x2286; a) &and; (a &#x2286; b)</li>
-                    <li>Transitive: &#x2200;a,b,c
-                        (a = b &and; b = c) &#x27f9; (a = c)</li>
+                        ((b &#x2286; a) &and; (a &#x2286; b)
+                    </li><li>
+                        Transitive: &#x2200;a,b,c
+                        (((a &#x2286; b) &and; (b &#x2286; a)) &and;
+                        ((b &#x2286; c) &and; (c &#x2286; b))) &#x27f9;
+                        ((a &#x2286; c) &and; (c &#x2286; a))
+                    </li>
                 </ul>
             </section>
             <section>
@@ -500,14 +517,14 @@
             <section>
                 <h2>Specification (Schema)</h2>
                 <p>
-                    &#x2200;a,p&#x2203;b &#x2200;c
+                    &#x2200;a,P&#x2203;b &#x2200;c
                     c&#x2208;b &#x27fa; (c&#x2208;a &and; P(c))
                 </p>
                 <p>
                     Given a set and a predicate there is another set
                     which contains all members of the set for which
                     the predicate is true.  We can use this with any
-                    set and the predicate p(x): x &ne; x to create
+                    set and the predicate P(a): a&#x2208;a to create
                     the empty set.
                 </p>
             </section>
@@ -661,41 +678,42 @@
             <section>
                 <h3>Natural Numbers &#x2115;: Order</h3>
                 <p>
-                    We can compare natural numbers using set
-                    membership and equality.
+                    Natural number order is set membership.  Every
+                    natural number contains all predecessors so order
+                    is transitive.
                 </p>
-                <ul>
-                    <li>
+                <table>
+                    <tr><td>
                         &#x2200;a,b&#x2208;&#x2115;
                         a &lt; b &#x225d; a &#x2208; b
-                    </li>
-                    <li>
+                    </td></tr><tr><td>
                         &#x2200;a,b&#x2208;&#x2115;
                         a &gt; b &#x225d; b &#x2208; a
-                    </li>
-                </ul>
-                <p>
-                    Transitive:
-                    &#x2200;a,b,c&#x2208;&#x2115;
-                    (a&#x2208;b &and; b&#x2208;c) &#x27f9;
-                    (a&#x2208;c)
-                </p>
-            </section>
-            <section>
-                <h3>Natural Numbers &#x2115;: Order</h3>
-                <p>
-                    Transitive:
-                    &#x2200;a,b,c&#x2208;&#x2115;
-                    (a&#x2208;b &and; b&#x2208;c) &#x27f9;
-                    (a&#x2208;c)
-                </p>
+                    </td></tr>
+                </table>
                 <ul>
-                    <li>&#x2200;a a&#x2208;(a &cup; {a})</li>
+                    <li>
+                        &#x2200;a a&#x2208;succ(a) &#x27fa;
+                        a&#x2208;(a &cup; {a})
+                    </li>
                     <li>
                         &#x2200;a,b a&#x2208;b &#x27f9;
                         a&#x2208;(b &cup; {b})
                     </li>
+                    <li>
+                        &#x2200;a,b,c&#x2208;&#x2115;
+                        (a&#x2208;b &and; b&#x2208;c) &#x27f9;
+                        (a&#x2208;c)
+                    </li>
                 </ul>
+                <aside class="notes">
+                    Every natural number is contained in its successor
+                    and indeed in the successor of its successor.  So
+                    if a is less than b and b is less than c, then a
+                    is contained in b and b is contained in c.  Since
+                    a is contained in b it's contained in all of b's
+                    successors, including c.
+                </aside>
             </section>
         </section>
         <section>
@@ -1267,14 +1285,6 @@
 
         <section>
             <section>
-                <h2>Cardinality</h2>
-                <p>
-                    Now that we have sets and natural numbers we can
-                    develop a way to talk about how many elements a
-                    set contains.  We will need a few more tools.
-                </p>
-            </section>
-            <section>
                 <p>
                     Extensionality means that members of a set have no
                     meaningful order.
@@ -1282,7 +1292,6 @@
                 <p>&#x2200;a,b : {a, b} = {b, a}</p>
                 <p>Let's impose some order on them!</p>
             </section>
-
             <section>
                 <h2>Ordered Pairs</h2>
                 <p>
@@ -1312,9 +1321,78 @@
                     </li>
                 </ul>
             </section>
+            <section>
+                <h3>Tuples</h3>
+                <p>
+                    Ordered pairs can be used to build general tuples
+                    that can order an aribtrary number of members
+                </p>
+                <ul>
+                    <li>&#x27ec;&#x27ed; &#x225d; {}</li>
+                    <li>
+                        &#x27ec;a&#x27ed; &#x225d;
+                        &#x27e8;a, {}&#x27e9;
+                    </li>
+                    <li>
+                        &#x27ec;a, b&#x27ed; &#x225d;
+                        &#x27e8;a, &#x27e8;b, {}&#x27e9;&#x27e9;
+                    </li><li>
+                        &#x27ec;a, b, c&#x27ed; &#x225d;
+                        &#x27e8;a, &#x27e8;b, &#x27e8;c,
+                        {}&#x27e9;&#x27e9;&#x27e9;
+                    </li>
+                    <li>...</li>
+                </ul>
+            </section>
+            <section>
+                <h3>Tuple Concatenation</h3>
+                <p>
+                    &#x2200;n,m&#x2208;&#x2115;
+                    &#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
+                    a<sub>n</sub>&#x27ed; &#x2a01;
+                    &#x27ec;b<sub>0</sub>, b<sub>1</sub>, ...
+                    b<sub>m</sub>&#x27ed; =<br />
+                    &#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
+                    a<sub>n</sub>, b<sub>0</sub>, b<sub>1</sub>, ...
+                    b<sub>m</sub>&#x27ed;
+                </p>
+                <ul>
+                    <li>
+                        &#x27ec;&#x27ed; &#x2a01; b =
+                        {} &#x2a01; b &#x225d; b
+                    </li>
+                    <li>
+                        &#x27ec;a&#x27ed; &#x2a01; b =
+                        &#x27e8;a, {}&#x27e9; &#x2a01; b &#x225d;
+                        &#x27e8;a, b&#x27e9; = &#x27ec;a,
+                        b<sub>0</sub>, b<sub>1</sub>, ...&#x27ed;
+                    </li>
+                    <li>
+                        &#x27ec;a, ...&#x27ed; &#x2a01; b =
+                        &#x27e8;a, t<sub>a</sub>&#x27e9; &#x2a01; b
+                        &#x225d; &#x27e8;a, t<sub>a</sub>
+                        &#x2a01; b&#x27e9;
+                    </li>
+                </ul>
+                <p>
+                    Tuples can be linked together in a recursive way.
+                </p>
+                <aside class="notes">
+                    Concatenating an empty tuple with another tuple
+                    leaves the other tuple unchanged.  Concatenating a
+                    tuple with one element with a tuple means
+                    replacing the empty set that is the second element
+                    of hte first tuple with the second tuple.
+                    Concatenating a tuple with more than one member
+                    can be done by recursively concatenating the
+                    second member of the ordered pair with the second
+                    tuple, which implicitly finds the end of the first
+                    tuple one step at a time.
+                </aside>
+            </section>
 
             <section>
-                <h2>Relation</h2>
+                <h3>Relation</h3>
                 <p>
                     (r : D &#x27f6; R) &#x225d;
                     { &#x27e8;a, b&#x27e9; :  a&#x2208;D,b&#x2208;R }
@@ -1326,13 +1404,12 @@
                 <ul>
                     <li>D is the Domain of the Relation</li>
                     <li>R is the Range of the Relation</li>
-                    <li>Application: r(a) = b &#x27fa;
+                    <li>r(a) = b &#x27fa;
                         &#x27e8;a, b&#x27e9;&#x2208;r</li>
                 </ul>
             </section>
-
             <section>
-                <h2>Function</h2>
+                <h3>Function</h3>
                 <p>
                     (f : D &#x27f6; R) &#x225d;
                     &#x2200;a&#x2208;D (&#x2203;b&#x2208;R
@@ -1348,9 +1425,8 @@
                     of the range.
                 </p>
             </section>
-
             <section>
-                <h2>Meet the Jections</h2>
+                <h3>Meet the Jections</h3>
                 <p>
                     Given function f : D &#x27f6; R
                 </p>
@@ -1369,7 +1445,14 @@
                         Bijection: both an injection and a surjection
                     </li>
                 </ul>
-
+            </section>
+            <section>
+                <h2>Cardinality</h2>
+                <p>
+                    Now that we have sets, natural numbers and
+                    functions we can develop a way to talk about how
+                    many elements a set contains.
+                </p>
             </section>
             <section>
                 <h3>Cardinality</h3>
@@ -1381,6 +1464,13 @@
                     the set {{}, {{}}, {{}, {{}}}}) we say that a <q>has
                     three elements.</q>
                 </p>
+                <ul>
+                    <li>
+                        f = {&#x27e8;0, a&#x27e9;, &#x27e8;1, b&#x27e9;,
+                        &#x27e8;2, c&#x27e9;}
+                    </li>
+                    <li>#{a, b, c} = #{0, 1, 2} = 3</li>
+                </ul>
             </section>
             <section>
                 <h3>Infinite Cardinality</h3>
@@ -1505,17 +1595,16 @@
             <section>
                 <h3>Integers &#x2124;: Cardinality</h3>
                 <p>
-                    How many integers are there?  A bijectdion
+                    How many integers are there?  A bijection
                     exists between integers and natural numbers.
                 </p>
-                <ul>
-                    <li>&#x27e8;0&#x2115;, 0&#x2124;&#x27e9;</li>
-                    <li>&#x27e8;1&#x2115;, 1&#x2124;&#x27e9;</li>
-                    <li>&#x27e8;2&#x2115;, -1&#x2124;&#x27e9;</li>
-                    <li>&#x27e8;3&#x2115;, 2&#x2124;&#x27e9;</li>
-                    <li>&#x27e8;4&#x2115;, -2&#x2124;&#x27e9;</li>
-                    <li>...</li>
-                </ul>
+                <p>
+                    f = {&#x27e8;0&#x2115;, 0&#x2124;&#x27e9;,
+                    &#x27e8;1&#x2115;, 1&#x2124;&#x27e9;,
+                    &#x27e8;2&#x2115;, -1&#x2124;&#x27e9;,<br />
+                    &#x27e8;3&#x2115;, 2&#x2124;&#x27e9;,
+                    &#x27e8;4&#x2115;, -2&#x2124;&#x27e9;, ...}
+                </p>
                 <aside class="notes">
                     Every natural number appears on this list exactly
                     once.  Every integer appears on this list exactly
@@ -2844,26 +2933,7 @@
                 </blockquote>
             </section>
             <section>
-                <h3>Tuples</h3>
-                <p>
-                    Ordered pairs can be used to build general tuples
-                    that can order an aribtrary number of members
-                </p>
-                <ul>
-                    <li>() &#x225d; {}</li>
-                    <li>(a) &#x225d; &#x27e8;a, {}&#x27e9;</li>
-                    <li>
-                        (a, b) &#x225d; &#x27e8;a, &#x27e8;b,
-                        {}&#x27e9;&#x27e9;
-                    </li><li>
-                        (a, b, c) &#x225d; &#x27e8;a, &#x27e8;b,
-                        &#x27e8;c, {}&#x27e9;&#x27e9;&#x27e9;
-                    </li>
-                    <li>...</li>
-                </ul>
-            </section>
-            <section>
-                <h3>Groups (G, &#x2218;)</h3>
+                <h3>Groups &#x27ec;G, &#x2218;&#x27ed;</h3>
                 <p>
                     A group is a set G and a binary operation G
                     &#x2218; G &#x27f6; G with four properties:
@@ -2950,13 +3020,13 @@
                 </ul>
             </section>
             <section>
-                <h3>Abelian Group (G, &#x2218)</h3>
+                <h3>Abelian Group &#x27ec;G, &#x2218&#x27ed;</h3>
                 <p>
                     An abelian group is a group with a commutative
                     operation.
                 </p>
                 <ul>
-                    <li>(G, &#x2218) is a group</li>
+                    <li>&#x27ed;G, &#x2218&#x27ed; is a group</li>
                     <li>Commutative: &#x2200;a,b,c&#x2208;G
                         (a &#x2218; b) = (b &#x2218; a)
                     </li>
@@ -2967,14 +3037,16 @@
                 </p>
             </section>
             <section>
-                <h3>Rings (R, &#x2218;, &#x229a;)</h3>
+                <h3>Rings &#x27ec;R, &#x2218;, &#x229a;&#x27ed;</h3>
                 <p>
                     A ring is a set and two binary operations
                     R &#x2218; R &#x27f6; R and R &#x229a; R
                     &#x27f6; R with four properties:
                 </p>
                 <ul>
-                    <li>(R, &#x2218) is an abelian group</li>
+                    <li>
+                        &#x27ec;R, &#x2218&#x27ed; is an abelian group
+                    </li>
                     <li>Closed: &#x2200;a,b&#x2208;R :
                         a &#x229a; b &#x2208; R</li>
                     <li>Associative: (a &#x229a; b) &#x229a;c =
@@ -2995,7 +3067,9 @@
                     operations.
                 </p>
                 <ul>
-                    <li>(R, &#x2218, &#x229a;) is a ring</li>
+                    <li>
+                        &#x27ec;R, &#x2218, &#x229a;&#x27ed; is a ring
+                    </li>
                     <li>Commutative: &#x2200;a,b,c&#x2208;R
                         (a &#x229a; b) = (b &#x229a; a)
                     </li>
@@ -3006,7 +3080,9 @@
                 </p>
             </section>
             <section>
-                <h3>Unitary Rings (U, &#x2218;, &#x229a;)</h3>
+                <h3>
+                    Unitary Rings &#x27ec;U, &#x2218;, &#x229a;&#x27ed;
+                </h3>
                 <p>
                     A unitary ring is a ring with an identity element
                     for the second operation:
@@ -3025,7 +3101,7 @@
                 </p>
             </section>
             <section>
-                <h3>Fields (F, &#x2218;, &#x229a;)</h3>
+                <h3>Fields &#x27ec;F, &#x2218;, &#x229a;&#x27ed;</h3>
                 <p>
                     A field is a commutative, unitary ring with
                     inverses:
@@ -3252,6 +3328,7 @@
         </section>
 
         <section>
+            <!-- https://www.math.brown.edu/~res/INF/handout3.pdf -->
             <section>
                 <h2>Real Numbers &#x211d;</h2>
                 <p>
@@ -3291,21 +3368,18 @@
 
         <section>
             <section>
-                <h2>Vectors</h2>
+                <h2>Vector Space &#x1d54d;</h2>
                 <p>
-                    A vector is an extension of a field that
-                    represents an oriented length.
+                    A vector represents an oriented length.  A vector
+                    space extends a field with an additional operation
+                    on tuples: (<strong>V</strong>,
+                    (F, &#x2218;, &#x229a;), +)
                 </p>
             </section>
             <section>
                 <h3>
                     Vector Space &#x1d54d;
                 </h3>
-                <p>
-                    A vector space extends a field with an additional
-                    operation on tuples:
-                    (<strong>V</strong>, (F, &#x2218;, &#x229a;), +)
-                </p>
                 <ul>
                     <li>
                         Associativity: &#x2200; <strong>u</strong>,
@@ -3792,7 +3866,29 @@
                 </p>
             </section>
             <section>
-                <h2>Component Product &#x1d53e;</h2>
+                <h3>Component Product &#x1d53e;</h3>
+                <ul>
+                    <li>
+                        &#x2200;a,b&#x2208;&#x211d;
+                        &#x2200;i&ne;j&#x2208;&#x2124;
+                        &#x2200;xt
+
+                        &#x27e8;&#x27e8;a, t&#x27e9;, {}&#x27e9;
+                        &#x00d7; &#x27e8;&#x27e8;b, {}&#x27e9;, {}&#x27e9;
+                        =
+                        &#x27e8;&#x27e8;(a &#x00d7; b),
+                        t&#x27e9;, {}&#x27e9;
+                    </li>
+                    <li>
+                        &#x2200;a&#x2208;&#x211d;
+                        &#x2200;i,j&#x2208;&#x2124;
+                        (i &ne; j) &#x27f9;<br />
+                        &#x27e8;a, &#x27e8;i, &#x27e8;j,
+                        t&#x27e9;&#x27e9;&#x27e9; =&#x1d544;
+                        &#x27e8;-a, &#x27e8;j, &#x27e8;i,
+                        t&#x27e9;&#x27e9;&#x27e9;
+                    </li>
+                </ul>
                 <p>
                 </p>
             </section>
