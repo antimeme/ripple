@@ -3,9 +3,11 @@
 <meta charset="utf-8" />
 <link rel="stylesheet" href="lib/reveal.css">
 <link rel="stylesheet" href="lib/sky.css">
+<!-- Slides created using Reveal.js:
+     https://github.com/hakimel/reveal.js/ -->
 
 <div class="reveal">
-    <div class="slides">
+    <div class="slides"><!-- -->
         <section>
             <section>
                 <h1>Math From Scratch</h1>
@@ -17,7 +19,7 @@
                 </blockquote>
                 <aside class="notes">
                     Creating the universe is rather a tall order.
-                    We'll settle for creating our own math.
+                    We'll have to settle for creating mathematics.
                 </aside>
             </section>
             <section>
@@ -30,21 +32,40 @@
                     field of science and technology.
                 </p>
                 <aside class="notes">
-                    We'll do that by stealing the best ideas invented
-                    by smart mathematicians over thousands of years.
+                    We'll do that by stealing the best ideas presented
+                    by people around the world over thousands of
+                    years.
                 </aside>
             </section>
             <section>
                 <p>
-                    This is an attempt to build the most important
-                    parts of math from the simplest possible
-                    foundations.  Forget everything you know about
-                    math and let's begin at the beginning.
+                    This is an attempt to build familiar mathematics
+                    from the simplest possible foundations.  Forget
+                    everything you know and let's begin at the
+                    beginning.
                 </p>
                 <aside class="notes">
                     For the purpose of this presentation, forget
                     everything you know about math.
                 </aside>
+            </section>
+            <section>
+                <h2>Acknowledgements</h2>
+                <ul>
+                    <li>
+                        Reveal.js for slide technology<br />
+                        <a href="https://github.com/hakimel/reveal.js/"
+                        >https://github.com/hakimel/reveal.js/</a>
+                    </li>
+                    <li>
+                        Special thanks to Euclid, al-Khwārizmī, Georg
+                        Cantor, Hermann Grassman, Emmy Noether, John
+                        von Neumann, Abraham Fraenkel, Ernst Zermello,
+                        Thoraf Skolem, Kazimierz Kuratowski and an
+                        apparently infinite set of mathematical minds
+                        who made this work possible.
+                    </li>
+                </ul>
             </section>
         </section>
 
@@ -54,13 +75,16 @@
                 <blockquote>
                     <q>Contrariwise,</q> continued Tweedledee,
                     <q>if it was so, it might be; and if it were so,
-                    it would be; but as it isn't, it ain't. That's
-                    logic.</q>
+                        it would be; but as it isn't, it ain't. That's
+                        logic.</q>
                     — Through the Looking Glass by Lewis Carroll
                 </blockquote>
                 <aside class="notes">
-                    Just in case Tweedledee's explanation isn't
-                    clear to everyone, let's go over a few things.
+                    Just in case Tweedledee's explanation isn't clear
+                    to everyone, let's go over a few things.  Logic is
+                    complex and addresses many concepts in the wider
+                    world.  We only need a few relatively simple ideas
+                    here.
                 </aside>
             </section>
             <section>
@@ -74,6 +98,11 @@
                     <li>An apple is a fruit (true)</li>
                     <li>A carrot is a fruit (false)</li>
                 </ul>
+                <aside class="notes">
+                    A predicate is a statement with one or more
+                    holes in it.  Depending on what we put in the
+                    holes it may be true or false.
+                </aside>
             </section>
             <section>
                 <h2>Compound Predicates</h2>
@@ -99,6 +128,18 @@
                         <td>if and only if P is true then Q is true</td>
                     </tr>
                 </table>
+                <aside class="notes">
+                    Once we have predicates we can combine them to
+                    form compound predicates.  We can invert one with
+                    the not operator.  We can assert that two
+                    prediates are both true using and.  We can assert
+                    that at least one of two prediates is true using
+                    or.  We can assert that one predicate follows from
+                    another with the double line arrow symbol.  We can
+                    assert that two predicates are equivalent, meaning
+                    they are true or false together, using the two
+                    sided double arrow.
+                </aside>
             </section>
             <section>
                 <h3>Bound Variable Predicates</h3>
@@ -119,10 +160,22 @@
                     </tr>
                 </table>
                 <aside class="notes">
+                    These are tools we can use to bind variables.  The
+                    upside down A asserts that the predicate is true
+                    for all possible values of the variable.  The
+                    backwards E asserts that there is at least one
+                    value for which the predicate is true.  A
+                    backwards E with a line through it is the reverse
+                    of that: there is no value that makes the
+                    predicate true.
                 </aside>
             </section>
             <section>
                 <h2>Deduction</h2>
+                <p>
+                    Deduction applies general rules to reach specific
+                    conclusions.
+                </p>
                 <ul>
                     <li>Modus ponens:
                         ((P &#x27f9; Q) &and; P) &#x27f9; Q
@@ -135,26 +188,34 @@
                         (P &#x27f9; R)
                     </li>
                 </ul>
-                <p>
-                    Deduction allows us to use combinations of
-                    predicates to prove other predicates.
-                </p>
+                <aside class="notes">
+                    Deduction allows us to derive specific conlusions
+                    from general rules.  These are some deductive
+                    rules.
+                </aside>
             </section>
             <section>
                 <h2>Induction</h2>
+                <p>
+                    Induction uses specific statements to prove
+                    more general conclusions.  A base establishes
+                    a starting point and a step can be repeated
+                    indefinitely.
+                </p>
                 <ul>
-                    <li>P(0) &and; (P(a) &#x27f9; P(next(a)))</li>
+                    <li>P(a) &and; (P(b) &#x27f9; P(next(b)))</li>
                     <li>
-                        P(a) is true for a after 0
+                        P(b) is true for b after a
                     </li>
                 </ul>
-                <p>
-                    An inductive proof is one that has a base case and
-                    a step.  The base case shows that the predicate is
-                    true for some value and the step shows that if the
-                    predicate is true for some value then it is also
-                    true for values that follow.
-                </p>
+                <aside class="notes">
+                    Induction allows us to build general rules from
+                    specific starting points.  We show that if a
+                    predicate is true for one value then it must be
+                    true for some next value.  Combine this with a
+                    starting point and we can implicitly repeat the
+                    steps as many times as necessary.
+                </aside>
             </section>
 
             <section>
@@ -169,18 +230,6 @@
                         <td>(a &ne; b) &#x225d; &not;(a = b)</td>
                     </tr>
                 </table>
-                <p>
-                    When two things are equal we can replace one with
-                    the other without changing the truth of any
-                    predicates.  When two things are not equal we can
-                    be sure they are distinct.
-                </p>
-            </section>
-            <section>
-                <h2>Equivalence</h2>
-                <p>
-                    We need the following properties from equivalence:
-                </p>
                 <ul>
                     <li>Reflexive: &#x2200;a (a = a)</li>
                     <li>Symmetric: &#x2200;a,b
@@ -188,6 +237,15 @@
                     <li>Transitive: &#x2200;a,b,c
                         (a = b &and; b = c) &#x27f9; (a = c)</li>
                 </ul>
+                <aside class="notes">
+                    Equality allows us to substitude one value for
+                    another without changing the truth of any
+                    predicates.  For this to work we need three
+                    properties.  Reflexive means everything is
+                    always equal to itself.  Symmetric means
+                    equality always goes both ways.  Transitive
+                    means... ?
+                </aside>
             </section>
             <section>
                 <h2>Order</h2>
@@ -215,6 +273,10 @@
                     Transitive: &#x2200;a,b,c
                     (a &lt; b &and; b &lt; c) &#x27f9; (a &lt; c)
                 </p>
+                <aside class="notes">
+                    Order is less strict than equality.  We only
+                    need it to be transitive.
+                </aside>
             </section>
             <section>
                 <h2>Mapping</h2>
@@ -226,18 +288,33 @@
                     example requires only one variable (unary) but
                     a mapping might require two (binary) or more.
                 </p>
+                <aside class="notes">
+                    We will go into more detail about what a mapping
+                    is and how to construct one later.  For now we
+                    just need to understand that we can apply a
+                    procedure to a value to get another value.
+                </aside>
             </section>
             <section>
                 <h2>Formal Systems</h2>
-                <p>
-                    A formal system consist of axioms and rules of
-                    inference.  Axioms are the fundamental properties
-                    of the system.  We must accept them as true
-                    because they define the sytem.  Rules of inference
-                    allow us to combine axioms to prove theorems,
-                    which like axioms we accept as true as long as the
-                    rules of inference are followed.
-                </p>
+                <ul>
+                    <li>Axioms: define the fundamentals of a system</li>
+                    <li>
+                        Rules of Inference: govern how statements can
+                        be combined
+                    </li>
+                    <li>Theorem: proven using axioms and rules</li>
+                </ul>
+                <aside class="notes">
+                    A formal system is a set of axioms and rules of
+                    inference that can be used to construct theorems.
+                    We would like our formal system to be consistent
+                    and complete.  Consistent means no theorem can be
+                    proven both true and false from the axioms.
+                    Complete means that all theorems can be proven
+                    either true or false.  G&ouml;del proved that this
+                    is not possible with his Incompleteness Theorem.
+                </aside>
             </section>
         </section>
 
@@ -245,10 +322,9 @@
             <section>
                 <h2>Nothing But Set</h2>
                 <p>
-                    Set Theory is a formal system.  This is an
-                    informal overview.  The only objects we will
-                    consider are sets.  The only thing a set can do is
-                    contain other sets as members.
+                    We attempt to define a formal system in which the
+                    only objects are sets and the only thing a set can
+                    do is contain other sets.
                 </p>
             </section>
             <section>
@@ -343,9 +419,10 @@
                     same set.
                 </p>
                 <ul>
-                    <li>Reflexive: &#x2200;a (a = a)</li>
+                    <li>Reflexive: &#x2200;a (a &#x2286; a)</li>
                     <li>Symmetric: &#x2200;a,b
-                        (a = b) &#x27fa; (b = a)</li>
+                        ((a &#x2286; b) &and; (b &#x2286; a)) &#x27fa;
+                        ((b &#x2286; a) &and; (a &#x2286; b)</li>
                     <li>Transitive: &#x2200;a,b,c
                         (a = b &and; b = c) &#x27f9; (a = c)</li>
                 </ul>
@@ -603,6 +680,22 @@
                     (a&#x2208;b &and; b&#x2208;c) &#x27f9;
                     (a&#x2208;c)
                 </p>
+            </section>
+            <section>
+                <h3>Natural Numbers &#x2115;: Order</h3>
+                <p>
+                    Transitive:
+                    &#x2200;a,b,c&#x2208;&#x2115;
+                    (a&#x2208;b &and; b&#x2208;c) &#x27f9;
+                    (a&#x2208;c)
+                </p>
+                <ul>
+                    <li>&#x2200;a a&#x2208;(a &cup; {a})</li>
+                    <li>
+                        &#x2200;a,b a&#x2208;b &#x27f9;
+                        a&#x2208;(b &cup; {b})
+                    </li>
+                </ul>
             </section>
         </section>
         <section>
@@ -3176,7 +3269,7 @@
                 </p>
             </section>
             <section>
-                <h2>Real Numbers &#x211d;: Rationals</h2>
+                <h3>Real Numbers &#x211d;: Rationals</h3>
                 <p>
                     &#x2200;a&#x2208;&#x211a;
                     &#x2203;&#x27e8;L, U&#x27e9;&#x2208;&#x211d;
@@ -3300,7 +3393,7 @@
                 <p>
                 </p>
             </section>
-        </section>
+        </section><!-- -->
 
         <section>
             <section>
@@ -3313,51 +3406,465 @@
                 </p>
             </section>
             <section>
-                <h3>Multivector</h3>
-                <p>&#x2200;a&#x2208;F &#x27e8;a, b&#x27e9;</p>
+                <h3>Components &#x1d544;</h3>
                 <p>
-                    Our construction of Geometric Algebra is unusual.
-                    We have construct multi-vectors as sums of
-                    components, each of which has a field member and a
-                    tuple.  The tuple represents a list of orthonormal
-                    basis vectors.
+                    &#x2200;a&#x2208;&#x211d;
+                    &#x2200;i&#x2208;&#x2124; &#x2200;t<br />
+                    (&#x27e8;a, {}&#x27e9; &#x2208; &#x1d544;) &and;
+                    (&#x27e8;a, t&#x27e9;&#x2208;&#x1d544;
+                    &#x27f9; &#x27e8;a, &#x27e8;i,
+                    t&#x27e9;&#x27e9;&#x2208;&#x1d544;)
+                </p>
+                <p>
+                    A multivector component consists of a real number
+                    and an integer tuple in an ordered pair.  The
+                    tuple may be empty or have any number of integers.
+                </p>
+                <aside class="notes">
+                    This defines a multivector component.  The
+                    simplest component is just an ordered pair with a
+                    real number and the empty set, but we can prepend
+                    integers to make a tuple of arbitrary length.
+                </aside>
+            </section>
+            <section>
+                <h3>Components &#x1d544; : Equality</h3>
+                <ul>
+                    <li>
+                        &#x2200;a,b&#x2208;&#x211d;
+                        (&#x27e8;a, {}&#x27e9; =&#x1d544;
+                        &#x27e8;b, {}&#x27e9;) &#x27fa;
+                        (a =&#x211d; b)
+                    </li>
+                    <li>
+                        &#x2200;i&#x2208;&#x2124;
+                        &#x2200;&#x27e8;a,
+                        a<sub>t</sub>&#x27e9;,&#x27e8;b,
+                        b<sub>t</sub>&#x27e9;&#x2208;&#x1d544;<br />
+                        (&#x27e8;a, a<sub>t</sub>&#x27e9; =&#x1d544;
+                        &#x27e8;b, b<sub>t</sub>&#x27e9;) &#x27fa;
+                        (&#x27e8;a, &#x27e8;i,
+                        a<sub>t</sub>&#x27e9;&#x27e9;
+                        =&#x1d544; &#x27e8;b, &#x27e8;i,
+                        b<sub>t</sub>&#x27e9;&#x27e9;)
+                    </li>
+                    <li>
+                        &#x2200;a&#x2208;&#x211d;
+                        &#x2200;i>0&#x2208;&#x2124;
+                        &#x27e8;a, &#x27e8;i, &#x27e8;i,
+                        t&#x27e9;&#x27e9;&#x27e9; =&#x1d544;
+                        &#x27e8;a, t&#x27e9;
+                    </li>
+                    <li>
+                        &#x2200;a&#x2208;&#x211d;
+                        &#x2200;i<0&#x2208;&#x2124;
+                        &#x27e8;a, &#x27e8;i, &#x27e8;i,
+                        t&#x27e9;&#x27e9;&#x27e9; =&#x1d544;
+                        &#x27e8;-a, t&#x27e9;
+                    </li>
+                    <li>
+                        &#x2200;a&#x2208;&#x211d;
+                        &#x2200;i,j&#x2208;&#x2124;
+                        (i &ne; j) &#x27f9;<br />
+                        &#x27e8;a, &#x27e8;i, &#x27e8;j,
+                        t&#x27e9;&#x27e9;&#x27e9; =&#x1d544;
+                        &#x27e8;-a, &#x27e8;j, &#x27e8;i,
+                        t&#x27e9;&#x27e9;&#x27e9;
+                    </li>
+                </ul>
+                <p>
+                    Equal integers can be combined.  Unequal integers
+                    can be swapped by negating the real number.
+                </p>
+                <aside class="notes">
+                    These are the ways we can transform the components
+                    while preserving equality.  When the tuples of
+                    both components are empty, component equality is
+                    the same as real number equality for the first
+                    element.  The second rule shows that we can
+                    prepend the same integer to both tuples without
+                    changing equality.  The third and fourth rules
+                    allow us to collapse adjacent pairs of integers in
+                    the tuple.  If these integers are negative we must
+                    flip the sign of the real number.  Finally, the
+                    last rule allows us to swap pairs of integers as
+                    long as we flip the sign of the real number.
+                </aside>
+            </section>
+            <section>
+                <h3>Multivector &#x1d53e;</h3>
+                <ul>
+                    <li>
+                        &#x2200;&#x27e8;a,t&#x27e9;&#x2208;&#x1d544;
+                        &#x27e8;&#x27e8;a,t&#x27e9;, {}&#x27e9;
+                        &#x2208;&#x1d53e;
+                    </li>
+                    <li>
+                        &#x2200;&#x27e8;a,t&#x27e9;&#x2208;&#x1d544;
+                        &#x2200;b&#x2208;&#x1d53e;
+                        &#x27e8;&#x27e8;a,t&#x27e9;, b&#x27e9;
+                        &#x2208;&#x1d53e;
+                    </li>
+                </ul>
+                <p>
+                    A multivector is a tuple consisting of one or more
+                    multivector components.
+                </p>
+                <aside class="notes">
+                    A multivector can be constructed in three ways.
+                    One is to convert a real number by making it the
+                    first member of an ordered pair and using the
+                    empty set as the second.  Another is to take
+                    an existing ordered pair multivector and prepend
+                    an integer to the tuple.  And finally we can
+                    create the sum of any two multivectors.
+                </aside>
+            </section>
+            <section>
+                <h3>Multivector &#x1d53e; : Equality</h3>
+                <ul>
+                    <li>
+                        &#x2200;&#x27e8;0, t&#x27e9;&#x2208;&#x1d544;
+                        &#x2200;c&#x2208;&#x1d53e;
+                        (&#x27e8;&#x27e8;0, t&#x27e9;, c&#x27e9;
+                        =&#x1d53e; c)
+                    </li>
+                    <li>
+                        &#x2200;&#x27e8;a,
+                        t&#x27e9;,&#x27e8;b,
+                        t&#x27e9;&#x2208;&#x1d544;
+                        &#x2200;c&#x2208;({{}} &cup; &#x1d53e;)
+                        <br />
+                        (&#x27e8;&#x27e8;a,
+                        t&#x27e9;, &#x27e8;&#x27e8;b,
+                        t&#x27e9;, c&#x27e9;&#x27e9;
+                        =&#x1d53e;
+                        &#x27e8;&#x27e8;(a + b), t&#x27e9;, c&#x27e9;)
+                    </li>
+                    <li>
+                        &#x2200;&#x27e8;a,
+                        t<sub>a</sub>&#x27e9;,&#x27e8;b,
+                        t<sub>b</sub>&#x27e9;&#x2208;&#x1d544;
+                        &#x2200;c&#x2208;({{}} &cup; &#x1d53e;)
+                        <br />(&#x27e8;a,
+                        t<sub>a</sub>&#x27e9; =&#x1d544; &#x27e8;b,
+                        t<sub>b</sub>&#x27e9;) &#x27fa;
+                        (&#x27e8;&#x27e8;a,
+                        t<sub>a</sub>&#x27e9;, c&#x27e9; =&#x1d53e;
+                        &#x27e8;&#x27e8;b, t<sub>b</sub>&#x27e9;,
+                        c&#x27e9;)
+                    </li>
+                    <li>
+                        &#x2200;&#x27e8;a,
+                        t<sub>a</sub>&#x27e9;,&#x27e8;b,
+                        t<sub>b</sub>&#x27e9;&#x2208;&#x1d544;
+                        &#x2200;c&#x2208;({{}} &cup; &#x1d53e;)
+                        <br />
+                        (&#x27e8;&#x27e8;a,
+                        t<sub>a</sub>&#x27e9;, &#x27e8;&#x27e8;b,
+                        t<sub>b</sub>&#x27e9;, c&#x27e9;&#x27e9;
+                        =&#x1d53e;
+                        &#x27e8;&#x27e8;b,
+                        t<sub>b</sub>&#x27e9;, &#x27e8;&#x27e8;a,
+                        t<sub>a</sub>&#x27e9;, c&#x27e9;&#x27e9;)
+                    </li>
+                </ul>
+                <p>
+                    Multivectors the same if their components are the
+                    same.  Swapping is allowed and components with
+                    matching tuples can be merged.
+                </p>
+                <aside class="notes">
+                    Multivector equality follows these rules.  Any
+                    components with a zero value real number can be
+                    dropped.  If the tuples of two adjacent components
+                    are the same they can be combined into a single
+                    component.  If the first component of two
+                    multivectors have component equality and the rest
+                    of the multivector is the same, then the
+                    multivectors are equal.  Two adjacent components
+                    of a multivector can be swapped without changing
+                    equality.
+                </aside>
+            </section>
+            <section>
+                <h3>Multivector Notation</h3>
+                <ul>
+                    <li>
+                        &#x2200;a&#x2208;&#x211d;
+                        a &#x2208;&#x1d53e; &#x225d; &#x27e8;&#x27e8;a,
+                        {}&#x27e9;, {}&#x27e9;
+                    </li>
+                    <li>
+                        &#x2200;a&#x2208;&#x211d;
+                        &#x2200;i&#x2208;&#x2124;
+                        a<strong>o<sub>i</sub></strong>
+                        &#x2208;&#x1d53e; &#x225d; &#x27e8;&#x27e8;a,
+                        &#x27e8;i, {}&#x27e9;&#x27e9;, {}&#x27e9;
+                    </li>
+                    <li>
+                        &#x2200;a&#x2208;&#x211d;
+                        &#x2200;i,j&#x2208;&#x2124;
+                        a<strong>o<sub>i</sub>o<sub>j</sub></strong>
+                        &#x2208;&#x1d53e; &#x225d; &#x27e8;&#x27e8;a,
+                        &#x27e8;i, &#x27e8;j,
+                        {}&#x27e9;&#x27e9;&#x27e9;, {}&#x27e9;
+                    </li>
+                    <li>
+                        &#x2200;a,b&#x2208;&#x211d;
+                        &#x2200;i,j&#x2208;&#x2124;
+                        (a<strong>o<sub>i</sub></strong> +
+                        b<strong>o<sub>j</sub></strong>)
+                        &#x2208;&#x1d53e;
+                        &#x225d;<br /> &#x27e8;&#x27e8;a,
+                        &#x27e8;i, {}&#x27e9;&#x27e9;,
+                        &#x27e8;&#x27e8;b,
+                        &#x27e8;j, {}&#x27e9;&#x27e9;
+                        {}&#x27e9;&#x27e9;
+                    </li>
+                    <li>...</li>
+                </ul>
+                <p>
+                    Representing multivectors as sums of vectors
+                    is more convenient than using ordered pairs.
+                </p>
+                <aside class="notes">
+                    When the context is unabiguous we will use a real
+                    number to represent a multivector with a single,
+                    empty tuple component.  We will use bold letter o
+                    to indicate which integers are in the component
+                    tuples.
+                </aside>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h2>Addition &#x1d53e;</h2>
+                <p>
+                    &#x2200;&#x27e8;a,
+                    t<sub>a</sub>&#x27e9;,&#x27e8;b,
+                    t<sub>b</sub>&#x27e9;&#x2208;&#x1d544;
+                    &#x2200;c&#x2208;({{}} &cup; &#x1d53e;)
+                    &#x2200;d&#x2208;&#x1d53e;
+                    <br />
+                    &#x27e8;&#x27e8;a,
+                    t<sub>a</sub>&#x27e9;, c&#x27e9; +
+                    &#x27e8;&#x27e8;b,
+                    t<sub>b</sub>&#x27e9;, {}&#x27e9;
+                    &#x225d;
+                    &#x27e8;&#x27e8;b,
+                    t<sub>b</sub>&#x27e9;, &#x27e8;&#x27e8;a,
+                    t<sub>a</sub>&#x27e9;, c&#x27e9;&#x27e9;
+                    &and;<br />
+                    &#x27e8;&#x27e8;a,
+                    t<sub>a</sub>&#x27e9;, c&#x27e9; +
+                    &#x27e8;&#x27e8;b,
+                    t<sub>b</sub>&#x27e9;, d&#x27e9;
+                    &#x225d;
+                    &#x27e8;&#x27e8;b,
+                    t<sub>b</sub>&#x27e9;, &#x27e8;&#x27e8;a,
+                    t<sub>a</sub>&#x27e9;, c&#x27e9;&#x27e9; + d
+                </p>
+                <p>
+                    Multivector addition merges the components of both
+                    into a single chain which can then be manipulated
+                    according to equality rules.
                 </p>
             </section>
             <section>
-                <h3>Anti-commutative Basis</h3>
-                <p></p>
+                <h3>Addition &#x1d53e; : Closed</h3>
+                <p>
+                    &#x2200;a,b&#x2208;&#x1d53e;
+                    a + b &#x2208;&#x1d53e;
+                </p>
+                <p>
+                    Multivector addition moves components from one to
+                    another.  At each step parts of the sum are
+                    multivectors.
+                </p>
+                <p>
+                </p>
             </section>
             <section>
-                <h3>Basis Signature Decomposition</h3>
-                <p></p>
+                <h3>Addition &#x1d53e; : Identity</h3>
+                <p>
+                    &#x2200;a&#x2208;&#x1d53e;
+                    a + 0 = a = 0 + a
+                </p>
+                <p>
+                    Multivector 0 is the identity.  Multivector
+                    addition allows swapping pairs of components and
+                    dropping zero components.
+                </p>
+                <p>
+                </p>
             </section>
             <section>
-                <h3>Multivector Equality</h3>
-                <p></p>
+                <h3>Addition &#x1d53e; : Associative</h3>
+                <p>
+                    &#x2200;a,b,c&#x2208;&#x1d53e;
+                    (a + b) + c = a + (b + c)
+                </p>
+                <p>
+                    Multivector equality allows us to swap components
+                    into any order.
+                </p>
             </section>
             <section>
-                <h3>Multivector Addition</h3>
-                <p></p>
+                <h3>Addition &#x1d53e; : Commutative</h3>
+                <p>
+                    &#x2200;a,b&#x2208;&#x1d53e;
+                    a + b = b + a
+                </p>
+                <p>
+                    Multivector equality allows us to swap components
+                    into any order.
+                </p>
             </section>
             <section>
-                <h3>Geometric Product</h3>
-                <p></p>
+                <h3>Addition &#x1d53e; : Inverses</h3>
+                <p>
+                    &#x2200;a&#x2208;&#x1d53e;
+                    &#x2203;(-a)&#x2208;&#x1d53e;
+                    a + (-a) = 0
+                </p>
+                <p>
+                    Each multivector component can be negated by
+                    replacing the real number with its addative
+                    inverse.  Adding a multivector to its inverse
+                    results in pairs of zero valued components.
+                </p>
             </section>
             <section>
-                <h3>Norm</h3>
-                <p></p>
+                <h2>Addition &#x1d53e;</h2>
+                <ul>
+                    <li>
+                        Definition: &#x2200;&#x27e8;a,
+                        t<sub>a</sub>&#x27e9;,&#x27e8;b,
+                        t<sub>b</sub>&#x27e9;&#x2208;&#x1d544;
+                        &#x2200;c&#x2208;({{}} &cup; &#x1d53e;)
+                        &#x2200;d&#x2208;&#x1d53e;
+                        <br />
+                        &#x27e8;&#x27e8;a,
+                        t<sub>a</sub>&#x27e9;, c&#x27e9; +
+                        &#x27e8;&#x27e8;b,
+                        t<sub>b</sub>&#x27e9;, {}&#x27e9;
+                        &#x225d;
+                        &#x27e8;&#x27e8;b,
+                        t<sub>b</sub>&#x27e9;, &#x27e8;&#x27e8;a,
+                        t<sub>a</sub>&#x27e9;, c&#x27e9;&#x27e9;
+                        &and;<br />
+                        &#x27e8;&#x27e8;a,
+                        t<sub>a</sub>&#x27e9;, c&#x27e9; +
+                        &#x27e8;&#x27e8;b,
+                        t<sub>b</sub>&#x27e9;, d&#x27e9;
+                        &#x225d;
+                        &#x27e8;&#x27e8;b,
+                        t<sub>b</sub>&#x27e9;, &#x27e8;&#x27e8;a,
+                        t<sub>a</sub>&#x27e9;, c&#x27e9;&#x27e9; + d
+                    </li>
+                    <li>Closed: &#x2200;a,b&#x2208;&#x1d53e;
+                        a + b &#x2208;&#x1d53e;</li>
+                    <li>Identity: &#x2200;a&#x2208;&#x1d53e;
+                        a + 0 = a = 0 + a</li>
+                    <li>Associative: &#x2200;a,b,c&#x2208;&#x1d53e;
+                        (a + b) + c = a + (b + c)
+                    </li>
+                    <li>Commutative: &#x2200;a,b&#x2208;&#x1d53e;
+                        a + b = b + a
+                    </li>
+                    <li>Inverses: &#x2200;a&#x2208;&#x1d53e;
+                        &#x2203;(-a)&#x2208;&#x1d53e;
+                        a + (-a) = 0
+                    </li>
+                </ul>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h2>Geometric Product &#x1d53e;</h2>
+                <p>
+                    &#x2200;&#x27e8;a,
+                    t<sub>a</sub>&#x27e9;,&#x27e8;b,
+                    t<sub>b</sub>&#x27e9;&#x2208;&#x1d544;
+                    &#x2200;c&#x2208;({{}} &cup; &#x1d53e;)
+                    &#x2200;d&#x2208;&#x1d53e;
+                </p>
             </section>
             <section>
-                <h3>Outer Product</h3>
-                <p></p>
+                <h2>Component Product &#x1d53e;</h2>
+                <p>
+                </p>
             </section>
             <section>
-                <h3>Scalar Product</h3>
-                <p></p>
+                <h3>Product &#x1d53e; : Closed</h3>
+                <p>
+                </p>
+                <p>
+                </p>
             </section>
             <section>
-                <h3>Contraction</h3>
-                <p></p>
+                <h3>Product &#x1d53e; : Identity</h3>
+                <p>
+                </p>
+                <p>
+                </p>
+            </section>
+            <section>
+                <h3>Product &#x1d53e; : Associative</h3>
+                <p>
+                </p>
+                <p>
+                </p>
+            </section>
+            <section>
+                <h3>Product &#x1d53e; : Commutative</h3>
+                <p>
+                </p>
+                <p>
+                </p>
+            </section>
+            <section>
+                <h3>Product &#x1d53e; : Inverses</h3>
+                <p>
+                </p>
+                <p>
+                </p>
+            </section>
+            <section>
+                <h2>Geometric Product &#x1d53e;</h2>
+                <ul>
+                    <li>Closed</li>
+                    <li>Identity</li>
+                    <li>Associative</li>
+                    <li>Commutative</li>
+                    <li>Inverses</li>
+                </ul>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h2>Conjugate &#x1d53e;</h2>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h2>Norm &#x1d53e;</h2>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h2>Outer Product &#x1d53e;</h2>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h2>Scalar Product &#x1d53e;</h2>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h2>Contraction &#x1d53e;</h2>
             </section>
         </section>
         <section>
@@ -3369,25 +3876,6 @@
                     <li>Scaling as rotation</li>
                 </p>
             </section>
-        </section>
-
-        <section>
-            <h2>Acknowledgements</h2>
-            <ul>
-                <li>
-                    Reveal.js for slide technology<br />
-                    <a href="https://github.com/hakimel/reveal.js/"
-                    >https://github.com/hakimel/reveal.js/</a>
-                </li>
-                <li>
-                    Special thanks to Euclid, al-Khwārizmī, Georg
-                    Cantor, Hermann Grassman, Emmy Noether, John von
-                    Neumann, Abraham Fraenkel, Ernst Zermello, Thoraf
-                    Skolem, Kazimierz Kuratowski and an apparently
-                    infinite set of mathematical minds who made this
-                    work possible.
-                </li>
-            </ul>
         </section>
     </div>
 </div>
