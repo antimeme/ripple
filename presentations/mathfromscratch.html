@@ -377,6 +377,26 @@
                 </aside>
             </section>
             <section>
+                <h2>Set Equality</h2>
+                <p>
+                    (a = b) &#x225d; ((a &#x2286; b) &and;
+                    (b &#x2286; a))
+                </p>
+                <ul>
+                    <li>
+                        Reflexive: &#x2200;a (a &#x2286; a)
+                    </li><li>
+                        Symmetric: &#x2200;a,b
+                        (a &#x2286; b) &and; (b &#x2286; a)) &#x27fa;
+                        <br />((b &#x2286; a) &and; (a &#x2286; b))
+                    </li><li>
+                        Transitive: &#x2200;a,b,c
+                        (a &#x2286; b) &and;
+                        (b &#x2286; c) &#x27f9; (a &#x2286; c)
+                    </li>
+                </ul>
+            </section>
+            <section>
                 <table>
                     <tr>
                         <td>Extensionality</td>
@@ -424,25 +444,9 @@
                     &#x2200;a,b,c (c &#x2208; a
                     &#x27fa; c &#x2208; b) &#x27f9; a = b
                 </p><p>
-                    (a = b) &#x225d; ((a &#x2286; b) &and;
-                    (b &#x2286; a))
-                </p><p>
                     Two sets that contain the same elements are the
                     same set.
                 </p>
-                <ul>
-                    <li>Reflexive: &#x2200;a (a &#x2286; a)</li>
-                    <li>
-                        Symmetric: &#x2200;a,b
-                        ((a &#x2286; b) &and; (b &#x2286; a)) &#x27fa;
-                        ((b &#x2286; a) &and; (a &#x2286; b)
-                    </li><li>
-                        Transitive: &#x2200;a,b,c
-                        (((a &#x2286; b) &and; (b &#x2286; a)) &and;
-                        ((b &#x2286; c) &and; (c &#x2286; b))) &#x27f9;
-                        ((a &#x2286; c) &and; (c &#x2286; a))
-                    </li>
-                </ul>
             </section>
             <section>
                 <h2>Pairing</h2>
@@ -626,8 +630,200 @@
                     </tr>
                 </table>
             </section>
-
         </section>
+
+        <section>
+            <section>
+                <p>
+                    Extensionality means that members of a set have no
+                    meaningful order.
+                </p>
+                <p>&#x2200;a,b : {a, b} = {b, a}</p>
+                <p>Let's impose some order on them!</p>
+            </section>
+            <section>
+                <h2>Ordered Pairs</h2>
+                <table>
+                    <tr><td>
+                        Kuratowski 1921: &#x27e8;a, b&#x27e9; &#x225d;
+                        {{a}, {a, b}}
+                        <ul>
+                            <li>
+                                &#x2200;a,b (a &ne; b) &#x27fa;
+                                (&#x27e8;a, b&#x27e9; &ne; &#x27e8;b,
+                                a&#x27e9;)
+                            </li>
+                            <li>
+                                &#x2200;a,b (a &ne; b) &#x27fa;
+                                {{a}, {a, b}} &ne; {{b}, {a, b}}
+                            </li>
+                        </ul>
+                    </td></tr>
+                    <tr><td>
+                        a is first in &#x27e8;a, b&#x27e9; &#x225d;
+                        &#x2200;c&#x2208;&#x27e8;a, b&#x27e9; :
+                        a&#x2208;c
+                    </td></tr>
+                    <tr><td>
+                        b is second in &#x27e8;a, b&#x27e9; &#x225d;
+                        (&#x2203;c&#x2208;&#x27e8;a, b&#x27e9; :
+                        b&#x2208;c) &and;<br />
+                        (&#x2200;c,d&#x2208;&#x27e8;a, b&#x27e9; : c
+                        &ne; d &#x27f9; b&#x2209;c &or; b&#x2209;d)
+                    </td></tr>
+                </table>
+            </section>
+            <section>
+                <h3>Tuples</h3>
+                <p>
+                    Ordered pairs can be used to build general tuples
+                    that can order an aribtrary number of members
+                </p>
+                <ul>
+                    <li>&#x27ec;&#x27ed; &#x225d; {}</li>
+                    <li>
+                        &#x27ec;a&#x27ed; &#x225d;
+                        &#x27e8;a, {}&#x27e9;
+                    </li>
+                    <li>
+                        &#x27ec;a, b&#x27ed; &#x225d;
+                        &#x27e8;a, &#x27e8;b, {}&#x27e9;&#x27e9;
+                    </li><li>
+                        &#x27ec;a, b, c&#x27ed; &#x225d;
+                        &#x27e8;a, &#x27e8;b, &#x27e8;c,
+                        {}&#x27e9;&#x27e9;&#x27e9;
+                    </li>
+                    <li>...</li>
+                </ul>
+            </section>
+            <section>
+                <h3>Tuple Concatenation</h3>
+                <p>
+                    &#x2200;n,m&#x2208;&#x2115;
+                    &#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
+                    a<sub>n</sub>&#x27ed; &#x2a01;
+                    &#x27ec;b<sub>0</sub>, b<sub>1</sub>, ...
+                    b<sub>m</sub>&#x27ed; =<br />
+                    &#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
+                    a<sub>n</sub>, b<sub>0</sub>, b<sub>1</sub>, ...
+                    b<sub>m</sub>&#x27ed;
+                </p>
+                <ul>
+                    <li>
+                        &#x27ec;&#x27ed; &#x2a01; b =
+                        {} &#x2a01; b &#x225d; b
+                    </li>
+                    <li>
+                        &#x27ec;a, ...&#x27ed; &#x2a01; b =
+                        &#x27e8;a, t<sub>a</sub>&#x27e9; &#x2a01; b
+                        &#x225d; &#x27e8;a, t<sub>a</sub>
+                        &#x2a01; b&#x27e9;
+                    </li>
+                </ul>
+                <p>
+                    Tuples can be linked together in a recursive way.
+                </p>
+                <aside class="notes">
+                    Concatenating an empty tuple with another tuple
+                    leaves the other tuple unchanged.  Concatenating a
+                    tuple with one element with a tuple means
+                    replacing the empty set that is the second element
+                    of hte first tuple with the second tuple.
+                    Concatenating a tuple with more than one member
+                    can be done by recursively concatenating the
+                    second member of the ordered pair with the second
+                    tuple, which implicitly finds the end of the first
+                    tuple one step at a time.
+                </aside>
+            </section>
+            <section>
+                <h3>Tuple Reversal</h3>
+                <p>
+                    &#x2200;n&#x2208;&#x2115;
+                    reverse(&#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
+                    a<sub>n</sub>&#x27ed;) =
+                    &#x27ec;a<sub>n</sub>, ... a<sub>1</sub>,
+                    a<sub>0</sub>&#x27ed;
+                </p>
+                <ul>
+                    <li>
+                        reverse(&#x27ec;&#x27ed;) &#x225d;
+                        &#x27ec;&#x27ed;
+                    </li><li>
+                        reverse(&#x27ec;a, ...&#x27ed;) =
+                        reverse(&#x27e8;a, t<sub>a</sub>&#x27e9;)
+                        &#x225d;<br />
+                        reverse(t<sub>a</sub>) &#x2a01;
+                        &#x27ec;a&#x27ed;
+                    </li>
+                </ul>
+                <p>
+                    Reversing a tuple means concatenating each
+                    element to the end.
+                </p>
+                <aside class="notes">
+                    We build on concatenation to recursively
+                    describe a process for reversing tuples.
+                </aside>
+            </section>
+
+            <section>
+                <h3>Relation</h3>
+                <p>
+                    (r : D &#x27f6; R) &#x225d;
+                    { &#x27e8;a, b&#x27e9; :  a&#x2208;D,b&#x2208;R }
+                </p>
+                <p>
+                    A relation maps members of one set to another.
+                    Of course a relation is a set too.
+                </p>
+                <ul>
+                    <li>D is the Domain of the Relation</li>
+                    <li>R is the Range of the Relation</li>
+                    <li>r(a) = b &#x27fa;
+                        &#x27e8;a, b&#x27e9;&#x2208;r</li>
+                </ul>
+            </section>
+            <section>
+                <h3>Function</h3>
+                <p>
+                    (f : D &#x27f6; R) &#x225d;
+                    &#x2200;a&#x2208;D (&#x2203;b&#x2208;R
+                    &#x27e8;a, b&#x27e9;&#x2208;f) &and;<br />
+                    (&#x2200;b,c&#x2208;R
+                    (&#x27e8;a, b&#x27e9;&#x2208;f &and;
+                    &#x27e8;a, c&#x27e9;&#x2208;f)
+                    &#x27f9; b = c)
+                </p>
+                <p>
+                    A function is a relation which maps every
+                    member of the domain to the exactly one member
+                    of the range.
+                </p>
+            </section>
+            <section>
+                <h3>Meet the Jections</h3>
+                <p>
+                    Given function f : D &#x27f6; R
+                </p>
+                <ul>
+                    <li>Injection: &#x2200;a,b&#x2208;D
+                        f(a) = f(b) &#x27f9; a = b<br />
+                        No two members of D are mapped to the same
+                        member of R
+                    </li>
+                    <li>Surjection: &#x2200;a&#x2208;R
+                        &#x2203;b&#x2208;D f(b) = a<br />
+                        Every member of R is mapped from at least one
+                        member of D
+                    </li>
+                    <li>
+                        Bijection: both an injection and a surjection
+                    </li>
+                </ul>
+            </section>
+        </section>
+
         <section>
             <section>
                 <h2>Natural Numbers &#x2115;</h2>
@@ -668,7 +864,7 @@
                 </aside>
             </section>
             <section>
-                <h3>Natural Numbers &#x2115;: Equality</h3>
+                <h3>Equality &#x2115;</h3>
                 <p>
                     Every natural number is a distinct set so set
                     equality works for testing natural number
@@ -676,12 +872,7 @@
                 </p>
             </section>
             <section>
-                <h3>Natural Numbers &#x2115;: Order</h3>
-                <p>
-                    Natural number order is set membership.  Every
-                    natural number contains all predecessors so order
-                    is transitive.
-                </p>
+                <h3>Order &#x2115;</h3>
                 <table>
                     <tr><td>
                         &#x2200;a,b&#x2208;&#x2115;
@@ -691,16 +882,25 @@
                         a &gt; b &#x225d; b &#x2208; a
                     </td></tr>
                 </table>
+                <p>
+                    Natural number order is set membership.
+                </p>
+            </section>
+            <section>
+                <h3>Order &#x2115;: Transitive</h3>
+                <p>
+                    Every natural number contains all predecessors so
+                    order is transitive.
+                </p>
                 <ul>
                     <li>
                         &#x2200;a a&#x2208;succ(a) &#x27fa;
                         a&#x2208;(a &cup; {a})
-                    </li>
-                    <li>
+                    </li><li>
                         &#x2200;a,b a&#x2208;b &#x27f9;
-                        a&#x2208;(b &cup; {b})
-                    </li>
-                    <li>
+                        (a&#x2208;succ(b) &#x27fa;
+                        a&#x2208;(b &cup; {b}))
+                    </li><li>
                         &#x2200;a,b,c&#x2208;&#x2115;
                         (a&#x2208;b &and; b&#x2208;c) &#x27f9;
                         (a&#x2208;c)
@@ -1284,168 +1484,6 @@
         </section>
 
         <section>
-            <section>
-                <p>
-                    Extensionality means that members of a set have no
-                    meaningful order.
-                </p>
-                <p>&#x2200;a,b : {a, b} = {b, a}</p>
-                <p>Let's impose some order on them!</p>
-            </section>
-            <section>
-                <h2>Ordered Pairs</h2>
-                <p>
-                    Kuratowski 1921: &#x27e8;a, b&#x27e9; &#x225d;
-                    {{a}, {a, b}}
-                </p>
-                <ul>
-                    <li>
-                        a is first in &#x27e8;a, b&#x27e9; &#x225d;
-                        &#x2200;c&#x2208;&#x27e8;a, b&#x27e9; : a&#x2208;c
-                    </li>
-                    <li>
-                        b is second in &#x27e8;a, b&#x27e9; &#x225d;
-                        (&#x2203;c&#x2208;&#x27e8;a, b&#x27e9; :
-                        b&#x2208;c) &and;
-                        (&#x2200;c,d&#x2208;&#x27e8;a, b&#x27e9; :
-                        c &ne; d &#x27f9; b&#x2209;c
-                        &or; b&#x2209;d)
-                    </li>
-                    <li>
-                        &#x2200;a,b (a &ne; b) &#x27fa;
-                        (&#x27e8;a, b&#x27e9; &ne; &#x27e8;b, a&#x27e9;)
-                    </li>
-                    <li>
-                        &#x2200;a,b (a &ne; b) &#x27fa;
-                        {{a}, {a, b}} &ne; {{b}, {a, b}}
-                    </li>
-                </ul>
-            </section>
-            <section>
-                <h3>Tuples</h3>
-                <p>
-                    Ordered pairs can be used to build general tuples
-                    that can order an aribtrary number of members
-                </p>
-                <ul>
-                    <li>&#x27ec;&#x27ed; &#x225d; {}</li>
-                    <li>
-                        &#x27ec;a&#x27ed; &#x225d;
-                        &#x27e8;a, {}&#x27e9;
-                    </li>
-                    <li>
-                        &#x27ec;a, b&#x27ed; &#x225d;
-                        &#x27e8;a, &#x27e8;b, {}&#x27e9;&#x27e9;
-                    </li><li>
-                        &#x27ec;a, b, c&#x27ed; &#x225d;
-                        &#x27e8;a, &#x27e8;b, &#x27e8;c,
-                        {}&#x27e9;&#x27e9;&#x27e9;
-                    </li>
-                    <li>...</li>
-                </ul>
-            </section>
-            <section>
-                <h3>Tuple Concatenation</h3>
-                <p>
-                    &#x2200;n,m&#x2208;&#x2115;
-                    &#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
-                    a<sub>n</sub>&#x27ed; &#x2a01;
-                    &#x27ec;b<sub>0</sub>, b<sub>1</sub>, ...
-                    b<sub>m</sub>&#x27ed; =<br />
-                    &#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
-                    a<sub>n</sub>, b<sub>0</sub>, b<sub>1</sub>, ...
-                    b<sub>m</sub>&#x27ed;
-                </p>
-                <ul>
-                    <li>
-                        &#x27ec;&#x27ed; &#x2a01; b =
-                        {} &#x2a01; b &#x225d; b
-                    </li>
-                    <li>
-                        &#x27ec;a&#x27ed; &#x2a01; b =
-                        &#x27e8;a, {}&#x27e9; &#x2a01; b &#x225d;
-                        &#x27e8;a, b&#x27e9; = &#x27ec;a,
-                        b<sub>0</sub>, b<sub>1</sub>, ...&#x27ed;
-                    </li>
-                    <li>
-                        &#x27ec;a, ...&#x27ed; &#x2a01; b =
-                        &#x27e8;a, t<sub>a</sub>&#x27e9; &#x2a01; b
-                        &#x225d; &#x27e8;a, t<sub>a</sub>
-                        &#x2a01; b&#x27e9;
-                    </li>
-                </ul>
-                <p>
-                    Tuples can be linked together in a recursive way.
-                </p>
-                <aside class="notes">
-                    Concatenating an empty tuple with another tuple
-                    leaves the other tuple unchanged.  Concatenating a
-                    tuple with one element with a tuple means
-                    replacing the empty set that is the second element
-                    of hte first tuple with the second tuple.
-                    Concatenating a tuple with more than one member
-                    can be done by recursively concatenating the
-                    second member of the ordered pair with the second
-                    tuple, which implicitly finds the end of the first
-                    tuple one step at a time.
-                </aside>
-            </section>
-
-            <section>
-                <h3>Relation</h3>
-                <p>
-                    (r : D &#x27f6; R) &#x225d;
-                    { &#x27e8;a, b&#x27e9; :  a&#x2208;D,b&#x2208;R }
-                </p>
-                <p>
-                    A relation maps members of one set to another.
-                    Of course a relation is a set too.
-                </p>
-                <ul>
-                    <li>D is the Domain of the Relation</li>
-                    <li>R is the Range of the Relation</li>
-                    <li>r(a) = b &#x27fa;
-                        &#x27e8;a, b&#x27e9;&#x2208;r</li>
-                </ul>
-            </section>
-            <section>
-                <h3>Function</h3>
-                <p>
-                    (f : D &#x27f6; R) &#x225d;
-                    &#x2200;a&#x2208;D (&#x2203;b&#x2208;R
-                    &#x27e8;a, b&#x27e9;&#x2208;f) &and;<br />
-                    (&#x2200;b,c&#x2208;R
-                    (&#x27e8;a, b&#x27e9;&#x2208;f &and;
-                    &#x27e8;a, c&#x27e9;&#x2208;f)
-                    &#x27f9; b = c)
-                </p>
-                <p>
-                    A function is a relation which maps every
-                    member of the domain to the exactly one member
-                    of the range.
-                </p>
-            </section>
-            <section>
-                <h3>Meet the Jections</h3>
-                <p>
-                    Given function f : D &#x27f6; R
-                </p>
-                <ul>
-                    <li>Injection: &#x2200;a,b&#x2208;D
-                        f(a) = f(b) &#x27f9; a = b<br />
-                        No two members of D are mapped to the same
-                        member of R
-                    </li>
-                    <li>Surjection: &#x2200;a&#x2208;R
-                        &#x2203;b&#x2208;D f(b) = a<br />
-                        Every member of R is mapped from at least one
-                        member of D
-                    </li>
-                    <li>
-                        Bijection: both an injection and a surjection
-                    </li>
-                </ul>
-            </section>
             <section>
                 <h2>Cardinality</h2>
                 <p>
@@ -2979,7 +3017,7 @@
                         e = (a<sup>-1</sup> &#x2218;
                         a) &#x2218; e :: Inverses
                     </li><li>
-                        e = a<sup>-1</sup> &#x2218; a) :: Identity
+                        e = a<sup>-1</sup> &#x2218; a :: Identity
                     </li>
                 </ul>
             </section>
@@ -3026,13 +3064,13 @@
                     operation.
                 </p>
                 <ul>
-                    <li>&#x27ed;G, &#x2218&#x27ed; is a group</li>
+                    <li>&#x27ec;G, &#x2218&#x27ed; is a group</li>
                     <li>Commutative: &#x2200;a,b,c&#x2208;G
                         (a &#x2218; b) = (b &#x2218; a)
                     </li>
                 </ul>
                 <p>
-                    Integers with addition form an abelian group:
+                    Integers with addition form an abelian group:<br />
                     &#x27ec;&#x2124;, +&#x27ed;
                 </p>
             </section>
@@ -3076,7 +3114,8 @@
                 </ul>
                 <p>
                     Integers with addition and multiplication form a
-                    commutative ring (&#x2124;, +, &#x00d7;)
+                    commutative ring &#x27ec;&#x2124;, +,
+                    &#x00d7;&#x27ed;
                 </p>
             </section>
             <section>
@@ -3748,6 +3787,37 @@
                 </p>
             </section>
             <section>
+                <h3>Addition &#x1d53e; Examples</h3>
+                <ul>
+                    <li>
+                        3<strong>o<sub>1</sub></strong> +
+                        2<strong>o<sub>1</sub></strong> =
+                        5<strong>o<sub>1</sub></strong>
+                    </li>
+                    <li>
+                        (2<strong>o</strong><sub>1</sub> +
+                        <strong>o</strong><sub>2</sub>) +
+                        (3<strong>o</strong><sub>1</sub> -
+                        <strong>o</strong><sub>2</sub>) =
+                        5<strong>o</strong><sub>1</sub> +
+                        0<strong>o</strong><sub>2</sub> =
+                        5<strong>o</strong><sub>1</sub>
+                    </li>
+                    <li>
+                        3<strong>o<sub>1</sub>o<sub>2</sub></strong> +
+                        2<strong>o<sub>1</sub>o<sub>2</sub></strong> =
+                        5<strong>o<sub>1</sub>o<sub>2</sub></strong>
+                    </li>
+                    <li>
+                        3<strong>o<sub>1</sub>o<sub>2</sub></strong> +
+                        2<strong>o<sub>2</sub>o<sub>1</sub></strong> =
+                        3<strong>o<sub>1</sub>o<sub>2</sub></strong> -
+                        2<strong>o<sub>1</sub>o<sub>2</sub></strong> =
+                        <strong>o<sub>1</sub>o<sub>2</sub></strong>
+                    </li>
+                </ul>
+            </section>
+            <section>
                 <h3>Addition &#x1d53e; : Closed</h3>
                 <p>
                     &#x2200;a,b&#x2208;&#x1d53e;
@@ -3948,31 +4018,383 @@
         <section>
             <section>
                 <h2>Norm &#x1d53e;</h2>
+                <p>
+                    If the product of a multivector and its
+                    conjugate is a scalar then this scalar is the
+                    norm squared.  Otherwise there is no norm.
+                </p>
+                <ul>
+                    <li>
+                        <strong>M</strong> <strong>M</strong><sup>*</sup>
+                        = |M|<sup>2</sup>
+                    </li><li>
+                        |M| = +&#x221a;(<strong>M</strong>
+                        <strong>M</strong><sup>*</sup>)
+                    </li>
+                </ul>
             </section>
-        </section>
-        <section>
             <section>
-                <h2>Outer Product &#x1d53e;</h2>
+                <h2>Inverse &#x1d53e;</h2>
+                <p>
+                    If the product of the multivector and its
+                    conjugate is a non-zero scalar then the inverse is
+                    the multivector times the multiplicative inverse
+                    of that scalar (which is the norm squared).
+                </p>
+                <ul>
+                    <li>
+                        <strong>M</strong><sup>-1</sup> =
+                        <strong>M</strong> (<strong>M</strong>
+                        <strong>M</strong><sup>*</sup>)<sup>-1</sup>
+                    </li><li>
+                        <strong>M</strong>
+                        <strong>M</strong><sup>-1</sup> =
+                        <strong>M</strong><sup>-1</sup>
+                        <strong>M</strong> = 1
+                    </li>
+                </ul>
             </section>
         </section>
         <section>
             <section>
                 <h2>Scalar Product &#x1d53e;</h2>
+                <p>
+                    Scalar product is the geometric product with all
+                    non-scalar components dropped.
+                </p>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h2>Outer Product &#x1d53e;</h2>
+                <p>
+                    Outer product is the geometric product with all
+                    components that share basis vectors dropped.
+                </p>
             </section>
         </section>
         <section>
             <section>
                 <h2>Contraction &#x1d53e;</h2>
+                <p>
+                    Contraction is the geometric product with all
+                    components that don't have the (k - l) basis
+                    components dropped.
+                </p>
+            </section>
+            <section>
+                <h3>Contraction &#x1d53e;</h3>
+            </section>
+            <section>
+                <h3>Contraction on Vectors</h3>
+                <ul>
+                    <li>Always a scalar</li>
+                    <li>Always commutative</li>
+                    <li>
+                        <strong>v</strong> <strong>u</strong> =
+                        <strong>v</strong> &#x230b;
+                        <strong>u</strong> +
+                        <strong>v</strong> ^ <strong>u</strong>
+                    </li>
+                </ul>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h2>Reflection &#x1d53e;</h2>
+                <ul>
+                    <li>
+                        <strong>v</strong> =
+                        <strong>v</strong><sub>u&#x2225;</sub> +
+                        <strong>v</strong><sub>u&#x27c2;</sub>
+                    </li>
+                    <li>
+                        <strong>v</strong>' =
+                        <strong>v</strong><sub>u&#x2225;</sub> -
+                        <strong>v</strong><sub>u&#x27c2;</sub>
+                    </li>
+                </ul>
+            </section>
+            <section>
+                <h3>Projection</h3>
+                <ul>
+                    <li>
+                        <strong>v</strong><sub>u&#x2225;</sub> =
+                        (<strong>v</strong> &#x230b;
+                        <strong>&#x00fb;</strong>)
+                        <strong>&#x00fb;</strong>
+                    </li>
+                    <li>
+                        <strong>u</strong> =
+                        |u|<strong>&#x00fb;</strong> &#x27f9;
+                        <strong>&#x00fb;</strong> =
+                        <strong>u</strong>|u|<sup>-1</sup>
+                    </li>
+                    <li>
+                        <strong>v</strong><sub>u&#x2225;</sub> =
+                        (<strong>v</strong> &#x230b;
+                        <strong>u</strong>)
+                        <strong>u</strong>|u|<sup>-2</sup>
+                    </li>
+                    <li>
+                        <strong>u</strong><sup>-1</sup> =
+                        <strong>u</strong>|u|<sup>-2</sup>
+                    </li>
+                    <li>
+                        <strong>v</strong><sub>u&#x2225;</sub> =
+                        (<strong>v</strong> &#x230b;
+                        <strong>u</strong>)
+                        <strong>u</strong><sup>-1</sup>
+                    </li>
+                </ul>
+            </section>
+            <section>
+                <h3>Rejection</h3>
+                <ul>
+                    <li>
+                        <strong>v</strong> =
+                        <strong>v</strong><sub>u&#x2225;</sub> +
+                        <strong>v</strong><sub>u&#x27c2;</sub>
+                        &#x27f9;
+                        <strong>v</strong><sub>u&#x27c2;</sub> =
+                        <strong>v</strong> -
+                        <strong>v</strong><sub>u&#x2225;</sub>
+                    </li>
+                    <li>
+                        <strong>v</strong><sub>u&#x27c2;</sub> =
+                        <strong>v</strong> -
+                        (<strong>v</strong> &#x230b;
+                        <strong>u</strong>)
+                        <strong>u</strong><sup>-1</sup>
+                    </li>
+                    <li>
+                        <strong>v</strong><sub>u&#x27c2;</sub> =
+                        (<strong>v</strong> <strong>u</strong>)
+                        <strong>u</strong><sup>-1</sup> -
+                        (<strong>v</strong> &#x230b;
+                        <strong>u</strong>)
+                        <strong>u</strong><sup>-1</sup>
+                    </li>
+                    <li>
+                        <strong>v</strong><sub>u&#x27c2;</sub> =
+                        (<strong>v</strong> <strong>u</strong> -
+                        <strong>v</strong> &#x230b;
+                        <strong>u</strong>)
+                        <strong>u</strong><sup>-1</sup>
+                    </li>
+                    <li>
+                        <strong>v</strong><sub>u&#x27c2;</sub> =
+                        (<strong>v</strong> ^ <strong>u</strong>)
+                        <strong>u</strong><sup>-1</sup>
+                    </li>
+                </ul>
+            </section>
+            <section>
+                <h3>Reflection</h3>
+                <ul>
+                    <li>
+                        <strong>v</strong>' =
+                        <strong>v</strong><sub>u&#x2225;</sub> -
+                        <strong>v</strong><sub>u&#x27c2;</sub>
+                    </li>
+                    <li>
+                        <strong>v</strong>' =
+                        (<strong>v</strong> &#x230b;
+                        <strong>u</strong>)
+                        <strong>u</strong><sup>-1</sup> -
+                        (<strong>v</strong> ^ <strong>u</strong>)
+                        <strong>u</strong><sup>-1</sup>
+                    </li>
+                    <li>
+                        <strong>v</strong>' =
+                        (<strong>v</strong> &#x230b;
+                        <strong>u</strong> -
+                        <strong>v</strong> ^ <strong>u</strong>)
+                        <strong>u</strong><sup>-1</sup>
+                    </li>
+                    <li>
+                        <strong>v</strong>' =
+                        (<strong>u</strong> &#x230b;
+                        <strong>v</strong> +
+                        <strong>u</strong> ^ <strong>v</strong>)
+                        <strong>u</strong><sup>-1</sup>
+                    </li>
+                    <li>
+                        <strong>v</strong>' =
+                        (<strong>u</strong> <strong>v</strong>)
+                        <strong>u</strong><sup>-1</sup> =
+                        <strong>u</strong> <strong>v</strong>
+                        <strong>u</strong><sup>-1</sup>
+                    </li>
+                </ul>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h2>Rotation &#x1d53e;</h2>
+                <p>
+                    What happens if we reflect twice?
+                </p>
+                <ul>
+                    <li>
+                        <strong>v</strong>' =
+                        <strong>w</strong>
+                        (<strong>u</strong> <strong>v</strong>
+                        <strong>u</strong><sup>-1</sup>)
+                        <strong>w</strong><sup>-1</sup>
+                    </li>
+                    <li>
+                        <strong>v</strong>' =
+                        (<strong>w</strong> <strong>u</strong>)
+                        <strong>v</strong>
+                        (<strong>u</strong><sup>-1</sup>
+                        <strong>w</strong><sup>-1</sup>)
+                    </li>
+                    <li>
+                        <strong>v</strong>' =
+                        (<strong>w</strong> <strong>u</strong>)
+                        <strong>v</strong>
+                        (<strong>w</strong>
+                        <strong>u</strong>)<sup>-1</sup>
+                    </li>
+                </ul>
+            </section>
+        </section>
+        <section>
+            <section>
+                <h2>Complex Numbers</h2>
+            </section>
+            <section>
+                <h3>Square Basis Bivector</h3>
+                <ul>
+                    <li>
+                        (<strong>o<sub>1</sub> o<sub>2</sub></strong>)
+                        <sup>2</sup>
+                    </li>
+                    <li>
+                        <strong>o<sub>1</sub> o<sub>2</sub>
+                            o<sub>1</sub> o<sub>2</sub></strong>
+                    </li>
+                    <li>
+                        -1 <strong>o<sub>1</sub> o<sub>2</sub>
+                        o<sub>2</sub> o<sub>1</sub></strong>
+                    </li>
+                    <li>
+                        -1 <strong>o<sub>1</sub> o<sub>1</sub></strong>
+                    </li>
+                    <li>-1</li>
+                    <li>
+                        (<strong>o<sub>1</sub> o<sub>2</sub></strong>)
+                        <sup>2</sup> = -1 &#x27f9; (&#x221a;(-1) =
+                        <strong>o<sub>1</sub>
+                            o<sub>2</sub></strong>)
+                    </li>
+                </ul>
+                <p>
+                    This holds for any pair of unequal integer basis
+                    vectors.
+                </p>
+            </section>
+            <section>
+                <h3>A Tale of Two Vectors (2D)</h3>
+                <ul>
+                    <li>
+                        (v<sub>1</sub><strong>o<sub>1</sub></strong> +
+                        v<sub>2</sub><strong>o<sub>2</sub></strong>)
+                        (u<sub>1</sub><strong>o<sub>1</sub></strong> -
+                        u<sub>2</sub><strong>o<sub>2</sub></strong>)
+                    </li>
+                    <li>
+                        = v<sub>1</sub>u<sub>1</sub>
+                        <strong>o<sub>1</sub>o<sub>1</sub></strong> +
+                        v<sub>2</sub>u<sub>2</sub>
+                        <strong>o<sub>2</sub>o<sub>2</sub></strong> +
+                        v<sub>1</sub>u<sub>2</sub>
+                        <strong>o<sub>1</sub>o<sub>2</sub></strong> +
+                        v<sub>2</sub>u<sub>1</sub>
+                        <strong>o<sub>2</sub>o<sub>1</sub></strong>
+                    </li>
+                    <li>
+                        = v<sub>1</sub>u<sub>1</sub> +
+                        v<sub>2</sub>u<sub>2</sub> +
+                        v<sub>1</sub>u<sub>2</sub>
+                        <strong>o<sub>1</sub>o<sub>2</sub></strong> -
+                        v<sub>2</sub>u<sub>1</sub>
+                        <strong>o<sub>1</sub>o<sub>2</sub></strong>
+                    </li>
+                    <li>
+                        = (v<sub>1</sub>u<sub>1</sub> +
+                        v<sub>2</sub>u<sub>2</sub>) +
+                        (v<sub>1</sub>u<sub>2</sub> -
+                        v<sub>2</sub>u<sub>1</sub>)
+                        <strong>o<sub>1</sub>o<sub>2</sub></strong>
+                    </li>
+                </ul>
+                <p>
+                    The product of two dimensional vectors is a
+                    complex number.
+                </p>
+            </section>
+            <section>
+                <h3>A Tale of Two Vectors (3D)</h3>
+                <ul>
+                    <li>
+                        (v<sub>1</sub><strong>o<sub>1</sub></strong> +
+                        v<sub>2</sub><strong>o<sub>2</sub></strong> +
+                        v<sub>3</sub><strong>o<sub>3</sub></strong>)
+                        (u<sub>1</sub><strong>o<sub>1</sub></strong> -
+                        u<sub>2</sub><strong>o<sub>2</sub></strong> +
+                        u<sub>3</sub><strong>o<sub>3</sub></strong>)
+                    </li>
+                    <li>
+                        = v<sub>1</sub>u<sub>1</sub>
+                        <strong>o<sub>1</sub>o<sub>1</sub></strong> +
+                        v<sub>2</sub>u<sub>2</sub>
+                        <strong>o<sub>2</sub>o<sub>2</sub></strong> +
+                        v<sub>3</sub>u<sub>3</sub>
+                        <strong>o<sub>3</sub>o<sub>3</sub></strong> +
+                        v<sub>1</sub>u<sub>2</sub>
+                        <strong>o<sub>1</sub>o<sub>2</sub></strong> +
+                        v<sub>2</sub>u<sub>1</sub>
+                        <strong>o<sub>2</sub>o<sub>1</sub></strong> +
+                        v<sub>2</sub>u<sub>3</sub>
+                        <strong>o<sub>2</sub>o<sub>3</sub></strong> +
+                        v<sub>3</sub>u<sub>2</sub>
+                        <strong>o<sub>3</sub>o<sub>2</sub></strong> +
+                        v<sub>1</sub>u<sub>3</sub>
+                        <strong>o<sub>1</sub>o<sub>3</sub></strong> +
+                        v<sub>1</sub>u<sub>3</sub>
+                        <strong>o<sub>1</sub>o<sub>3</sub></strong>
+                    </li>
+                    <li>
+                        = (v<sub>1</sub>u<sub>1</sub> +
+                        v<sub>2</sub>u<sub>2</sub> +
+                        v<sub>3</sub>u<sub>3</sub>) +
+                        (v<sub>1</sub>u<sub>2</sub> -
+                        v<sub>2</sub>u<sub>1</sub>)
+                        <strong>o<sub>1</sub>o<sub>2</sub></strong> +
+                        <br />(v<sub>2</sub>u<sub>3</sub> -
+                        v<sub>3</sub>u<sub>2</sub>)
+                        <strong>o<sub>2</sub>o<sub>3</sub></strong> +
+                        (v<sub>1</sub>u<sub>3</sub> -
+                        v<sub>3</sub>u<sub>1</sub>)
+                        <strong>o<sub>1</sub>o<sub>3</sub></strong>
+                    </li>
+                </ul>
+                <p>
+                    The product of three dimensional vectors is a
+                    quaternion.
+                </p>
             </section>
         </section>
         <section>
             <section>
                 <h2>Conformal Model</h2>
-                <p>
+                <ul>
                     <li>Rotations as Rotors</li>
                     <li>Translations as rotation</li>
                     <li>Scaling as rotation</li>
-                </p>
+                </ul>
             </section>
         </section>
     </div>
