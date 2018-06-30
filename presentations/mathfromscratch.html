@@ -674,100 +674,6 @@
                 </table>
             </section>
             <section>
-                <h3>Tuples</h3>
-                <p>
-                    Ordered pairs can be used to build general tuples
-                    that can order an aribtrary number of members
-                </p>
-                <ul>
-                    <li>&#x27ec;&#x27ed; &#x225d; {}</li>
-                    <li>
-                        &#x27ec;a&#x27ed; &#x225d;
-                        &#x27e8;a, {}&#x27e9;
-                    </li>
-                    <li>
-                        &#x27ec;a, b&#x27ed; &#x225d;
-                        &#x27e8;a, &#x27e8;b, {}&#x27e9;&#x27e9;
-                    </li><li>
-                        &#x27ec;a, b, c&#x27ed; &#x225d;
-                        &#x27e8;a, &#x27e8;b, &#x27e8;c,
-                        {}&#x27e9;&#x27e9;&#x27e9;
-                    </li>
-                    <li>...</li>
-                </ul>
-            </section>
-            <section>
-                <h3>Tuple Concatenation</h3>
-                <p>
-                    &#x2200;n,m&#x2208;&#x2115;
-                    &#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
-                    a<sub>n</sub>&#x27ed; &#x2a01;
-                    &#x27ec;b<sub>0</sub>, b<sub>1</sub>, ...
-                    b<sub>m</sub>&#x27ed; =<br />
-                    &#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
-                    a<sub>n</sub>, b<sub>0</sub>, b<sub>1</sub>, ...
-                    b<sub>m</sub>&#x27ed;
-                </p>
-                <ul>
-                    <li>
-                        &#x27ec;&#x27ed; &#x2a01; b =
-                        {} &#x2a01; b &#x225d; b
-                    </li>
-                    <li>
-                        &#x27ec;a, ...&#x27ed; &#x2a01; b =
-                        &#x27e8;a, t<sub>a</sub>&#x27e9; &#x2a01; b
-                        &#x225d; &#x27e8;a, t<sub>a</sub>
-                        &#x2a01; b&#x27e9;
-                    </li>
-                </ul>
-                <p>
-                    Tuples can be linked together in a recursive way.
-                </p>
-                <aside class="notes">
-                    Concatenating an empty tuple with another tuple
-                    leaves the other tuple unchanged.  Concatenating a
-                    tuple with one element with a tuple means
-                    replacing the empty set that is the second element
-                    of hte first tuple with the second tuple.
-                    Concatenating a tuple with more than one member
-                    can be done by recursively concatenating the
-                    second member of the ordered pair with the second
-                    tuple, which implicitly finds the end of the first
-                    tuple one step at a time.
-                </aside>
-            </section>
-            <section>
-                <h3>Tuple Reversal</h3>
-                <p>
-                    &#x2200;n&#x2208;&#x2115;
-                    reverse(&#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
-                    a<sub>n</sub>&#x27ed;) =
-                    &#x27ec;a<sub>n</sub>, ... a<sub>1</sub>,
-                    a<sub>0</sub>&#x27ed;
-                </p>
-                <ul>
-                    <li>
-                        reverse(&#x27ec;&#x27ed;) &#x225d;
-                        &#x27ec;&#x27ed;
-                    </li><li>
-                        reverse(&#x27ec;a, ...&#x27ed;) =
-                        reverse(&#x27e8;a, t<sub>a</sub>&#x27e9;)
-                        &#x225d;<br />
-                        reverse(t<sub>a</sub>) &#x2a01;
-                        &#x27ec;a&#x27ed;
-                    </li>
-                </ul>
-                <p>
-                    Reversing a tuple means concatenating each
-                    element to the end.
-                </p>
-                <aside class="notes">
-                    We build on concatenation to recursively
-                    describe a process for reversing tuples.
-                </aside>
-            </section>
-
-            <section>
                 <h3>Relation</h3>
                 <p>
                     (r : D &#x27f6; R) &#x225d;
@@ -1531,7 +1437,7 @@
                     &#x2200;a,b&#x2208;&#x2115; [a - b] &#x225d;
                     { &#x2200;&#x27e8;c<sub>1</sub>,
                     c<sub>2</sub>&#x27e9;&#x2208;&#x2124; :
-                    (c<sub>1</sub> + b = c<sub>2</sub> + a) }
+                    (a + c<sub>2</sub> = c<sub>1</sub> + b) }
                 </p>
                 <p>
                     Integers extend the natural numbers.  They introduce
@@ -1581,6 +1487,11 @@
                         a<sub>2</sub> + b<sub>1</sub>)
                     </li>
                 </ul>
+                <aside class="notes">
+                    Integer equality means that the gap between the
+                    numbers has the same number steps in the same
+                    direction.
+                </aside>
             </section>
 
             <section>
@@ -2963,15 +2874,131 @@
 
         <section>
             <section>
+                <h3>Tuples</h3>
+                <p>
+                    Ordered pairs can be used to build general tuples
+                    that can order an aribtrary number of members
+                </p>
+                <ul>
+                    <li>&#x27ec;&#x27ed; &#x225d; {}</li>
+                    <li>
+                        &#x27ec;a&#x27ed; &#x225d;
+                        &#x27e8;a, {}&#x27e9;
+                    </li>
+                    <li>
+                        &#x27ec;a, b&#x27ed; &#x225d;
+                        &#x27e8;a, &#x27e8;b, {}&#x27e9;&#x27e9;
+                    </li><li>
+                        &#x27ec;a, b, c&#x27ed; &#x225d;
+                        &#x27e8;a, &#x27e8;b, &#x27e8;c,
+                        {}&#x27e9;&#x27e9;&#x27e9;
+                    </li>
+                    <li>...</li>
+                </ul>
+            </section>
+            <section>
+                <h3>Tuple Equality</h3>
+                <ul>
+                    <li>&#x27ec;&#x27ed; = &#x27ec;&#x27ed;</li>
+                    <li>
+                        &#x2200;a,b,t
+                        (&#x27e8;a, t&#x27e9; =* &#x27e8;b, t&#x27e9;)
+                        &#x27fa; (a =* b)
+                    </li>
+                </ul>
+                <p>
+                    Tuples are equal if their contents are equal.
+                </p>
+                <aside class="notes">
+                </aside>
+            </section>
+            <section>
+                <h3>Tuple Concatenation</h3>
+                <p>
+                    &#x2200;n,m&#x2208;&#x2115;
+                    &#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
+                    a<sub>n</sub>&#x27ed; &#x2a01;
+                    &#x27ec;b<sub>0</sub>, b<sub>1</sub>, ...
+                    b<sub>m</sub>&#x27ed; =<br />
+                    &#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
+                    a<sub>n</sub>, b<sub>0</sub>, b<sub>1</sub>, ...
+                    b<sub>m</sub>&#x27ed;
+                </p>
+                <ul>
+                    <li>
+                        &#x27ec;&#x27ed; &#x2a01; b =
+                        {} &#x2a01; b &#x225d; b
+                    </li>
+                    <li>
+                        &#x27ec;a, ...&#x27ed; &#x2a01; b =
+                        &#x27e8;a, t<sub>a</sub>&#x27e9; &#x2a01; b
+                        &#x225d; &#x27e8;a, t<sub>a</sub>
+                        &#x2a01; b&#x27e9;
+                    </li>
+                </ul>
+                <p>
+                    Tuples can be linked together in a recursive way.
+                </p>
+                <aside class="notes">
+                    Concatenating an empty tuple with another tuple
+                    leaves the other tuple unchanged.  Concatenating a
+                    tuple with one element with a tuple means
+                    replacing the empty set that is the second element
+                    of hte first tuple with the second tuple.
+                    Concatenating a tuple with more than one member
+                    can be done by recursively concatenating the
+                    second member of the ordered pair with the second
+                    tuple, which implicitly finds the end of the first
+                    tuple one step at a time.
+                </aside>
+            </section>
+            <section>
+                <h3>Tuple Reversal</h3>
+                <p>
+                    &#x2200;n&#x2208;&#x2115;
+                    reverse(&#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
+                    a<sub>n</sub>&#x27ed;) =
+                    &#x27ec;a<sub>n</sub>, ... a<sub>1</sub>,
+                    a<sub>0</sub>&#x27ed;
+                </p>
+                <ul>
+                    <li>
+                        reverse(&#x27ec;&#x27ed;) &#x225d;
+                        &#x27ec;&#x27ed;
+                    </li><li>
+                        reverse(&#x27ec;a, ...&#x27ed;) =
+                        reverse(&#x27e8;a, t<sub>a</sub>&#x27e9;)
+                        &#x225d;<br />
+                        reverse(t<sub>a</sub>) &#x2a01;
+                        &#x27ec;a&#x27ed;
+                    </li>
+                </ul>
+                <p>
+                    Reversing a tuple means concatenating each
+                    element to the end.
+                </p>
+                <aside class="notes">
+                    We build on concatenation to recursively
+                    describe a process for reversing tuples.
+                </aside>
+            </section>
+        </section>
+
+        <section>
+            <section>
                 <h2>Algebra</h2>
                 <blockquote>
                     <q>Algebra: from Arabic <q>al-jabr</q>, literally
                         meaning <q>reunion of broken parts</q></q>
-                    — Oxford English Dictionary
+                    <br />— Oxford English Dictionary
                 </blockquote>
+                <aside class="notes">
+                    Let's begin with some algebra, shall we?
+                    Don't panic.  There won't be an exam.
+                </aside>
             </section>
             <section>
-                <h3>Groups &#x27ec;G, &#x2218;&#x27ed;</h3>
+                <h3>Group &#x27ec;G, &#x2218;&#x27ed;</h3>
                 <p>
                     A group is a set G and a binary operation G
                     &#x2218; G &#x27f6; G with four properties:
@@ -2990,11 +3017,37 @@
                 </ul>
             </section>
             <section>
+                <h3>Abstraction</h3>
                 <p>
                     By definition identity and inverses work when
-                    applied from the right.  Group axioms are enough
-                    to prove that these also work from the left.
+                    applied from the right.
                 </p>
+                <ul>
+                    <li>
+                        Identity: &#x2203;e&#x2208;G
+                        &#x2200;a&#x2208;G a &#x2218; e = a
+                    </li><li>
+                        Inverses: &#x2200;a&#x2208;G
+                        &#x2203;a<sup>-1</sup>&#x2208;G
+                        a &#x2218; a<sup>-1</sup> = e
+                    </li>
+                </ul>
+                <p>
+                    Do these work from the left?
+                </p>
+                <ul>
+                    <li>
+                        &#x2203;e&#x2208;G
+                        &#x2200;a&#x2208;G e &#x2218; a = a ?
+                    </li><li>
+                        &#x2200;a&#x2208;G
+                        &#x2203;a<sup>-1</sup>&#x2208;G
+                        a<sup>-1</sup> &#x2218; a = e ?
+                    </li>
+                </ul>
+            </section>
+            <section>
+                <h3>Proof: Commutative Inverses</h3>
                 <ul>
                     <li>e = a<sup>-1</sup> &#x2218;
                         (a<sup>-1</sup>)<sup>-1</sup> :: Inverses
@@ -3022,11 +3075,7 @@
                 </ul>
             </section>
             <section>
-                <p>
-                    So inverses work regardless of which side they're
-                    applied.  This means the identity also works from
-                    both sides:
-                </p>
+                <h3>Proof: Commutative Identity</h3>
                 <ul>
                     <li>e &#x2218; a = (a &#x2218; a<sup>-1</sup>)
                         &#x2218; a :: Inverses</li>
@@ -3037,6 +3086,7 @@
                 </ul>
             </section>
             <section>
+                <h3>Equation Solving</h3>
                 <p>
                     A group is the simplest mathematical structure
                     that allows algebra.  Suppose we have know a, b
@@ -3070,12 +3120,12 @@
                     </li>
                 </ul>
                 <p>
-                    Integers with addition form an abelian group:<br />
-                    &#x27ec;&#x2124;, +&#x27ed;
+                    Integers with addition form an abelian group:
+                    <br />&#x27ec;&#x2124;, +&#x27ed;
                 </p>
             </section>
             <section>
-                <h3>Rings &#x27ec;R, &#x2218;, &#x229a;&#x27ed;</h3>
+                <h3>Ring &#x27ec;R, &#x2218;, &#x229a;&#x27ed;</h3>
                 <p>
                     A ring is a set and two binary operations
                     R &#x2218; R &#x27f6; R and R &#x229a; R
@@ -3097,11 +3147,18 @@
                         (b &#x229a; a) &#x2218; (c &#x229a; a))
                     </li>
                 </ul>
+                <aside class="notes">
+                    We like math don't we?  As Beyonce tells us, if
+                    we like it we should have put a ring on it.
+                </aside>
             </section>
             <section>
-                <h3>Commutative Rings</h3>
+                <h3>
+                    Commutative Ring &#x27ec;R, &#x2218,
+                    &#x229a;&#x27ed;
+                </h3>
                 <p>
-                    A commutative ring is a with commutative
+                    A commutative ring is a ring with commutative
                     operations.
                 </p>
                 <ul>
@@ -3120,7 +3177,7 @@
             </section>
             <section>
                 <h3>
-                    Unitary Rings &#x27ec;U, &#x2218;, &#x229a;&#x27ed;
+                    Unitary Ring &#x27ec;R, &#x2218;, &#x229a;&#x27ed;
                 </h3>
                 <p>
                     A unitary ring is a ring with an identity element
@@ -3128,11 +3185,11 @@
                 </p>
                 <ul>
                     <li>
-                        &#x27ec;U, &#x2218, &#x229a;&#x27ed; is a ring
+                        &#x27ec;R, &#x2218, &#x229a;&#x27ed; is a ring
                     </li>
                     <li>
-                        Identity: &#x2203;e<sub>&#x229a;</sub>&#x2208;U
-                        &#x2200;a&#x2208;U a &#x229a;
+                        Identity: &#x2203;e<sub>&#x229a;</sub>&#x2208;R
+                        &#x2200;a&#x2208;R a &#x229a;
                         e<sub>&#x229a;</sub> = a
                     </li>
                 </ul>
@@ -3142,7 +3199,7 @@
                 </p>
             </section>
             <section>
-                <h3>Fields &#x27ec;F, &#x2218;, &#x229a;&#x27ed;</h3>
+                <h3>Field &#x27ec;F, &#x2218;, &#x229a;&#x27ed;</h3>
                 <p>
                     A field is a commutative, unitary ring with
                     inverses:
@@ -3164,6 +3221,17 @@
                     An example of a field is rational numbers with
                     addition and multiplication: &#x27ec;&#x211a;, +,
                     &#x00d7;&#x27ed;
+                </p>
+            </section>
+            <section>
+                <h3>
+                    Finite Field &#x27ec;F, &#x2218;, &#x229a;&#x27ed;
+                </h3>
+                <p>
+                    A finite field is a field with a finite number of
+                    members.  An example a field is integers modulo a
+                    prime integer with addition and multiplication:
+                    &#x27ec;&#x2124;/p&#x2124;, +, &#x00d7;&#x27ed;
                 </p>
             </section>
         </section>
@@ -4399,6 +4467,7 @@
         </section>
     </div>
 </div>
+<script src="lib/head.min.js"></script>
 <script src="lib/reveal.js"></script>
 <script>
  var link = document.createElement('link');
@@ -4407,11 +4476,28 @@
  link.href = window.location.search.match(/document/gi) ?
              'lib/pdf.css' : 'lib/paper.css';
  document.getElementsByTagName('head')[0].appendChild( link );
- Reveal.initialize();
- Reveal.configure({
+ Reveal.initialize({
      slideNumber: 'h.v',
      transition: 'convex',
      showNotes: window.location.search.match(/shownotes/gi) ?
-                true : false
+                true : false,
+     dependencies: [
+	 /* { src: 'lib/js/classList.js',
+          *   condition: function() { return !document.body.classList; } },
+	    { src: 'plugin/markdown/marked.js',
+          *   condition: function() {
+          *       return !!document.querySelector( '[data-markdown]' );
+          *   } },
+	    { src: 'plugin/markdown/markdown.js',
+          *   condition: function() {
+          *       return !!document.querySelector( '[data-markdown]' );
+          *   } },
+	    { src: 'plugin/highlight/highlight.js',
+          *   async: true, callback: function() {
+          *       hljs.initHighlightingOnLoad(); } },
+	    { src: 'plugin/search/search.js', async: true },
+	    { src: 'plugin/zoom-js/zoom.js', async: true },*/
+	 { src: 'lib/notes.js', async: true }
+     ]
  });
 </script>
