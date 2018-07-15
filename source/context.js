@@ -55,6 +55,20 @@
                     break; }
             return result; };
 
+    if (typeof Math.imul === 'undefined')
+        Math.imul = function(a, b) {
+            // Performs a 32-bit multiplication modulo 2^32,
+            // approximating the unsigned type in C.  Javascript
+            // integers are stored as a double precision floating
+            // point value, which means they have 53 bits of for
+            // integer values -- an awkward amount.
+            var ah = (a >>> 16) & 0xffff, al = a & 0xffff;
+            var bh = (b >>> 16) & 0xffff, bl = b & 0xffff;
+            var high = ((ah * bl) + (al * bh)) & 0xffff;
+            return (((high << 16) + (al * bl)) & 0xffffffff) >>> 0;
+        }
+
+
     // Browser vendors sometimes introduce features before standards
     // are agreed upon, but with prefixes.  We'll search for these
     // prefixes for some values.

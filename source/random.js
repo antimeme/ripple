@@ -1,5 +1,5 @@
 // random.js
-// Copyright (C) 2011-2014 by Jeff Gold.
+// Copyright (C) 2011-2018 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -29,17 +29,6 @@
     var RRAND_TAOCP2P106 = 1812433253;
     var RRAND_TEMPER_B   = 0x9D2C5680;
     var RRAND_TEMPER_C   = 0xEFC60000;
-
-    // Performs a 32-bit multiplication modulo 2^32, approximating the
-    // unsigned type in C.  Javascript integers are stored as a double
-    // precision floating point value, which means they have 53 bits
-    // of for integer values -- an awkward amount.
-    function multiply_uint32(a, b) {
-        var ah = (a >>> 16) & 0xffff, al = a & 0xffff;
-        var bh = (b >>> 16) & 0xffff, bl = b & 0xffff;
-        var high = ((ah * bl) + (al * bh)) & 0xffff;
-        return (((high << 16) + (al * bl)) & 0xffffffff) >>> 0;
-    }
 
     var int32 = function() {
         // This is the heart of the Mersenne Twister implementation
@@ -95,7 +84,7 @@
         self.mt = new Array();
         self.mt[mti] = seed & RRAND_MAXIMUM;
         for (mti = 1; mti < RRAND_N; mti++) {
-            self.mt[mti] = multiply_uint32(
+            self.mt[mti] = Math.imul(
                 RRAND_TAOCP2P106,
                 (self.mt[mti - 1] ^
                  (self.mt[mti - 1] >>> 30))) + mti;
