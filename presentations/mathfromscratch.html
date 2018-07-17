@@ -253,10 +253,11 @@
         <section>
             <h3>Formal Systems</h3>
             <ul>
-                <li>Axioms: statements accepted as true</li>
                 <li>
                     Rules of Inference: ways statements can be
                     combined
+                </li><li>
+                    Axioms: statements accepted as true
                 </li><li>
                     Theorem: statements proven as true using rules
                     on axioms and other theorems
@@ -283,19 +284,20 @@
         </section>
         <section>
             <h3>Incompleteness</h3>
-            <p>
-                Any formal system containing basic arithmetic is
-                either inconsistent or incomplete. (Gödel 1931)
-            </p>
+            <p>Desirable properties of a formal system:</p>
             <ul>
                 <li>
                     Consistent: no statement can be proven both
-                    true and false
+                    true and false (no paradoxes)
                 </li><li>
                     Complete: all statements can be proven either
-                    true or false
+                    true or false (nothing missing)
                 </li>
             </ul>
+            <p>
+                Any formal system containing basic arithmetic is
+                either inconsistent or incomplete.<br />(Gödel 1931)
+            </p>
             <aside class="notes">
                 We would like our formal system to be both
                 consistent and complete.  Consistency means that
@@ -328,6 +330,34 @@
                 Abraham Fraenkel and Thorlaf Skolem.  Alternative
                 formulations, such as Von Neumann's Category
                 Theory, also exist but we won't use them here.
+            </aside>
+        </section>
+        <section>
+            <h2>Set Contents</h2>
+            <p>
+                We describe sets using either an enumeration or a
+                predicate.
+            </p>
+            <table>
+                <tr>
+                    <td>{a, b, c}</td>
+                    <td>Set containing a, b and c</td>
+                </tr>
+                <tr>
+                    <td>{a&#x2208;b&nbsp;:&nbsp;P(a)}</td>
+                    <td>
+                        Set containing all members of set b
+                        which satify a predicate
+                    </td>
+                </tr>
+            </table>
+            <aside class="notes">
+                We usually describe sets in one of these two ways.
+                When a set contains only a few selected members,
+                we enumerate them, separated by commas.  Larger
+                sets are difficult to represent this way so we
+                describe them using a predicate which selects
+                members from some other set.
             </aside>
         </section>
         <section>
@@ -374,32 +404,28 @@
                 <tr>
                     <td>Extensionality</td>
                     <td>Same members, same set</td>
-                </tr>
-                <tr>
+                </tr><tr>
                     <td>Pairing</td>
                     <td>Make a set with two members</td>
-                </tr>
-                <tr><td>Union</td><td>Sets can be merged</td></tr>
-                <tr>
-                    <td>Power Set</td><td>Sets of subsets exist</td>
-                </tr>
-                <tr>
+                </tr><tr>
+                    <td>Union</td>
+                    <td>Sets can be merged</td>
+                </tr><tr>
+                    <td>Power Set</td>
+                    <td>Sets of subsets exist</td>
+                </tr><tr>
                     <td>Regularity</td>
                     <td>Sets can't contain themselves</td>
-                </tr>
-                <tr>
+                </tr><tr>
                     <td>Infinity</td>
                     <td>There is at least one infinite set</td>
-                </tr>
-                <tr>
+                </tr><tr>
                     <td>Specification</td>
                     <td>A subset exists for any predicate</td>
-                </tr>
-                <tr>
+                </tr><tr>
                     <td>Replacement</td>
                     <td>A set exists for any function</td>
-                </tr>
-                <tr>
+                </tr><tr>
                     <td>Choice</td>
                     <td>One member from each set</td>
                 </tr>
@@ -703,8 +729,8 @@
                 a R b &#x225d; &#x27e8;a, b&#x27e9;&#x2208;R
             </p>
             <p>
-                A relation is a set of ordered pairs.  A relation
-                matches members of one set to another.
+                A relation is a set of ordered pairs.  Relations
+                have a domain and a range, which may be the same.
             </p>
             <ul>
                 <li>Domain(R) &#x225d; { a : &#x2203;b
@@ -714,19 +740,40 @@
             </ul>
         </section>
         <section>
+            <h2>Relation Properties</h2>
+            <ul>
+                <li>Reflexive: &#x2200;a (a R a)</li>
+                <li>Symmetric: &#x2200;a,b (a R b) &#x27fa; (b R a)</li>
+                <li>
+                    Antisymmetric: &#x2200;a,b
+                    (a R b) &and; (b R a) &#x27f9; (a = b)
+                </li><li>
+                    Transitive: &#x2200;a,b,c (a R b) &and;
+                    (b R c) &#x27fa; (a R c)
+                </li>
+                <li>Connex: &#x2200;a,b (a R b) &or; (b R a)</li>
+            </ul>
+            <aside class="notes">
+                These are some properties a relation might have.  We
+                will use these as building blocks for higher level
+                concepts.
+            </aside>
+        </section>
+        <section>
             <h2>Equivalence</h2>
             <p>
                 An equivalence relation is a relation with three
                 special properties:
             </p>
             <ul>
-                <li>Reflexive: &#x2200;a (a = a)</li>
+                <li>Reflexive: &#x2200;a (a &#x2251; a)</li>
                 <li>
-                    Symmetric: &#x2200;a,b (a = b) &#x27fa; (b = a)
+                    Symmetric: &#x2200;a,b (a &#x2251; b) &#x27fa;
+                    (b &#x2251; a)
                 </li>
                 <li>
-                    Transitive: &#x2200;a,b,c
-                    (a = b &and; b = c) &#x27f9; (a = c)
+                    Transitive: &#x2200;a,b,c (a &#x2251; b &and;
+                    b &#x2251; c) &#x27f9; (a &#x2251; c)
                 </li>
             </ul>
             <aside class="notes">
@@ -745,14 +792,15 @@
                 properties:
             </p>
             <ul>
-                <li>Reflexive: &#x2200;a (a &le; a)</li>
+                <li>Reflexive: &#x2200;a (a &#x22d6; a)</li>
                 <li>
                     Antisymmetric: &#x2200;a,b
-                    (a &le; b) &and; (b &le; a) &#x27f9; (a = b)
+                    (a &#x22d6; b) &and; (b &#x22d6; a) &#x27f9; (a = b)
                 </li>
                 <li>
                     Transitive: &#x2200;a,b,c
-                    (a &le; b) &and; (b &le; c) &#x27f9; (a &le; c)
+                    (a &#x22d6; b) &and; (b &#x22d6; c) &#x27f9;
+                    (a &#x22d6; c)
                 </li>
             </ul>
             <aside class="notes">
@@ -770,17 +818,12 @@
                 property:
             </p>
             <ul>
-                <li>Reflexive: &#x2200;a (a &le; a)</li>
                 <li>
-                    Antisymmetric: &#x2200;a,b
-                    (a &le; b) &and; (b &le; a) &#x27f9; (a = b)
+                    Reflexive, Antisymmetric and Transitive
                 </li>
                 <li>
-                    Transitive: &#x2200;a,b,c
-                    (a &le; b) &and; (b &le; c) &#x27f9; (a &le; c)
-                </li>
-                <li>
-                    Connex: &#x2200;a,b (a &le; b) &or; (b &le; a)
+                    Connex: &#x2200;a,b (a &#x22d6; b) &or;
+                    (b &#x22d6; a)
                 </li>
             </ul>
             <aside class="notes">
@@ -845,6 +888,10 @@
                     &#x2200;a&#x2208;D,b&#x2208;R
                     (f(a) = b) &#x27fa; (f<sup>-1</sup>(b) = a)
                 </li>
+                <li>
+                    Cardinality: two sets have the same cardinality
+                    when a bijection between them exists
+                </li>
             </ul>
         </section>
     </section>
@@ -852,19 +899,21 @@
     <section>
         <section>
             <h2>Natural Numbers &#x2115;</h2>
-            <p>succ(a) &#x225d; a &cup; {a}</p>
+            <p>
+                succ(a) &#x225d; a &cup; {a} = &cup;{a, {a, a}}
+            </p>
             <p>
                 &#x2115; &#x225d; { a : (a = {}) &or;
                 &#x2203;b&#x2208;&#x2115; a = succ(b) }
             </p>
             <p>
                 Natural numbers are an effective way to represent
-                discrete quantities that can't be separated into
-                smaller components. (Von Neumann 1923)
+                discrete and indivisible quantities. (Von Neumann
+                1923)
             </p>
         </section>
         <section>
-            <h3>Natural Numbers &#x2115;:</h3>
+            <h3>Natural Numbers &#x2115;: Examples</h3>
             <ul>
                 <li>0&#x2115; &#x225d; {}
                 </li><li>
@@ -878,14 +927,60 @@
                     4&#x2115; &#x225d; succ(3) = {0, 1, 2, 3} =
                     <br />
                     {{}, {{}}, {{}, {{}}}, {{{}, {{}}, {{}, {{}}}}}}
+                </li>
+            </ul>
+
+            <aside class="notes">
+                Rather than writing out the set description, we'll
+                invent some symbols to refer to natural numbers.  Most
+                of the time we will use a number without the natural
+                number symbol.
+            </aside>
+        </section>
+        <section>
+            <h3>Natural Numbers &#x2115;: Examples</h3>
+            <ul>
+                <li>5&#x2115; &#x225d; succ(4) = {0, 1, 2, 3, 4}
+                </li><li>
+                    6&#x2115; &#x225d; succ(5) = {0, 1, 2, 3, 4, 5}
+                </li><li>
+                    7&#x2115; &#x225d; succ(6) = {0, 1, 2, 3, 4, 5, 6}
+                </li><li>
+                    8&#x2115; &#x225d; succ(7) =
+                    {0, 1, 2, 3, 4, 5, 6, 7}
+                </li><li>
+                    9&#x2115; &#x225d; succ(8) =
+                    {0, 1, 2, 3, 4, 5, 6, 7, 8}
+                </li>
+            </ul>
+
+            <aside class="notes">
+                Here are a few more symbols for good measure.
+            </aside>
+        </section>
+        <section>
+            <h3>Natural Numbers &#x2115;: Decimal</h3>
+            <p>
+                Increment the digit to the left and then replace 9
+                with 0. (Unknown Indian mathematicians ~500)
+            </p>
+            <ul>
+                <li>10&#x2115; &#x225d; succ(9) =
+                    {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+                </li><li>
+                    11&#x2115; &#x225d; succ(10) =
+                    {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
                 </li><li>
                     ...
                 </li>
             </ul>
 
             <aside class="notes">
-                Most of the time we will use a number without the
-                natural number symbol.
+                We could keep inventing symbols indefinitely, but
+                that would be cumbersome.  Instead we use a trick
+                invented by Indian mathematicians.  We increment
+                the digit to the left of nine and replace the nine
+                itself with a zero.
             </aside>
         </section>
         <section>
@@ -901,15 +996,63 @@
             <table>
                 <tr><td>
                     &#x2200;a,b&#x2208;&#x2115;
-                    a &lt; b &#x225d; a &#x2208; b
+                    a &le; b &#x225d; a &#x2208; succ(b)
                 </td></tr><tr><td>
                     &#x2200;a,b&#x2208;&#x2115;
-                    a &gt; b &#x225d; b &#x2208; a
+                    a &ge; b &#x225d; b &#x2208; succ(a)
+                </td></tr><tr><td>
+                    &#x2200;a,b&#x2208;&#x2115;
+                    a &lt; b &#x225d; &not;(a &ge; b) &#x27fa;
+                    (a &#x2208; b)
+                </td></tr><tr><td>
+                    &#x2200;a,b&#x2208;&#x2115;
+                    a &gt; b &#x225d; &not;(a &le; b) &#x27fa;
+                    (b &#x2208; a)
                 </td></tr>
             </table>
             <p>
-                Natural number order is set membership.
+                Natural number order is built on set membership.
             </p>
+        </section>
+        <section>
+            <h3>Order &#x2115;: Reflexive</h3>
+            <p>
+                Natural numbers are always contained within their
+                successors, so order is reflexive.
+            </p>
+            <ul>
+                <li>
+                    &#x2200;a&#x2208;&#x2115; a&#x2208;&cup;{a, {a, a}}
+                </li><li>
+                    &#x2200;a&#x2208;&#x2115; a&#x2208;succ(a)
+                </li><li>
+                    &#x2200;a&#x2208;&#x2115; a &le; a
+                </li>
+            </ul>
+            <aside class="notes">
+                Natural number order is reflexive because every
+                natural number is contained in its own successor.
+                This is a clear consequence of the union operator.
+            </aside>
+        </section>
+        <section>
+            <h3>Order &#x2115;: Antisymmetric</h3>
+            <p>
+                The only way two natural numbers can both be contained
+                in the successor of the other is if they are the same.
+            </p>
+            <ul>
+                <li>
+                    &#x2200;a,b,c&#x2208;&#x2115;
+                    (a &#x2208; succ(b)) &and;
+                    (b &#x2208; succ(a)) &#x27f9; (a = b)
+                </li><li>
+                    &#x2200;a,b,c&#x2208;&#x2115; (a &le; b) &and;
+                    (b &le; a) &#x27f9; (a = b)
+                </li>
+            </ul>
+            <aside class="notes">
+            </aside>
         </section>
         <section>
             <h3>Order &#x2115;: Transitive</h3>
@@ -919,16 +1062,12 @@
             </p>
             <ul>
                 <li>
-                    &#x2200;a&#x2208;&#x2115; a&#x2208;succ(a) &#x27fa;
-                    a&#x2208;(a &cup; {a})
-                </li><li>
-                    &#x2200;a,b&#x2208;&#x2115; a&#x2208;b &#x27f9;
-                    (a&#x2208;succ(b) &#x27fa;
-                    a&#x2208;(b &cup; {b}))
+                    &#x2200;a,b,c&#x2208;&#x2115;
+                    (a&#x2208;succ(b)) &and; (b&#x2208;succ(c)) &#x27f9;
+                    (a&#x2208;succ(c))
                 </li><li>
                     &#x2200;a,b,c&#x2208;&#x2115;
-                    (a&#x2208;b &and; b&#x2208;c) &#x27f9;
-                    (a&#x2208;c)
+                    (a &le; b) &and; (b &le; c) &#x27f9; (a &le; c)
                 </li>
             </ul>
             <aside class="notes">
@@ -938,6 +1077,25 @@
                 is contained in b and b is contained in c.  Since
                 a is contained in b it's contained in all of b's
                 successors, including c.
+            </aside>
+        </section>
+        <section>
+            <h3>Order &#x2115;: Connex</h3>
+            <p>
+                Every pair of natural numbers has an order.  Either
+                the first is less than or equal to the second, the
+                second is less than or equal to the first or both.
+            </p>
+            <ul>
+                <li>
+                    &#x2200;a,b&#x2208;&#x2115;
+                    (a&#x2208;succ(b)) &or; (b&#x2208;succ(a))
+                </li><li>
+                    &#x2200;a,b&#x2208;&#x2115;
+                    (a &le; b) &or; (b &le; a)
+                </li>
+            </ul>
+            <aside class="notes">
             </aside>
         </section>
     </section>
@@ -3471,11 +3629,11 @@
             <ul>
                 <li>
                     &#x2203;e&#x2208;G
-                    &#x2200;a&#x2208;G e &#x2218; a = a ?
+                    &#x2200;a&#x2208;G e &#x2218; a &#x225f; a
                 </li><li>
                     &#x2200;a&#x2208;G
                     &#x2203;a<sup>-1</sup>&#x2208;G
-                    a<sup>-1</sup> &#x2218; a = e ?
+                    a<sup>-1</sup> &#x2218; a &#x225f; e
                 </li>
             </ul>
         </section>
