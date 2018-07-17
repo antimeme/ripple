@@ -3,6 +3,9 @@
 <meta charset="utf-8" />
 <link rel="stylesheet" href="lib/reveal/reveal.css">
 <link rel="stylesheet" href="lib/reveal/sky.css">
+<style>
+ canvas.triggy { width: 80%; height: 80%; }
+</style>
 <!-- Slides created using Reveal.js:
      https://github.com/hakimel/reveal.js/ -->
 
@@ -896,7 +899,7 @@
         </section>
     </section>
 
-    <section>
+    <section id="natural-numbers">
         <section>
             <h2>Natural Numbers &#x2115;</h2>
             <p>
@@ -1666,7 +1669,7 @@
         </section>
     </section>
 
-    <section>
+    <section id="integers">
         <section>
             <h2>Integers &#x2124;</h2>
             <p>
@@ -2404,7 +2407,7 @@
         </section>
     </section>
 
-    <section>
+    <section id="rational-numbers">
         <section>
             <h2>Rational Numbers &#x211a;</h2>
             <p>
@@ -3026,7 +3029,7 @@
         </section>
     </section>
 
-    <section>
+    <section id="real-numbers">
         <!-- https://www.math.brown.edu/~res/INF/handout3.pdf -->
         <section>
             <h2>Real Numbers &#x211d;</h2>
@@ -3575,7 +3578,7 @@
         </section>
     </section>
 
-    <section>
+    <section id="algebra">
         <section>
             <h2>Algebra</h2>
             <blockquote>
@@ -4027,6 +4030,21 @@
         </section>
     </section>
 
+    <section id="trigonometry">
+        <section>
+            <h2>Trigonometry</h2>
+            <canvas class="angle" data-theta="0.33" data-phi="0.66">
+            </canvas>
+        </section>
+        <section>
+            <h3>Unit Circle</h3>
+            <canvas class="triggy"
+                    data-theta="0.785"
+                    data-enable="theta"
+                    data-triangle="theta"></canvas>
+        </section>
+    </section>
+
     <section>
         <section>
             <h2>Vector Space &#x1d54d;</h2>
@@ -4128,9 +4146,9 @@
             <p>
             </p>
         </section>
-    </section><!-- -->
+    </section>
 
-    <section>
+    <section id="geometric-algebra">
         <section>
             <h2>Geometric Algebra</h2>
             <p>
@@ -5031,6 +5049,7 @@
 </div></div>
 <script src="lib/reveal/head.min.js"></script>
 <script src="lib/reveal/reveal.js"></script>
+<script src="lib/triggy.js"></script>
 <script>
  var link = document.createElement('link');
  link.rel = 'stylesheet';
@@ -5061,5 +5080,22 @@
 	 { src: 'lib/reveal/search.js', async: true },
 	 { src: 'lib/reveal/notes.js', async: true }
      ]
+ });
+
+ // Experimental jQuery replacement: http://youmightnotneedjquery.com/
+ var ready = function(fn) {
+     if (document.attachEvent ?
+         document.readyState === "complete" :
+         document.readyState !== "loading")
+         fn();
+     else document.addEventListener('DOMContentLoaded', fn);
+ };
+ ready(function() {
+     var elements = document.querySelectorAll('canvas.triggy');
+     Array.prototype.forEach.call(elements, function(el, ii) {
+         el.addEventListener('click', triggy.click);
+         el.addEventListener('resize', triggy.draw);
+         triggy.draw({target: el});
+     });
  });
 </script>
