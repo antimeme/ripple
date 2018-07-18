@@ -17,6 +17,8 @@
 //
 // ---------------------------------------------------------------------
 // A library for visualizing trigonometry using HTML canvas elements.
+// The plan is to illustrate this:
+//   http://www.clowder.net/hop/cos(a+b).html
 (function(triggy) {
     'use strict';
 
@@ -34,11 +36,12 @@
             right: result.width - (result.width - result.size) / 2 };
         result.margin = 0.05;
         result.top = result.extents.top + (result.size * result.margin);
-        result.left = result.extents.left + (result.size * result.margin);
-        result.bottom = result.extents.bottom -
-                        (result.size * result.margin);
-        result.right = result.extents.right -
-                       (result.size * result.margin);
+        result.left = result.extents.left + (
+            result.size * result.margin);
+        result.bottom = result.extents.bottom - (
+            result.size * result.margin);
+        result.right = result.extents.right - (
+            result.size * result.margin);
         result.radius = Math.min(result.right - result.left,
                                  result.bottom - result.top);
         return result;
@@ -78,22 +81,32 @@
         var sintheta = Math.sin(theta);
         theta = (theta !== null) ? parseFloat(theta) : undefined;
 
-        var triangle = canvas.getAttribute('data-triangle');
-        if ((triangle == 'theta') && !isNaN(theta)) {
+        var decorate = canvas.getAttribute('data-decorate');
+        if (!isNaN(theta) && (decorate === 'theta')) {
+            var decosize = bounds.radius * 0.1;
             ctx.beginPath();
             ctx.moveTo(bounds.left + costheta * bounds.radius,
                        bounds.bottom - sintheta * bounds.radius);
             ctx.lineTo(bounds.left + costheta * bounds.radius,
                        bounds.bottom);
-            if (true) { // TODO drop square if angle too sharp
+            if ((costheta < 0.993) &&
+                (sintheta < 0.993)) { // enough room?
                 ctx.moveTo(bounds.left + costheta * bounds.radius -
-                           bounds.radius * 0.1, bounds.bottom);
+                           decosize, bounds.bottom);
                 ctx.lineTo(bounds.left + costheta * bounds.radius -
-                           bounds.radius * 0.1,
-                           bounds.bottom - bounds.radius * 0.1);
+                           decosize, bounds.bottom - decosize);
                 ctx.lineTo(bounds.left + costheta * bounds.radius,
-                           bounds.bottom - bounds.radius * 0.1);
+                           bounds.bottom - decosize);
             }
+
+            ctx.moveTo(bounds.left + 3 * costheta * decosize / 2,
+                       bounds.bottom - 3 * sintheta * decosize / 2);
+            ctx.arc(bounds.left, bounds.bottom,
+                    3 * decosize / 2, 2 * Math.PI - theta, 0);
+
+            ctx.fillText(String.fromCharCode(0x1d703),
+                         bounds.left, bounds.bottom);
+
             ctx.lineWidth = 2;
             ctx.strokeStyle = 'rgb(64, 64, 64)';
             ctx.stroke();
