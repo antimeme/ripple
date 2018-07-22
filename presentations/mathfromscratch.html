@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="lib/reveal/reveal.css">
 <link rel="stylesheet" href="lib/reveal/sky.css">
 <style>
- canvas.triggy { width: 80%; height: 80%; }
+ canvas.triggy { width: 100%; height: 100%; }
 </style>
 <!-- Slides created using Reveal.js:
      https://github.com/hakimel/reveal.js/ -->
@@ -4033,15 +4033,20 @@
     <section id="trigonometry">
         <section>
             <h2>Trigonometry</h2>
-            <canvas class="triggy" data-theta="0.33" data-phi="0.66">
+            <canvas class="triggy"
+                    data-origin="center" data-circle="on"
+                    data-angle1="-0.33"
+                    data-enable="1">
             </canvas>
         </section>
         <section>
-            <h3>Unit Circle</h3>
+            <h3>Angles and Triangles</h3>
             <canvas class="triggy"
-                    data-theta="0.785"
-                    data-enable="theta"
-                    data-decorate="theta"></canvas>
+                    data-circle="on" data-axes="on"
+                    data-decorate1="on"
+                    data-angle1="0.33"
+                    data-enable="1">
+            </canvas>
         </section>
     </section>
 
@@ -5091,6 +5096,8 @@
      else document.addEventListener('DOMContentLoaded', fn);
  };
  ready(function() {
+     triggy.setScaleFn(function(value) {
+         return value / Reveal.getScale(); });
      var elements = document.querySelectorAll('canvas.triggy');
      Array.prototype.forEach.call(elements, function(el, ii) {
          el.addEventListener('click', triggy.click);

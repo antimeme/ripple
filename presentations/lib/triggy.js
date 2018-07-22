@@ -22,18 +22,21 @@
 (function(triggy) {
     'use strict';
 
-    triggy.compute = function(event) { 
+    var scale = function(value) { return value; };
+    triggy.setScaleFn = function(fn) { scale = fn; };
+
+    triggy.computeBounds = function(event, origin) {
         var canvas = event.target;
         var result = {
             width: canvas.clientWidth,
-            height: canvas.clientHeight
-        };
+            height: canvas.clientHeight };
         result.size = Math.min(result.width, result.height);
         result.extents = {
             top: (result.height - result.size) / 2,
             left: (result.width - result.size) / 2,
             bottom: result.height - (result.height - result.size) / 2,
-            right: result.width - (result.width - result.size) / 2 };
+            right:  result.width  - (result.width  - result.size) / 2 };
+
         result.margin = 0.05;
         result.top = result.extents.top + (result.size * result.margin);
         result.left = result.extents.left + (
@@ -42,14 +45,108 @@
             result.size * result.margin);
         result.right = result.extents.right - (
             result.size * result.margin);
-        result.radius = Math.min(result.right - result.left,
-                                 result.bottom - result.top);
+
+        var origin = canvas.getAttribute('data-origin');
+        if (origin === 'center') {
+            result.origin = {
+                style: 'center',
+                x: (result.right + result.left) / 2,
+                y: (result.top + result.bottom) / 2 };
+            result.radius = result.size * (1 - result.margin) / 2;
+        } else {
+            result.origin = {
+                style: 'bleft', x: result.left, y: result.bottom };
+            result.radius = Math.min(result.right - result.left,
+                                     result.bottom - result.top);
+        }
+
         return result;
     };
 
-    triggy.draw = function(event) {
-        var canvas = event.target;
-        var bounds = triggy.compute(event);
+    var drawRay = function(ctx, bounds, color,
+                           angle, cosangle, sinangle) {
+        ctx.beginPath();
+        ctx.moveTo(bounds.origin.x, bounds.origin.y);
+        ctx.lineTo(bounds.origin.x + cosangle * bounds.radius,
+                   bounds.origin.y - sinangle * bounds.radius);
+        ctx.arc(bounds.origin.x + cosangle * bounds.radius,
+                bounds.origin.y - sinangle * bounds.radius, 8,
+                0, 2 * Math.PI);
+        ctx.lineTo(bounds.origin.x + cosangle * bounds.radius,
+                   bounds.origin.y - sinangle * bounds.radius);
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = color;
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.fill();
+    };
+
+    var drawDecoration = function(ctx, bounds, name, angle, sin, cos) {
+        var decosize = bounds.radius * 0.1;
+        ctx.fillStyle = 'rgb(64, 64, 64)';
+        ctx.strokeStyle = 'rgb(64, 64, 64)';
+
+        // Draw a triangle using sin and cos
+        ctx.beginPath();
+        ctx.moveTo(bounds.origin.x + cos * bounds.radius,
+                   bounds.origin.y - sin * bounds.radius);
+        ctx.lineTo(bounds.origin.x + cos * bounds.radius,
+                   bounds.origin.y);
+        ctx.lineTo(bounds.origin.x, bounds.origin.y);
+
+        // If there's enough room, draw a right-angle box
+        var roomy = 0.993;
+        if ((cos < roomy) && (cos > -roomy) &&
+            (sin < roomy) && (sin > -roomy)) {
+            var xdeco = (cos >= 0) ? decosize : -decosize;
+            var ydeco = (sin >= 0) ? decosize : -decosize;
+
+            ctx.moveTo(bounds.origin.x + cos * bounds.radius -
+                       xdeco, bounds.origin.y);
+            ctx.lineTo(bounds.origin.x + cos * bounds.radius -
+                       xdeco, bounds.origin.y - ydeco);
+            ctx.lineTo(bounds.origin.x + cos * bounds.radius,
+                       bounds.origin.y - ydeco);
+        }
+
+        // Draw an arc to represent the angle
+        if ((angle >= 0) && (angle <= Math.PI / 2)) {
+            ctx.moveTo(bounds.origin.x + 3 * cos * decosize / 2,
+                       bounds.origin.y);
+            ctx.arc(bounds.origin.x, bounds.origin.y,
+                    3 * decosize / 2, 0, -angle, true);
+        } else if (angle >= 0) {
+            ctx.moveTo(bounds.origin.x + 3 * cos * decosize / 2,
+                       bounds.origin.y - 3 * sin * decosize / 2);
+            ctx.arc(bounds.origin.x, bounds.origin.y,
+                    3 * decosize / 2, -angle, Math.PI, true);
+        } else if (angle < -Math.PI / 2) {
+            ctx.moveTo(bounds.origin.x + 3 * cos * decosize / 2,
+                       bounds.origin.y);
+            ctx.arc(bounds.origin.x, bounds.origin.y,
+                    3 * decosize / 2, Math.PI, -angle, true);
+        } else {
+            ctx.moveTo(bounds.origin.x + 3 * cos * decosize / 2,
+                       bounds.origin.y - 3 * sin * decosize / 2);
+            ctx.arc(bounds.origin.x, bounds.origin.y,
+                    3 * decosize / 2, -angle, 0, true);
+        }
+
+        ctx.font = Math.floor(bounds.size / 10) + 'px Verdana';
+        ctx.fillText(name, bounds.origin.x + (cos * bounds.radius / 4),
+                     bounds.origin.y - (sin * bounds.radius / 8));
+        ctx.font = Math.floor(bounds.size / 20) + 'px Verdana';
+        ctx.fillText('r sin(' + name + ')',
+                     bounds.origin.x + (cos * bounds.radius) +
+                     bounds.size * 0.01,
+                     bounds.origin.y - (sin * bounds.radius) / 2);
+
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    };
+
+    var innerDraw = function(canvas, bounds) {
         var ctx;
 
         canvas.width  = bounds.width;
@@ -61,127 +158,87 @@
         }
         ctx.clearRect(0, 0, bounds.width, bounds.height);
 
-        ctx.beginPath();
-        ctx.moveTo(bounds.left, bounds.top);
-        ctx.lineTo(bounds.left, bounds.bottom);
-        ctx.lineTo(bounds.right, bounds.bottom);
-        ctx.moveTo(bounds.left, bounds.top);
-        ctx.arc(bounds.left, bounds.bottom, bounds.radius,
-                3 * Math.PI / 2, 0);
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = 'rgb(0, 0, 0)';
-        ctx.stroke();
-
-        var phi = canvas.getAttribute('data-phi');
-        var cosphi = Math.cos(phi);
-        var sinphi = Math.sin(phi);
-        phi = (phi !== null) ? parseFloat(phi) : undefined;
-        var theta = canvas.getAttribute('data-theta');
-        var costheta = Math.cos(theta);
-        var sintheta = Math.sin(theta);
-        theta = (theta !== null) ? parseFloat(theta) : undefined;
-
-        var decorate = canvas.getAttribute('data-decorate');
-        if (!isNaN(theta) && (decorate === 'theta')) {
-            var decosize = bounds.radius * 0.1;
+        if (canvas.getAttribute('data-axes')) {
             ctx.beginPath();
-            ctx.moveTo(bounds.left + costheta * bounds.radius,
-                       bounds.bottom - sintheta * bounds.radius);
-            ctx.lineTo(bounds.left + costheta * bounds.radius,
-                       bounds.bottom);
-            if ((costheta < 0.993) &&
-                (sintheta < 0.993)) { // enough room?
-                ctx.moveTo(bounds.left + costheta * bounds.radius -
-                           decosize, bounds.bottom);
-                ctx.lineTo(bounds.left + costheta * bounds.radius -
-                           decosize, bounds.bottom - decosize);
-                ctx.lineTo(bounds.left + costheta * bounds.radius,
-                           bounds.bottom - decosize);
-            }
+            ctx.moveTo(bounds.left, bounds.origin.y);
+            ctx.lineTo(bounds.right, bounds.origin.y);
+            ctx.moveTo(bounds.origin.x, bounds.top);
+            ctx.lineTo(bounds.origin.x, bounds.bottom);
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = 'rgb(0, 0, 0)';
+            ctx.stroke();
+        }
 
-            ctx.moveTo(bounds.left + 3 * costheta * decosize / 2,
-                       bounds.bottom - 3 * sintheta * decosize / 2);
-            ctx.arc(bounds.left, bounds.bottom,
-                    3 * decosize / 2, 2 * Math.PI - theta, 0);
-
-            ctx.fillText(String.fromCharCode(0x1d703),
-                         bounds.left, bounds.bottom);
-
+        if (canvas.getAttribute('data-circle')) {
+            ctx.beginPath();
+            ctx.moveTo(bounds.origin.x + bounds.radius, bounds.origin.y);
+            ctx.arc(bounds.origin.x, bounds.origin.y, bounds.radius,
+                    0, (bounds.origin.style === 'center') ?
+                    (2 * Math.PI) : (-Math.PI / 2), true);
             ctx.lineWidth = 2;
-            ctx.strokeStyle = 'rgb(64, 64, 64)';
+            ctx.strokeStyle = 'rgb(0, 0, 0)';
             ctx.stroke();
         }
 
-        if (!isNaN(phi) && !isNaN(theta)) {
-            ctx.beginPath();
-            if (phi > theta) {
-                ctx.moveTo(bounds.left + cosphi * bounds.radius,
-                           bounds.bottom - sinphi * bounds.radius);
-                ctx.arc(bounds.left, bounds.bottom, bounds.radius,
-                        2 * Math.PI - phi, 2 * Math.PI - theta);
-            } else {
-                ctx.moveTo(bounds.left + costheta * bounds.radius,
-                           bounds.bottom - sintheta * bounds.radius);
-                ctx.arc(bounds.left, bounds.bottom, bounds.radius,
-                        2 * Math.PI - theta, 2 * Math.PI - phi);
-            }
-            ctx.lineWidth = 10;
-            ctx.strokeStyle = 'rgb(32, 192, 192)';
-            ctx.stroke();
-        }
+        var colors = [
+            'rgb(32, 32, 192)', 'rgb(32, 192, 32)', 'rgb(192, 32, 32)'];
+        var names = [
+            '\u{1d703}', '\u{1d711}', '\u{1d7fe}'];
+        var anum = 1;
+        while (anum > 0) {
+            var name = canvas.getAttribute('data-name' + anum);
+            var color = canvas.getAttribute('data-color' + anum);
+            var angle = canvas.getAttribute('data-angle' + anum);
+            var deco  = canvas.getAttribute('data-decorate' + anum);
 
-        if (!isNaN(phi)) {
-            ctx.beginPath();
-            ctx.moveTo(bounds.left, bounds.bottom);
-            ctx.lineTo(bounds.left + cosphi * bounds.radius,
-                       bounds.bottom - sinphi * bounds.radius);
-            ctx.arc(bounds.left + cosphi * bounds.radius,
-                    bounds.bottom - sinphi * bounds.radius, 8,
-                    0, 2 * Math.PI);
-            ctx.lineTo(bounds.left + cosphi * bounds.radius,
-                       bounds.bottom - sinphi * bounds.radius);
-            ctx.lineWidth = 4;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = 'rgb(32, 192, 32)';
-            ctx.stroke();
-            ctx.fill();
-        }
+            if ((angle === null) || (isNaN(angle)))
+                break;
 
-        if (!isNaN(theta)) {
-            ctx.beginPath();
-            ctx.moveTo(bounds.left, bounds.bottom);
-            ctx.lineTo(bounds.left + costheta * bounds.radius,
-                       bounds.bottom - sintheta * bounds.radius);
-            ctx.arc(bounds.left + costheta * bounds.radius,
-                    bounds.bottom - sintheta * bounds.radius, 8,
-                    0, 2 * Math.PI);
-            ctx.lineTo(bounds.left + costheta * bounds.radius,
-                       bounds.bottom - sintheta * bounds.radius);
-            ctx.lineWidth = 4;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = 'rgb(32, 32, 192)';
-            ctx.stroke();
-            ctx.fill();
+            if (!name)
+                name = names[anum - 1];
+            if (!color)
+                color = colors[anum - 1];
+
+            angle = parseFloat(angle);
+            var cos = Math.cos(angle);
+            var sin = Math.sin(angle);
+
+            if (deco)
+                drawDecoration(ctx, bounds, name, angle, sin, cos);
+            drawRay(ctx, bounds, color, angle, cos, sin);
+            anum++;
         }
     };
 
+    triggy.draw = function(event) {
+        var canvas = event.target;
+        var bounds = triggy.computeBounds(event);
+        return innerDraw(canvas, bounds);
+    }
+
     triggy.click = function(event) {
         var enable = event.target.getAttribute('data-enable');
-        if (enable == 'theta') {
-            var bounds = triggy.compute(event);
+        if (enable)
+            enable = enable.split().map(function(value) {
+                return parseInt(value, 10) });
+
+        if (enable.length > 0) {
+            var bounds = triggy.computeBounds(event);
             var brect = event.target.getBoundingClientRect();
-            var scale = Reveal.getScale() || 1;
-            var click = { x: (event.pageX - brect.left) / scale,
-                          y: (event.pageY - brect.top) / scale };
-            var clicvec = { x: click.x - bounds.left,
-                            y: bounds.bottom - click.y };
-            var lsquared = clicvec.x * clicvec.x + clicvec.y * clicvec.y;
-            
-            if ((click.x < bounds.left) || (click.y > bounds.bottom)) {
-            } else if (lsquared <= 0.000001) {
-            } else event.target.setAttribute(
-                'data-theta', Math.acos(clicvec.x / Math.sqrt(lsquared)));
-            triggy.draw(event);
+            var click = { x: scale(event.pageX - brect.left) -
+                             bounds.origin.x,
+                          y: scale(event.pageY - brect.top) -
+                             bounds.origin.y};
+            var lsquared = click.x * click.x + click.y * click.y;
+            var angle = Math.acos(click.x / Math.sqrt(lsquared));
+            if (click.y > 0)
+                angle = -angle;
+
+            if ((bounds.origin.style === 'center') ||
+                ((angle >= 0) && (angle <= Math.PI / 2)))
+                event.target.setAttribute(
+                    'data-angle' + enable[0], angle);
+            innerDraw(event.target, bounds);
         }
     };
 
