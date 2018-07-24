@@ -22,11 +22,10 @@
 (function(triggy) {
     'use strict';
 
-    var scale = function(value) { return value; };
-    triggy.setScaleFn = function(fn) { scale = fn; };
-
-    triggy.computeBounds = function(event, origin) {
-        var canvas = event.target;
+    /**
+     * Computes some useful locations within a canvas in a size
+     * independent manner. */
+    var computeBounds = function(canvas, origin) {
         var result = {
             width: canvas.clientWidth,
             height: canvas.clientHeight };
@@ -82,7 +81,7 @@
         ctx.fill();
     };
 
-    var drawDecoration = function(ctx, bounds, name, angle, sin, cos) {
+    var drawDeco = function(ctx, bounds, name, angle, sin, cos) {
         var decosize = bounds.radius * 0.1;
         ctx.fillStyle = 'rgb(64, 64, 64)';
         ctx.strokeStyle = 'rgb(64, 64, 64)';
@@ -137,16 +136,20 @@
         ctx.fillText(name, bounds.origin.x + (cos * bounds.radius / 4),
                      bounds.origin.y - (sin * bounds.radius / 8));
         ctx.font = Math.floor(bounds.size / 20) + 'px Verdana';
-        ctx.fillText('r sin(' + name + ')',
+        ctx.fillText('sin' + name,
                      bounds.origin.x + (cos * bounds.radius) +
-                     bounds.size * 0.01,
+                     bounds.size * (cos >= 0 ? 0.01 : -0.11),
                      bounds.origin.y - (sin * bounds.radius) / 2);
+        ctx.fillText('cos' + name,
+                     bounds.origin.x + (cos * bounds.radius) / 2,
+                     bounds.origin.y + bounds.size  *
+            (sin >= 0 ? 0.05 : -0.03));
 
         ctx.lineWidth = 2;
         ctx.stroke();
     };
 
-    var innerDraw = function(canvas, bounds) {
+    var draw = function(canvas, bounds) {
         var ctx;
 
         canvas.width  = bounds.width;
@@ -183,63 +186,185 @@
         var colors = [
             'rgb(32, 32, 192)', 'rgb(32, 192, 32)', 'rgb(192, 32, 32)'];
         var names = [
-            '\u{1d703}', '\u{1d711}', '\u{1d7fe}'];
+            '\u{1d703}' /* theta */,
+            '\u{1d711}' /* phi */,
+            '\u{1d7fe}' /* gamma */];
+        var angle, cos, sin;
         var anum = 1;
-        while (anum > 0) {
-            var name = canvas.getAttribute('data-name' + anum);
-            var color = canvas.getAttribute('data-color' + anum);
-            var angle = canvas.getAttribute('data-angle' + anum);
-            var deco  = canvas.getAttribute('data-decorate' + anum);
+        var prev = undefined;
 
+        if (canvas.getAttribute('data-arcs')) {
+            while (anum > 0) {
+                angle = canvas.getAttribute('data-angle' + anum);
+                if ((angle === null) || (isNaN(angle)))
+                    break;
+                angle = parseFloat(angle);
+                cos = Math.cos(angle);
+                sin = Math.sin(angle);
+                if (anum > 0) {
+                    ctx.beginPath();
+                    ctx.moveTo(bounds.origin.x + bounds.radius * cos,
+                               bounds.origin.y - bounds.radius * sin);
+                    ctx.arc(bounds.origin.x, bounds.origin.y,
+                            bounds.radius, -angle, -prev, true);
+                    ctx.strokeStyle = 'rgb(64, 234, 234)';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+                prev = angle;
+                ++anum;
+            }
+            anum = 1;
+        }
+        while (anum > 0) {
+            var angle = canvas.getAttribute('data-angle' + anum);
             if ((angle === null) || (isNaN(angle)))
                 break;
+            angle = parseFloat(angle);
+            var cos = Math.cos(angle);
+            var sin = Math.sin(angle);
+            var name = canvas.getAttribute('data-name' + anum);
+            var color = canvas.getAttribute('data-color' + anum);
+            var deco  = canvas.getAttribute('data-decorate' + anum);
 
             if (!name)
                 name = names[anum - 1];
             if (!color)
                 color = colors[anum - 1];
 
-            angle = parseFloat(angle);
-            var cos = Math.cos(angle);
-            var sin = Math.sin(angle);
-
             if (deco)
-                drawDecoration(ctx, bounds, name, angle, sin, cos);
+                drawDeco(ctx, bounds, name, angle, sin, cos);
             drawRay(ctx, bounds, color, angle, cos, sin);
-            anum++;
+
+            ++anum;
         }
     };
 
-    triggy.draw = function(event) {
-        var canvas = event.target;
-        var bounds = triggy.computeBounds(event);
-        return innerDraw(canvas, bounds);
-    }
-
-    triggy.click = function(event) {
-        var enable = event.target.getAttribute('data-enable');
+    var closestAngle = function(canvas, bounds, point) {
+        var result = undefined;
+        var best = undefined;
+        var enable = canvas.getAttribute('data-enable');
         if (enable)
-            enable = enable.split().map(function(value) {
+            enable = enable.split(',').map(function(value) {
                 return parseInt(value, 10) });
+        else enable = [];
 
-        if (enable.length > 0) {
-            var bounds = triggy.computeBounds(event);
-            var brect = event.target.getBoundingClientRect();
-            var click = { x: scale(event.pageX - brect.left) -
-                             bounds.origin.x,
-                          y: scale(event.pageY - brect.top) -
-                             bounds.origin.y};
-            var lsquared = click.x * click.x + click.y * click.y;
-            var angle = Math.acos(click.x / Math.sqrt(lsquared));
-            if (click.y > 0)
-                angle = -angle;
+        for (var ii = 0; ii < enable.length; ++ii) {
+            var angle = canvas.getAttribute('data-angle' + enable[ii]);
+            var delta = {
+                x: bounds.radius * Math.cos(angle) - point.x,
+                y: bounds.radius * Math.sin(angle) - point.y};
+            var dsquared = delta.x * delta.x + delta.y * delta.y;
 
-            if ((bounds.origin.style === 'center') ||
-                ((angle >= 0) && (angle <= Math.PI / 2)))
-                event.target.setAttribute(
-                    'data-angle' + enable[0], angle);
-            innerDraw(event.target, bounds);
+            if (isNaN(best) || (dsquared < best)) {
+                result = enable[ii];
+                best = dsquared;
+            }
         }
+        if (!isNaN(result))
+            setAngle(canvas, bounds, point, result);
+        return result;
     };
+
+    var setAngle = function(canvas, bounds, point, anum) {
+        var lsquared = point.x * point.x + point.y * point.y;
+        var angle = Math.acos(point.x / Math.sqrt(lsquared));
+        if (point.y < 0)
+            angle = -angle;
+
+        if ((bounds.origin.style === 'center') ||
+            ((angle >= 0) && (angle <= Math.PI / 2)))
+            canvas.setAttribute('data-angle' + anum, angle);
+    };
+
+    var pointify = function(canvas, bounds, event, scalefn) {
+        var result = null;
+        var brect = canvas.getBoundingClientRect();
+        if (!scalefn) // identity scaling if no scale function provided
+            scalefn = function(value) { return value; };
+        var transform = function(x, y) {
+            if (isNaN(x) || isNaN(y))
+                alert('ERROR point: ' + x + ', ' + y);
+            else if (isNaN(brect.left) || isNaN(brect.top))
+                alert('ERROR brect:' + brect.left + ', ' + brect.top);
+            else if (isNaN(bounds.origin.x) || isNaN(bounds.origin.y))
+                alert('ERROR bounds.origin:' +
+                      bounds.origin.x + ', ' + bounds.origin.y);
+            return { x: scalefn(x - brect.left) - bounds.origin.x,
+                     y: bounds.origin.y - scalefn(y - brect.top) };
+        };
+
+        if (event.targetTouches) {
+            var current = [];
+            var ii;
+
+            for (ii = 0; ii < event.targetTouches.length; ++ii) {
+                var touch = event.targetTouches.item(ii);
+                result.current.push(
+                    transform(touch.pageX, touch.pageY));
+            }
+
+            if (current.length > 0)
+                result = current[0];
+            else if (event.changedTouches) {
+                for (ii = 0; ii < event.changedTouches.length; ++ii) {
+                    var touch = event.changedTouches.item(ii);
+                    result.current.push(
+                        transform(touch.pageX, touch.pageY));
+                }
+
+                if (current.length > 0)
+                    result = current[0];
+                else alert('ERROR empty target and changed');
+            } else { alert('ERROR empty target but no changed'); }
+        } else result = transform(event.pageX, event.pageY);
+        return result;
+    };
+
+    triggy.setup = function(selector, scalefn) {
+        var elements = document.querySelectorAll(selector);
+        Array.prototype.forEach.call(elements, function(canvas, ii) {
+            var bounds = computeBounds(canvas);
+            var dragging = null;
+
+            canvas.addEventListener('mousedown', function(event) {
+                var point = pointify(canvas, bounds, event, scalefn);
+                //click(canvas, bounds, point);
+                dragging = closestAngle(canvas, bounds, point);
+                draw(canvas, bounds);
+            });
+            canvas.addEventListener('mousemove', function(event) {
+                if (dragging) {
+                    var point = pointify(
+                        canvas, bounds, event, scalefn);
+                    setAngle(canvas, bounds, point, dragging);
+                    draw(canvas, bounds);
+                }
+            });
+            canvas.addEventListener('mouseup', function(event)
+                { dragging = null; });
+            canvas.addEventListener('mouseleave', function(event)
+                { dragging = null; });
+
+            canvas.addEventListener('touchstart', function(event) {
+                var point = pointify(canvas, bounds, event, scalefn);
+                click(canvas, bounds, point);
+                draw(canvas, bounds);
+                // TODO touch events
+            });
+            canvas.addEventListener('touchmove', function(event) {
+                // TODO touch events
+            });
+            canvas.addEventListener('touchend', function(event) {
+                // TODO touch events
+            });
+
+            canvas.addEventListener('resize', function(event) {
+                bounds = computeBounds(event.target);
+                draw(canvas, bounds);
+            });
+            draw(canvas, bounds);
+        });
+    }
 
 })(typeof exports === 'undefined' ? this.triggy = {} : exports);

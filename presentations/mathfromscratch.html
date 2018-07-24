@@ -4030,13 +4030,31 @@
         </section>
     </section>
 
+    <!-- Foundation:
+         * Euclid book 3 proposition 20: Center angle = 2 x inscribed
+         * Ptolemy's Theorem: AC * BD = AB * BC + BC * AD
+         * Law of sines
+
+         Prove:
+         * cos(a - b) = cos(a)cos(b) + sin(a)sin(b)
+       -->
     <section id="trigonometry">
         <section>
             <h2>Trigonometry</h2>
             <canvas class="triggy"
                     data-origin="center" data-circle="on"
+                    data-enable="1,2,3"
                     data-angle1="-0.33"
-                    data-enable="1">
+                    data-angle2="0.5"
+                    data-angle3="1.2">
+            </canvas>
+        </section>
+        <section>
+            <h3>Circles and Angles</h3>
+            <canvas class="triggy"
+                    data-origin="center" data-circle="on"
+                    data-angle1="0.33" data-angle2="0"
+                    data-decorate1="on" data-arcs="on" data-enable="1">
             </canvas>
         </section>
         <section>
@@ -4045,6 +4063,17 @@
                     data-circle="on" data-axes="on"
                     data-decorate1="on"
                     data-angle1="0.33"
+                    data-enable="1">
+            </canvas>
+        </section>
+        <section>
+            <h2>Angles and Circles</h2>
+            <canvas class="triggy"
+                    data-origin="center"
+                    data-circle="on"
+                    data-axes="on"
+                    data-decorate1="on"
+                    data-angle1="-0.33"
                     data-enable="1">
             </canvas>
         </section>
@@ -5096,13 +5125,7 @@
      else document.addEventListener('DOMContentLoaded', fn);
  };
  ready(function() {
-     triggy.setScaleFn(function(value) {
+     triggy.setup('canvas.triggy', function(value) {
          return value / Reveal.getScale(); });
-     var elements = document.querySelectorAll('canvas.triggy');
-     Array.prototype.forEach.call(elements, function(el, ii) {
-         el.addEventListener('click', triggy.click);
-         el.addEventListener('resize', triggy.draw);
-         triggy.draw({target: el});
-     });
  });
 </script>
