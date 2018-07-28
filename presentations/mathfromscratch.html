@@ -4,7 +4,6 @@
 <link rel="stylesheet" href="lib/reveal/reveal.css">
 <link rel="stylesheet" href="lib/reveal/sky.css">
 <style>
- canvas.triggy { width: 100%; height: 100%; }
 </style>
 <!-- Slides created using Reveal.js:
      https://github.com/hakimel/reveal.js/ -->
@@ -3226,7 +3225,7 @@
             <h2>Addition &#x211d;</h2>
             <ul>
                 <li>
-                    Definition: 
+                    Definition:
                     &#x27e8;A<sub>L</sub>,A<sub>H</sub>&#x27e9; +
                     &#x27e8;B<sub>L</sub>,B<sub>H</sub>&#x27e9; &#x225d;
                     <br />&#x27e8;{&#x2200;a&#x2208;A<sub>L</sub>,
@@ -3988,7 +3987,7 @@
                 This degree one polynomial can be used to create
                 any rational number [a / b].  This shows that all
                 rational numbers are the root of at least one
-                polynomial expression.                
+                polynomial expression.
             </p>
         </section>
         <section>
@@ -4030,6 +4029,54 @@
         </section>
     </section>
 
+    <section id="geometry">
+        <section>
+            <h2>Geometry</h2>
+            <canvas class="triggy"
+                    data-origin="center"
+                    data-circle="on"
+                    data-enable="1"
+                    data-connect1="2,3"
+                    data-radii="2,3"
+                    data-angle1="-2.25" data-angle2="0.25"
+                    data-angle3="1.75">
+            </canvas>
+        </section>
+        <section>
+            <h3>Geometry II</h3>
+            <canvas class="triggy"
+                    data-origin="center" data-circle="on"
+                    data-enable="1"
+                    data-connect1="2,3"
+                    data-radii="2,3"
+                    data-angle1="-2.25" data-angle2="0.25"
+                    data-angle3="1.75">
+            </canvas>
+        </section>
+        <section>
+            <h3>Geometry III</h3>
+            <canvas class="triggy"
+                    data-origin="center" data-circle="on"
+                    data-enable="1"
+                    data-connect1="2,3"
+                    data-radii="2,3"
+                    data-angle1="-2.25" data-angle2="0.25"
+                    data-angle3="1.75">
+            </canvas>
+        </section>
+        <section>
+            <h3>Geometry IV</h3>
+            <canvas class="triggy"
+                    data-origin="center" data-circle="on"
+                    data-enable="1"
+                    data-connect1="2,3"
+                    data-radii="2,3"
+                    data-angle1="-2.25" data-angle2="0.25"
+                    data-angle3="1.75">
+            </canvas>
+        </section>
+    </section>
+
     <!-- Foundation:
          * Euclid book 3 proposition 20: Center angle = 2 x inscribed
          * Ptolemy's Theorem: AC * BD = AB * BC + BC * AD
@@ -4042,38 +4089,38 @@
         <section>
             <h2>Trigonometry</h2>
             <canvas class="triggy"
+                    data-circle="on" data-axes="on"
+                    data-decorate1="on"
+                    data-angle1="0.33"
+                    data-radii="1"
+                    data-enable="1">
+            </canvas>
+        </section>
+        <section>
+            <h3>Trigonometry of Circles</h3>
+            <canvas class="triggy"
                     data-origin="center" data-circle="on"
-                    data-enable="1,2,3"
-                    data-angle1="-0.33"
-                    data-angle2="0.5"
-                    data-angle3="1.2">
+                    data-radii="1,2"
+                    data-angle1="0.33" data-angle2="0"
+                    data-decorate1="on" data-arcs="on" data-enable="1">
             </canvas>
         </section>
         <section>
             <h3>Circles and Angles</h3>
             <canvas class="triggy"
                     data-origin="center" data-circle="on"
+                    data-radii="1,2"
                     data-angle1="0.33" data-angle2="0"
                     data-decorate1="on" data-arcs="on" data-enable="1">
             </canvas>
         </section>
         <section>
-            <h3>Angles and Triangles</h3>
+            <h3>Angles and Circles</h3>
             <canvas class="triggy"
                     data-circle="on" data-axes="on"
                     data-decorate1="on"
                     data-angle1="0.33"
-                    data-enable="1">
-            </canvas>
-        </section>
-        <section>
-            <h2>Angles and Circles</h2>
-            <canvas class="triggy"
-                    data-origin="center"
-                    data-circle="on"
-                    data-axes="on"
-                    data-decorate1="on"
-                    data-angle1="-0.33"
+                    data-radii="1"
                     data-enable="1">
             </canvas>
         </section>
@@ -4107,7 +4154,7 @@
                     <strong>u</strong> + <strong>v</strong> =
                     <strong>v</strong> + <strong>u</strong>
                 </li><li>
-                    Identity: 
+                    Identity:
                     &#x2203;<strong>0</strong>
                     &#x2208;<strong>V</strong>
                     &#x2200;<strong>v</strong>

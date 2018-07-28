@@ -19,8 +19,24 @@
 // A library for visualizing trigonometry using HTML canvas elements.
 // The plan is to illustrate this:
 //   http://www.clowder.net/hop/cos(a+b).html
+//
+// The following settings are available:
+// * data-enable="1,2,3" - Angles the user is allowed to move
+// * data-radii="2,3"    - Draw lines from origin to these points
+// * data-connect1="2,3" - Draw lines from point to these points
 (function(triggy) {
     'use strict';
+
+    var getDataList = function(canvas, attribute) {
+        var result = {};
+        var value = canvas.getAttribute('data-' + attribute);
+        if (value) {
+            value.split(',').forEach(function(entry) {
+                result[parseInt(entry, 10)] = true;
+            });
+        }
+        return result;
+    };
 
     /**
      * Computes some useful locations within a canvas in a size
@@ -45,6 +61,8 @@
         result.right = result.extents.right - (
             result.size * result.margin);
 
+        result.radii = getDataList(canvas, 'radii');
+
         var origin = canvas.getAttribute('data-origin');
         if (origin === 'center') {
             result.origin = {
@@ -62,17 +80,21 @@
         return result;
     };
 
-    var drawRay = function(ctx, bounds, color,
-                           angle, cosangle, sinangle) {
+    var drawRay = function(ctx, bounds, anum, color,
+                           angle, cos, sin) {
         ctx.beginPath();
-        ctx.moveTo(bounds.origin.x, bounds.origin.y);
-        ctx.lineTo(bounds.origin.x + cosangle * bounds.radius,
-                   bounds.origin.y - sinangle * bounds.radius);
-        ctx.arc(bounds.origin.x + cosangle * bounds.radius,
-                bounds.origin.y - sinangle * bounds.radius, 8,
+        if (bounds.radii[anum]) {
+            ctx.moveTo(bounds.origin.x, bounds.origin.y);
+            ctx.lineTo(bounds.origin.x + cos * bounds.radius,
+                       bounds.origin.y - sin * bounds.radius);
+        } else ctx.moveTo(bounds.origin.x + cos * bounds.radius,
+                          bounds.origin.y - sin * bounds.radius);
+        ctx.arc(bounds.origin.x + cos * bounds.radius,
+                bounds.origin.y - sin * bounds.radius,
+                bounds.radius / 30,
                 0, 2 * Math.PI);
-        ctx.lineTo(bounds.origin.x + cosangle * bounds.radius,
-                   bounds.origin.y - sinangle * bounds.radius);
+        ctx.lineTo(bounds.origin.x + cos * bounds.radius,
+                   bounds.origin.y - sin * bounds.radius);
         ctx.lineWidth = 4;
         ctx.lineCap = 'round';
         ctx.strokeStyle = color;
@@ -81,13 +103,16 @@
         ctx.fill();
     };
 
-    var drawDeco = function(ctx, bounds, name, angle, sin, cos) {
+    var drawDeco = function(ctx, bounds, symbol, angle, sin, cos) {
         var decosize = bounds.radius * 0.1;
+        var xdeco = (cos >= 0) ? decosize : -decosize;
+        var ydeco = (sin >= 0) ? decosize : -decosize;
+
+        ctx.beginPath();
         ctx.fillStyle = 'rgb(64, 64, 64)';
         ctx.strokeStyle = 'rgb(64, 64, 64)';
 
         // Draw a triangle using sin and cos
-        ctx.beginPath();
         ctx.moveTo(bounds.origin.x + cos * bounds.radius,
                    bounds.origin.y - sin * bounds.radius);
         ctx.lineTo(bounds.origin.x + cos * bounds.radius,
@@ -95,12 +120,9 @@
         ctx.lineTo(bounds.origin.x, bounds.origin.y);
 
         // If there's enough room, draw a right-angle box
-        var roomy = 0.993;
+        var roomy = 0.99;
         if ((cos < roomy) && (cos > -roomy) &&
             (sin < roomy) && (sin > -roomy)) {
-            var xdeco = (cos >= 0) ? decosize : -decosize;
-            var ydeco = (sin >= 0) ? decosize : -decosize;
-
             ctx.moveTo(bounds.origin.x + cos * bounds.radius -
                        xdeco, bounds.origin.y);
             ctx.lineTo(bounds.origin.x + cos * bounds.radius -
@@ -110,37 +132,27 @@
         }
 
         // Draw an arc to represent the angle
-        if ((angle >= 0) && (angle <= Math.PI / 2)) {
+        if ((angle < Math.PI / 2 - 0.02) ||
+            (angle > Math.PI / 2)) {
             ctx.moveTo(bounds.origin.x + 3 * cos * decosize / 2,
                        bounds.origin.y);
             ctx.arc(bounds.origin.x, bounds.origin.y,
                     3 * decosize / 2, 0, -angle, true);
-        } else if (angle >= 0) {
-            ctx.moveTo(bounds.origin.x + 3 * cos * decosize / 2,
-                       bounds.origin.y - 3 * sin * decosize / 2);
-            ctx.arc(bounds.origin.x, bounds.origin.y,
-                    3 * decosize / 2, -angle, Math.PI, true);
-        } else if (angle < -Math.PI / 2) {
-            ctx.moveTo(bounds.origin.x + 3 * cos * decosize / 2,
-                       bounds.origin.y);
-            ctx.arc(bounds.origin.x, bounds.origin.y,
-                    3 * decosize / 2, Math.PI, -angle, true);
         } else {
-            ctx.moveTo(bounds.origin.x + 3 * cos * decosize / 2,
-                       bounds.origin.y - 3 * sin * decosize / 2);
-            ctx.arc(bounds.origin.x, bounds.origin.y,
-                    3 * decosize / 2, -angle, 0, true);
+            ctx.moveTo(bounds.origin.x + xdeco, bounds.origin.y);
+            ctx.lineTo(bounds.origin.x + xdeco, bounds.origin.y - ydeco);
+            ctx.lineTo(bounds.origin.x, bounds.origin.y - ydeco);
         }
 
         ctx.font = Math.floor(bounds.size / 10) + 'px Verdana';
-        ctx.fillText(name, bounds.origin.x + (cos * bounds.radius / 4),
+        ctx.fillText(symbol, bounds.origin.x + (cos * bounds.radius / 4),
                      bounds.origin.y - (sin * bounds.radius / 8));
         ctx.font = Math.floor(bounds.size / 20) + 'px Verdana';
-        ctx.fillText('sin' + name,
+        ctx.fillText('sin' + symbol,
                      bounds.origin.x + (cos * bounds.radius) +
                      bounds.size * (cos >= 0 ? 0.01 : -0.11),
                      bounds.origin.y - (sin * bounds.radius) / 2);
-        ctx.fillText('cos' + name,
+        ctx.fillText('cos' + symbol,
                      bounds.origin.x + (cos * bounds.radius) / 2,
                      bounds.origin.y + bounds.size  *
             (sin >= 0 ? 0.05 : -0.03));
@@ -148,6 +160,39 @@
         ctx.lineWidth = 2;
         ctx.stroke();
     };
+
+    var angleList = [
+        {name: 'alpha',  symbol: '\u{1d6fc}', color: 'rgb(32, 32, 32)'},
+        {name: 'beta',   symbol: '\u{1d6fd}', color: 'rgb(32, 32, 32)'},
+        {name: 'gamma',  symbol: '\u{1d7fe}', color: 'rgb(32, 32, 32)'},
+        {name: 'delta',  symbol: '\u{1d6ff}', color: 'rgb(32, 32, 32)'},
+        {name: 'epsilon', symbol: '\u{1d700}',
+         color: 'rgb(32, 32, 32)'},
+        {name: 'zeta',   symbol: '\u{1d701}', color: 'rgb(32, 32, 32)'},
+        {name: 'eta',    symbol: '\u{1d702}', color: 'rgb(32, 32, 32)'},
+        {name: 'theta',  symbol: '\u{1d703}', color: 'rgb(32, 32, 32)'},
+        {name: 'iota',   symbol: '\u{1d704}', color: 'rgb(32, 32, 32)'},
+        {name: 'kappa',  symbol: '\u{1d705}', color: 'rgb(32, 32, 32)'},
+        {name: 'lambda', symbol: '\u{1d706}', color: 'rgb(32, 32, 32)'},
+        {name: 'mu',     symbol: '\u{1d707}', color: 'rgb(32, 32, 32)'},
+        {name: 'nu',     symbol: '\u{1d708}', color: 'rgb(32, 32, 32)'},
+        {name: 'xi',     symbol: '\u{1d709}', color: 'rgb(32, 32, 32)'},
+        {name: 'omicron', symbol: '\u{1d70a}',
+         color: 'rgb(32, 32, 32)'},
+        {name: 'pi',     symbol: '\u{1d70b}', color: 'rgb(32, 32, 32)'},
+        {name: 'rho',    symbol: '\u{1d70c}', color: 'rgb(32, 32, 32)'},
+        {name: 'sigma',  symbol: '\u{1d70e}', color: 'rgb(32, 32, 32)'},
+        {name: 'tau',    symbol: '\u{1d70f}', color: 'rgb(32, 32, 32)'},
+        {name: 'upsilon', symbol: '\u{1d710}',
+         color: 'rgb(32, 32, 32)'},
+        {name: 'phi',    symbol: '\u{1d711}', color: 'rgb(32, 32, 32)'},
+        {name: 'chi',    symbol: '\u{1d712}', color: 'rgb(32, 32, 32)'},
+        {name: 'psi',    symbol: '\u{1d713}', color: 'rgb(32, 32, 32)'},
+        {name: 'omega',  symbol: '\u{1d714}', color: 'rgb(32, 32, 32)'},
+    ];
+    var angleTable = {};
+    angleList.forEach(function(angle) {
+        angleTable[angle.name] = angle; });
 
     var draw = function(canvas, bounds) {
         var ctx;
@@ -183,24 +228,41 @@
             ctx.stroke();
         }
 
-        var colors = [
-            'rgb(32, 32, 192)', 'rgb(32, 192, 32)', 'rgb(192, 32, 32)'];
-        var names = [
-            '\u{1d703}' /* theta */,
-            '\u{1d711}' /* phi */,
-            '\u{1d7fe}' /* gamma */];
-        var angle, cos, sin;
-        var anum = 1;
-        var prev = undefined;
+        var angle, cos, sin, anum, prev = undefined;
+        var arcs = canvas.getAttribute('data-arcs');
 
-        if (canvas.getAttribute('data-arcs')) {
-            while (anum > 0) {
-                angle = canvas.getAttribute('data-angle' + anum);
-                if ((angle === null) || (isNaN(angle)))
-                    break;
-                angle = parseFloat(angle);
-                cos = Math.cos(angle);
-                sin = Math.sin(angle);
+        var nextAngle = function(canvas, anum) {
+            var result = canvas.getAttribute('data-angle' + anum);
+            if (result === null)
+                result = undefined;
+            return result;
+        };
+
+        for (anum = 1; !isNaN(angle = nextAngle(canvas, anum));
+             ++anum) {
+            angle = parseFloat(angle);
+            cos = Math.cos(angle);
+            sin = Math.sin(angle);
+
+            var connects = getDataList(canvas, 'connect' + anum);
+            if (Object.keys(connects).length > 0) {
+                ctx.beginPath();
+                Object.keys(connects).forEach(function(connect) {
+                    var other = parseFloat(canvas.getAttribute(
+                        'data-angle' + connect));
+                    ctx.moveTo(bounds.origin.x + bounds.radius * cos,
+                               bounds.origin.y - bounds.radius * sin);
+                    ctx.lineTo(bounds.origin.x + bounds.radius *
+                        Math.cos(other),
+                               bounds.origin.y - bounds.radius *
+                        Math.sin(other));
+                });
+                ctx.strokeStyle = 'rgb(32, 32, 32)';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+            }
+
+            if (arcs) {
                 if (anum > 0) {
                     ctx.beginPath();
                     ctx.moveTo(bounds.origin.x + bounds.radius * cos,
@@ -212,55 +274,56 @@
                     ctx.stroke();
                 }
                 prev = angle;
-                ++anum;
             }
-            anum = 1;
         }
-        while (anum > 0) {
-            var angle = canvas.getAttribute('data-angle' + anum);
-            if ((angle === null) || (isNaN(angle)))
-                break;
+
+        if (canvas.getAttribute('data-arcs')) {
+            for (anum = 1; !isNaN(angle = nextAngle(canvas, anum));
+                 ++anum) {
+            }
+        }
+
+        for (anum = 1; !isNaN(angle = nextAngle(canvas, anum));
+             ++anum) {
             angle = parseFloat(angle);
             var cos = Math.cos(angle);
             var sin = Math.sin(angle);
             var name = canvas.getAttribute('data-name' + anum);
+            var symbol = canvas.getAttribute('data-symbol' + anum);
             var color = canvas.getAttribute('data-color' + anum);
             var deco  = canvas.getAttribute('data-decorate' + anum);
 
-            if (!name)
-                name = names[anum - 1];
-            if (!color)
-                color = colors[anum - 1];
+            var angleDesc = angleTable[name];
+            if (!angleDesc)
+                angleDesc = angleList[anum - 1];
+            if (angleDesc && !symbol)
+                symbol = angleDesc.symbol;
+            if (angleDesc && !color)
+                color = angleDesc.color;
 
             if (deco)
-                drawDeco(ctx, bounds, name, angle, sin, cos);
-            drawRay(ctx, bounds, color, angle, cos, sin);
-
-            ++anum;
+                drawDeco(ctx, bounds, symbol, angle, sin, cos);
+            drawRay(ctx, bounds, anum, color, angle, cos, sin);
         }
     };
 
     var closestAngle = function(canvas, bounds, point) {
         var result = undefined;
         var best = undefined;
-        var enable = canvas.getAttribute('data-enable');
-        if (enable)
-            enable = enable.split(',').map(function(value) {
-                return parseInt(value, 10) });
-        else enable = [];
+        var enable = getDataList(canvas, 'enable');
 
-        for (var ii = 0; ii < enable.length; ++ii) {
-            var angle = canvas.getAttribute('data-angle' + enable[ii]);
+        Object.keys(enable).forEach(function(key) {
+            var angle = canvas.getAttribute('data-angle' + key);
             var delta = {
                 x: bounds.radius * Math.cos(angle) - point.x,
                 y: bounds.radius * Math.sin(angle) - point.y};
             var dsquared = delta.x * delta.x + delta.y * delta.y;
 
             if (isNaN(best) || (dsquared < best)) {
-                result = enable[ii];
+                result = key;
                 best = dsquared;
             }
-        }
+        });
         if (!isNaN(result))
             setAngle(canvas, bounds, point, result);
         return result;
@@ -300,8 +363,7 @@
 
             for (ii = 0; ii < event.targetTouches.length; ++ii) {
                 var touch = event.targetTouches.item(ii);
-                result.current.push(
-                    transform(touch.pageX, touch.pageY));
+                current.push(transform(touch.pageX, touch.pageY));
             }
 
             if (current.length > 0)
@@ -309,7 +371,7 @@
             else if (event.changedTouches) {
                 for (ii = 0; ii < event.changedTouches.length; ++ii) {
                     var touch = event.changedTouches.item(ii);
-                    result.current.push(
+                    current.push(
                         transform(touch.pageX, touch.pageY));
                 }
 
@@ -329,9 +391,9 @@
 
             canvas.addEventListener('mousedown', function(event) {
                 var point = pointify(canvas, bounds, event, scalefn);
-                //click(canvas, bounds, point);
                 dragging = closestAngle(canvas, bounds, point);
                 draw(canvas, bounds);
+                return false;
             });
             canvas.addEventListener('mousemove', function(event) {
                 if (dragging) {
@@ -340,11 +402,12 @@
                     setAngle(canvas, bounds, point, dragging);
                     draw(canvas, bounds);
                 }
+                return false;
             });
             canvas.addEventListener('mouseup', function(event)
-                { dragging = null; });
+                { dragging = null; return false; });
             canvas.addEventListener('mouseleave', function(event)
-                { dragging = null; });
+                { dragging = null; return false; });
 
             canvas.addEventListener('touchstart', function(event) {
                 var point = pointify(canvas, bounds, event, scalefn);
