@@ -4,6 +4,7 @@
 <link rel="stylesheet" href="lib/reveal/reveal.css">
 <link rel="stylesheet" href="lib/reveal/sky.css">
 <style>
+ canvas.triggy { width: 100%; height: 100%; }
 </style>
 <!-- Slides created using Reveal.js:
      https://github.com/hakimel/reveal.js/ -->
@@ -4077,13 +4078,37 @@
         </section>
     </section>
 
-    <!-- Foundation:
-         * Euclid book 3 proposition 20: Center angle = 2 x inscribed
-         * Ptolemy's Theorem: AC * BD = AB * BC + BC * AD
-         * Law of sines
+    <!-- The most important thing to prove is this:
 
-         Prove:
-         * cos(a - b) = cos(a)cos(b) + sin(a)sin(b)
+           cos(a - b) = cos(a)cos(b) + sin(a)sin(b)
+
+         This shows that a two dimensional dot product is equal to
+         the product of the magnitude of the two vectors times the
+         cosine of the angle between them.
+
+         We may be able to get this from Ptolemy's theorem.
+         https://www.cut-the-knot.org/proofs/ptolemy.shtml
+
+         On the diagonal BD locate a point M such that angles ACB and
+         MCD be equal. Since angles BAC and BDC subtend the same arc,
+         they are equal. Therefore, triangles ABC and DMC are similar.
+         Thus we get CD/MD=AC/AB, or AB⋅CD=AC⋅MD.
+
+         Now, angles BCM and ACD are also equal; so triangles BCM and
+         ACD are similar which leads to BC/BM=AC/AD, or BC⋅AD=AC⋅BM.
+         Summing up the two identities we obtain
+
+         AB⋅CD+BC⋅AD=AC⋅MD+AC⋅BM=AC⋅BD
+
+         So... what do we need for that proof to work?
+         * Prove that similar triangles have proportional side lengths
+         * Prove that angles inscribed in a circle that subtend the
+           same arc are equal.
+
+         We will also need to prove the Pthagorean theorem, but that
+         should be easy given Ptolemy's theorem.  Just arrange the
+         points so that they form right angles.
+
        -->
     <section id="trigonometry">
         <section>
@@ -5136,11 +5161,11 @@
  link.rel = 'stylesheet';
  link.type = 'text/css';
  link.href = window.location.search.match(/document/gi) ?
-             'lib/pdf.css' : 'lib/paper.css';
+             'lib/reveal/pdf.css' : 'lib/reveal/paper.css';
  document.getElementsByTagName('head')[0].appendChild( link );
  Reveal.initialize({
      slideNumber: 'h.v',
-     transition: 'convex',
+     transition: 'convex', history: true,
      showNotes: window.location.search.match(/shownotes/gi) ?
                 true : false,
      dependencies: [
@@ -5163,16 +5188,12 @@
      ]
  });
 
- // Experimental jQuery replacement: http://youmightnotneedjquery.com/
- var ready = function(fn) {
-     if (document.attachEvent ?
-         document.readyState === "complete" :
-         document.readyState !== "loading")
-         fn();
-     else document.addEventListener('DOMContentLoaded', fn);
- };
- ready(function() {
+ Reveal.addEventListener('ready', function(event) {
      triggy.setup('canvas.triggy', function(value) {
          return value / Reveal.getScale(); });
+ });
+
+ Reveal.addEventListener('slidechanged', function(event) {
+     console.log('slidechanged', event.currentSlide);
  });
 </script>

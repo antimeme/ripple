@@ -430,4 +430,15 @@
         });
     }
 
+    // Experimental jQuery replacement: http://youmightnotneedjquery.com/
+    /* var ready = function(fn) {
+     *     if (document.attachEvent ?
+     *         document.readyState === "complete" :
+     *         document.readyState !== "loading")
+     *         fn();
+     *     else document.addEventListener('DOMContentLoaded', fn);
+     * };
+     * ready(function() {
+     *     triggy.setup('canvas.triggy' });
+     * }); */
 })(typeof exports === 'undefined' ? this.triggy = {} : exports);
