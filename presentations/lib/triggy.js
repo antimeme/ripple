@@ -386,16 +386,19 @@
     triggy.setup = function(selector, scalefn) {
         var elements = document.querySelectorAll(selector);
         Array.prototype.forEach.call(elements, function(canvas, ii) {
-            var bounds = computeBounds(canvas);
             var dragging = null;
 
             canvas.addEventListener('mousedown', function(event) {
+                var canvas = event.target;
+                var bounds = computeBounds(canvas);
                 var point = pointify(canvas, bounds, event, scalefn);
                 dragging = closestAngle(canvas, bounds, point);
                 draw(canvas, bounds);
                 return false;
             });
             canvas.addEventListener('mousemove', function(event) {
+                var canvas = event.target;
+                var bounds = computeBounds(canvas);
                 if (dragging) {
                     var point = pointify(
                         canvas, bounds, event, scalefn);
@@ -423,12 +426,21 @@
             });
 
             canvas.addEventListener('resize', function(event) {
-                bounds = computeBounds(event.target);
-                draw(canvas, bounds);
+                var canvas = event.target;
+                draw(canvas, computeBounds(canvas));
             });
-            draw(canvas, bounds);
         });
     }
+
+    triggy.update = function(selector, element) {
+        if (!element)
+            element = document;
+        Array.prototype.forEach.call(
+            element.querySelectorAll(selector),
+            function(canvas, ii) {
+                draw(canvas, computeBounds(canvas));
+            });
+    };
 
     // Experimental jQuery replacement: http://youmightnotneedjquery.com/
     /* var ready = function(fn) {

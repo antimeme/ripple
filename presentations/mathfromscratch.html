@@ -5191,9 +5191,10 @@
  Reveal.addEventListener('ready', function(event) {
      triggy.setup('canvas.triggy', function(value) {
          return value / Reveal.getScale(); });
+     triggy.update('canvas.triggy', Reveal.getCurrentSlide());
  });
 
  Reveal.addEventListener('slidechanged', function(event) {
-     console.log('slidechanged', event.currentSlide);
+     triggy.update('canvas.triggy', event.currentSlide);
  });
 </script>
