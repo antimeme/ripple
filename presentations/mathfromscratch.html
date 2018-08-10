@@ -240,7 +240,7 @@
             <ul>
                 <li>P(a) &and; (P(b) &#x27f9; P(next(b)))</li>
                 <li>
-                    P(b) is true for b after a
+                    P(b) is true for anything that follows a
                 </li>
             </ul>
             <aside class="notes">
@@ -1760,6 +1760,7 @@
                 (a<sub>1</sub> + c<sub>2</sub> &lt;
                 a<sub>2</sub> + c<sub>1</sub>)
             </p>
+            <!-- TODO prove that positive integers multiply positive -->
         </section>
         <section>
             <h3>Integers &#x2124;: Examples</h3>
@@ -2625,9 +2626,8 @@
             <p>
                 Addition for rational numbers is constructed
                 entirely from integer arithmetic, which is closed.
-                However, not all ordered pairs of integers are
-                rational numbers.  We need to show that the second
-                member of the pair is greater than zero.
+                The product of two positive numbers is always positve
+                so second element is positive.
             </p>
             <aside class="notes">
                 We have to be a bit more careful here because not
@@ -2637,120 +2637,89 @@
             </aside>
         </section>
         <section>
-            <h3>Greater + 1 &#x2124;</h3>
-            <p>&#x2200;a&#x2208;&#x2124; a + 1 > a</p>
-            <ul>
-                <li>
-                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
-                    &#x27e8;1, 0&#x27e9; >
-                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
-                </li>
-                <li>
-                    &#x27e8;a<sub>1</sub> + 1, a<sub>2</sub> +
-                    0&#x27e9; > &#x27e8;a<sub>1</sub>,
-                    a<sub>2</sub>&#x27e9; :: Addition &#x2124;
-                </li>
-                <li>
-                    a<sub>1</sub> + 1 + a<sub>2</sub> >
-                    a<sub>2</sub> + a<sub>1</sub> :: Order &#x2124;
-                </li><li>
-                    a<sub>1</sub> + a<sub>2</sub> + 1 >
-                    a<sub>1</sub> + a<sub>2</sub>
-                    :: Arithmetic &#x2124;
-                </li><li>
-                    succ(a<sub>1</sub> + a<sub>2</sub>) >
-                    a<sub>1</sub> + a<sub>2</sub>
-                    :: Successor + 1
-                </li><li>
-                    (a<sub>1</sub> + a<sub>2</sub>) &#x2208;
-                    succ(a<sub>1</sub> + a<sub>2</sub>)
-                    :: Order &#x2115;
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h3>Positive Sums &#x2124;</h3>
-            <p>
-                &#x2200;a,b&#x2208;&#x2124;
-                (a &gt; 0 &and; b &gt; 0) &#x27f9; (a + b > 0)
-            </p>
-            <ul>
-                <li>1 + 1 &gt; 0</li>
-                <li>
-                    &#x2203;a>0,b>0&#x2208;&#x2124;
-                    (a + b > 0) :: Assumption
-                </li><li>
-                    a + (b + 1) = (a + b) + 1 :: Aritmetic &#x2124;
-                </li><li>
-                    (a + b) + 1 > (a + b)
-                    :: Greater + 1 &#x2124;
-                </li><li>
-                    (a + b) > 0 :: Induction
-                </li><li>
-                    (a + b) + 1 > 0 :: Transitive Order &#x2124;
-                </li>
-            </ul>
-            <p>We could do the same proof with (a + 1).</p>
-        </section>
-        <section>
-            <h3>Positive Products &#x2124;</h3>
-            <p>
-                &#x2200;a,b&#x2208;&#x2124;
-                (a &gt; 0 &and; b &gt; 0) &#x27f9;
-                (a &#x00d7; b > 0)
-            </p>
-            <ul>
-                <li>1 &#x00d7; 1 > 0</li>
-                <li>
-                    &#x2203;a>0,b>0&#x2208;&#x2124;
-                    (a &#x00d7; b > 0) :: Assumption
-                </li>
-                <li>
-                    a &#x00d7; (b + 1) = (a &#x00d7; b) + a
-                    :: Aritmetic &#x2124;
-                </li>
-                <li>(a &#x00d7; b > 0) + (a > 0) :: Induction</li>
-                <li>
-                    a &#x00d7; (b + 1) > 0
-                    :: Positive Sums &#x2124;
-                </li>
-            </ul>
-            <p>The same proof works for (a + 1).</p>
-        </section>
-        <section>
-            <h3>Addition &#x211a;: Closed</h3>
-            <p>
-                &#x2200;a,b&#x2208;&#x211a;
-                a + b &#x2208;&#x211a;
-            </p>
-            <p>
-                &#x2200;a,b&#x2208;&#x211a; a + b &#x225d;
-                &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
-                &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; =<br />
-                &#x27e8;(a<sub>1</sub> &#x00d7; b<sub>2</sub>) +
-                (a<sub>2</sub> &#x00d7; b<sub>1</sub>),
-                a<sub>2</sub> &#x00d7; b<sub>2</sub>&#x27e9;
-            </p>
-            <p>
-                The second member is the product of two positive
-                numbers, so by Postive Sums &#x2124; it too must
-                be positive.
-            </p>
-        </section>
-        <section>
             <h3>Addition &#x211a;: Associative</h3>
             <p>
-                TODO
+                &#x2200;a,b,c&#x2208;&#x211a;
+                (a + b) + c = a + (b + c)
             </p>
             <ul>
+                <li>
+                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) +
+                    &#x27e8;c<sub>1</sub>, c<sub>2</sub>&#x27e9; =<br />
+                    &#x27e8;(a<sub>1</sub> &#x00d7; b<sub>2</sub>) +
+                    (a<sub>2</sub> &#x00d7; b<sub>1</sub>),
+                    a<sub>2</sub> &#x00d7; b<sub>2</sub>&#x27e9; +
+                    &#x27e8;c<sub>1</sub>, c<sub>2</sub>&#x27e9;
+                    :: Definition +
+                </li><li>
+                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) +
+                    &#x27e8;c<sub>1</sub>, c<sub>2</sub>&#x27e9; =
+                    &#x27e8;((a<sub>1</sub> &#x00d7; b<sub>2</sub>) +
+                    (a<sub>2</sub> &#x00d7; b<sub>1</sub>) &#x00d7;
+                    c<sub>2</sub>) + ((a<sub>2</sub> &#x00d7;
+                    b<sub>2</sub>) &#x00d7; c<sub>1</sub>),
+                    (a<sub>2</sub> &#x00d7; b<sub>2</sub>) &#x00d7;
+                    c<sub>2</sub>&#x27e9;
+                    :: Definition +
+                </li><li>
+                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) +
+                    &#x27e8;c<sub>1</sub>, c<sub>2</sub>&#x27e9; =
+                    &#x27e8;(a<sub>1</sub> &#x00d7; (b<sub>2</sub>
+                    &#x00d7; c<sub>2</sub>)) +<br />
+                    (a<sub>2</sub> &#x00d7; ((b<sub>1</sub> &#x00d7;
+                    c<sub>2</sub>) + (b<sub>2</sub> &#x00d7;
+                    c<sub>1</sub>))), a<sub>2</sub> &#x00d7;
+                    (b<sub>2</sub> &#x00d7; c<sub>2</sub>)&#x27e9;
+                    :: Arithmetic &#x2124;
+                </li><li>
+                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) +
+                    &#x27e8;c<sub>1</sub>, c<sub>2</sub>&#x27e9; =
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +<br />
+                    &#x27e8;(b<sub>1</sub> &#x00d7; c<sub>2</sub>) +
+                    (b<sub>2</sub> &#x00d7; c<sub>1</sub>),
+                    b<sub>2</sub> &#x00d7; c<sub>2</sub>&#x27e9;
+                    :: Definition +
+                </li><!-- <li>
+                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) +
+                    &#x27e8;c<sub>1</sub>, c<sub>2</sub>&#x27e9; =
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                    (&#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; +
+                    &#x27e8;c<sub>1</sub>, c<sub>2</sub>&#x27e9;)
+                </li>-->
             </ul>
         </section>
         <section>
             <h3>Addition &#x211a;: Commutative</h3>
             <p>
-                TODO
+                &#x2200;a,b&#x2208;&#x211a; a + b = b + a
             </p>
             <ul>
+                <li>
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; =
+                    &#x27e8;(a<sub>1</sub> &#x00d7; b<sub>2</sub>) +
+                    (a<sub>2</sub> &#x00d7; b<sub>1</sub>),
+                    a<sub>2</sub> &#x00d7; b<sub>2</sub>&#x27e9;
+                    :: Definition +
+                </li><li>
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; =
+                    &#x27e8;(b<sub>1</sub> &#x00d7; a<sub>2</sub>) +
+                    (b<sub>2</sub> &#x00d7; a<sub>1</sub>),
+                    b<sub>2</sub> &#x00d7; a<sub>2</sub>&#x27e9;
+                    :: Arithmetic &#x2124;
+                </li><li>
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; =
+                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; +
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
+                    :: Definition +
+                </li>
             </ul>
         </section>
         <section>
@@ -2889,21 +2858,53 @@
         <section>
             <h3>Multiplication &#x211a;: Closed</h3>
             <p>
+                &#x2200;a,b&#x2208;&#x211a;
+                a &#x00d7; b &#x2208;&#x211a;
             </p>
-            <ul>
-            </ul>
+            <p>
+                &#x2200;a,b&#x2208;&#x211a;
+                a &#x00d7; b &#x225d;
+                &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
+                &#x00d7; &#x27e8;b<sub>1</sub>,
+                b<sub>2</sub>&#x27e9; = &#x27e8;a<sub>1</sub>
+                &#x00d7; b<sub>1</sub>, a<sub>2</sub> &#x00d7;
+                b<sub>2</sub>&#x27e9;
+            </p>
+            <p>
+                Because integer multiplication is commutative and
+                two positive integers always multiply to another
+                positive, rational number multiplication is closed.
+            </p>
         </section>
         <section>
             <h3>Multiplication &#x211a;: Associative</h3>
             <p>
+                &#x2200;a,b,c&#x2208;&#x211a;
+                (a &#x00d7; b) &#x00d7; c = a &#x00d7; (b &#x00d7; c)
             </p>
+            TODO
             <ul>
             </ul>
         </section>
         <section>
             <h3>Multiplication &#x211a;: Commutative</h3>
             <p>
+                &#x2200;a,b&#x2208;&#x211a; a &#x00d7; b = b &#x00d7; a
             </p>
+            TODO
+            <ul>
+            </ul>
+        </section>
+        <section>
+            <h3>Multiplication &#x211a;: Distributive</h3>
+            <p>
+                &#x2200;a,b,c&#x2208;&#x211a;
+                <br />(a &#x00d7; (b + c) =
+                (a &#x00d7; b) + (a &#x00d7; c)) &and;<br />
+                ((b + c) &#x00d7; a =
+                (b &#x00d7; a) + (c &#x00d7; a))
+            </p>
+            TODO
             <ul>
             </ul>
         </section>
@@ -3011,9 +3012,8 @@
                 </li>
                 <li>Commutative: &#x2200;a,b&#x2208;&#x211a;
                     a &#x00d7; b = b &#x00d7; a</li>
-                <li>Distributive:  &#x2200;a,b,c&#x2208;&#x211a;
-                    <br />
-                    (a &#x00d7; (b + c) =
+                <li>Distributive: &#x2200;a,b,c&#x2208;&#x211a;
+                    <br />(a &#x00d7; (b + c) =
                     (a &#x00d7; b) + (a &#x00d7; c)) &and;<br />
                     ((b + c) &#x00d7; a =
                     (b &#x00d7; a) + (c &#x00d7; a))</li>
