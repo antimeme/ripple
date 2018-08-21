@@ -51,8 +51,8 @@
         </section>
         <section>
             <p>
-                This is an attempt to build familiar mathematics from
-                the simplest possible foundations.
+                This is an attempt to build a powerful set of tools
+                from the simple foundations.
             </p>
             <aside class="notes">
                 We will build familiar mathematics from the simplest
@@ -71,13 +71,23 @@
                     <a href="https://github.com/hakimel/reveal.js/"
                     >https://github.com/hakimel/reveal.js/</a>
                 </li>
-                <li>
-                    Special thanks to Euclid, al-Khwārizmī, Georg
-                    Cantor, Hermann Grassman, Emmy Noether, John von
-                    Neumann, Abraham Fraenkel, Ernst Zermello, Thoraf
-                    Skolem, Kazimierz Kuratowski and an apparently
-                    infinite set of mathematical minds who made this
-                    work possible.
+                <li>Abraham Fraenkel, Ernst Zermello and
+                    Thoraf Skolem</li>
+                <li>Kazimierz Kuratowski</li>
+                <li>Hermann Grassman</li>
+                <li>Georg Cantor</li>
+            </ul>
+        </section>
+        <section>
+            <h2>Acknowledgements</h2>
+            <ul>
+                <li>Euclid</li>
+                <li>al-Khwārizmī</li>
+                <li>Emmy Noether</li>
+                <li>John von Neumann</li>
+                <li>Norman Wildberger</li>
+                <li>And an apparently infinite series of
+                    mathematical minds who made this work possible
                 </li>
             </ul>
         </section>
@@ -210,6 +220,7 @@
                     ((P &#x27f9; Q) &and; (Q &#x27f9; R)) &#x27f9;
                     (P &#x27f9; R)
                 </li>
+                <li>And so on...</li>
             </ul>
             <aside class="notes">
                 Deduction allows us to derive specific conlusions
@@ -246,11 +257,12 @@
             <aside class="notes">
                 Induction allows us to build general rules from
                 specific starting points.  For example, suppose we
-                know that Charlie is a raven with black feathers.
-                If we can also show that any raven with black
-                feathers has parent with black feathers we can use
-                induction to prove that Charlie has an indefinite
-                line of parents with black feathers.
+                have a ladder and we want to prove that we can climb
+                to the top.  We would need to show first that we
+                can climb onto the bottom rung and second that from
+                any rung we could reach the next one.  We'll ingore
+                practical constraints like getting tired or being
+                afraid of heights.
             </aside>
         </section>
         <section>
@@ -353,6 +365,10 @@
                         which satify a predicate
                     </td>
                 </tr>
+                <tr>
+                    <td>{f(a)&nbsp;:&nbsp;a&#x2208;b}</td>
+                    <td>Set containing function outputs</td>
+                </tr>
             </table>
             <aside class="notes">
                 We usually describe sets in one of these two ways.
@@ -372,7 +388,8 @@
                 </tr>
                 <tr>
                     <td>
-                        a &#x2209; {b, c}
+                        a &#x2209; {b, c} &#x27f9;<br />
+                        (b&ne;a &and; c&ne;a)
                     </td>
                     <td>
                         not a member of<br />
@@ -420,14 +437,14 @@
                     <td>Regularity</td>
                     <td>Sets can't contain themselves</td>
                 </tr><tr>
-                    <td>Infinity</td>
-                    <td>There is at least one infinite set</td>
-                </tr><tr>
                     <td>Specification</td>
                     <td>A subset exists for any predicate</td>
                 </tr><tr>
                     <td>Replacement</td>
                     <td>A set exists for any function</td>
+                </tr><tr>
+                    <td>Infinity</td>
+                    <td>There is at least one infinite set</td>
                 </tr><tr>
                     <td>Choice</td>
                     <td>One member from each set</td>
@@ -533,25 +550,6 @@
             </aside>
         </section>
         <section>
-            <h2>Infinity</h2>
-            <p>
-                &#x2203;a (({}&#x2208;a) &and;
-                (&#x2200;b&#x2208;a &cup;{b, {b, b}} &#x2208; a))
-            </p>
-            <p>
-                A set with infinitely many distinct members
-                exists.  Specifically the set containing the empty
-                set and all sets we can get by taking the union of
-                any member with a set containing only that member
-                exists.
-            </p>
-            <aside class="notes">
-                The axiom of infinity guarantees that at least
-                one infinite set exists.  This will allow us to
-                create and work with other infinite sets.
-            </aside>
-        </section>
-        <section>
             <h2>Specification (Schema)</h2>
             <p>
                 &#x2200;a,P&#x2203;b &#x2200;c
@@ -590,6 +588,25 @@
                 mapping.  We haven't yet explained what a function
                 is or how to construct one.  We will do that once
                 we've established a few important tools.
+            </aside>
+        </section>
+        <section>
+            <h2>Infinity</h2>
+            <p>
+                &#x2203;a (({}&#x2208;a) &and;
+                (&#x2200;b&#x2208;a &cup;{b, {b, b}} &#x2208; a))
+            </p>
+            <p>
+                A set with infinitely many distinct members
+                exists.  Specifically the set containing the empty
+                set and all sets we can get by taking the union of
+                any member with a set containing only that member
+                exists.
+            </p>
+            <aside class="notes">
+                The axiom of infinity guarantees that at least
+                one infinite set exists.  This will allow us to
+                create and work with other infinite sets.
             </aside>
         </section>
         <section>
@@ -651,13 +668,6 @@
                     </small></td>
                 </tr>
                 <tr>
-                    <td>Infinity</td>
-                    <td><small>
-                        &#x2203;a (({}&#x2208;a) &and;
-                        (&#x2200;b&#x2208;a b&cup;{b} &#x2208; a))
-                    </small></td>
-                </tr>
-                <tr>
                     <td>Specification (S)</td>
                     <td><small>
                         &#x2200;a,p&#x2203;b &#x2200;c
@@ -671,6 +681,13 @@
                         &#x2200;a,f&#x2203;b &#x2200;c
                         c&#x2208;b &#x27fa;
                         &#x2203;d&#x2208;a f(c) = d
+                    </small></td>
+                </tr>
+                <tr>
+                    <td>Infinity</td>
+                    <td><small>
+                        &#x2203;a (({}&#x2208;a) &and;
+                        (&#x2200;b&#x2208;a b&cup;{b} &#x2208; a))
                     </small></td>
                 </tr>
                 <tr>
@@ -723,6 +740,9 @@
                     b&#x2208;c) &and;<br />
                     (&#x2200;c,d&#x2208;&#x27e8;a, b&#x27e9; c
                     &ne; d &#x27f9; b&#x2209;c &or; b&#x2209;d)
+                </td></tr><tr><td>
+                    &cup;&#x27e8;a, b&#x27e9; =
+                    &cup;{{a}, {a, b}} = {a, b}
                 </td></tr>
             </table>
         </section>
@@ -736,25 +756,28 @@
                 have a domain and a range, which may be the same.
             </p>
             <ul>
-                <li>Domain(R) &#x225d; { a : &#x2203;b
-                    &#x27e8;a, b&#x27e9;&#x2208;R}</li>
-                <li>Range(R) &#x225d; { b : &#x2203;a
-                    &#x27e8;a, b&#x27e9;&#x2208;R}</li>
+                <li>&cup;&cup;R is the set of all members</li>
+                <li>Domain(R) &#x225d; { a&#x2208;&cup;&cup;R :
+                    &#x2203;b &#x27e8;a, b&#x27e9;&#x2208;R}</li>
+                <li>Range(R) &#x225d; { b&#x2208;&cup;&cup;R :
+                    &#x2203;a &#x27e8;a, b&#x27e9;&#x2208;R}</li>
             </ul>
         </section>
         <section>
             <h2>Relation Properties</h2>
             <ul>
-                <li>Reflexive: &#x2200;a (a R a)</li>
-                <li>Symmetric: &#x2200;a,b (a R b) &#x27fa; (b R a)</li>
-                <li>
-                    Antisymmetric: &#x2200;a,b
+                <li>Reflexive: &#x2200;a&#x2208;&cup;&cup;R (a R a)</li>
+                <li>Symmetric: &#x2200;a,b&#x2208;&cup;&cup;R (a R b)
+                    &#x27fa; (b R a)
+                </li><li>
+                    Antisymmetric:<br /> &#x2200;a,b&#x2208;&cup;&cup;R
                     (a R b) &and; (b R a) &#x27f9; (a = b)
                 </li><li>
-                    Transitive: &#x2200;a,b,c (a R b) &and;
-                    (b R c) &#x27fa; (a R c)
+                    Transitive: &#x2200;a,b,c&#x2208;&cup;&cup;R
+                    (a R b) &and; (b R c) &#x27fa; (a R c)
                 </li>
-                <li>Connex: &#x2200;a,b (a R b) &or; (b R a)</li>
+                <li>Connex: &#x2200;a,b&#x2208;&cup;&cup;R
+                    (a R b) &or; (b R a)</li>
             </ul>
             <aside class="notes">
                 These are some properties a relation might have.  We
@@ -849,7 +872,8 @@
             <p>
                 A function is a relation which maps every
                 member of the domain to the exactly one member
-                of the range: f(a) = b
+                of the range: &#x2200;a&#x2208;D
+                <strong>f(a) = b</strong>&#x2208;R
             </p>
             <aside class="notes">
                 A function is a relation with the special property
@@ -870,8 +894,8 @@
                     No two members of the domain are mapped to the
                     same member of the range
                 </li>
-                <li>Surjection: &#x2200;a&#x2208;R
-                    &#x2203;b&#x2208;D f(b) = a<br />
+                <li>Surjection: &#x2200;b&#x2208;R
+                    &#x2203;a&#x2208;D f(a) = b<br />
                     Every member of the range is mapped from at
                     least one member of domain
                 </li>
@@ -903,7 +927,7 @@
         <section>
             <h2>Natural Numbers &#x2115;</h2>
             <p>
-                succ(a) &#x225d; a &cup; {a} = &cup;{a, {a, a}}
+                succ(a) &#x225d; &cup;{a, {a, a}} = a &cup; {a}
             </p>
             <p>
                 &#x2115; &#x225d; { a : (a = {}) &or;
@@ -1041,8 +1065,7 @@
         <section>
             <h3>Order &#x2115;: Antisymmetric</h3>
             <p>
-                The only way two natural numbers can both be contained
-                in the successor of the other is if they are the same.
+                Every natural number contains all predecessors.
             </p>
             <ul>
                 <li>
@@ -1688,7 +1711,6 @@
                 represent concepts like debt.
             </p>
         </section>
-
         <section>
             <h3>Integers &#x2124;: Equality</h3>
             <p>
@@ -1736,7 +1758,22 @@
                 direction.
             </aside>
         </section>
-
+        <section>
+            <h3>Successor Equality</h3>
+            <p>
+                &#x2200;a,b&#x2208;&#x2115;
+                &#x27e8;a,b&#x27e9; = &#x27e8;succ(a), succ(b)&#x27e9;
+            </p>
+            <ul>
+                <li>a + succ(b) = succ(a) + b</li>
+                <li>a + b + 1 = a + 1 + b</li>
+                <li>a + b + 1 = a + b + 1</li>
+            </ul>
+            <p>
+                Every integers has a simplest form, which has at least
+                one member that is natural number zero.
+            </p>
+        </section>
         <section>
             <h3>Integers &#x2124;: Order</h3>
             <p>
@@ -1858,6 +1895,20 @@
                 integer.  Nothing changes and the result matches our
                 intuition: this takes two away from three.
             </aside>
+        </section>
+        <section>
+            <h3>Addition &#x2124;: Congruent</h3>
+            <p>
+                &#x2200; a,b&#x2208;&#x2115;
+                &#x27e8;a, 0&#x27e9; + &#x27e8;b, 0&#x27e9; =
+                &#x27e8;a + b, 0 + 0&#x27e9; =
+                &#x27e8;a + b, 0&#x27e9;
+            </p>
+            <p>
+                Adding any two integers that match natural
+                numbers results in the natural number their sum
+                would match.
+            </p>
         </section>
         <section>
             <h3>Addition &#x2124;: Closed</h3>
@@ -2126,6 +2177,21 @@
                 </li>
                 <li>3&#x2124; &#x00d7; (-1)&#x2124; = (-3)&#x2124;</li>
             </ul>
+        </section>
+        <section>
+            <h3>Multiplication &#x2124;: Congruent</h3>
+            <p>
+                &#x2200; a,b&#x2208;&#x2115;
+                &#x27e8;a, 0&#x27e9; &#x00d7; &#x27e8;b, 0&#x27e9; =
+                <br/>&#x27e8;(a &#x00d7; b) + (0 &#x00d7; 0),
+                (a &#x00d7; 0) + (b &#x00d7; 0)&#x27e9; =
+                &#x27e8;a &#x00d7; b, 0&#x27e9;
+            </p>
+            <p>
+                Multiplying any two integers that match natural
+                numbers results in the natural number their product
+                would match.
+            </p>
         </section>
         <section>
             <h3>Multiplication &#x2124;: Closed</h3>
@@ -2610,6 +2676,19 @@
             </ul>
         </section>
         <section>
+            <h3>Addition &#x211a;: Congruent</h3>
+            <p>
+                &#x2200; a,b&#x2208;&#x2124;
+                &#x27e8;a, 1&#x27e9; + &#x27e8;b, 1&#x27e9; =
+                <br/>&#x27e8;(a &#x00d7; 1) + (1 &#x00d7; b),
+                1 &#x00d7; 1&#x27e9; = &#x27e8;a + b, 1&#x27e9;
+            </p>
+            <p>
+                Adding any two rational numbers that match
+                integers results in the integer their sum would match.
+            </p>
+        </section>
+        <section>
             <h3>Addition &#x211a;: Closed</h3>
             <p>
                 &#x2200;a,b&#x2208;&#x211a;
@@ -2684,13 +2763,13 @@
                     b<sub>2</sub> &#x00d7; c<sub>2</sub>&#x27e9;
                     :: Definition +
                 </li><!-- <li>
-                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
-                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) +
-                    &#x27e8;c<sub>1</sub>, c<sub>2</sub>&#x27e9; =
-                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
-                    (&#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; +
-                    &#x27e8;c<sub>1</sub>, c<sub>2</sub>&#x27e9;)
-                </li>-->
+                          (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                          &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) +
+                          &#x27e8;c<sub>1</sub>, c<sub>2</sub>&#x27e9; =
+                          &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                          (&#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; +
+                          &#x27e8;c<sub>1</sub>, c<sub>2</sub>&#x27e9;)
+                          </li>-->
             </ul>
         </section>
         <section>
@@ -2853,6 +2932,38 @@
                 b<sub>2</sub>&#x27e9; = &#x27e8;a<sub>1</sub>
                 &#x00d7; b<sub>1</sub>, a<sub>2</sub> &#x00d7;
                 b<sub>2</sub>&#x27e9;
+            </p>
+        </section>
+        <section>
+            <h3>Multiplication &#x211a; Example: 3 &#x00d7; 5/2</h3>
+            <ul>
+                <li>
+                    3&#x211a; &#x00d7; 5/2&#x211a; =
+                    &#x27e8;3, 1&#x27e9; &#x00d7; &#x27e8;5, 2&#x27e9;
+                </li>
+                <li>
+                    3&#x211a; &#x00d7; 5/2&#x211a; =
+                    &#x27e8;3 &#x00d7; 5, 1 &#x00d7; 2&#x27e9;
+                </li>
+                <li>
+                    3&#x211a; &#x00d7; 5/2&#x211a; =
+                    &#x27e8;15, 2&#x27e9;
+                </li>
+                <li>3&#x211a; &#x00d7; 5/2&#x211a; = 15/2&#x211a;</li>
+            </ul>
+        </section>
+        <section>
+            <h3>Multiplication &#x211a;: Congruent</h3>
+            <p>
+                &#x2200; a,b&#x2208;&#x2124;
+                &#x27e8;a, 1&#x27e9; &#x00d7; &#x27e8;b, 1&#x27e9; =
+                &#x27e8;a &#x00d7; b, 1 &#x00d7; 1&#x27e9; =
+                &#x27e8;a &#x00d7; b, 1&#x27e9;
+            </p>
+            <p>
+                Multiplying any two rational numbers that match
+                integers results in the integer their product would
+                match.
             </p>
         </section>
         <section>
@@ -3462,7 +3573,8 @@
         </section>
         <section>
             <h3>Real Numbers &#x211d;: Cardinality</h3>
-            <p>Cantor diagonalization</p>
+            <p>TODO: prove more than naturals, integers and rationals
+                using Cantor diagonalization</p>
         </section>
     </section>
 
@@ -4046,37 +4158,128 @@
             </canvas>
         </section>
         <section>
-            <h3>Geometry II</h3>
-            <canvas class="triggy"
-                    data-origin="center" data-circle="on"
-                    data-enable="1"
-                    data-connect1="2,3"
-                    data-radii="2,3"
-                    data-angle1="-2.25" data-angle2="0.25"
-                    data-angle3="1.75">
-            </canvas>
+            <h3>Geometry: Postulates</h3>
+            <p>Postulates are what axioms are called in geometry.
+               These four build on real numbers. (Birkhoff 1932)
+            </p>
+            <ul>
+                <li>
+                    Line Measure: bijection between points on any
+                    line and real numbers
+                </li>
+                <li>
+                    Point-Line: exactly one line contains any two
+                    distinct points
+                </li>
+                <li>
+                    Angle Measure: bijection between any angle and
+                    a subset of the real numbers
+                </li>
+                <li>
+                    Similarity: triangles with two proportional sides
+                    and a matching angle between them are similar
+                </li>
+            </ul>
         </section>
         <section>
-            <h3>Geometry III</h3>
-            <canvas class="triggy"
-                    data-origin="center" data-circle="on"
-                    data-enable="1"
-                    data-connect1="2,3"
-                    data-radii="2,3"
-                    data-angle1="-2.25" data-angle2="0.25"
-                    data-angle3="1.75">
-            </canvas>
+            <h3>Geometry: Terms</h3>
+            <ul>
+                <li>Point: a position in space</li>
+                <li>Line: a set of points with zero curvature</li>
+                <li>
+                    Conjugate: &#x2200;a&#x2208;&#x211d;
+                    a<sup>&#x22b9;</sup> &#x225d; a
+                </li><li>
+                    Quadrance: Q(A,B) &#x225d;
+                    (b - a)<sup>&#x22b9;</sup> &#x00d7; (b - a)
+                </li>
+                <li>Distance: d(A, B) &#x225d; +&#x221a;(Q(A, B))</li>
+                <li>Angle: three ordered points A, O, B <br />with
+                    A &ne; O &and; B &ne; O</li>
+            </ul>
         </section>
         <section>
-            <h3>Geometry IV</h3>
-            <canvas class="triggy"
-                    data-origin="center" data-circle="on"
-                    data-enable="1"
-                    data-connect1="2,3"
-                    data-radii="2,3"
-                    data-angle1="-2.25" data-angle2="0.25"
-                    data-angle3="1.75">
-            </canvas>
+            <h3>Geometry: Definitions</h3>
+            <ul>
+                <li>Between: B is between A and C &#x27fa;<br />
+                    d(A,B) + d(B, C) = d(A, C)</li>
+                <li>Segment: all points between A and B</li>
+                <li>Endpoint: part of line O A with O not between</li>
+                <li>Parallel: lines with no or all points in common</li>
+                <li>Right Angle: angle formed by two lines</li>
+                <li>Triangle: three distinct points (degenerate if one
+                    between the other two)</li>
+                <li>Similar: one-to-one correspondence between
+                    points with distances proportional</li>
+            </ul>
+        </section>
+        <section>
+            <h3>Similarity</h3>
+            <p>
+                &#x2203;k>0 (d(A', B') = kd(A, B)) &and;
+                (d(A', C') = kd(A, C)) &and;
+                (∠B'A'C' = ± ∠BAC) &#x27f9;
+                (d(B', C' ) = kd(B, C)) &and;
+                (∠C'B'A' = ± ∠CBA) &and; (∠A'C'B' = ± ∠ACB)
+            </p>
+        </section>
+        <section>
+            <h3>Vertical Angles</h3>
+            <p>
+                TODO: prove that opposing veritical angles match
+            </p>
+        </section>
+        <section>
+            <h3>Parallel Angles Match</h3>
+            <p>TODO: prove that parallel angles match</p>
+        </section>
+        <section>
+            <h3>Triangle Angles</h3>
+            <p>
+                TODO: prove that adding the three angles of any
+                triangle gets the same result as the angle formed by
+                three points on the same line.
+            </p>
+        </section>
+        <section>
+            <h3>Diameter Angles</h3>
+            <p>
+                TODO: prove that an angle from a diameter to a point
+                on the circle is half the size of the angle from the
+                center to the same point.
+            </p>
+        </section>
+        <section>
+            <h3>Chord Angles</h3>
+            <p>
+                TODO: prove that the angle from any point on the
+                circle to a chord is half the angle from the center
+                to that chord.
+            </p>
+        </section>
+        <section>
+            <h3>Ptolemy's Theorem</h3>
+            <p>
+                TODO: prove that the product of diagonal lengths
+                of an inscribed quadrilateral is equal to the sum
+                of the product
+            </p>
+        </section>
+        <section>
+            <h3>Pythagoean Theorem</h3>
+            <p>
+                TODO: use Ptolemy's theorem to prove the Pythagorean
+                theorem.  Then separately use Pythagorus' visual
+                proof to confirm
+            </p>
+        </section>
+        <section>
+            <h3>Pythagoean Theorem</h3>
+            <p>
+                TODO: use Ptolemy's theorem to prove the Pythagorean
+                theorem.  Then separately use Pythagorus' visual
+                proof to confirm
+            </p>
         </section>
     </section>
 

@@ -197,6 +197,8 @@
     var draw = function(canvas, bounds) {
         var ctx;
 
+        if (!bounds)
+            bounds = computeBounds(canvas);
         canvas.width  = bounds.width;
         canvas.height = bounds.height;
         if (!canvas.getContext) {
@@ -413,22 +415,29 @@
                 { dragging = null; return false; });
 
             canvas.addEventListener('touchstart', function(event) {
+                var canvas = event.target;
+                var bounds = computeBounds(canvas);
                 var point = pointify(canvas, bounds, event, scalefn);
-                click(canvas, bounds, point);
+                dragging = closestAngle(canvas, bounds, point);
                 draw(canvas, bounds);
-                // TODO touch events
+                return false;
             });
             canvas.addEventListener('touchmove', function(event) {
-                // TODO touch events
-            });
-            canvas.addEventListener('touchend', function(event) {
-                // TODO touch events
-            });
-
-            canvas.addEventListener('resize', function(event) {
                 var canvas = event.target;
-                draw(canvas, computeBounds(canvas));
+                var bounds = computeBounds(canvas);
+                if (dragging) {
+                    var point = pointify(
+                        canvas, bounds, event, scalefn);
+                    setAngle(canvas, bounds, point, dragging);
+                    draw(canvas, bounds);
+                }
+                return false;
             });
+            canvas.addEventListener('touchend', function(event)
+                { dragging = null; return false; });
+
+            canvas.addEventListener('resize', function(event)
+                { draw(event.target); });
         });
     }
 
@@ -437,9 +446,7 @@
             element = document;
         Array.prototype.forEach.call(
             element.querySelectorAll(selector),
-            function(canvas, ii) {
-                draw(canvas, computeBounds(canvas));
-            });
+            function(canvas, ii) { draw(canvas); });
     };
 
     // Experimental jQuery replacement: http://youmightnotneedjquery.com/
