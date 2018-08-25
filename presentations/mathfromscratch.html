@@ -967,11 +967,11 @@
             <p>
                 succ(a) &#x225d; &cup;{a, {a, a}} = a &cup; {a}
             </p>
-            <p class="fragment">
+            <p>
                 &#x2115; &#x225d; { a : (a = {}) &or;
                 &#x2203;b&#x2208;&#x2115; a = succ(b) }
             </p>
-            <p class="fragment">
+            <p>
                 Natural numbers are an effective way to represent
                 discrete and indivisible quantities. (Von Neumann
                 1923)
@@ -1125,7 +1125,7 @@
                     (a &#x2208; succ(b)) &and;
                     (b &#x2208; succ(a)) &#x27f9; (a = b)
                 </li><li>
-                    &#x2200;a,b,c&#x2208;&#x2115; (a &le; b) &and;
+                    &#x2200;a,b&#x2208;&#x2115; (a &le; b) &and;
                     (b &le; a) &#x27f9; (a = b)
                 </li>
             </ul>
@@ -1434,18 +1434,25 @@
         <section>
             <h3>Multiplication &#x2115; Example: 3 &#x00d7; 2</h3>
             <ul>
-                <li>3 &#x00d7; 2 = 3 &#x00d7; succ(1)
-                    :: Definition of 2</li>
-                <li>3 &#x00d7; 2 = 3 &#x00d7; succ(succ(0))
-                    :: Definition of 1</li>
-                <li>3 &#x00d7; 2 = 3 + (3 &#x00d7; succ(0))
-                    :: Step &#x00d7;</li>
-                <li>3 &#x00d7; 2 = 3 + (3 + (3 &#x00d7; 0))
-                    :: Step &#x00d7;</li>
-                <li>3 &#x00d7; 2 = 3 + (3 + 0)
-                    :: Base &#x00d7;</li>
-                <li>3 &#x00d7; 2 = 3 + 3 :: Addition</li>
-                <li>3 &#x00d7; 2 = 6 :: Addition</li>
+                <li class="fragment">
+                    3 &#x00d7; 2 = 3 &#x00d7; succ(1)
+                    :: Definition of 2
+                </li><li class="fragment">
+                    3 &#x00d7; 2 = 3 &#x00d7; succ(succ(0))
+                    :: Definition of 1
+                </li><li class="fragment">
+                    3 &#x00d7; 2 = 3 + (3 &#x00d7; succ(0))
+                    :: Step &#x00d7;
+                </li><li class="fragment">
+                    3 &#x00d7; 2 = 3 + (3 + (3 &#x00d7; 0))
+                    :: Step &#x00d7;
+                </li><li class="fragment">
+                    3 &#x00d7; 2 = 3 + (3 + 0) :: Base &#x00d7;
+                </li><li class="fragment">
+                    3 &#x00d7; 2 = 3 + 3 :: Addition
+                </li><li class="fragment">
+                    3 &#x00d7; 2 = 6 :: Addition
+                </li>
             </ul>
 
             <aside class="notes">
@@ -1484,18 +1491,19 @@
                 &#x2200;a&#x2208;&#x2115;
                 a &#x00d7; 1 = a = 1 &#x00d7; a
             </p>
-            <p>Right identity:</p>
+            <p class="fragment">Right identity:</p>
             <ul>
-                <li>
+                <li class="fragment">
                     a &#x00d7; 1 = a &#x00d7; succ(0)
                     :: Definition of 1
-                </li>
-                <li>
+                </li><li class="fragment">
                     a &#x00d7; 1 = a + (a &#x00d7; 0)
                     :: Step &#x00d7;
+                </li><li class="fragment">
+                    a &#x00d7; 1 = a + 0 :: Base &#x00d7;
+                </li><li class="fragment">
+                    a &#x00d7; 1 = a :: Addition &#x2115;
                 </li>
-                <li>a &#x00d7; 1 = a + 0 :: Base &#x00d7;</li>
-                <li>a &#x00d7; 1 = a :: Addition &#x2115;</li>
             </ul>
         </section>
         <section>
@@ -1504,18 +1512,22 @@
                 &#x2200;a&#x2208;&#x2115;
                 a &#x00d7; 1 = a = 1 &#x00d7; a
             </p>
-            <p>Left identity:</p>
+            <p class="fragment">Left identity:</p>
             <ul>
-                <li>1 &#x00d7; 0 = 0 :: Base &#x00d7;</li>
-                <li>&#x2203;a&#x2208;&#x2115;
-                    1 &#x00d7; a = a :: Assumption</li>
-                <li>
+                <li class="fragment">
+                    1 &#x00d7; 0 = 0 :: Base &#x00d7;
+                </li><li class="fragment">
+                    &#x2203;a&#x2208;&#x2115;
+                    1 &#x00d7; a = a :: Assumption
+                </li><li class="fragment">
                     1 &#x00d7; succ(a) = 1 + (1 &#x00d7; a)
                     :: Step &#x00d7;
+                </li><li class="fragment">
+                    1 &#x00d7; succ(a) = 1 + a :: Induction
+                </li><li class="fragment">
+                    1 &#x00d7; succ(a) = succ(a)
+                    :: Addition &#x2115;
                 </li>
-                <li>1 &#x00d7; succ(a) = 1 + a :: Induction</li>
-                <li>1 &#x00d7; succ(a) = succ(a)
-                    :: Addition &#x2115;</li>
             </ul>
         </section>
 
@@ -1528,27 +1540,16 @@
                 (c &#x00d7; a) + (c &#x00d7; b))
             </p>
             <p>
-                When we multiply a sum we can push the product
-                through to each term.  Because equality is
-                symmetric we can also reverse this by pulling a
-                common product out of each term.
-            </p>
-        </section>
-
-        <section>
-            <h3>Multiplication &#x2115;: Distributive</h3>
-            <p>
-                We separate this property into right and left
-                distributive rules so we can prove them
-                separately.
+                When we multiply a sum we can push the product through
+                to each term.  We separate this property into right
+                and left distributive rules.
             </p>
             <ul>
-                <li>
+                <li class="fragment">
                     Right: &#x2200;a,b,c&#x2208;&#x2115;
                     ((a + b) &#x00d7; c = (a &#x00d7; c) +
                     (b &#x00d7; c))
-                </li>
-                <li>
+                </li><li class="fragment">
                     Left: &#x2200;a,b,c&#x2208;&#x2115;
                     (c &#x00d7; (a + b) = (c &#x00d7; a) +
                     (c &#x00d7; b))
@@ -1562,13 +1563,15 @@
                 &#x2200;a,b,c&#x2208;&#x2115;
                 (a + b) &#x00d7; c = (a &#x00d7; c) + (b &#x00d7; c)
             </p>
-            <p>Consider the special case where c = 0:</p>
+            <p class="fragment">
+                Consider the special case where c = 0:
+            </p>
             <ul>
-                <li>(a + b) &#x00d7; 0 = 0 :: Base &#x00d7;</li>
-                <li>
+                <li class="fragment">
+                    (a + b) &#x00d7; 0 = 0 :: Base &#x00d7;
+                </li><li class="fragment">
                     (a + b) &#x00d7; 0 = 0 + 0 :: Addition &#x2115;
-                </li>
-                <li>
+                </li><li class="fragment">
                     (a + b) &#x00d7; 0 = (a &#x00d7; 0) +
                     (b &#x00d7; 0) :: Base &#x00d7;
                 </li>
@@ -1581,24 +1584,29 @@
                 <li>
                     (a + b) &#x00d7; 0 =
                     (a &#x00d7; 0) + (b &#x00d7; 0)
-                </li>
-                <li>&#x2203;c&#x2208;&#x2115;
+                </li><li class="fragment">
+                    &#x2203;c&#x2208;&#x2115;
                     &#x2200;a,b&#x2208;&#x2115; :
                     ((a + b) &#x00d7; c =
                     (a &#x00d7; c) + (b &#x00d7; c))
-                    :: Assumption</li>
-                <li>((a + b) &#x00d7; succ(c) =
+                    :: Assumption
+                </li><li class="fragment">
+                    ((a + b) &#x00d7; succ(c) =
                     (a + b) + ((a + b) &#x00d7; c)
                     :: Step &#x00d7;</li>
-                <li>((a + b) &#x00d7; succ(c) =
+                <li class="fragment">
+                    ((a + b) &#x00d7; succ(c) =
                     (a + b) + ((a &#x00d7; c) + (b &#x00d7; c))
-                    :: Induction</li>
-                <li>((a + b) &#x00d7; succ(c) =
+                    :: Induction
+                </li><li class="fragment">
+                    ((a + b) &#x00d7; succ(c) =
                     (a + (a &#x00d7; c)) + (b + (b &#x00d7; c))
-                    :: Addition &#x2115;</li>
-                <li>((a + b) &#x00d7; succ(c) =
+                    :: Addition &#x2115;
+                </li><li class="fragment">
+                    ((a + b) &#x00d7; succ(c) =
                     (a &#x00d7; succ(c)) + (b &#x00d7; succ(c))
-                    :: Step &#x00d7;</li>
+                    :: Step &#x00d7;
+                </li>
             </ul>
         </section>
 
@@ -1608,42 +1616,53 @@
                 &#x2200;a,b,c&#x2208;&#x2115;
                 c &#x00d7; (a + b) = (c &#x00d7; a) + (c &#x00d7; b)
             </p>
-            <p>Consider the special case where b = 0:</p>
+            <p class="fragment">
+                Consider the special case where b = 0:
+            </p>
             <ul>
-                <li>
+                <li class="fragment">
                     c &#x00d7; (a + 0) = c &#x00d7; a
                     :: Addition &#x2115;
+                </li><li class="fragment">
+                    c &#x00d7; (a + 0) = (c &#x00d7; a) + 0
+                    :: Addition &#x2115;
+                </li><li class="fragment">
+                    c &#x00d7; (a + 0) = (c &#x00d7; a) + (c &#x00d7; 0)
+                    :: Base &#x00d7;
                 </li>
-                <li>c &#x00d7; (a + 0) = (c &#x00d7; a) + 0
-                    :: Addition &#x2115;</li>
-                <li>c &#x00d7; (a + 0) =
-                    (c &#x00d7; a) + (c &#x00d7; 0)
-                    :: Definition Base</li>
             </ul>
         </section>
 
         <section>
             <h3>Multiplication &#x2115;: Distributive</h3>
             <ul>
-                <li>c &#x00d7; (a + 0) =
-                    (c &#x00d7; a) + (c &#x00d7; 0)</li>
-                <li>&#x2203;b&#x2208;&#x2115;
+                <li>
+                    c &#x00d7; (a + 0) =
+                    (c &#x00d7; a) + (c &#x00d7; 0)
+                </li><li class="fragment">
+                    &#x2203;b&#x2208;&#x2115;
                     &#x2200;a,c&#x2208;&#x2115; :
                     c &#x00d7; (a + b) = (c &#x00d7; a) +
-                    (c &#x00d7; b) :: Assumption</li>
-                <li>c &#x00d7; (a + succ(b)) =
-                    c &#x00d7; succ(a + b) :: Addition &#x2115;</li>
-                <li>c &#x00d7; (a + succ(b)) =
-                    c + (c &#x00d7; (a + b)) :: Step &#x00d7;</li>
-                <li>c &#x00d7; (a + succ(b)) =
+                    (c &#x00d7; b) :: Assumption
+                </li><li class="fragment">
+                    c &#x00d7; (a + succ(b)) =
+                    c &#x00d7; succ(a + b) :: Addition &#x2115;
+                </li><li class="fragment">
+                    c &#x00d7; (a + succ(b)) =
+                    c + (c &#x00d7; (a + b)) :: Step &#x00d7;
+                </li><li class="fragment">
+                    c &#x00d7; (a + succ(b)) =
                     c + ((c &#x00d7; a) + (c &#x00d7; b)) ::
-                    Induction</li>
-                <li>c &#x00d7; (a + succ(b)) =
+                    Induction
+                </li><li class="fragment">
+                    c &#x00d7; (a + succ(b)) =
                     (c &#x00d7; a) + (c + (c &#x00d7; b)) ::
-                    Addition &#x2115;</li>
-                <li>c &#x00d7; (a + succ(b)) =
+                    Addition &#x2115;
+                </li><li class="fragment">
+                    c &#x00d7; (a + succ(b)) =
                     (c &#x00d7; a) + (c &#x00d7; succ(b)) ::
-                    Step &#x00d7;</li>
+                    Step &#x00d7;
+                </li>
             </ul>
         </section>
 
@@ -1654,18 +1673,19 @@
                 (a &#x00d7; b) &#x00d7;
                 c = a &#x00d7; (b &#x00d7; c)
             </p>
-            <p>Consider the special case where c = 0:</p>
+            <p class="fragment">
+                Consider the special case where c = 0:
+            </p>
             <ul>
-                <li>
+                <li class="fragment">
                     (a &#x00d7; b) &#x00d7; 0 = 0 :: Base &#x00d7;
-                </li>
-                <li>
+                </li><li class="fragment">
                     (a &#x00d7; b) &#x00d7; 0 = a &#x00d7; 0
                     :: Base &#x00d7;
+                </li><li class="fragment">
+                    (a &#x00d7; b) &#x00d7; 0 =
+                    a &#x00d7; (b &#x00d7; 0) :: Base &#x00d7;
                 </li>
-                <li>(a &#x00d7; b) &#x00d7; 0 =
-                    a &#x00d7; (b &#x00d7; 0)
-                    :: Base &#x00d7;</li>
             </ul>
         </section>
 
@@ -1675,25 +1695,28 @@
                 <li>
                     (a &#x00d7; b) &#x00d7; 0 = a &#x00d7;
                     (b &#x00d7; 0)
-                </li>
-                <li>
+                </li><li class="fragment">
                     &#x2203;c&#x2208;&#x2115;
                     &#x2200;a,b&#x2208;&#x2115; :
                     (a &#x00d7; b) &#x00d7; c =
                     a &#x00d7; (b &#x00d7; c) :: Assumption
-                </li>
-                <li>(a &#x00d7; b) &#x00d7; succ(c) =
+                </li><li class="fragment">
+                    (a &#x00d7; b) &#x00d7; succ(c) =
                     (a &#x00d7; b) + ((a &#x00d7; b) &#x00d7; c)
-                    :: Step &#x00d7;</li>
-                <li>(a &#x00d7; b) &#x00d7; succ(c) =
+                    :: Step &#x00d7;
+                </li><li class="fragment">
+                    (a &#x00d7; b) &#x00d7; succ(c) =
                     (a &#x00d7; b) + (a &#x00d7; (b &#x00d7; c))
-                    :: Induction</li>
-                <li>(a &#x00d7; b) &#x00d7; succ(c) =
+                    :: Induction
+                </li><li class="fragment">
+                    (a &#x00d7; b) &#x00d7; succ(c) =
                     a &#x00d7; (b + (b &#x00d7; c))
-                    :: Distributive &#x00d7;</li>
-                <li>(a &#x00d7; b) &#x00d7; succ(c) =
+                    :: Distributive &#x00d7;
+                </li><li class="fragment">
+                    (a &#x00d7; b) &#x00d7; succ(c) =
                     a &#x00d7; (b &#x00d7; succ(c))
-                    :: Step &#x00d7;</li>
+                    :: Step &#x00d7;
+                </li>
             </ul>
         </section>
         <section>
@@ -1702,18 +1725,24 @@
                 &#x2200;a,b&#x2208;&#x2115;
                 a &#x00d7; b = b &#x00d7; a
             </p>
-            <p>Consider the special case where b = 0:</p>
+            <p class="fragment">
+                Consider the special case where b = 0:
+            </p>
             <ul>
-                <li>0 &#x00d7; 0 = 0 :: Base &#x00d7;</li>
-                <li>
+                <li class="fragment">
+                    0 &#x00d7; 0 = 0 &#x00d7; 0 :: Reflexive Equality
+                </li><li class="fragment">
                     &#x2203;a&#x2208;&#x2115;
-                    0 &#x00d7; a = 0 :: Assumption
-                </li>
-                <li>0 &#x00d7; succ(a) = 0 + (0 &#x00d7; a)
-                    :: Step &#x00d7;</li>
-                <li>0 &#x00d7; succ(a) = 0 + 0 :: Induction</li>
-                <li>0 &#x00d7; succ(a) = 0 :: Addition &#x2115;</li>
-                <li>0 &#x00d7; succ(a) = succ(a) &#x00d7; 0
+                    0 &#x00d7; a = a &#x00d7; 0 :: Assumption
+                </li><li class="fragment">
+                    0 &#x00d7; succ(a) = 0 + (0 &#x00d7; a)
+                    :: Step &#x00d7;
+                </li><li class="fragment">
+                    0 &#x00d7; succ(a) = 0 + (a &#x00d7; 0) :: Induction
+                </li><li class="fragment">
+                    0 &#x00d7; succ(a) = 0 + 0 = 0 :: Base &#x00d7;
+                </li><li class="fragment">
+                    0 &#x00d7; succ(a) = succ(a) &#x00d7; 0
                     :: Base &#x00d7;
                 </li>
             </ul>
@@ -1721,22 +1750,30 @@
         <section>
             <h3>Multiplication &#x2115;: Commutative</h3>
             <ul>
-                <li>a &#x00d7; 0 = 0 &#x00d7; a</li>
-                <li>&#x2203;b&#x2208;&#x2115;
+                <li>a &#x00d7; 0 = 0 &#x00d7; a
+                </li><li class="fragment">
+                    &#x2203;b&#x2208;&#x2115;
                     &#x2200;a&#x2208;&#x2115; :
-                    a &#x00d7; b = b &#x00d7; a :: Assumption</li>
-                <li>a &#x00d7; succ(b) = a + (a &#x00d7; b) ::
-                    Step &#x00d7;</li>
-                <li>a &#x00d7; succ(b) = a + (b &#x00d7; a) ::
-                    Induction</li>
-                <li>a &#x00d7; succ(b) = (b &#x00d7; a) + a ::
-                    Addition &#x2115;</li>
-                <li>a &#x00d7; succ(b) = (b &#x00d7; a) +
-                    (1 &#x00d7; a) :: Identity</li>
-                <li>a &#x00d7; succ(b) = (b + 1) &#x00d7; a ::
-                    Distributive</li>
-                <li>a &#x00d7; succ(b) = succ(b) &#x00d7; a ::
-                    Successor + 1</li>
+                    a &#x00d7; b = b &#x00d7; a :: Assumption
+                </li><li class="fragment">
+                    a &#x00d7; succ(b) = a + (a &#x00d7; b) ::
+                    Step &#x00d7;
+                </li><li class="fragment">
+                    a &#x00d7; succ(b) = a + (b &#x00d7; a) ::
+                    Induction
+                </li><li class="fragment">
+                    a &#x00d7; succ(b) = (b &#x00d7; a) + a ::
+                    Addition &#x2115;
+                </li><li class="fragment">
+                    a &#x00d7; succ(b) = (b &#x00d7; a) +
+                    (1 &#x00d7; a) :: Identity
+                </li><li class="fragment">
+                    a &#x00d7; succ(b) = (b + 1) &#x00d7; a ::
+                    Distributive
+                </li><li class="fragment">
+                    a &#x00d7; succ(b) = succ(b) &#x00d7; a ::
+                    Successor + 1
+                </li>
             </ul>
         </section>
         <section>
@@ -1812,12 +1849,12 @@
                 b<sub>2</sub> = a<sub>2</sub> + b<sub>1</sub>
             </p>
             <ul>
-                <li>
+                <li class="fragment">
                     Reflexive: &#x2200;&#x27e8;a<sub>1</sub>,
                     a<sub>2</sub>&#x27e9;&#x2208;&#x2124;
                     a<sub>1</sub> + a<sub>2</sub> =
-                    a<sub>1</sub> + a<sub>2</sub>
-                </li><li>
+                    a<sub>2</sub> + a<sub>1</sub>
+                </li><li class="fragment">
                     Symmetric: &#x2200;&#x27e8;a<sub>1</sub>,
                     a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
                     b<sub>2</sub>&#x27e9;&#x2208;&#x2124;
@@ -1825,7 +1862,7 @@
                     b<sub>1</sub> + a<sub>2</sub> &#x27fa;
                     b<sub>1</sub> + a<sub>2</sub> =
                     a<sub>1</sub> + b<sub>2</sub>
-                </li><li>
+                </li><li class="fragment">
                     Transitive: &#x2200;&#x27e8;a<sub>1</sub>,
                     a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
                     b<sub>2</sub>&#x27e9;,&#x27e8;c<sub>1</sub>,
@@ -1850,65 +1887,92 @@
             <h3>Successor Equality</h3>
             <p>
                 &#x2200;a,b&#x2208;&#x2115;
-                &#x27e8;a,b&#x27e9; = &#x27e8;succ(a), succ(b)&#x27e9;
+                &#x27e8;a, b&#x27e9; = &#x27e8;succ(a), succ(b)&#x27e9;
             </p>
             <ul>
-                <li>a + succ(b) = succ(a) + b</li>
-                <li>a + b + 1 = a + 1 + b</li>
-                <li>a + b + 1 = a + b + 1</li>
+                <li class="fragment">
+                    a + succ(b) = succ(a) + b :: Integer Equality
+                </li><li class="fragment">
+                    a + (b + 1) = (a + 1) + b :: Successor + 1
+                </li><li class="fragment">
+                    (a + b) + 1 = (a + b) + 1 :: Addition &#x2115;
+                </li>
             </ul>
-            <p>
+            <p class="fragment">
                 Every integers has a simplest form, which has at least
                 one member that is natural number zero.
             </p>
         </section>
         <section>
-            <h3>Integers &#x2124;: Order</h3>
-            <p>
-                &#x2200;&#x27e8;a<sub>1</sub>,
-                a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
-                b<sub>2</sub>&#x27e9;&#x2208;&#x2124;<br />
-                (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; &lt;
-                &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) &#x225d;
-                a<sub>1</sub> + b<sub>2</sub> &lt;
-                a<sub>2</sub> + b<sub>1</sub>
-            </p>
-            <p>
-                Transitive: &#x2200;&#x27e8;a<sub>1</sub>,
-                a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
-                b<sub>2</sub>&#x27e9;,&#x27e8;c<sub>1</sub>,
-                c<sub>2</sub>&#x27e9;&#x2208;&#x2124;
-                (a<sub>1</sub> + b<sub>2</sub> &lt;
-                a<sub>2</sub> + b<sub>1</sub>) &and;
-                (b<sub>1</sub> + c<sub>2</sub> &lt;
-                b<sub>2</sub> + c<sub>1</sub>) &#x27f9;
-                (a<sub>1</sub> + c<sub>2</sub> &lt;
-                a<sub>2</sub> + c<sub>1</sub>)
-            </p>
-            <!-- TODO prove that positive integers multiply positive -->
-        </section>
-        <section>
             <h3>Integers &#x2124;: Examples</h3>
             <ul>
-                <li>3&#x2124; = &#x27e8;3, 0&#x27e9; =
+                <li class="fragment">
+                    3&#x2124; = &#x27e8;3, 0&#x27e9; =
                     {{3}, {3, 0}} = {{{{}, {{}}, {{}, {{}}}}},
                     {{{}, {{}}, {{}, {{}}}}, {}}}
-                </li>
-                <li>3&#x2124; = &#x27e8;5, 2&#x27e9; =
-                    {{5}, {5, 2}} =
-                    {{{{}, {{}}, {{{}, {{}}}}, {{{}, {{}},
-                    {{{}, {{}}}}}}, {{{}, {{}}, {{{}, {{}}}},
+                </li><li class="fragment">
+                    3&#x2124; = &#x27e8;5, 2&#x27e9; =
+                    {{5}, {5, 2}} = {{{{}, {{}}, {{{}, {{}}}},
+                    {{{}, {{}}, {{{}, {{}}}}}},
+                    {{{}, {{}}, {{{}, {{}}}},
                     {{{}, {{}}, {{{}, {{}}}}}}}}}},
                     {{{}, {{}}, {{{}, {{}}}}, {{{}, {{}},
                     {{{}, {{}}}}}}, {{{}, {{}}, {{{}, {{}}}},
                     {{{}, {{}}, {{{}, {{}}}}}}}}},
                     {{{}, {{}}}}}} <em>(Notice: 5 + 0 = 3 + 2)</em>
-                </li>
-                <li>-4&#x2124; = &#x27e8;0, 4&#x27e9; =
+                </li><li class="fragment">
+                    -4&#x2124; = &#x27e8;0, 4&#x27e9; =
                     {{0}, {0, 4}} = {{{}}, {{}, {{}, {{}},
                     {{}, {{}}}, {{}, {{}}, {{}, {{}}}}}}}
                 </li>
             </ul>
+        </section>
+        <section>
+            <h3>Integers &#x2124;: Order</h3>
+            <p>
+                &#x2200;a<sub>1 </sub>,a<sub>2 </sub>,b<sub>1
+                </sub>,b<sub>2 </sub>&#x2208;&#x2115;
+                (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; &le;
+                &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) &#x225d;
+                <br />&#x2203;c&#x2208;&#x2115;
+                a<sub>1</sub> + b<sub>2</sub> + c =
+                a<sub>2</sub> + b<sub>1</sub>
+            </p>
+            <ul>
+                <li class="fragment">
+                    Reflexive:
+                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; &le;
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;)
+                    &#x27f9; a<sub>1</sub> + a<sub>2</sub> + 0 =
+                    a<sub>2</sub> + a<sub>1</sub>
+                </li><li class="fragment">
+                    Antisymmetric:
+                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; &le;
+                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) &and;
+                    <br />
+                    (&#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; &le;
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;)
+                    &#x27f9;
+                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; =
+                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;)
+                </li><li class="fragment">
+                    Transitive:
+                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; &le;
+                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) &and;
+                    <br />
+                    (&#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; &le;
+                    &#x27e8;c<sub>1</sub>, c<sub>2</sub>&#x27e9;)
+                    &#x27f9;
+                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; =
+                    &#x27e8;c<sub>1</sub>, c<sub>2</sub>&#x27e9;)
+                </li><li class="fragment">
+                    Connex:
+                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; &le;
+                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) &or;
+                    (&#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; &le;
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;)
+                </li>
+            </p>
         </section>
     </section>
 
@@ -1934,20 +1998,16 @@
         <section>
             <h3>Addition &#x2124; Example: 3 + 2</h3>
             <ul>
-                <li>
+                <li class="fragment">
                     3&#x2124; + 2&#x2124; = &#x27e8;3, 0&#x27e9; +
                     &#x27e8;5, 3&#x27e9;
-                </li>
-                <li>
+                </li><li class="fragment">
                     3&#x2124; + 2&#x2124; = &#x27e8;3 + 5, 0 + 3&#x27e9;
-                </li>
-                <li>
+                </li><li class="fragment">
                     3&#x2124; + 2&#x2124; = &#x27e8;8, 3&#x27e9;
-                </li>
-                <li>
+                </li><li class="fragment">
                     3&#x2124; + 2&#x2124; = &#x27e8;5, 0&#x27e9;
-                </li>
-                <li>
+                </li><li class="fragment">
                     3&#x2124; + 2&#x2124; = 5&#x2124;
                 </li>
             </ul>
@@ -1960,21 +2020,17 @@
         <section>
             <h3>Addition &#x2124; Example: 3 + (-2)</h3>
             <ul>
-                <li>
+                <li class="fragment">
                     3&#x2124; + (-2&#x2124;) = &#x27e8;3, 0&#x27e9; +
                     &#x27e8;0, 2&#x27e9;
-                </li>
-                <li>
+                </li><li class="fragment">
                     3&#x2124; + (-2&#x2124;) =
                     &#x27e8;3 + 0, 0 + 2&#x27e9;
-                </li>
-                <li>
+                </li><li class="fragment">
                     3&#x2124; + (-2&#x2124;) = &#x27e8;3, 2&#x27e9;
-                </li>
-                <li>
+                </li><li class="fragment">
                     3&#x2124; + (-2&#x2124;) = &#x27e8;1, 0&#x27e9;
-                </li>
-                <li>
+                </li><li class="fragment">
                     3&#x2124; + (-2&#x2124;) = 1&#x2124;
                 </li>
             </ul>
@@ -1992,7 +2048,7 @@
                 &#x27e8;a + b, 0 + 0&#x27e9; =
                 &#x27e8;a + b, 0&#x27e9;
             </p>
-            <p>
+            <p class="fragment">
                 Adding any two integers that match natural
                 numbers results in the natural number their sum
                 would match.
@@ -2026,25 +2082,30 @@
                 &#x2200;a&#x2208;&#x2124; a + 0 = a = 0 + a
             </p>
             <ul>
-                <li>&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                <li class="fragment">
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
                     &#x27e8;0, 0&#x27e9; =
                     &#x27e8;a<sub>1</sub> + 0,
                     a<sub>2</sub> + 0&#x27e9; ::
-                    Definition</li>
-                <li>&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                    Definition +
+                </li><li class="fragment">
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
                     &#x27e8;0, 0&#x27e9; =
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; ::
-                    Addition &#x2115;</li>
-                <li>&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                    Addition &#x2115;
+                </li><li class="fragment">
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
                     &#x27e8;0, 0&#x27e9; =
                     &#x27e8;0 + a<sub>1</sub>,
                     0 + a<sub>2</sub>&#x27e9; ::
-                    Addition &#x2115;</li>
-                <li>&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                    Addition &#x2115;
+                </li><li class="fragment">
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
                     &#x27e8;0, 0&#x27e9; =
                     &#x27e8;0, 0&#x27e9; +
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; ::
-                    Definition</li>
+                    Definition +
+                </li>
             </ul>
         </section>
         <section>
@@ -2054,22 +2115,24 @@
                 (a + b) + c = a + (b + c)
             </p>
             <ul>
-                <li>(&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                <li class="fragment">
+                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
                     &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) +
                     &#x27e8;c<sub>1</sub>, c<sub>2</sub>&#x27e9; =<br />
                     &#x27e8;(a<sub>1</sub> + b<sub>1</sub>) +
                     c<sub>1</sub>,
                     (a<sub>2</sub> + b<sub>2</sub>) +
                     c<sub>2</sub>)&#x27e9; :: Definition +
-                </li>
-                <li>(&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                </li><li class="fragment">
+                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
                     &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) +
                     &#x27e8;c<sub>1</sub>, c<sub>2</sub>&#x27e9; =<br />
                     &#x27e8;a<sub>1</sub> + (b<sub>1</sub> +
                     c<sub>1</sub>),
                     a<sub>2</sub> + (b<sub>2</sub> +
-                    c<sub>2</sub>)&#x27e9; :: Addition &#x2115;</li>
-                <li>(&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                    c<sub>2</sub>)&#x27e9; :: Addition &#x2115;
+                </li><li class="fragment">
+                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
                     &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) +
                     &#x27e8;c<sub>1</sub>, c<sub>2</sub>&#x27e9; =<br />
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
@@ -2089,21 +2152,19 @@
                 &#x2200;a,b&#x2208;&#x2124; a + b = b + a
             </p>
             <ul>
-                <li>
+                <li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
                     &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; =
                     &#x27e8;a<sub>1</sub> + b<sub>1</sub>,
                     a<sub>2</sub> + b<sub>2</sub>&#x27e9; ::
                     Definition
-                </li>
-                <li>
+                </li><li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
                     &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; =
                     &#x27e8;b<sub>1</sub> + a<sub>1</sub>,
                     b<sub>2</sub> + a<sub>2</sub>&#x27e9; ::
                     Addition &#x2115;
-                </li>
-                <li>
+                </li><li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
                     &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; =
                     &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; +
@@ -2125,19 +2186,23 @@
                 &#x27e8;a<sub>2</sub>, a<sub>1</sub>&#x27e9;
             </p>
             <ul>
-                <li>&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                <li class="fragment">
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
                     &#x27e8;a<sub>2</sub>, a<sub>1</sub>&#x27e9; =
                     &#x27e8;a<sub>1</sub> + a<sub>2</sub>,
                     a<sub>2</sub> + a<sub>1</sub>&#x27e9; ::
-                    Definition</li>
-                <li>&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                    Definition
+                </li><li class="fragment">
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
                     &#x27e8;a<sub>2</sub>, a<sub>1</sub>&#x27e9; =
                     &#x27e8;a<sub>1</sub> + a<sub>2</sub>,
                     a<sub>1</sub> + a<sub>2</sub>&#x27e9; ::
-                    Addition &#x2115;</li>
-                <li>&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                    Addition &#x2115;
+                </li><li class="fragment">
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
                     &#x27e8;a<sub>2</sub>, a<sub>1</sub>&#x27e9;
-                    =&#x2124; &#x27e8;0, 0&#x27e9;</li>
+                    =&#x2124; &#x27e8;0, 0&#x27e9;
+                </li>
             </ul>
         </section>
         <section>
@@ -2201,69 +2266,63 @@
         <section>
             <h3>Multiplication &#x2124; Example: 3 &#x00d7; 2</h3>
             <ul>
-                <li>
+                <li class="fragment">
                     3&#x2124; &#x00d7; 2&#x2124; =
                     &#x27e8;3, 0&#x27e9; &#x00d7; &#x27e8;4, 2&#x27e9;
-                </li>
-                <li>
+                </li><li class="fragment">
                     3&#x2124; &#x00d7; 2&#x2124; =
                     &#x27e8;(3 &#x00d7; 4) + (0 &#x00d7; 2),
                     (3 &#x00d7; 2) + (0 &#x00d7; 4)&#x27e9;
-                </li>
-                <li>
+                </li><li class="fragment">
                     3&#x2124; &#x00d7; 2&#x2124; =
                     &#x27e8;12 + 0, 6 + 0&#x27e9;
-                </li>
-                <li>
+                </li><li class="fragment">
                     3&#x2124; &#x00d7; 2&#x2124; = &#x27e8;12, 6&#x27e9;
+                </li><li class="fragment">
+                    3&#x2124; &#x00d7; 2&#x2124; = 6&#x2124;
                 </li>
-                <li>3&#x2124; &#x00d7; 2&#x2124; = 6&#x2124;</li>
             </ul>
         </section>
         <section>
             <h3>Multiplication &#x2124; Example: 3 &#x00d7; (-1)</h3>
             <ul>
-                <li>
+                <li class="fragment">
                     3&#x2124; &#x00d7; (-1)&#x2124; =
                     &#x27e8;3, 0&#x27e9; &#x00d7; &#x27e8;0, 1&#x27e9;
-                </li>
-                <li>
+                </li><li class="fragment">
                     3&#x2124; &#x00d7; (-1)&#x2124; =
                     &#x27e8;(3 &#x00d7; 0) + (0 &#x00d7; 1),
                     (3 &#x00d7; 1) + (0 &#x00d7; 0)&#x27e9;
-                </li>
-                <li>
+                </li><li class="fragment">
                     3&#x2124; &#x00d7; (-1)&#x2124; =
                     &#x27e8;0 + 0, 3 + 0&#x27e9;
-                </li>
-                <li>
+                </li><li class="fragment">
                     3&#x2124; &#x00d7; (-1)&#x2124; =
                     &#x27e8;0, 3&#x27e9;
+                </li><li class="fragment">
+                    3&#x2124; &#x00d7; (-1)&#x2124; = (-3)&#x2124;
                 </li>
-                <li>3&#x2124; &#x00d7; (-1)&#x2124; = (-3)&#x2124;</li>
             </ul>
         </section>
         <section>
             <h3>Multiplication &#x2124; Example: 3 &#x00d7; (-1)</h3>
             <ul>
-                <li>
+                <li class="fragment">
                     3&#x2124; &#x00d7; (-1)&#x2124; =
                     &#x27e8;4, 1&#x27e9; &#x00d7; &#x27e8;1, 2&#x27e9;
-                </li>
-                <li>
+                </li><li class="fragment">
                     3&#x2124; &#x00d7; (-1)&#x2124; =
                     &#x27e8;(4 &#x00d7; 1) + (1 &#x00d7; 2),
                     (4 &#x00d7; 2) + (1 &#x00d7; 1)&#x27e9;
-                </li>
-                <li>
+                </li><li class="fragment">
                     3&#x2124; &#x00d7; (-1)&#x2124; =
                     &#x27e8;4 + 2, 8 + 1&#x27e9;
-                </li>
-                <li>
+                </li><li class="fragment">
                     3&#x2124; &#x00d7; (-1)&#x2124; =
                     &#x27e8;6, 9&#x27e9;
+                </li><li class="fragment">
+                    3&#x2124; &#x00d7; (-1)&#x2124; = (-3)&#x2124;
                 </li>
-                <li>3&#x2124; &#x00d7; (-1)&#x2124; = (-3)&#x2124;</li>
             </ul>
         </section>
         <section>
@@ -2275,7 +2334,7 @@
                 (a &#x00d7; 0) + (b &#x00d7; 0)&#x27e9; =
                 &#x27e8;a &#x00d7; b, 0&#x27e9;
             </p>
-            <p>
+            <p class="fragment">
                 Multiplying any two integers that match natural
                 numbers results in the natural number their product
                 would match.
@@ -2314,33 +2373,30 @@
                 a &#x00d7; 1 = a = 1 &#x00d7; a
             </p>
             <ul>
-                <li>
+                <li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &#x00d7; &#x27e8;1, 0&#x27e9; =
                     &#x27e8;(a<sub>1</sub> &#x00d7; 1) +
                     (a<sub>2</sub> &#x00d7; 0),<br />
                     (a<sub>1</sub> &#x00d7; 0) +
                     (a<sub>2</sub> &#x00d7; 1)&#x27e9; :: Definition
-                </li>
-                <li>&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
+                </li><li class="fragment">
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &#x00d7; &#x27e8;1, 0&#x27e9; =
                     &#x27e8;a<sub>1</sub> + 0,
                     0 + a<sub>2</sub>&#x27e9;
                     :: Multiplication &#x2115;
-                </li>
-                <li>
+                </li><li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &#x00d7; &#x27e8;1, 0&#x27e9; =
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     :: Addition &#x2115;
-                </li>
-                <li>
+                </li><li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &#x00d7; &#x27e8;1, 0&#x27e9; =
                     &#x27e8;0 + a<sub>1</sub>, a<sub>2</sub> +
                     0&#x27e9; :: Addition &#x2115;
-                </li>
-                <li>
+                </li><li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &#x00d7; &#x27e8;1, 0&#x27e9; =
                     &#x27e8;(1 &#x00d7 a<sub>1</sub>) +
@@ -2348,8 +2404,7 @@
                     (0 &#x00d7 a<sub>1</sub>) +
                     (1 &#x00d7 a<sub>2</sub>)&#x27e9;
                     :: Multiplication &#x2115;
-                </li>
-                <li>
+                </li><li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &#x00d7; &#x27e8;1, 0&#x27e9; =
                     &#x27e8;1, 0&#x27e9; &#x00d7;
@@ -2366,7 +2421,7 @@
                 a &#x00d7; (b &#x00d7; c)
             </p>
             <ul>
-                <li>
+                <li class="fragment">
                     (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &#x00d7; &#x27e8;b<sub>1</sub>,
                     b<sub>2</sub>&#x27e9;) &#x00d7;
@@ -2383,7 +2438,7 @@
                     b<sub>2</sub>) + (a<sub>2</sub> &#x00d7;
                     b<sub>1</sub>)) &#x00d7; c<sub>1</sub>))&#x27e9;
                     :: Definition
-                </li><li>
+                </li><li class="fragment">
                     (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &#x00d7; &#x27e8;b<sub>1</sub>,
                     b<sub>2</sub>&#x27e9;) &#x00d7;
@@ -2399,7 +2454,7 @@
                     ((b<sub>1</sub> &#x00d7; c<sub>1</sub>) +
                     (b<sub>2</sub> &#x00d7; c<sub>2</sub>)))&#x27e9;
                     :: Addition &#x2115;
-                </li><li>
+                </li><li class="fragment">
                     (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &#x00d7; &#x27e8;b<sub>1</sub>,
                     b<sub>2</sub>&#x27e9;) &#x00d7;
@@ -2420,7 +2475,7 @@
                 a &#x00d7; b = b &#x00d7; a
             </p>
             <ul>
-                <li>
+                <li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &#x00d7; &#x27e8;b<sub>1</sub>,
                     b<sub>2</sub>&#x27e9; =
@@ -2429,8 +2484,7 @@
                     (a<sub>1</sub> &#x00d7; b<sub>2</sub>) +
                     (a<sub>2</sub> &#x00d7; b<sub>1</sub>)&#x27e9;
                     :: Definition
-                </li>
-                <li>
+                </li><li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &#x00d7; &#x27e8;b<sub>1</sub>,
                     b<sub>2</sub>&#x27e9; =
@@ -2439,8 +2493,7 @@
                     (b<sub>1</sub> &#x00d7; a<sub>2</sub>) +
                     (b<sub>2</sub> &#x00d7; a<sub>1</sub>)&#x27e9;
                     :: Multiplication &#x2115;
-                </li>
-                <li>
+                </li><li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &#x00d7; &#x27e8;b<sub>1</sub>,
                     b<sub>2</sub>&#x27e9; =
@@ -2458,11 +2511,11 @@
                 (a &#x00d7; b) + (a &#x00d7; c)) &and;<br />
                 ((b + c) &#x00d7; a = (b &#x00d7; a) + (c &#x00d7; a))
             </p>
-            <p>
-                We have proven that integer multiplication is
-                commutative so if we prove that the distributive
-                property is true from one side, the other side
-                clearly works as well.
+            <p class="fragment">
+               We have proven that integer multiplication is
+               commutative so if we prove that the distributive
+               property is true from one side, the other side clearly
+               works as well.
             </p>
         </section>
         <section>
@@ -2473,7 +2526,7 @@
                 (a &#x00d7; b) + (a &#x00d7; c))
             </p>
             <ul>
-                <li>
+                <li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &#x00d7; (&#x27e8;b<sub>1</sub>,
                     b<sub>2</sub>&#x27e9; +
@@ -2487,8 +2540,7 @@
                     (a<sub>2</sub> &#x00d7;
                     (b<sub>1</sub> + c<sub>1</sub>))&#x27e9;
                     :: Definition
-                </li>
-                <li>
+                </li><li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &#x00d7; (&#x27e8;b<sub>1</sub>,
                     b<sub>2</sub>&#x27e9; +
@@ -2503,8 +2555,7 @@
                     ((a<sub>1</sub> &#x00d7; c<sub>2</sub>) +
                     (a<sub>2</sub> &#x00d7; c<sub>1</sub>))&#x27e9;
                     :: Multiplication &#x2115;
-                </li>
-                <li>
+                </li><li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &#x00d7; (&#x27e8;b<sub>1</sub>,
                     b<sub>2</sub>&#x27e9; +
