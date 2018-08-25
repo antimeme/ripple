@@ -249,8 +249,9 @@
                 indefinitely.
             </p>
             <ul>
-                <li>P(a) &and; (P(b) &#x27f9; P(next(b)))</li>
                 <li>
+                    P(a) &and; (P(b) &#x27f9; P(next(b)))
+                </li><li>
                     P(b) is true for anything that follows a
                 </li>
             </ul>
@@ -330,11 +331,11 @@
         <section>
             <h2>Nothing But Set</h2>
             <p>
-                We will use set theory to construct numbers,
-                arithmetic, relations, functions, algebra and
-                geometry.  Set theory is a formal system in which the
-                only objects are sets and the only thing sets can do
-                is contain other objects. (Zermelo-Fraenkel 1908-1922)
+                We will use set theory to construct relations,
+                functions, numbers, arithmetic, algebra and geometry.
+                Set theory is a formal system in which the only
+                objects are sets and the only thing sets can do is
+                contain other objects. (Zermelo-Fraenkel 1908-1922)
             </p>
             <aside class="notes">
                 Axiomatic set theory is the foundation of this
@@ -708,8 +709,8 @@
                 Extensionality means that members of a set have no
                 meaningful order.
             </p>
-            <p>&#x2200;a,b : {a, b} = {b, a}</p>
-            <p>Let's impose some order on them!</p>
+            <p class="fragment">&#x2200;a,b : {a, b} = {b, a}</p>
+            <p class="fragment">Let's impose some order on them!</p>
         </section>
         <section>
             <h2>Ordered Pairs</h2>
@@ -718,33 +719,59 @@
                 {{a}, {a, b}} (Kuratowski 1921)
             </p>
             <ul>
-                <li>
-                    &#x2200;a,b (a &ne; b) &#x27fa;
-                    (&#x27e8;a, b&#x27e9; &ne; &#x27e8;b,
-                    a&#x27e9;)
-                </li>
-                <li>
-                    &#x2200;a,b (a &ne; b) &#x27fa;
-                    {{a}, {a, b}} &ne; {{b}, {a, b}}
-                </li>
-            </ul>
-            <table>
-                <tr><td>
-                </td></tr><tr><td>
+                <li class="fragment"><ul>
+                    <li>
+                        &#x2200;a,b (a &ne; b) &#x27fa;
+                        (&#x27e8;a, b&#x27e9; &ne; &#x27e8;b,
+                        a&#x27e9;)
+                    </li><li class="fragment">
+                        &#x2200;a,b (a &ne; b) &#x27fa;
+                        {{a}, {a, b}} &ne; {{b}, {a, b}}
+                    </li>
+                </ul></li><li class="fragment">
                     a is first in &#x27e8;a, b&#x27e9; &#x225d;
                     &#x2200;c&#x2208;&#x27e8;a, b&#x27e9;
                     a&#x2208;c
-                </td></tr><tr><td>
+                </li><li class="fragment">
                     b is second in &#x27e8;a, b&#x27e9; &#x225d;
                     (&#x2203;c&#x2208;&#x27e8;a, b&#x27e9;
                     b&#x2208;c) &and;<br />
                     (&#x2200;c,d&#x2208;&#x27e8;a, b&#x27e9; c
                     &ne; d &#x27f9; b&#x2209;c &or; b&#x2209;d)
-                </td></tr><tr><td>
+                </li><li class="fragment">
                     &cup;&#x27e8;a, b&#x27e9; =
                     &cup;{{a}, {a, b}} = {a, b}
-                </td></tr>
-            </table>
+                </li>
+            </ul>
+
+            <!-- <table>
+                 <tr><td class="framgent">
+                 <ul>
+                 <li class="framgent">
+                 &#x2200;a,b (a &ne; b) &#x27fa;
+                 (&#x27e8;a, b&#x27e9; &ne; &#x27e8;b,
+                 a&#x27e9;)
+                 </li>
+                 <li class="framgent">
+                 &#x2200;a,b (a &ne; b) &#x27fa;
+                 {{a}, {a, b}} &ne; {{b}, {a, b}}
+                 </li>
+                 </ul>
+                 </td></tr><tr><td class="framgent">
+                 a is first in &#x27e8;a, b&#x27e9; &#x225d;
+                 &#x2200;c&#x2208;&#x27e8;a, b&#x27e9;
+                 a&#x2208;c
+                 </td></tr><tr><td class="framgent">
+                 b is second in &#x27e8;a, b&#x27e9; &#x225d;
+                 (&#x2203;c&#x2208;&#x27e8;a, b&#x27e9;
+                 b&#x2208;c) &and;<br />
+                 (&#x2200;c,d&#x2208;&#x27e8;a, b&#x27e9; c
+                 &ne; d &#x27f9; b&#x2209;c &or; b&#x2209;d)
+                 </td></tr><tr><td class="framgent">
+                 &cup;&#x27e8;a, b&#x27e9; =
+                 &cup;{{a}, {a, b}} = {a, b}
+                 </td></tr>
+                 </table> -->
         </section>
         <section>
             <h2>Relation</h2>
@@ -756,28 +783,37 @@
                 have a domain and a range, which may be the same.
             </p>
             <ul>
-                <li>&cup;&cup;R is the set of all members</li>
-                <li>Domain(R) &#x225d; { a&#x2208;&cup;&cup;R :
-                    &#x2203;b &#x27e8;a, b&#x27e9;&#x2208;R}</li>
-                <li>Range(R) &#x225d; { b&#x2208;&cup;&cup;R :
-                    &#x2203;a &#x27e8;a, b&#x27e9;&#x2208;R}</li>
+                <li class="fragment">
+                    &cup;&cup;R is the set of all members
+                </li><li class="fragment">
+                    Domain(R) &#x225d; { a&#x2208;&cup;&cup;R :
+                    &#x2203;b&#x2208;&cup;&cup;R
+                    &#x27e8;a, b&#x27e9;&#x2208;R }
+                </li><li class="fragment">
+                    Range(R) &#x225d; { b&#x2208;&cup;&cup;R :
+                    &#x2203;a&#x2208;&cup;&cup;R
+                    &#x27e8;a, b&#x27e9;&#x2208;R }
+                </li>
             </ul>
         </section>
         <section>
             <h2>Relation Properties</h2>
             <ul>
-                <li>Reflexive: &#x2200;a&#x2208;&cup;&cup;R (a R a)</li>
-                <li>Symmetric: &#x2200;a,b&#x2208;&cup;&cup;R (a R b)
+                <li class="fragment">
+                    Reflexive: &#x2200;a&#x2208;&cup;&cup;R (a R a)
+                </li><li class="fragment">
+                    Symmetric: &#x2200;a,b&#x2208;&cup;&cup;R (a R b)
                     &#x27fa; (b R a)
-                </li><li>
+                </li><li class="fragment">
                     Antisymmetric:<br /> &#x2200;a,b&#x2208;&cup;&cup;R
                     (a R b) &and; (b R a) &#x27f9; (a = b)
-                </li><li>
+                </li><li class="fragment">
                     Transitive: &#x2200;a,b,c&#x2208;&cup;&cup;R
                     (a R b) &and; (b R c) &#x27fa; (a R c)
+                </li><li class="fragment">
+                    Connex: &#x2200;a,b&#x2208;&cup;&cup;R
+                    (a R b) &or; (b R a)
                 </li>
-                <li>Connex: &#x2200;a,b&#x2208;&cup;&cup;R
-                    (a R b) &or; (b R a)</li>
             </ul>
             <aside class="notes">
                 These are some properties a relation might have.  We
@@ -788,8 +824,7 @@
         <section>
             <h2>Equivalence</h2>
             <p>
-                An equivalence relation is a relation with three
-                special properties:
+                An equivalence relation has three properties:
             </p>
             <ul>
                 <li>Reflexive: &#x2200;a (a &#x2251; a)</li>
@@ -802,6 +837,10 @@
                     b &#x2251; c) &#x27f9; (a &#x2251; c)
                 </li>
             </ul>
+            <p>
+                Equivalence relations partition sets into equivalence
+                classes.
+            </p>
             <aside class="notes">
                 An equivalence relation has three special
                 properties.  Reflexive means every member of the
@@ -840,8 +879,7 @@
         <section>
             <h2>Total Order</h2>
             <p>
-                A total order is a partial order with the connex
-                property:
+                A total order is a partial order with connex:
             </p>
             <ul>
                 <li>
@@ -873,7 +911,8 @@
                 A function is a relation which maps every
                 member of the domain to the exactly one member
                 of the range: &#x2200;a&#x2208;D
-                <strong>f(a) = b</strong>&#x2208;R
+                <span class="fragment highlight-red">f(a)
+                    = b</span>&#x2208;R
             </p>
             <aside class="notes">
                 A function is a relation with the special property
@@ -889,12 +928,13 @@
                 Given function f : D &#x27f6; R
             </p>
             <ul>
-                <li>Injection: &#x2200;a,b&#x2208;D
+                <li class="fragment">
+                    Injection: &#x2200;a,b&#x2208;D
                     f(a) = f(b) &#x27f9; (a = b)<br />
                     No two members of the domain are mapped to the
                     same member of the range
-                </li>
-                <li>Surjection: &#x2200;b&#x2208;R
+                </li><li class="fragment">
+                    Surjection: &#x2200;b&#x2208;R
                     &#x2203;a&#x2208;D f(a) = b<br />
                     Every member of the range is mapped from at
                     least one member of domain
@@ -907,15 +947,13 @@
                 Given function f : D &#x27f6; R
             </p>
             <ul>
-                <li>
+                <li class="fragment">
                     Bijection: both an injection and a surjection
-                </li>
-                <li>
+                </li><li class="fragment">
                     Inverse: f<sup>-1</sup> : R &#x27f6; D<br />
                     &#x2200;a&#x2208;D,b&#x2208;R
                     (f(a) = b) &#x27fa; (f<sup>-1</sup>(b) = a)
-                </li>
-                <li>
+                </li><li class="fragment">
                     Cardinality: two sets have the same cardinality
                     when a bijection between them exists
                 </li>
@@ -929,11 +967,11 @@
             <p>
                 succ(a) &#x225d; &cup;{a, {a, a}} = a &cup; {a}
             </p>
-            <p>
+            <p class="fragment">
                 &#x2115; &#x225d; { a : (a = {}) &or;
                 &#x2203;b&#x2208;&#x2115; a = succ(b) }
             </p>
-            <p>
+            <p class="fragment">
                 Natural numbers are an effective way to represent
                 discrete and indivisible quantities. (Von Neumann
                 1923)
@@ -942,15 +980,15 @@
         <section>
             <h3>Natural Numbers &#x2115;: Examples</h3>
             <ul>
-                <li>0&#x2115; &#x225d; {}
-                </li><li>
+                <li class="fragment">0&#x2115; &#x225d; {}
+                </li><li class="fragment">
                     1&#x2115; &#x225d; succ(0) = {0} = {{}}
-                </li><li>
+                </li><li class="fragment">
                     2&#x2115; &#x225d; succ(1) = {0, 1} = {{}, {{}}}
-                </li><li>
+                </li><li class="fragment">
                     3&#x2115; &#x225d; succ(2) = {0, 1, 2} =
                     {{}, {{}}, {{}, {{}}}}
-                </li><li>
+                </li><li class="fragment">
                     4&#x2115; &#x225d; succ(3) = {0, 1, 2, 3} =
                     <br />
                     {{}, {{}}, {{}, {{}}}, {{{}, {{}}, {{}, {{}}}}}}
@@ -967,15 +1005,16 @@
         <section>
             <h3>Natural Numbers &#x2115;: Examples</h3>
             <ul>
-                <li>5&#x2115; &#x225d; succ(4) = {0, 1, 2, 3, 4}
-                </li><li>
+                <li class="fragment">
+                    5&#x2115; &#x225d; succ(4) = {0, 1, 2, 3, 4}
+                </li><li class="fragment">
                     6&#x2115; &#x225d; succ(5) = {0, 1, 2, 3, 4, 5}
-                </li><li>
+                </li><li class="fragment">
                     7&#x2115; &#x225d; succ(6) = {0, 1, 2, 3, 4, 5, 6}
-                </li><li>
+                </li><li class="fragment">
                     8&#x2115; &#x225d; succ(7) =
                     {0, 1, 2, 3, 4, 5, 6, 7}
-                </li><li>
+                </li><li class="fragment">
                     9&#x2115; &#x225d; succ(8) =
                     {0, 1, 2, 3, 4, 5, 6, 7, 8}
                 </li>
@@ -992,12 +1031,19 @@
                 with 0. (Unknown Indian mathematicians ~500)
             </p>
             <ul>
-                <li>10&#x2115; &#x225d; succ(9) =
+                <li class="fragment">
+                    10&#x2115; &#x225d; succ(9) =
                     {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-                </li><li>
+                </li><li class="fragment">
                     11&#x2115; &#x225d; succ(10) =
                     {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-                </li><li>
+                </li><li class="fragment">
+                    ...
+                </li><li class="fragment">
+                    19&#x2115; &#x225d; succ(18)
+                </li><li class="fragment">
+                    20&#x2115; &#x225d; succ(19)
+                </li><li class="fragment">
                     ...
                 </li>
             </ul>
@@ -1013,9 +1059,10 @@
         <section>
             <h3>Equality &#x2115;</h3>
             <p>
-                Every natural number is a distinct set so set
-                equality works for testing natural number
-                equality.
+                Every natural number is a distinct set so set equality
+                works for testing natural number equality.  This is
+                reflexive, symmetric and transitive because set
+                equality has these properites.
             </p>
         </section>
         <section>
@@ -1065,10 +1112,15 @@
         <section>
             <h3>Order &#x2115;: Antisymmetric</h3>
             <p>
-                Every natural number contains all predecessors.
+                Every natural number is a subset of all of its
+                successors.  This makes natural number order
+                antisymmetric due to regularity.
             </p>
             <ul>
                 <li>
+                    &#x2200;a&#x2208;&#x2115; a &#x2209; a
+                    &#x27f9; succ(a) &#x2209; a
+                </li><li>
                     &#x2200;a,b,c&#x2208;&#x2115;
                     (a &#x2208; succ(b)) &and;
                     (b &#x2208; succ(a)) &#x27f9; (a = b)
@@ -1083,8 +1135,9 @@
         <section>
             <h3>Order &#x2115;: Transitive</h3>
             <p>
-                Every natural number contains all predecessors so
-                order is transitive.
+                Every natural number contains all predecessors.  This
+                means each contains not only its own predecessors but
+                also the predecessors of those predecessors.
             </p>
             <ul>
                 <li>
@@ -1131,7 +1184,7 @@
             <p>
                 Let's define <q>addition</q> which maps two
                 natural numbers to another natural number.  We
-                will represent it with a + sign between two
+                will represent it with a <q>+</q> sign between two
                 natural numbers: a + b (Grassman 1861):</p>
             <ul>
                 <li>
@@ -1147,15 +1200,21 @@
         <section>
             <h3>Addition &#x2115; Example: 3 + 2</h3>
             <ul>
-                <li>3 + 2 = 3 + succ(1) :: Definition of 2</li>
-                <li>
+                <li class="fragment">
+                    3 + 2 = 3 + succ(1) :: Definition of 2
+                </li><li class="fragment">
                     3 + 2 = 3 + succ(succ(0)) :: Definition of 1
+                </li><li class="fragment">
+                    3 + 2 = succ(3 + succ(0)) :: Step +
+                </li><li class="fragment">
+                    3 + 2 = succ(succ(3 + 0)) :: Step +
+                </li><li class="fragment">
+                    3 + 2 = succ(succ(3)) :: Base +
+                </li><li class="fragment">
+                    3 + 2 = succ(4) :: Definition of 4
+                </li><li class="fragment">
+                    3 + 2 = 5 :: Definition of 5
                 </li>
-                <li>3 + 2 = succ(3 + succ(0)) :: Step +</li>
-                <li>3 + 2 = succ(succ(3 + 0)) :: Step +</li>
-                <li>3 + 2 = succ(succ(3)) :: Base +</li>
-                <li>3 + 2 = succ(4) :: Definition of 4</li>
-                <li>3 + 2 = 5 :: Definition of 5</li>
             </ul>
             <aside class="notes">
                 We can use this method to add any two natural
@@ -1196,12 +1255,16 @@
                 a + 0 = a = 0 + a
             </p>
             <ul>
-                <li>0 + 0 = 0 :: Base +</li>
-                <li>&#x2203;a&#x2208;&#x2115; :
-                    0 + a = a :: Assumption</li>
-                <li>0 + succ(a) = succ(0 + a)
-                    :: Step +</li>
-                <li>0 + succ(a) = succ(a) :: Induction</li>
+                <li class="fragment">
+                    0 + 0 = 0 :: Base +
+                </li><li class="fragment">
+                    &#x2203;a&#x2208;&#x2115; :
+                    0 + a = a :: Assumption
+                </li><li class="fragment">
+                    0 + succ(a) = succ(0 + a) :: Step +
+                </li><li class="fragment">
+                    0 + succ(a) = succ(a) :: Induction
+                </li>
             </ul>
         </section>
         <section>
@@ -1211,20 +1274,20 @@
                 (a + b) + c = a + (b + c)
             </p>
             <ul>
-                <li>(a + b) + 0 = a + b = a + (b + 0)
-                    :: Base +</li>
-                <li>&#x2203;c&#x2208;&#x2115;
+                <li class="fragment">
+                    (a + b) + 0 = a + b = a + (b + 0) :: Base +
+                </li><li class="fragment">
+                    &#x2203;c&#x2208;&#x2115;
                     &#x2200;a,b&#x2208;&#x2115; :
-                    (a + b) + c = a + (b + c)</li>
-                <li>
+                    (a + b) + c = a + (b + c)
+                </li><li class="fragment">
                     (a + b) + succ(c) = succ((a + b) + c) :: Step +
-                </li>
-                <li>(a + b) + succ(c) = succ(a + (b + c))
-                    :: Induction </li>
-                <li>
+                </li><li class="fragment">
+                    (a + b) + succ(c) = succ(a + (b + c))
+                    :: Induction
+                </li><li class="fragment">
                     (a + b) + succ(c) = a + succ(b + c) :: Step +
-                </li>
-                <li>
+                </li><li class="fragment">
                     (a + b) + succ(c) = a + (b + succ(c)) :: Step +
                 </li>
             </ul>
@@ -1235,15 +1298,18 @@
                 &#x2200;a,b&#x2208;&#x2115;
                 a + b = b + a
             </p>
-            <p>
+            <p class="fragment">
                 We will prove two simpler results and make use of
                 them to prove that addition is commutative
             </p>
             <ul>
-                <li>Successor + 1: &#x2200;a&#x2208;&#x2115;
-                    succ(a) = a + 1</li>
-                <li>Commutative 1: &#x2200;a&#x2208;&#x2115;
-                    a + 1 = 1 + a</li>
+                <li class="fragment">
+                    Successor + 1: &#x2200;a&#x2208;&#x2115;
+                    succ(a) = a + 1
+                </li><li class="fragment">
+                    Commutative 1: &#x2200;a&#x2208;&#x2115;
+                    a + 1 = 1 + a
+                </li>
             </ul>
         </section>
         <section>
@@ -1252,26 +1318,39 @@
                 &#x2200;a&#x2208;&#x2115; succ(a) = a + 1
             </p>
             <ul>
-                <li>succ(a) = succ(a + 0) :: Base +</li>
-                <li>succ(a) = a + succ(0) :: Step +</li>
-                <li>succ(a) = a + 1 :: Definition of 1</li>
+                <li class="fragment">
+                    succ(a) = succ(a + 0) :: Base +
+                </li><li class="fragment">
+                    succ(a) = a + succ(0) :: Step +
+                </li><li class="fragment">
+                    succ(a) = a + 1 :: Definition of 1
+                </li>
             </ul>
         </section>
         <section>
             <h3>Addition &#x2115;: Commutative 1</h3>
             <p>&#x2200;a&#x2208;&#x2115; a + 1 = 1 + a</p>
             <ul>
-                <li>0 + 1 = 1 + 0 :: Identity +</li>
-                <li>&#x2203;a&#x2208;&#x2115; :
-                    a + 1 = 1 + a :: Assumption</li>
-                <li>succ(a) + 1 = succ(a) + succ(0)
-                    :: Definition of 1</li>
-                <li>succ(a) + 1 = succ(succ(a) + 0) :: Step +</li>
-                <li>succ(a) + 1 = succ((a + 1) + 0)
-                    :: Successor + 1</li>
-                <li>succ(a) + 1 = succ(a + 1) :: Base +</li>
-                <li>succ(a) + 1 = succ(1 + a) :: Induction</li>
-                <li>succ(a) + 1 = 1 + succ(a) :: Step +</li>
+                <li class="fragment">
+                    0 + 1 = 1 + 0 :: Identity +
+                </li><li class="fragment">
+                    &#x2203;a&#x2208;&#x2115; :
+                    a + 1 = 1 + a :: Assumption
+                </li><li class="fragment">
+                    succ(a) + 1 = succ(a) + succ(0)
+                    :: Definition of 1
+                </li><li class="fragment">
+                    succ(a) + 1 = succ(succ(a) + 0) :: Step +
+                </li><li class="fragment">
+                    succ(a) + 1 = succ((a + 1) + 0)
+                    :: Successor + 1
+                </li><li class="fragment">
+                    succ(a) + 1 = succ(a + 1) :: Base +
+                </li><li class="fragment">
+                    succ(a) + 1 = succ(1 + a) :: Induction
+                </li><li class="fragment">
+                    succ(a) + 1 = 1 + succ(a) :: Step +
+                </li>
             </ul>
         </section>
         <section>
@@ -1280,16 +1359,25 @@
                 &#x2200;a,b&#x2208;&#x2115; a + b = b + a
             </p>
             <ul>
-                <li>&#x2203;b&#x2208;&#x2115;
+                <li class="fragment">
+                    &#x2203;b&#x2208;&#x2115;
                     &#x2200;a&#x2208;&#x2115; :
-                    a + b = b + a :: Assumption</li>
-                <li>a + succ(b) = a + (b + 1) :: Successor + 1</li>
-                <li>a + succ(b) = (a + b) + 1 :: Associativity</li>
-                <li>a + succ(b) = (b + a) + 1 :: Induction</li>
-                <li>a + succ(b) = b + (a + 1) :: Associativity</li>
-                <li>a + succ(b) = b + (1 + a) :: Communtative 1</li>
-                <li>a + succ(b) = (b + 1) + a :: Associativity</li>
-                <li>a + succ(b) = succ(b) + a :: Successor + 1</li>
+                    a + b = b + a :: Assumption
+                </li><li class="fragment">
+                    a + succ(b) = a + (b + 1) :: Successor + 1
+                </li><li class="fragment">
+                    a + succ(b) = (a + b) + 1 :: Associativity
+                </li><li class="fragment">
+                    a + succ(b) = (b + a) + 1 :: Induction
+                </li><li class="fragment">
+                    a + succ(b) = b + (a + 1) :: Associativity
+                </li><li class="fragment">
+                    a + succ(b) = b + (1 + a) :: Communtative 1
+                </li><li class="fragment">
+                    a + succ(b) = (b + 1) + a :: Associativity
+                </li><li class="fragment">
+                    a + succ(b) = succ(b) + a :: Successor + 1
+                </li>
             </ul>
         </section>
         <section>
@@ -1328,8 +1416,8 @@
             <p>
                 Let's define <q>multiplication</q> which maps two
                 natural numbers to another natural number.  We
-                will represent it with a &#x00d7; sign between two
-                natural numbers: a &#x00d7; b (Grassman 1861):
+                will represent it with a <q>&#x00d7;</q> sign between
+                two natural numbers: a &#x00d7; b (Grassman 1861):
             </p>
             <ul>
                 <li>
@@ -1830,7 +1918,7 @@
             <p>
                 Let's define <q>addition</q> which maps two
                 integers to another integer.  As with natural
-                numbers we will represent this with a + sign
+                numbers we will represent this with a <q>+</q> sign
                 between two integers:<br /> a + b
             </p>
             <p>
@@ -2094,8 +2182,8 @@
             <p>
                 Let's define <q>multiplication</q> which maps two
                 integers to another integer.  As with natural numbers
-                we will represent this with a &#x00d7; sign between
-                two integers: a &#x00d7; b
+                we will represent this with a <q>&#x00d7;</q> sign
+                between two integers: a &#x00d7; b
             </p>
             <p>
                 &#x2200;&#x27e8;a<sub>1</sub>,
@@ -2641,8 +2729,8 @@
                 Let's define <q>addition</q> which maps two rational
                 numbers to another.  This will preserve all properties
                 of integer addition, including inverses.  As with
-                integers we will represent this with a + sign between
-                two rational numbers: a + b
+                integers we will represent this with a <q>+</q> sign
+                between two rational numbers: a + b
             </p>
             <p>
                 &#x2200;a,b&#x2208;&#x211a; a + b &#x225d;
@@ -2921,7 +3009,7 @@
                 rational numbers to another.  This will presearve
                 all properties of integer multiplication and will
                 add inverses for everything except zero. As with
-                integers we will represent this with a &#x00d7;
+                integers we will represent this with a <q>&#x00d7;</q>
                 sign between two rational numbers: a &#x00d7; b
             </p>
             <p>
@@ -3145,8 +3233,8 @@
         <section>
             <h2>Real Numbers &#x211d;</h2>
             <p>
-                &#x211d; &#x225d; { &#x27e8;L,H&#x27e9; :
-                L,H&#x2286;&#x211a; &and; dedekind(L, H) }
+                &#x211d; &#x225d; { &#x27e8;L,U&#x27e9; :
+                L,U&#x2286;&#x211a; &and; dedekind(L, U) }
             </p>
             <p>
                 Real numbers extend the rational numbers.  They
@@ -3158,7 +3246,7 @@
         <section>
             <h3>Dedekind Cuts</h3>
             <p>
-                &#x2200;L,H&#x2286;&#x211a; dedekind(L, H) &#x225d;
+                &#x2200;L,U&#x2286;&#x211a; dedekind(L, U) &#x225d;
             </p>
             <table><tr><td><ul>
                 <li>&#x2203;a&#x2208;&#x211a; a&#x2208;L</li>
@@ -3169,7 +3257,7 @@
                 </li>
                 <li>
                     &#x2200;a,b&#x2208;&#x211a;
-                    (b &#x2209; H) &and;<br />
+                    (b &#x2209; U) &and;<br />
                     (a &lt; b) &#x27f9; (a &#x2208; L)
                 </li>
                 <li>
@@ -3180,22 +3268,22 @@
                 </li>
             </ul></td>
             <td><ul>
-                <li>&#x2203;b&#x2208;&#x211a; b&#x2208;H</li>
+                <li>&#x2203;b&#x2208;&#x211a; b&#x2208;U</li>
                 <li>
                     &#x2200;a,b&#x2208;&#x211a;
-                    (b &#x2208; H) &and;<br />
-                    (a &gt; b) &#x27f9; (a &#x2208; H)
+                    (b &#x2208; U) &and;<br />
+                    (a &gt; b) &#x27f9; (a &#x2208; U)
                 </li>
                 <li>
                     &#x2200;a,b&#x2208;&#x211a;
                     (a &#x2209; L) &and;<br />
-                    (b &gt; a) &#x27f9; (b &#x2208; H)
+                    (b &gt; a) &#x27f9; (b &#x2208; U)
                 </li>
                 <li>
                     &#x2200;a,b&#x2208;&#x211a;
-                    (b &#x2208; H) &#x27f9;<br />
+                    (b &#x2208; U) &#x27f9;<br />
                     &#x2203;c&#x2208;&#x211a;
-                    (c&lt;b) &and; c&#x2208;H
+                    (c&lt;b) &and; c&#x2208;U
                 </li>
             </ul></tr></table>
         </section>
@@ -3252,15 +3340,39 @@
         <section>
             <h3>Real Numbers &#x211d; Irrational</h3>
             <p>
-                &#x2200;&#x27e8;L,H&#x27e9;&#x2208;&#x211d;
-                (L &cup; H = &#x211a;) &#x27f9;
-                &#x27e8;L,H&#x27e9; is irrational
+                &#x2200;&#x27e8;L,U&#x27e9;&#x2208;&#x211d;
+                (L &cup; U = &#x211a;) &#x27f9;
+                &#x27e8;L,U&#x27e9; is irrational
             </p>
             <p>
                 An irrational number is a real number that does
                 not correspond to any rational number.  This is
                 true when the union of the upper and lower set is
                 equal to the entire set of rational numbers.
+            </p>
+        </section>
+        <section>
+            <h3>Real Numbers &#x211d; Equality</h3>
+            <p>
+                Real numbers are equal if and only if the sets
+                that represent them are equal.  This is reflexive
+                symmetric and transitive because set equality
+                has these properties.
+            </p>
+        </section>
+        <section>
+            <h3>Real Numbers &#x211d; Order</h3>
+            <p>
+                (&#x27e8;A<sub>L</sub>,A<sub>U</sub>&#x27e9; &le;
+                &#x27e8;B<sub>L</sub>,B<sub>U</sub>&#x27e9;) &#x225d;
+                (A<sub>L</sub> &#x2286; B<sub>L</sub>) &and;
+                (B<sub>U</sub> &#x2286; A<sub>U</sub>)
+            </p>
+            <p>
+                A real number is less than or equal to another if its
+                lower set is a subset of the others lower set.  This
+                is reflexive, antisymmetric, transitive and connex
+                because the subset operator is all of these things.
             </p>
         </section>
     </section>
@@ -3270,8 +3382,8 @@
             <p>
                 Real number addition preserves the important
                 properties of rational number addition.  We will
-                represent this with a + sign between two rational
-                numbers: a + b
+                represent this with a <q>+</q> sign between two
+                rational numbers: a + b
             </p>
             <p>
                 &#x27e8;A<sub>L</sub>,A<sub>H</sub>&#x27e9; +
@@ -3370,8 +3482,8 @@
             <p>
                 Real number multiplication preserves the important
                 properties of rational number multiplication.  We
-                will represent this with a &#x00d7; sign between
-                two rational numbers: a &#x00d7; b
+                will represent this with a <q>&#x00d7;</q> sign
+                between two rational numbers: a &#x00d7; b
             </p>
             <p>
                 &#x27e8;A<sub>L</sub>,A<sub>H</sub>&#x27e9; &#x00d7;
@@ -3983,6 +4095,18 @@
             </p>
         </section>
         <section>
+            <h3>Irreducible Element</h3>
+            <p>
+                &#x2200;a&#x2208;R (a is irreducible) &#x225d;<br />
+                &#x2200;b,c&#x2208;R (a = b &#x229a; c) &#x27f9;
+                (b = e &or; c = e)
+            </p>
+            <p>
+                An irreducible element is a member of a ring that is
+                not the product of any non-unit.
+            </p>
+        </section>
+        <section>
             <h3>Prime Element</h3>
             <p>
                 &#x2200;a&#x2208;R (a is prime) &#x225d;<br />
@@ -3997,26 +4121,14 @@
         <section>
             <h3>Zero Divisors</h3>
             <p>
-                &#x2200;a&#x2208;R (a is a zero divisor)
-                &#x225d;<br />&#x2203;b&ne;e<sub>+</sub>&#x2208;R
-                a &#x229a; b = e<sub>+</sub>
+                &#x2200;a&#x2208;R (a is a zero divisor) &#x225d;<br />
+                &#x2203;b&ne;e<sub>&#x2218;</sub>&#x2208;R
+                a &#x229a; b = e<sub>&#x2218;</sub>
             </p>
             <p>
                 A zero divisor is a member of a ring that, when
                 multiplied by something other than the additive
                 identity to reach the additive identity.
-            </p>
-        </section>
-        <section>
-            <h3>Irreducible Element</h3>
-            <p>
-                &#x2200;a&#x2208;R (a is irreducible) &#x225d;<br />
-                &#x2200;b,c&#x2208;R (a = b &#x229a; c) &#x27fa;
-                (b = e &or; c = e)
-            </p>
-            <p>
-                An irreducible element is a member of a ring that is
-                not the product of any non-unit.
             </p>
         </section>
         <section>
@@ -4065,10 +4177,11 @@
         <section>
             <h3>Exponents</h3>
             <p>
-                Exponents defined this way obey some simple rules:
+                Exponents defined this way obey simple rules:
             </p>
             <ul>
                 <li>a<sup>b</sup>a<sup>c</sup> = a<sup>b + c</sup></li>
+                <li>a<sup>b</sup>/a<sup>c</sup> = a<sup>b - c</sup></li>
                 <li>
                     (a<sup>b</sup>)<sup>c</sup> =
                     a<sup>b &#x00d7; c</sup> = a<sup>bc</sup>
@@ -4076,6 +4189,7 @@
             </ul>
         </section>
     </section>
+
     <section>
         <section>
             <h2>Algebraic Numbers</h2>
