@@ -355,9 +355,9 @@
     quanta.go = function($, container, viewport) {
         // Query Parameters
         var nphotons = Math.max(0, parseInt(
-            window.params['nphotons'] || 3, 10));
-        var center = window.params['center'] || 'center';
-        c = Math.max(0.01, parseFloat(window.params['customc'] || 1.0));
+            ripple.param('nphotons') || 3, 10));
+        var center = ripple.param('center') || 'center';
+        c = Math.max(0.01, parseFloat(ripple.param('customc') || 1.0));
 
         // Settings
         var index, lab = null;

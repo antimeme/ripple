@@ -1,12 +1,12 @@
 (function(exports) {
     "use strict";
     var nplayers = Math.max(2, Math.min(
-        parseInt(window.params['nplayers'], 10) || 4, 12));
+        parseInt(ripple.param('nplayers'), 10) || 4, 12));
     var pfactor = Math.max(10, parseInt(
-        window.params['pfactor'], 10) || (7 * nplayers));
-    var activate = parseInt(window.params['activate'], 10) || 600;
+        ripple.param('pfactor'), 10) || (7 * nplayers));
+    var activate = parseInt(ripple.param('activate'), 10) || 600;
     var margin = Math.max(3, parseFloat(
-        window.params['margin']) || 20);
+        ripple.param('margin')) || 20);
 
     var setup = function(index, object) {
         var self = $(object);

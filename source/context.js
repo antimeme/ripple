@@ -132,21 +132,6 @@
             window.cancelAnimationFrame = function(id)
             { clearTimeout(id); };
         }
-
-        // Create a dictionary of query string parameters
-        if (typeof window.params === 'undefined') {
-            window.params = (function(a) {
-                if (a === "") return {};
-                var result = {};
-                for (var i = 0; i < a.length; ++i) {
-                    var p = a[i].split('=');
-                    if (p.length != 2) continue;
-                    result[p[0]] = decodeURIComponent(
-                        p[1].replace(/\+/g, " "));
-                }
-                return result;
-            })(window.location.search.substr(1).split('&'));
-        }
     }
 
     // Extensions for jQuery, but only when it's present

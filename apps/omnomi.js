@@ -127,14 +127,14 @@
         var self = $(object);
         var viewport = $(window);
         var mapgrid = grid.create(
-            {type: window.params['gridtype'] || 'hex', size: 33});
+            {type: ripple.param('gridtype') || 'hex', size: 33});
         var actors = [];
         var target;
 
         var throttle = null;
         var counter = 0;
 
-        var seed = Math.max(0, parseInt(window.params['seed'], 10) ||
+        var seed = Math.max(0, parseInt(ripple.param('seed'), 10) ||
                             random.random().int32());
         console.log('seed =', seed);
         var landscape = terrain.landscape({zoom: 4, seed: seed});

@@ -19,6 +19,40 @@
 (function(ripple) {
     'use strict';
 
+    // === Experimental jQuery replacement
+    //     http://youmightnotneedjquery.com/
+    ripple.ready = function(fn) {
+        if (document.attachEvent ? document.readyState === "complete" :
+            document.readyState !== "loading")
+            fn();
+        else document.addEventListener('DOMContentLoaded', fn);
+    };
+
+    var __params = undefined;
+
+    ripple.param = function(name) {
+        var result = undefined;
+        if (typeof window !== 'undefined') {
+            // Parse browser GET parameters
+            if (!__params) {
+                var items = window.location.search.substr(1).split('&');
+                __params = {};
+
+                for (var ii = 0; ii < items.length; ++ii) {
+                    var p = items[ii].split('=');
+                    if (p.length === 2)
+                        __params[p[0]] = decodeURIComponent(
+                            p[1].replace(/\+/g, " "));
+                    else if (p.length === 1)
+                        __params[p[0]] = true;
+                }
+            }
+            result = __params[name];
+        } else if (typeof process !== 'undefined')
+            result = process.env[name];
+        return result;
+    };
+
     // === Pairing Functions
 
     // Represents a reversable transformation from a pair of positive
@@ -69,10 +103,6 @@
 
     // === General utilities
 
-    ripple.fetchParam = function(name) {
-        return (typeof window !== 'undefined') ?
-               window.params[name] : process.env[name];
-    };
 
     // Randomize the order of an array in place, using an optional
     // random number generator

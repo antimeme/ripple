@@ -130,9 +130,9 @@
 
     // Creates a game rendered using three.js
     onball.go = function(parent, viewport) {
-        var shapeName = window.params['shape'] in shapes ?
-            window.params['shape'] : 'cube';
-        var steps = Math.min(8, parseInt(window.params['steps'], 10));
+        var shapeName = ripple.param('shape') in shapes ?
+            ripple.param('shape') : 'cube';
+        var steps = Math.min(8, parseInt(ripple.param('steps'), 10));
         var minzoom = 1.1;
         var camera = new THREE.PerspectiveCamera(
             75, viewport.width() / viewport.height(), 0.1, 1000);
@@ -145,7 +145,7 @@
         light.position.set(1, 1, 1);
 
         camera.position.z = Math.max(minzoom, parseInt(
-            window.params['zoom'], 10) || 2);
+            ripple.param('zoom'), 10) || 2);
 
         var isDragging = false;
         var previousMousePosition = {
@@ -249,9 +249,13 @@
         });
         var selectSteps = $('<select class="steps"></select>');
         var index;
-        for (index = 0; index <= 8; ++index)
-            selectSteps.append('<option value="' + index + '">' +
+        for (index = 0; index <= 8; ++index) {
+            var prefix = '<option';
+            if (steps === index)
+                prefix += ' selected="selected"';
+            selectSteps.append(prefix + ' value="' + index + '">' +
                                index + '</option>');
+        }
         menuList.append($('<li></li>').append(
             $('<label>Shape </label>').append(selectShape)));
         menuList.append($('<li></li>').append(
