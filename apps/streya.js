@@ -6,7 +6,7 @@
 // - save/load ship file
 // - save/load ship localStorage
 //     https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API
-// - compute weight and thrust
+// - compute mass and thrust
 // - compute cost and apply budget
 // - support more than one deck?
 (function(streya) {
@@ -17,8 +17,8 @@
     }
 
     var browserSettings = {
-        debug: !!ripple.fetchParam('debug'),
-        ship: ripple.fetchParam('ship')
+        debug: !!ripple.param('debug'),
+        ship: ripple.param('ship')
     };
 
     // === Ship representation
@@ -96,7 +96,7 @@
             return this;
         },
 
-        weight: function() { // TODO
+        mass: function() { // TODO
             var result = 0;
             Object.keys(this.__cells).forEach(function(id) {
             }, this);
@@ -585,9 +585,14 @@
 
         menu.append('<hr />');
 
+        var shipName = $('<input type="text" size="9">');
+        shipName.attr('placeholder', 'Ship Name');
+        shipName.on('change', function(event) {
+            ship.name = shipName.val(); });
+        menu.append($('<li>').append(shipName));
+        var designs = $('<select>');
+        designs.append('<option>-</options>');
         if (data.shipDesigns) {
-            var designs = $('<select>');
-            designs.append('<option>-</options>');
             Object.keys(data.shipDesigns).forEach(function(key) {
                 designs.append('<option>' + key + '</option>');
             });
@@ -595,11 +600,12 @@
                 if (designs.val() !== '-') {
                     ship = streya.Ship.create(
                         data.shipDesigns[designs.val()]);
+                    shipName.val(ship.name);
                 }
                 redraw();
             });
-            menu.append($('<li>').append(designs));
         }
+        menu.append($('<li>').append(designs));
         menu.append('<li data-action="center">Center View</li>');
         menu.append('<li data-action="full-screen">Full Screen</li>');
         menu.append('<li data-action="save">Save Ship</li>');
@@ -609,8 +615,7 @@
 
             switch (this.getAttribute('data-action')) {
                 case 'save': {
-                    // How to create a data file to save?
-                    console.log(JSON.stringify(ship.save()));
+                    ripple.downloadJSON(ship.save(), ship.name);
                 } break;
                 case 'center': { game.center(); redraw(); } break;
                 case 'tour': {

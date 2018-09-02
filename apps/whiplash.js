@@ -14,14 +14,14 @@
     }
 
     var browserSettings = {
-        debug: !!ripple.fetchParam('debug'),
+        debug: !!ripple.param('debug'),
         profiling: false,
-        rotateworld: !!ripple.fetchParam('rotateworld'),
-        mazeType: ripple.fetchParam('mazeType') || undefined,
+        rotateworld: !!ripple.param('rotateworld'),
+        mazeType: ripple.param('mazeType') || undefined,
         mazeRings: Math.max(Math.min(parseInt(
-            ripple.fetchParam('mazeRings'), 10), 8), 1),
-        startStage: ripple.fetchParam('startStage'),
-        mode: ripple.fetchParam('mode')
+            ripple.param('mazeRings'), 10), 8), 1),
+        startStage: ripple.param('startStage'),
+        mode: ripple.param('mode')
     };
 
     var createWall = function(wall) {

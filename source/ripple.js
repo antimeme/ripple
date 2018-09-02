@@ -21,6 +21,7 @@
 
     // === Experimental jQuery replacement
     //     http://youmightnotneedjquery.com/
+
     ripple.ready = function(fn) {
         if (document.attachEvent ? document.readyState === "complete" :
             document.readyState !== "loading")
@@ -29,14 +30,13 @@
     };
 
     var __params = undefined;
-
     ripple.param = function(name) {
-        var result = undefined;
-        if (typeof window !== 'undefined') {
-            // Parse browser GET parameters
-            if (!__params) {
+        if (!__params) {
+            __params = {};
+
+            if (typeof window !== 'undefined') {
+                // Parse browser GET parameters
                 var items = window.location.search.substr(1).split('&');
-                __params = {};
 
                 for (var ii = 0; ii < items.length; ++ii) {
                     var p = items[ii].split('=');
@@ -46,11 +46,10 @@
                     else if (p.length === 1)
                         __params[p[0]] = true;
                 }
-            }
-            result = __params[name];
-        } else if (typeof process !== 'undefined')
-            result = process.env[name];
-        return result;
+            } else if (typeof process !== 'undefined')
+                __params = process.env;
+        }
+        return __params[name];
     };
 
     // === Pairing Functions

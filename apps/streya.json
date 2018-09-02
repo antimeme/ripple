@@ -190,7 +190,7 @@
     },
     "resources": {
         "Oxygen": {},
-        "Clean Water": {},
+        "Water": {"units": "liter"},
         "Vegetables": {"units": "kilogram"},
         "Textiles": {},
         "Plastic Goods": {},
@@ -216,13 +216,14 @@
         "Building Waste": {"units": "kilogram"},
         "Nuclear Waste": {"units": "kilogram"}
     },
+
     "industrialAppliances": {
-        "Nuclear Reactor": {
+        "Reactor": {
             "time": 8,
             "inputs": {"Nuclear Fuel": 1},
             "outputs": {"Energy": 162000}
         },
-        "Water Treatment Tank": {
+        "Recycler (Water)": {
             "time": "86400000",
             "inputs": {
                 "Energy": 100,

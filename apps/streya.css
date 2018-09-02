@@ -2,7 +2,7 @@ html, body
 { position: absolute; padding: 0; margin: 0; overflow: hidden; }
 
 .streya-menu {
-    position: absolute; top: 10; left: 25; z-index: 2;
+    position: absolute; top: 10px; left: 25px; z-index: 2;
     background: #333; color: white;
     border: 2px solid white;
 }
@@ -21,7 +21,7 @@ html, body
     -khtml-user-select: none; /* Konqueror HTML */
     -moz-user-select: none; /* Firefox */
     -ms-user-select: none; /* Internet Explorer/Edge */
-    user-select: none;
+    /*user-select: none;*/
     padding-top: 0.5em;
 }
 .streya-menu li:hover { background: #55e; }
@@ -29,7 +29,7 @@ html, body
 .bbar {
     position: fixed;
     display: block; z-index: 2;
-    margin: 1%; border-radius: 10 }
+    margin: 1%; border-radius: 10px }
 .bbar div { display: inline-block; height: 100% }
 .bbar button:first-child {
     border-top-left-radius: 15px;

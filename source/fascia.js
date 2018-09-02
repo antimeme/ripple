@@ -776,7 +776,7 @@
     fascia.app = function($, container, viewport, app) {
         var canvas = $('<canvas>')
             .attr('class', 'fascia-canvas')
-            .appendTo(container);
+            .prependTo(container);
 
         var draw_id = 0, draw_last = 0;
         var draw = function() {

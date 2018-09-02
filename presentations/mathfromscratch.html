@@ -2947,13 +2947,12 @@
                 </li><li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
                     &#x27e8;0, 1&#x27e9; =
-                    &#x27e8;(1 &#x00d7; a<sub>1</sub>) +
-                    (0 &#x00d7; a<sub>2</sub>),
-                    1 &#x00d7; a<sub>2</sub>&#x27e9;
-                    :: Arithmetic &#x2124;
+                    &#x27e8;(0 &#x00d7; a<sub>2</sub>) +
+                    (1 &#x00d7; a<sub>1</sub>), 1 &#x00d7;
+                    a<sub>2</sub>&#x27e9; :: Arithmetic &#x2124;
                 </li><li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
-                    &#x27e8;0, 1&#x27e9; = &#x27e8;1, 0&#x27e9 +
+                    &#x27e8;0, 1&#x27e9; = &#x27e8;0, 1&#x27e9 +
                     &#x27e8;a<sub>1</sub>,a<sub>2</sub>&#x27e9;
                     :: Definition +
                 </li>
@@ -3076,7 +3075,7 @@
                 &#x2203;(-a)&#x2208;&#x211a;
                 a + (-a) = 0
             </p>
-            <p>
+            <p class="fragment">
                 &#x2200;a=&#x27e8;a<sub>1</sub>,
                 a<sub>2</sub>&#x27e9;&#x2208;&#x211a; (-a) &#x225d;
                 &#x27e8;-a<sub>1</sub>, a<sub>2</sub>&#x27e9;
@@ -3104,7 +3103,7 @@
                     :: Addition &#x2124;
                 </li><li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
-                    &#x27e8;-a<sub>1</sub>, a<sub>2</sub>&#x27e9;
+                    &#x27e8;-a<sub>1</sub>, a<sub>2</sub>&#x27e9; =
                     &#x27e8;0, a<sub>2</sub> &#x00d7;
                     a<sub>2</sub>&#x27e9; =&#x211a; 0
                 </li>
@@ -3556,18 +3555,17 @@
                 &#x2200;L,U&#x2286;&#x211a; dedekind(L, U) &#x225d;
             </p>
             <table><tr><td><ul>
-                <li>&#x2203;a&#x2208;&#x211a; a&#x2208;L</li>
-                <li>
+                <li class="fragment">
+                    &#x2203;a&#x2208;&#x211a; a&#x2208;L
+                </li><li class="fragment">
                     &#x2200;a,b&#x2208;&#x211a;
                     (a &#x2208; L) &and;<br />
                     (b &lt; a) &#x27f9; (b &#x2208; L)
-                </li>
-                <li>
+                </li><li class="fragment">
                     &#x2200;a,b&#x2208;&#x211a;
                     (b &#x2209; U) &and;<br />
                     (a &lt; b) &#x27f9; (a &#x2208; L)
-                </li>
-                <li>
+                </li><li class="fragment">
                     &#x2200;a,b&#x2208;&#x211a;
                     (a &#x2208; L) &#x27f9;<br />
                     &#x2203;c&#x2208;&#x211a;
@@ -3575,18 +3573,17 @@
                 </li>
             </ul></td>
             <td><ul>
-                <li>&#x2203;b&#x2208;&#x211a; b&#x2208;U</li>
-                <li>
+                <li class="fragment">
+                    &#x2203;b&#x2208;&#x211a; b&#x2208;U
+                </li><li class="fragment">
                     &#x2200;a,b&#x2208;&#x211a;
                     (b &#x2208; U) &and;<br />
                     (a &gt; b) &#x27f9; (a &#x2208; U)
-                </li>
-                <li>
+                </li><li class="fragment">
                     &#x2200;a,b&#x2208;&#x211a;
                     (a &#x2209; L) &and;<br />
                     (b &gt; a) &#x27f9; (b &#x2208; U)
-                </li>
-                <li>
+                </li><li class="fragment">
                     &#x2200;a,b&#x2208;&#x211a;
                     (b &#x2208; U) &#x27f9;<br />
                     &#x2203;c&#x2208;&#x211a;
@@ -3601,22 +3598,21 @@
                 &#x27e8;{a&#x2208;&#x211a; : a &lt; 0&#x211a;},
                 {b&#x2208;&#x211a; : b &gt; 0&#x211a;}&#x27e9;
             </p>
-            <p>
-                Real number 0 is constructed by separating
-                rational numbers less than 0 and greater
-                than 0.  Any rational number can be used
-                to construct a real number in this way.
+            <p class="fragment">
+                Real number 0 is constructed by separating rational
+                numbers less than 0 and greater than 0.
             </p>
         </section>
         <section>
             <h3>Real Numbers &#x211d; Example</h3>
             <p>
-                3&#x211d; &#x225d;
-                &#x27e8;{a&#x2208;&#x211a; : a &lt; 3&#x211a;},
-                {b&#x2208;&#x211a; : b &gt; 3&#x211a;}&#x27e9;
+                &#x2200;a&#x2208;&#x211a; &#x2203;
+                &#x27e8;{b&#x2208;&#x211a; : b &lt; a},
+                {c&#x2208;&#x211a; : c &gt; a}&#x27e9;
             </p>
-            <p>
-                That includes the rational number 3.
+            <p class="fragment">
+                All rational numbers can be used to construct
+                a real number.
             </p>
         </section>
         <section>
@@ -3630,11 +3626,11 @@
                 (b &gt; 0&#x211a;) &and;
                 (b &#x00d7; b &gt; 2&#x211a;)}&#x27e9;
             </p>
-            <p>
+            <p class="fragment">
                 This real number is one of two that squares
-                to two.  This is the other:
+                to two.
             </p>
-            <p>
+            <p class="fragment">
                 -&#x221a;2&#x211d; &#x225d;
                 &#x27e8;{a&#x2208;&#x211a; :
                 (a &lt; 0&#x211a;) &and;
@@ -3642,6 +3638,9 @@
                 <br />{b&#x2208;&#x211a; :
                 (b &gt; 0&#x211a;) &or;
                 (b &#x00d7; b &lt; 2&#x211a;)}&#x27e9;
+            </p>
+            <p class="fragment">
+                This is the other.
             </p>
         </section>
         <section>
@@ -3651,7 +3650,7 @@
                 (L &cup; U = &#x211a;) &#x27f9;
                 &#x27e8;L,U&#x27e9; is irrational
             </p>
-            <p>
+            <p class="fragment">
                 An irrational number is a real number that does
                 not correspond to any rational number.  This is
                 true when the union of the upper and lower set is
@@ -3675,12 +3674,30 @@
                 (A<sub>L</sub> &#x2286; B<sub>L</sub>) &and;
                 (B<sub>U</sub> &#x2286; A<sub>U</sub>)
             </p>
-            <p>
+            <p class="fragment">
                 A real number is less than or equal to another if its
                 lower set is a subset of the others lower set.  This
                 is reflexive, antisymmetric, transitive and connex
                 because the subset operator is all of these things.
             </p>
+        </section>
+        <section>
+            <h2>Real Numbers &#x211d;</h2>
+            <ul>
+                <li>
+                    &#x211d; &#x225d; { &#x27e8;L,U&#x27e9; :
+                    L,U&#x2286;&#x211a; &and; dedekind(L, U) }
+                </li><li>
+                    Equality: Set Equality
+                </li><li>
+                    Order:
+                    (&#x27e8;A<sub>L</sub>,A<sub>U</sub>&#x27e9; &le;
+                    &#x27e8;B<sub>L</sub>,B<sub>U</sub>&#x27e9;)
+                    &#x225d;
+                    (A<sub>L</sub> &#x2286; B<sub>L</sub>) &and;
+                    (B<sub>U</sub> &#x2286; A<sub>U</sub>)
+                </li>
+            </ul>
         </section>
     </section>
     <section>
@@ -3695,11 +3712,29 @@
             <p>
                 &#x27e8;A<sub>L</sub>,A<sub>H</sub>&#x27e9; +
                 &#x27e8;B<sub>L</sub>,B<sub>H</sub>&#x27e9; &#x225d;
-                <br />&#x27e8;{&#x2200;a&#x2208;A<sub>L</sub>,
-                b&#x2208;B<sub>L</sub>: a + b},
-                {&#x2200;a&#x2208;A<sub>H</sub>,
-                b&#x2208;B<sub>H</sub>: a + b}&#x27e9;
+                <br />&#x27e8;{ &#x2200;c&#x2208;&#x211a; :
+                &#x2203;a&#x2208;A<sub>L</sub>, b&#x2208;B<sub>L</sub>
+                c &lt; a + b},<br />
+                &#x2200;c&#x2208;&#x211a; :
+                &#x2203;a&#x2208;A<sub>U</sub>,
+                b&#x2208;B<sub>U</sub> c &gt; a + b}&#x27e9;
             </p>
+        </section>
+        <section>
+            <h3>Addition &#x211d; Example: 3 + 2 = 5</h3>
+            <ul>
+                <li>3&#x211d; + 2&#x211d; = 5&#x211d;</li>
+                <li>
+                    &#x27e8;{a&#x2208;&#x211a; : a &lt; 5&#x211a;},
+                    {b&#x2208;&#x211a; : b &gt; 5&#x211a;}&#x27e9; =
+                    <br />
+                    &#x27e8;{ a&#x2208;&#x211a; :
+                    &#x2203;c&lt;3,d&lt;2&#x2208;&#x211a;
+                    a &lt c + d },<br /> { b&#x2208;&#x211a; :
+                    &#x2203;c&lt;3,d&lt;2&#x2208;&#x211a;
+                    b &gt c + d }&#x27e9;
+                </li>
+            </ul>
         </section>
         <section>
             <h2>Addition &#x211d; Closed</h2>
