@@ -290,10 +290,6 @@
         PINCH: 6,
         RESOLV: 7 };
 
-    var createTouch = function(touch) {
-        return {id: touch.id, x: touch.x, y: touch.y};
-    };
-
     var dot = function(a, b) {
         if (typeof(b) === 'undefined')
             b = a;
@@ -317,14 +313,17 @@
         this.doubleThreshold = isNaN(config.doubleThreshold) ? 500 :
                                config.doubleThreshold;
         this.doubleDistance = isNaN(config.doubleDistance) ? 400 : (
-            config.doubleThreshold * config.doubleThreshold);
+            config.doubleDistance * config.doubleDistance);
         this.dragThreshold = isNaN(config.dragThreshold) ? 100 :
                              config.dragThreshold;
+        this.dragDistance = isNaN(config.doubleDistance) ? 400 : (
+            config.dragDistance * config.dragDistance);
         this.swipeThreshold = isNaN(config.swipeThreshold) ? 500 :
                               config.swipeThreshold;
         this.swipeAngle = Math.cos(isNaN(config.swipeAngle) ?
                                    (Math.PI / 8) : config.swipeAngle);
         this.reset();
+        this.lastTap = undefined;
 
         if (target)
             this.setElement(target);
@@ -336,33 +335,34 @@
     };
 
     ripple.gestur.prototype.reset = function() {
-        this.startTime = undefined;
+        this.start = undefined;
         this.touchOne = undefined;
         this.touchTwo = undefined;
-        this.lastTap = undefined;
         this.swipe = false;
         this.drag = undefined;
         this.state = gesturStates.READY;
     };
 
-    ripple.gestur.prototype.onStart = function(event) {
+    ripple.gestur.prototype.onStart = function(event, touching) {
         var now = new Date().getTime();
         var points = ripple.getInputPoints(
             this.target, event, this.scalefn);
 
+        if (this.start && this.start.touching !== touching)
+            return false;
+
         switch (this.state) {
             case gesturStates.READY:
-                this.startTime = now;
+                this.start = { when: now, touching: touching };
                 this.swipe = (this.config.swipe ? true : false);
                 if (points.targets && points.targets.length > 1) {
-                    this.touchOne = createTouch(points.targets[0]);
-                    this.touchTwo = createTouch(points.targets[1]);
+                    this.touchOne = points.targets[0];
+                    this.touchTwo = points.targets[1];
                     this.state = gesturStates.PINCH;
                     this.fireEvent('pinchStart',
                                    this.touchOne, this.touchTwo);
                 } else if (!isNaN(points.x) && !isNaN(points.y)) {
-                    console.log('DEBUG-tap', points, event.pageX);
-                    this.touchOne = createTouch(points);
+                    this.touchOne = points;
                     this.touchTwo = undefined;
                     this.state = gesturStates.TAP;
                 } else this.reset();
@@ -372,7 +372,7 @@
                 if (points.targets)
                     points.targets.forEach(function(touch) {
                         if (touch.id !== this.touchOne.id) {
-                            this.touchTwo = createTouch(touch);
+                            this.touchTwo = touch;
                             this.state = gesturStates.PINCH;
                             this.fireEvent('pinchStart',
                                            this.touchOne,
@@ -397,33 +397,47 @@
                 break;
             default: // wedged
         };
+        return false;
+    };
+
+    var findCurrent = function(points, match) {
+        var result = undefined;
+        if (points.targets && match)
+            points.targets.forEach(function(touch) {
+                if (touch.id === match.id)
+                    result = touch;
+            }, this);
+        if (!result)
+            result = points;
+        return result;
     };
 
     ripple.gestur.prototype.onMove = function(event, touching) {
         var now = new Date().getTime();
         var points = ripple.getInputPoints(
             this.target, event, this.scalefn);
-        var current, original, ortho, pinchOne, pinchTwo;
+        var current = findCurrent(points, this.touchOne);
+        var original, ortho, pinchOne, pinchTwo;
+
+        if (this.start && this.start.touching !== touching)
+            return false;
 
         switch (this.state) {
             case gesturStates.READY: /* ignore */ break;
             case gesturStates.PRESS:
             case gesturStates.TAP:
-                if ((now - this.startTime) < this.dragThreshold)
+                if (((now - this.start.when) < this.dragThreshold) &&
+                    (dot({x: this.touchOne.x - points.x,
+                          y: this.touchOne.y - points.y}) <
+                        this.dragDistance)) {
+                    this.reset();
                     break;
+                }
                 this.drag = this.touchOne;
                 this.state = gesturStates.DRAG;
                 // fall though...
             case gesturStates.DRAG:
-                current = undefined;
-                if (points.targets)
-                    points.targets.forEach(function(touch) {
-                        if (touch.id === this.touchOne.id)
-                            current = createTouch(touch);
-                    }, this);
-                else current = points;
-
-                if ((now - this.startTime) < this.swipeThreshold)
+                if ((now - this.start.when) > this.swipeThreshold)
                     this.swipe = false;
 
                 if (current) {
@@ -431,9 +445,8 @@
                         if (!checkLine(this.swipeAngle, this.touchOne,
                                        this.drag, current))
                             this.swipe = false;
-                    } else if (current)
-                        this.fireEvent(
-                            'drag', this.touchOne, this.drag, current);
+                    } else this.fireEvent(
+                        'drag', this.touchOne, this.drag, current);
                 }
                 this.drag = current;
                 break;
@@ -480,39 +493,44 @@
                 break;
             default: // wedged
         };
+        return false;
     };
 
     ripple.gestur.prototype.onEnd = function(event, touching) {
         var now = new Date().getTime();
         var points = ripple.getInputPoints(
             this.target, event, this.scalefn);
+        var current = findCurrent(points, this.touchOne);
+
+        console.log('DEBUG', this.start);
+        if (this.start && this.start.touching !== touching)
+            return false;
+        console.log('DEBUG', true);
 
         switch (this.state) {
             case gesturStates.READY: break;
             case gesturStates.TAP:
-                // Suppress tap event for browsers that fire touch
-                // and mouse events
-                if (this.lastTap &&
-                    (touching !== this.lastTap.touching))
-                    break;
+                // Some browsers fire both mouse and touch events
+                // Suppress second tap event in these cases
+                if (!this.lastTap ||
+                    (touching === this.lastTap.touching)) {
+                    this.fireEvent('tap', this.touchOne);
 
-                this.fireEvent('tap', this.touchOne);
-
-                // If the previous tap was close to this one in both
-                // time and space then this is a double tap
-                if (this.lastTap && !isNaN(this.lastTap.when) &&
-                    (now - this.lastTap.when < this.doubleThreshold) &&
-                    (dot({x: this.touchOne.x - this.lastTap.x,
-                          y: this.touchOne.y - this.lastTap.y}) <
-                        this.doubleDistance)) {
-                    this.fireEvent('doubleTap', this.touchOne);
-                    this.reset();
-                } else {
-                    this.reset();
+                    // If the previous tap was close to this one in both
+                    // time and space then this is a double tap
+                    if (this.lastTap && !isNaN(this.lastTap.when) &&
+                        ((now - this.lastTap.when) <
+                            this.doubleThreshold) &&
+                        (dot({x: this.touchOne.x - this.lastTap.x,
+                              y: this.touchOne.y - this.lastTap.y}) <
+                            this.doubleDistance)) {
+                        this.fireEvent('doubleTap', this.touchOne);
+                    }
                     this.lastTap = {
                         when: now, touching: touching,
                         x: this.touchOne.x, y: this.touchOne.y };
                 }
+                this.reset();
                 break;
             case gesturStates.PRESS:
                 // fire press event (unless dragged?)
@@ -528,7 +546,7 @@
                 else this.reset();
                 break;
             case gesturStates.DRAG:
-                if (now > this.startTime + this.swipeThreshold)
+                if (now > this.start.when + this.swipeThreshold)
                     this.swipe = false;
 
                 if (this.swipe) {
@@ -546,6 +564,7 @@
                 break;
             default: // wedged
         };
+        return false;
     };
 
     ripple.gestur.prototype.onWheel = function(event) {
@@ -554,6 +573,7 @@
             x: event.deltaX,
             y: event.deltaY,
             z: event.deltaZ});
+        return false;
     };
 
     ripple.gestur.prototype.setElement = function(target) {
@@ -572,23 +592,26 @@
             return self.onMove(event, true);
         });
         target.addEventListener('touchend', function(event) {
-            console.log('DEBUG-touchend');
-            return self.onEnd(event, true);
+            var result = self.onEnd(event, true);
+            console.log('DEBUG-touchend', self.state);
+            return result;
         });
         target.addEventListener('touchcancel', function(event) {
             return self.reset();
         });
         target.addEventListener('mousedown', function(event) {
-            console.log('DEBUG-mousedown');
             self.fireEvent('debug', 'mousedown', event);
-            return self.onStart(event, false);
+            var result = self.onStart(event, false);
+            console.log('DEBUG-mousedown', self.state, self.start);
+            return result;
         });
         target.addEventListener('mousemove', function(event) {
             return self.onMove(event, false);
         });
         target.addEventListener('mouseup', function(event) {
-            console.log('DEBUG-mouseup');
-            return self.onEnd(event, false);
+            var result = self.onEnd(event, false);
+            console.log('DEBUG-mouseup', self.state, self.start);
+            return result;
         });
         target.addEventListener('mouseleave', function(event) {
             return self.reset();
