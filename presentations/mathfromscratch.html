@@ -349,39 +349,7 @@
             </aside>
         </section>
         <section>
-            <h2>Set Contents</h2>
-            <p>
-                We describe sets using either an enumeration or a
-                predicate.
-            </p>
-            <table>
-                <tr>
-                    <td>{a, b, c}</td>
-                    <td>Set containing a, b and c</td>
-                </tr>
-                <tr>
-                    <td>{a&#x2208;b&nbsp;:&nbsp;P(a)}</td>
-                    <td>
-                        Set containing all members of set b
-                        which satify a predicate
-                    </td>
-                </tr>
-                <tr>
-                    <td>{f(a)&nbsp;:&nbsp;a&#x2208;b}</td>
-                    <td>Set containing function outputs</td>
-                </tr>
-            </table>
-            <aside class="notes">
-                We usually describe sets in one of these two ways.
-                When a set contains only a few selected members,
-                we enumerate them, separated by commas.  Larger
-                sets are difficult to represent this way so we
-                describe them using a predicate which selects
-                members from some other set.
-            </aside>
-        </section>
-        <section>
-            <h2>Set Predicates</h2>
+            <h3>Set Predicates</h3>
             <table>
                 <tr>
                     <td>a &#x2208; {a, b, c}</td>
@@ -419,6 +387,45 @@
                 of the first set are also members of the second.
                 Notice that every set is a subset of itself.
             </aside>
+        </section>
+        <section>
+            <h2>Set Contents</h2>
+            <p>
+                We describe sets using either an enumeration or a
+                predicate.
+            </p>
+            <table>
+                <tr>
+                    <td>{a, b, c}</td>
+                    <td>Set containing a, b and c</td>
+                </tr>
+                <tr>
+                    <td>{a&#x2208;b&nbsp;:&nbsp;P(a)}</td>
+                    <td>
+                        Set containing all members of set b
+                        which satify a predicate
+                    </td>
+                </tr>
+                <tr>
+                    <td>{f(a)&nbsp;:&nbsp;a&#x2208;b}</td>
+                    <td>Set containing function outputs</td>
+                </tr>
+            </table>
+            <aside class="notes">
+                We usually describe sets in one of these two ways.
+                When a set contains only a few selected members,
+                we enumerate them, separated by commas.  Larger
+                sets are difficult to represent this way so we
+                describe them using a predicate which selects
+                members from some other set.
+            </aside>
+        </section>
+        <section>
+            <h3>Empty Set</h3>
+            <p>&#x2203;{} &#x2200;a a&#x2209;{}</p>
+            <p>
+                The empty set is a set that doesn't contain anything.
+            </p>
         </section>
         <section>
             <table>
@@ -857,6 +864,18 @@
             </aside>
         </section>
         <section>
+            <h3>Equivalence and Equality</h3>
+            <p>
+                &#x2200;a &#x2203;{ &#x27e8;b, c&#x27e9; :
+                b&#x2208;a &and; c&#x2208;a &and; b = c }
+            </p>
+            <p>
+                Set equality can be used to construct an equivalence
+                relation over any set: this is always reflexive,
+                symmetric and transitive.
+            </p>
+        </section>
+        <section>
             <h2>Partial Order</h2>
             <p>
                 A partial order is a relation build on an
@@ -902,6 +921,19 @@
                 property, which means that every pair of elements
                 is related in one direction or the other.
             </aside>
+        </section>
+        <section>
+            <h3>Order and Subsets</h3>
+            <p>
+                &#x2200;a &#x2203;{ &#x27e8;b, c&#x27e9; :
+                b&#x2208;a &and; c&#x2208;a &and; b &#x2286; c }
+            </p>
+            <p>
+                Subset relationships can be used to construct a
+                partial order over any set.  This is always reflexive,
+                antisymmetric and transitive.  It's not always connex,
+                so this is not a total order.
+            </p>
         </section>
     </section>
 
