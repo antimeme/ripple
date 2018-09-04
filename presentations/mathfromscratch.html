@@ -31,7 +31,7 @@
         <section>
             <p>
                 Mathematics has no generally accepted definition.  We
-                could describe it as a collection of tools for
+                will describe it as a collection of tools for
                 understanding patterns and for studying structure and
                 change.  People have studied mathematics for centuries
                 and found applications for it in every field of
@@ -52,7 +52,7 @@
         <section>
             <p>
                 This is an attempt to build a powerful set of tools
-                from the simple foundations.
+                from simple foundations.
             </p>
             <aside class="notes">
                 We will build familiar mathematics from the simplest
@@ -83,6 +83,8 @@
             <ul>
                 <li>Euclid</li>
                 <li>al-Khwārizmī</li>
+                <li>Gottfried Wilhelm Leibniz</li>
+                <li>Isaac Newton</li>
                 <li>Emmy Noether</li>
                 <li>John von Neumann</li>
                 <li>Norman Wildberger</li>
@@ -134,18 +136,18 @@
         <section>
             <h3>Bound Variables</h3>
             <p>
-                If P is a predicate with variable a then the
+                If P is a predicate with variable then the
                 following are also predicates:
             </p>
             <table>
                 <tr>
-                    <td>&#x2200;a P</td>
+                    <td>&#x2200;a P(a)</td>
                     <td>P is true for all values of a</td>
                 </tr><tr>
-                    <td>&#x2203;a P</td>
+                    <td>&#x2203;a P(a)</td>
                     <td>P is true for some value of a</td>
                 </tr><tr>
-                    <td>&#x2204;a P</td>
+                    <td>&#x2204;a P(a)</td>
                     <td>P is false for all values of a</td>
                 </tr>
             </table>
@@ -178,10 +180,10 @@
                     <td>at least one of P and Q are true</td>
                 </tr><tr>
                     <td>(P &#x27f9; Q)</td>
-                    <td>if P is true then Q is true</td>
+                    <td>if P then Q (implication)</td>
                 </tr><tr>
                     <td>(P &#x27fa; Q)</td>
-                    <td>if and only if P is true then Q is true</td>
+                    <td>if and only if P then Q (biconditional)</td>
                 </tr>
             </table>
             <aside class="notes">
@@ -202,6 +204,31 @@
                 For example, if and only if it is raining then
                 the ground is wet.
             </aside>
+        </section>
+        <section>
+            <h3>Biconditional Laws</h3>
+            <p>
+                Symmetric: &#x2200;P,Q (P &#x27fa; Q) &#x27f9;
+                (Q &#x27fa; P)
+            </p>
+            <p>
+                Transitive: &#x2200;P,Q,R (P &#x27fa; Q) &and;
+                (Q &#x27fa; R) &#x27f9; (P &#x27fa; R)
+            </p>
+            <p>
+                Biconditional predicates can be swapped and
+                transferred without changing results.
+            </p>
+        </section>
+        <section>
+            <h3>Liebniz's Law</h3>
+            <p>&#x2200;a,b (a = b) &#x27f9; (P(a) &#x27fa; P(b))</p>
+            <p>
+                When a and b are equal the value of any predicate
+                using a is the same as the same predicate using b.
+                We can substitute equal values without changing
+                any results.
+            </p>
         </section>
         <section>
             <h3>Deduction</h3>
@@ -312,7 +339,7 @@
             </ul>
             <p>
                 Any formal system containing basic arithmetic is
-                either inconsistent or incomplete.<br />(Gödel 1931)
+                either inconsistent or incomplete.<br />(Gödel 1931 CE)
             </p>
             <aside class="notes">
                 We would like our formal system to be both
@@ -335,7 +362,7 @@
                 functions, numbers, arithmetic, algebra and geometry.
                 Set theory is a formal system in which the only
                 objects are sets and the only thing sets can do is
-                contain other objects. (Zermelo-Fraenkel 1908-1922)
+                contain other objects. (Zermelo-Fraenkel 1908-1922 CE)
             </p>
             <aside class="notes">
                 Axiomatic set theory is the foundation of this
@@ -389,26 +416,24 @@
             </aside>
         </section>
         <section>
-            <h2>Set Contents</h2>
+            <h3>Set Contents</h3>
             <p>
-                We describe sets using either an enumeration or a
-                predicate.
+                We describe sets using one of these forms.
             </p>
             <table>
                 <tr>
-                    <td>{a, b, c}</td>
-                    <td>Set containing a, b and c</td>
+                    <td>{ a, b, c }</td>
+                    <td>Enumeration</td>
                 </tr>
                 <tr>
-                    <td>{a&#x2208;b&nbsp;:&nbsp;P(a)}</td>
+                    <td>{ a&#x2208;b&nbsp;:&nbsp;P(a) }</td>
                     <td>
-                        Set containing all members of set b
-                        which satify a predicate
+                        Specification (filtered by predicate)
                     </td>
                 </tr>
                 <tr>
-                    <td>{f(a)&nbsp;:&nbsp;a&#x2208;b}</td>
-                    <td>Set containing function outputs</td>
+                    <td>{ f(a)&nbsp;:&nbsp;a&#x2208;b }</td>
+                    <td>Replacement (function outputs)</td>
                 </tr>
             </table>
             <aside class="notes">
@@ -469,8 +494,9 @@
         <section>
             <h2>Extensionality</h2>
             <p>
-                &#x2200;a,b,c (c &#x2208; a
-                &#x27fa; c &#x2208; b) &#x27f9; a = b
+                &#x2200;a,b,c (c &#x2208; a &#x27fa; c &#x2208; b)
+                &#x27f9; <br />
+                (a &#x2286; b) &and; (b &#x2286; a) &#x27f9; (a = b)
             </p><p>
                 Two sets that contain the same elements are the
                 same set.
@@ -566,9 +592,8 @@
             <p>
                 Given a set and a predicate there is another set
                 which contains all members of the set for which
-                the predicate is true.  We can use this with any
-                set and the predicate P(a): a&#x2208;a to create
-                the empty set.
+                the predicate is true.  This allows us to filter
+                sets.
             </p>
             <aside class="notes">
                 Specification is actually an axiom schema because
@@ -586,8 +611,7 @@
             <p>
                 Given a set and a function from that set to some
                 other set there is a set which contains all the
-                mapping results for all members of the original
-                set.
+                function outputs for all members of the set.
             </p>
             <aside class="notes">
                 Replacement is another schema but this time it
@@ -643,7 +667,9 @@
                     <td>Extensionality</td>
                     <td><small>
                         &#x2200;a,b,c (c &#x2208; a
-                        &#x27fa; c &#x2208; b) &#x27f9; a = b
+                        &#x27fa; c &#x2208; b) &#x27f9;<br />
+                        (a &#x2286; b) &and; (b &#x2286; a)
+                        &#x27f9; (a = b)
                     </small></td>
                 </tr>
                 <tr><td>Pairing</td>
@@ -730,7 +756,7 @@
             <h2>Ordered Pairs</h2>
             <p>
                 &#x27e8;a, b&#x27e9; &#x225d;
-                {{a}, {a, b}} (Kuratowski 1921)
+                {{a}, {a, b}} (Kuratowski 1921 CE)
             </p>
             <ul>
                 <li class="fragment"><ul>
@@ -798,7 +824,7 @@
             </p>
             <ul>
                 <li class="fragment">
-                    &cup;&cup;R is the set of all members
+                    &cup;&cup;R contains all members
                 </li><li class="fragment">
                     Domain(R) &#x225d; { a&#x2208;&cup;&cup;R :
                     &#x2203;b&#x2208;&cup;&cup;R
@@ -864,18 +890,6 @@
             </aside>
         </section>
         <section>
-            <h3>Equivalence and Equality</h3>
-            <p>
-                &#x2200;a &#x2203;{ &#x27e8;b, c&#x27e9; :
-                b&#x2208;a &and; c&#x2208;a &and; b = c }
-            </p>
-            <p>
-                Set equality can be used to construct an equivalence
-                relation over any set: this is always reflexive,
-                symmetric and transitive.
-            </p>
-        </section>
-        <section>
             <h2>Partial Order</h2>
             <p>
                 A partial order is a relation build on an
@@ -923,7 +937,95 @@
             </aside>
         </section>
         <section>
-            <h3>Order and Subsets</h3>
+            <h3>Equality: Reflexive</h3>
+            <p>&#x2200;a a = a</p>
+            <p class="fragment">
+                Every set is equal to itself.
+                <span class="fragment">Obviously?</span>
+            </p>
+        </section>
+        <section>
+            <h3>Equality: Symmetric</h3>
+            <p>&#x2200;a,b (a = b) &#x27fa; (b = a)</p>
+            <ul>
+                <li class="fragment">
+                    (a = b) &#x27f9; (P(a) &#x27fa; P(b)) :: Leibniz's Law
+                </li><li class="fragment">
+                    (a = b) &#x27f9; (P(b) &#x27fa; P(b))
+                    :: Symmetric Biconditional
+                </li><li class="fragment">
+                    (a = b) &#x27f9; (b = a) :: Leibniz's Law
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Equality: Transitive</h3>
+            <p>&#x2200;a,b,c (a = b) &and; (b = c) &#x27f9; (a = c)</p>
+            <ul>
+                <li class="fragment">
+                    (a = b) &and; (b = c) &#x27f9; (P(a) &#x27fa; P(b))
+                    :: Leibniz's Law
+                </li><li class="fragment">
+                    (a = b) &and; (b = c) &#x27f9; (P(a) &#x27fa; P(b))
+                    &and; (P(b) &#x27fa; P(c)) :: Leibniz's Law
+                </li><li class="fragment">
+                    (a = b) &and; (b = c) &#x27f9; (P(a) &#x27fa; P(c))
+                    :: Transitive Biconditional
+                </li><li class="fragment">
+                    (a = b) &and; (b = c) &#x27f9 (a = c) :: Leibniz's Law
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Equality: Equivalence</h3>
+            <p>
+                &#x2200;a &#x2203;{ &#x27e8;b, c&#x27e9; :
+                b&#x2208;a &and; c&#x2208;a &and; b = c }
+            </p>
+            <p>
+                Set equality can be used to construct an equivalence
+                relation over any set: this is always reflexive,
+                symmetric and transitive.
+            </p>
+        </section>
+        <section>
+            <h3>Subset: Reflexive</h3>
+            <p>&#x2200;a a &#x2286; a</p>
+            <p>
+                Every set is a subset of itself by definition, so the
+                subset operator is reflexive.
+            </p>
+        </section>
+        <section>
+            <h3>Subset: Antisymmetric</h3>
+            <p>&#x2200;a,b (a &#x2286; b) &and; (b &#x2286; a) &#x27f9;
+                (a = b)</p>
+            <p>
+                Two sets that are each subsets of the other must contain
+                the same elements.  Extensionality makes them equal.
+            </p>
+        </section>
+        <section>
+            <h3>Subset: Transitive</h3>
+            <p>&#x2200;a,b,c (a &#x2286; b) &and; (b &#x2286; c) &#x27f9;
+                (a &#x2286; c)</p>
+            <ul>
+                <li class="fragment">
+                    (a &#x2286; b) &and; (b &#x2286; c) &#x27f9;
+                    &#x2200;d (d&#x2208;a &#x27f9; d&#x2208;b)<br />
+                    :: Definition Subset
+                </li><li class="fragment">
+                    (a &#x2286; b) &and; (b &#x2286; c) &#x27f9;
+                    &#x2200;d (d&#x2208;b &#x27f9;
+                    d&#x2208;c) <br />:: Definition Subset
+                </li><li class="fragment">
+                    (a &#x2286; b) &and; (b &#x2286; c) &#x27f9;
+                    (a &#x2286; c) :: Definition Subset
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Subsets: Partial Order</h3>
             <p>
                 &#x2200;a &#x2203;{ &#x27e8;b, c&#x27e9; :
                 b&#x2208;a &and; c&#x2208;a &and; b &#x2286; c }
@@ -931,9 +1033,11 @@
             <p>
                 Subset relationships can be used to construct a
                 partial order over any set.  This is always reflexive,
-                antisymmetric and transitive.  It's not always connex,
-                so this is not a total order.
+                antisymmetric and transitive.
+                <span class="fragment"> It's not always connex,
+                    so subset is not always a total order:</span>
             </p>
+            <p class="fragment">{{a, b}, {a}, {a, c}}</p>
         </section>
     </section>
 
@@ -950,7 +1054,7 @@
             <p>
                 Natural numbers are an effective way to represent
                 discrete and indivisible quantities. (Von Neumann
-                1923)
+                1923 CE)
             </p>
         </section>
         <section>
@@ -1004,7 +1108,7 @@
             <h3>Natural Numbers &#x2115;: Decimal</h3>
             <p>
                 Increment the digit to the left and then replace 9
-                with 0. (Unknown Indian mathematicians ~500)
+                with 0. (Unknown Indian mathematicians ~500 CE)
             </p>
             <ul>
                 <li class="fragment">
@@ -1177,7 +1281,7 @@
                 Let's define <q>addition</q> which maps two
                 natural numbers to another natural number.  We
                 will represent it with a <q>+</q> sign between two
-                natural numbers: a + b (Grassman 1861):</p>
+                natural numbers: a + b (Grassman 1861 CE):</p>
             <ul>
                 <li>
                     Base: &#x2200;a&#x2208;&#x2115;
@@ -1409,7 +1513,7 @@
                 Let's define <q>multiplication</q> which maps two
                 natural numbers to another natural number.  We
                 will represent it with a <q>&#x00d7;</q> sign between
-                two natural numbers: a &#x00d7; b (Grassman 1861):
+                two natural numbers: a &#x00d7; b (Grassman 1861 CE):
             </p>
             <ul>
                 <li>
@@ -1860,13 +1964,13 @@
                     b<sub>2</sub>&#x27e9;,&#x27e8;c<sub>1</sub>,
                     c<sub>2</sub>&#x27e9;&#x2208;&#x2124;
                     <br />
-                    (a<sub>1</sub> + c<sub>2</sub> =
-                    c<sub>1</sub> + a<sub>2</sub>) &and;
+                    (a<sub>1</sub> + b<sub>2</sub> =
+                    b<sub>1</sub> + a<sub>2</sub>) &and;
                     (b<sub>1</sub> + c<sub>2</sub> =
                     c<sub>1</sub> + b<sub>2</sub>)
                     &#x27fa;<br />
-                    (a<sub>1</sub> + b<sub>2</sub> =
-                    a<sub>2</sub> + b<sub>1</sub>)
+                    (a<sub>1</sub> + c<sub>2</sub> =
+                    a<sub>2</sub> + c<sub>1</sub>)
                 </li>
             </ul>
             <aside class="notes">
