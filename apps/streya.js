@@ -274,7 +274,7 @@
         }
     }
 
-    streya.game = function($, data) {
+    streya.game = function(data) {
         var game, redraw, tap, selected, drag, zooming, gesture;
 
         var colorSelected = 'rgba(192, 192, 0, 0.2)';

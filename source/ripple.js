@@ -29,6 +29,45 @@
     };
 
     /**
+     * Complete an action after a set of JSON objects are loaded from
+     * an array of URLs. */
+    ripple.preload = function(urls, action) {
+        var loaded = false;
+        var count = 0;
+        var go = null;
+        var results = {};
+
+        urls.forEach(function(url) {
+            var request = new XMLHttpRequest();
+            request.open("GET", url, true);
+            request.onload = function() {
+                if (request.status >= 200 && request.status < 400) {
+                    results[url] =
+                        (typeof(request.responseText) === 'string') ?
+                        JSON.parse(request.responseText) :
+                        request.responseText;
+                    ++count;
+                    if ((count === urls.length) && go)
+                        go(results);
+                } else {
+                    console.log("ERROR", "???");
+                    alert("ERROR ???");
+                }
+            };
+            request.onerror = function() {
+                console.log("ERROR", "???");
+                alert("ERROR ???");
+            };
+            request.send();
+        });
+        ripple.ready(function() {
+            go = action;
+            if (count === urls.length)
+                go(results);
+        });
+    };
+
+    /**
      * Parameter values either from page search string or Node.js
      * environemnt variables */
     var __params = undefined;
@@ -259,37 +298,6 @@
     };
 
     // === User interface utilities
-
-    // Starts an application after loading a series of URLs using
-    // jQuery with AJAX
-    ripple.preload = function($, urls, action) {
-        var loaded = false;
-        var count = 0;
-        var go = null;
-        var results = {};
-
-        urls.forEach(function(url) {
-            $.ajax({url: url}).done(function(data) {
-                // For some reason AJAX data gets parsed in browsers
-                // but not in electron.  Hack hackity hack hack...
-                if (typeof(data) === 'string')
-                    data = JSON.parse(data);
-
-                results[url] = data;
-                ++count;
-                if ((count === urls.length) && go)
-                    go($, results);
-            }).fail(function(jqXHR, err) {
-                console.log(err);
-                alert(err);
-            });
-        });
-        $(function($) {
-            go = action;
-            if (count === urls.length)
-                go($, results);
-        });
-    };
 
     var setTransform = function(event, transform) {
         // An undefined transform means we should attempt to remove

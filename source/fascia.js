@@ -773,7 +773,7 @@
     // app.isActive() // return falsy if redraw not needed
     // app.color
     // app.background
-    fascia.app = function($, container, viewport, app) {
+    fascia.app = function(container, viewport, app) {
         var canvas = $('<canvas>')
             .attr('class', 'fascia-canvas')
             .prependTo(container);
