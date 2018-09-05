@@ -29,6 +29,7 @@
 <script src="ripple/ripple.js"></script>
 <script>//<![CDATA[
  ripple.ready(function() {
+     var canvas = document.getElementById("gridlines");
      var last = null;
      var post = function(description, details) {
          var entry, log = document.getElementById('log');
@@ -49,9 +50,6 @@
 
      var resize = function() {
          var ctx, xx, yy, scale = 100;
-         var canvas = document.getElementById("gridlines");
-         canvas.setAttribute("width", window.innerWidth);
-         canvas.setAttribute("height", window.innerHeight);
 
          if (!canvas) { // Report unlikley problems if necessary
              alert("ERROR - missing canvas element"); return;
@@ -60,6 +58,8 @@
          } else if (!(ctx = canvas.getContext('2d'))) {
              alert("ERROR - canvas.getContext() failed"); return;
          }
+         canvas.setAttribute("width", window.innerWidth);
+         canvas.setAttribute("height", window.innerHeight);
 
          ctx.clearRect(0, 0, canvas.width, canvas.height);
          ctx.beginPath();
@@ -89,13 +89,13 @@
       "touchcancel", "mouseenter", "mouseleave",
       "mousedown", "mousemove", "mouseup",
       "click", "dblclick"].forEach(function(eventName) {
-          window.addEventListener(eventName, function(event) {
+          canvas.addEventListener(eventName, function(event) {
               post(event.type, ripple.getInputPoints(
                   event.target, event));
               return false;
           });
       });
-     ripple.addWheelListener(window, function(event) {
+     ripple.addWheelListener(canvas, function(event) {
          post(event.type, {
              deltaX: event.deltaX,
              deltaY: event.deltaY,
