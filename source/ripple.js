@@ -157,8 +157,9 @@
         var __addWheelListener = function(element, eventName, callback,
                                           useCapture) {
             element[__addEventListener](
-                __wheelPrefix + eventName, __wheelSupport == "wheel" ?
-                callback : function(originalEvent) {
+                __wheelPrefix + eventName,
+                (__wheelSupport === "wheel") ? callback :
+                function(originalEvent) {
                     !originalEvent && (originalEvent = window.event);
 
                     // create a normalized event object
@@ -510,14 +511,17 @@
                 this.state = gesturStates.DRAG;
                 // fall though...
             case gesturStates.DRAG:
-                if ((now - this.start.when) > this.swipeThreshold)
+                if ((now - this.start.when) > this.swipeThreshold) {
                     this.swipe = false;
+                    console.log("DEBUG unswipe2");
+                }
 
                 if (current) {
                     if (this.swipe) {
                         if (!checkLine(this.swipeAngle, this.touchOne,
                                        this.drag, current))
                             this.swipe = false;
+                        console.log('DEBUG unswipe3');
                     } else this.fireEvent(
                         'drag', this.touchOne, this.drag, current);
                 }
@@ -619,15 +623,18 @@
                 else this.reset();
                 break;
             case gesturStates.DRAG:
-                if (now > this.start.when + this.swipeThreshold)
+                if (now > this.start.when + this.swipeThreshold) {
                     this.swipe = false;
+                    console.log('DEBUG unswipe1');
+                }
 
                 if (this.swipe) {
                     var current = this.drag;
-                    points.targets.forEach(function(touch) {
-                        if (touch.id === this.touchOne.id)
-                            current = createTouch(touch);
-                    }, this);
+                    if (points.targets)
+                        points.targets.forEach(function(touch) {
+                            if (touch.id === this.touchOne.id)
+                                current = touch;
+                        }, this);
                     this.fireEvent('swipe', this.touchOne, current);
                 }
                 // fall through
@@ -651,50 +658,29 @@
 
     ripple.gestur.prototype.setElement = function(target) {
         var self = this;
-
         if ((typeof(jQuery) !== "undefined") &&
             (target instanceof jQuery))
             target = target[0];
         this.target = target;
 
         target.addEventListener('touchstart', function(event) {
-            console.log('DEBUG-touchstart');
-            self.fireEvent('debug', 'touchstart', event);
-            return self.onStart(event, true);
-        });
+            return self.onStart(event, true); });
         target.addEventListener('touchmove', function(event) {
-            return self.onMove(event, true);
-        });
+            return self.onMove(event, true); });
         target.addEventListener('touchend', function(event) {
-            var result = self.onEnd(event, true);
-            console.log('DEBUG-touchend', self.state);
-            return result;
-        });
+            return self.onEnd(event, true); });
         target.addEventListener('touchcancel', function(event) {
-            return self.reset();
-        });
+            return self.reset(); });
         target.addEventListener('mousedown', function(event) {
-            self.fireEvent('debug', 'mousedown', event);
-            var result = self.onStart(event, false);
-            console.log('DEBUG-mousedown', self.state, self.start);
-            return result;
-        });
+            return self.onStart(event, false); });
         target.addEventListener('mousemove', function(event) {
-            return self.onMove(event, false);
-        });
+            return self.onMove(event, false); });
         target.addEventListener('mouseup', function(event) {
-            var result = self.onEnd(event, false);
-            console.log('DEBUG-mouseup', self.state, self.start);
-            return result;
-        });
+            return self.onEnd(event, false); });
         target.addEventListener('mouseleave', function(event) {
-            return self.reset();
-        });
-
-        target.addEventListener('wheel', function(event) {
-            // TODO https://developer.mozilla.org/en-US/docs/Web/Events/wheel
-            return self.onWheel(event);
-        });
+            return self.reset(); });
+        ripple.addWheelListener(target, function(event) {
+            return self.onWheel(event); });
         return this;
     };
 
