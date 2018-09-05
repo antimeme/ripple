@@ -89,15 +89,15 @@
         },
 
         mtdown: function(targets, event, redraw) {
-            if (targets.touches.length === 1) {
+            if (targets.current.length === 1) {
                 this.mark = targets;
                 this.downcell = this.findCell(targets.x, targets.y);
-            } else if (!this.mark && targets.touches.length == 2) {
+            } else if (!this.mark && targets.current.length == 2) {
                 this.zbase =
-                    ((targets.touches[0].x - targets.touches[1].x) *
-                     (targets.touches[0].x - targets.touches[1].x) +
-                     (targets.touches[0].y - targets.touches[1].y) *
-                     (targets.touches[0].y - targets.touches[1].y));
+                    ((targets.current[0].x - targets.current[1].x) *
+                     (targets.current[0].x - targets.current[1].x) +
+                     (targets.current[0].y - targets.current[1].y) *
+                     (targets.current[0].y - targets.current[1].y));
             }
         },
         mtmove: function(targets, event, redraw) {
@@ -109,10 +109,10 @@
                 this.mark = targets;
             } else if (this.zbase) {
                 zlen =
-                    ((targets.touches[0].x - targets.touches[1].x) *
-                        (targets.touches[0].x - targets.touches[1].x) +
-                      (targets.touches[0].y - targets.touches[1].y) *
-                        (targets.touches[0].y - targets.touches[1].y));
+                    ((targets.current[0].x - targets.current[1].x) *
+                        (targets.current[0].x - targets.current[1].x) +
+                      (targets.current[0].y - targets.current[1].y) *
+                        (targets.current[0].y - targets.current[1].y));
                 this.zshift(zlen / this.zbase);
             }
         },
