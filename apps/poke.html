@@ -10,7 +10,7 @@
      background-color: lightblue;
      overflow-x: visible; overflow-y: hidden;
  }
- canvas {
+ #gridlines {
      position: absolute; top: 0; bottom: 0; left: 0; right: 0;
      touch-action: none; /* important! */
  }
@@ -18,101 +18,95 @@
      position: absolute; top: 0, bottom: 0, left: 0, right: 0;
      text-indent: -2em; margin-left: 2em;
  }
- button { position: absolute; top: 1%; right: 1%; }
+ #clear { position: absolute; top: 1%; right: 1%; }
 </style>
 
 <div id="log"></div>
-<canvas></canvas>
+<canvas id="gridlines"></canvas>
 <button id="clear">CLEAR</button>
 
-<script src="lib/jquery.min.js"></script>
-<script src="lib/jquery.mousewheel.js"></script>
+<script src="ripple/context.js"></script>
+<script src="ripple/ripple.js"></script>
 <script>//<![CDATA[
- jQuery(function($) {
-     var viewport = $(window);
-     var canvas = $('canvas');
+ ripple.ready(function() {
      var last = null;
      var post = function(description, details) {
+         var entry, log = document.getElementById('log');
          if (last && last.description === description &&
-             description.endsWith("move"))
-             $('#log').children(':first').remove();
+             (description === "mousemove" ||
+              description === "touchmove")) {
+             if (log.childNodes.length > 0)
+                 log.removeChild(log.firstChild);
+         }
          last = {description: description};
-         $('#log').prepend(
-             '<div>' + description +
-             JSON.stringify(details).replace(/,/g, ', ') + '</div>');
+         entry = document.createElement("div");
+         entry.appendChild(
+             document.createTextNode(
+                 description + JSON.stringify(details)
+                                   .replace(/,/g, ', ')));
+         log.prepend(entry);
      };
+
      var resize = function() {
-	 canvas.css({width: viewport.innerWidth(),
-                     height: viewport.innerHeight()});
-         canvas.attr({width: canvas.innerWidth(),
-                      height: canvas.innerHeight()});
+         var ctx, xx, yy, scale = 100;
+         var canvas = document.getElementById("gridlines");
+         canvas.setAttribute("width", window.innerWidth);
+         canvas.setAttribute("height", window.innerHeight);
 
-         canvas.each(function(index, current) {
-             var xx, yy, scale = 100;
-             var ctx = current.getContext('2d');
-             if (!ctx)
-                 return;
-             ctx.clearRect(0, 0, canvas.width, canvas.height);
-             ctx.beginPath();
-             for (xx = 0; xx < current.width; xx += scale) {
-                 ctx.moveTo(xx, 0);
-                 ctx.lineTo(xx, current.height);
-             }
-             for (yy = 0; yy < current.height; yy += scale) {
-                 ctx.moveTo(0, yy);
-                 ctx.lineTo(current.width, yy);
-             }
-             ctx.lineWidth = 2;
-             ctx.strokeStyle = 'rgba(16, 16, 64, 0.5)';
-             ctx.stroke();
-         });
-     };
-
-     resize();
-     viewport.on('resize', resize);
-     viewport.on('keydown keyup keypress', function(event) {
-	 var details = {key: event.key, keyCode: event.keyCode,
-                        which: event.which};
-         post(event.type, details);
-	 return false;
-     });
-     $('#clear').on('click', function() { $('#log').empty(); });
-
-     var poke = function(event) {
-         var details = {pageX: event.pageX, pageY: event.pageY,
-                        which: event.which};
-         var getTouches = function(name) {
-             var touches, result = [];
-	     if (!event.originalEvent ||
-                 !(touches = event.originalEvent[name]))
-                 return;
-             Object.keys(touches).forEach(function(index) {
-		 var touchlog = {};
-                 ['identifier', 'pageX', 'pageY', 'force',
-                  'rotationAngle', 'radiusX', 'radiusY']
-                     .forEach(function(field) {
-                         var value = touches[index][field];
-                         if (!isNaN(value))
-                             value = Math.round(value * 1000) / 1000;
-                         this[field] = value;
-                     }, touchlog);
-                 result.push(touchlog);
-             });
-	     return result;
-	 };
-         ['touches', 'targetTouches', 'changedTouches']
-             .forEach(function(field) {
-                 this[field] = getTouches(field); }, details);
-         if (event.type == 'mousewheel') {
-             details.deltaX = event.deltaX;
-             details.deltaY = event.deltaY;
-             details.deltaFactor = event.deltaFactor;
+         if (!canvas) { // Report unlikley problems if necessary
+             alert("ERROR - missing canvas element"); return;
+         } else if (!canvas.getContext) {
+             alert("ERROR - canvas has no getContext"); return;
+         } else if (!(ctx = canvas.getContext('2d'))) {
+             alert("ERROR - canvas.getContext() failed"); return;
          }
 
-         post(event.type, details);
-         return false;
+         ctx.clearRect(0, 0, canvas.width, canvas.height);
+         ctx.beginPath();
+         for (xx = 0; xx < canvas.width; xx += scale) {
+             ctx.moveTo(xx, 0);
+             ctx.lineTo(xx, canvas.height);
+         }
+         for (yy = 0; yy < canvas.height; yy += scale) {
+             ctx.moveTo(0, yy);
+             ctx.lineTo(canvas.width, yy);
+         }
+         ctx.lineWidth = 2;
+         ctx.strokeStyle = 'rgba(16, 16, 64, 0.5)';
+         ctx.stroke();
      };
-     canvas.on('touchstart touchend touchmove touchcancel ' +
-               'mousedown mouseup mousemove mousewheel ' +
-               'mouseenter mouseleave click dblclick', poke);
+     window.addEventListener("resize", resize);
+     resize();
+
+     ["keydown", "keyup", "keypress"].forEach(function(eventName) {
+         window.addEventListener(eventName, function(event) {
+             post(event.type, {key: event.key,
+                               keyCode: event.keyCode,
+                               which: event.which});
+             return false;
+         }); });
+     ["touchstart", "touchmove", "touchend",
+      "touchcancel", "mouseenter", "mouseleave",
+      "mousedown", "mousemove", "mouseup",
+      "click", "dblclick"].forEach(function(eventName) {
+          window.addEventListener(eventName, function(event) {
+              post(event.type, ripple.getInputPoints(
+                  event.target, event));
+              return false;
+          });
+      });
+     ripple.addWheelListener(window, function(event) {
+         post(event.type, {
+             deltaX: event.deltaX,
+             deltaY: event.deltaY,
+             deltaZ: event.deltaZ,
+             deltaMode: event.deltaMode,
+         });
+         return false;
+     }, true);
+
+     document.getElementById("clear").addEventListener(
+         "click", function(event) {
+             document.getElementById("log").innerHTML = "";
+             return false; });
  }); //]]></script>

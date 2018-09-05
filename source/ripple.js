@@ -19,9 +19,8 @@
 (function(ripple) {
     'use strict';
 
-    // === Experimental jQuery replacement
-    //     http://youmightnotneedjquery.com/
-
+    /**
+     * Call given function when document is ready */
     ripple.ready = function(fn) {
         if (document.attachEvent ? document.readyState === "complete" :
             document.readyState !== "loading")
@@ -29,6 +28,9 @@
         else document.addEventListener('DOMContentLoaded', fn);
     };
 
+    /**
+     * Parameter values either from page search string or Node.js
+     * environemnt variables */
     var __params = undefined;
     ripple.param = function(name) {
         if (!__params) {
@@ -51,6 +53,113 @@
         }
         return __params[name];
     };
+
+    /**
+     * Create a normalized data structure to represent a mouse or
+     * multi-touch event with coordinates scaled to the element. */
+    ripple.getInputPoints = function(element, event, scalefn) {
+        var brect = element.getBoundingClientRect();
+        if (!scalefn) // identity if no scale function provided
+            scalefn = function(value) { return value; };
+        var transform = function(id, x, y) {
+            return scalefn({
+                id: id, x: x - brect.left, y: y - brect.top });
+        };
+        var ii;
+        var result = (!isNaN(event.pageX) && !isNaN(event.pageY)) ?
+                     transform(0, event.pageX, event.pageY) : {};
+
+        if (event.targetTouches) {
+            result.targets = [];
+            for (ii = 0; ii < event.targetTouches.length; ++ii) {
+                var touch = event.targetTouches.item(ii);
+                if (!isNaN(touch.pageX) && !isNaN(touch.pageY))
+                    result.targets.push(
+                        transform(touch.identifier,
+                                  touch.pageX, touch.pageY));
+            }
+        }
+
+        if (event.changedTouches) {
+            result.changed = [];
+            for (ii = 0; ii < event.changedTouches.length; ++ii) {
+                var touch = event.changedTouches.item(ii);
+                if (!isNaN(touch.pageX) && !isNaN(touch.pageY))
+                    result.changed.push(
+                        transform(touch.identifier,
+                                  touch.pageX, touch.pageY));
+            }
+        }
+
+        if (result.targets && result.targets.length > 0) {
+            result.id = result.targets[0].id;
+            result.x = result.targets[0].x;
+            result.y = result.targets[0].y;
+        } else if (result.changed && result.changed.length > 0) {
+            result.id = result.changed[0].id;
+            result.x = result.changed[0].x;
+            result.y = result.changed[0].y;
+        }
+        return result;
+    };
+
+    /**
+     * Generic mouse wheel support */
+    if ((typeof(document) !== "undefined") &&
+        (typeof(window) !== "undefined")) {
+        // https://developer.mozilla.org/en-US/docs/Web/Events/wheel
+        var __wheelPrefix = "";
+        var __wheelSupport =
+            "onwheel" in document.createElement("div") ?
+            "wheel" : document.onmousewheel !== undefined ?
+            "mousewheel" : "DOMMouseScroll";
+        var __addEventListener = (window.addEventListener) ?
+                                 "addEventListener" : "attachEvent";
+        var __addWheelListener = function(element, eventName, callback,
+                                          useCapture) {
+            element[__addEventListener](
+                __wheelPrefix + eventName, __wheelSupport == "wheel" ?
+                callback : function(originalEvent) {
+                    !originalEvent && (originalEvent = window.event);
+
+                    // create a normalized event object
+                    var event = {
+                        // keep a ref to the original event object
+                        originalEvent: originalEvent,
+                        target: originalEvent.target ||
+                                originalEvent.srcElement,
+                        type: "wheel",
+                        deltaMode: originalEvent.type ==
+                            "MozMousePixelScroll" ? 0 : 1,
+                        deltaX: 0,
+                        deltaY: 0,
+                        deltaZ: 0,
+                        preventDefault: function() {
+                            originalEvent.preventDefault ?
+                            originalEvent.preventDefault() :
+                            originalEvent.returnValue = false;
+                        }
+                    };
+                    
+                    if (__wheelSupport == "mousewheel") {
+                        event.deltaY = -1/40 * originalEvent.wheelDelta;
+                        originalEvent.wheelDeltaX && (
+                            event.deltaX = -1/40 *
+                            originalEvent.wheelDeltaX);
+                    } else event.deltaY = originalEvent.deltaY ||
+                                          originalEvent.detail;
+                    return callback(event);
+                }, useCapture || false);
+        };
+
+        ripple.addWheelListener = function(element, callback, useCapture) {
+            __addWheelListener(element, __wheelSupport,
+                               callback, useCapture);
+            if (__wheelSupport == "DOMMouseScroll")
+                __addWheelListener(element, "MozMousePixelScroll",
+                                   callback, useCapture);
+        };
+    }
 
     // === Pairing Functions
 
@@ -234,51 +343,7 @@
         return result;
     };
 
-    ripple.getInputPoints = function(element, event, scalefn) {
-        var brect = element.getBoundingClientRect();
-        if (!scalefn) // identity if no scale function provided
-            scalefn = function(value) { return value; };
-        var transform = function(id, x, y) {
-            return scalefn({
-                id: id, x: x - brect.left, y: y - brect.top });
-        };
-        var ii;
-        var result = (!isNaN(event.pageX) && !isNaN(event.pageY)) ?
-                     transform(0, event.pageX, event.pageY) : {};
-
-        if (event.targetTouches) {
-            result.targets = [];
-            for (ii = 0; ii < event.targetTouches.length; ++ii) {
-                var touch = event.targetTouches.item(ii);
-                if (!isNaN(touch.pageX) && !isNaN(touch.pageY))
-                    result.targets.push(
-                        transform(touch.identifier,
-                                  touch.pageX, touch.pageY));
-            }
-        }
-
-        if (event.changedTouches) {
-            result.changed = [];
-            for (ii = 0; ii < event.changedTouches.length; ++ii) {
-                var touch = event.changedTouches.item(ii);
-                if (!isNaN(touch.pageX) && !isNaN(touch.pageY))
-                    result.changed.push(
-                        transform(touch.identifier,
-                                  touch.pageX, touch.pageY));
-            }
-        }
-
-        if (result.targets && result.targets.length > 0) {
-            result.id = result.targets[0].id;
-            result.x = result.targets[0].x;
-            result.y = result.targets[0].y;
-        } else if (result.changed && result.changed.length > 0) {
-            result.id = result.changed[0].id;
-            result.x = result.changed[0].x;
-            result.y = result.changed[0].y;
-        }
-        return result;
-    };
+    // Gestur ==========================================================
 
     var gesturStates = {
         READY: 0,
@@ -502,10 +567,8 @@
             this.target, event, this.scalefn);
         var current = findCurrent(points, this.touchOne);
 
-        console.log('DEBUG', this.start);
         if (this.start && this.start.touching !== touching)
             return false;
-        console.log('DEBUG', true);
 
         switch (this.state) {
             case gesturStates.READY: break;
@@ -513,7 +576,9 @@
                 // Some browsers fire both mouse and touch events
                 // Suppress second tap event in these cases
                 if (!this.lastTap ||
-                    (touching === this.lastTap.touching)) {
+                    (touching === this.lastTap.touching) ||
+                    ((now - this.lastTap.when) >
+                        this.doubleThreshold)) {
                     this.fireEvent('tap', this.touchOne);
 
                     // If the previous tap was close to this one in both
@@ -569,7 +634,7 @@
 
     ripple.gestur.prototype.onWheel = function(event) {
         this.fireEvent('wheel', {
-            factor: event.deltaFactor,
+            mode: event.deltaMode,
             x: event.deltaX,
             y: event.deltaY,
             z: event.deltaZ});
@@ -579,7 +644,8 @@
     ripple.gestur.prototype.setElement = function(target) {
         var self = this;
 
-        if (jQuery && (target instanceof jQuery))
+        if ((typeof(jQuery) !== "undefined") &&
+            (target instanceof jQuery))
             target = target[0];
         this.target = target;
 
@@ -616,6 +682,7 @@
         target.addEventListener('mouseleave', function(event) {
             return self.reset();
         });
+
         target.addEventListener('wheel', function(event) {
             // TODO https://developer.mozilla.org/en-US/docs/Web/Events/wheel
             return self.onWheel(event);

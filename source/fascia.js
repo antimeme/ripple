@@ -848,8 +848,7 @@
                 if (app.pinch)
                     return app.pinch(length, angle);
             },
-        });
-        g.setTarget(canvas);
+        }, canvas);
 
         canvas.on('mousedown touchstart', function(event) {
             var touches;

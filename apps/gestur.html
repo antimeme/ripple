@@ -18,7 +18,7 @@
      position: absolute; top: 0, bottom: 0, left: 0, right: 0;
      text-indent: -2em; margin-left: 2em;
  }
- button { position: absolute; top: 1%; right: 1%; }
+ #clear { position: absolute; top: 1%; right: 1%; }
  img { position: absolute; right: 0; top: 0; }
 </style>
 
@@ -27,53 +27,61 @@
 <canvas></canvas>
 <button id="clear">CLEAR</button>
 
-<script src="lib/jquery.min.js"></script>
-<script src="lib/jquery.mousewheel.js"></script>
+<script src="ripple/context.js"></script>
 <script src="ripple/ripple.js"></script>
 <script>//<![CDATA[
- jQuery(function($) {
-     var viewport = $(window);
-     var canvas = $('canvas');
+ ripple.ready(function() {
      var last = null;
      var post = function(description, details) {
+         var entry, log = document.getElementById('log');
          if (last && last.description === description &&
-             description === "drag")
-             $('#log').children(':first').remove();
+             description === "drag") {
+             if (log.childNodes.length > 0)
+                 log.removeChild(log.firstChild);
+         }
          last = {description: description};
-         $('#log').prepend(
-             '<div>' + description +
-             JSON.stringify(details).replace(/,/g, ', ') + '</div>');
+         entry = document.createElement("div");
+         entry.appendChild(
+             document.createTextNode(
+                 description + JSON.stringify(details)
+                                   .replace(/,/g, ', ')));
+         log.prepend(entry);
      };
+
      var resize = function() {
-	 canvas.css({width: viewport.innerWidth(),
-                     height: viewport.innerHeight()});
-         canvas.attr({width: canvas.innerWidth(),
-                      height: canvas.innerHeight()});
+         var ctx, xx, yy, scale = 100;
+         var canvas = document.querySelector("canvas");
+         canvas.setAttribute("width", window.innerWidth);
+         canvas.setAttribute("height", window.innerHeight);
 
-         canvas.each(function(index, current) {
-             var xx, yy, scale = 100;
-             var ctx = current.getContext('2d');
-             if (!ctx)
-                 return;
-             ctx.clearRect(0, 0, canvas.width, canvas.height);
-             ctx.beginPath();
-             for (xx = 0; xx < current.width; xx += scale) {
-                 ctx.moveTo(xx, 0);
-                 ctx.lineTo(xx, current.height);
-             }
-             for (yy = 0; yy < current.height; yy += scale) {
-                 ctx.moveTo(0, yy);
-                 ctx.lineTo(current.width, yy);
-             }
-             ctx.lineWidth = 2;
-             ctx.strokeStyle = 'rgba(16, 16, 64, 0.5)';
-             ctx.stroke();
-         });
+         if (!canvas) { // Report unlikley problems if necessary
+             alert("ERROR - missing canvas element"); return;
+         } else if (!canvas.getContext) {
+             alert("ERROR - canvas has no getContext"); return;
+         } else if (!(ctx = canvas.getContext('2d'))) {
+             alert("ERROR - canvas.getContext() failed"); return;
+         }
+
+         ctx.clearRect(0, 0, canvas.width, canvas.height);
+         ctx.beginPath();
+         for (xx = 0; xx < canvas.width; xx += scale) {
+             ctx.moveTo(xx, 0);
+             ctx.lineTo(xx, canvas.height);
+         }
+         for (yy = 0; yy < canvas.height; yy += scale) {
+             ctx.moveTo(0, yy);
+             ctx.lineTo(canvas.width, yy);
+         }
+         ctx.lineWidth = 2;
+         ctx.strokeStyle = 'rgba(16, 16, 64, 0.5)';
+         ctx.stroke();
      };
-
+     window.addEventListener("resize", resize);
      resize();
-     viewport.on('resize', resize);
-     $('#clear').on('click', function() { $('#log').empty(); });
+
+     document.getElementById("clear").addEventListener(
+         "click", function(event) {
+             document.getElementById("log").innerHTML = ""; });
 
      ripple.gestur({
          tap: function(name, touch) { post(name, touch); },
@@ -91,5 +99,5 @@
          pinchDebug: function(name, value) {
              post(name, value);
          }
-     }, canvas);
+     }, document.querySelector("canvas"));
  }); //]]></script>
