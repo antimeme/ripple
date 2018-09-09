@@ -394,6 +394,9 @@
             config.dragDistance * config.dragDistance);
         this.swipeThreshold = isNaN(config.swipeThreshold) ? 500 :
                               config.swipeThreshold;
+        this.swipeMinDistance = isNaN(config.swipeMinDistance) ? 500 :
+                                (config.swipeMinDistance *
+                                    config.swipeMinDistance);
         this.swipeAngle = Math.cos(isNaN(config.swipeAngle) ?
                                    (Math.PI / 8) : config.swipeAngle);
         this.reset();
@@ -511,17 +514,14 @@
                 this.state = gesturStates.DRAG;
                 // fall though...
             case gesturStates.DRAG:
-                if ((now - this.start.when) > this.swipeThreshold) {
+                if ((now - this.start.when) > this.swipeThreshold)
                     this.swipe = false;
-                    console.log("DEBUG unswipe2");
-                }
 
                 if (current) {
                     if (this.swipe) {
                         if (!checkLine(this.swipeAngle, this.touchOne,
                                        this.drag, current))
                             this.swipe = false;
-                        console.log('DEBUG unswipe3');
                     } else this.fireEvent(
                         'drag', this.touchOne, this.drag, current);
                 }
@@ -635,7 +635,14 @@
                             if (touch.id === this.touchOne.id)
                                 current = touch;
                         }, this);
-                    this.fireEvent('swipe', this.touchOne, current);
+
+                    // Swipes that are too short are probably intended
+                    // as taps with accidental movement
+                    if (dot(current.x - this.touchOne.x,
+                            current.y - this.touchOne.y) <
+                        this.swipeMinDistance)
+                        this.fireEvent('tap', current);
+                    else this.fireEvent('swipe', this.touchOne, current);
                 }
                 // fall through
             case gesturStates.RESOLV:
