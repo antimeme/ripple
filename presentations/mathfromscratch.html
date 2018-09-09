@@ -4318,8 +4318,8 @@
         <section>
             <h3>Group &#x27ec;G, &#x2218;&#x27ed;</h3>
             <p>
-                A group is a set G and a binary function G
-                &#x2218; G &#x27f6; G with four properties:
+                A group is a set and a binary function G
+                &#x2218; G &#x27f6; G:
             </p>
             <ul>
                 <li>Closed: &#x2200;a,b&#x2208;G :
@@ -4327,12 +4327,20 @@
                 <li>Associative: &#x2200;a,b,c&#x2208;G
                     (a &#x2218; b) &#x2218; c =
                     a &#x2218; (b &#x2218; c)</li>
-                <li>Identity: &#x2203;e&#x2208;G
-                    &#x2200;a&#x2208;G a &#x2218; e = a</li>
-                <li>Inverses: &#x2200;a&#x2208;G
+                <li>
+                    Identity: &#x2203;e<sub>&#x2218;</sub>&#x2208;G
+                    &#x2200;a&#x2208;G a &#x2218;
+                    e<sub>&#x2218;</sub> = a
+                </li><li>
+                    Inverses: &#x2200;a&#x2208;G
                     &#x2203;a<sup>-1</sup>&#x2208;G
-                    a &#x2218; a<sup>-1</sup> = e</li>
+                    a &#x2218; a<sup>-1</sup> = e<sub>&#x2218;</sub>
+                </li>
             </ul>
+            <p>
+                A group is the simplest mathematical structure
+                that makes algebra possible.
+            </p>
         </section>
         <section>
             <h3>Abstraction</h3>
@@ -4342,12 +4350,13 @@
             </p>
             <ul>
                 <li>
-                    Identity: &#x2203;e&#x2208;G
-                    &#x2200;a&#x2208;G a &#x2218; e = a
+                    Identity: &#x2203;e<sub>&#x2218;</sub>&#x2208;G
+                    &#x2200;a&#x2208;G a &#x2218;
+                    e<sub>&#x2218;</sub> = a
                 </li><li>
                     Inverses: &#x2200;a&#x2208;G
                     &#x2203;a<sup>-1</sup>&#x2208;G
-                    a &#x2218; a<sup>-1</sup> = e
+                    a &#x2218; a<sup>-1</sup> = e<sub>&#x2218;</sub>
                 </li>
             </ul>
             <p>
@@ -4355,73 +4364,82 @@
             </p>
             <ul>
                 <li>
-                    &#x2203;e&#x2208;G
-                    &#x2200;a&#x2208;G e &#x2218; a &#x225f; a
+                    &#x2203;e<sub>&#x2218;</sub>&#x2208;G
+                    &#x2200;a&#x2208;G e<sub>&#x2218;</sub>
+                    &#x2218; a &#x225f; a
                 </li><li>
                     &#x2200;a&#x2208;G
                     &#x2203;a<sup>-1</sup>&#x2208;G
-                    a<sup>-1</sup> &#x2218; a &#x225f; e
+                    a<sup>-1</sup> &#x2218; a &#x225f;
+                    e<sub>&#x2218;</sub>
                 </li>
             </ul>
         </section>
         <section>
             <h3>Proof: Commutative Inverses</h3>
             <ul>
-                <li>e = a<sup>-1</sup> &#x2218;
+                <li>
+                    e<sub>&#x2218;</sub> = a<sup>-1</sup> &#x2218;
                     (a<sup>-1</sup>)<sup>-1</sup> :: Inverses
                 </li><li>
-                    e = (a<sup>-1</sup> &#x2218; e) &#x2218;
+                    e<sub>&#x2218;</sub> = (a<sup>-1</sup> &#x2218;
+                    e<sub>&#x2218;</sub>) &#x2218;
                     (a<sup>-1</sup>)<sup>-1</sup> :: Identity
                 </li><li>
-                    e = (a<sup>-1</sup> &#x2218;
+                    e<sub>&#x2218;</sub> = (a<sup>-1</sup> &#x2218;
                     (a &#x2218; a<sup>-1</sup>)) &#x2218;
                     (a<sup>-1</sup>)<sup>-1</sup> :: Inverses
                 </li><li>
-                    e = ((a<sup>-1</sup> &#x2218;
+                    e<sub>&#x2218;</sub> = ((a<sup>-1</sup> &#x2218;
                     a) &#x2218; a<sup>-1</sup>) &#x2218;
                     (a<sup>-1</sup>)<sup>-1</sup> :: Associativity
                 </li><li>
-                    e = (a<sup>-1</sup> &#x2218;
+                    e<sub>&#x2218;</sub> = (a<sup>-1</sup> &#x2218;
                     a) &#x2218; (a<sup>-1</sup> &#x2218;
                     (a<sup>-1</sup>)<sup>-1</sup>) :: Associativity
                 </li><li>
-                    e = (a<sup>-1</sup> &#x2218;
-                    a) &#x2218; e :: Inverses
+                    e<sub>&#x2218;</sub> = (a<sup>-1</sup> &#x2218;
+                    a) &#x2218; e<sub>&#x2218;</sub> :: Inverses
                 </li><li>
-                    e = a<sup>-1</sup> &#x2218; a :: Identity
+                    e<sub>&#x2218;</sub> = a<sup>-1</sup> &#x2218;
+                    a :: Identity
                 </li>
             </ul>
         </section>
         <section>
             <h3>Proof: Commutative Identity</h3>
             <ul>
-                <li>e &#x2218; a = (a &#x2218; a<sup>-1</sup>)
-                    &#x2218; a :: Inverses</li>
-                <li>e &#x2218; a = a &#x2218; (a<sup>-1</sup>
-                    &#x2218; a) :: Associativity</li>
-                <li>e &#x2218; a = a &#x2218; e :: Inverses</li>
-                <li>e &#x2218; a = a :: Identity</li>
+                <li>
+                    e<sub>&#x2218;</sub> &#x2218; a =
+                    (a &#x2218; a<sup>-1</sup>) &#x2218; a :: Inverses
+                </li><li>
+                    e<sub>&#x2218;</sub> &#x2218; a = a &#x2218;
+                    (a<sup>-1</sup> &#x2218; a) :: Associativity
+                </li><li>
+                    e<sub>&#x2218;</sub> &#x2218; a = a &#x2218;
+                    e<sub>&#x2218;</sub> :: Inverses
+                </li><li>
+                    e<sub>&#x2218;</sub> &#x2218; a = a :: Identity
+                </li>
             </ul>
         </section>
         <section>
             <h3>Equation Solving</h3>
             <p>
-                A group is the simplest mathematical structure
-                that allows algebra.  Suppose we have know a, b
-                and <br />(x &#x2218; a = b):
+                Suppose we have know a, b and (a &#x2218; x = b):
             </p>
             <ul>
                 <li>
-                    (x &#x2218; a) &#x2218; a<sup>-1</sup> =
-                    b &#x2218; a<sup>-1</sup> :: Equality
+                    a<sup>-1</sup> &#x2218; (a &#x2218; x) =
+                    a<sup>-1</sup> &#x2218; b :: Equality
                 </li><li>
-                    x &#x2218; (a &#x2218; a<sup>-1</sup>) =
-                    b &#x2218; a<sup>-1</sup> :: Associativity
+                    (a<sup>-1</sup> &#x2218; a) &#x2218; x =
+                    a<sup>-1</sup> &#x2218; b :: Associativity
                 </li><li>
-                    x &#x2218; e = b &#x2218; a<sup>-1</sup>
-                    :: Inverses
+                    e<sub>&#x2218;</sub> &#x2218; x =
+                    a<sup>-1</sup> &#x2218; b :: Inverses
                 </li><li>
-                    x = b &#x2218; a<sup>-1</sup> :: Identity
+                    x = a<sup>-1</sup> &#x2218; b :: Identity
                 </li>
             </ul>
         </section>
@@ -4437,8 +4455,8 @@
                 </li>
             </ul>
             <p>
-                Integers with addition form an abelian group:
-                <br />&#x27ec;&#x2124;, +&#x27ed;
+                Integers with addition are an abelian group:
+                &#x27ec;&#x2124;, +&#x27ed;
             </p>
         </section>
         <section>
@@ -4541,9 +4559,8 @@
                 </li>
             </ul>
             <p>
-                An example of a field is rational numbers with
-                addition and multiplication: &#x27ec;&#x211a;, +,
-                &times;&#x27ed;
+                Rational numbers with addition and multiplication
+                are a field: &#x27ec;&#x211a;, +, &times;&#x27ed;
             </p>
         </section>
         <section>
@@ -4559,7 +4576,8 @@
         </section>
         <section>
             <h3>
-                Finite Field: &#x27ec;&#x2124;/5&#x2124;, +, &times;&#x27ed;
+                Finite Field Example:
+                &#x27ec;&#x2124;/5&#x2124;, +, &times;&#x27ed;
             </h3>
             <table style="float: left">
                 <tr><th>+</th><th>0</th><th>1</th><th>2</th>
@@ -4591,7 +4609,7 @@
             </table>
         </section>
         <section>
-            <h3>Notation</h3>
+            <h3>Ring/Field Notation</h3>
             <p>
                 ax &#x225d; a &#x229a; x
             </p>
@@ -4601,6 +4619,141 @@
                 field.  This is especially useful when working with
                 numeric systems with a variable is named <q>x</q>:
                 <br />ax &#x225d; a &times; x
+            </p>
+        </section>
+        <section>
+            <h2>Exponents</h2>
+            <p>
+                A natural way to extend our notation for inverses
+                is to use an integer superscript to represent
+                repeated application of the second operation.
+            </p>
+            <ul>
+                <li>a<sup>0</sup> &#x225d; e<sub>&#x229a;</sub></li>
+                <li>a<sup>1</sup> &#x225d; a</li>
+                <li>a<sup>2</sup> &#x225d; a &#x229a; a</li>
+                <li>
+                    a<sup>3</sup> &#x225d; a &#x229a; a &#x229a; a
+                </li>
+            </ul>
+            <ul>
+                <li>a<sup>-1</sup> (a &ne; e<sub>&#x2218;</sub>)</li>
+                <li>
+                    a<sup>-2</sup> &#x225d; a<sup>-1</sup> &#x229a;
+                    a<sup>-1</sup>
+                </li>
+                <li>
+                    a<sup>-3</sup> &#x225d; a<sup>-1</sup> &#x229a;
+                    a<sup>-1</sup> &#x229a; a<sup>-1</sup>
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Exponents</h3>
+            <p>
+                Exponents defined this way obey simple rules:
+            </p>
+            <ul>
+                <li>a<sup>b</sup>a<sup>c</sup> = a<sup>b + c</sup></li>
+                <li>a<sup>b</sup>/a<sup>c</sup> = a<sup>b - c</sup></li>
+                <li>
+                    (a<sup>b</sup>)<sup>c</sup> =
+                    a<sup>b &times; c</sup> = a<sup>bc</sup>
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>
+                Vector Space &#x1d54d; &#x27ec;<strong>V</strong>, +,
+                &#x27ec;F, &#x2218;, &#x229a;&#x27ed;&#x27ed;
+            </h3>
+            <ul>
+                <li>&#x27ec;F, &#x2218;, &#x229a;&#x27ed; is a field</li>
+                <li>
+                    &#x27ec;<strong>V</strong>, +&#x27ed; is an
+                    abelian group (closure, associative, identity,
+                    inverses, commutative)
+                </li><li>
+                    Scalar Compatability:
+                    &#x2200;<strong>v</strong>
+                    &#x2208;<strong>V</strong>
+                    &#x2200;a,b&#x2208;F
+                    a(b<strong>v</strong>) = (ab)<strong>v</strong>
+                </li><li>
+                    Scalar Identity:
+                    &#x2200;<strong>v</strong>
+                    &#x2208;<strong>V</strong>
+                    e<sub>&#x229a;</sub><strong>v</strong>) =
+                    <strong>v</strong>
+                </li><li>
+                    Distributivity:
+                    &#x2200;<strong>v</strong>,<strong>u</strong>
+                    &#x2208;<strong>V</strong>
+                    &#x2200;a,b&#x2208;F<br />
+                    (a(<strong>v</strong> + <strong>u</strong>) =
+                    a<strong>v</strong> + a<strong>u</strong>) &and;
+                    (a + b)<strong>v</strong> =
+                    a<strong>v</strong> + b<strong>v</strong>)
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Vector Space Example: Rationals</h3>
+            <p>&#x27ec;&#x211a;, +, &#x27ec;&#x211a;, +,
+                &times;&#x27ed;&#x27ed;</p>
+            <p>
+                Rational numbers can be used to construct a trivial
+                example of a vector space.  There isn't anything we
+                can do with this that we couldn't also do with the
+                field of rational numbers, but it demonstrates that
+                at least one vector space exists.
+            </p>
+        </section>
+        <section>
+            <h3>Vector Space Example: Pairs</h3>
+            <p>&#x27ec;&#x211a; &times; &#x211a;, +, &#x27ec;&#x211a;,
+                +, &times;&#x27ed;&#x27ed;</p>
+            <ul>
+                <li>
+                    V = { &#x27e8;a, b&#x27e9; :
+                    a&#x2208;&#x211a; &and; b&#x2208;&#x211a; }
+                </li><li>
+                    &#x2200;<strong>v</strong>,<strong>w</strong>
+                    &#x2208;V <strong>v</strong> + <strong>w</strong> =
+                    &#x27e8;v<sub>a</sub> + w<sub>a</sub>,
+                    v<sub>b</sub> + w<sub>b</sub>&#x27e9;
+                </li><li>
+                    &#x2200;<strong>v</strong>,<strong>w</strong>
+                    &#x2208;V &#x2200;a&#x2208;&#x211a;
+                    a<strong>v</strong> =
+                    &#x27e8;av<sub>a</sub>, av<sub>b</sub>&#x27e9;
+                </li>
+            </ul>
+            <p>
+                We can make a more interesting vector space using
+                tuples of rational numbers.
+            </p>
+        </section>
+        <section>
+            <h3>Vector Space Example: Tuples</h3>
+            <ul>
+                <li>
+                    <strong>v</strong> = &#x27ec;v<sub>0</sub>,
+                    v<sub>1</sub>, v<sub>2</sub>, ...&#x27ed;
+                </li><li>
+                    <strong>v</strong> + <strong>w</strong> =
+                    &#x27ec;v<sub>0</sub> + w<sub>0</sub>,
+                    v<sub>1</sub> + w<sub>1</sub>,
+                    v<sub>2</sub> + w<sub>2</sub>, ...&#x27ed;
+                </li><li>
+                    a<strong>v</strong> =
+                    &#x27ec;av<sub>0</sub>, av<sub>1</sub>,
+                    av<sub>2</sub>, ...&#x27ed;
+                </li>
+            </ul>
+            <p>
+                Tuples can be used to generalize the vector space
+                created by ordered pairs.
             </p>
         </section>
     </section>
@@ -4681,50 +4834,6 @@
                 All integers can be represented as tuple consisting
                 of 1 or -1 followed by an ordered list of primes.
             </p>
-        </section>
-    </section>
-
-    <section>
-        <section>
-            <h2>Exponents</h2>
-            <p>
-                A natural way to extend our notation for inverses
-                is to use an integer superscript to represent
-                repeated application of the second operation.
-            </p>
-            <ul>
-                <li>a<sup>0</sup> &#x225d; e<sub>&#x229a;</sub></li>
-                <li>a<sup>1</sup> &#x225d; a</li>
-                <li>a<sup>2</sup> &#x225d; a &#x229a; a</li>
-                <li>
-                    a<sup>3</sup> &#x225d; a &#x229a; a &#x229a; a
-                </li>
-            </ul>
-            <ul>
-                <li>a<sup>-1</sup></li>
-                <li>
-                    a<sup>-2</sup> &#x225d; a<sup>-1</sup> &#x229a;
-                    a<sup>-1</sup>
-                </li>
-                <li>
-                    a<sup>-3</sup> &#x225d; a<sup>-1</sup> &#x229a;
-                    a<sup>-1</sup> &#x229a; a<sup>-1</sup>
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h3>Exponents</h3>
-            <p>
-                Exponents defined this way obey simple rules:
-            </p>
-            <ul>
-                <li>a<sup>b</sup>a<sup>c</sup> = a<sup>b + c</sup></li>
-                <li>a<sup>b</sup>/a<sup>c</sup> = a<sup>b - c</sup></li>
-                <li>
-                    (a<sup>b</sup>)<sup>c</sup> =
-                    a<sup>b &times; c</sup> = a<sup>bc</sup>
-                </li>
-            </ul>
         </section>
     </section>
 
@@ -4812,7 +4921,7 @@
         <section>
             <h3>Geometry: Postulates</h3>
             <p>Postulates are what axioms are called in geometry.
-               These four build on real numbers. (Birkhoff 1932)
+                These four build on real numbers. (Birkhoff 1932)
             </p>
             <ul>
                 <li>
@@ -4937,7 +5046,7 @@
 
     <!-- The most important thing to prove is this:
 
-           cos(a - b) = cos(a)cos(b) + sin(a)sin(b)
+         cos(a - b) = cos(a)cos(b) + sin(a)sin(b)
 
          This shows that a two dimensional dot product is equal to
          the product of the magnitude of the two vectors times the
@@ -4960,13 +5069,13 @@
          So... what do we need for that proof to work?
          * Prove that similar triangles have proportional side lengths
          * Prove that angles inscribed in a circle that subtend the
-           same arc are equal.
+         same arc are equal.
 
          We will also need to prove the Pthagorean theorem, but that
          should be easy given Ptolemy's theorem.  Just arrange the
          points so that they form right angles.
 
-       -->
+    -->
     <section id="trigonometry">
         <section>
             <h2>Trigonometry</h2>
@@ -5005,109 +5114,6 @@
                     data-radii="1"
                     data-enable="1">
             </canvas>
-        </section>
-    </section>
-
-    <section>
-        <section>
-            <h2>Vector Space &#x1d54d;</h2>
-            <p>
-                A vector represents an oriented length.  A vector
-                space extends a field with an additional operation
-                on tuples: (<strong>V</strong>,
-                (F, &#x2218;, &#x229a;), +)
-            </p>
-        </section>
-        <section>
-            <h3>
-                Vector Space &#x1d54d;
-            </h3>
-            <ul>
-                <li>
-                    Associativity: &#x2200; <strong>u</strong>,
-                    <strong>v</strong>, <strong>w</strong>
-                    &#x2208;<strong>V</strong>
-                    (<strong>u</strong> + <strong>v</strong>) +
-                    <strong>w</strong> = <strong>u</strong> +
-                    (<strong>v</strong> + <strong>w</strong>)
-                </li><li>
-                    Commutativity: &#x2200; <strong>u</strong>,
-                    <strong>v</strong> &#x2208;<strong>V</strong>
-                    <strong>u</strong> + <strong>v</strong> =
-                    <strong>v</strong> + <strong>u</strong>
-                </li><li>
-                    Identity:
-                    &#x2203;<strong>0</strong>
-                    &#x2208;<strong>V</strong>
-                    &#x2200;<strong>v</strong>
-                    &#x2208;<strong>V</strong>
-                    <strong>v</strong> + <strong>0</strong> =
-                    <strong>v</strong>
-                </li><li>
-                    Inverse:
-                    &#x2200;<strong>v</strong>
-                    &#x2208;<strong>V</strong>
-                    &#x2203;(-<strong>v</strong>)
-                    &#x2208;<strong>V</strong>
-                    <strong>v</strong> + (-<strong>v</strong>) =
-                    <strong>0</strong>
-                </li><li>
-                    Compatability:
-                    &#x2200;<strong>v</strong>
-                    &#x2208;<strong>V</strong>
-                    &#x2200;a,b&#x2208;F
-                    a(b<strong>v</strong>) = (ab)<strong>v</strong>
-                </li><li>
-                    Scalar Identity:
-                    &#x2200;<strong>v</strong>
-                    &#x2208;<strong>V</strong>
-                    e<sub>&#x229a;</sub><strong>v</strong>) =
-                    <strong>v</strong>
-                </li><li>
-                    Distributivity:
-                    &#x2200; <strong>v</strong>,
-                    <strong>u</strong> &#x2208;<strong>V</strong>
-                    &#x2200;a,b&#x2208;F
-                    (a(<strong>v</strong> + <strong>u</strong>) =
-                    a<strong>v</strong> + a<strong>u</strong>) &and;
-                    (a + b)<strong>v</strong> =
-                    a<strong>v</strong> + b<strong>v</strong>)
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h3>Vector as Tuple</h3>
-            <p>
-                A simple way to construct vectors is to use
-                tuples containing field members.
-            </p>
-            <ul>
-                <li>
-                    <strong>v</strong> = (v<sub>0</sub>,
-                    v<sub>1</sub>, v<sub>2</sub>, ...)
-                </li><li>
-                    <strong>v</strong> + <strong>w</strong> =
-                    (v<sub>0</sub> + w<sub>0</sub>,
-                    v<sub>1</sub> + w<sub>1</sub>,
-                    v<sub>2</sub> + w<sub>2</sub>, ...)
-                </li><li>
-                    a<strong>v</strong> =
-                    (av<sub>0</sub>, av<sub>1</sub>,
-                    av<sub>2</sub>, ...)
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h2>Equality</h2>
-            <p>
-                v = w defined (first(v) = first(w) &and;
-                rest(v) = rest(w))
-            </p>
-        </section>
-        <section>
-            <h2>Inner Product Space</h2>
-            <p>
-            </p>
         </section>
     </section>
 
