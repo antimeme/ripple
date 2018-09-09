@@ -32,7 +32,10 @@
 <script>//<![CDATA[
  ripple.ready(function() {
      var canvas = document.querySelector("canvas");
-     var last = null, drawDrag = null, drawSwipe = null;
+     var last = null;
+     var drawDrag = null, drawSwipe = null;
+     var drawTap = null, drawDTap = null;
+
      var post = function(description, details) {
          var entry, log = document.getElementById('log');
          if (last && last.description === description &&
@@ -72,6 +75,21 @@
          ctx.lineWidth = 2;
          ctx.strokeStyle = 'rgba(16, 16, 64, 0.5)';
          ctx.stroke();
+
+         if (drawDTap) {
+             ctx.beginPath();
+             ctx.moveTo(drawDTap.x + 20, drawDTap.y);
+             ctx.arc(drawDTap.x, drawDTap.y, 20, 0, 2 * Math.PI, true);
+             ctx.fillStyle = 'rgba(192, 192, 64)';
+             ctx.fill();
+         }
+         if (drawTap) {
+             ctx.beginPath();
+             ctx.moveTo(drawTap.x + 10, drawTap.y);
+             ctx.arc(drawTap.x, drawTap.y, 10, 0, 2 * Math.PI, true);
+             ctx.fillStyle = 'rgba(64, 64, 192)';
+             ctx.fill();
+         }
 
          if (drawDrag) {
              ctx.beginPath();
@@ -120,11 +138,16 @@
 
      ripple.gestur({
          tap: function(name, touch) {
+             drawTap = touch;
+             drawSwipe = drawDrag = drawDTap = null;
              post(name, touch);
-             drawSwipe = drawDrag = null;
              draw();
          },
-         doubleTap: function(name, touch) { post(name, touch); },
+         doubleTap: function(name, touch) {
+             drawDTap = touch;
+             post(name, touch);
+             draw();
+         },
          swipe: function(name, start, end) {
              drawSwipe = {start: start, end: end};
              post(name, drawSwipe);
