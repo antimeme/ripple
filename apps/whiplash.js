@@ -195,7 +195,7 @@
             chest.checkAccessible(this.player); }, this);
     };
 
-    whiplash.game = function($, data) {
+    whiplash.game = function(data) {
         return {
             debug: browserSettings.debug && !data.schema.disableDebug,
             rotateworld: browserSettings.rotateworld,

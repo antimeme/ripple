@@ -16,9 +16,9 @@
 <script src="streya.js"></script>
 <script>//<![CDATA[
  ripple.ready(function() {
-     ripple.preload($, [
+     ripple.preload([
          'streya.json'
-     ], function($, results) {
-         fascia.app($, $('body'), $(window),
-                    streya.game($, results['streya.json'])); });
+     ], function(results) {
+         fascia.app($('body'), $(window),
+                    streya.game(results['streya.json'])); });
  }); //]]></script>

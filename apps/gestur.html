@@ -18,7 +18,7 @@
      position: absolute; top: 0, bottom: 0, left: 0, right: 0;
      text-indent: -2em; margin-left: 2em;
  }
- button { position: absolute; top: 1%; right: 1%; }
+ #clear { position: absolute; top: 1%; right: 1%; }
  img { position: absolute; right: 0; top: 0; }
 </style>
 
@@ -27,62 +27,138 @@
 <canvas></canvas>
 <button id="clear">CLEAR</button>
 
-<script src="lib/jquery.min.js"></script>
-<script src="lib/jquery.mousewheel.js"></script>
+<script src="ripple/context.js"></script>
 <script src="ripple/ripple.js"></script>
 <script>//<![CDATA[
- jQuery(function($) {
-     var viewport = $(window);
-     var canvas = $('canvas');
+ ripple.ready(function() {
+     var canvas = document.querySelector("canvas");
      var last = null;
+     var drawDrag = null, drawSwipe = null;
+     var drawTap = null, drawDTap = null;
+
      var post = function(description, details) {
+         var entry, log = document.getElementById('log');
          if (last && last.description === description &&
-             description === "drag")
-             $('#log').children(':first').remove();
+             description === "drag") {
+             if (log.childNodes.length > 0)
+                 log.removeChild(log.firstChild);
+         }
          last = {description: description};
-         $('#log').prepend(
-             '<div>' + description +
-             JSON.stringify(details).replace(/,/g, ', ') + '</div>');
+         entry = document.createElement("div");
+         entry.appendChild(
+             document.createTextNode(
+                 description + JSON.stringify(details)
+                                   .replace(/,/g, ', ')));
+         log.prepend(entry);
+     };
+
+     var draw = function() {
+         var ctx, xx, yy, scale = 100;
+
+         if (!canvas) { // Report unlikley problems if necessary
+             alert("ERROR - missing canvas element"); return;
+         } else if (!canvas.getContext) {
+             alert("ERROR - canvas has no getContext"); return;
+         } else if (!(ctx = canvas.getContext('2d'))) {
+             alert("ERROR - canvas.getContext() failed"); return;
+         }
+         ctx.clearRect(0, 0, canvas.width, canvas.height);
+         ctx.beginPath();
+         for (xx = 0; xx < canvas.width; xx += scale) { // horizontal
+             ctx.moveTo(xx, 0);
+             ctx.lineTo(xx, canvas.height);
+         }
+         for (yy = 0; yy < canvas.height; yy += scale) { // vertical
+             ctx.moveTo(0, yy);
+             ctx.lineTo(canvas.width, yy);
+         }
+         ctx.lineWidth = 2;
+         ctx.strokeStyle = 'rgba(16, 16, 64, 0.5)';
+         ctx.stroke();
+
+         if (drawDTap) {
+             ctx.beginPath();
+             ctx.moveTo(drawDTap.x + 20, drawDTap.y);
+             ctx.arc(drawDTap.x, drawDTap.y, 20, 0, 2 * Math.PI, true);
+             ctx.fillStyle = 'rgba(192, 192, 64)';
+             ctx.fill();
+         }
+         if (drawTap) {
+             ctx.beginPath();
+             ctx.moveTo(drawTap.x + 10, drawTap.y);
+             ctx.arc(drawTap.x, drawTap.y, 10, 0, 2 * Math.PI, true);
+             ctx.fillStyle = 'rgba(64, 64, 192)';
+             ctx.fill();
+         }
+
+         if (drawDrag) {
+             ctx.beginPath();
+             ctx.moveTo(drawDrag.start.x, drawDrag.start.y);
+             ctx.lineTo(drawDrag.current.x, drawDrag.current.y);
+             ctx.moveTo(drawDrag.current.x + 10, drawDrag.current.y);
+             ctx.arc(drawDrag.current.x, drawDrag.current.y, 10,
+                     0, 2 * Math.PI, true);
+             ctx.lineWidth = 5;
+             ctx.lineCap = 'round';
+             ctx.strokeStyle = 'rgba(192, 32, 192)';
+             ctx.stroke();
+             ctx.fillStyle = 'rgba(192, 32, 192)';
+             ctx.fill();
+         }
+
+         if (drawSwipe) {
+             ctx.beginPath();
+             ctx.moveTo(drawSwipe.start.x, drawSwipe.start.y);
+             ctx.lineTo(drawSwipe.end.x, drawSwipe.end.y);
+             ctx.moveTo(drawSwipe.end.x + 10, drawSwipe.end.y);
+             ctx.arc(drawSwipe.end.x, drawSwipe.end.y, 10,
+                     0, 2 * Math.PI, true);
+             ctx.lineWidth = 5;
+             ctx.lineCap = 'round';
+             ctx.strokeStyle = 'rgba(192, 32, 32)';
+             ctx.stroke();
+             ctx.fillStyle = 'rgba(192, 32, 32)';
+             ctx.fill();
+         }
      };
      var resize = function() {
-	 canvas.css({width: viewport.innerWidth(),
-                     height: viewport.innerHeight()});
-         canvas.attr({width: canvas.innerWidth(),
-                      height: canvas.innerHeight()});
-
-         canvas.each(function(index, current) {
-             var xx, yy, scale = 100;
-             var ctx = current.getContext('2d');
-             if (!ctx)
-                 return;
-             ctx.clearRect(0, 0, canvas.width, canvas.height);
-             ctx.beginPath();
-             for (xx = 0; xx < current.width; xx += scale) {
-                 ctx.moveTo(xx, 0);
-                 ctx.lineTo(xx, current.height);
-             }
-             for (yy = 0; yy < current.height; yy += scale) {
-                 ctx.moveTo(0, yy);
-                 ctx.lineTo(current.width, yy);
-             }
-             ctx.lineWidth = 2;
-             ctx.strokeStyle = 'rgba(16, 16, 64, 0.5)';
-             ctx.stroke();
-         });
+         if (!canvas) { // Report unlikley problems if necessary
+             alert("ERROR - missing canvas element"); return;
+         }
+         canvas.setAttribute("width", window.innerWidth);
+         canvas.setAttribute("height", window.innerHeight);
+         draw();
      };
-
+     window.addEventListener("resize", resize);
      resize();
-     viewport.on('resize', resize);
-     $('#clear').on('click', function() { $('#log').empty(); });
+
+     document.getElementById("clear").addEventListener(
+         "click", function(event) {
+             document.getElementById("log").innerHTML = ""; });
 
      ripple.gestur({
-         tap: function(name, touch) { post(name, touch); },
-         doubleTap: function(name, touch) { post(name, touch); },
-         flick: function(name, start, end) {
-             post(name, {start: start, end: end}); },
+         tap: function(name, touch) {
+             drawTap = touch;
+             drawSwipe = drawDrag = drawDTap = null;
+             post(name, touch);
+             draw();
+         },
+         doubleTap: function(name, touch) {
+             drawDTap = touch;
+             post(name, touch);
+             draw();
+         },
+         swipe: function(name, start, end) {
+             drawSwipe = {start: start, end: end};
+             post(name, drawSwipe);
+             draw();
+         },
          drag: function(name, start, last, current) {
-             post(name, {start: start, last: last,
-                         current: current}); },
+             drawDrag = {start: start, last: last,
+                         current: current};
+             post(name, drawDrag);
+             draw();
+         },
          wheel: function(name, scroll) { post(name, scroll); },
          pinchStart: function(name, one, two) {
              post(name, {one: one, two: two}); },
