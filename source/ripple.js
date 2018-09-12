@@ -20,10 +20,36 @@
     'use strict';
 
     /**
+     * Parameter values either from page search string or Node.js
+     * environemnt variables */
+    var __params = undefined;
+    ripple.param = function(name) {
+        if (!__params) {
+            __params = {};
+
+            if (typeof window !== 'undefined') {
+                // Parse browser GET parameters
+                var items = window.location.search.substr(1).split('&');
+
+                for (var ii = 0; ii < items.length; ++ii) {
+                    var p = items[ii].split('=');
+                    if (p.length === 2)
+                        __params[p[0]] = decodeURIComponent(
+                            p[1].replace(/\+/g, " "));
+                    else if (p.length === 1)
+                        __params[p[0]] = true;
+                }
+            } else if (typeof process !== 'undefined')
+                __params = process.env;
+        }
+        return __params[name];
+    };
+
+    /**
      * Call given function when document is ready */
     ripple.ready = function(fn) {
-        if (document.attachEvent ? document.readyState === "complete" :
-            document.readyState !== "loading")
+        if (document.attachEvent ? (document.readyState === "complete") :
+            (document.readyState !== "loading"))
             fn();
         else document.addEventListener('DOMContentLoaded', fn);
     };
@@ -67,30 +93,59 @@
         });
     };
 
-    /**
-     * Parameter values either from page search string or Node.js
-     * environemnt variables */
-    var __params = undefined;
-    ripple.param = function(name) {
-        if (!__params) {
-            __params = {};
+    ripple.createElement = function(name, attrs) {
+        var result = document.createElement(name);
+        var ii;
 
-            if (typeof window !== 'undefined') {
-                // Parse browser GET parameters
-                var items = window.location.search.substr(1).split('&');
+        if (attrs) Object.keys(attrs).forEach(function(attr) {
+            if ((attr === 'style') &&
+                (typeof(attrs[attr]) === 'object')) {
+                Object.keys(attrs[attr]).forEach(function(entry) {
+                    result.style[entry] = attrs[attr][entry]; });
+            } else result.setAttribute(attr, attrs[attr]); });
 
-                for (var ii = 0; ii < items.length; ++ii) {
-                    var p = items[ii].split('=');
-                    if (p.length === 2)
-                        __params[p[0]] = decodeURIComponent(
-                            p[1].replace(/\+/g, " "));
-                    else if (p.length === 1)
-                        __params[p[0]] = true;
-                }
-            } else if (typeof process !== 'undefined')
-                __params = process.env;
-        }
-        return __params[name];
+        for (ii = 2; ii < arguments.length; ++ii)
+            result.appendChild((typeof(arguments[ii]) === 'string') ?
+                               document.createTextNode(arguments[ii]) :
+                               arguments[ii]);
+        return result;
+    };
+
+    ripple.toggleClass = function(element, className) {
+        if (!element.classList) {
+            var classes = element.className.split(' ');
+            var existingIndex = classes.indexOf(className);
+
+            if (existingIndex >= 0)
+                classes.splice(existingIndex, 1);
+            else
+                classes.push(className);
+
+            element.className = classes.join(' ');
+        } else element.classList.toggle(className);
+        return element;
+    };
+
+    ripple.queryEach = function(query, fn, source) {
+        (source ? source : document).querySelectorAll(query).forEach(fn);
+    };
+
+    ripple.isVisible = function(element) {
+        return !!(element.offsetWidth || element.offsetHeight ||
+                  element.getClientRects().length); };
+    ripple.toggleVisible = function(element, display) {
+        if (ripple.isVisible(element))
+            ripple.hide(element);
+        else ripple.show(element, display);
+        return element;
+    };
+    ripple.show = function(element, display) {
+        element.style.display = display ? display : 'block';
+        return element;
+    };
+    ripple.hide = function(element) {
+        element.style.display = 'none';
+        return element;
     };
 
     ripple.downloadJSON = function(obj, name) {
@@ -211,6 +266,46 @@
                                    callback, useCapture);
         };
     }
+
+    // Browser vendors sometimes introduce features before standards
+    // are agreed upon, but with prefixes.  We'll search for these
+    // prefixes for some values.
+    var vendors = ['moz', 'webkit', 'o', 'ms'];
+
+    /**
+     * Support for full screen requests */
+    ripple.requestFullscreen = function(elem) {
+        var req = elem.requestFullscreen || elem.requestFullScreen;
+        var names = ["RequestFullscreen", "RequestFullScreen"];
+        for (var i = 0; !req && i < vendors.length; ++i) {
+            for (var n = i; !req && n < names.length; ++n)
+                req = elem[vendors[i] + names[n]];
+        }
+        if (req) req.apply(elem);
+    };
+    ripple.exitFullscreen = function() {
+        var efs = document.exitFullscreen ||
+                  document.exitFullScreen;
+        var names = ["ExitFullscreen", "ExitFullScreen",
+                     "CancelFullScreen"];
+        for (var i = 0; !efs && i < vendors.length; ++i) {
+            for (var n = i; !efs && n < names.length; ++n)
+                efs = document[vendors[i] + names[n]];
+        }
+        console.log("efs");
+        if (efs) efs.apply(document);
+    };
+    ripple.toggleFullscreen = function(elem) {
+        var fse = document.fullscreenElement ||
+                  document.fullScreenElement;
+        var names = ["FullscreenElement", "FullScreenElement"];
+        for (var i = 0; !fse && i < vendors.length; ++i) {
+            for (var n = i; !fse && n < names.length; ++n)
+                fse = document[vendors[i] + names[n]];
+        }
+        return fse ? ripple.exitFullscreen() :
+               ripple.requestFullscreen(elem);
+    };
 
     // === Pairing Functions
 
@@ -634,10 +729,8 @@
                 else this.reset();
                 break;
             case gesturStates.DRAG:
-                if (now > this.start.when + this.swipeThreshold) {
+                if (now > this.start.when + this.swipeThreshold)
                     this.swipe = false;
-                    console.log('DEBUG unswipe1');
-                }
 
                 if (this.swipe) {
                     var current = this.drag;

@@ -12,14 +12,10 @@
 (function(streya) {
     'use strict';
     if (typeof require !== 'undefined') {
+        this.ripple = require('./ripple/ripple.js');
         this.multivec = require('./ripple/multivec.js');
         this.fascia = require('./ripple/fascia.js');
     }
-
-    var browserSettings = {
-        debug: !!ripple.param('debug'),
-        ship: ripple.param('ship')
-    };
 
     // === Ship representation
     // A ship consists of one or more connected cells, each of which
@@ -278,20 +274,25 @@
         var game, redraw, tap, selected, drag, zooming, gesture;
 
         var colorSelected = 'rgba(192, 192, 0, 0.2)';
-        var menu = $('<ul>');
-        var menuframe = $('<fieldset>')
-            .addClass('streya-menu')
-            .css({ position: 'absolute', top: 10, left: 25,
-                   'z-order': 2})
-            .append($('<legend>Streya Menu</legend>').on(
-                'click', function() {
-                    menu.toggle(); }))
-            .append(menu);
+        var menu = document.createElement('ul');
+        var menuframe = ripple.createElement(
+            'fieldset', null, ripple.createElement(
+                'legend', null, 'Streya Menu'), menu);
+        menuframe.setAttribute('class', 'streya-menu');
+        menuframe.style.position = 'absolute';
+        menuframe.style.top = 10;
+        menuframe.style.left = 25;
+        menuframe.style['z-order'] = 2;
+
+        menuframe.addEventListener('click', function(event) {
+            if (event.target.tagName.toLowerCase() === 'legend')
+                ripple.toggleVisible(menu);
+        });
         var tform = ripple.transform();
         var ship = streya.Ship.create(
-            (browserSettings.ship &&
-             browserSettings.ship in data.shipDesigns) ?
-            data.shipDesigns[browserSettings.ship] : undefined);
+            (ripple.param('ship') &&
+             ripple.param('ship') in data.shipDesigns) ?
+            data.shipDesigns[ripple.param('ship')] : undefined);
         var imageSystem = fascia.imageSystem(data.imageSystem);
         var itemSystem = fascia.itemSystem(data.itemSystem);
         var player = fascia.createPlayer(
@@ -304,7 +305,7 @@
                          if (inventoryPane.isVisible())
                              inventoryPane.hide();
                          else {
-                             inventoryPane.populate($);
+                             inventoryPane.populate();
                              inventoryPane.show();
                          } }}));
         var inventoryPane;
@@ -312,9 +313,9 @@
         var system, systems = {
             edit: {
                 start: function() {
-                    bbarLeft.hide();
-                    bbarRight.hide();
-                    menuframe.show();
+                    ripple.hide(bbarLeft);
+                    ripple.hide(bbarRight);
+                    ripple.show(menuframe);
                 },
                 keydown: function(event) {
                     if (event.key === 't') {
@@ -323,8 +324,9 @@
                     } else if (event.key === 'c') {
                         game.center();
                     } else if (event.key === 'f') {
-                        $.toggleFullscreen(
-                            $('.fascia-canvas').parent().get(0));
+                        ripple.toggleFullscreen(
+                            document.querySelect('.fascia-canvas')
+                                    .parentElement);
                     } else if ((event.key === '+') ||
                                (event.key === '=')) {
                         game.zoom(1.1);
@@ -340,14 +342,14 @@
                         tform.toWorldFromScreen(touches));
 
                     cell = ship.getCell(selected);
-                    if (mode.val() === 'extend' && !cell) {
+                    if (mode.value === 'extend' && !cell) {
                         if (ship.grid.neighbors(selected, {
                             coordinates: true, points: true })
                                 .some(function(neigh) {
                                     return ship.getCell(neigh); })) {
                             var current, queue = [];
                             selected.radius = parseInt(
-                                modeParam.val(), 10);
+                                modeParam.value, 10);
                             queue.push(selected);
 
                             while (queue.length > 0) {
@@ -367,23 +369,28 @@
 
                             ship.setCell(selected, {});
                         }
-                    } else if (mode.val() === 'remove' && cell) {
+                    } else if (mode.value === 'remove' && cell) {
                         if (cell.system)
                             ship.setCell(selected, {});
                         else ship.setCell(selected, undefined);
-                    } else if (mode.val() === 'sys' && cell) {
+                    } else if (mode.value === 'sys' && cell) {
                         ship.setCell(selected, {
-                            system: modeParam.val() ?
-                                    modeParam.find(
-                                        'option:selected').text() :
+                            system: modeParam.value ?
+                                    modeParam.options[
+                                        modeParam.selectedIndex].text :
                                     undefined,
-                            sigil: modeParam.val() });
-                    } else if (mode.val() === 'bound' &&
+                            sigil: modeParam.value });
+                    } else if (mode.value === 'bound' &&
                                cell && previous) {
                         ship.setBoundary(
                             selected, previous,
-                            modeParam.val());
+                            modeParam.value);
                     }
+                },
+                drag: function(start, last, current) {
+                    tform.pan({
+                        x: (last.x - current.x) / tform.scale,
+                        y: (last.y - current.y) / tform.scale});
                 },
                 draw: function(ctx, now) {
                     if (selected) {
@@ -415,13 +422,19 @@
                             player.position = candidate;
                     }
 
-                    bbarLeft.show();
-                    bbarRight.show();
-                    menuframe.hide();
+                    ripple.show(bbarLeft);
+                    ripple.show(bbarRight);
+                    ripple.hide(menuframe);
                 },
                 keydown: function(event) {
-                    player.control.keydown(event);
-                    this.update();
+                    if (event.keyCode === 27) {
+                        ripple.hide(inventoryPane.pane);
+                        system = systems.edit;
+                        system.start();
+                    } else {
+                        player.control.keydown(event);
+                        this.update();
+                    }
                 },
                 keyup: function(event) {
                     player.control.keyup(event);
@@ -474,146 +487,157 @@
             },
         };
 
-        var bbarLeft = $('<div>')
-            .addClass('bbar').hide()
-            .css({ bottom: 0, left: 0 })
-            .append(imageSystem.createButton(
-                'lhand', $, function() {
-                    player.punchLeft = Date.now();
-                }, this))
-            .append(imageSystem.createButton(
-                'rhand', $, function() {
-                    player.punchRight = Date.now();
-                }, this));
-        var bbarRight = $('<div>')
-            .addClass('bbar').hide()
-            .css({ bottom: 0, right: 0 })
-            .append(imageSystem.createButton(
-                'settings', $, function(event) {
-                    inventoryPane.hide();
-                    system = systems.edit;
-                    system.start(); }))
-            .append(imageSystem.createButton(
-                'interact', $, function(event) {
-                    player.interact(); }));
+        var bbarLeft = document.createElement('div');
+        bbarLeft.setAttribute('class', 'bbar');
+        bbarLeft.style.display = 'none';
+        bbarLeft.style.bottom = 0;
+        bbarLeft.style.left = 0;
+        bbarLeft.appendChild(imageSystem.createButton(
+            'lhand', function() {
+                player.punchLeft = Date.now(); }, this));
+        bbarLeft.appendChild(imageSystem.createButton(
+            'rhand', function() {
+                player.punchRight = Date.now(); }, this));
 
-        var modeParam = $('<select>');
-        var mode = $('<select>')
-            .on('change', function(event) {
-                var shipElements = data.shipElements;
-                modeParam.empty();
-                modeParam.hide();
-                if (mode.val() === 'extend') {
-                    [1, 2, 3].forEach(function(key) {
-                        modeParam.append(
-                            '<option value="' + key + '">' +
-                            'Radius ' + key + '</option>'); });
-                    modeParam.show();
-                } if (mode.val() === 'sys') {
-                    modeParam.append('<option value="">Clear</option>');
-                    Object.keys(shipElements).forEach(function(key) {
-                        var element = shipElements[key];
+        var bbarRight = document.createElement('div');
+        bbarRight.style.display = 'none';
+        bbarRight.style.bottom = 0;
+        bbarRight.style.right = 0;
+        bbarRight.appendChild(imageSystem.createButton(
+            'settings', function(event) {
+                ripple.hide(inventoryPane);
+                system = systems.edit;
+                system.start();
+            }));
+        bbarRight.appendChild(imageSystem.createButton(
+            'interact', function(event) {
+                player.interact(); }));
 
-                        if (element.internal || element.disable ||
-                            element.boundary)
+        var modeParam = document.createElement('select');
+        var mode = document.createElement('select');
+        mode.appendChild(ripple.createElement(
+            'option', {value: 'extend'}, 'Extend Hull'));
+        mode.appendChild(ripple.createElement(
+            'option', {value: 'remove'}, 'Remove Hull'));
+        mode.appendChild(ripple.createElement(
+            'option', {value: 'sys'}, 'Add System'));
+        mode.appendChild(ripple.createElement(
+            'option', {value: 'bound'}, 'Add Boundary'));
+        mode.addEventListener('change', function(event) {
+            var shipElements = data.shipElements;
+            modeParam.innerHTML = '';
+            ripple.hide(modeParam);
+            if (mode.value === 'extend') {
+                [1, 2, 3].forEach(function(key) {
+                    modeParam.appendChild(ripple.createElement(
+                        'option', {value: key}, 'Radius ' + key)); });
+                ripple.show(modeParam);
+            } if (mode.value === 'sys') {
+                modeParam.appendChild(ripple.createElement(
+                    'option', {value: ''}, 'Clear'));
+                Object.keys(shipElements).forEach(function(key) {
+                    var element = shipElements[key];
+
+                    if (element.internal || element.disable ||
+                        element.boundary)
+                        return;
+                    modeParam.append(ripple.createElement(
+                        'option', {value: element.sigil},
+                        key + (element.sigil ?
+                               (' (' + element.sigil + ')') : '')));
+                });
+                ripple.show(modeParam);
+            } else if (mode.value === 'bound') {
+                modeParam.append('<option value="">Clear</option>');
+                Object.keys(shipElements).forEach(function(key) {
+                    if (shipElements[key].internal ||
+                        shipElements[key].disable ||
+                        !shipElements[key].boundary)
                             return;
-                        modeParam.append(
-                            '<option value="' +
-                            element.sigil +'">' + key + (
-                                element.sigil ? (
-                                    ' (' + element.sigil + ')') : '') +
-                            '</option>');
+                        modeParam.appendChild(ripple.createElement(
+                            'option', {value: shipElements[
+                                key].boundary}, key));
                     });
-                    modeParam.show();
-                } else if (mode.val() === 'bound') {
-                    modeParam.append('<option value="">Clear</option>');
-                    Object.keys(shipElements).forEach(function(key) {
-                        if (shipElements[key].internal ||
-                            shipElements[key].disable ||
-                            !shipElements[key].boundary)
-                            return;
-                        modeParam.append(
-                            '<option value="' +
-                            shipElements[key].boundary + '">' + key +
-                            '</option>');
-                    });
-                    modeParam.show();
-                }
-            })
-            .append('<option value="extend">Extend Hull</option>')
-            .append('<option value="remove">Remove Hull</option>')
-            .append('<option value="sys">Add System</option>')
-            .append('<option value="bound">Add Boundary</option>');
-        mode.change();
+                ripple.show(modeParam);
+            }
+        });
+        mode.dispatchEvent(new Event('change'));
 
-        menu.append($('<li data-action="mode">').append(mode));
-        menu.append($('<li>').append(modeParam));
+        menu.appendChild(ripple.createElement(
+            'li', {'data-action': 'mode'}, mode));
+        menu.appendChild(ripple.createElement('li', null, modeParam));
 
-        var gtype = $('<select>')
-            .on('change', function() {
-                var gconfig = JSON.parse(gtype.val());
-                gconfig.size = parseInt(gsize.val());
-                ship = streya.Ship.create({ grid: gconfig });
-                selected = ship.grid.coordinate(selected);
-                redraw();
-            })
-            .css({display: 'inline-block'});
+        var gtype = ripple.createElement(
+            'select', {style: {display: 'inline-block'}});
         [{name: "Hex(point)", type: "hex", orient: "point"},
          {name: "Hex(edge)", type: "hex", orient: "edge"},
          {name: "Square", type: "square"},
          {name: "Triangle", type: "triangle"}
         ].forEach(function(g) {
-            gtype.append('<option value="' +
-                         JSON.stringify(g)
-                             .replace(/"/g, '&#34;')
-                             .replace(/'/g, '&#39;') + '">' +
-                         g.name + '</option>');
+            gtype.appendChild(
+                ripple.createElement('option', {
+                    value: encodeURI(JSON.stringify(g))}, g.name));
+        });
+        gtype.addEventListener('change', function(event) {
+            var gconfig = JSON.parse(decodeURI(gtype.value));
+            gconfig.size = parseInt(gsize.value);
+            ship = streya.Ship.create({ grid: gconfig });
+            selected = ship.grid.coordinate(selected);
+            redraw();
         });
 
-        var gsize = $('<select>')
-            .on('change', function() {
-                var gconfig = JSON.parse(gtype.val());
-                ship.grid.size(parseInt(gsize.val()));
-                selected = ship.grid.coordinate(selected);
-                redraw();
-            })
-            .css({display: 'inline-block'});
-        gsize.append('<option>10</option>');
-        gsize.append('<option>20</option>');
-        gsize.append('<option>30</option>');
-        menu.append($('<li>').append(gtype).append(gsize));
+        var gsize = ripple.createElement(
+            'select', {style: {display: 'inline-block'}},
+            ripple.createElement('option', null, '10'),
+            ripple.createElement('option', null, '20'),
+            ripple.createElement('option', null, '30'));
+        gsize.addEventListener('change', function() {
+            var gconfig = JSON.parse(decodeURI(gtype.value));
+            ship.grid.size(parseInt(gsize.value));
+            selected = ship.grid.coordinate(selected);
+            redraw();
+        });
+        menu.appendChild(ripple.createElement('li', null, gtype, gsize));
+        menu.appendChild(ripple.createElement('hr'));
 
-        menu.append('<hr />');
-
-        var shipName = $('<input type="text" size="9">');
-        shipName.attr('placeholder', 'Ship Name');
-        shipName.on('change', function(event) {
-            ship.name = shipName.val(); });
-        menu.append($('<li>').append(shipName));
-        var designs = $('<select>');
-        designs.append('<option>-</options>');
+        var shipName = ripple.createElement(
+            'input', {type: 'text', size: 9, placeholder: 'Ship Name'});
+        shipName.addEventListener('change', function(event) {
+            ship.name = shipName.value; });
+        menu.appendChild(ripple.createElement('li', null, shipName));
+        var designs = ripple.createElement('select');
+        designs.appendChild(ripple.createElement('option', null, '-'));
         if (data.shipDesigns) {
             Object.keys(data.shipDesigns).forEach(function(key) {
-                designs.append('<option>' + key + '</option>');
+                designs.appendChild(ripple.createElement(
+                    'option', null, key));
             });
-            designs.on('change', function(event) {
-                if (designs.val() !== '-') {
+            designs.addEventListener('change', function(event) {
+                if (designs.value !== '-') {
                     ship = streya.Ship.create(
-                        data.shipDesigns[designs.val()]);
-                    shipName.val(ship.name);
+                        data.shipDesigns[designs.value]);
+                    shipName.value = ship.name;
                 }
                 redraw();
             });
         }
-        menu.append($('<li>').append(designs));
-        menu.append('<li data-action="center">Center View</li>');
-        menu.append('<li data-action="full-screen">Full Screen</li>');
-        menu.append('<li data-action="save">Save Ship</li>');
-        menu.append('<li data-action="tour">Tour Ship</li>');
-        menu.on('click', 'li', function(event) {
+        menu.appendChild(ripple.createElement('li', null, designs));
+        menu.appendChild(ripple.createElement('li', {
+            'data-action': 'center'}, 'Center View'));
+        menu.appendChild(ripple.createElement('li', {
+            'data-action': 'full-screen'}, 'Full Screen'));
+        menu.appendChild(ripple.createElement('li', {
+            'data-action': 'save'}, 'Save Ship'));
+        menu.appendChild(ripple.createElement('li', {
+            'data-action': 'tour'}, 'Tour Ship'));
+        menu.addEventListener('click', function(event) {
             var dimensions;
+            var target = event.target ?
+                         event.target.closest('li') : null;
+            if (!target)
+                return;
 
-            switch (this.getAttribute('data-action')) {
+            switch (target.getAttribute('data-action')) {
                 case 'save': {
                     ripple.downloadJSON(ship.save(), ship.name);
                 } break;
@@ -625,23 +649,23 @@
                     redraw();
                 } break;
                 case 'full-screen': {
-                    $.toggleFullscreen(
-                        $('.fascia-canvas').parent().get(0));
+                    ripple.toggleFullscreen(
+                        document.querySelector('.fascia-canvas')
+                                .parentElement);
                 } break;
             }
         });
 
         var game = {
-            init: function($, container, viewport, fasciaRedraw) {
+            init: function(container, viewport, fasciaRedraw) {
                 inventoryPane = fascia.inventoryPane(
-                    $, container, player, itemSystem, imageSystem);
-                container
-                    .append(menuframe)
-                    .append(bbarLeft)
-                    .append(bbarRight)
-                //.append(systemPane) // TODO
-                //.append(settingsPane) // TODO
-                    .append(inventoryPane);
+                    container, player, itemSystem, imageSystem);
+                container.appendChild(menuframe);
+                container.appendChild(bbarLeft);
+                container.appendChild(bbarRight);
+                //container.appendChild(systemPane) // TODO
+                //container.appendChild(settingsPane) // TODO
+                container.appendChild(inventoryPane.pane);
 
                 this.center(); // TODO relies on prior resize call
                 system = systems.edit;
@@ -654,26 +678,35 @@
                 return system.active && system.active();
             },
 
-            resize: function(width, height, $) {
+            resize: function(width, height) {
                 var size = Math.min(width, height);
                 this.width = width;
                 this.height = height;
 
-                $('.streya-menu, .streya-menu legend').css({
-                    'border-radius': Math.floor(size / 50) });
-                $('.page').css({
-                    'border-width': Math.floor(size / 100),
-                    'border-radius': Math.floor(size / 25),
-                    top: Math.floor(size / 50),
-                    left: Math.floor(size / 50),
-                    width: width - Math.floor(size / 20),
-                    height: height - Math.floor(
-                        size / 20 + size / 11)
-                });
+                ripple.queryEach('.streya-menu', function(element) {
+                    element.style['border-radius'] =
+                        Math.floor(size / 50) + 'px'; });
+                ripple.queryEach(
+                    '.streya-menu legend', function(element) {
+                        element.style['border-radius'] =
+                            Math.floor(size / 80) + 'px'; });
+                document.querySelectorAll(
+                    '.page', function(element) {
+                        element.style['border-width'] =
+                            Math.floor(size / 50) + 'px';
+                        element.style['border-radius'] =
+                            Math.floor(size / 25) + 'px';
+                        element.style.top = Math.floor(size / 50);
+                        element.style.left = Math.floor(size / 50);
+                        element.style.width =
+                            width - Math.floor(size / 20);
+                        element.style.height =
+                            height - Math.floor(size / 20 + size / 11);
+                    });
 
                 tform.resize(width, height);
-                imageSystem.resize($, width, height);
-                inventoryPane.resize($, width, height);
+                imageSystem.resize(width, height);
+                inventoryPane.resize(width, height);
                 zooming = drag = undefined;
             },
 
@@ -766,71 +799,30 @@
                     this.height / (extents.ey - extents.sy)) / 2);
             },
 
-            mwheel: function(event, redraw) {
-                this.zoom(1 + 0.1 * event.deltaY);
+            wheel: function(event, redraw) {
+                this.zoom(1 + 0.1 * event.y);
                 redraw();
-            },
-
-            mtdown: function(touches, event, redraw) {
-                if (event.which > 1) {
-                    // Reserve right and middle clicks for browser menus
-                    return true;
-                } else if (touches.current.length > 1) {
-                    tap = touches;
-                    if (touches.current.length == 2) {
-                        var t0 = touches.current[0];
-                        var t1 = touches.current[1];
-                        zooming = {
-                            diameter: Math.sqrt(sqdist(t0, t1)) };
-                    }
-                } else {
-                    tap = drag = touches;
-                }
-
-                redraw();
-                return false;
-            },
-
-            mtmove: function(touches, event, redraw) {
-                if (drag) {
-                    var wtap = tform.toWorldFromScreen(touches);
-                    var wdrag = tform.toWorldFromScreen(drag);
-                    game.pan({ x: wdrag.x - wtap.x,
-                               y: wdrag.y - wtap.y });
-                    tap = touches;
-                    drag = tap;
-                }
-                if (zooming) {
-                    var factor;
-                    if (zooming.diameter &&
-                        touches.current.length == 2) {
-                        var t0 = touches.current[0];
-                        var t1 = touches.current[1];
-                        var diameter = Math.sqrt(sqdist(t0, t1));
-                        factor = diameter / zooming.diameter;
-                    }
-                    if (factor && factor > 0)
-                        game.zoom(factor);
-                }
-                redraw();
-                return false;
-            },
-
-            mtup: function(event) {
-                drag = zooming = undefined;
-                return false;
             },
 
             tap: function(touch, redraw) {
-                if (system.singleTap)
+                if (system.singleTap) {
                     system.singleTap(touch);
-                redraw();
+                    redraw();
+                }
             },
 
             doubleTap: function(touch, redraw) {
-                if (system.doubleTap)
+                if (system.doubleTap) {
                     system.doubleTap(touch);
-                redraw();
+                    redraw();
+                }
+            },
+
+            drag: function(start, last, current) {
+                if (system.drag) {
+                    system.drag(start, last, current);
+                    redraw();
+                }
             }
         };
 

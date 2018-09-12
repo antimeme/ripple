@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="whiplash.css" />
 <title>Whiplash Paradox</title>
 
-<div class="whiplash"></div>
 <script src="lib/jquery.min.js"></script>
 <script src="lib/jquery.mousewheel.js"></script>
 <script src="ripple/context.js"></script>
@@ -18,7 +17,6 @@
 <script src="whiplash.js"></script>
 <script>//<![CDATA[
  ripple.preload(['whiplash.json'], function(results) {
-     fascia.app($('.whiplash'), $(window),
-                whiplash.game(results['whiplash.json']));
+     fascia.app(whiplash.game(results['whiplash.json']));
  });
  //]]></script>

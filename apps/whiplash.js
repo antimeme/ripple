@@ -214,9 +214,9 @@
             tap: null, mmove: null,
             player: null, update: update,
             itemSystem: fascia.itemSystem(data.itemdefs),
-            imageSystem: fascia.imageSystem(data.images, $),
+            imageSystem: fascia.imageSystem(data.images),
 
-            init: function($, container, viewport) {
+            init: function(container, viewport) {
                 var self = this;
 
                 $('<div>') // Left Action Bar
@@ -224,11 +224,11 @@
                     .css({ bottom: 0, left: 0 })
                     .appendTo(container)
                     .append(this.imageSystem.createButton(
-                        'lhand', $, function() {
+                        'lhand', function() {
                             this.player.punchLeft = Date.now();
                         }, this))
                     .append(this.imageSystem.createButton(
-                        'rhand', $, function() {
+                        'rhand', function() {
                             this.player.punchRight = Date.now();
                         }, this));
 
@@ -237,11 +237,11 @@
                     .css({ bottom: 0, right: 0 })
                     .appendTo(container)
                     .append(this.imageSystem.createButton(
-                        'settings', $, function(event) {
+                        'settings', function(event) {
                             self.settings.toggle();
                             self.inventory.hide(); }))
                     .append(this.imageSystem.createButton(
-                        'interact', $, function(event) {
+                        'interact', function(event) {
                             self.interact(); }));
 
 	        this.player = fascia.createPlayer(
@@ -257,13 +257,13 @@
                     .append('<h2>Settings</h2>')
                     .appendTo(container);
                 this.inventory = fascia.inventoryPane(
-                    $, container, this.player,
+                    container, this.player,
                     this.itemSystem, this.imageSystem);
 
                 this.setStage(this.startStage);
             },
 
-            resize: function(width, height, $) {
+            resize: function(width, height) {
                 var size = Math.min(width, height);
                 this.width = width;
                 this.height = height;
@@ -278,8 +278,8 @@
                         size / 20 + size / 11)
                 });
 
-                this.imageSystem.resize($, width, height);
-                this.inventory.resize($, width, height);
+                this.imageSystem.resize(width, height);
+                this.inventory.resize(width, height);
             },
 
             draw: function(ctx, width, height, now, last) {
@@ -397,7 +397,7 @@
 
                 if (closest &&
                     tapped.minus(closest.position).normSquared() < 9) {
-                    this.inventory.populate($, closest);
+                    this.inventory.populate(closest);
                     this.inventory.show();
                 } else this.player.control.setTarget(tapped);
             },
@@ -496,7 +496,7 @@
                         }
                     }, this);
 
-                    this.inventory.populate($, closest);
+                    this.inventory.populate(closest);
                     this.inventory.show();
                 }
             },

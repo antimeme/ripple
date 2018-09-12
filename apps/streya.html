@@ -5,8 +5,6 @@
 <meta name="viewport" content="initial-scale=1, maximum-scale=1" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <link rel="stylesheet" type="text/css" href="streya.css" />
-<script src="lib/jquery.min.js"></script>
-<script src="lib/jquery.mousewheel.js"></script>
 <script src="ripple/context.js"></script>
 <script src="ripple/ripple.js"></script>
 <script src="ripple/fascia.js"></script>
@@ -19,6 +17,5 @@
      ripple.preload([
          'streya.json'
      ], function(results) {
-         fascia.app($('body'), $(window),
-                    streya.game(results['streya.json'])); });
+         fascia.app(streya.game(results['streya.json'])); });
  }); //]]></script>

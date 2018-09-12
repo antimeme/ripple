@@ -527,7 +527,7 @@
     };
 
     // Manages icon images in sprite sheets
-    fascia.imageSystem = function(config, $) {
+    fascia.imageSystem = function(config) {
         if (!(this instanceof fascia.imageSystem))
             return new fascia.imageSystem(config);
 
@@ -536,24 +536,42 @@
         this.size = 45;
     };
 
-    fascia.imageSystem.prototype.resize = function($, width, height) {
+    fascia.imageSystem.prototype.resize = function(width, height) {
         this.size = Math.floor(Math.min(width, height) * 2 / 11);
-        $('.fascia-button').css({width: this.size, height: this.size});
+        document.querySelectorAll('.fascia-button').forEach(
+            function(button) {
+                button.style.width = this.size;
+                button.style.height = this.size;
+            }, this);
     };
 
     fascia.imageSystem.prototype.createButton = function(
-        config, $, fn, context) {
+        config, fn, context) {
         var position = 'center';
         var backsize = 'contain';
         var imgdef;
         var image;
+        var settings;
+        var className = 'image-button';
 
+        var result = document.createElement('button');
         if (!config)
-            config = this.icons['default'] || {};
+            settings = this.icons['default'] || {};
         else if (typeof config === 'string')
-            config = this.icons[config] || {};
+            settings = this.icons[config] || {};
+        else {
+            settings = this.icons[config.icon] || {};
+            if (config.className)
+                className += ' ' + config.className;
+            if (config.title)
+                result.setAttribute('title', config.title);
+            if (config.data)
+                Object.keys(config.data).forEach(function(key) {
+                    result.setAttribute(
+                        'data-' + key, config.data[key]); });
+        };
 
-        imgdef = this.images[config.image || 'default'];
+        imgdef = this.images[settings.image || 'default'];
         if (imgdef) {
             image = 'url(' + imgdef.url + ')';
             if (!isNaN(imgdef.cols) && !isNaN(imgdef.rows)) {
@@ -561,32 +579,36 @@
                     (imgdef.size * imgdef.cols) + '% ' + (
                         imgdef.size * imgdef.rows) + '%');
                 position = (
-                    Math.floor(100 * config.col /
+                    Math.floor(100 * settings.col /
                         (imgdef.cols - 1)) + '% ' +
-                    Math.floor(100 * config.row /
+                    Math.floor(100 * settings.row /
                         (imgdef.rows - 1)) + '%');
             }
-        } else image = config.image;
+        } else image = settings.image;
 
-        var result = $('<button>')
-            .addClass('image-button')
-            .css({
-                'background-image': image,
-                'background-position': position,
-                'background-size': backsize,
-                width: this.size, height: this.size })
-            .on('mousedown touchstart', function(event) {
-                fn.call(context, arguments);
-                return false; });
+        result.setAttribute('class', className);
+        result.style['background-image'] = image;
+        result.style['background-position'] = position;
+        result.style['background-size'] = backsize;
+        result.style.width = this.size;
+        result.style.height = this.size;
+        result.addEventListener('mousedown', function(event) {
+            fn.call(context, arguments);
+            return false;
+        });
+        result.addEventListener('touchstart', function(event) {
+            fn.call(context, arguments);
+            return false;
+        });
         return result;
     };
 
     // Create an HTML inventory system
     fascia.inventoryPane = function(
-        $, container, player, itemSystem, imageSystem) {
+        container, player, itemSystem, imageSystem) {
         if (!(this instanceof fascia.inventoryPane))
             return new fascia.inventoryPane(
-                $, container, player, itemSystem, imageSystem);
+                container, player, itemSystem, imageSystem);
 
         this.imageSystem = imageSystem;
         this.itemSystem = itemSystem;
@@ -609,7 +631,7 @@
                     else updated.push(item);
                 }, this);
                 this.player.inventory = updated;
-                this.populate($, this.other);
+                this.populate(this.other);
             } else this.playerPane.find('button').addClass('selected');
         };
 
@@ -628,84 +650,80 @@
                     else updated.push(item);
                 }, this);
                 this.other.inventory = updated;
-                this.populate($, this.other);
+                this.populate(this.other);
             } else this.otherPane.find('button').addClass('selected');
         };
 
-        this.pane = $('<div>')
-            .addClass('page').addClass('inventory').hide()
-            .appendTo(container);
-        this.header = $('<div>')
-            .addClass('inventory-header')
-            .append($('<div>')
-                .addClass('bbar')
-                .append(this.imageSystem.createButton(
-                    'close', $, function(event) {
-                        this.hide();
-                    }, this).addClass('inventory-close'))
-                .append(this.imageSystem.createButton(
-                    'take', $, take, this)
-                            .addClass('inventory-givetake'))
-                .append(this.imageSystem.createButton(
-                    'give', $, give, this)
-                            .addClass('inventory-givetake')))
-            .appendTo(this.pane);
-        this.playerPane = $('<div>')
-            .addClass('inventory-pane')
-            .addClass('inventory-self')
-            .appendTo(this.pane);
-        this.otherPane = $('<div>')
-            .addClass('inventory-pane')
-            .addClass('inventory-other')
-            .appendTo(this.pane);
-        this.footer = $('<div>')
-            .addClass('inventory-footer')
-            .appendTo(this.pane);
-        this.portraitPane = $('<canvas>')
-            .addClass('inventory-pane')
-            .addClass('inventory-portrait')
-            .appendTo(this.pane);
-        this.populate($);
+        this.pane = ripple.createElement('div', {style: {display: 'none'}});
+        this.pane.className = 'page inventory';
+        container.appendChild(this.pane);
+        this.header = ripple.createElement('div', {
+            'class': 'inventory-header'});
+        this.header.appendChild(ripple.createElement(
+            'div', {'class': 'bbar'},
+            this.imageSystem.createButton(
+                {icon: 'close', className: 'inventory-close'},
+                function(event) { this.hide(); }, this),
+            this.imageSystem.createButton(
+                {icon: 'take', className: 'inventory-givetake'},
+                take, this),
+            this.imageSystem.createButton(
+                {icon: 'give', className: 'inventory-givetake'},
+                give, this)
+        ));
+        this.pane.appendChild(this.header);
+        this.playerPane = ripple.createElement(
+            'div', {'class': 'inventory-pane inventory-self'});
+        this.pane.appendChild(this.playerPane);
+        this.otherPane = ripple.createElement(
+            'div', {'class': 'inventory-pane inventory-other'});
+        this.pane.appendChild(this.otherPane);
+        this.footer = ripple.createElement(
+            'div', {'class': 'inventory-footer'});
+        this.pane.appendChild(this.footer);
+        this.portraitPane = ripple.createElement(
+            'canvas', {'class': 'inventory-pane inventory-portrait'});
+        this.pane.appendChild(this.portraitPane);
+        this.populate();
     };
 
-    fascia.inventoryPane.prototype.resize = function($, width, height) {
+    fascia.inventoryPane.prototype.resize = function(width, height) {
         var size = Math.min(width, height);
-        $('.inventory-header').css({
-            height: Math.floor(size * 2 / 11) });
-        $('.inventory-footer').css({
-            height: Math.floor(size * 2 / 11) });
+        ripple.queryEach(
+            '.inventory-header, .inventory-footer',
+            function(element) { element.setAttribute(
+                'height', Math.floor(size * 2 / 11)); });
         return this;
     };
 
     fascia.inventoryPane.prototype.show = function() {
-        this.pane.show(); return this; };
+        return ripple.show(this.pane); };
 
     fascia.inventoryPane.prototype.hide = function() {
-        this.pane.hide(); return this; };
+        return ripple.hide(this.pane); };
 
     fascia.inventoryPane.prototype.toggle = function() {
-        this.pane.toggle(); return this; };
+        return ripple.toggleVisible(this.pane); };
 
     fascia.inventoryPane.prototype.isVisible = function() {
-        return this.pane.is(':visible'); };
+        return ripple.isVisible(this.pane); };
 
     fascia.inventoryPane.prototype.showPortrait = function() {
         var self = this;
         var draw = function() {
             var canvas = self.portraitPane;
 
-            if (self.isVisible() && canvas.size() &&
-                canvas.get(0).getContext) {
-                var width = canvas.innerWidth();
-                var height = canvas.innerHeight();
+            if (self.isVisible() && canvas.getContext) {
+                var width = canvas.clientWidth;
+                var height = canvas.clientHeight;
                 var size = Math.min(width, height);
                 var margin = 0.05;
                 var ctx;
 
-                canvas.attr('width', Math.floor(canvas.innerWidth()));
-                canvas.attr('height', Math.floor(canvas.innerHeight()));
+                canvas.width = width;
+                canvas.height = height;
 
-                ctx = canvas.get(0).getContext('2d');
+                ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, width, height);
                 ctx.save();
                 ctx.translate(
@@ -727,34 +745,38 @@
     };
 
     fascia.inventoryPane.prototype.addItem = function(
-        $, item, index, itemPane) {
-        itemPane.append(this.imageSystem.createButton(
-            item.icon, $, function(event) {
-                $(event[0].target).toggleClass('selected');  }, this)
-                            .prop('title', item.toString())
-                            .data('index', index));
+        item, index, itemPane) {
+        itemPane.appendChild(this.imageSystem.createButton(
+            {icon: item.icon, title: item.toString(),
+             data: {index: index}}, function(event) {
+                 ripple.toggleClass(event.target, 'selected');
+             }, this));
         return this;
     };
 
-    fascia.inventoryPane.prototype.populate = function($, other) {
-        this.playerPane.empty();
+    fascia.inventoryPane.prototype.populate = function(other) {
+        this.playerPane.innerHTML = '';
         if (this.player) {
             this.player.inventory.forEach(function(item, index) {
-                this.addItem($, item, index, this.playerPane);
+                this.addItem(item, index, this.playerPane);
             }, this);
         }
 
-        this.otherPane.empty();
+        this.otherPane.innerHTML = '';
         this.other = other;
         if (this.other) {
             this.other.inventory.forEach(function(item, index) {
-                this.addItem($, item, index, this.otherPane);
+                this.addItem(item, index, this.otherPane);
             }, this);
-            $('.inventory-portrait').hide();
-            $('.inventory-givetake').show();
+            ripple.queryEach('.inventory-portrait', function(element) {
+                element.style.display = 'none'; });
+            ripple.queryEach('.inventory-givetake', function(element) {
+                element.style.display = 'block'; });
         } else {
-            $('.inventory-givetake').hide();
-            $('.inventory-portrait').show();
+            ripple.queryEach('.inventory-givetake', function(element) {
+                element.style.display = 'none'; });
+            ripple.queryEach('.inventory-portrait', function(element) {
+                element.style.display = 'block'; });
             this.showPortrait();
         }
     };
@@ -762,7 +784,7 @@
     // Framework for canvas applications
     // Object passed as the app is expected to have the following:
     //
-    // app.init($, container, viewport)
+    // app.init(container, viewport)
     // app.draw(ctx, width, height, now)
     // app.resize(width, height)
     // app.keydown(event, redraw)
@@ -773,27 +795,30 @@
     // app.isActive() // return falsy if redraw not needed
     // app.color
     // app.background
-    fascia.app = function(container, viewport, app) {
-        var canvas = $('<canvas>')
-            .attr('class', 'fascia-canvas')
-            .prependTo(container);
+    fascia.app = function(app, container, viewport) {
+        if (!container)
+            container = document.body;
+        if (!viewport)
+            viewport = window;
+
+        var canvas = ripple.createElement(
+            'canvas', {'class': 'fascia-canvas'});
+        container.insertBefore(canvas, container.firstChild);
 
         var draw_id = 0, draw_last = 0;
         var draw = function() {
             var ii, ctx, width, height;
-            var now = new Date().getTime();
+            var now = Date.now();
             draw_id = 0;
 
-            if (canvas.size() && canvas.get(0).getContext) {
-                width = canvas.innerWidth();
-                height = canvas.innerHeight();
-                ctx = canvas.get(0).getContext('2d');
-                ctx.clearRect(0, 0, width, height);
-                if (app.draw)
-                    app.draw(ctx, width, height, now, draw_last);
-            }
+            width = canvas.clientWidth;
+            height = canvas.clientHeight;
+            ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, width, height);
+            if (app.draw)
+                app.draw(ctx, width, height, now, draw_last);
             draw_last = now;
-            if (!app.isActive || app.isActive())
+            if (app.isActive && app.isActive())
                 redraw();
         };
 
@@ -801,30 +826,23 @@
         { if (!draw_id) draw_id = requestAnimationFrame(draw); };
 
         var resize = function(event) {
-            var width = viewport.width();
-            var height = viewport.height();
-            var size = Math.min(width, height);
+            var width = viewport.innerWidth || viewport.clientWidth;
+            var height = viewport.innerHeight || viewport.clientHeight;
 
-            canvas.width(width);
-	    canvas.height(height);
+            if (!width || !height)
+                return;
+            canvas.width = width;
+	    canvas.height = height;
+
             if (app.resize)
-                app.resize(
-                    canvas.innerWidth(), canvas.innerHeight(), $);
-
-            // A canvas has a height and a width that are part of the
-            // document object model but also separate height and
-            // width attributes which determine how many pixels are
-            // part of the canvas itself.  Keeping the two in sync
-            // is essential to avoid ugly stretching effects.
-            canvas.attr("width",  Math.floor(canvas.innerWidth()));
-            canvas.attr("height", Math.floor(canvas.innerHeight()));
+                app.resize(width, height);
             redraw();
         };
 
         if (app.init)
-            app.init($, container, viewport, redraw);
-        viewport.resize(resize);
-        resize();
+            app.init(container, viewport, redraw);
+        viewport.addEventListener('resize', resize);
+        viewport.dispatchEvent(new Event('resize'));
 
         var g = ripple.gestur({
             next: true,
@@ -836,9 +854,9 @@
                 if (app.doubleTap)
                     return app.doubleTap(touch, redraw);
             },
-            flick: function(name, start, end) {
-                if (app.flick)
-                    return app.flick(start, end, redraw);
+            swipe: function(name, start, end) {
+                if (app.swipe)
+                    return app.swipe(start, end, redraw);
             },
             drag: function(name, start, last, current) {
                 if (app.drag)
@@ -848,53 +866,18 @@
                 if (app.pinch)
                     return app.pinch(length, angle);
             },
+            wheel: function(name, event) {
+                if (app.wheel)
+                    return app.wheel(event, redraw);
+            }
         }, canvas);
 
-        canvas.on('mousedown touchstart', function(event) {
-            var touches;
-            if (app.mtdown) {
-                touches = ripple.createTouches(event);
-                return app.mtdown(touches, event, redraw);
-            }
-            return false;
-        });
-
-        canvas.on('mousemove touchmove', function(event) {
-            var touches;
-            if (app.mtmove) {
-                touches = ripple.createTouches(event);
-                return app.mtmove(touches, event, redraw);
-            }
-            return false;
-        });
-
-        canvas.on('mouseleave mouseup touchend', function(event) {
-            var touches;
-            if (app.mtup) {
-                touches = ripple.createTouches(event);
-                return app.mtup(touches, event, redraw);
-            }
-            return false;
-        });
-
-        canvas.on('mouseleave', function(event) {
-            if (app.mleave)
-                return app.mleave(event, redraw);
-            return false;
-        });
-
-        canvas.on('mousewheel', function(event) {
-            if (app.mwheel)
-                return app.mwheel(event, redraw);
-            return false;
-        });
-
-	viewport.on('keydown', function(event) {
+	viewport.addEventListener('keydown', function(event) {
             if (app.keydown)
                 return app.keydown(event, redraw);
 	});
 
-	viewport.on('keyup', function(event) {
+	viewport.addEventListener('keyup', function(event) {
             if (app.keyup)
                 return app.keyup(event, redraw);
 	});

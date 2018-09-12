@@ -134,41 +134,4 @@
         }
     }
 
-    // Extensions for jQuery, but only when it's present
-    if (typeof jQuery !== 'undefined') {
-
-        // Process full screen events independent of browser vendor
-        jQuery.requestFullscreen = function(elem) {
-            var req = elem.requestFullscreen || elem.requestFullScreen;
-            var names = ["RequestFullscreen", "RequestFullScreen"];
-            for (var i = 0; !req && i < vendors.length; ++i) {
-                for (var n = i; !req && n < names.length; ++n)
-                    req = elem[vendors[i] + names[n]];
-            }
-            if (req) req.apply(elem);
-        };
-        jQuery.exitFullscreen = function() {
-            var efs = document.exitFullscreen ||
-                      document.exitFullScreen;
-            var names = ["ExitFullscreen", "ExitFullScreen",
-                         "CancelFullScreen"];
-            for (var i = 0; !efs && i < vendors.length; ++i) {
-                for (var n = i; !efs && n < names.length; ++n)
-                    efs = document[vendors[i] + names[n]];
-            }
-            console.log("efs");
-            if (efs) efs.apply(document);
-        };
-        jQuery.toggleFullscreen = function(elem) {
-            var fse = document.fullscreenElement ||
-                      document.fullScreenElement;
-            var names = ["FullscreenElement", "FullScreenElement"];
-            for (var i = 0; !fse && i < vendors.length; ++i) {
-                for (var n = i; !fse && n < names.length; ++n)
-                    fse = document[vendors[i] + names[n]];
-            }
-            return fse ? jQuery.exitFullscreen() :
-                jQuery.requestFullscreen(elem);
-        };
-    }
 }());
