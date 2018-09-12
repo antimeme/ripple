@@ -52,6 +52,17 @@
         return __params[name];
     };
 
+    ripple.downloadJSON = function(obj, name) {
+        var data = "data:text/json;charset=utf-8," +
+                   encodeURIComponent(JSON.stringify(obj));
+        var anchor = document.createElement('a');
+        anchor.setAttribute("href", data);
+        anchor.setAttribute("download", name + ".json");
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+    };
+
     // === Pairing Functions
 
     // Represents a reversable transformation from a pair of positive
