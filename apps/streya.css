@@ -9,6 +9,12 @@ html, body
 .streya-menu legend {
     background: #333;
     border: 2px solid white;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none;
 }
 .streya-menu ul {
     list-style-type: none;
@@ -21,7 +27,7 @@ html, body
     -khtml-user-select: none; /* Konqueror HTML */
     -moz-user-select: none; /* Firefox */
     -ms-user-select: none; /* Internet Explorer/Edge */
-    /*user-select: none;*/
+    user-select: none;
     padding-top: 0.5em;
 }
 .streya-menu li:hover { background: #55e; }
