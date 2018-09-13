@@ -724,7 +724,6 @@
                 container.appendChild(bbarRight);
                 //container.appendChild(systemPane) // TODO
                 //container.appendChild(settingsPane) // TODO
-                container.appendChild(inventoryPane.pane);
 
                 this.center(); // TODO relies on prior resize call
                 system = systems.edit;
@@ -765,7 +764,8 @@
 
                 tform.resize(width, height);
                 imageSystem.resize(width, height);
-                inventoryPane.resize(width, height);
+                if (inventoryPane)
+                    inventoryPane.resize(width, height);
                 zooming = drag = undefined;
             },
 
@@ -850,7 +850,6 @@
             // Center the ship to get a good overall view
             center: function() {
                 var extents = ship.extents();
-                console.log('DEBUG-center', this.width, this.height, extents);
                 tform.reset();
                 tform.pan({ x: (extents.sx + extents.ex) / 2,
                             y: (extents.sy + extents.ey) / 2 });
