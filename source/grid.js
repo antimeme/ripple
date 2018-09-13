@@ -726,9 +726,7 @@
 
     grid.test = function(parent, viewport) {
         var self = document.createElement('canvas');
-        if (!parent)
-            parent = document.body;
-        parent.appendChild(self);
+        (parent ? parent : document.body).appendChild(self);
         var colorTapInner = 'rgba(45, 45, 128, 0.8)';
         var colorTapOuter = 'rgba(128, 255, 128, 0.6)';
         var colorSelected = 'rgba(192, 192, 0, 0.6)';
@@ -739,8 +737,7 @@
         var tap, selected, drag, zooming, gesture, press = 0;
 
         if (!viewport)
-            viewport = (typeof(window) !== 'undefined') ?
-                       window : parent;
+            viewport = parent ? parent : window;
 
         var draw_id = 0;
         var draw = function() {
@@ -838,10 +835,11 @@
                 });
             }
             if (tap) {
-                for (index = 0; index < tap.current.length; ++index) {
+                var targets = tap.targets || [tap];
+                for (index = 0; index < targets.length; ++index) {
                     ctx.beginPath();
-                    ctx.arc(tap.current[index].x,
-                            tap.current[index].y,
+                    ctx.arc(targets[index].x,
+                            targets[index].y,
                             20, 0, 2 * Math.PI);
                     ctx.fillStyle = colorTapOuter;
                     ctx.fill();
@@ -857,15 +855,14 @@
         var redraw = function()
         { if (!draw_id) draw_id = requestAnimationFrame(draw); };
 
-        var resize = function(event) {
+        viewport.addEventListener('resize', function(event) {
             // Consume enough space to fill the viewport.
             self.height = viewport.innerHeight || viewport.clientHeight;
             self.width = viewport.innerWidth || viewport.clientWidth;
 
             zooming = drag = undefined;
             redraw();
-        };
-        viewport.addEventListener('resize', resize);
+        });
         viewport.dispatchEvent(new Event('resize'));
 
         var animation = new (function() {
@@ -951,11 +948,6 @@
             ripple.hide(menu);
             var gridType = event.target.getAttribute('data-grid-type');
             if (gridType) {
-                tap = undefined; selected = undefined;
-
-                var foo = event.target.getAttribute('data-grid-options');
-                console.log('DEBUG-options', foo, '|||', typeof(foo),
-                '|||', decodeURIComponent(foo));
                 var options = JSON.parse(decodeURIComponent(
                     event.target.getAttribute('data-grid-options')));
                 if (!options)
@@ -964,13 +956,14 @@
                 options.height = self.clientHeight;
                 instance = grid.create(options);
                 lineWidth = instance.size() / lineFactor;
+
+                tap = undefined; selected = undefined;
                 redraw();
             }
 
             switch (event.target.getAttribute('data-action')) {
                 case 'full-screen': {
                     ripple.toggleFullscreen(self.parentElement);
-                    resize();
                 } break;
                 case 'animation': {
                     animation.toggle();
@@ -1037,16 +1030,16 @@
                  1 + 0.1 * event.deltaY);
         });
         var downEvent = function(event) {
-            var targets = ripple.createTouches(event);
+            var targets = ripple.getInputPoints(self, event);
             ripple.hide(menu);
             if (event.which > 1) {
                 // Reserve right and middle clicks for browser menus
                 return true;
-            } else if (targets.current.length > 1) {
+            } else if (targets.targets && targets.targets.length > 1) {
                 tap = targets;
-                if (targets.current.length == 2) {
-                    var t0 = targets.current[0];
-                    var t1 = targets.current[1];
+                if (targets.targets.length == 2) {
+                    var t0 = targets.targets[0];
+                    var t1 = targets.targets[1];
                     zooming = {
                         diameter: Math.sqrt(sqdist(t0, t1)),
                         x: (t0.x + t1.x) / 2, y: (t0.y + t1.y) / 2,
@@ -1083,7 +1076,7 @@
         var moveEvent = function(event) {
             if (drag) {
                 animation.stop();
-                tap = ripple.createTouches(event);
+                tap = ripple.getInputPoints(self, event);
                 var goff = instance.offset();
                 instance.offset(goff.left + tap.x - drag.x,
                                 goff.top + tap.y - drag.y);
@@ -1094,11 +1087,11 @@
             }
             if (zooming) {
                 animation.stop();
-                var targets = ripple.createTouches(event);
+                var targets = ripple.getInputPoints(self, event);
                 var factor;
-                if (zooming.diameter && targets.current.length == 2) {
-                    var t0 = targets.current[0];
-                    var t1 = targets.current[1];
+                if (zooming.diameter && targets.targets.length == 2) {
+                    var t0 = targets.targets[0];
+                    var t1 = targets.targets[1];
                     var diameter = Math.sqrt(sqdist(t0, t1));
                     factor = diameter / zooming.diameter;
                 }

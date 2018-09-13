@@ -6,23 +6,28 @@
 <meta http-equiv="X-UA-Compatible" content="chrome=1">
 <title>Grid Test</title>
 <style>
-    html, body
-    { padding: 0; margin: 0; overflow: hidden; position: relative; }
-    canvas { background: white; color: #336; }
-    .menu {
-      position: absolute; padding: 0.5em;
-      background: #333; color: white;
-      border: 2px solid white; border-radius: 5px;
-      list-style-type: none; list-style-position: outside;
-    }
-    .menu a { text-decoration: none; color: white; }
-    .menu li { padding: 0.5em; border-radius: 5px; }
-    .menu li:hover { background: #55e; }
+ html, body {
+     padding: 0; margin: 0; overflow: hidden;
+     position: relative; background: gray;
+ }
+ canvas { background: white; color: #336; }
+ .menu {
+     position: absolute; padding: 0.5em;
+     background: #333; color: white;
+     border: 2px solid white; border-radius: 5px;
+     list-style-type: none; list-style-position: outside;
+ }
+ .menu a { text-decoration: none; color: white; }
+ .menu li { padding: 0.5em; border-radius: 5px; }
+ .menu li:hover { background: #55e; }
+ #container { height: 90vh; margin: 2% 2%; }
 </style>
+<div id="container"></div>
 
 <script src="ripple/context.js"></script>
 <script src="ripple/ripple.js"></script>
 <script src="ripple/grid.js"></script>
 <script>//<![CDATA[
- ripple.ready(function() { grid.test(); });
-//]]></script>
+ ripple.ready(function() {
+     grid.test(document.getElementById('container'));
+ }); //]]></script>
