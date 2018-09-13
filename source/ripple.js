@@ -932,24 +932,51 @@ if (typeof require !== 'undefined') (function(ripple) {
         }
     };
 
-    // TODO create a simple programming language for handling
-    // user scripts
-    ripple.eval = function() {
-        var index;
-        for (index = 0; index < arguments.length; ++index)
-            arguments[index];
+    ripple.expression = function(value) {
+        if (!(this instanceof ripple.expression))
+            return new ripple.expression(value);
+
+        var states = {
+            START: 1
+        };
+        if (typeof(value) === 'string') {
+            var state = states.START;
+            for (var ii = 0; ii < value.length; ++ii) {
+                var current = value[ii];
+                if (/\s/.test(current))
+                    continue;
+
+                switch (state) {
+                    case states.START:
+                        break;
+                    default:
+                }
+            }
+        }
+        // "x^2 + 2x - 4"
+        //  ==>  [{variable: "x", exponent: 2, coefficient: 1},
+        //        {variable: "x", exponent: 1, coefficient: 2},
+        //        {variable: undefined, exponent: 1, coefficient: -4}]
+        // "(x - 2)(x + 2)"
+        //  ==>  [{product: [{variable: "x"}, {coefficient: -2}],
+        //                  [{variable: "x"}, {coefficient: 2}]]
     };
+    ripple.expression.prototype.evaluate = function(config) {
+        // Return a number if the config parameter resolves all
+        // unbound varibles or an expression (with as many variables
+        // resolved as possible) if not.
+    };
+
 })(typeof exports === 'undefined' ? this.ripple = {} : exports);
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
     var ripple = exports;
-    var index;
-    var tests = [
-        ['2'], ['+'], ['foo'], ['foo', {'foo': 7}],
-        ['(+ 7 5)'], ['(* 2, (+ (sqrt 16) 4))'],
-        ['(sqr 7)', {'sqr': function(x) { return x * x; }}]
-    ];
-    for (index = 0; index < tests.length; ++index)
-        console.log(JSON.stringify(tests[index]) + ' -> ' +
-                    ripple.eval.apply(ripple.eval, tests[index]));
+
+    [
+        'x^2 + 2x - 4',
+        '(x - 2)(x + 2)'
+    ].forEach(function(value) {
+        var expression = ripple.expression(value);
+        console.log(expression);
+    });
 }
