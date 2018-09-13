@@ -98,8 +98,13 @@
         var ii;
 
         if (attrs) Object.keys(attrs).forEach(function(attr) {
-            if ((attr === 'style') &&
+            if ((attr === 'data') &&
                 (typeof(attrs[attr]) === 'object')) {
+                Object.keys(attrs[attr]).forEach(function(entry) {
+                    result.setAttribute(
+                        'data-' + entry, attrs[attr][entry]); });
+            } else if ((attr === 'style') &&
+                       (typeof(attrs[attr]) === 'object')) {
                 Object.keys(attrs[attr]).forEach(function(entry) {
                     result.style[entry] = attrs[attr][entry]; });
             } else result.setAttribute(attr, attrs[attr]); });

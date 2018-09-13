@@ -724,8 +724,11 @@
         return result;
     };
 
-    grid.test = function($, parent, viewport) {
-        var self = $('<canvas></canvas>').appendTo(parent);
+    grid.test = function(parent, viewport) {
+        var self = document.createElement('canvas');
+        if (!parent)
+            parent = document.body;
+        parent.appendChild(self);
         var colorTapInner = 'rgba(45, 45, 128, 0.8)';
         var colorTapOuter = 'rgba(128, 255, 128, 0.6)';
         var colorSelected = 'rgba(192, 192, 0, 0.6)';
@@ -735,110 +738,120 @@
         var instance;
         var tap, selected, drag, zooming, gesture, press = 0;
 
+        if (!viewport)
+            viewport = (typeof(window) !== 'undefined') ?
+                       window : parent;
+
         var draw_id = 0;
         var draw = function() {
-            var ctx, width, height, color;
+            if (!self.getContext) {
+                alert('ERROR: canvas has no getContext');
+                return;
+            }
+            var ctx = self.getContext('2d');
+            var width = self.clientWidth;
+            var height = self.clientHeight;
+            var style = getComputedStyle(self);
+            var color = (style.color === 'transparent') ?
+                        'white' : style.color;
             var points, last, index;
             var neighbors, vector, radius;
 
-            if (self[0].getContext) {
-                ctx = self[0].getContext('2d');
-                width = self.width();
-                height = self.height();
-                color = (self.css('color') == 'transparent' ?
-                         'white' : self.css('color'));
-                ctx.save();
-                ctx.clearRect(0, 0, width, height);
-
-                // Create a grid
-                ctx.beginPath();
-                ctx.lineWidth = lineWidth;
-                ctx.textAlign = 'center';
-                ctx.font = 'bold ' + 12 + 'pt sans-serif';
-                instance.map(width, height, function(node) {
-                    instance.draw(ctx, node); });
-                ctx.fillStyle = self.css('background-color');
-                ctx.fill();
-                ctx.strokeStyle = color;
-                ctx.stroke();
-                if (combined)
-                    instance.map(width, height, function(node) {
-                        ctx.fillStyle = color;
-                        ctx.fillText(
-                            ripple.pair(node.row, node.col),
-                            node.x, node.y);
-                    });
-                else if (numbers)
-                    instance.map(width, height, function(node) {
-                        ctx.fillStyle = color;
-                        ctx.fillText('(' + node.row + ', ' +
-                                     node.col + ')', node.x, node.y);
-                    });
-
-                if (selected) {
-                    // Coordinates of the selected square must be
-                    // updated in case the grid offsets have moved
-                    // since the last draw call.
-                    ctx.beginPath();
-                    instance.draw(ctx, instance.coordinate(selected));
-                    ctx.fillStyle = colorSelected;
-                    ctx.fill();
-
-                    neighbors = instance.neighbors(
-                        selected, {coordinates: true, points: true});
-                    ctx.beginPath();
-                    neighbors.forEach(function(neighbor) {
-                        instance.draw(ctx, neighbor); });
-                    ctx.fillStyle = colorNeighbor;
-                    ctx.fill();
-
-                    var colors = [
-                        'red', 'green', 'blue', 'cyan', 'magenta',
-                        'yellow', 'black', 'white'];
-                    neighbors.forEach(function(neighbor, index) {
-                        var points = neighbor.points;
-
-                        ctx.beginPath();
-                        if (points.length > 1) {
-                            vector = {x: points[1].x - points[0].x,
-                                      y: points[1].y - points[0].y};
-                            ctx.moveTo(points[0].x + 0.25 * vector.x,
-                                       points[0].y + 0.25 * vector.y);
-                            ctx.lineTo(points[0].x + 0.75 * vector.x,
-                                       points[0].y + 0.75 * vector.y);
-                        } else if (points.length === 1) {
-                            radius = lineWidth * 5;
-                            ctx.moveTo(points[0].x + radius,
-                                       points[0].y);
-                            ctx.arc(points[0].x, points[0].y,
-                                    radius, 0, 2 * Math.PI);
-                        }
-                        ctx.moveTo(neighbor.x + lineWidth * 2,
-                                   neighbor.y);
-                        ctx.arc(neighbor.x, neighbor.y,
-                                lineWidth * 2, 0, 2 * Math.PI);
-
-                        ctx.strokeStyle = colors[index % colors.length];
-                        ctx.stroke();
-                    });
-                }
-                if (tap) {
-                    for (index = 0; index < tap.current.length;
-                         ++index) {
-                        ctx.beginPath();
-                        ctx.arc(tap.current[index].x,
-                                tap.current[index].y,
-                                20, 0, 2 * Math.PI);
-                        ctx.fillStyle = colorTapOuter;
-                        ctx.fill();
-                    }
-                    ctx.beginPath();
-                    ctx.arc(tap.x, tap.y, 10, 0, 2 * Math.PI);
-                    ctx.fillStyle = colorTapInner;
-                    ctx.fill();
-                }
-                ctx.restore();
+            if (!instance) {
+                instance = grid.create({width: width, height: height});
+                lineWidth = instance.size() / lineFactor;
             }
+
+            ctx.save();
+            ctx.clearRect(0, 0, width, height);
+
+            // Create a grid
+            ctx.beginPath();
+            ctx.lineWidth = lineWidth;
+            ctx.textAlign = 'center';
+            ctx.font = 'bold ' + 12 + 'pt sans-serif';
+            instance.map(width, height, function(node) {
+                instance.draw(ctx, node); });
+            ctx.fillStyle = style['background-color'];
+            ctx.fill();
+            ctx.strokeStyle = color;
+            ctx.stroke();
+            if (combined)
+                instance.map(width, height, function(node) {
+                    ctx.fillStyle = color;
+                    ctx.fillText(
+                        ripple.pair(node.row, node.col),
+                        node.x, node.y);
+                });
+            else if (numbers)
+                instance.map(width, height, function(node) {
+                    ctx.fillStyle = color;
+                    ctx.fillText('(' + node.row + ', ' +
+                                 node.col + ')', node.x, node.y);
+                });
+
+            if (selected) {
+                // Coordinates of the selected square must be
+                // updated in case the grid offsets have moved
+                // since the last draw call.
+                ctx.beginPath();
+                instance.draw(ctx, instance.coordinate(selected));
+                ctx.fillStyle = colorSelected;
+                ctx.fill();
+
+                neighbors = instance.neighbors(
+                    selected, {coordinates: true, points: true});
+                ctx.beginPath();
+                neighbors.forEach(function(neighbor) {
+                    instance.draw(ctx, neighbor); });
+                ctx.fillStyle = colorNeighbor;
+                ctx.fill();
+
+                var colors = [
+                    'red', 'green', 'blue', 'cyan', 'magenta',
+                    'yellow', 'black', 'white'];
+                neighbors.forEach(function(neighbor, index) {
+                    var points = neighbor.points;
+
+                    ctx.beginPath();
+                    if (points.length > 1) {
+                        vector = {x: points[1].x - points[0].x,
+                                  y: points[1].y - points[0].y};
+                        ctx.moveTo(points[0].x + 0.25 * vector.x,
+                                   points[0].y + 0.25 * vector.y);
+                        ctx.lineTo(points[0].x + 0.75 * vector.x,
+                                   points[0].y + 0.75 * vector.y);
+                    } else if (points.length === 1) {
+                        radius = lineWidth * 5;
+                        ctx.moveTo(points[0].x + radius,
+                                   points[0].y);
+                        ctx.arc(points[0].x, points[0].y,
+                                radius, 0, 2 * Math.PI);
+                    }
+                    ctx.moveTo(neighbor.x + lineWidth * 2,
+                               neighbor.y);
+                    ctx.arc(neighbor.x, neighbor.y,
+                            lineWidth * 2, 0, 2 * Math.PI);
+
+                    ctx.strokeStyle = colors[index % colors.length];
+                    ctx.stroke();
+                });
+            }
+            if (tap) {
+                for (index = 0; index < tap.current.length; ++index) {
+                    ctx.beginPath();
+                    ctx.arc(tap.current[index].x,
+                            tap.current[index].y,
+                            20, 0, 2 * Math.PI);
+                    ctx.fillStyle = colorTapOuter;
+                    ctx.fill();
+                }
+                ctx.beginPath();
+                ctx.arc(tap.x, tap.y, 10, 0, 2 * Math.PI);
+                ctx.fillStyle = colorTapInner;
+                ctx.fill();
+            }
+            ctx.restore();
             draw_id = 0;
         };
         var redraw = function()
@@ -846,25 +859,14 @@
 
         var resize = function(event) {
             // Consume enough space to fill the viewport.
-            self.height(viewport.height());
-            self.width(viewport.width());
-
-            // A canvas has a height and a width that are part of the
-            // document object model but also separate height and
-            // width attributes which determine how many pixels are
-            // part of the canvas itself.  Keeping the two in sync
-            // is essential to avoid ugly stretching effects.
-            self.attr("width", self.innerWidth());
-            self.attr("height", self.innerHeight());
+            self.height = viewport.innerHeight || viewport.clientHeight;
+            self.width = viewport.innerWidth || viewport.clientWidth;
 
             zooming = drag = undefined;
             redraw();
         };
-        viewport.resize(resize);
-        resize();
-        instance = grid.create({width: self.width(),
-                                height: self.height()});
-        lineWidth = instance.size() / lineFactor;
+        viewport.addEventListener('resize', resize);
+        viewport.dispatchEvent(new Event('resize'));
 
         var animation = new (function() {
             var id, current, start, stop, limit = 60000;
@@ -923,43 +925,51 @@
         })();
 
         // Populate menu with available grid types
-        var menu = $('<ul class="menu"></ul>').hide();
-        menu.appendTo(self.parent());
+        var menu = ripple.hide(ripple.createElement(
+            'ul', {'class': 'menu'}));
+        self.parentElement.appendChild(menu);
         grid.canonical.forEach(function (entry) {
             var options = JSON.stringify(entry);
-            menu.append('<li data-grid-type="' + entry.name +
-                        '" data-grid-options="' +
-                         (options.replace(/"/g, '&#34;')
-                                 .replace(/'/g, '&#39;')) +
-                        '">' + entry.name + '</li>');
+            menu.appendChild(ripple.createElement(
+                'li', {
+                    data: {'grid-type': entry.name,
+                           'grid-options': options}},
+                entry.name));
         });
-        menu.append('<hr />');
-        menu.append('<li data-action="animation">' +
-                    'Toggle Animation</li>');
-        menu.append('<li data-action="numbers">' +
-                    'Toggle Numbers</li>');
-        menu.append('<li data-action="colors">' +
-                    'Swap Colors</li>');
-        menu.append('<li data-action="full-screen">Full Screen</li>');
-        menu.on('click', 'li', function(event) {
-            menu.hide();
-            var gtype = this.getAttribute('data-grid-type');
-            if (gtype) {
+        menu.appendChild(document.createElement('hr'));
+        menu.appendChild(ripple.createElement(
+            'li', {data: {action: "animation"}}, 'Toggle Animation'));
+        menu.appendChild(ripple.createElement(
+            'li', {data: {action: "numbers"}}, 'Toggle Numbers'));
+        menu.appendChild(ripple.createElement(
+            'li', {data: {action: "colors"}}, 'Swap Colors'));
+        menu.appendChild(ripple.createElement(
+            'li', {data: {action: "full-screen"}}, 'Full Screen'));
+        menu.addEventListener('click',function(event) {
+            if (event.target.tagName.toLowerCase() !== 'li')
+                return false;
+            ripple.hide(menu);
+            var gridType = event.target.getAttribute('data-grid-type');
+            if (gridType) {
                 tap = undefined; selected = undefined;
-                var options = JSON.parse(
-                    this.getAttribute('data-grid-options'));
+
+                var foo = event.target.getAttribute('data-grid-options');
+                console.log('DEBUG-options', foo, '|||', typeof(foo),
+                '|||', decodeURIComponent(foo));
+                var options = JSON.parse(decodeURIComponent(
+                    event.target.getAttribute('data-grid-options')));
                 if (!options)
-                    options = {type: gtype};
-                options.width  = self.width();
-                options.height = self.height();
+                    options = {type: gridType};
+                options.width  = self.clientWidth;
+                options.height = self.clientHeight;
                 instance = grid.create(options);
                 lineWidth = instance.size() / lineFactor;
                 redraw();
             }
 
-            switch (this.getAttribute('data-action')) {
+            switch (event.target.getAttribute('data-action')) {
                 case 'full-screen': {
-                    $.toggleFullscreen(self.parent().get(0));
+                    ripple.toggleFullscreen(self.parentElement);
                     resize();
                 } break;
                 case 'animation': {
@@ -974,10 +984,10 @@
                     redraw();
                 } break;
                 case 'colors': {
-                    var foreground = self.css('color');
-                    var background = self.css('background-color');
-                    self.css({color: background,
-                              "background-color": foreground});
+                    var style = getComputedStyle(self);
+                    var swap = style.color;
+                    self.style.color = style['background-color'];
+                    self.style['background-color'] = swap;
                     redraw();
                 } break;
             }
@@ -985,7 +995,9 @@
 
         // Show grid menu at event location
         var menuate = function(tap) {
-            menu.css('top', 10).css('left', 25).show();
+            menu.style.top = 10 + 'px';
+            menu.style.left = 25 + 'px';
+            ripple.show(menu);
             drag = undefined;
         };
 
@@ -999,7 +1011,7 @@
 
             if (factor && factor > 0) {
                 var screenSize = Math.min(
-                    self.attr('width'), self.attr('height'));
+                    self.clientWidth, self.clientHeight);
                 if ((size * factor > (screenSize / 50)) &&
                     (size * factor < screenSize)) {
                     instance.offset((left - x) * factor + x,
@@ -1012,18 +1024,21 @@
         };
 
         // Process mouse and touch events on grid itself
-        self.on('mousewheel', function(event) {
+        ripple.addWheelListener(self, function(event) {
             var offset = instance.offset();
             var x, y;
             if (tap) {
                 x = tap.x; y = tap.y;
-            } else { x = self.width() / 2; y = self.height() / 2; }
+            } else {
+                x = self.clientWidth / 2;
+                y = self.clientHeight / 2;
+            }
             zoom(offset.left, offset.top, instance.size(), x, y,
                  1 + 0.1 * event.deltaY);
         });
-        self.on('mousedown touchstart', function(event) {
+        var downEvent = function(event) {
             var targets = ripple.createTouches(event);
-            menu.hide();
+            ripple.hide(menu);
             if (event.which > 1) {
                 // Reserve right and middle clicks for browser menus
                 return true;
@@ -1062,8 +1077,10 @@
 
             redraw();
             return false;
-        });
-        self.on('mousemove touchmove', function(event) {
+        };
+        self.addEventListener('mousedown', downEvent);
+        self.addEventListener('touchstart', downEvent);
+        var moveEvent = function(event) {
             if (drag) {
                 animation.stop();
                 tap = ripple.createTouches(event);
@@ -1091,12 +1108,17 @@
                          zooming.x, zooming.y, factor);
             }
             return false;
-        });
-        self.on('mouseleave mouseup touchend', function(event) {
+        };
+        self.addEventListener('mousemove', moveEvent);
+        self.addEventListener('touchmove', moveEvent);
+        var upEvent = function(event) {
             drag = zooming = undefined;
             if (press) { clearTimeout(press); press = 0; }
             return false;
-        });
+        };
+        self.addEventListener('mouseleave', upEvent);
+        self.addEventListener('mouseup', upEvent);
+        self.addEventListener('touchend', upEvent);
     };
 
 }).call(this, typeof exports === 'undefined' ?

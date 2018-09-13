@@ -20,17 +20,9 @@
     .menu li:hover { background: #55e; }
 </style>
 
-<script src="lib/jquery.min.js"></script>
-<script src="lib/jquery.mousewheel.js"></script>
-<!--[if lt IE 9]><script>//<![CDATA[
-  jQuery(function($) {
-     $.getScript('http://ajax.googleapis.com/ajax/libs/' +
-                 'chrome-frame/1/CFInstall.min.js',
-                 function() { CFInstall.check(); }); });
-//]]></script><![endif]-->
 <script src="ripple/context.js"></script>
 <script src="ripple/ripple.js"></script>
 <script src="ripple/grid.js"></script>
 <script>//<![CDATA[
-jQuery(function($) { grid.test($, $('body'), $(window)); });
+ ripple.ready(function() { grid.test(); });
 //]]></script>
