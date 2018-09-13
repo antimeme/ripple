@@ -25,6 +25,19 @@
         create: function(config) { // Returns a new ship
             var result = Object.create(this);
 
+            result.name = (config && config.name) ?
+                          config.name : 'Ship';
+            result.grid = grid.create(
+                (config && config.grid) ? config.grid :
+                { type: 'hex', size: 10 });
+
+
+            // Ship undo system: each call to setCell or setBoundary
+            // pushes an undo entry.  Callers should call undoIncrement
+            // after each complete change and call undo to step back.
+            result.__undo = [];
+            result.__undoCounter = 0;
+
             // Extract cells from configuration if possible
             result.__cells = {};
             if (config && config.cells)
@@ -38,12 +51,77 @@
                     result.__boundaries[key] = config.boundaries[key];
                 });
 
-            result.name = (config && config.name) ?
-                          config.name : 'Ship';
-            result.grid = grid.create(
-                (config && config.grid) ? config.grid :
-                { type: 'hex', size: 10 });
+            return result;
+        },
 
+        __indexCell: function(node) {
+            return ripple.pair(node.col, node.row);
+        },
+        __unindexCell: function(id) {
+            var pair = ripple.unpair(id);
+            return {row: pair.y, col: pair.x};
+        },
+        __indexBoundary: function(nodeA, nodeB) {
+            var indexA = this.__indexCell(nodeA);
+            var indexB = this.__indexCell(nodeB);
+            var swap;
+
+            if (indexA > indexB) {
+                swap = indexA;
+                indexA = indexB;
+                indexB = swap;
+            }
+            return ripple.pair(indexA, indexB);
+        },
+        __unindexBoundary: function(id) {
+            var pair = ripple.unpair(id);
+            return {nodeA: this.__unindexCell(pair.x),
+                    nodeB: this.__unindexCell(pair.y)};
+        },
+
+        __pushUndo: function(entry) {
+            entry.id = this.__undoCounter;
+            this.__undo.push(entry);
+        },
+
+        __safeDelete(id) {
+            // Return true iff deleting the specified cell would
+            // preserve the following invariants:
+            // - At least once cell is active
+            // - All cells are connected by a chain of neighbors
+            // We assume these hold before and must return true exactly
+            // when they would hold true after deletion
+            var result = false;
+            var queue = [], visited = {}, current;
+            var target = this.__unindexCell(id);
+            var count = Object.keys(this.__cells).length;
+
+            if ((count > 1) && (id in this.__cells) &&
+                this.grid.neighbors(target).some(
+                    function(neigh) {
+                        neigh.id = this.__indexCell(neigh);
+                        if (neigh.id in this.__cells) {
+                            queue.push(neigh);
+                            return true;
+                        } else return false; }, this)) {
+                while (queue.length > 0) {
+                    current = queue.pop();
+                    if (current.id in visited)
+                        continue;
+                    visited[current.id] = true;
+
+                    this.grid.neighbors(current).forEach(
+                        function(neigh) {
+                            neigh.id = this.__indexCell(neigh);
+                            if (!(this.id in visited) &&
+                                (neigh.id !== id) &&
+                                (neigh.id in this.__cells))
+                                queue.push(neigh);
+                        }, this);
+                }
+                if (Object.keys(visited).length + 1 == count)
+                    result = true;
+            }
             return result;
         },
 
@@ -51,19 +129,28 @@
             return this.__cells[this.__indexCell(node)];
         },
 
-        setCell: function(node, value) {
+        setCell: function(node, value, noUndo) {
             var id = this.__indexCell(node);
+            var undo = noUndo ? null :
+                       {cell: id, value: this.__cells[id]};
 
             if (value) {
+                // Force extent recalculation when expanding the
+                // footprint of a ship
                 if (!(id in this.__cells))
                     this.__extents = undefined;
+                else if (value == this.__cells[id])
+                    undo = null;
                 this.__cells[id] = value;
             } else if (this.__safeDelete(id)) {
                 this.grid.neighbors(node).forEach(function(neigh) {
                     this.setBoundary(node, neigh); }, this);
-                this.__extents = undefined;
                 delete this.__cells[id];
-            }
+                this.__extents = undefined;
+            } else undo = null;
+
+            if (undo)
+                this.__pushUndo(undo);
             return this;
         },
 
@@ -79,8 +166,10 @@
                 this.__indexBoundary(nodeA, nodeB)];
         },
 
-        setBoundary: function(nodeA, nodeB, value) {
+        setBoundary: function(nodeA, nodeB, value, noUndo) {
             var id = this.__indexBoundary(nodeA, nodeB);
+            var undo = noUndo ? null :
+                       {boundary: id, value: this.__boundaries[id]};
 
             if ((this.__indexCell(nodeA) in this.__cells) &&
                 (this.__indexCell(nodeB) in this.__cells) &&
@@ -88,8 +177,43 @@
                 if (value)
                     this.__boundaries[id] = value;
                 else delete this.__boundaries[id];
-            }
+            } else undo = null;
+
+            if (undo)
+                this.__pushUndo(undo);
             return this;
+        },
+
+        undo: function() { // Reverts the most recent change
+            if (this.__undoCounter <= 0)
+                return;
+            --this.__undoCounter;
+            var hardStop = 20;
+            while ((this.__undo.length > 0) &&
+                   (this.__undo[this.__undo.length - 1].id ===
+                       this.__undoCounter)) {
+                var entry = this.__undo.pop();
+                if (!isNaN(entry.cell))
+                    this.setCell(
+                        this.__unindexCell(entry.cell),
+                        entry.value, true);
+                else if (!isNaN(entry.boundary)) {
+                    var boundary = this.__unindexBoundary(
+                        entry.boundary);
+                    this.setBoundary(
+                        boundary.nodeA, boundary.nodeB,
+                        entry.value, true);
+                }
+            }
+        },
+
+        undoIncrement: function() {
+            // Collects all as-yet-unmarked changes into a single undo
+            // event that can be unwound.
+            if ((this.__undo.length > 0) &&
+                (this.__undo[this.__undo.length - 1].id ===
+                    this.__undoCounter))
+                this.__undoCounter++;
         },
 
         mass: function() { // TODO
@@ -203,71 +327,6 @@
             return this.__extents;
         },
 
-        __indexCell: function(node) {
-            return ripple.pair(node.col, node.row);
-        },
-        __unindexCell: function(id) {
-            var pair = ripple.unpair(id);
-            return {row: pair.y, col: pair.x};
-        },
-        __indexBoundary: function(nodeA, nodeB) {
-            var indexA = this.__indexCell(nodeA);
-            var indexB = this.__indexCell(nodeB);
-            var swap;
-
-            if (indexA > indexB) {
-                swap = indexA;
-                indexA = indexB;
-                indexB = swap;
-            }
-            return ripple.pair(indexA, indexB);
-        },
-        __unindexBoundary: function(id) {
-            var pair = ripple.unpair(id);
-            return {nodeA: this.__unindexCell(pair.x),
-                    nodeB: this.__unindexCell(pair.y)};
-        },
-
-        __safeDelete(id) {
-            // Return true iff deleting the specified cell would
-            // preserve the following invariants:
-            // - At least once cell is active
-            // - All cells are connected by a chain of neighbors
-            // We can assume these hold before and must guarantee
-            // that they hold after deletion when returning true
-            var result = false;
-            var queue = [], visited = {}, current;
-            var target = this.__unindexCell(id);
-            var count = Object.keys(this.__cells).length;
-
-            if ((count > 1) && (id in this.__cells) &&
-                this.grid.neighbors(target).some(
-                    function(neigh) {
-                        neigh.id = this.__indexCell(neigh);
-                        if (neigh.id in this.__cells) {
-                            queue.push(neigh);
-                            return true;
-                        } else return false; }, this)) {
-                while (queue.length > 0) {
-                    current = queue.pop();
-                    if (current.id in visited)
-                        continue;
-                    visited[current.id] = true;
-
-                    this.grid.neighbors(current).forEach(
-                        function(neigh) {
-                            neigh.id = this.__indexCell(neigh);
-                            if (!(this.id in visited) &&
-                                (neigh.id !== id) &&
-                                (neigh.id in this.__cells))
-                                queue.push(neigh);
-                        }, this);
-                }
-                if (Object.keys(visited).length + 1 == count)
-                    result = true;
-            }
-            return result;
-        }
     }
 
     streya.game = function(data) {
@@ -276,14 +335,11 @@
         var colorSelected = 'rgba(192, 192, 0, 0.2)';
         var menu = document.createElement('ul');
         var menuframe = ripple.createElement(
-            'fieldset', null, ripple.createElement(
+            'fieldset', {'class': 'streya-menu', style: {
+                position: 'absolute', top: 10, left: 25,
+                'z-order': 2
+            }}, ripple.createElement(
                 'legend', null, 'Streya Menu'), menu);
-        menuframe.setAttribute('class', 'streya-menu');
-        menuframe.style.position = 'absolute';
-        menuframe.style.top = 10;
-        menuframe.style.left = 25;
-        menuframe.style['z-order'] = 2;
-
         menuframe.addEventListener('click', function(event) {
             if (event.target.tagName.toLowerCase() === 'legend')
                 ripple.toggleVisible(menu);
@@ -366,7 +422,6 @@
                                         queue.push(neigh);
                                     });
                             }
-
                             ship.setCell(selected, {});
                         }
                     } else if (mode.value === 'remove' && cell) {
@@ -386,6 +441,7 @@
                             selected, previous,
                             modeParam.value);
                     }
+                    ship.undoIncrement();
                 },
                 drag: function(start, last, current) {
                     tform.pan({
@@ -413,7 +469,7 @@
                                 ship.grid.coordinate(node));
                             if (!candidate ||
                                 (player.position.minus(candidate)
-                                    .normSquared() >
+                                       .normSquared() >
                                     player.position.minus(node)
                                           .normSquared()))
                                 candidate = node;
@@ -553,11 +609,11 @@
                     if (shipElements[key].internal ||
                         shipElements[key].disable ||
                         !shipElements[key].boundary)
-                            return;
-                        modeParam.appendChild(ripple.createElement(
-                            'option', {value: shipElements[
-                                key].boundary}, key));
-                    });
+                        return;
+                    modeParam.appendChild(ripple.createElement(
+                        'option', {value: shipElements[
+                            key].boundary}, key));
+                });
                 ripple.show(modeParam);
             }
         });
@@ -625,6 +681,8 @@
         menu.appendChild(ripple.createElement('li', {
             'data-action': 'center'}, 'Center View'));
         menu.appendChild(ripple.createElement('li', {
+            'data-action': 'undo'}, 'Undo'));
+        menu.appendChild(ripple.createElement('li', {
             'data-action': 'full-screen'}, 'Full Screen'));
         menu.appendChild(ripple.createElement('li', {
             'data-action': 'save'}, 'Save Ship'));
@@ -638,10 +696,11 @@
                 return;
 
             switch (target.getAttribute('data-action')) {
+                case 'center': { game.center(); redraw(); } break;
+                case 'undo': { ship.undo(); redraw(); } break;
                 case 'save': {
                     ripple.downloadJSON(ship.save(), ship.name);
                 } break;
-                case 'center': { game.center(); redraw(); } break;
                 case 'tour': {
                     system = systems.tour;
                     if (system.start)
@@ -791,6 +850,7 @@
             // Center the ship to get a good overall view
             center: function() {
                 var extents = ship.extents();
+                console.log('DEBUG-center', this.width, this.height, extents);
                 tform.reset();
                 tform.pan({ x: (extents.sx + extents.ex) / 2,
                             y: (extents.sy + extents.ey) / 2 });
@@ -829,7 +889,7 @@
         // Calculate square distance
         var sqdist = function(node1, node2) {
             return ((node2.x - node1.x) * (node2.x - node1.x) +
-                           (node2.y - node1.y) * (node2.y - node1.y));
+                            (node2.y - node1.y) * (node2.y - node1.y));
         };
 
         return game;
