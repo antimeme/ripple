@@ -198,7 +198,7 @@
         if (points.length > 0) {
             last = points[points.length - 1];
             ctx.moveTo(last.x, last.y);
-            for (index in points)
+            for (var index in points)
                 ctx.lineTo(points[index].x,
                            points[index].y);
         } else if (points.length === 1) {
