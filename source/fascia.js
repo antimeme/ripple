@@ -654,22 +654,22 @@
             } else this.otherPane.find('button').addClass('selected');
         };
 
-        this.pane = ripple.createElement('div', {style: {display: 'none'}});
-        this.pane.className = 'page inventory';
+        this.pane = ripple.createElement(
+            'div', {'class': 'page inventory', style: {display: 'none'}});
         container.appendChild(this.pane);
+
         this.header = ripple.createElement('div', {
-            'class': 'inventory-header'});
-        this.header.appendChild(ripple.createElement(
-            'div', {'class': 'bbar'},
-            this.imageSystem.createButton(
-                {icon: 'close', className: 'inventory-close'},
-                function(event) { this.hide(); }, this),
-            this.imageSystem.createButton(
-                {icon: 'take', className: 'inventory-givetake'},
-                take, this),
-            this.imageSystem.createButton(
-                {icon: 'give', className: 'inventory-givetake'},
-                give, this)
+            'class': 'inventory-header'}, ripple.createElement(
+                'div', {'class': 'bbar'},
+                this.imageSystem.createButton(
+                    {icon: 'close', className: 'inventory-close'},
+                    function(event) { this.hide(); }, this),
+                this.imageSystem.createButton(
+                    {icon: 'take', className: 'inventory-givetake'},
+                    take, this),
+                this.imageSystem.createButton(
+                    {icon: 'give', className: 'inventory-givetake'},
+                    give, this)
         ));
         this.pane.appendChild(this.header);
         this.playerPane = ripple.createElement(
@@ -825,7 +825,7 @@
         var redraw = function()
         { if (!draw_id) draw_id = requestAnimationFrame(draw); };
 
-        var resize = function(event) {
+        viewport.addEventListener('resize', function(event) {
             var width = viewport.innerWidth || viewport.clientWidth;
             var height = viewport.innerHeight || viewport.clientHeight;
 
@@ -837,12 +837,10 @@
             if (app.resize)
                 app.resize(width, height);
             redraw();
-        };
-
+        });
+        viewport.dispatchEvent(new Event('resize'));
         if (app.init)
             app.init(container, viewport, redraw);
-        viewport.addEventListener('resize', resize);
-        viewport.dispatchEvent(new Event('resize'));
 
         var g = ripple.gestur({
             next: true,
