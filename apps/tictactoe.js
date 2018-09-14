@@ -135,16 +135,22 @@
         return state;
     };
 
-    tictactoe.go = function($, container) {
+    tictactoe.go = function(container) {
         var state = __clear();
         var ai = ai_opportune;
         var player = 1;
-        var board = $('<canvas>').attr({
-            'class': 'board'
-        }).css({
-            width: 320, height: 320, margin: 'auto', display: 'block',
-            color: '#222', background: '#ddd'
-        }).appendTo(container);
+        var board = document.createElement('canvas');
+        board.setAttribute('class', 'board');
+        board.width = 320;
+        board.height = 320;
+        board.style.width = 320 + 'px';
+        board.style.height = 320 + 'px';
+        board.style.margin = 'auto';
+        board.style.display = 'block';
+        board.style.color = '#222';
+        board.style.background = '#ddd';
+        container.appendChild(board);
+
         var draw_id = 0;
         var draw = function() {
             var ctx, width, height, color, lineWidth;
@@ -153,14 +159,14 @@
             var ocolor = '#633';
             draw_id = 0;
 
-            if (board.get(0).getContext) {
-                width = board.width();
-                height = board.height();
+            if (board.getContext) {
+                width = board.clientWidth;
+                height = board.clientHeight;
                 lineWidth = (width > height) ?
                     (width / 50) : (height / 50);
-                color = board.css('color');
+                color = board.style.color;
 
-                ctx = board[0].getContext('2d');
+                ctx = board.getContext('2d');
                 ctx.save();
                 ctx.lineWidth = lineWidth;
                 ctx.clearRect(0, 0, width, height);
@@ -240,20 +246,16 @@
         };
         var redraw = function()
         { if (!draw_id) draw_id = requestAnimationFrame(draw); };
-        var resize = function(event) {
-            // A canvas has a height and a width that are part of the
-            // document object model but also separate height and
-            // width attributes which determine how many pixels are
-            // part of the canvas itself.  Keeping the two in sync
-            // is essential to avoid ugly stretching effects.
-            board.attr("width", board.innerWidth());
-            board.attr("height", board.innerHeight());
+        board.addEventListener('resize', function(event) {
+            //board.attr("width", board.clientWidth);
+            //board.attr("height", board.clientHeight);
 
             redraw();
-        };
-        board.on('click', function(event) {
-            var row = Math.floor(event.offsetY * 3 / board.height());
-            var col = Math.floor(event.offsetX * 3 / board.width());
+        });
+        board.dispatchEvent(new Event('resize'));
+        board.addEventListener('click', function(event) {
+            var row = Math.floor(event.offsetY * 3 / board.clientHeight);
+            var col = Math.floor(event.offsetX * 3 / board.clientWidth);
 
             if (!state.winner && !state.board[row * 3 + col]) {
                 state.board[row * 3 + col] = player;
@@ -265,8 +267,6 @@
                 redraw();
             }
         });
-        board.resize(resize);
-        resize();
         var reset = function() {
             state = __clear();
             if (player < 0)
@@ -274,39 +274,53 @@
             redraw();
         };
 
-        var bbar = $('<div>').css({
-            margin: 'auto', display: 'block', 'text-align': 'center'
-        }).appendTo(container);
+        var bbar = document.createElement('div');
+        bbar.style.margin = 'auto';
+        bbar.style.display = 'block';
+        bbar.style['text-align'] = 'center';
+        container.appendChild(bbar);
 
-        var btnReset = $('<button class="reset">Reset</button>').
-            css({margin: 'auto', display: 'inline-block'}).
-            appendTo(bbar);
-        btnReset.on('click', function() { reset(); });
+        var btnReset = document.createElement('button');
+        btnReset.setAttribute('class', 'reset');
+        btnReset.appendChild(document.createTextNode('Reset'));
+        btnReset.style.margin = 'auto';
+        btnReset.display = 'inline-block';
+        bbar.appendChild(btnReset);
+        btnReset.addEventListener('click', function() { reset(); });
 
-        var btnSwitch = $('<button class="reset">Switch</button>').
-            css({margin: 'auto', display: 'inline-block'}).
-            appendTo(bbar);
-        btnSwitch.on('click', function() {
+        var btnSwitch = document.createElement('button');
+        btnSwitch.setAttribute('class', 'reset');
+        btnSwitch.appendChild(document.createTextNode('Switch'));
+        btnSwitch.style.margin = 'auto';
+        btnSwitch.style.display = 'inline-block';
+        bbar.appendChild(btnSwitch);
+        btnSwitch.addEventListener('click', function() {
             player = -1 * player;
             reset();
         });
         
-        var aibar = $('<div>').css({
-            margin: 'auto', display: 'block', 'text-align': 'center'
-        }).appendTo(container);
-        var ailabel = $('<label>Opponent: </label>').appendTo(aibar);
-        var aiselect = $('<select>').appendTo(ailabel);
+        var aibar = document.createElement('div');
+        aibar.style.margin = 'auto';
+        aibar.style.display = 'block';
+        aibar.style['text-align'] = 'center';
+        container.appendChild(aibar);
+        var ailabel = document.createElement('label');
+        ailabel.appendChild(document.createTextNode('Opponent: '));
+        aibar.appendChild(ailabel);
+        var aiselect = document.createElement('select');
+        ailabel.appendChild(aiselect);
         Object.keys(ais).sort().forEach(function(value) {
             var vtitle = value.replace(/^[a-z]/, function(i) {
                 return i.toUpperCase(); });
-            var attrs = {value: value};
-            aiselect.append($('<option>' + vtitle +
-                              '</option>').attr(attrs));
+            var option = document.createElement('option');
+            option.appendChild(document.createTextNode(vtitle));
+            option.setAttribute('value', value);
+            aiselect.append(option);
             if (ais[value] === ai)
-                aiselect.val(value);
+                aiselect.value = value;
         });
-        aiselect.on('change', function(event) {
-            var chosen = $(event.target).val();
+        aiselect.addEventListener('change', function(event) {
+            var chosen = event.target.value;
             if (chosen in ais)
                 ai = ais[chosen];
         });
