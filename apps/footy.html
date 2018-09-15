@@ -5,16 +5,16 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <title>Footy</title>
 <style>
-    html, body
-    { padding: 0; margin: 0; overflow: hidden; position: relative; }
-    canvas { background: #060; color: white; touch-action: none; }
+ html, body
+ { padding: 0; margin: 0; overflow: hidden; position: relative; }
+ canvas { background: #060; color: white; touch-action: none; }
 </style>
-<canvas class="footy"></canvas>
+<canvas id="footy"></canvas>
 
-<script src="lib/jquery.min.js"></script>
-<script src="ripple/ripple.js"></script>
 <script src="ripple/context.js"></script>
+<script src="ripple/ripple.js"></script>
 <script src="footy.js"></script>
 <script>//<![CDATA[
-jQuery(function($) { $('canvas.footy').each(footy.setup); });
-//]]></script>
+ ripple.ready(function() {
+     footy.setup(document.getElementById('footy'));
+ }); //]]></script>

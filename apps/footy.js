@@ -8,9 +8,8 @@
     var margin = Math.max(3, parseFloat(
         ripple.param('margin')) || 20);
 
-    var setup = function(index, object) {
-        var self = $(object);
-        var viewport = $(window);
+    var setup = function(object) {
+        var self = object;
 
         var player_update = function(elapsed) {
             var step, steplen, fraction;
@@ -174,115 +173,104 @@
         var last_tap = 0;
         var draw_id = 0;
         var draw = function() {
-            var now = new Date().getTime();
+            var now = Date.now();
             var index, player, step, stepi;
             draw_id = 0;
 
-            if (self[0].getContext) {
-                var width = self.width();
-                var height = self.height();
-                var ctx = self[0].getContext('2d');
-                ctx.save();
-                ctx.clearRect(0, 0, width, height);
-                field.size(width, height).draw(ctx);
+            if (!self.getContext) {
+                alert('ERROR: canvas does not have getContext');
+                return;
+            }
+            self.height = window.innerHeight;
+            self.width = window.innerWidth;
+            var width = self.clientWidth;
+            var height = self.clientHeight;
+            var ctx = self.getContext('2d');
 
-                player_radius = field.lmagnitude / pfactor;
-                still_moving = false;
-                for (index in players) {
-                    player = players[index];
-                    if (moving) {
-                        if (player.steps.length) {
-                            player.update(now - updated);
-                            redraw();
-                        }
-                        if (player.steps.length)
-                            still_moving = true;
-                    }
-                }
-                moving = still_moving;
-                updated = now;
+            ctx.save();
+            ctx.clearRect(0, 0, width, height);
+            field.size(width, height).draw(ctx);
 
-                for (index in players) {
-                    player = players[index];
-
+            player_radius = field.lmagnitude / pfactor;
+            still_moving = false;
+            for (index in players) {
+                player = players[index];
+                if (moving) {
                     if (player.steps.length) {
-                        step = player.steps[player.steps.length - 1];
-                        ctx.beginPath();
-                        ctx.arc.apply(ctx, field.coord(
-                            step.lpos, step.spos,
-                            2 * player_radius / 3, 0, 2 * Math.PI));
-                        ctx.moveTo.apply(ctx, field.coord(
-                            player.lpos, player.spos));
-                        for (stepi = 0; stepi < player.steps.length;
-                             ++stepi) {
-                            step = player.steps[stepi];
-                            ctx.lineTo.apply(ctx, field.coord(
-                                step.lpos, step.spos));
-                        }
-                        ctx.lineCap = 'round';
-                        ctx.lineJoin = 'round';
-                        ctx.strokeStyle = 'rgba(64, 64, 64, 0.8)';
-                        ctx.stroke();
+                        player.update(now - updated);
+                        redraw();
                     }
+                    if (player.steps.length)
+                        still_moving = true;
                 }
-                if (target && selected) {
-                    if (selected.steps.length)
-                        step = selected.steps[
-                            selected.steps.length - 1];
-                    else step = selected;
+            }
+            moving = still_moving;
+            updated = now;
 
+            for (index in players) {
+                player = players[index];
+
+                if (player.steps.length) {
+                    step = player.steps[player.steps.length - 1];
                     ctx.beginPath();
                     ctx.arc.apply(ctx, field.coord(
-                        target.lpos, target.spos,
-                        player_radius, 0, 2 * Math.PI));
+                        step.lpos, step.spos,
+                        2 * player_radius / 3, 0, 2 * Math.PI));
                     ctx.moveTo.apply(ctx, field.coord(
-                        step.lpos, step.spos));
-                    ctx.lineTo.apply(ctx, field.coord(
-                        target.lpos, target.spos));
+                        player.lpos, player.spos));
+                    for (stepi = 0; stepi < player.steps.length;
+                             ++stepi) {
+                        step = player.steps[stepi];
+                        ctx.lineTo.apply(ctx, field.coord(
+                            step.lpos, step.spos));
+                    }
                     ctx.lineCap = 'round';
-                    ctx.strokeStyle = 'rgba(255, 255, 64, 0.8)';
+                    ctx.lineJoin = 'round';
+                    ctx.strokeStyle = 'rgba(64, 64, 64, 0.8)';
                     ctx.stroke();
                 }
-                for (index in players) {
-                    player = players[index];
-
-                    ctx.beginPath();
-                    ctx.arc.apply(ctx, field.coord(
-                        player.lpos, player.spos, player_radius,
-                        0, 2 * Math.PI));
-                    ctx.fillStyle = (player == selected) ?
-                        'purple' : player.color;
-                    ctx.fill();
-                }
-
-                ctx.restore();
             }
+            if (target && selected) {
+                if (selected.steps.length)
+                    step = selected.steps[
+                        selected.steps.length - 1];
+                else step = selected;
+
+                ctx.beginPath();
+                ctx.arc.apply(ctx, field.coord(
+                    target.lpos, target.spos,
+                    player_radius, 0, 2 * Math.PI));
+                ctx.moveTo.apply(ctx, field.coord(
+                    step.lpos, step.spos));
+                ctx.lineTo.apply(ctx, field.coord(
+                    target.lpos, target.spos));
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = 'rgba(255, 255, 64, 0.8)';
+                ctx.stroke();
+            }
+            for (index in players) {
+                player = players[index];
+
+                ctx.beginPath();
+                ctx.arc.apply(ctx, field.coord(
+                    player.lpos, player.spos, player_radius,
+                    0, 2 * Math.PI));
+                ctx.fillStyle = (player == selected) ?
+                                'purple' : player.color;
+                ctx.fill();
+            }
+
+            ctx.restore();
         };
         var redraw = function() {
             if (!draw_id)
                 draw_id = requestAnimationFrame(draw);
         };
-
-        var resize = function(event) {
-            // Consume enough space to fill the viewport.
-            self.height(viewport.height());
-            self.width(viewport.width());
-
-            // A canvas has a height and a width that are part of the
-            // document object model but also separate height and
-            // width attributes which determine how many pixels are
-            // part of the canvas itself.  Keeping the two in sync
-            // is essential to avoid ugly stretching effects.
-            self.attr("width", self.innerWidth());
-            self.attr("height", self.innerHeight());
-
-            redraw();
-        };
-        viewport.resize(resize);
-        resize();
+        window.addEventListener('resize', redraw);
+        window.dispatchEvent(new Event('resize'));
 
         // Process mouse and touch events
-        self.on('mousedown touchstart', function(event) {
+        var downEvent = function(event) {
             var index;
             var player, step, coord, best, dsquared, clear;
             var point, now;
@@ -339,8 +327,11 @@
                 redraw();
             }
             return false;
-        });
-        self.on('mousemove touchmove', function(event) {
+        };
+        self.addEventListener('mousedown', downEvent);
+        self.addEventListener('touchstart', downEvent);
+
+        var moveEvent = function(event) {
             var point, vec;
             if (selected) {
                 point = ripple.createTouches(event);
@@ -348,8 +339,11 @@
                 redraw();
             }
             return false;
-        });
-        self.on('mouseleave mouseup touchend', function(event) {
+        };
+        self.addEventListener('mousemove', moveEvent);
+        self.addEventListener('touchmove', moveEvent);
+
+        var upEvent = function(event) {
             if (selected) {
                 if (target) {
                     selected.steps.push(target);
@@ -359,9 +353,12 @@
                 redraw();
             }
             return false;
-        });
+        };
+        self.addEventListener('mouseleave', upEvent);
+        self.addEventListener('mouseup', upEvent);
+        self.addEventListener('touchend', upEvent);
 
-        $('body').on('keyup', self, function(event) {
+        document.body.addEventListener('keyup', function(event) {
             if (event.keyCode == 32) { // space bar
                 moving = !moving;
                 redraw();
