@@ -137,7 +137,7 @@
             }
         }
 
-        return basisCache[basis] = result;
+        return (current.length ? undefined : (basisCache[basis] = result));
     };
 
     var polish = function(value) {
@@ -156,6 +156,9 @@
 
         while ((m = remain.match(termExp)) && m[0].length) {
             basis = canonicalizeBasis(m[3]);
+            if (!basis)
+                throw new TypeError(
+                    'Unable to parse basis "' + m[3] + '" as a basis');
             if (!components[basis.label])
                 components[basis.label] = 0;
             components[basis.label] += (((termOp === '+') ? 1 : -1) *
@@ -204,7 +207,7 @@
             } else {
                 Object.keys(value).forEach(function(key) {
                     var basis = canonicalizeBasis(key);
-                    if (!zeroish(value[key]))
+                    if (basis && !zeroish(value[key]))
                         result.components[basis.label] =
                             (result.components[basis.label] || 0) +
                             basis.sign * value[key];
