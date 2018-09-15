@@ -246,13 +246,9 @@
         };
         var redraw = function()
         { if (!draw_id) draw_id = requestAnimationFrame(draw); };
-        board.addEventListener('resize', function(event) {
-            //board.attr("width", board.clientWidth);
-            //board.attr("height", board.clientHeight);
-
-            redraw();
-        });
+        board.addEventListener('resize', redraw);
         board.dispatchEvent(new Event('resize'));
+
         board.addEventListener('click', function(event) {
             var row = Math.floor(event.offsetY * 3 / board.clientHeight);
             var col = Math.floor(event.offsetX * 3 / board.clientWidth);
