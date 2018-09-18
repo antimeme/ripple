@@ -123,16 +123,34 @@
 
             if (existingIndex >= 0)
                 classes.splice(existingIndex, 1);
-            else
-                classes.push(className);
-
+            else classes.push(className);
             element.className = classes.join(' ');
         } else element.classList.toggle(className);
         return element;
     };
 
-    ripple.queryEach = function(query, fn, source) {
-        (source ? source : document).querySelectorAll(query).forEach(fn);
+    ripple.addClass = function(element, className) {
+        if (!element.classList) {
+            var classes = element.className.split(' ');
+            var existingIndex = classes.indexOf(className);
+
+            if (existingIndex < 0)
+                classes.push(className);
+            element.className = classes.join(' ');
+        } else element.classList.add(className);
+        return element;
+    };
+
+    ripple.removeClass = function(element, className) {
+        if (!element.classList) {
+            var classes = element.className.split(' ');
+            var existingIndex = classes.indexOf(className);
+
+            if (existingIndex >= 0)
+                classes.splice(existingIndex, 1);
+            element.className = classes.join(' ');
+        } else element.classList.remove(className);
+        return element;
     };
 
     ripple.isVisible = function(element) {

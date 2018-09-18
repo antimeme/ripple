@@ -235,11 +235,20 @@
             }
         }
     },
-    "shipElements": {
+    "apparatus": {
         "Structure": {
             "comment": [
-                "Each active cell in a ship is a structure.",
-                "Structure includes conduits for power and resources"],
+                "A ship is composed of one or more active cells. ",
+                "These are presumed to include support beams and ",
+                "conduits for power, water, oxygen and other ",
+                "resources.  Cells can be further populated with ",
+                "systems and boundaries can be added between two ",
+                "adjacent cells. Each system or boudnary has mass and ",
+                "may require power to operate.  A system may be ",
+                "external, which means it requires access to the ",
+                "exterior of the ship in order to make sense.  If an ",
+                "external system is surrounded by active cells then ",
+                "it must be removed."],
             "mass": 500, "internal": true},
         "Bulkhead": {
             "comment": ["Separates two cells as a wall"],
@@ -255,41 +264,47 @@
             "mass": 100, "power": 1, "boundary": "auto"},
         "Reactor": {
             "comment": ["Generates power for a ship"],
-            "mass": 2000, "sigil": "R"},
+            "mass": 2000, "sigil": "R", "console": "reactor"},
         "Mainframe": {
             "comment": ["Computer node for controlling ship systems"],
-            "mass": 100, "sigil": "M", "power": 100},
+            "mass": 100, "sigil": "M", "power": 100,
+            "console": "mainframe"},
         "Console": {
             "comment": ["Terminal for interacting with ship computer"],
-            "mass": 25, "sigil": "C", "power": 1},
+            "mass": 25, "sigil": "C", "power": 1,
+            "console": "mainframe"},
         "Helm": {
             "comment": [
                 "Ship navigation and primary weapon control"],
-            "mass": 500, "sigil": "H", "power": 1},
+            "mass": 500, "sigil": "H", "power": 1, "console": "helm"},
         "Sensors": {
             "comment": ["Detect other ships and hazards"],
-            "mass": 500, "sigil": "S", "power": 50},
+            "mass": 500, "sigil": "S", "power": 50,
+            "console": "sensors"},
         "Life Support": {
             "comment": [
                 "Support for oxygen generation, waste collection, ",
                 "personal cleansing and water recycling"],
-            "mass": 1000, "sigil": "O", "power": 100},
+            "mass": 1000, "sigil": "O", "power": 100, "enclose": "auto"},
         "Engine": {
             "comment": ["Generates thrust to move ship"],
-            "mass": 1500, "sigil": "E", "power": 200},
+            "mass": 1500, "sigil": "E", "power": 200,
+            "console": "engines"},
         "Cargo": {
             "comment": ["Storage compartments and rigging"],
             "mass": 50, "sigil": "G"},
         "PodBay": {
             "comment": ["Support for a single escape pod"],
-            "mass": 100, "sigil": "P", "external": true},
+            "mass": 100, "sigil": "P", "external": true,
+            "enclose": "wheel"},
         "Airlock": {
             "comment": ["Support for docking with other ships and ",
                         "stations"],
-            "mass": 200, "sigil": "A", "external": true},
+            "mass": 200, "sigil": "A", "external": true,
+            "enclose": "wheel"},
         "Cabin": {
             "comment": ["Living quarters for a person or couple"],
-            "mass": 100, "sigil": "B", "power": 1},
+            "mass": 100, "sigil": "B", "power": 1, "enclose": "auto"},
         "Bunks": {
             "comment": ["Living quarters for up to 5 people"],
             "mass": 100, "sigil": "K", "power": 1},

@@ -16,8 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-// A library of tools for creating a video game user interface within a
-// web browser.
+// A library of tools for creating a video game user interface.
 (function(fascia) {
     "use strict";
     if (typeof require !== 'undefined') {
@@ -25,6 +24,8 @@
         this.multivec = require('./ripple.js');
     }
 
+    // A playerControl stores state related to the direction a player
+    // should move.
     fascia.playerControl = function(player) {
         if (!(this instanceof fascia.playerControl))
             return new fascia.playerControl(player);
@@ -49,34 +50,27 @@
 
     fascia.playerControl.prototype.keydown = function(event) {
         var result = true;
-        if (event.keyCode === 37 /* left */ ||
-            event.keyCode === 65 /* a */) {
+        if (event.keyCode === 37 || event.key === 'a') {
             this.clear(true);
 	    this.left = true;
-	} else if (event.keyCode === 38 /* up */ ||
-                   event.keyCode === 87 /* w */) {
+	} else if (event.keyCode === 38 || event.key === 'w') {
             this.clear(true);
             this.up = true;
-	} else if (event.keyCode === 39 /* right */ ||
-                   event.keyCode === 68 /* d */) {
+	} else if (event.keyCode === 39 || event.key === 'd') {
             this.clear(true);
 	    this.right = true;
-	} else if (event.keyCode === 40 /* down */ ||
-                   event.keyCode === 83 /* s */) {
+	} else if (event.keyCode === 40 || event.key === 's') {
             this.clear(true);
 	    this.down = true;
-        } else if (event.keyCode === 81 /* q */) {
+        } else if (event.key === 'q') {
             this.clear(true);
 	    this.sleft = true;
-        } else if (event.keyCode === 69 /* e */) {
+        } else if (event.key === 'e') {
             this.clear(true);
 	    this.sright = true;
-	} else if (event.keyCode === 90 /* z */) {
-            this.player.punchRight = Date.now();
-	} else if (event.keyCode === 67 /* c */) {
-            this.player.punchLeft = Date.now();
-        } else if (event.keyCode === 73 /* i */ ||
-                   event.keyCode === 192 /* tilde */) {
+	} else if (event.key === 'z') { this.player.activateRight();
+	} else if (event.key === 'c') { this.player.activateLeft();
+        } else if (event.key === 'i' || event.key === '`') {
             this.player.interact();
         } else result = false;
         return result;
@@ -84,32 +78,32 @@
 
     fascia.playerControl.prototype.keyup = function(event) {
         var result = true;
-	if (event.keyCode === 37 || event.keyCode === 65) {
+	if (event.keyCode === 37 || event.key === 'a') {
             this.clear(true);
 	    this.left = false;
-	} else if (event.keyCode === 38 || event.keyCode === 87) {
+	} else if (event.keyCode === 38 || event.key === 'w') {
             this.clear(true);
             this.up = false;
-	} else if (event.keyCode === 39 || event.keyCode === 68) {
+	} else if (event.keyCode === 39 || event.key === 'd') {
             this.clear(true);
 	    this.right = false;
-	} else if (event.keyCode === 40 || event.keyCode === 83) {
+	} else if (event.keyCode === 40 || event.key === 's') {
             this.clear(true);
 	    this.down = false;
-        } else if (event.keyCode === 81 /* q */) {
+        } else if (event.key === 'q') {
             this.clear(true);
 	    this.sleft = false;
-        } else if (event.keyCode === 69 /* e */) {
+        } else if (event.key === 'e') {
             this.clear(true);
 	    this.sright = false;
-	} else if (event.keyCode === 90 /* z */) {
-	} else if (event.keyCode === 67 /* c */) {
-        } else if (event.keyCode === 70 /* i */ ||
-                   event.keyCode === 192 /* tilde */) {
+	} else if (event.key === 'z') {
+	} else if (event.key === 'c') {
+        } else if (event.key === 'i' || event.key === '`') {
         }
         return result;
     };
 
+    // Set a destination the player should attempt to reach
     fascia.playerControl.prototype.setTarget = function(target) {
         var diff;
 
@@ -121,7 +115,9 @@
         }
     };
 
-    fascia.playerControl.prototype.setArrow = function(turn, start, end) {
+    // Set a direction the player should move in until hitting an obstacl
+    fascia.playerControl.prototype.setArrow = function(
+        turn, start, end) {
         this.clear();
 
         if (start) {
@@ -141,6 +137,7 @@
         this.target = this.player.position;
     };
 
+    // Draws a vision cone to illustrate what a character can see
     fascia.drawVision = function(ctx, character, now) {
         var size;
         if (character.visionRange && character.visionArc &&
@@ -160,6 +157,7 @@
         }
     };
 
+    // Draws a character from top-down perspective
     fascia.drawCharacter = function(ctx, character, now) {
         var size = character.size;
         var fraction;
@@ -245,6 +243,9 @@
         ctx.restore();
     };
 
+    // Draw a character portrait.  All coordinates are between (0, 0)
+    // and (1, 1) so it's important to scale the context appropriately
+    // before calling this function.
     fascia.drawCharacterPortrait = function(ctx, character, now) {
         var head = {x: 0, y: 9/10, radius: 1/10};
         var hand = {x: 1/3, y: 1/2, radius: 1/25};
@@ -332,9 +333,9 @@
 
     /**
      * A character is a representation of a humanoid create.
-     * Characters have the folleowing properties:
+     * Characters have the following properties:
      *
-     *   position: vector location
+     *   position: vector representing location
      *   direction: radians angle with x axis
      *   size: number radius
      *   speed: number movement rate
@@ -429,12 +430,23 @@
 
         result.interact = (config && config.interact) || function() {};
 
+        result.activateLeft = function() {
+            this.punchLeft = Date.now();
+        };
+        result.activateRight = function() {
+            this.punchRight = Date.now();
+        };
+
+        // Adjusts the destination determined by player actions to
+        // account for obstacles.
         result.replan = function(now, collide, destination) {
             this.control.clear(true);
             return this.position.add(
                 destination.minus(this.position).multiply(collide));
         };
 
+        // Creates a destination based on what the player is asking
+        // his/her character to do.
         result.plan = function(now) {
             var result = undefined;
             var needrads, signrads, tgtvec;
@@ -507,6 +519,11 @@
         return result;
     };
 
+    var fasciaButtonSize = function(width, height) {
+        return Math.floor(Math.min(width, height) / 7); };
+
+    // An item system connects items from a characters inventory to
+    // definition objects that give the items default properties.
     fascia.itemSystem = function(itemdefs) {
         if (!(this instanceof fascia.itemSystem))
             return new fascia.itemSystem(itemdefs);
@@ -526,7 +543,8 @@
         return result;
     };
 
-    // Manages icon images in sprite sheets
+    // The image system manages icon images in sprite sheets so that
+    // a single source image can be used to supply many icons at once.
     fascia.imageSystem = function(config) {
         if (!(this instanceof fascia.imageSystem))
             return new fascia.imageSystem(config);
@@ -537,11 +555,11 @@
     };
 
     fascia.imageSystem.prototype.resize = function(width, height) {
-        this.size = Math.floor(Math.min(width, height) * 2 / 11);
+        this.size = fasciaButtonSize(width, height);
         document.querySelectorAll('.fascia-button').forEach(
             function(button) {
-                button.style.width = this.size;
-                button.style.height = this.size;
+                button.style.width = this.size + 'px';
+                button.style.height = this.size + 'px';
             }, this);
     };
 
@@ -552,7 +570,7 @@
         var imgdef;
         var image;
         var settings;
-        var className = 'image-button';
+        var className = 'fascia-button';
 
         var result = document.createElement('button');
         if (!config)
@@ -560,7 +578,8 @@
         else if (typeof config === 'string')
             settings = this.icons[config] || {};
         else {
-            settings = this.icons[config.icon] || {};
+            settings = (typeof(config.icon) === 'object') ?
+                       config.icon : (this.icons[config.icon] || {});
             if (config.className)
                 className += ' ' + config.className;
             if (config.title)
@@ -590,24 +609,24 @@
         result.style['background-image'] = image;
         result.style['background-position'] = position;
         result.style['background-size'] = backsize;
-        result.style.width = this.size;
-        result.style.height = this.size;
+        result.style.width = this.size + 'px';
+        result.style.height = this.size + 'px';
         result.addEventListener('mousedown', function(event) {
-            fn.call(context, arguments);
+            fn.apply(context, arguments);
             return false;
         });
         result.addEventListener('touchstart', function(event) {
-            fn.call(context, arguments);
+            fn.apply(context, arguments);
             return false;
         });
         return result;
     };
 
     // Create an HTML inventory system
-    fascia.inventoryPane = function(
+    fascia.inventoryScreen = function(
         container, player, itemSystem, imageSystem) {
-        if (!(this instanceof fascia.inventoryPane))
-            return new fascia.inventoryPane(
+        if (!(this instanceof fascia.inventoryScreen))
+            return new fascia.inventoryScreen(
                 container, player, itemSystem, imageSystem);
 
         this.imageSystem = imageSystem;
@@ -617,12 +636,13 @@
         this.__drawPortraitID = 0;
 
         var give = function(event) {
-            var selected = this.playerPane.find('.selected');
-            if (selected.size() > 0) {
+            var selected =
+                this.playerPane.querySelectorAll('.selected');
+            if (selected.length > 0) {
                 var chosen = {};
                 var updated = [];
-                selected.each(function(index, item) {
-                    var value = $(item).data('index');
+                selected.forEach(function(item, index) {
+                    var value = item.getAttribute('data-index');
                     if (!isNaN(value))
                         chosen[parseInt(value, 10)] = true; });
                 this.player.inventory.forEach(function(item, index) {
@@ -632,16 +652,19 @@
                 }, this);
                 this.player.inventory = updated;
                 this.populate(this.other);
-            } else this.playerPane.find('button').addClass('selected');
+            } else this.playerPane.querySelectorAll('button').forEach(
+                function(button) {
+                    ripple.addClass(button, 'selected'); });
         };
 
         var take = function(event) {
-            var selected = this.otherPane.find('.selected');
-            if (selected.size()) {
+            var selected =
+                this.otherPane.querySelectorAll('.selected');
+            if (selected.length > 0) {
                 var chosen = {};
                 var updated = [];
-                selected.each(function(index, item) {
-                    var value = $(item).data('index');
+                selected.forEach(function(item, index) {
+                    var value = item.getAttribute('data-index');
                     if (!isNaN(value))
                         chosen[parseInt(value, 10)] = true; });
                 this.other.inventory.forEach(function(item, index) {
@@ -651,7 +674,9 @@
                 }, this);
                 this.other.inventory = updated;
                 this.populate(this.other);
-            } else this.otherPane.find('button').addClass('selected');
+            } else this.otherPane.querySelectorAll('button').forEach(
+                function(button) {
+                    ripple.addClass(button, 'selected'); });
         };
 
         this.pane = ripple.createElement(
@@ -687,28 +712,32 @@
         this.populate();
     };
 
-    fascia.inventoryPane.prototype.resize = function(width, height) {
-        var size = Math.min(width, height);
-        ripple.queryEach(
-            '.inventory-header, .inventory-footer',
-            function(element) { element.setAttribute(
-                'height', Math.floor(size * 2 / 11)); });
+    fascia.inventoryScreen.prototype.resize = function(width, height) {
+        var size = fasciaButtonSize(width, height);
+        this.pane.style.width = Math.floor(width - size / 2) + 'px';
+        this.pane.style.height = Math.floor(height - size / 2) + 'px';
+        this.pane.style.top = Math.floor(size / 4) + 'px';
+        this.pane.style.left = Math.floor(size / 4) + 'px';
+        document.querySelectorAll('.inventory-header, .inventory-footer')
+                .forEach(function(element) {
+                    element.style.height =
+                        Math.floor(size) + 'px'; });
         return this;
     };
 
-    fascia.inventoryPane.prototype.show = function() {
+    fascia.inventoryScreen.prototype.show = function() {
         return ripple.show(this.pane); };
 
-    fascia.inventoryPane.prototype.hide = function() {
+    fascia.inventoryScreen.prototype.hide = function() {
         return ripple.hide(this.pane); };
 
-    fascia.inventoryPane.prototype.toggle = function() {
+    fascia.inventoryScreen.prototype.toggle = function() {
         return ripple.toggleVisible(this.pane); };
 
-    fascia.inventoryPane.prototype.isVisible = function() {
+    fascia.inventoryScreen.prototype.isVisible = function() {
         return ripple.isVisible(this.pane); };
 
-    fascia.inventoryPane.prototype.showPortrait = function() {
+    fascia.inventoryScreen.prototype.showPortrait = function() {
         var self = this;
         var draw = function() {
             var canvas = self.portraitPane;
@@ -744,17 +773,16 @@
         return this;
     };
 
-    fascia.inventoryPane.prototype.addItem = function(
+    fascia.inventoryScreen.prototype.addItem = function(
         item, index, itemPane) {
         itemPane.appendChild(this.imageSystem.createButton(
             {icon: item.icon, title: item.toString(),
              data: {index: index}}, function(event) {
-                 ripple.toggleClass(event.target, 'selected');
-             }, this));
+                 ripple.toggleClass(event.target, 'selected'); }));
         return this;
     };
 
-    fascia.inventoryPane.prototype.populate = function(other) {
+    fascia.inventoryScreen.prototype.populate = function(other) {
         this.playerPane.innerHTML = '';
         if (this.player) {
             this.player.inventory.forEach(function(item, index) {
@@ -768,15 +796,15 @@
             this.other.inventory.forEach(function(item, index) {
                 this.addItem(item, index, this.otherPane);
             }, this);
-            ripple.queryEach('.inventory-portrait', function(element) {
-                element.style.display = 'none'; });
-            ripple.queryEach('.inventory-givetake', function(element) {
-                element.style.display = 'block'; });
+            document.querySelectorAll('.inventory-portrait').forEach(
+                function(element) { element.style.display = 'none'; });
+            document.querySelectorAll('.inventory-givetake').forEach(
+                function(element) { element.style.display = 'block'; });
         } else {
-            ripple.queryEach('.inventory-givetake', function(element) {
-                element.style.display = 'none'; });
-            ripple.queryEach('.inventory-portrait', function(element) {
-                element.style.display = 'block'; });
+            document.querySelectorAll('.inventory-givetake').forEach(
+                function(element) { element.style.display = 'none'; });
+            document.querySelectorAll('.inventory-portrait').forEach(
+                function(element) { element.style.display = 'block'; });
             this.showPortrait();
         }
     };
@@ -835,7 +863,7 @@
 	    canvas.height = height;
 
             if (app.resize)
-                app.resize(width, height);
+                app.resize(width, height, container);
             redraw();
         });
         viewport.dispatchEvent(new Event('resize'));
@@ -858,7 +886,7 @@
             },
             drag: function(name, start, last, current) {
                 if (app.drag)
-                    return app.drag(start, last, current);
+                    return app.drag(start, last, current, redraw);
             },
             pinch: function(name, length, angle) {
                 if (app.pinch)

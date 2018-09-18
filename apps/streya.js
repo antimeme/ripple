@@ -17,6 +17,41 @@
         this.fascia = require('./ripple/fascia.js');
     }
 
+    streya.Apparatus = {
+        data: null,
+        create: function(config, data) {
+            var result = Object.create(this);
+            if (typeof(config) === 'string') {
+            } else {
+            }
+            return result;
+        },
+        equals: function(other) {
+            var result = false;
+            if (other && (other instanceof streya.Apparatus)) {
+            }
+            return result;
+        },
+        mapApparatus: function(fn) {
+            Object.keys(this.data).forEach(function(key) {
+                var apparatus = this.data[key];
+                if (!apparatus.internal &&
+                    !apparatus.disable &&
+                    !apparatus.boundary)
+                    fn(key, apparatus);
+            }, this);
+        },
+        mapBoundary: function(fn) {
+            Object.keys(this.data).forEach(function(key) {
+                var apparatus = this.data[key];
+                if (!apparatus.internal &&
+                    !apparatus.disable &&
+                    apparatus.boundary)
+                    fn(key, apparatus);
+            }, this);
+        }
+    };
+
     // === Ship representation
     // A ship consists of one or more connected cells, each of which
     // may have systems present, and a set of boundaries which connect
@@ -40,7 +75,7 @@
 
             // Extract cells from configuration if possible
             result.__cells = {};
-            if (config && config.cells)
+            if (config && config.cells && Object.keys().length > 0)
                 Object.keys(config.cells).forEach(function(key) {
                     result.__cells[key] = config.cells[key];
                 });
@@ -331,8 +366,24 @@
 
     streya.game = function(data) {
         var game, redraw, tap, selected, drag, zooming, gesture;
-
         var colorSelected = 'rgba(192, 192, 0, 0.2)';
+        var tform = ripple.transform();
+        var imageSystem = fascia.imageSystem(data.imageSystem);
+        var itemSystem = fascia.itemSystem(data.itemSystem);
+        var inventoryScreen;
+        var player = fascia.createPlayer(
+            ripple.mergeConfig(
+                (data.characterDefinitions &&
+                 data.characterDefinitions.player) || null, {
+                     position: {x: 0, y: 0},
+                     itemSystem: itemSystem,
+                     interact: function() {
+                         if (inventoryScreen.isVisible())
+                             inventoryScreen.hide();
+                         else {
+                             inventoryScreen.populate();
+                             inventoryScreen.show();
+                         } }}));
         var menu = document.createElement('ul');
         var menuframe = ripple.createElement(
             'fieldset', {'class': 'streya-menu', style: {
@@ -344,27 +395,12 @@
             if (event.target.tagName.toLowerCase() === 'legend')
                 ripple.toggleVisible(menu);
         });
-        var tform = ripple.transform();
+
+        streya.Apparatus.data = data.apparatus;
         var ship = streya.Ship.create(
             (ripple.param('ship') &&
              ripple.param('ship') in data.shipDesigns) ?
             data.shipDesigns[ripple.param('ship')] : undefined);
-        var imageSystem = fascia.imageSystem(data.imageSystem);
-        var itemSystem = fascia.itemSystem(data.itemSystem);
-        var player = fascia.createPlayer(
-            ripple.mergeConfig(
-                (data.characterDefinitions &&
-                 data.characterDefinitions.player) || null, {
-                     position: {x: 0, y: 0},
-                     itemSystem: itemSystem,
-                     interact: function() {
-                         if (inventoryPane.isVisible())
-                             inventoryPane.hide();
-                         else {
-                             inventoryPane.populate();
-                             inventoryPane.show();
-                         } }}));
-        var inventoryPane;
 
         var system, systems = {
             edit: {
@@ -374,7 +410,9 @@
                     ripple.show(menuframe);
                 },
                 keydown: function(event) {
-                    if (event.key === 't') {
+                    if (event.keyCode === 8) { // backspace
+                        ship.undo();
+                    } else if (event.key === 't') {
                         system = systems.tour;
                         system.start();
                     } else if (event.key === 'c') {
@@ -428,7 +466,7 @@
                         if (cell.system)
                             ship.setCell(selected, {});
                         else ship.setCell(selected, undefined);
-                    } else if (mode.value === 'sys' && cell) {
+                    } else if (mode.value === 'app' && cell) {
                         ship.setCell(selected, {
                             system: modeParam.value ?
                                     modeParam.options[
@@ -484,7 +522,7 @@
                 },
                 keydown: function(event) {
                     if (event.keyCode === 27) {
-                        ripple.hide(inventoryPane.pane);
+                        ripple.hide(inventoryScreen.pane);
                         system = systems.edit;
                         system.start();
                     } else {
@@ -544,24 +582,23 @@
         };
 
         var bbarLeft = document.createElement('div');
-        bbarLeft.setAttribute('class', 'bbar');
+        bbarLeft.className = 'bbar';
         bbarLeft.style.display = 'none';
         bbarLeft.style.bottom = 0;
         bbarLeft.style.left = 0;
         bbarLeft.appendChild(imageSystem.createButton(
-            'lhand', function() {
-                player.punchLeft = Date.now(); }, this));
+            'lhand', function() { player.activateLeft(); }, this));
         bbarLeft.appendChild(imageSystem.createButton(
-            'rhand', function() {
-                player.punchRight = Date.now(); }, this));
+            'rhand', function() { player.activateRight(); }, this));
 
         var bbarRight = document.createElement('div');
+        bbarRight.className = 'bbar';
         bbarRight.style.display = 'none';
         bbarRight.style.bottom = 0;
         bbarRight.style.right = 0;
         bbarRight.appendChild(imageSystem.createButton(
             'settings', function(event) {
-                ripple.hide(inventoryPane);
+                ripple.hide(inventoryScreen.pane);
                 system = systems.edit;
                 system.start();
             }));
@@ -576,11 +613,10 @@
         mode.appendChild(ripple.createElement(
             'option', {value: 'remove'}, 'Remove Hull'));
         mode.appendChild(ripple.createElement(
-            'option', {value: 'sys'}, 'Add System'));
+            'option', {value: 'app'}, 'Add Apparatus'));
         mode.appendChild(ripple.createElement(
             'option', {value: 'bound'}, 'Add Boundary'));
         mode.addEventListener('change', function(event) {
-            var shipElements = data.shipElements;
             modeParam.innerHTML = '';
             ripple.hide(modeParam);
             if (mode.value === 'extend') {
@@ -588,31 +624,21 @@
                     modeParam.appendChild(ripple.createElement(
                         'option', {value: key}, 'Radius ' + key)); });
                 ripple.show(modeParam);
-            } if (mode.value === 'sys') {
+            } if (mode.value === 'app') {
                 modeParam.appendChild(ripple.createElement(
                     'option', {value: ''}, 'Clear'));
-                Object.keys(shipElements).forEach(function(key) {
-                    var element = shipElements[key];
-
-                    if (element.internal || element.disable ||
-                        element.boundary)
-                        return;
+                streya.Apparatus.mapApparatus(function(name, apparatus) {
                     modeParam.append(ripple.createElement(
-                        'option', {value: element.sigil},
-                        key + (element.sigil ?
-                               (' (' + element.sigil + ')') : '')));
+                        'option', {value: apparatus.sigil},
+                        name + (apparatus.sigil ?
+                               (' (' + apparatus.sigil + ')') : '')));
                 });
                 ripple.show(modeParam);
             } else if (mode.value === 'bound') {
                 modeParam.append('<option value="">Clear</option>');
-                Object.keys(shipElements).forEach(function(key) {
-                    if (shipElements[key].internal ||
-                        shipElements[key].disable ||
-                        !shipElements[key].boundary)
-                        return;
+                streya.Apparatus.mapBoundary(function(name, boundary) {
                     modeParam.appendChild(ripple.createElement(
-                        'option', {value: shipElements[
-                            key].boundary}, key));
+                        'option', {value: boundary.boundary}, name));
                 });
                 ripple.show(modeParam);
             }
@@ -715,57 +741,59 @@
             }
         });
 
-        var game = {
+        return {
             init: function(container, viewport, fasciaRedraw) {
-                inventoryPane = fascia.inventoryPane(
-                    container, player, itemSystem, imageSystem);
                 container.appendChild(menuframe);
-                container.appendChild(bbarLeft);
-                container.appendChild(bbarRight);
                 //container.appendChild(systemPane) // TODO
                 //container.appendChild(settingsPane) // TODO
+                container.appendChild(bbarLeft);
+                container.appendChild(bbarRight);
+                imageSystem.resize(this.width, this.height);
+                inventoryScreen = fascia.inventoryScreen(
+                    container, player, itemSystem, imageSystem);
+                inventoryScreen.resize(this.width, this.height);
 
-                this.center(); // TODO relies on prior resize call
+                this.center();
                 system = systems.edit;
                 if (system.start)
                     system.start();
-                redraw = fasciaRedraw;
+
+                redraw = fasciaRedraw; // needed for menu events
             },
 
             isActive: function() {
-                return system.active && system.active();
+                return system && system.active && system.active();
             },
 
-            resize: function(width, height) {
+            resize: function(width, height, container) {
                 var size = Math.min(width, height);
                 this.width = width;
                 this.height = height;
 
-                ripple.queryEach('.streya-menu', function(element) {
-                    element.style['border-radius'] =
-                        Math.floor(size / 50) + 'px'; });
-                ripple.queryEach(
-                    '.streya-menu legend', function(element) {
-                        element.style['border-radius'] =
-                            Math.floor(size / 80) + 'px'; });
-                document.querySelectorAll(
-                    '.page', function(element) {
-                        element.style['border-width'] =
+                menuframe.style.borderRadius =
+                    Math.floor(size / 50) + 'px';
+                menuframe.querySelector('legend').style.borderRadius =
+                    Math.floor(size / 80) + 'px';
+
+                container.querySelectorAll('.page').forEach(
+                    function(page) {
+                        page.style.borderWidth =
                             Math.floor(size / 50) + 'px';
-                        element.style['border-radius'] =
+                        page.style.borderRadius =
                             Math.floor(size / 25) + 'px';
-                        element.style.top = Math.floor(size / 50);
-                        element.style.left = Math.floor(size / 50);
-                        element.style.width =
+                        page.style.top = Math.floor(size / 50);
+                        page.style.left = Math.floor(size / 50);
+                        page.style.width =
                             width - Math.floor(size / 20);
-                        element.style.height =
+                        page.style.height =
                             height - Math.floor(size / 20 + size / 11);
                     });
 
                 tform.resize(width, height);
-                imageSystem.resize(width, height);
-                if (inventoryPane)
-                    inventoryPane.resize(width, height);
+                if (imageSystem)
+                    imageSystem.resize(width, height);
+                if (inventoryScreen)
+                    inventoryScreen.resize(width, height);
                 zooming = drag = undefined;
             },
 
@@ -792,16 +820,30 @@
 
                 // Draw ship systems
                 ctx.beginPath();
+                ship.mapCells(function(node, cell) {
+                    var radius = ship.grid.size() * 5 / 12;
+
+                    if (cell && cell.system) {
+                        node = ship.grid.coordinate(node);
+                        ctx.moveTo(node.x + radius, node.y);
+                        ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI);
+                    }
+                }, this);
+                ctx.fillStyle = 'rgb(128, 128, 128)';
+                ctx.fill();
+
+                // Draw ship sigils
+                ctx.beginPath();
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.font = 'bold ' + Math.round(
                     ship.grid.size() / 2) + 'px sans';
                 ctx.fillStyle = 'rgb(48, 48, 96)';
                 ship.mapCells(function(node, cell) {
-                    node = ship.grid.coordinate(node);
-                    if (cell && cell.sigil)
+                    if (cell && cell.sigil) {
+                        node = ship.grid.coordinate(node);
                         ctx.fillText(cell.sigil, node.x, node.y);
-                }, this);
+                    } }, this);
 
                 if (system.draw)
                     system.draw(ctx, now);
@@ -877,21 +919,13 @@
                 }
             },
 
-            drag: function(start, last, current) {
+            drag: function(start, last, current, redraw) {
                 if (system.drag) {
                     system.drag(start, last, current);
                     redraw();
                 }
             }
         };
-
-        // Calculate square distance
-        var sqdist = function(node1, node2) {
-            return ((node2.x - node1.x) * (node2.x - node1.x) +
-                            (node2.y - node1.y) * (node2.y - node1.y));
-        };
-
-        return game;
     };
 
 }).call(this, typeof exports === 'undefined'?
