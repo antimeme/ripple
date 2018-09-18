@@ -841,7 +841,7 @@
                 ship.mapCells(function(node, cell) {
                     if (cell && cell.sigil) {
                         node = ship.grid.coordinate(node);
-                        ctx.fillText(cell.sigil, node.x - ship.grid.size(), node.y - ship.grid.size());
+                        ctx.fillText(cell.sigil, node.x, node.y);
                     } }, this);
 
                 if (system.draw)
