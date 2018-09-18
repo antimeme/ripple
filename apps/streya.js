@@ -75,10 +75,9 @@
 
             // Extract cells from configuration if possible
             result.__cells = {};
-            if (config && config.cells && Object.keys().length > 0)
+            if (config && config.cells)
                 Object.keys(config.cells).forEach(function(key) {
-                    result.__cells[key] = config.cells[key];
-                });
+                    result.__cells[key] = config.cells[key]; });
             else result.setCell({row: 0, col: 0}, {});
             result.__boundaries = {};
             if (config && config.boundaries)
@@ -842,7 +841,7 @@
                 ship.mapCells(function(node, cell) {
                     if (cell && cell.sigil) {
                         node = ship.grid.coordinate(node);
-                        ctx.fillText(cell.sigil, node.x, node.y);
+                        ctx.fillText(cell.sigil, node.x - ship.grid.size(), node.y - ship.grid.size());
                     } }, this);
 
                 if (system.draw)
