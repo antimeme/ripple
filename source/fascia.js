@@ -872,25 +872,25 @@
 
         var g = ripple.gestur({
             next: true,
-            tap: function(name, touch) {
+            tap: function(name, event) {
                 if (app.tap)
-                    return app.tap(touch, redraw);
+                    return app.tap(event, redraw);
             },
-            doubleTap: function(name, touch) {
+            doubleTap: function(name, event) {
                 if (app.doubleTap)
-                    return app.doubleTap(touch, redraw);
+                    return app.doubleTap(event, redraw);
             },
-            swipe: function(name, start, end) {
+            swipe: function(name, event) {
                 if (app.swipe)
-                    return app.swipe(start, end, redraw);
+                    return app.swipe(event, redraw);
             },
-            drag: function(name, start, last, current) {
+            drag: function(name, event) {
                 if (app.drag)
-                    return app.drag(start, last, current, redraw);
+                    return app.drag(event, redraw);
             },
-            pinch: function(name, length, angle) {
+            pinch: function(name, event) {
                 if (app.pinch)
-                    return app.pinch(length, angle);
+                    return app.pinch(event, redraw);
             },
             wheel: function(name, event) {
                 if (app.wheel)

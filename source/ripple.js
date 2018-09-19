@@ -519,13 +519,12 @@
             config.doubleDistance * config.doubleDistance);
         this.dragThreshold = isNaN(config.dragThreshold) ? 100 :
                              config.dragThreshold;
-        this.dragDistance = isNaN(config.doubleDistance) ? 400 : (
-            config.dragDistance * config.dragDistance);
+        this.dragDistance = isNaN(config.doubleDistance) ? 400 :
+                            (config.dragDistance * config.dragDistance);
         this.swipeThreshold = isNaN(config.swipeThreshold) ? 500 :
                               config.swipeThreshold;
-        this.swipeMinDistance = isNaN(config.swipeMinDistance) ? 500 :
-                                (config.swipeMinDistance *
-                                    config.swipeMinDistance);
+        this.swipeMinDistance = isNaN(config.swipeMinDistance) ? 500 : (
+            config.swipeMinDistance * config.swipeMinDistance);
         this.swipeAngle = Math.cos(isNaN(config.swipeAngle) ?
                                    (Math.PI / 8) : config.swipeAngle);
         this.reset();
@@ -565,8 +564,9 @@
                     this.touchOne = points.targets[0];
                     this.touchTwo = points.targets[1];
                     this.state = gesturStates.PINCH;
-                    this.fireEvent('pinchStart',
-                                   this.touchOne, this.touchTwo);
+                    this.fireEvent('pinchStart', {
+                        target: event.target,
+                        points: [this.touchOne, this.touchTwo]});
                 } else if (!isNaN(points.x) && !isNaN(points.y)) {
                     this.touchOne = points;
                     this.touchTwo = undefined;
@@ -580,9 +580,10 @@
                         if (touch.id !== this.touchOne.id) {
                             this.touchTwo = touch;
                             this.state = gesturStates.PINCH;
-                            this.fireEvent('pinchStart',
-                                           this.touchOne,
-                                           this.touchTwo);
+                            this.fireEvent('pinchStart', {
+                                target: event.target,
+                                points: [this.touchOne,
+                                         this.touchTwo]});
                         }
                     }, this);
                 break;
@@ -651,8 +652,10 @@
                         if (!checkLine(this.swipeAngle, this.touchOne,
                                        this.drag, current))
                             this.swipe = false;
-                    } else this.fireEvent(
-                        'drag', this.touchOne, this.drag, current);
+                    } else this.fireEvent('drag', {
+                        target: event.target,
+                        start: this.touchOne,
+                        last: this.drag, current: current});
                 }
                 this.drag = current;
                 break;
@@ -685,12 +688,13 @@
                         y: this.touchTwo.y - this.touchOne.y};
                     ortho = {x: -original.y, y: original.x};
 
-                    this.fireEvent(
-                        'pinchMove', Math.sqrt(
+                    this.fireEvent('pinchMove', {
+                        target: event.target,
+                        length: Math.sqrt(
                             dot(current) / dot(original)),
-                        ((dot(current, ortho) >= 0) ? 1 : -1) *
+                        angle: ((dot(current, ortho) >= 0) ? 1 : -1) *
                         Math.acos(dot(current, original) /
-                            Math.sqrt(dot(current) * dot(original))));
+                            Math.sqrt(dot(current) * dot(original)))});
                 }
                 break;
             case gesturStates.RESOLV:
@@ -720,7 +724,9 @@
                     (touching === this.lastTap.touching) ||
                     ((now - this.lastTap.when) >
                         this.doubleThreshold)) {
-                    this.fireEvent('tap', this.touchOne);
+                    this.fireEvent('tap', {
+                        target: event.target,
+                        point: this.touchOne});
 
                     // If the previous tap was close to this one in both
                     // time and space then this is a double tap
@@ -730,7 +736,9 @@
                         (dot({x: this.touchOne.x - this.lastTap.x,
                               y: this.touchOne.y - this.lastTap.y}) <
                             this.doubleDistance)) {
-                        this.fireEvent('doubleTap', this.touchOne);
+                        this.fireEvent('doubleTap', {
+                            target: event.target,
+                            point: this.touchOne});
                     }
                     this.lastTap = {
                         when: now, touching: touching,
@@ -768,8 +776,12 @@
                     if (dot(current.x - this.touchOne.x,
                             current.y - this.touchOne.y) <
                         this.swipeMinDistance)
-                        this.fireEvent('tap', current);
-                    else this.fireEvent('swipe', this.touchOne, current);
+                        this.fireEvent('tap', {
+                            target: event.target,
+                            point: current});
+                    else this.fireEvent('swipe', {
+                        target: event.target,
+                        start: this.touchOne, end: current});
                 }
                 // fall through
             case gesturStates.RESOLV:
@@ -783,6 +795,7 @@
 
     ripple.gestur.prototype.onWheel = function(event) {
         this.fireEvent('wheel', {
+            target: event.target,
             mode: event.deltaMode,
             x: event.deltaX,
             y: event.deltaY,

@@ -20,19 +20,69 @@
     streya.Apparatus = {
         data: null,
         create: function(config, data) {
+            if (!data)
+                data = this.data;
             var result = Object.create(this);
+            var settings;
+
             if (typeof(config) === 'string') {
-            } else {
-            }
+                result.type = config;
+                settings = data[config];
+            } else if (typeof(config) === 'object') {
+                result.type = config.type;
+                settings = config;
+            } else settings = {};
+
+            ['sigil', 'console', 'mass', 'power'].forEach(
+                function(key) { result[key] = settings[key]; });
             return result;
         },
         equals: function(other) {
             var result = false;
             if (other && (other instanceof streya.Apparatus)) {
+                result = true;
+                ['sigil', 'console', 'mass', 'power'].forEach(
+                    function(key) {
+                        if (this[key] !== other[key])
+                            result = false;
+                    });
             }
             return result;
         },
-        mapApparatus: function(fn) {
+        toJSON: function() { return this.type; },
+        draw: function(ctx, size, node) {
+            var outer = Math.floor(size * 2 / 5);
+            var inner = Math.floor(size / 5);
+            var fontSize = Math.floor(size / 3);
+
+            if (this.console) {
+                ctx.beginPath();
+                ctx.moveTo(node.x + outer, node.y);
+                ctx.arc(node.x, node.y, outer, 0, 2 * Math.PI);
+                ctx.fillStyle = 'rgb(152, 152, 160)';
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.moveTo(node.x + inner, node.y);
+                ctx.arc(node.x, node.y, inner, 0, 2 * Math.PI);
+                ctx.fillStyle = 'rgb(128, 128, 192)';
+                ctx.fill();
+                if (this.active) {
+                    ctx.strokeStyle = 'rgb(96, 96, 240)';
+                    ctx.stroke();
+                }
+            }
+
+            if (this.sigil) {
+                ctx.beginPath();
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = 'bold ' + fontSize + 'px sans';
+                ctx.fillStyle = 'rgb(48, 48, 96)';
+                ctx.fillText(this.sigil, node.x, node.y);
+            }
+        },
+        eachApparatus: function(fn) {
             Object.keys(this.data).forEach(function(key) {
                 var apparatus = this.data[key];
                 if (!apparatus.internal &&
@@ -41,7 +91,7 @@
                     fn(key, apparatus);
             }, this);
         },
-        mapBoundary: function(fn) {
+        eachBoundary: function(fn) {
             Object.keys(this.data).forEach(function(key) {
                 var apparatus = this.data[key];
                 if (!apparatus.internal &&
@@ -66,9 +116,8 @@
                 (config && config.grid) ? config.grid :
                 { type: 'hex', size: 10 });
 
-
             // Ship undo system: each call to setCell or setBoundary
-            // pushes an undo entry.  Callers should call undoIncrement
+            // pushes an undo entry.  Callers should call undoMark
             // after each complete change and call undo to step back.
             result.__undo = [];
             result.__undoCounter = 0;
@@ -76,8 +125,13 @@
             // Extract cells from configuration if possible
             result.__cells = {};
             if (config && config.cells)
-                Object.keys(config.cells).forEach(function(key) {
-                    result.__cells[key] = config.cells[key]; });
+                Object.keys(config.cells).forEach(function(id) {
+                    result.__cells[id] = {};
+                    if (config.cells[id].apparatus)
+                        result.__cells[id].apparatus =
+                            streya.Apparatus.create(
+                                config.cells[id].apparatus);
+                });
             else result.setCell({row: 0, col: 0}, {});
             result.__boundaries = {};
             if (config && config.boundaries)
@@ -188,7 +242,7 @@
             return this;
         },
 
-        mapCells: function(fn, context) {
+        eachCell: function(fn, context) {
             Object.keys(this.__cells).forEach(function(id) {
                 var node = this.__unindexCell(id);
                 fn.call(context, node, this.getCell(node));
@@ -241,7 +295,7 @@
             }
         },
 
-        undoIncrement: function() {
+        undoMark: function() {
             // Collects all as-yet-unmarked changes into a single undo
             // event that can be unwound.
             if ((this.__undo.length > 0) &&
@@ -262,7 +316,7 @@
             return result;
         },
 
-        save: function() { // TODO
+        toJSON: function() {
             var result = {
                 name: this.name,
                 grid: {
@@ -271,15 +325,76 @@
                 cells: {}, boundaries: {},
             };
             Object.keys(this.__cells).forEach(function(id) {
-                result.cells[id] = this.__cells[id]; }, this);
+                result.cells[id] = this.__cells[id];
+            }, this);
             Object.keys(this.__boundaries).forEach(function(id) {
                 result.boundaries[id] = this.__boundaries[id]; }, this);
             return result;
         },
 
-        walls: function() {
-            var result = [];
+        drawBackground: function(ctx) {
+            // Draw the ship cells
+            ctx.beginPath();
+            this.eachCell(function(node, cell) {
+                this.grid.draw(ctx, this.grid.coordinate(node));
+            }, this);
+            ctx.fillStyle = 'rgb(160, 160, 176)';
+            ctx.fill();
 
+            // Draw ship apparatus
+            this.eachCell(function(node, cell) {
+                if (cell && cell.apparatus)
+                    cell.apparatus.draw(ctx, this.grid.size(),
+                                        this.grid.coordinate(node));
+            }, this);
+        },
+
+        draw: function(ctx) {
+            // Draw the walls
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = 'rgb(96, 96, 240)';
+            this.eachWall(function(wall, index) {
+                ctx.beginPath();
+                ctx.lineWidth = wall.width;
+                ctx.moveTo(wall.start.x, wall.start.y);
+                ctx.lineTo(wall.end.x, wall.end.y);
+                ctx.stroke();
+            });
+        },
+
+        checkCollision: function(character, collide) {
+            var current;
+
+            this.eachWall(function(wall) {
+                if (wall.pass)
+                    return;
+                current = multivec.collideRadiusSegment(
+                    character.position, character.destination,
+                    character.size, wall);
+                if (!isNaN(current) &&
+                    (isNaN(collide) || current < collide))
+                    collide = current;
+            });
+
+            this.eachCell(function(node, cell) {
+                if (cell && cell.apparatus && cell.apparatus.console) {
+                    node = multivec(this.grid.coordinate(node));
+                    if (node.minus(character.position).normSquared() >
+                        (this.grid.size() * this.grid.size() / 25)) {
+                        current = multivec.collideRadiusRadius(
+                            character.position, character.destination,
+                            character.size, node, node,
+                            this.grid.size() / 5);
+                        if (!isNaN(current) &&
+                            (isNaN(collide) || current < collide))
+                            collide = current;
+                    }
+                }
+            }, this);
+            return collide;
+        },
+
+        eachWall: function(fn, context) {
             Object.keys(this.__cells).forEach(function(id) {
                 var unpair = ripple.unpair(id);
                 var neighbors = this.grid.neighbors(
@@ -289,7 +404,7 @@
                 for (index in neighbors) {
                     if (!this.getCell(neighbors[index]) &&
                         neighbors[index].points.length > 1)
-                        result.push({
+                        fn.call(context, {
                             start: neighbors[index].points[0],
                             end: neighbors[index].points[1],
                             width: 1 });
@@ -316,31 +431,32 @@
 
                 if (points.length > 1) { // TODO drive with data
                     if (value === 'wall')
-                        result.push(segment(points, 1, 0, 1));
+                        fn.call(context, segment(points, 1, 0, 1));
                     else if (value === 'pass') {
-                        result.push(segment(points, 1, 0, 0.25));
-                        result.push(segment(points, 1, 0.75, 1));
+                        fn.call(context, segment(points, 1, 0, 0.25));
+                        fn.call(context, segment(points, 1, 0.75, 1));
                     } else if (value === 'auto') {
-                        result.push(segment(
+                        fn.call(context, segment(
                             points, 0.5, 0.2, 0.8, true));
-                        result.push(segment(points, 1, 0, 0.25));
-                        result.push(segment(points, 1, 0.75, 1));
+                        fn.call(context, segment(points, 1, 0, 0.25));
+                        fn.call(context, segment(points, 1, 0.75, 1));
                     } else if (value === 'wheel') {
-                        result.push(segment(
+                        fn.call(context, segment(
                             points, 1.5, 0.2, 0.8, true));
-                        result.push(segment(points, 1, 0, 0.25));
-                        result.push(segment(points, 1, 0.75, 1));
+                        fn.call(context, segment(points, 1, 0, 0.25));
+                        fn.call(context, segment(points, 1, 0.75, 1));
                     }
                 }
             }, this);
-            return result;
+
+            return this;
         },
 
         extents: function() {
             if (!this.__extents) {
                 this.__extents = { sx: undefined, sy: undefined,
                                    ex: undefined, ey: undefined };
-                this.mapCells(function(node) {
+                this.eachCell(function(node) {
                     node = this.grid.coordinate(node);
                     this.grid.points(node).forEach(function(point) {
                         if (isNaN(this.__extents.sx) ||
@@ -427,12 +543,12 @@
                         game.zoom(0.909);
                     }
                 },
-                singleTap: function(touches) {
+                singleTap: function(point) {
                     var cell, previous;
 
                     previous = selected;
                     selected = ship.grid.position(
-                        tform.toWorldFromScreen(touches));
+                        tform.toWorldFromScreen(point));
 
                     cell = ship.getCell(selected);
                     if (mode.value === 'extend' && !cell) {
@@ -462,28 +578,27 @@
                             ship.setCell(selected, {});
                         }
                     } else if (mode.value === 'remove' && cell) {
-                        if (cell.system)
+                        if (cell.apparatus)
                             ship.setCell(selected, {});
                         else ship.setCell(selected, undefined);
                     } else if (mode.value === 'app' && cell) {
                         ship.setCell(selected, {
-                            system: modeParam.value ?
-                                    modeParam.options[
-                                        modeParam.selectedIndex].text :
-                                    undefined,
-                            sigil: modeParam.value });
+                            apparatus: streya.Apparatus.create(
+                                modeParam.value) });
                     } else if (mode.value === 'bound' &&
                                cell && previous) {
                         ship.setBoundary(
                             selected, previous,
                             modeParam.value);
                     }
-                    ship.undoIncrement();
+                    ship.undoMark();
                 },
-                drag: function(start, last, current) {
+                drag: function(event) {
                     tform.pan({
-                        x: (last.x - current.x) / tform.scale,
-                        y: (last.y - current.y) / tform.scale});
+                        x: (event.last.x - event.current.x) /
+                        tform.scale,
+                        y: (event.last.y - event.current.y) /
+                        tform.scale });
                 },
                 draw: function(ctx, now) {
                     if (selected) {
@@ -492,7 +607,6 @@
                         ctx.fillStyle = colorSelected;
                         ctx.fill();
                     }
-
                 }
             },
             tour: {
@@ -501,7 +615,7 @@
                     var startNode = ship.grid.position(player.position);
                     var candidate = null;
                     if (!ship.getCell(startNode)) {
-                        ship.mapCells(function(node, cell) {
+                        ship.eachCell(function(node, cell) {
                             node = multivec(
                                 ship.grid.coordinate(node));
                             if (!candidate ||
@@ -533,16 +647,16 @@
                     player.control.keyup(event);
                     this.update();
                 },
-                singleTap: function(touches) {
+                singleTap: function(point) {
                     this.update();
                     player.control.setTarget(
-                        tform.toWorldFromScreen(touches));
+                        tform.toWorldFromScreen(point));
                 },
-                doubleTap: function(touch) {
+                doubleTap: function(point) {
                     this.update();
                     player.control.setArrow(
                         true, player.position,
-                        tform.toWorldFromScreen(touch));
+                        tform.toWorldFromScreen(point));
                 },
                 draw: function(ctx, now) {
                     player.draw(ctx, now);
@@ -560,14 +674,7 @@
                                 collide = current;
                         };
 
-                        ship.walls().forEach(function(wall) {
-                            if (!wall.pass)
-                                updateCollide(
-                                    multivec.collideRadiusSegment(
-                                        player.position,
-                                        player.destination,
-                                        player.size, wall));
-                        }, this);
+                        collide = ship.checkCollision(player, collide);
 
                         if (!isNaN(collide))
                             player.destination = player.replan(
@@ -612,9 +719,9 @@
         mode.appendChild(ripple.createElement(
             'option', {value: 'remove'}, 'Remove Hull'));
         mode.appendChild(ripple.createElement(
-            'option', {value: 'app'}, 'Add Apparatus'));
-        mode.appendChild(ripple.createElement(
             'option', {value: 'bound'}, 'Add Boundary'));
+        mode.appendChild(ripple.createElement(
+            'option', {value: 'app'}, 'Add Apparatus'));
         mode.addEventListener('change', function(event) {
             modeParam.innerHTML = '';
             ripple.hide(modeParam);
@@ -626,16 +733,18 @@
             } if (mode.value === 'app') {
                 modeParam.appendChild(ripple.createElement(
                     'option', {value: ''}, 'Clear'));
-                streya.Apparatus.mapApparatus(function(name, apparatus) {
-                    modeParam.append(ripple.createElement(
-                        'option', {value: apparatus.sigil},
-                        name + (apparatus.sigil ?
-                               (' (' + apparatus.sigil + ')') : '')));
-                });
+                streya.Apparatus.eachApparatus(
+                    function(name, apparatus) {
+                        modeParam.append(ripple.createElement(
+                            'option', {value: name}, name + (
+                                apparatus.sigil ?
+                                (' (' + apparatus.sigil + ')') : '')));
+                    });
                 ripple.show(modeParam);
             } else if (mode.value === 'bound') {
-                modeParam.append('<option value="">Clear</option>');
-                streya.Apparatus.mapBoundary(function(name, boundary) {
+                modeParam.appendChild(ripple.createElement(
+                    'option', {'value': ''}, 'Clear'));
+                streya.Apparatus.eachBoundary(function(name, boundary) {
                     modeParam.appendChild(ripple.createElement(
                         'option', {value: boundary.boundary}, name));
                 });
@@ -724,7 +833,7 @@
                 case 'center': { game.center(); redraw(); } break;
                 case 'undo': { ship.undo(); redraw(); } break;
                 case 'save': {
-                    ripple.downloadJSON(ship.save(), ship.name);
+                    ripple.downloadJSON(ship, ship.name);
                 } break;
                 case 'tour': {
                     system = systems.tour;
@@ -740,7 +849,7 @@
             }
         });
 
-        return {
+        var game = {
             init: function(container, viewport, fasciaRedraw) {
                 container.appendChild(menuframe);
                 //container.appendChild(systemPane) // TODO
@@ -809,55 +918,10 @@
                 ctx.fillRect(0, 0, this.width, this.height);
                 tform.setupContext(ctx);
 
-                // Draw the ship cells
-                ctx.beginPath();
-                ship.mapCells(function(node, cell) {
-                    ship.grid.draw(ctx, ship.grid.coordinate(node));
-                }, this);
-                ctx.fillStyle = 'rgb(160, 160, 176)';
-                ctx.fill();
-
-                // Draw ship systems
-                ctx.beginPath();
-                ship.mapCells(function(node, cell) {
-                    var radius = ship.grid.size() * 5 / 12;
-
-                    if (cell && cell.system) {
-                        node = ship.grid.coordinate(node);
-                        ctx.moveTo(node.x + radius, node.y);
-                        ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI);
-                    }
-                }, this);
-                ctx.fillStyle = 'rgb(128, 128, 128)';
-                ctx.fill();
-
-                // Draw ship sigils
-                ctx.beginPath();
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.font = 'bold ' + Math.round(
-                    ship.grid.size() / 2) + 'px sans';
-                ctx.fillStyle = 'rgb(48, 48, 96)';
-                ship.mapCells(function(node, cell) {
-                    if (cell && cell.sigil) {
-                        node = ship.grid.coordinate(node);
-                        ctx.fillText(cell.sigil, node.x, node.y);
-                    } }, this);
-
+                ship.drawBackground(ctx);
                 if (system.draw)
                     system.draw(ctx, now);
-
-                // Draw the walls
-                ctx.lineCap = 'round';
-                ctx.strokeStyle = 'rgb(96, 96, 240)';
-                ship.walls().forEach(function(wall, index) {
-                    ctx.beginPath();
-                    ctx.lineWidth = wall.width;
-                    ctx.moveTo(wall.start.x, wall.start.y);
-                    ctx.lineTo(wall.end.x, wall.end.y);
-                    ctx.stroke();
-                }, this);
-
+                ship.draw(ctx);
                 ctx.restore();
             },
 
@@ -904,27 +968,28 @@
                 redraw();
             },
 
-            tap: function(touch, redraw) {
+            tap: function(event, redraw) {
                 if (system.singleTap) {
-                    system.singleTap(touch);
+                    system.singleTap(event.point);
                     redraw();
                 }
             },
 
-            doubleTap: function(touch, redraw) {
+            doubleTap: function(event, redraw) {
                 if (system.doubleTap) {
-                    system.doubleTap(touch);
+                    system.doubleTap(event.point);
                     redraw();
                 }
             },
 
-            drag: function(start, last, current, redraw) {
+            drag: function(event) {
                 if (system.drag) {
-                    system.drag(start, last, current);
+                    system.drag(event);
                     redraw();
                 }
             }
         };
+        return game;
     };
 
 }).call(this, typeof exports === 'undefined'?

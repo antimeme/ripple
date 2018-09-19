@@ -36,22 +36,6 @@
      var drawDrag = null, drawSwipe = null;
      var drawTap = null, drawDTap = null;
 
-     var post = function(description, details) {
-         var entry, log = document.getElementById('log');
-         if (last && last.description === description &&
-             description === "drag") {
-             if (log.childNodes.length > 0)
-                 log.removeChild(log.firstChild);
-         }
-         last = {description: description};
-         entry = document.createElement("div");
-         entry.appendChild(
-             document.createTextNode(
-                 description + JSON.stringify(details)
-                                   .replace(/,/g, ', ')));
-         log.prepend(entry);
-     };
-
      var draw = function() {
          var ctx, xx, yy, scale = 100;
 
@@ -130,42 +114,56 @@
          draw();
      };
      window.addEventListener("resize", resize);
-     resize();
+     window.dispatchEvent(new Event('resize'));
 
      document.getElementById("clear").addEventListener(
          "click", function(event) {
              document.getElementById("log").innerHTML = ""; });
 
+     var post = function(description, details) {
+         var entry, log = document.getElementById('log');
+         if (last && last.description === description &&
+             description === "drag") {
+             if (log.childNodes.length > 0)
+                 log.removeChild(log.firstChild);
+         }
+         last = {description: description};
+         entry = document.createElement("div");
+         entry.appendChild(
+             document.createTextNode(
+                 description + JSON.stringify(details)
+                                   .replace(/,/g, ', ')));
+         log.prepend(entry);
+         draw();
+     };
+
      ripple.gestur({
-         tap: function(name, touch) {
-             drawTap = touch;
+         tap: function(name, event) {
+             drawTap = event.point;
              drawSwipe = drawDrag = drawDTap = null;
-             post(name, touch);
-             draw();
+             post(name, event.point);
          },
-         doubleTap: function(name, touch) {
-             drawDTap = touch;
-             post(name, touch);
-             draw();
+         doubleTap: function(name, event) {
+             drawDTap = event.point;
+             post(name, event.point);
          },
-         swipe: function(name, start, end) {
-             drawSwipe = {start: start, end: end};
+         swipe: function(name, event) {
+             drawSwipe = {start: event.start, end: event.end};
              post(name, drawSwipe);
-             draw();
          },
-         drag: function(name, start, last, current) {
-             drawDrag = {start: start, last: last,
-                         current: current};
+         drag: function(name, event) {
+             drawDrag = {start: event.start, last: event.last,
+                         current: event.current};
              post(name, drawDrag);
-             draw();
          },
-         wheel: function(name, scroll) { post(name, scroll); },
-         pinchStart: function(name, one, two) {
-             post(name, {one: one, two: two}); },
-         pinchMove: function(name, length, angle) {
-             post(name, {length: length, angle: angle}); },
-         pinchDebug: function(name, value) {
-             post(name, value);
+         wheel: function(name, event) {
+             post(name, event);
+         },
+         pinchStart: function(name, event) {
+             post(name, {points: event.points});
+         },
+         pinchMove: function(name, event) {
+             post(name, {length: event.length, angle: event.angle});
          }
      }, canvas);
  }); //]]></script>
