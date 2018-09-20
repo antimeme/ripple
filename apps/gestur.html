@@ -75,21 +75,6 @@
              ctx.fill();
          }
 
-         if (drawDrag) {
-             ctx.beginPath();
-             ctx.moveTo(drawDrag.start.x, drawDrag.start.y);
-             ctx.lineTo(drawDrag.current.x, drawDrag.current.y);
-             ctx.moveTo(drawDrag.current.x + 10, drawDrag.current.y);
-             ctx.arc(drawDrag.current.x, drawDrag.current.y, 10,
-                     0, 2 * Math.PI, true);
-             ctx.lineWidth = 5;
-             ctx.lineCap = 'round';
-             ctx.strokeStyle = 'rgba(192, 32, 192)';
-             ctx.stroke();
-             ctx.fillStyle = 'rgba(192, 32, 192)';
-             ctx.fill();
-         }
-
          if (drawSwipe) {
              ctx.beginPath();
              ctx.moveTo(drawSwipe.start.x, drawSwipe.start.y);
@@ -102,6 +87,21 @@
              ctx.strokeStyle = 'rgba(192, 32, 32)';
              ctx.stroke();
              ctx.fillStyle = 'rgba(192, 32, 32)';
+             ctx.fill();
+         }
+
+         if (drawDrag) {
+             ctx.beginPath();
+             ctx.moveTo(drawDrag.start.x, drawDrag.start.y);
+             ctx.lineTo(drawDrag.current.x, drawDrag.current.y);
+             ctx.moveTo(drawDrag.current.x + 10, drawDrag.current.y);
+             ctx.arc(drawDrag.current.x, drawDrag.current.y, 10,
+                     0, 2 * Math.PI, true);
+             ctx.lineWidth = 5;
+             ctx.lineCap = 'round';
+             ctx.strokeStyle = 'rgba(192, 32, 192)';
+             ctx.stroke();
+             ctx.fillStyle = 'rgba(192, 32, 192)';
              ctx.fill();
          }
      };

@@ -648,12 +648,13 @@
                     this.swipe = false;
 
                 if (current) {
-                    if (this.swipe) {
-                        if (!checkLine(this.swipeAngle, this.touchOne,
-                                       this.drag, current))
-                            this.swipe = false;
-                    } else this.fireEvent('drag', {
+                    if (!checkLine(this.swipeAngle, this.touchOne,
+                                   this.drag, current))
+                        this.swipe = false;
+
+                    this.fireEvent('drag', {
                         target: event.target,
+                        swipe: this.swipe,
                         start: this.touchOne,
                         last: this.drag, current: current});
                 }
