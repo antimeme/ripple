@@ -118,7 +118,10 @@
 
      document.getElementById("clear").addEventListener(
          "click", function(event) {
-             document.getElementById("log").innerHTML = ""; });
+             document.getElementById("log").innerHTML = "";
+             drawTap = drawDTap = drawSwipe = drawDrag = null;
+             draw();
+         });
 
      var post = function(description, details) {
          var entry, log = document.getElementById('log');
@@ -140,7 +143,6 @@
      ripple.gestur({
          tap: function(name, event) {
              drawTap = event.point;
-             drawSwipe = drawDrag = drawDTap = null;
              post(name, event.point);
          },
          doubleTap: function(name, event) {
