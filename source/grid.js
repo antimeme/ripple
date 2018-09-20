@@ -360,13 +360,9 @@
     // and a continuous grid of squares.  The size parameter to the
     // constuctor represents the length of a square edge.
     var SquareGrid = function(options) {
-        this._json = {
-            type: 'square', diagonal: this.diagonal,
-            width: options.width, height: options.height
-        };
-        this.size(options && options.size ? options.size : 100);
-        this.diagonal = (options && options.diagonal ?
-                         options.diagonal : false);
+        BaseGrid.call(this, options);
+        this._json.diagonal = this.diagonal =
+            (options && options.diagonal ? options.diagonal : false);
     };
     SquareGrid.prototype = Object.create(BaseGrid.prototype);
 
@@ -425,12 +421,7 @@
     // and a continuous grid of equalateral triangles.  The size
     // parameter to the constuctor is the length of a triangle edge.
     var TriangleGrid = function(options) {
-        this._json = {
-            type: 'triangle',
-            width: options.width, height: options.height
-        };
-        this.size(options && options.size ? options.size : 125);
-    };
+        BaseGrid.call(this, options); };
     TriangleGrid.prototype = Object.create(BaseGrid.prototype);
 
     TriangleGrid.prototype._update = function() {
@@ -497,12 +488,9 @@
     // fourty-five degrees).  The size parameter to the constuctor
     // represents the length of a triangle edge.
     var RTriangleGrid = function(options) {
-        this._json = {
-            type: 'rtriangle', regular: this.regular,
-            width: options.width, height: options.height
-        };
-        this.size((options && options.size) ? options.size : 100);
-        this.regular = (options && options.regular);
+        BaseGrid.call(this, options);
+        this._json.regular = this.regular =
+            (options && options.regular);
     };
     RTriangleGrid.prototype = Object.create(BaseGrid.prototype);
 
@@ -598,15 +586,10 @@
     // is a point or an edge.  Pass either "edge" or "point" (the
     // default) as a property of options to control the result.
     var HexGrid = function(options) {
-        this._json = {
-            type: 'hex', orient: orient,
-            width: options.width, height: options.height,
-        };
-        this.size(options && options.size ? options.size : 60);
-
-        var orient = (options && options.orient) ?
-                     options.orient : "point";
-        if (orient == "point") {
+        BaseGrid.call(this, options);
+        this._json.orient = (options && options.orient) ?
+                            options.orient : "point";
+        if (this._json.orient == "point") {
             this.alpha = "x";
             this.beta  = "y";
             this.row   = "row";
