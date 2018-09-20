@@ -622,12 +622,43 @@
         return result;
     };
 
+    fascia.screen = function(container, className) {
+        if (!(this instanceof fascia.screen))
+            return new fascia.screen(container);
+        this.pane = ripple.createElement(
+            'div', {'class': className, style: {display: 'none'}});
+        container.appendChild(this.pane);
+    };
+
+    fascia.screen.prototype.show = function() {
+        return ripple.show(this.pane); };
+
+    fascia.screen.prototype.hide = function() {
+        return ripple.hide(this.pane); };
+
+    fascia.screen.prototype.toggle = function() {
+        return ripple.toggleVisible(this.pane); };
+
+    fascia.screen.prototype.isVisible = function() {
+        return ripple.isVisible(this.pane); };
+
+    fascia.screen.prototype.resize = function(width, height) {
+        var size = fasciaButtonSize(width, height);
+        this.pane.style.width = Math.floor(width - size / 2) + 'px';
+        this.pane.style.height = Math.floor(height - size / 2) + 'px';
+        this.pane.style.top = Math.floor(size / 4) + 'px';
+        this.pane.style.left = Math.floor(size / 4) + 'px';
+        return this;
+    };
+
     // Create an HTML inventory system
     fascia.inventoryScreen = function(
         container, player, itemSystem, imageSystem) {
         if (!(this instanceof fascia.inventoryScreen))
             return new fascia.inventoryScreen(
                 container, player, itemSystem, imageSystem);
+        fascia.screen.call(this, container, 'page');
+        ripple.addClass(this.pane, 'inventory');
 
         this.imageSystem = imageSystem;
         this.itemSystem = itemSystem;
@@ -679,10 +710,6 @@
                     ripple.addClass(button, 'selected'); });
         };
 
-        this.pane = ripple.createElement(
-            'div', {'class': 'page inventory', style: {display: 'none'}});
-        container.appendChild(this.pane);
-
         this.header = ripple.createElement('div', {
             'class': 'inventory-header'}, ripple.createElement(
                 'div', {'class': 'bbar'},
@@ -695,7 +722,7 @@
                 this.imageSystem.createButton(
                     {icon: 'give', className: 'inventory-givetake'},
                     give, this)
-        ));
+            ));
         this.pane.appendChild(this.header);
         this.playerPane = ripple.createElement(
             'div', {'class': 'inventory-pane inventory-self'});
@@ -711,31 +738,18 @@
         this.pane.appendChild(this.portraitPane);
         this.populate();
     };
+    fascia.inventoryScreen.prototype =
+        Object.create(fascia.screen.prototype);
 
     fascia.inventoryScreen.prototype.resize = function(width, height) {
         var size = fasciaButtonSize(width, height);
-        this.pane.style.width = Math.floor(width - size / 2) + 'px';
-        this.pane.style.height = Math.floor(height - size / 2) + 'px';
-        this.pane.style.top = Math.floor(size / 4) + 'px';
-        this.pane.style.left = Math.floor(size / 4) + 'px';
+        fascia.screen.prototype.resize.call(this, width, height);
         document.querySelectorAll('.inventory-header, .inventory-footer')
                 .forEach(function(element) {
                     element.style.height =
                         Math.floor(size) + 'px'; });
         return this;
     };
-
-    fascia.inventoryScreen.prototype.show = function() {
-        return ripple.show(this.pane); };
-
-    fascia.inventoryScreen.prototype.hide = function() {
-        return ripple.hide(this.pane); };
-
-    fascia.inventoryScreen.prototype.toggle = function() {
-        return ripple.toggleVisible(this.pane); };
-
-    fascia.inventoryScreen.prototype.isVisible = function() {
-        return ripple.isVisible(this.pane); };
 
     fascia.inventoryScreen.prototype.showPortrait = function() {
         var self = this;

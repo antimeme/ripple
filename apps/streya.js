@@ -66,13 +66,10 @@
                 ctx.beginPath();
                 ctx.moveTo(node.x + inner, node.y);
                 ctx.arc(node.x, node.y, inner, 0, 2 * Math.PI);
-                ctx.fillStyle = 'rgb(128, 128, 192)';
+                ctx.fillStyle = this.active ?
+                                'rgb(200, 200, 255)' :
+                                'rgb(128, 128, 192)';
                 ctx.fill();
-                if (this.active) {
-                    ctx.lineWidth = 0.5;
-                    ctx.strokeStyle = 'rgb(240, 240, 255)';
-                    ctx.stroke();
-                }
             }
 
             if (this.sigil) {
@@ -140,6 +137,7 @@
                 Object.keys(config.boundaries).forEach(function(key) {
                     result.__boundaries[key] = config.boundaries[key];
                 });
+            result.activeApparatus = null;
 
             return result;
         },
@@ -485,6 +483,17 @@
 
     }
 
+    var checkFacingClose = function(character,
+                                    interactablePosition,
+                                    distance, spread) {
+        var delta = multivec(interactablePosition).minus(
+            character.position);
+        return (!delta.zeroish() &&
+                (delta.normSquared() < (distance * distance)) &&
+                (delta.normalize().dot(multivec(
+                    {theta: character.direction})) > spread));
+    };
+
     streya.game = function(data) {
         var game, redraw, tap, selected, drag, zooming, gesture;
         var colorSelected = 'rgba(192, 192, 0, 0.2)';
@@ -492,6 +501,7 @@
         var imageSystem = fascia.imageSystem(data.imageSystem);
         var itemSystem = fascia.itemSystem(data.itemSystem);
         var inventoryScreen;
+        var apparatusScreen;
         var player = fascia.createPlayer(
             ripple.mergeConfig(
                 (data.characterDefinitions &&
@@ -499,7 +509,10 @@
                      position: {x: 0, y: 0},
                      itemSystem: itemSystem,
                      interact: function() {
-                         if (inventoryScreen.isVisible())
+                         if (ship.activeApparatus) {
+                             apparatusScreen.show();
+                             inventoryScreen.hide();
+                         } else if (inventoryScreen.isVisible())
                              inventoryScreen.hide();
                          else {
                              inventoryScreen.populate();
@@ -641,7 +654,7 @@
                 },
                 keydown: function(event) {
                     if (event.keyCode === 27) {
-                        ripple.hide(inventoryScreen.pane);
+                        inventoryScreen.hide();
                         system = systems.edit;
                         system.start();
                     } else {
@@ -680,10 +693,15 @@
                     }
 
                     player.update(now);
+                    ship.activeApparatus = null;
                     ship.eachApparatus(function(apparatus, node) {
-                        apparatus.active = !!(player.position.minus(
-                            ship.grid.coordinate(
-                                node)).normSquared() < 25);
+                        if (apparatus.console &&
+                            checkFacingClose(
+                                player, ship.grid.coordinate(node),
+                                3.5, 0.5)) {
+                            apparatus.active = true;
+                            ship.activeApparatus = apparatus;
+                        } else apparatus.active = false;
                     });
                     tform.position(player.position);
                 }
@@ -707,7 +725,7 @@
         bbarRight.style.right = 0;
         bbarRight.appendChild(imageSystem.createButton(
             'settings', function(event) {
-                ripple.hide(inventoryScreen.pane);
+                inventoryScreen.hide();
                 system = systems.edit;
                 system.start();
             }));
@@ -860,6 +878,10 @@
                 container.appendChild(bbarLeft);
                 container.appendChild(bbarRight);
                 imageSystem.resize(this.width, this.height);
+                apparatusScreen = fascia.screen(container, 'page');
+                apparatusScreen.pane.appendChild(
+                    ripple.createElement('h1', null, 'Apparatus'));
+                apparatusScreen.resize(this.width, this.height);
                 inventoryScreen = fascia.inventoryScreen(
                     container, player, itemSystem, imageSystem);
                 inventoryScreen.resize(this.width, this.height);
@@ -905,6 +927,8 @@
                     imageSystem.resize(width, height);
                 if (inventoryScreen)
                     inventoryScreen.resize(width, height);
+                if (apparatusScreen)
+                    apparatusScreen.resize(width, height);
                 zooming = drag = undefined;
             },
 
