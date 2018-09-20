@@ -622,12 +622,38 @@
         return result;
     };
 
-    fascia.screen = function(container, className) {
+    fascia.screen = function(container, options) {
         if (!(this instanceof fascia.screen))
-            return new fascia.screen(container);
+            return new fascia.screen(container, options);
         this.pane = ripple.createElement(
-            'div', {'class': className, style: {display: 'none'}});
+            'div', {className: 'fascia-screen'});
+        this.hide();
+        if (!options)
+            options = {};
+        if (options.title && (typeof(options.title) === 'string')) {
+            this._title = options.title;
+            this.pane.appendChild(
+                ripple.createElement(
+                    'h1', null, document.createTextNode(this._title)));
+        }
+        if (options.imageSystem && options.close)
+            this.pane.appendChild(
+                options.imageSystem.createButton(
+                    {icon: 'close', className: 'inventory-close'},
+                    function(event) { this.hide(); }, this));
         container.appendChild(this.pane);
+    };
+
+    fascia.screen.prototype.title = function(value) {
+        if (value) {
+            var h1 = this.pane.querySelector('h1');
+            if (h1) {
+                h1.innerHTML = '';
+                h1.appendChild(document.createTextNode(value));
+            }
+            this._title = value
+            return this;
+        } else return this._title;
     };
 
     fascia.screen.prototype.show = function() {
@@ -657,7 +683,7 @@
         if (!(this instanceof fascia.inventoryScreen))
             return new fascia.inventoryScreen(
                 container, player, itemSystem, imageSystem);
-        fascia.screen.call(this, container, 'page');
+        fascia.screen.call(this, container);
         ripple.addClass(this.pane, 'inventory');
 
         this.imageSystem = imageSystem;

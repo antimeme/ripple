@@ -45,12 +45,3 @@ html, body
     border-top-right-radius: 15px;
     border-bottom-right-radius: 15px;
 }
-
-.page {
-    position: absolute; top: 0; left: 0; z-index: 3;
-    border: 5px solid rgb(96, 69, 240);
-    background-color: #ddd;
-    border-radius: 20px;
-    border-width: 5px;
-    box-sizing: border-box;
-}

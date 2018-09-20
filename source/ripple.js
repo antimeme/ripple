@@ -98,7 +98,9 @@
         var ii;
 
         if (attrs) Object.keys(attrs).forEach(function(attr) {
-            if ((attr === 'data') &&
+            if (attr === 'className')
+                result.className = attrs[attr];
+            else if ((attr === 'data') &&
                 (typeof(attrs[attr]) === 'object')) {
                 Object.keys(attrs[attr]).forEach(function(entry) {
                     result.setAttribute(

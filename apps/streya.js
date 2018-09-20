@@ -509,12 +509,16 @@
                      position: {x: 0, y: 0},
                      itemSystem: itemSystem,
                      interact: function() {
-                         if (ship.activeApparatus) {
+                         if (apparatusScreen.isVisible()) {
+                             apparatusScreen.hide()
+                         } else if (ship.activeApparatus) {
+                             apparatusScreen.title(
+                                 ship.activeApparatus.type);
                              apparatusScreen.show();
                              inventoryScreen.hide();
-                         } else if (inventoryScreen.isVisible())
+                         } else if (inventoryScreen.isVisible()) {
                              inventoryScreen.hide();
-                         else {
+                         } else {
                              inventoryScreen.populate();
                              inventoryScreen.show();
                          } }}));
@@ -878,9 +882,8 @@
                 container.appendChild(bbarLeft);
                 container.appendChild(bbarRight);
                 imageSystem.resize(this.width, this.height);
-                apparatusScreen = fascia.screen(container, 'page');
-                apparatusScreen.pane.appendChild(
-                    ripple.createElement('h1', null, 'Apparatus'));
+                apparatusScreen = fascia.screen(
+                    container, {title: 'Apparatus'});
                 apparatusScreen.resize(this.width, this.height);
                 inventoryScreen = fascia.inventoryScreen(
                     container, player, itemSystem, imageSystem);

@@ -4,6 +4,19 @@
     background-color: rgba(223,223,223,0.8); }
 .fascia-button.selected { background-color: rgba(168,168,223,0.8); }
 
+.fascia-screen {
+    position: absolute; top: 0; left: 0; z-index: 3;
+    border: 5px solid rgb(96, 69, 240);
+    background-color: #ddd;
+    border-radius: 20px;
+    border-width: 5px;
+    box-sizing: border-box;
+}
+
+.fascia-screen h1, .fascia-screen h2, .fascia-screen h3 {
+    text-align: center;
+}
+
 .inventory-pane {
     position: absolute;
     box-sizing: border-box;
