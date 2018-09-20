@@ -605,9 +605,9 @@
                             ship.setCell(selected, {});
                         else ship.setCell(selected, undefined);
                     } else if (mode.value === 'app' && cell) {
-                        ship.setCell(selected, {
+                        ship.setCell(selected, modeParam.value ? {
                             apparatus: streya.Apparatus.create(
-                                modeParam.value) });
+                                modeParam.value) } : {});
                     } else if (mode.value === 'bound' &&
                                cell && previous) {
                         ship.setBoundary(
