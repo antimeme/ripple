@@ -69,9 +69,12 @@
     // thinks like a SquareGrid for the most part, it returns an empty
     // list of points for each cell.
     var BaseGrid = function(options) {
+        this._json = {
+            type: null, width: options.width, height: options.height };
         this.size(options && options.size ? options.size : 100);
     };
 
+    BaseGrid.prototype.toJSON = function() { return this._json; };
     BaseGrid.prototype._update = function() {};
     BaseGrid.prototype._offset_init = function(left, top) {
         if (!this._offset)
@@ -80,7 +83,7 @@
 
     BaseGrid.prototype.size = function(value) {
         if (!isNaN(value) && (value > 0)) {
-            this._size = value;
+            this._json.size = this._size = value;
             this._update();
         }
         return this._size;
@@ -357,6 +360,10 @@
     // and a continuous grid of squares.  The size parameter to the
     // constuctor represents the length of a square edge.
     var SquareGrid = function(options) {
+        this._json = {
+            type: 'square', diagonal: this.diagonal,
+            width: options.width, height: options.height
+        };
         this.size(options && options.size ? options.size : 100);
         this.diagonal = (options && options.diagonal ?
                          options.diagonal : false);
@@ -418,6 +425,10 @@
     // and a continuous grid of equalateral triangles.  The size
     // parameter to the constuctor is the length of a triangle edge.
     var TriangleGrid = function(options) {
+        this._json = {
+            type: 'triangle',
+            width: options.width, height: options.height
+        };
         this.size(options && options.size ? options.size : 125);
     };
     TriangleGrid.prototype = Object.create(BaseGrid.prototype);
@@ -452,7 +463,7 @@
         var yfrac = (node.y + this.radius) / this.rowh;
         if ((row + col) % 2) {
             if ((yfrac - Math.ceil(yfrac)) +
-                 (xfrac - Math.floor(xfrac)) > 0)
+                  (xfrac - Math.floor(xfrac)) > 0)
                 col += 1;
         } else if ((yfrac - Math.floor(yfrac)) -
                    (xfrac - Math.floor(xfrac)) < 0)
@@ -466,7 +477,7 @@
         return [{row: node.row, col: node.col + 1},
                 {row: node.row, col: node.col - 1},
                 {row: node.row +
-                  (((node.row + node.col) % 2) ? -1 : 1 ), col: node.col}];
+                   (((node.row + node.col) % 2) ? -1 : 1 ), col: node.col}];
     };
 
     TriangleGrid.prototype.points = function(node) {
@@ -486,6 +497,10 @@
     // fourty-five degrees).  The size parameter to the constuctor
     // represents the length of a triangle edge.
     var RTriangleGrid = function(options) {
+        this._json = {
+            type: 'rtriangle', regular: this.regular,
+            width: options.width, height: options.height
+        };
         this.size((options && options.size) ? options.size : 100);
         this.regular = (options && options.regular);
     };
@@ -583,6 +598,10 @@
     // is a point or an edge.  Pass either "edge" or "point" (the
     // default) as a property of options to control the result.
     var HexGrid = function(options) {
+        this._json = {
+            type: 'hex', orient: orient,
+            width: options.width, height: options.height,
+        };
         this.size(options && options.size ? options.size : 60);
 
         var orient = (options && options.orient) ?
