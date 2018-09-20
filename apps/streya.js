@@ -35,6 +35,7 @@
 
             ['sigil', 'console', 'mass', 'power'].forEach(
                 function(key) { result[key] = settings[key]; });
+            result.active = false;
             return result;
         },
         equals: function(other) {
@@ -68,7 +69,8 @@
                 ctx.fillStyle = 'rgb(128, 128, 192)';
                 ctx.fill();
                 if (this.active) {
-                    ctx.strokeStyle = 'rgb(96, 96, 240)';
+                    ctx.lineWidth = 0.5;
+                    ctx.strokeStyle = 'rgb(240, 240, 255)';
                     ctx.stroke();
                 }
             }
@@ -245,153 +247,15 @@
         eachCell: function(fn, context) {
             Object.keys(this.__cells).forEach(function(id) {
                 var node = this.__unindexCell(id);
-                fn.call(context, node, this.getCell(node));
+                fn.call(context, this.getCell(node), node);
             }, this);
         },
 
-        getBoundary: function(nodeA, nodeB) {
-            return this.__boundaries[
-                this.__indexBoundary(nodeA, nodeB)];
-        },
-
-        setBoundary: function(nodeA, nodeB, value, noUndo) {
-            var id = this.__indexBoundary(nodeA, nodeB);
-            var undo = noUndo ? null :
-                       {boundary: id, value: this.__boundaries[id]};
-
-            if ((this.__indexCell(nodeA) in this.__cells) &&
-                (this.__indexCell(nodeB) in this.__cells) &&
-                this.grid.adjacent(nodeA, nodeB)) {
-                if (value)
-                    this.__boundaries[id] = value;
-                else delete this.__boundaries[id];
-            } else undo = null;
-
-            if (undo)
-                this.__pushUndo(undo);
-            return this;
-        },
-
-        undo: function() { // Reverts the most recent change
-            if (this.__undoCounter <= 0)
-                return;
-            --this.__undoCounter;
-            var hardStop = 20;
-            while ((this.__undo.length > 0) &&
-                   (this.__undo[this.__undo.length - 1].id ===
-                       this.__undoCounter)) {
-                var entry = this.__undo.pop();
-                if (!isNaN(entry.cell))
-                    this.setCell(
-                        this.__unindexCell(entry.cell),
-                        entry.value, true);
-                else if (!isNaN(entry.boundary)) {
-                    var boundary = this.__unindexBoundary(
-                        entry.boundary);
-                    this.setBoundary(
-                        boundary.nodeA, boundary.nodeB,
-                        entry.value, true);
-                }
-            }
-        },
-
-        undoMark: function() {
-            // Collects all as-yet-unmarked changes into a single undo
-            // event that can be unwound.
-            if ((this.__undo.length > 0) &&
-                (this.__undo[this.__undo.length - 1].id ===
-                    this.__undoCounter))
-                this.__undoCounter++;
-        },
-
-        mass: function() { // TODO
-            var result = 0;
-            Object.keys(this.__cells).forEach(function(id) {
-            }, this);
-            return result;
-        },
-
-        cost: function() { // TODO
-            var result = 0;
-            return result;
-        },
-
-        toJSON: function() {
-            var result = {
-                name: this.name,
-                grid: {
-                    type: 'hex', // TODO set this correctly
-                    size: this.grid.size()},
-                cells: {}, boundaries: {},
-            };
-            Object.keys(this.__cells).forEach(function(id) {
-                result.cells[id] = this.__cells[id];
-            }, this);
-            Object.keys(this.__boundaries).forEach(function(id) {
-                result.boundaries[id] = this.__boundaries[id]; }, this);
-            return result;
-        },
-
-        drawBackground: function(ctx) {
-            // Draw the ship cells
-            ctx.beginPath();
-            this.eachCell(function(node, cell) {
-                this.grid.draw(ctx, this.grid.coordinate(node));
-            }, this);
-            ctx.fillStyle = 'rgb(160, 160, 176)';
-            ctx.fill();
-
-            // Draw ship apparatus
-            this.eachCell(function(node, cell) {
+        eachApparatus: function(fn, context) {
+            this.eachCell(function(cell, node) {
                 if (cell && cell.apparatus)
-                    cell.apparatus.draw(ctx, this.grid.size(),
-                                        this.grid.coordinate(node));
-            }, this);
-        },
-
-        draw: function(ctx) {
-            // Draw the walls
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = 'rgb(96, 96, 240)';
-            this.eachWall(function(wall, index) {
-                ctx.beginPath();
-                ctx.lineWidth = wall.width;
-                ctx.moveTo(wall.start.x, wall.start.y);
-                ctx.lineTo(wall.end.x, wall.end.y);
-                ctx.stroke();
+                    fn.call(context, cell.apparatus, node);
             });
-        },
-
-        checkCollision: function(character, collide) {
-            var current;
-
-            this.eachWall(function(wall) {
-                if (wall.pass)
-                    return;
-                current = multivec.collideRadiusSegment(
-                    character.position, character.destination,
-                    character.size, wall);
-                if (!isNaN(current) &&
-                    (isNaN(collide) || current < collide))
-                    collide = current;
-            });
-
-            this.eachCell(function(node, cell) {
-                if (cell && cell.apparatus && cell.apparatus.console) {
-                    node = multivec(this.grid.coordinate(node));
-                    if (node.minus(character.position).normSquared() >
-                        (this.grid.size() * this.grid.size() / 25)) {
-                        current = multivec.collideRadiusRadius(
-                            character.position, character.destination,
-                            character.size, node, node,
-                            this.grid.size() / 5);
-                        if (!isNaN(current) &&
-                            (isNaN(collide) || current < collide))
-                            collide = current;
-                    }
-                }
-            }, this);
-            return collide;
         },
 
         eachWall: function(fn, context) {
@@ -452,11 +316,153 @@
             return this;
         },
 
+        getBoundary: function(nodeA, nodeB) {
+            return this.__boundaries[
+                this.__indexBoundary(nodeA, nodeB)];
+        },
+
+        setBoundary: function(nodeA, nodeB, value, noUndo) {
+            var id = this.__indexBoundary(nodeA, nodeB);
+            var undo = noUndo ? null :
+                       {boundary: id, value: this.__boundaries[id]};
+
+            if ((this.__indexCell(nodeA) in this.__cells) &&
+                (this.__indexCell(nodeB) in this.__cells) &&
+                this.grid.adjacent(nodeA, nodeB)) {
+                if (value)
+                    this.__boundaries[id] = value;
+                else delete this.__boundaries[id];
+            } else undo = null;
+
+            if (undo)
+                this.__pushUndo(undo);
+            return this;
+        },
+
+        undo: function() { // Reverts the most recent change
+            if (this.__undoCounter <= 0)
+                return;
+            --this.__undoCounter;
+            var hardStop = 20;
+            while ((this.__undo.length > 0) &&
+                   (this.__undo[this.__undo.length - 1].id ===
+                       this.__undoCounter)) {
+                var entry = this.__undo.pop();
+                if (!isNaN(entry.cell))
+                    this.setCell(
+                        this.__unindexCell(entry.cell),
+                        entry.value, true);
+                else if (!isNaN(entry.boundary)) {
+                    var boundary = this.__unindexBoundary(
+                        entry.boundary);
+                    this.setBoundary(
+                        boundary.nodeA, boundary.nodeB,
+                        entry.value, true);
+                }
+            }
+        },
+
+        undoMark: function() {
+            // Collects all as-yet-unmarked changes into a single undo
+            // event that can be unwound in one step.
+            if ((this.__undo.length > 0) &&
+                (this.__undo[this.__undo.length - 1].id ===
+                    this.__undoCounter))
+                this.__undoCounter++;
+        },
+
+        mass: function() { // TODO
+            var result = 0;
+            Object.keys(this.__cells).forEach(function(id) {
+            }, this);
+            return result;
+        },
+
+        cost: function() { // TODO
+            var result = 0;
+            return result;
+        },
+
+        toJSON: function() {
+            var result = {
+                name: this.name, grid: this.grid,
+                cells: {}, boundaries: {},
+            };
+            Object.keys(this.__cells).forEach(function(id) {
+                result.cells[id] = this.__cells[id];
+            }, this);
+            Object.keys(this.__boundaries).forEach(function(id) {
+                result.boundaries[id] = this.__boundaries[id]; }, this);
+            return result;
+        },
+
+        drawBackground: function(ctx) {
+            // Draw the ship cells
+            ctx.beginPath();
+            this.eachCell(function(cell, node) {
+                this.grid.draw(ctx, this.grid.coordinate(node));
+            }, this);
+            ctx.fillStyle = 'rgb(160, 160, 176)';
+            ctx.fill();
+
+            // Draw ship apparatus
+            this.eachCell(function(cell, node) {
+                if (cell && cell.apparatus)
+                    cell.apparatus.draw(ctx, this.grid.size(),
+                                        this.grid.coordinate(node));
+            }, this);
+        },
+
+        draw: function(ctx) {
+            // Draw the walls
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = 'rgb(96, 96, 240)';
+            this.eachWall(function(wall, index) {
+                ctx.beginPath();
+                ctx.lineWidth = wall.width;
+                ctx.moveTo(wall.start.x, wall.start.y);
+                ctx.lineTo(wall.end.x, wall.end.y);
+                ctx.stroke();
+            });
+        },
+
+        checkCollision: function(character, collide) {
+            var current;
+
+            this.eachWall(function(wall) {
+                if (wall.pass)
+                    return;
+                current = multivec.collideRadiusSegment(
+                    character.position, character.destination,
+                    character.size, wall);
+                if (!isNaN(current) &&
+                    (isNaN(collide) || current < collide))
+                    collide = current;
+            });
+
+            this.eachCell(function(cell, node) {
+                if (cell && cell.apparatus && cell.apparatus.console) {
+                    node = multivec(this.grid.coordinate(node));
+                    if (node.minus(character.position).normSquared() >
+                        (this.grid.size() * this.grid.size() / 25)) {
+                        current = multivec.collideRadiusRadius(
+                            character.position, character.destination,
+                            character.size, node, node,
+                            this.grid.size() / 5);
+                        if (!isNaN(current) &&
+                            (isNaN(collide) || current < collide))
+                            collide = current;
+                    }
+                }
+            }, this);
+            return collide;
+        },
+
         extents: function() {
             if (!this.__extents) {
                 this.__extents = { sx: undefined, sy: undefined,
                                    ex: undefined, ey: undefined };
-                this.eachCell(function(node) {
+                this.eachCell(function(cell, node) {
                     node = this.grid.coordinate(node);
                     this.grid.points(node).forEach(function(point) {
                         if (isNaN(this.__extents.sx) ||
@@ -615,7 +621,7 @@
                     var startNode = ship.grid.position(player.position);
                     var candidate = null;
                     if (!ship.getCell(startNode)) {
-                        ship.eachCell(function(node, cell) {
+                        ship.eachCell(function(cell, node) {
                             node = multivec(
                                 ship.grid.coordinate(node));
                             if (!candidate ||
@@ -658,23 +664,15 @@
                         true, player.position,
                         tform.toWorldFromScreen(point));
                 },
-                draw: function(ctx, now) {
-                    player.draw(ctx, now);
-                },
+                draw: function(ctx, now) { player.draw(ctx, now); },
                 update: function(now) {
                     if (isNaN(now))
                         now = Date.now();
 
                     player.destination = player.plan(now);
                     if (player.destination) {
-                        var collide = undefined;
-                        var updateCollide = function(current) {
-                            if (!isNaN(current) &&
-                                (isNaN(collide) || current < collide))
-                                collide = current;
-                        };
-
-                        collide = ship.checkCollision(player, collide);
+                        var collide = ship.checkCollision(
+                            player, collide);
 
                         if (!isNaN(collide))
                             player.destination = player.replan(
@@ -682,6 +680,11 @@
                     }
 
                     player.update(now);
+                    ship.eachApparatus(function(apparatus, node) {
+                        apparatus.active = !!(player.position.minus(
+                            ship.grid.coordinate(
+                                node)).normSquared() < 25);
+                    });
                     tform.position(player.position);
                 }
             },
