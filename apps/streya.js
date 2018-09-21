@@ -702,7 +702,7 @@
                         if (apparatus.console &&
                             checkFacingClose(
                                 player, ship.grid.coordinate(node),
-                                3.5, 0.5)) {
+                                3.5, 0.1)) {
                             apparatus.active = true;
                             ship.activeApparatus = apparatus;
                         } else apparatus.active = false;
@@ -878,7 +878,7 @@
                 container.appendChild(bbarRight);
                 imageSystem.resize(this.width, this.height);
                 apparatusScreen = fascia.screen(
-                    container, {title: 'Apparatus'});
+                    container, {imageSystem: imageSystem});
                 apparatusScreen.resize(this.width, this.height);
                 inventoryScreen = fascia.inventoryScreen(
                     container, player, itemSystem, imageSystem);

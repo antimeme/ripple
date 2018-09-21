@@ -14,7 +14,9 @@
 }
 
 .fascia-screen h1, .fascia-screen h2, .fascia-screen h3 {
-    text-align: center;
+    display: inline-block;
+    margin-left: 1em;
+    font-family: sans-serif;
 }
 
 .inventory-pane {

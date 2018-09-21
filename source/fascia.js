@@ -628,19 +628,21 @@
         this.pane = ripple.createElement(
             'div', {className: 'fascia-screen'});
         this.hide();
+
         if (!options)
             options = {};
-        if (options.title && (typeof(options.title) === 'string')) {
-            this._title = options.title;
+        this._title = options.title || 'Screen';
+        if (options.imageSystem)
             this.pane.appendChild(
                 ripple.createElement(
-                    'h1', null, document.createTextNode(this._title)));
-        }
-        if (options.imageSystem && options.close)
-            this.pane.appendChild(
-                options.imageSystem.createButton(
-                    {icon: 'close', className: 'inventory-close'},
-                    function(event) { this.hide(); }, this));
+                    'div', {className: 'bbar', style: {
+                        position: 'relative', top: 0, left: 0}},
+                    options.imageSystem.createButton(
+                        {icon: 'close', className: 'inventory-close'},
+                        function(event) { this.hide(); }, this),
+                    ripple.createElement(
+                        'h1', null, document.createTextNode(
+                            this._title))));
         container.appendChild(this.pane);
     };
 
