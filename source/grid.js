@@ -69,8 +69,9 @@
     // thinks like a SquareGrid for the most part, it returns an empty
     // list of points for each cell.
     var BaseGrid = function(options) {
-        this._json = {
-            type: null, width: options.width, height: options.height };
+        this._json = { type: options.type,
+                       width: options.width,
+                       height: options.height };
         this.size(options && options.size ? options.size : 100);
     };
 
