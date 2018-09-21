@@ -69,10 +69,13 @@
     // thinks like a SquareGrid for the most part, it returns an empty
     // list of points for each cell.
     var BaseGrid = function(options) {
-        this._json = { type: options.type,
-                       width: options.width,
-                       height: options.height };
+        if (!options)
+            options = {};
+        this.type = options.type || 'square';
+        this._json = { type: this.type };
         this.size(options && options.size ? options.size : 100);
+        if (!isNaN(options.width) && !isNaN(options.height))
+            this.center(options.width, options.height);
     };
 
     BaseGrid.prototype.toJSON = function() { return this._json; };
@@ -418,6 +421,53 @@
                 {x: node.x - halfsize, y: node.y + halfsize}];
     };
 
+    SquareGrid.prototype.eachLine = function(start, end, fn, context) {
+        // Given two points call a function for each cell in a line
+        // approximating the path that would have to be taken.
+        // This uses Bresenham's algorithm for plotting lines.
+        var deltaX = end.x - start.x, deltaY = end.y - start.y;
+        var absX = Math.abs(deltaX), absY = Math.abs(deltaY);
+        var ncells, index, deltaM, deltaE;
+        var error = 0;
+        var slope;
+        var node = {x: start.x, y: start.y};
+        var which;
+
+        if ((absX < 0.0001) && (absY < 0.0001)) { // degenerate case
+            which = 'col';
+            deltaM = deltaE = {x: 0, y: 0};
+            slope = 1;
+        } else if (absX >= absY) {
+            which = 'col';
+            deltaM = {x: ((deltaX > 0) ? 1 : -1) * this.size(), y: 0};
+            deltaE = {x: 0, y: ((deltaY > 0) ? 1 : -1) * this.size()};
+            slope = absY / absX; 
+        } else {
+            which = 'row';
+            deltaM = {x: 0, y: ((deltaY > 0) ? 1 : -1) * this.size()};
+            deltaE = {x: ((deltaX > 0) ? 1 : -1) * this.size(), y: 0};
+            slope = absX / absY;
+        }
+        ncells = 1 + Math.abs(this.position(end)[which] -
+                              this.position(start)[which]);
+        for (index = 0; index < ncells; ++index) {
+            node = this.position(node);
+            if (fn)
+                fn.call(context, this.coordinate(node));
+
+            if (index + 1 < ncells) {
+                node = {x: node.x + deltaM.x, y: node.y + deltaM.y};
+                error += slope * this.size();
+                if (error >= this.size() / 2) {
+                    node.x += deltaE.x;
+                    node.y += deltaE.y;
+                    error -= this.size();
+                }
+            }
+        }
+        return fn ? this : collected;
+    };
+
     // TriangleGrid represents a mapping between cartesian coordinates
     // and a continuous grid of equalateral triangles.  The size
     // parameter to the constuctor is the length of a triangle edge.
@@ -722,8 +772,6 @@
             types[options.type.toLowerCase()])
             result = new types[options.type.toLowerCase()](options);
         else result = new SquareGrid(options);
-        if (options && (options.height || options.width))
-            result.center(options.width || 0, options.height || 0);
         return result;
     };
 
@@ -734,6 +782,8 @@
         var colorTapOuter = 'rgba(128, 255, 128, 0.6)';
         var colorSelected = 'rgba(192, 192, 0, 0.6)';
         var colorNeighbor = 'rgba(128, 128, 0, 0.4)';
+        var colorLine     = 'rgba(128, 128, 224, 0.5)';
+        var colorOccupied = 'rgba(128, 192, 128, 0.5)';
         var lineWidth = 0, lineFactor = 40;
         var numbers = false, combined = false;
         var instance;
@@ -799,6 +849,7 @@
                 ctx.fillStyle = colorSelected;
                 ctx.fill();
 
+                // Show the cells adjacent to the selected cell.
                 neighbors = instance.neighbors(
                     selected, {coordinates: true, points: true});
                 ctx.beginPath();
@@ -807,9 +858,11 @@
                 ctx.fillStyle = colorNeighbor;
                 ctx.fill();
 
+                // Show the boundaries between cells using a different
+                // color for each adjacent cell.
                 var colors = [
-                    'red', 'green', 'blue', 'cyan', 'magenta',
-                    'yellow', 'black', 'white'];
+                        'red', 'green', 'blue', 'cyan', 'magenta',
+                        'yellow', 'black', 'white'];
                 neighbors.forEach(function(neighbor, index) {
                     var points = neighbor.points;
 
@@ -833,10 +886,12 @@
                     ctx.arc(neighbor.x, neighbor.y,
                             lineWidth * 2, 0, 2 * Math.PI);
 
+                    ctx.lineWidth = lineWidth;
                     ctx.strokeStyle = colors[index % colors.length];
                     ctx.stroke();
                 });
             }
+
             if (tap) {
                 var targets = tap.targets || [tap];
                 for (index = 0; index < targets.length; ++index) {
@@ -847,11 +902,31 @@
                     ctx.fillStyle = colorTapOuter;
                     ctx.fill();
                 }
+
+                if (targets.length > 1) {
+                    ctx.beginPath();
+                    instance.eachLine(
+                        targets[0], targets[1], function(node) {
+                            instance.draw(ctx, instance.coordinate(node));
+                        });
+                    ctx.fillStyle = colorLine;
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.moveTo(targets[0].x, targets[0].y);
+                    ctx.lineTo(targets[1].x, targets[1].y);
+                    ctx.lineWidth = lineWidth * 2;
+                    ctx.lineCap = 'round';
+                    ctx.strokeStyle = colorTapInner;
+                    ctx.stroke();
+                }
+
                 ctx.beginPath();
                 ctx.arc(tap.x, tap.y, 10, 0, 2 * Math.PI);
                 ctx.fillStyle = colorTapInner;
                 ctx.fill();
             }
+
             ctx.restore();
             draw_id = 0;
         };
@@ -1053,6 +1128,10 @@
             } else {
                 tap = drag = targets;
                 selected = instance.position(tap);
+                if (tap.targets && tap.targets.length > 1)
+                    selected.range = [
+                        instance.position(tap.targets[0]),
+                        instance.position(tap.targets[1])];
 
                 // Show a menu on either double tap or long press.
                 // There are some advantages to using a native double
