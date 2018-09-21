@@ -519,102 +519,77 @@
             }
         },
         "Opal": {
-            "name":"Opal",
-            "grid":{
-                "type":"hex",
-                "size":10
+            "name": "Opal",
+            "grid": {"type": "hex", "size": 10, "orient": "point"},
+            "cells": {
+                "0": {"apparatus": "Recreation"},
+                "1": {},
+                "2": {},
+                "3": {},
+                "4": {},
+                "5": {},
+                "6": {},
+                "7": {"apparatus": "Weapon Pod"},
+                "8": {"apparatus": "Cargo"},
+                "9": {"apparatus": "Helm"},
+                "12": {"apparatus": "Shields"},
+                "13": {"apparatus": "Weapon Pod"},
+                "14": {"apparatus": "Sensors"},
+                "16": {"apparatus": "Reactor"},
+                "17": {"apparatus": "Life Support"},
+                "18": {"apparatus": "Bunks"},
+                "19": {"apparatus": "Mainframe"},
+                "20": {"apparatus": "Airlock"},
+                "22": {"apparatus": "PodBay"},
+                "24": {"apparatus": "Cargo"},
+                "32": {"apparatus": "Cabin"},
+                "36": {"apparatus": "Engine"},
+                "37": {"apparatus": "Engine"},
+                "38": {"apparatus": "Engine"},
+                "39": {"apparatus": "Engine"}
             },
-            "cells":{
-                "0":{
-                    "apparatus": "Mainframe",
-                    "sigil":"M"
-                },
-                "1":{
-
-                },
-                "2":{
-                    "sigil":""
-                },
-                "3":{
-
-                },
-                "4":{
-                    "sigil":""
-                },
-                "5":{
-                    "sigil":""
-                },
-                "6":{
-                    "sigil":""
-                },
-                "7":{
-                    "apparatus": "Airlock",
-                    "sigil":"A"
-                },
-                "8":{
-                    "apparatus": "Life Support",
-                    "sigil":"O"
-                },
-                "9":{
-                    "apparatus": "Helm",
-                    "sigil":"H"
-                },
-                "12":{
-                    "apparatus": "Cabin",
-                    "sigil":"B"
-                },
-                "13":{
-                    "apparatus": "Airlock",
-                    "sigil":"A"
-                },
-                "14":{
-                    "apparatus": "Life Support",
-                    "sigil":"O"
-                },
-                "16":{
-                    "apparatus": "Reactor",
-                    "sigil":"R"
-                },
-                "17":{
-                    "apparatus": "Engine",
-                    "sigil":"E"
-                },
-                "18":{
-                    "apparatus": "Engine",
-                    "sigil":"E"
-                },
-                "20":{
-                    "apparatus": "Bunks",
-                    "sigil":"K"
-                }
-            },
-            "boundaries":{
-                "4":"pass",
-                "16":"pass",
-                "36":"pass",
-                "64":"pass",
-                "100":"pass",
-                "144":"pass",
-                "198":"auto",
-                "208":"wall",
-                "264":"wall",
-                "268":"auto",
-                "580":"auto",
-                "680":"wall",
-                "682":"auto",
-                "700":"wall",
-                "788":"auto",
-                "794":"wall",
-                "808":"wall",
-                "1032":"auto",
-                "1034":"auto",
-                "1166":"wall",
-                "1184":"wall",
-                "1304":"wall",
-                "1312":"wall",
-                "1612":"auto",
-                "1614":"wall",
-                "1616":"wall"
+            "boundaries": {
+                "4": "pass",
+                "16": "pass",
+                "36": "pass",
+                "64": "pass",
+                "100": "pass",
+                "144": "pass",
+                "198": "auto",
+                "208": "wall",
+                "264": "auto",
+                "268": "auto",
+                "580": "auto",
+                "680": "wall",
+                "682": "auto",
+                "700": "wall",
+                "788": "auto",
+                "794": "auto",
+                "1032": "auto",
+                "1034": "auto",
+                "1166": "auto",
+                "1184": "wall",
+                "1188": "wall",
+                "1304": "auto",
+                "1312": "wall",
+                "1328": "wall",
+                "1478": "wall",
+                "1612": "wheel",
+                "1614": "wall",
+                "1616": "wheel",
+                "1952": "wheel",
+                "1976": "wheel",
+                "2340": "wall",
+                "2348": "wheel",
+                "4120": "auto",
+                "4124": "auto",
+                "4134": "wall",
+                "5220": "wall",
+                "5510": "wall",
+                "5812": "wall",
+                "5824": "wall",
+                "6118": "wall",
+                "6122": "wall"
             }
         },
         "Donut": {
