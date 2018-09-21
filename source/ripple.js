@@ -101,7 +101,7 @@
             if (attr === 'className')
                 result.className = attrs[attr];
             else if ((attr === 'data') &&
-                (typeof(attrs[attr]) === 'object')) {
+                     (typeof(attrs[attr]) === 'object')) {
                 Object.keys(attrs[attr]).forEach(function(entry) {
                     result.setAttribute(
                         'data-' + entry, attrs[attr][entry]); });
@@ -866,16 +866,18 @@
         this.radians += radians;
         return this;
     };
-    ripple.transform.prototype.zoom = function(factor, min, max) {
-        var scale = this.scale * factor;
-        if (!isNaN(scale)) {
-            if (!isNaN(max) && (scale > max))
-                scale = max;
-            if (!isNaN(min) && (scale < min))
-                scale = min;
-            this.scale = scale;
+    ripple.transform.prototype.setScale = function(factor, min, max) {
+        if (!isNaN(factor)) {
+            if (!isNaN(max) && (factor > max))
+                factor = max;
+            if (!isNaN(min) && (factor < min))
+                factor = min;
+            this.scale = factor;
         }
         return this;
+    };
+    ripple.transform.prototype.zoom = function(factor, min, max) {
+        return this.setScale(this.scale * factor, min, max);
     };
     ripple.transform.prototype.toScreenFromWorld = function(point) {
         var place = { x: point.x, y: point.y };

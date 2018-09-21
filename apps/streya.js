@@ -623,6 +623,21 @@
                         y: (event.last.y - event.current.y) /
                         tform.scale });
                 },
+                pinchStart: function(event) {
+                    alert('pinchStart');
+                    this._pinchScale = tform.scale;
+                },
+                pinch: function(event) {
+                    var extents = ship.extents();
+                    var min = Math.min(
+                        game.width / (extents.ex - extents.sx),
+                        game.height / (extents.ey - extents.sy));
+                    tform.setScale(
+                        this._pinchScale * event.length,
+                        min / 2, Math.min(
+                            game.width, game.height) /
+                        ship.grid.size());
+                },
                 draw: function(ctx, now) {
                     if (selected) {
                         ctx.beginPath();
