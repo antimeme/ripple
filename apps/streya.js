@@ -676,6 +676,11 @@
                         inventoryScreen.hide();
                         system = systems.edit;
                         system.start();
+                    } else if ((event.key === '+') ||
+                               (event.key === '=')) {
+                        game.zoom(1.1);
+                    } else if (event.key === '-') {
+                        game.zoom(0.909);
                     } else {
                         player.control.keydown(event);
                         this.update();
@@ -695,6 +700,21 @@
                     player.control.setArrow(
                         true, player.position,
                         tform.toWorldFromScreen(point));
+                },
+                pinchStart: function(event) {
+                    alert('pinchStart');
+                    this._pinchScale = tform.scale;
+                },
+                pinch: function(event) {
+                    var extents = ship.extents();
+                    var min = Math.min(
+                        game.width / (extents.ex - extents.sx),
+                        game.height / (extents.ey - extents.sy));
+                    tform.setScale(
+                        this._pinchScale * event.length,
+                        min / 2, Math.min(
+                            game.width, game.height) /
+                        ship.grid.size());
                 },
                 draw: function(ctx, now) { player.draw(ctx, now); },
                 update: function(now) {
