@@ -712,30 +712,25 @@
             },
         };
 
-        var bbarLeft = document.createElement('div');
-        bbarLeft.className = 'bbar';
-        bbarLeft.style.display = 'none';
-        bbarLeft.style.bottom = 0;
-        bbarLeft.style.left = 0;
-        bbarLeft.appendChild(imageSystem.createButton(
-            'lhand', function() { player.activateLeft(); }, this));
-        bbarLeft.appendChild(imageSystem.createButton(
-            'rhand', function() { player.activateRight(); }, this));
+        var bbarLeft = ripple.createElement(
+            'div', {className: 'bbar', style: {
+                display: 'none', bottom: 0, left: 0}},
+            imageSystem.createButton(
+                'lhand', function() { player.activateLeft(); }, this),
+            imageSystem.createButton(
+                'rhand', function() { player.activateRight(); }, this));
 
-        var bbarRight = document.createElement('div');
-        bbarRight.className = 'bbar';
-        bbarRight.style.display = 'none';
-        bbarRight.style.bottom = 0;
-        bbarRight.style.right = 0;
-        bbarRight.appendChild(imageSystem.createButton(
-            'settings', function(event) {
+        var bbarRight = ripple.createElement(
+            'div', {className: 'bbar', style: {
+                display: 'none', bottom: 0, right: 0}},
+            imageSystem.createButton('settings', function(event) {
                 inventoryScreen.hide();
                 system = systems.edit;
                 system.start();
-            }));
-        bbarRight.appendChild(imageSystem.createButton(
-            'interact', function(event) {
-                player.interact(); }));
+            }),
+            imageSystem.createButton('interact', function(event) {
+                player.interact(); })
+        );
 
         var modeParam = document.createElement('select');
         var mode = document.createElement('select');
