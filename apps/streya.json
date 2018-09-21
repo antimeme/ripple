@@ -54,7 +54,7 @@
             "headColor": "rgb(198,134,66)",
             "bodyColor": "rgb(64, 64, 224)",
             "eyeColor": "rgb(32, 32, 224)",
-            "speed": 0.015,
+            "speed": 0.01,
             "turnSpeed": 0.01,
             "inventory": [{"type": "keycard"}]
         }
