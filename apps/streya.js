@@ -575,8 +575,7 @@
 
                     cell = ship.getCell(selected);
                     if (mode.value === 'extend' && !cell) {
-                        if (ship.grid.neighbors(selected, {
-                            coordinates: true, points: true })
+                        if (ship.grid.neighbors(selected)
                                 .some(function(neigh) {
                                     return ship.getCell(neigh); })) {
                             var current, queue = [];
@@ -604,6 +603,15 @@
                         if (cell.apparatus)
                             ship.setCell(selected, {});
                         else ship.setCell(selected, undefined);
+                    } else if (mode.value === 'toggle') {
+                        if (!cell) {
+                            if (ship.grid.neighbors(selected)
+                                    .some(function(neigh) {
+                                        return ship.getCell(neigh); }))
+                                ship.setCell(selected, {});
+                        } else if (cell.apparatus) {
+                            ship.setCell(selected, {});
+                        } else ship.setCell(selected, undefined);
                     } else if (mode.value === 'app' && cell) {
                         ship.setCell(selected, modeParam.value ? {
                             apparatus: streya.Apparatus.create(
@@ -624,10 +632,11 @@
                         tform.scale });
                 },
                 pinchStart: function(event) {
-                    alert('pinchStart');
+                    //console.log('DEBUG-pinchStart', event);
                     this._pinchScale = tform.scale;
                 },
                 pinch: function(event) {
+                    //console.log('DEBUG-pinch', event);
                     var extents = ship.extents();
                     var min = Math.min(
                         game.width / (extents.ex - extents.sx),
@@ -773,6 +782,8 @@
             'option', {value: 'extend'}, 'Extend Hull'));
         mode.appendChild(ripple.createElement(
             'option', {value: 'remove'}, 'Remove Hull'));
+        mode.appendChild(ripple.createElement(
+            'option', {value: 'toggle'}, 'Toggle Hull'));
         mode.appendChild(ripple.createElement(
             'option', {value: 'bound'}, 'Add Boundary'));
         mode.appendChild(ripple.createElement(
