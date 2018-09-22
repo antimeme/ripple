@@ -1151,6 +1151,8 @@
             }
 
             redraw();
+            if (event.preventDefault)
+                event.preventDefault();
             return false;
         };
         self.addEventListener('mousedown', downEvent);
@@ -1182,6 +1184,9 @@
                          zooming.size,
                          zooming.x, zooming.y, factor);
             }
+
+            if (event.preventDefault)
+                event.preventDefault();
             return false;
         };
         self.addEventListener('mousemove', moveEvent);
@@ -1189,6 +1194,9 @@
         var upEvent = function(event) {
             drag = zooming = undefined;
             if (press) { clearTimeout(press); press = 0; }
+
+            if (event.preventDefault)
+                event.preventDefault();
             return false;
         };
         self.addEventListener('mouseleave', upEvent);

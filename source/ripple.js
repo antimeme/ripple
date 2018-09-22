@@ -814,20 +814,36 @@
         this.target = target;
 
         target.addEventListener('touchstart', function(event) {
+            if (event.preventDefault)
+                event.preventDefault();
             return self.onStart(event, true); });
         target.addEventListener('touchmove', function(event) {
+            if (event.preventDefault)
+                event.preventDefault();
             return self.onMove(event, true); });
         target.addEventListener('touchend', function(event) {
+            if (event.preventDefault)
+                event.preventDefault();
             return self.onEnd(event, true); });
         target.addEventListener('touchcancel', function(event) {
+            if (event.preventDefault)
+                event.preventDefault();
             return self.reset(); });
         target.addEventListener('mousedown', function(event) {
+            if (event.preventDefault)
+                event.preventDefault();
             return self.onStart(event, false); });
         target.addEventListener('mousemove', function(event) {
+            if (event.preventDefault)
+                event.preventDefault();
             return self.onMove(event, false); });
         target.addEventListener('mouseup', function(event) {
+            if (event.preventDefault)
+                event.preventDefault();
             return self.onEnd(event, false); });
         target.addEventListener('mouseleave', function(event) {
+            if (event.preventDefault)
+                event.preventDefault();
             return self.reset(); });
         ripple.addWheelListener(target, function(event) {
             return self.onWheel(event); });
