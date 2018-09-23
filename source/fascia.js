@@ -937,9 +937,13 @@
                 if (app.drag)
                     return app.drag(event, redraw);
             },
-            pinch: function(name, event) {
-                if (app.pinch)
-                    return app.pinch(event, redraw);
+            pinchStart: function(name, event) {
+                if (app.pinchStart)
+                    return app.pinchStart(event, redraw);
+            },
+            pinchMove: function(name, event) {
+                if (app.pinchMove)
+                    return app.pinchMove(event, redraw);
             },
             wheel: function(name, event) {
                 if (app.wheel)

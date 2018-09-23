@@ -566,9 +566,8 @@
                     this.touchOne = points.targets[0];
                     this.touchTwo = points.targets[1];
                     this.state = gesturStates.PINCH;
-                    this.fireEvent('pinchStart', {
-                        target: event.target,
-                        points: [this.touchOne, this.touchTwo]});
+                    this.fireEvent('pinchStart', this.__createPinch(
+                        event.target, this.touchOne, this.touchTwo));
                 } else if (!isNaN(points.x) && !isNaN(points.y)) {
                     this.touchOne = points;
                     this.touchTwo = undefined;
@@ -582,10 +581,10 @@
                         if (touch.id !== this.touchOne.id) {
                             this.touchTwo = touch;
                             this.state = gesturStates.PINCH;
-                            this.fireEvent('pinchStart', {
-                                target: event.target,
-                                points: [this.touchOne,
-                                         this.touchTwo]});
+                            this.fireEvent(
+                                'pinchStart', this.__createPinch(
+                                    event.target, this.touchOne,
+                                    this.touchTwo));
                         }
                     }, this);
                 break;
@@ -609,6 +608,30 @@
         return false;
     };
 
+    ripple.gestur.prototype.__createPinch = function(target, one, two) {
+        // It's actually mildly annoying to find the angle between two
+        // vectors.  Yes yes, we all know that
+        //   cos(theta) = v1 . v2 / (||v1|| ||v2||)
+        // However, this will give the same result for an angle to the
+        // left as for an angle to the right because cos(-x) = cos(x).
+        // To sort this out we first compute the dual of one vector and
+        // take the dot product of the other against it.  The angle
+        // should be positive exactly when this product is.
+        var current = { x: two.x - one.x, y: two.y - one.y};
+        var original = {
+            x: this.touchTwo.x - this.touchOne.x,
+            y: this.touchTwo.y - this.touchOne.y};
+        var ortho = {x: -original.y, y: original.x};
+
+        return {
+            target: target, one: one, two: two,
+            length: Math.sqrt(
+                dot(current) / dot(original)),
+            angle: ((dot(current, ortho) >= 0) ? 1 : -1) *
+            Math.acos(dot(current, original) /
+                Math.sqrt(dot(current) * dot(original))) };
+    };
+
     var findCurrent = function(points, match) {
         var result = undefined;
         if (points.targets && match)
@@ -626,7 +649,7 @@
         var points = ripple.getInputPoints(
             this.target, event, this.scalefn);
         var current = findCurrent(points, this.touchOne);
-        var original, ortho, pinchOne, pinchTwo;
+        var pinchOne, pinchTwo;
 
         if (this.start && this.start.touching !== touching)
             return false;
@@ -650,6 +673,7 @@
                     this.swipe = false;
 
                 if (current) {
+                    console.log('DEBUG-drag', this.swipeAngle, this.touchOne, this.drag, current);
                     if (!checkLine(this.swipeAngle, this.touchOne,
                                    this.drag, current))
                         this.swipe = false;
@@ -673,32 +697,9 @@
                     else if (touch.id === this.touchTwo.id)
                         pinchTwo = touch;
                 }, this);
-                if (pinchOne && pinchTwo) {
-                    // It's actually mildly annoying to find the angle
-                    // between two vectors.  Yes yes, we all know that
-                    //   cos(theta) = v1 . v2 / (||v1|| ||v2||)
-                    // However, this will give the same result for an
-                    // angle to the left as for an angle to the right.
-                    // To sort this out we first compute the dual of
-                    // one vector and take the dot product of the other
-                    // against it.  The angle should be positive
-                    // exactly when this product is.
-                    current = {
-                        x: pinchTwo.x - pinchOne.x,
-                        y: pinchTwo.y - pinchOne.y};
-                    original = {
-                        x: this.touchTwo.x - this.touchOne.x,
-                        y: this.touchTwo.y - this.touchOne.y};
-                    ortho = {x: -original.y, y: original.x};
-
-                    this.fireEvent('pinchMove', {
-                        target: event.target,
-                        length: Math.sqrt(
-                            dot(current) / dot(original)),
-                        angle: ((dot(current, ortho) >= 0) ? 1 : -1) *
-                        Math.acos(dot(current, original) /
-                            Math.sqrt(dot(current) * dot(original)))});
-                }
+                if (pinchOne && pinchTwo)
+                    this.fireEvent('pinchMove', this.__createPinch(
+                        event.target, pinchOne, pinchTwo));
                 break;
             case gesturStates.RESOLV:
                 // check safety threshold
@@ -721,32 +722,23 @@
         switch (this.state) {
             case gesturStates.READY: break;
             case gesturStates.TAP:
-                // Some browsers fire both mouse and touch events
-                // Suppress second tap event in these cases
-                if (!this.lastTap ||
-                    (touching === this.lastTap.touching) ||
-                    ((now - this.lastTap.when) >
-                        this.doubleThreshold)) {
-                    this.fireEvent('tap', {
+                this.fireEvent('tap', {
+                    target: event.target,
+                    point: this.touchOne});
+
+                // If the previous tap was close to this one in both
+                // time and space then this is a double tap
+                if (this.lastTap && !isNaN(this.lastTap.when) &&
+                    ((now - this.lastTap.when) <
+                        this.doubleThreshold) &&
+                    (dot({x: this.touchOne.x - this.lastTap.where.x,
+                          y: this.touchOne.y - this.lastTap.where.y}) <
+                        this.doubleDistance)) {
+                    this.fireEvent('doubleTap', {
                         target: event.target,
                         point: this.touchOne});
-
-                    // If the previous tap was close to this one in both
-                    // time and space then this is a double tap
-                    if (this.lastTap && !isNaN(this.lastTap.when) &&
-                        ((now - this.lastTap.when) <
-                            this.doubleThreshold) &&
-                        (dot({x: this.touchOne.x - this.lastTap.x,
-                              y: this.touchOne.y - this.lastTap.y}) <
-                            this.doubleDistance)) {
-                        this.fireEvent('doubleTap', {
-                            target: event.target,
-                            point: this.touchOne});
-                    }
-                    this.lastTap = {
-                        when: now, touching: touching,
-                        x: this.touchOne.x, y: this.touchOne.y };
                 }
+                this.lastTap = { when: now, where: this.touchOne };
                 this.reset();
                 break;
             case gesturStates.PRESS:

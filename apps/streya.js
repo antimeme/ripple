@@ -495,7 +495,7 @@
     };
 
     streya.game = function(data) {
-        var game, redraw, tap, selected, drag, zooming, gesture;
+        var game, redraw, tap, selected, drag, zooming;
         var colorSelected = 'rgba(192, 192, 0, 0.2)';
         var tform = ripple.transform();
         var imageSystem = fascia.imageSystem(data.imageSystem);
@@ -512,6 +512,7 @@
                      interact: function() {
                          if (settingsScreen.isVisible()) {
                              settingsScreen.hide();
+                             inventoryScreen.show();
                          } else if (apparatusScreen.isVisible()) {
                              apparatusScreen.hide()
                          } else if (inventoryScreen.isVisible()) {
@@ -635,11 +636,9 @@
                         tform.scale });
                 },
                 pinchStart: function(event) {
-                    //console.log('DEBUG-pinchStart', event);
                     this._pinchScale = tform.scale;
                 },
-                pinch: function(event) {
-                    //console.log('DEBUG-pinch', event);
+                pinchMove: function(event) {
                     var extents = ship.extents();
                     var min = Math.min(
                         game.width / (extents.ex - extents.sx),
@@ -714,10 +713,9 @@
                         tform.toWorldFromScreen(point));
                 },
                 pinchStart: function(event) {
-                    alert('pinchStart');
                     this._pinchScale = tform.scale;
                 },
-                pinch: function(event) {
+                pinchMove: function(event) {
                     var extents = ship.extents();
                     var min = Math.min(
                         game.width / (extents.ex - extents.sx),
@@ -929,7 +927,6 @@
             }
         });
         settingsMenu.addEventListener('keydown', function(event) {
-            console.log('DEBUG-focus', event.target.tagName);
             if (event.target.tagName.toLowerCase() === 'li') {
                 if (event.keyCode === 13 /* enter */) {
                     settingsScreen.hide();
@@ -994,14 +991,11 @@
                     });
 
                 tform.resize(width, height);
-                if (imageSystem)
-                    imageSystem.resize(width, height);
-                if (inventoryScreen)
-                    inventoryScreen.resize(width, height);
-                if (apparatusScreen)
-                    apparatusScreen.resize(width, height);
-                if (settingsScreen)
-                    settingsScreen.resize(width, height);
+                [imageSystem, inventoryScreen,
+                 apparatusScreen,
+                 settingsScreen].forEach(function(system) {
+                     if (system)
+                         system.resize(width, height); });
                 zooming = drag = undefined;
             },
 
@@ -1030,37 +1024,11 @@
                     system.keydown(event);
                 redraw();
             },
+
             keyup: function(event, redraw) {
                 if (system.keyup)
                     system.keyup(event);
                 redraw();
-            },
-
-            // Move the center of the screen within limts
-            pan: function(vector) {
-                tform.pan(vector);
-            },
-
-            // Change the magnification within limits
-            zoom: function(factor) {
-                var extents = ship.extents();
-                var max = Math.min(
-                    this.width, this.height) / ship.grid.size();
-                var min = Math.min(
-                    this.width / (extents.ex - extents.sx),
-                    this.height / (extents.ey - extents.sy));
-                tform.zoom(factor, min / 2, max);
-            },
-
-            // Center the ship to get a good overall view
-            center: function() {
-                var extents = ship.extents();
-                tform.reset();
-                tform.pan({ x: (extents.sx + extents.ex) / 2,
-                            y: (extents.sy + extents.ey) / 2 });
-                tform.zoom(Math.min(
-                    this.width / (extents.ex - extents.sx),
-                    this.height / (extents.ey - extents.sy)) * 4 / 5);
             },
 
             wheel: function(event, redraw) {
@@ -1082,12 +1050,53 @@
                 }
             },
 
-            drag: function(event) {
+            drag: function(event, redraw) {
                 if (system.drag) {
                     system.drag(event);
                     redraw();
                 }
-            }
+            },
+
+            pinchStart: function(event, redraw) {
+                if (system.pinchStart) {
+                    system.pinchStart(event);
+                    redraw();
+                }
+            },
+
+            pinchMove: function(event, redraw) {
+                if (system.pinchMove) {
+                    system.pinchMove(event);
+                    redraw();
+                }
+            },
+
+            // Move the center of the screen within limts
+            pan: function(vector) {
+                tform.pan(vector);
+            },
+
+            // Change the magnification within limits
+            zoom: function(factor) {
+                var extents = ship.extents();
+                var max = Math.min(
+                    this.width, this.height) / ship.grid.size();
+                var min = Math.min(
+                    this.width / (extents.ex - extents.sx),
+                    this.height / (extents.ey - extents.sy));
+                tform.zoom(factor, min * 4 / 5, max);
+            },
+
+            // Center the ship to get a good overall view
+            center: function() {
+                var extents = ship.extents();
+                tform.reset();
+                tform.pan({ x: (extents.sx + extents.ex) / 2,
+                            y: (extents.sy + extents.ey) / 2 });
+                tform.zoom(Math.min(
+                    this.width / (extents.ex - extents.sx),
+                    this.height / (extents.ey - extents.sy)) * 4 / 5);
+            },
         };
         return game;
     };
