@@ -502,6 +502,7 @@
         var itemSystem = fascia.itemSystem(data.itemSystem);
         var inventoryScreen;
         var apparatusScreen;
+        var settingsScreen;
         var player = fascia.createPlayer(
             ripple.mergeConfig(
                 (data.characterDefinitions &&
@@ -509,14 +510,16 @@
                      position: {x: 0, y: 0},
                      itemSystem: itemSystem,
                      interact: function() {
-                         if (apparatusScreen.isVisible()) {
+                         if (settingsScreen.isVisible()) {
+                             settingsScreen.hide();
+                         } else if (apparatusScreen.isVisible()) {
                              apparatusScreen.hide()
+                         } else if (inventoryScreen.isVisible()) {
+                             inventoryScreen.hide();
                          } else if (ship.activeApparatus) {
                              apparatusScreen.title(
                                  ship.activeApparatus.type);
                              apparatusScreen.show();
-                             inventoryScreen.hide();
-                         } else if (inventoryScreen.isVisible()) {
                              inventoryScreen.hide();
                          } else {
                              inventoryScreen.populate();
@@ -681,10 +684,10 @@
                     ripple.hide(menuframe);
                 },
                 keydown: function(event) {
-                    if (event.keyCode === 27) {
+                    if (event.keyCode === 27 /* escape */) {
+                        apparatusScreen.hide();
                         inventoryScreen.hide();
-                        system = systems.edit;
-                        system.start();
+                        settingsScreen.show();
                     } else if ((event.key === '+') ||
                                (event.key === '=')) {
                         game.zoom(1.1);
@@ -768,9 +771,9 @@
             'div', {className: 'bbar', style: {
                 display: 'none', bottom: 0, right: 0}},
             imageSystem.createButton('settings', function(event) {
+                apparatusScreen.hide();
                 inventoryScreen.hide();
-                system = systems.edit;
-                system.start();
+                settingsScreen.show();
             }),
             imageSystem.createButton('interact', function(event) {
                 player.interact(); })
@@ -879,9 +882,9 @@
         }
         menu.appendChild(ripple.createElement('li', null, designs));
         menu.appendChild(ripple.createElement('li', {
-            'data-action': 'center'}, 'Center View'));
-        menu.appendChild(ripple.createElement('li', {
             'data-action': 'undo'}, 'Undo'));
+        menu.appendChild(ripple.createElement('li', {
+            'data-action': 'center'}, 'Center View'));
         menu.appendChild(ripple.createElement('li', {
             'data-action': 'full-screen'}, 'Full Screen'));
         menu.appendChild(ripple.createElement('li', {
@@ -915,14 +918,38 @@
             }
         });
 
+        var settingsMenu = ripple.createElement(
+            'ul', null, ripple.createElement(
+                'li', {tabindex: 0}, 'Edit Ship'));
+        settingsMenu.addEventListener('click', function(event) {
+            if (event.target.tagName.toLowerCase() === 'li') {
+                settingsScreen.hide();
+                system = systems.edit;
+                system.start();
+            }
+        });
+        settingsMenu.addEventListener('keydown', function(event) {
+            console.log('DEBUG-focus', event.target.tagName);
+            if (event.target.tagName.toLowerCase() === 'li') {
+                if (event.keyCode === 13 /* enter */) {
+                    settingsScreen.hide();
+                    system = systems.edit;
+                    system.start();
+                }
+            }
+        });
+
         var game = {
             init: function(container, viewport, fasciaRedraw) {
                 container.appendChild(menuframe);
-                //container.appendChild(systemPane) // TODO
-                //container.appendChild(settingsPane) // TODO
                 container.appendChild(bbarLeft);
                 container.appendChild(bbarRight);
                 imageSystem.resize(this.width, this.height);
+
+                settingsScreen = fascia.screen(
+                    container, {imageSystem: imageSystem,
+                                title: 'Settings'}, settingsMenu);
+                settingsScreen.resize(this.width, this.height);
                 apparatusScreen = fascia.screen(
                     container, {imageSystem: imageSystem});
                 apparatusScreen.resize(this.width, this.height);
@@ -973,6 +1000,8 @@
                     inventoryScreen.resize(width, height);
                 if (apparatusScreen)
                     apparatusScreen.resize(width, height);
+                if (settingsScreen)
+                    settingsScreen.resize(width, height);
                 zooming = drag = undefined;
             },
 
@@ -1031,7 +1060,7 @@
                             y: (extents.sy + extents.ey) / 2 });
                 tform.zoom(Math.min(
                     this.width / (extents.ex - extents.sx),
-                    this.height / (extents.ey - extents.sy)) / 2);
+                    this.height / (extents.ey - extents.sy)) * 4 / 5);
             },
 
             wheel: function(event, redraw) {
