@@ -623,10 +623,17 @@
     };
 
     fascia.screen = function(container, options) {
-        if (!(this instanceof fascia.screen))
-            return new fascia.screen(container, options);
+        var index;
+        if (!(this instanceof fascia.screen)) {
+            var screen = new fascia.screen(container, options);
+            for (index = 2; index < arguments.length; ++index)
+                screen.pane.appendChild(arguments[index]);
+            return screen;
+        }
         this.pane = ripple.createElement(
             'div', {className: 'fascia-screen'});
+        for (index = 2; index < arguments.length; ++index)
+            this.pane.appendChild(arguments[index]);
         this.hide();
 
         if (!options)
