@@ -112,13 +112,15 @@
     };
 
     BaseGrid.prototype.coordinate = function(node) {
+        // Return a new object with x and y properties equal to the
+        // coordinates of the center of a cell for the row and column
+        // properties of the given node value.  This new object will
+        // also have the row and column.
         return this.adjust(this._coordinate(node));
     };
 
     BaseGrid.prototype._coordinate = function(node) {
-        // Return a node with a cartesian coordinate (x and y) for the
-        // center of the cell in the row and column specified within
-        // node.  The return value will have the given row and column.
+        // Default implementation replaced by specific grids
         var halfsize = this._size / 2;
         return {x: node.col * this._size + halfsize,
                 y: node.row * this._size + halfsize,
@@ -126,14 +128,17 @@
     };
 
     BaseGrid.prototype.position = function(node) {
+        // Return a new object with the row and column values for the
+        // grid cell represented by the coordinate x and y properties
+        // in the given node.  This new object will also have x and
+        // y properties, but these will be for the center of the grid
+        // cell rather than the original location.
         return this.coordinate(
             this._position(this.adjust({x: node.x, y: node.y}, true)));
     };
 
     BaseGrid.prototype._position = function(node) {
-        // Return a node with the row and column of the square in which
-        // the cartesian coordinate (x and y) is contained.  The return
-        // value will have an x and y value for the cell center.
+        // Default implementation replaced by specific grids
         return {row: Math.floor(node.y / this._size),
                 col: Math.floor(node.x / this._size)};
     };
@@ -145,35 +150,37 @@
         });
     };
 
-    BaseGrid.prototype.neighbors = function(node, options) {
-        // Return a list of neighboring nodes.  The following options
-        // are recognized:
-        //   coordinates: compute x and y position of each node iff true
-        //   points: compute a pair of points which define the
-        //           intersection
-        var result = [];
+    BaseGrid.prototype.neighbors = function(node, options, fn, self) {
+        if (!fn) {
+            var result = [];
+            this.neighbors(node, options, function(neighbor) {
+                result.push(neighbor);
+            });
+            return result;
+        }
+
         if (options && options.points)
             node = this.coordinate(node);
-        this._neighbors(node).forEach(function(neigh) {
+        this._neighbors(node, function(neighbor) {
             if ((options && options.coordinates) ||
                 (options && options.points))
-                neigh = this.coordinate(neigh);
+                neighbor = this.coordinate(neighbor);
             if (options && options.points)
-                neigh.points = this._pairpoints(node, neigh);
-            if (isNaN(neigh.cost))
-                neigh.cost = 1;
-            result.push(neigh);
+                neighbor.points = this._pairpoints(node, neighbor);
+            if (isNaN(neighbor.cost))
+                neighbor.cost = 1;
+            fn.call(self, neighbor);
         }, this);
-        return result;
+        return this;
     };
 
-    BaseGrid.prototype._neighbors = function(node) {
-        // Return a list of neighbors for the row and column specified
-        // in the given node.
-        return [{row: node.row, col: node.col + 1},
-                {row: node.row, col: node.col - 1},
-                {row: node.row + 1, col: node.col},
-                {row: node.row - 1, col: node.col}];
+    BaseGrid.prototype._neighbors = function(node, fn, self) {
+        // Call a function for each neighbor of the grid cell specified
+        fn.call(self, {row: node.row, col: node.col + 1});
+        fn.call(self, {row: node.row, col: node.col - 1});
+        fn.call(self, {row: node.row + 1, col: node.col});
+        fn.call(self, {row: node.row - 1, col: node.col});
+        return this;
     };
 
     BaseGrid.prototype._pairpoints = function(nodeA, nodeB) {
@@ -386,32 +393,35 @@
         return {row: Math.floor((node.y + halfsize) / this._size),
                 col: Math.floor((node.x + halfsize) / this._size)};
     };
-    SquareGrid.prototype._neighbors = function(node) {
-        // Return a list of neighbors for the row and column specified
-        // in the given node.
-        var halfsize = this._size / 2;
-        var result = [{row: node.row, col: node.col + 1},
-                      {row: node.row, col: node.col - 1},
-                      {row: node.row + 1, col: node.col},
-                      {row: node.row - 1, col: node.col}];
-        if (this.diagonal)
-            result = result.concat([
-                {row: node.row + 1, col: node.col + 1, cost: _sqrt2},
-                {row: node.row + 1, col: node.col - 1, cost: _sqrt2},
-                {row: node.row - 1, col: node.col + 1, cost: _sqrt2},
-                {row: node.row - 1, col: node.col - 1, cost: _sqrt2}]);
-        return result;
+    SquareGrid.prototype._neighbors = function(node, fn, self) {
+        // Call a function for each neighbor of the grid cell specified
+        fn.call(self, {row: node.row, col: node.col + 1});
+        fn.call(self, {row: node.row, col: node.col - 1});
+        fn.call(self, {row: node.row + 1, col: node.col});
+        fn.call(self, {row: node.row - 1, col: node.col});
+        if (this.diagonal) {
+            fn.call(self, {row: node.row + 1,
+                           col: node.col + 1, cost: _sqrt2});
+            fn.call(self, {row: node.row + 1,
+                           col: node.col - 1, cost: _sqrt2});
+            fn.call(self, {row: node.row - 1,
+                           col: node.col + 1, cost: _sqrt2});
+            fn.call(self, {row: node.row - 1,
+                           col: node.col - 1, cost: _sqrt2});
+        }
+        return this;
     };
     SquareGrid.prototype._pairpoints = function(nodeA, nodeB) {
         // Diagonal neighbors need special treatment because the base
         // implemenation assumes two points
         return (((nodeA.row - nodeB.row) * (nodeA.row - nodeB.row) +
-                  (nodeA.col - nodeB.col) * (nodeA.col - nodeB.col) > 1) ?
+                    (nodeA.col - nodeB.col) * (nodeA.col - nodeB.col) > 1) ?
                 [{x: nodeA.x + (nodeB.x - nodeA.x) / 2,
                   y: nodeA.y + (nodeB.y - nodeA.y) / 2}] :
                 BaseGrid.prototype._pairpoints.call(this, nodeA, nodeB));
     };
     SquareGrid.prototype.points = function(node) {
+        // Call a function for each neighbor of the grid cell specified
         // Given a node with the coordinates for the center of a square,
         // return a set of coordinates for each of its vertices.
         var halfsize = this._size / 2;
@@ -505,7 +515,7 @@
         var yfrac = (node.y + this.radius) / this.rowh;
         if ((row + col) % 2) {
             if ((yfrac - Math.ceil(yfrac)) +
-                  (xfrac - Math.floor(xfrac)) > 0)
+                    (xfrac - Math.floor(xfrac)) > 0)
                 col += 1;
         } else if ((yfrac - Math.floor(yfrac)) -
                    (xfrac - Math.floor(xfrac)) < 0)
@@ -513,13 +523,13 @@
         return {row: row, col: col};
     };
 
-    TriangleGrid.prototype._neighbors = function(node) {
-        // Return a list of neighbors for the row and column specified
-        // in the given node.
-        return [{row: node.row, col: node.col + 1},
-                {row: node.row, col: node.col - 1},
-                {row: node.row +
-                   (((node.row + node.col) % 2) ? -1 : 1 ), col: node.col}];
+    TriangleGrid.prototype._neighbors = function(node, fn, self) {
+        // Call a function for each neighbor of the grid cell specified
+        fn.call(self, {row: node.row, col: node.col + 1});
+        fn.call(self, {row: node.row, col: node.col - 1});
+        fn.call(self, {row: node.row + (((node.row + node.col) % 2) ?
+                                       -1 : 1 ), col: node.col});
+        return this;
     };
 
     TriangleGrid.prototype.points = function(node) {
@@ -580,18 +590,18 @@
         return {row: row, col: col};
     };
 
-    RTriangleGrid.prototype._neighbors = function(node) {
-        // Return a list of neighbors for the row and column specified
-        // in the given node.
+    RTriangleGrid.prototype._neighbors = function(node, fn, self) {
+        // Call a function for each neighbor of the grid cell specified
         var rmod = node.col % 2 ?  1 : -1;
         var cmod = node.col % 2 ? -1 :  1;
         if (!this.regular) {
             rmod *= ((node.row < 0) ^ (node.col < 0)) ? -1 : 1;
             cmod *= ((node.row < 0) ^ (node.row + rmod < 0)) ? 0 : 1;
         }
-        return [{row: node.row, col: node.col + 1},
-                {row: node.row, col: node.col - 1},
-                {row: node.row + rmod, col: node.col + cmod}];
+        fn.call(self, {row: node.row, col: node.col + 1});
+        fn.call(self, {row: node.row, col: node.col - 1});
+        fn.call(self, {row: node.row + rmod, col: node.col + cmod});
+        return this;
     };
 
     RTriangleGrid.prototype._pairpoints = function(nodeA, nodeB) {
@@ -702,26 +712,24 @@
         return result;
     };
 
-    HexGrid.prototype._neighbors = function(node) {
-        // Return a list of neighbors for the row and column specified
-        // in the given node.
-        var result = [
-            {row: node.row + 1, col: node.col},
-            {row: node.row - 1, col: node.col},
-            {row: node.row, col: node.col + 1},
-            {row: node.row, col: node.col - 1}];
+    HexGrid.prototype._neighbors = function(node, fn, self) {
+        // Call a function for each neighbor of the grid cell specified
+        fn.call(self, {row: node.row + 1, col: node.col});
+        fn.call(self, {row: node.row - 1, col: node.col});
+        fn.call(self, {row: node.row, col: node.col + 1});
+        fn.call(self, {row: node.row, col: node.col - 1});
         if (this.alpha == 'x') {
-            result.push({row: node.row - 1, col: node.col +
-                          ((node.row % 2) ? 1 : -1)});
-            result.push({row: node.row + 1, col: node.col +
-                          ((node.row % 2) ? 1 : -1)});
+            fn.call(self, {row: node.row - 1,
+                           col: node.col + ((node.row % 2) ? 1 : -1)});
+            fn.call(self, {row: node.row + 1,
+                           col: node.col + ((node.row % 2) ? 1 : -1)});
         } else {
-            result.push({row: node.row + (node.col % 2 ? 1 : -1),
-                         col: node.col - 1});
-            result.push({row: node.row + (node.col % 2 ? 1 : -1),
-                         col: node.col + 1});
+            fn.call(self, {row: node.row + (node.col % 2 ? 1 : -1),
+                           col: node.col - 1});
+            fn.call(self, {row: node.row + (node.col % 2 ? 1 : -1),
+                           col: node.col + 1});
         }
-        return result;
+        return this;
     };
 
     HexGrid.prototype.points = function(node) {
