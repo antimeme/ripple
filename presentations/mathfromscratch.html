@@ -4924,127 +4924,49 @@
             </canvas>
         </section>
         <section>
-            <h3>Geometry: Postulates</h3>
-            <p>Postulates are what axioms are called in geometry.
-                These four build on real numbers. (Birkhoff 1932)
+            <h3>Points and Vectors</h3>
+            <p>
+                A point is a position in space.  This is the simplest
+                kind of geometric object.  A vector is the difference
+                between two points.  This is how they interact:
+            </p>
+            <ul>
+                <li>difference(P<sub>a</sub>, P<sub>b</sub>) =
+                    <strong>v</strong></li>
+                <li>follow(P<sub>a</sub>, <strong>v</strong>) =
+                    P<sub>b</sub></li>
+            </ul>
+        </section>
+        <section>
+            <h3>Zero Vector</h3>
+            <p>
+                The difference between any point and itself is the
+                zero vector.  Unlike other vectors it has no
+                direction.
             </p>
             <ul>
                 <li>
-                    Line Measure: bijection between points on any
-                    line and real numbers
+                    &#x2200;P<sub>a</sub>
+                    difference(P<sub>a</sub>, P<sub>a</sub>) =
+                    <strong>0</strong>
                 </li>
                 <li>
-                    Point-Line: exactly one line contains any two
-                    distinct points
-                </li>
-                <li>
-                    Angle Measure: bijection between any angle and
-                    a subset of the real numbers
-                </li>
-                <li>
-                    Similarity: triangles with two proportional sides
-                    and a matching angle between them are similar
+                    &#x2200;P<sub>a</sub>
+                    follow(P<sub>a</sub>, <strong>0</strong>) =
+                    P<sub>a</sub>
                 </li>
             </ul>
         </section>
         <section>
-            <h3>Geometry: Terms</h3>
-            <ul>
-                <li>Point: a position in space</li>
-                <li>Line: a set of points with zero curvature</li>
-                <li>
-                    Conjugate: &#x2200;a&#x2208;&#x211d;
-                    a<sup>&#x22b9;</sup> &#x225d; a
-                </li><li>
-                    Quadrance: Q(A,B) &#x225d;
-                    (b - a)<sup>&#x22b9;</sup> &times; (b - a)
-                </li>
-                <li>Distance: d(A, B) &#x225d; +&#x221a;(Q(A, B))</li>
-                <li>Angle: three ordered points A, O, B <br />with
-                    A &ne; O &and; B &ne; O</li>
-            </ul>
-        </section>
-        <section>
-            <h3>Geometry: Definitions</h3>
-            <ul>
-                <li>Between: B is between A and C &#x27fa;<br />
-                    d(A,B) + d(B, C) = d(A, C)</li>
-                <li>Segment: all points between A and B</li>
-                <li>Endpoint: part of line O A with O not between</li>
-                <li>Parallel: lines with no or all points in common</li>
-                <li>Right Angle: angle formed by two lines</li>
-                <li>Triangle: three distinct points (degenerate if one
-                    between the other two)</li>
-                <li>Similar: one-to-one correspondence between
-                    points with distances proportional</li>
-            </ul>
-        </section>
-        <section>
-            <h3>Similarity</h3>
+            <h3>Lines</h3>
             <p>
-                &#x2203;k>0 (d(A', B') = kd(A, B)) &and;
-                (d(A', C') = kd(A, C)) &and;
-                (∠B'A'C' = ± ∠BAC) &#x27f9;
-                (d(B', C' ) = kd(B, C)) &and;
-                (∠C'B'A' = ± ∠CBA) &and; (∠A'C'B' = ± ∠ACB)
+                Any two distinct points define a line, which is the
+                set of all points we can reach from one of the points
+                by scaling the vector formed by their difference.
             </p>
-        </section>
-        <section>
-            <h3>Vertical Angles</h3>
-            <p>
-                TODO: prove that opposing veritical angles match
-            </p>
-        </section>
-        <section>
-            <h3>Parallel Angles Match</h3>
-            <p>TODO: prove that parallel angles match</p>
-        </section>
-        <section>
-            <h3>Triangle Angles</h3>
-            <p>
-                TODO: prove that adding the three angles of any
-                triangle gets the same result as the angle formed by
-                three points on the same line.
-            </p>
-        </section>
-        <section>
-            <h3>Diameter Angles</h3>
-            <p>
-                TODO: prove that an angle from a diameter to a point
-                on the circle is half the size of the angle from the
-                center to the same point.
-            </p>
-        </section>
-        <section>
-            <h3>Chord Angles</h3>
-            <p>
-                TODO: prove that the angle from any point on the
-                circle to a chord is half the angle from the center
-                to that chord.
-            </p>
-        </section>
-        <section>
-            <h3>Ptolemy's Theorem</h3>
-            <p>
-                TODO: prove that the product of diagonal lengths
-                of an inscribed quadrilateral is equal to the sum
-                of the product
-            </p>
-        </section>
-        <section>
-            <h3>Pythagoean Theorem</h3>
-            <p>
-                TODO: use Ptolemy's theorem to prove the Pythagorean
-                theorem.  Then separately use Pythagorus' visual
-                proof to confirm
-            </p>
-        </section>
-        <section>
-            <h3>Pythagoean Theorem</h3>
-            <p>
-                TODO: use Ptolemy's theorem to prove the Pythagorean
-                theorem.  Then separately use Pythagorus' visual
-                proof to confirm
+            <p>L = { follow(P<sub>a</sub>,
+                a &times; difference(P<sub>a</sub>, P<sub>b</sub>)) :
+                a &#x2208; &#x211d; }
             </p>
         </section>
     </section>
