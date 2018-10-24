@@ -112,7 +112,8 @@
             } else result.setAttribute(attr, attrs[attr]); });
 
         for (ii = 2; ii < arguments.length; ++ii)
-            result.appendChild((typeof(arguments[ii]) === 'string') ?
+            result.appendChild((typeof(arguments[ii]) === 'string' ||
+                                typeof(arguments[ii]) === 'number') ?
                                document.createTextNode(arguments[ii]) :
                                arguments[ii]);
         return result;
@@ -673,7 +674,6 @@
                     this.swipe = false;
 
                 if (current) {
-                    console.log('DEBUG-drag', this.swipeAngle, this.touchOne, this.drag, current);
                     if (!checkLine(this.swipeAngle, this.touchOne,
                                    this.drag, current))
                         this.swipe = false;
