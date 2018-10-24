@@ -2,8 +2,6 @@
 // management and combat.
 //
 // TODO ship design
-// - undo
-// - save/load ship file
 // - save/load ship localStorage
 //     https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API
 // - compute mass and thrust
@@ -237,8 +235,10 @@
                 this.__extents = undefined;
             } else undo = null;
 
-            if (undo)
+            if (undo) {
                 this.__pushUndo(undo);
+                this.__mass = undefined;
+            }
             return this;
         },
 
@@ -340,6 +340,7 @@
         undo: function() { // Reverts the most recent change
             if (this.__undoCounter <= 0)
                 return;
+            this.__mass = undefined;
             --this.__undoCounter;
             var hardStop = 20;
             while ((this.__undo.length > 0) &&
@@ -369,11 +370,17 @@
                 this.__undoCounter++;
         },
 
-        mass: function() { // TODO
-            var result = 0;
-            Object.keys(this.__cells).forEach(function(id) {
-            }, this);
-            return result;
+        __mass: undefined,
+        mass: function() {
+            if (isNaN(this.__mass)) {
+                this.__mass = 0;
+                this.eachCell(function(cell, node) {
+                    this.__mass += streya.Apparatus.data.Structure.mass;
+                    if (cell && cell.apparatus)
+                        this.__mass += cell.apparatus.mass;
+                }, this);
+            }
+            return this.__mass;
         },
 
         cost: function() { // TODO
@@ -538,11 +545,18 @@
                 ripple.toggleVisible(menu);
         });
 
+        var menuShipUpdate = function(ship) {
+            var massMeter = document.getElementById('mass-meter');
+            if (massMeter)
+                massMeter.innerHTML = ship.mass();
+            return ship;
+        };
+
         streya.Apparatus.data = data.apparatus;
-        var ship = streya.Ship.create(
+        var ship = menuShipUpdate(streya.Ship.create(
             (ripple.param('ship') &&
              ripple.param('ship') in data.shipDesigns) ?
-            data.shipDesigns[ripple.param('ship')] : undefined);
+            data.shipDesigns[ripple.param('ship')] : undefined));
 
         var system, systems = {
             edit: {
@@ -602,11 +616,13 @@
                                     });
                             }
                             ship.setCell(selected, {});
+                            menuShipUpdate(ship);
                         }
                     } else if (mode.value === 'remove' && cell) {
                         if (cell.apparatus)
                             ship.setCell(selected, {});
                         else ship.setCell(selected, undefined);
+                        menuShipUpdate(ship);
                     } else if (mode.value === 'toggle') {
                         if (!cell) {
                             if (ship.grid.neighbors(selected)
@@ -616,15 +632,18 @@
                         } else if (cell.apparatus) {
                             ship.setCell(selected, {});
                         } else ship.setCell(selected, undefined);
+                        menuShipUpdate(ship);
                     } else if (mode.value === 'app' && cell) {
                         ship.setCell(selected, modeParam.value ? {
                             apparatus: streya.Apparatus.create(
                                 modeParam.value) } : {});
+                        menuShipUpdate(ship);
                     } else if (mode.value === 'bound' &&
                                cell && previous) {
                         ship.setBoundary(
                             selected, previous,
                             modeParam.value);
+                        menuShipUpdate(ship);
                     }
                     ship.undoMark();
                 },
@@ -838,7 +857,7 @@
         gtype.addEventListener('change', function(event) {
             var gconfig = JSON.parse(decodeURI(gtype.value));
             gconfig.size = parseInt(gsize.value);
-            ship = streya.Ship.create({ grid: gconfig });
+            ship = menuShipUpdate(streya.Ship.create({ grid: gconfig }));
             selected = ship.grid.coordinate(selected);
             redraw();
         });
@@ -871,14 +890,18 @@
             });
             designs.addEventListener('change', function(event) {
                 if (designs.value !== '-') {
-                    ship = streya.Ship.create(
-                        data.shipDesigns[designs.value]);
+                    ship = menuShipUpdate(streya.Ship.create(
+                        data.shipDesigns[designs.value]));
                     shipName.value = ship.name;
                 }
                 redraw();
             });
         }
         menu.appendChild(ripple.createElement('li', null, designs));
+        menu.appendChild(ripple.createElement(
+            'li', null, 'Mass: ', ripple.createElement(
+                'span', {id: 'mass-meter'},
+                ship ? ship.mass() : 'unknown')));
         menu.appendChild(ripple.createElement('li', {
             'data-action': 'undo'}, 'Undo'));
         menu.appendChild(ripple.createElement('li', {

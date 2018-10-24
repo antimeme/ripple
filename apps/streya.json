@@ -249,6 +249,17 @@
                 "exterior of the ship in order to make sense.  If an ",
                 "external system is surrounded by active cells then ",
                 "it must be removed."],
+            "fieldNotes": {
+                "mass": "kilograms",
+                "boundary": "if non-empty means ",
+                "power": "kilojoules per second to operate",
+                "console": "",
+                "sigil": "",
+                "disable": "if true apparatus should not be presented",
+                "internal": "",
+                "external": [
+                    "if true the apparatus must have at least one ",
+                    "neighbor outside the ship"]},
             "mass": 500, "internal": true},
         "Bulkhead": {
             "comment": ["Separates two cells as a wall"],
@@ -321,7 +332,7 @@
             "console": "recreation"},
         "Workshop": {
             "comment": ["Work space for up to two engineers"],
-            "mass": 500, "sigil": "W", "power": 5,
+            "mass": 500, "sigil": "X", "power": 5,
             "console": "workshop"},
         "Laboratory": {
             "comment": ["Work space for up to two scientists"],
