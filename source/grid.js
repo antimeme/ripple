@@ -144,20 +144,17 @@
     };
 
     BaseGrid.prototype.adjacent = function(nodeA, nodeB) {
-        return this._neighbors(nodeA).some(function(neigh) {
+        return this.neighbors(nodeA).some(function(neigh) {
             return ((neigh.row === nodeB.row) &&
                     (neigh.col === nodeB.col));
         });
     };
 
     BaseGrid.prototype.neighbors = function(node, options, fn, self) {
-        if (!fn) {
-            var result = [];
-            this.neighbors(node, options, function(neighbor) {
-                result.push(neighbor);
-            });
-            return result;
-        }
+        // Iterate over the neighbors of a specified node
+        if (!fn)
+            return this.neighbors(node, options, function(neighbor) {
+                this.push(neighbor); }, []);
 
         if (options && options.points)
             node = this.coordinate(node);
@@ -171,7 +168,7 @@
                 neighbor.cost = 1;
             fn.call(self, neighbor);
         }, this);
-        return this;
+        return self || this;
     };
 
     BaseGrid.prototype._neighbors = function(node, fn, self) {
@@ -431,10 +428,24 @@
                 {x: node.x - halfsize, y: node.y + halfsize}];
     };
 
-    SquareGrid.prototype.eachLine = function(start, end, fn, context) {
+    SquareGrid.prototype.eachPath = function(start, end, fn, self) {
+        // Given two points call a function for each cell that the
+        // line intersects. This uses Wu's algorithm for plotting.
+        if (!fn)
+            return this.eachLine(start, end, function(node) {
+                this.push(node); }, []);
+        var swap, primary, secondary;
+        // :FIXME: implement this
+        return self || this;
+    };
+
+    SquareGrid.prototype.eachLine = function(start, end, fn, self) {
         // Given two points call a function for each cell in a line
         // approximating the path that would have to be taken.
         // This uses Bresenham's algorithm for plotting lines.
+        if (!fn)
+            return this.eachLine(start, end, function(node) {
+                this.push(node); }, []);
         var deltaX = end.x - start.x, deltaY = end.y - start.y;
         var absX = Math.abs(deltaX), absY = Math.abs(deltaY);
         var ncells, index, deltaM, deltaE;
@@ -463,7 +474,7 @@
         for (index = 0; index < ncells; ++index) {
             node = this.position(node);
             if (fn)
-                fn.call(context, this.coordinate(node));
+                fn.call(self, this.coordinate(node));
 
             if (index + 1 < ncells) {
                 node = {x: node.x + deltaM.x, y: node.y + deltaM.y};
@@ -475,7 +486,7 @@
                 }
             }
         }
-        return fn ? this : collected;
+        return self || this;
     };
 
     // TriangleGrid represents a mapping between cartesian coordinates
