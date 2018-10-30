@@ -1,7 +1,10 @@
-// Streya is a game of space trading, ship construction, crew
-// management and combat.
+// Streya is a science fiction video game for web browsers.  Players
+// control a single character but can hire crew, command ships and
+// stations, rule over populations and more.  The game takes place in
+// the Kuiper Belt around 2220 CE and confines itself to scientifically
+// plausible technologies.
 //
-// TODO ship design
+// TODO
 // - save/load ship localStorage
 //     https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API
 // - compute mass and thrust
@@ -15,8 +18,14 @@
         this.fascia = require('./ripple/fascia.js');
     }
 
+    // === Apparatus
+    // An apparatus is a component of a ship or station.  This includes
+    // things like life support, crew quarters, shield generators and
+    // many other things.  When instantiated with the create method, this
+    // represents a single instance of an apparatus.
     streya.Apparatus = {
         data: null,
+
         create: function(config, data) {
             if (!data)
                 data = this.data;
@@ -36,6 +45,7 @@
             result.active = false;
             return result;
         },
+
         equals: function(other) {
             var result = false;
             if (other && (other instanceof streya.Apparatus)) {
@@ -43,12 +53,13 @@
                 ['sigil', 'console', 'mass', 'power'].forEach(
                     function(key) {
                         if (this[key] !== other[key])
-                            result = false;
-                    });
+                            result = false; });
             }
             return result;
         },
+
         toJSON: function() { return this.type; },
+
         draw: function(ctx, size, node) {
             var outer = Math.floor(size * 2 / 5);
             var inner = Math.floor(size / 5);
@@ -79,6 +90,7 @@
                 ctx.fillText(this.sigil, node.x, node.y);
             }
         },
+
         eachApparatus: function(fn) {
             Object.keys(this.data).forEach(function(key) {
                 var apparatus = this.data[key];
@@ -88,6 +100,7 @@
                     fn(key, apparatus);
             }, this);
         },
+
         eachBoundary: function(fn) {
             Object.keys(this.data).forEach(function(key) {
                 var apparatus = this.data[key];
@@ -99,10 +112,10 @@
         }
     };
 
-    // === Ship representation
+    // === Ship
     // A ship consists of one or more connected cells, each of which
-    // may have systems present, and a set of boundaries which connect
-    // pairs of cells.
+    // may have an apparatus present, and a set of boundaries which
+    // connect pairs of cells.
     streya.Ship = {
         create: function(config) { // Returns a new ship
             var result = Object.create(this);
@@ -113,9 +126,9 @@
                 (config && config.grid) ? config.grid :
                 { type: 'hex', size: 10 });
 
-            // Ship undo system: each call to setCell or setBoundary
-            // pushes an undo entry.  Callers should call undoMark
-            // after each complete change and call undo to step back.
+            // Undo: each call to setCell or setBoundary pushes an undo
+            // entry.  Clients should call undoMark after each complete
+            // change and call undo to take a single step back.
             result.__undo = [];
             result.__undoCounter = 0;
 
@@ -130,6 +143,7 @@
                                 config.cells[id].apparatus);
                 });
             else result.setCell({row: 0, col: 0}, {});
+
             result.__boundaries = {};
             if (config && config.boundaries)
                 Object.keys(config.boundaries).forEach(function(key) {
@@ -164,16 +178,14 @@
             return {nodeA: this.__unindexCell(pair.x),
                     nodeB: this.__unindexCell(pair.y)};
         },
-
         __pushUndo: function(entry) {
             entry.id = this.__undoCounter;
             this.__undo.push(entry);
         },
-
         __safeDelete(id) {
             // Return true iff deleting the specified cell would
             // preserve the following invariants:
-            // - At least once cell is active
+            // - Ship has at least one active cell
             // - All cells are connected by a chain of neighbors
             // We assume these hold before and must return true exactly
             // when they would hold true after deletion
@@ -212,8 +224,7 @@
         },
 
         getCell: function(node) {
-            return this.__cells[this.__indexCell(node)];
-        },
+            return this.__cells[this.__indexCell(node)]; },
 
         setCell: function(node, value, noUndo) {
             var id = this.__indexCell(node);
