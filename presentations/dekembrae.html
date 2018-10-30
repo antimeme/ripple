@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <meta charset="utf-8" />
 <link rel="stylesheet" href="lib/sakura.css">
+<style>
+ td { text-align: center; }
+ td:first-child { text-align: left; }
+</style>
 <title>Dekembr&aelig;</title>
 <h1>Dekembr&aelig;</h1>
 
@@ -9,21 +13,21 @@
     table top and computer games with a variety of genres.
 </p>
 
-<h3>Problems</h3>
+<h3>Goals</h3>
 <p>
-    Role playing games have been around for many decades but most
-    have serious problems that undermine story telling.
+    Role playing games have been around a long time but most have
+    serious problems that undermine story telling.  Dekembr&aelig;
+    seeks to address these and present a more robust system.
 </p>
 
 <h4>Rolling Dice for Abilities</h4>
 <p>
     In the earliest role playing games players rolled dice to
-    determine character abilities.  This can be exciting but it
-    creates important problems.  First, players lose the power to
-    choose important aspects of their characters.  Second, the dice
-    make it difficult to know whether a player cheated.  Finally,
-    different players can have characters with substantial differences
-    in power through no virtue or fault of their own.
+    determine character abilities.  This can be exciting but players
+    lose the power to construct the kinds of characters they want to
+    play.  Dice also make it difficult to know whether a player
+    cheated.  Finally, players can have characters with substantial
+    differences in power through no virtue or fault of their own.
 </p>
 
 <h4>Character Classes</h4>
@@ -32,7 +36,9 @@
     one of the earliest steps.  This simplifies the game for players,
     which is helpful.  However, in most games this constrains the
     player choices so much that the designers feel compelled to add
-    a multi-class system -- usually a cumbersome one.
+    a multi-class system -- usually a cumbersome one.  Dekembr&aelig;
+    seeks to reverse this by presenting a flexible base system with
+    optional character classes to simplify the game when desired.
 </p>
 
 <h4>Escalating Physical Toughness</h4>
@@ -61,7 +67,7 @@
     role playing systems use implausible and poorly constructed
     balancing mechanisms, such as limiting powers to a small number of
     uses per day.  This strains credibility and undermines story
-    telling when there are better alternatives available.
+    telling when there are better mechanic alternatives available.
 </p>
 
 <h4>Experience Points for Kills</h4>
@@ -71,13 +77,13 @@
     direct mechanic, but it creates a structural incentive to solve as
     many problems as possible with violence.  Players who consider
     bribing or sneaking past enemies are forced to consider the loss
-    of game mechanic rewards that have no direct role in the story.
+    of game rewards that have no direct role in the story.
 </p>
 
 <h4>Deterministic Character Speed</h4>
 <p>
     In some role playing games characters have a fixed speed at which
-    they can move.  This makes chase scenes predictable.
+    they can move.  This makes chase scenes predictable and dull.
 </p>
 
 <h3>Goals</h3>
@@ -86,7 +92,16 @@
     <li>Deterministic character creation</li>
     <li>Flexible character creation</li>
     <li>Story friendly mechancis</li>
-    <li>Plausible combat and balance</li>
+    <li>Plausible combat that models:
+        <ul>
+            <li>Striking (with or without weapons)</li>
+            <li>Speed and Reach</li>
+            <li>Dodging, Parrying and Binding</li>
+            <li>Cover and Concealment</li>
+            <li>Shields and Armor</li>
+            <li>Stamina and Wounds</li>
+        </ul>
+    </li>
     <li>Universal system for many genres</li>
 </ul>
 
@@ -121,54 +136,33 @@
 </table>
 
 <table>
-    <caption>Possible Score Distributions (50 Points)</caption>
+    <caption>Example Score Distributions (50 Points)</caption>
     <tr>
-        <th>S</th><th>S</th><th>S</th><th>S</th><th>S</th>
-        <th>Total</th>
-    </tr>
-    <tr>
-        <td>5</td><td>5</td><td>5</td><td>5</td><td>5</td>
-        <td>25</td>
-    </tr>
-    <tr>
-        <td>6</td><td>5</td><td>5</td><td>5</td><td>4</td>
-        <td>25</td>
-    </tr>
-    <tr>
-        <td>6</td><td>6</td><td>5</td><td>4</td><td>4</td>
-        <td>25</td>
-    </tr>
-    <tr>
-        <td>6</td><td>6</td><td>5</td><td>5</td><td>3</td>
-        <td>25</td>
-    </tr>
-    <tr>
-        <td>6</td><td>6</td><td>6</td><td>3</td><td>3</td>
-        <td>25</td>
-    </tr>
-    <tr>
-        <td>7</td><td>5</td><td>5</td><td>5</td><td>3</td>
-        <td>25</td>
-    </tr>
-    <tr>
-        <td>7</td><td>6</td><td>4</td><td>4</td><td>4</td>
-        <td>25</td>
-    </tr>
-    <tr>
-        <td>7</td><td>7</td><td>4</td><td>3</td><td>3</td>
-        <td>24</td>
-    </tr>
-    <tr>
-        <td>8</td><td>4</td><td>4</td><td>4</td><td>4</td>
-        <td>24</td>
-    </tr>
-    <tr>
-        <td>8</td><td>5</td><td>4</td><td>4</td><td>3</td>
-        <td>24</td>
-    </tr>
-    <tr>
-        <td>9</td><td>5</td><td>3</td><td>3</td><td>3</td>
-        <td>23</td>
+        <th>S</th><th>S</th><th>S</th><th>S</th><th>S</th><th>Total</th>
+    </tr><tr>
+        <td>5</td><td>5</td><td>5</td><td>5</td><td>5</td><td>45</td>
+    </tr><tr>
+        <td>6</td><td>5</td><td>5</td><td>5</td><td>4</td><td>46</td>
+    </tr><tr>
+        <td>6</td><td>6</td><td>5</td><td>4</td><td>4</td><td>47</td>
+    </tr><tr>
+        <td>6</td><td>6</td><td>5</td><td>5</td><td>3</td><td>48</td>
+    </tr><tr>
+        <td>6</td><td>6</td><td>6</td><td>3</td><td>3</td><td>45</td>
+    </tr><tr>
+        <td>7</td><td>5</td><td>5</td><td>5</td><td>3</td><td>49</td>
+    </tr><tr>
+        <td>7</td><td>6</td><td>4</td><td>4</td><td>4</td><td>49</td>
+    </tr><tr>
+        <td>7</td><td>7</td><td>4</td><td>3</td><td>3</td><td>48</td>
+    </tr><tr>
+        <td>8</td><td>4</td><td>4</td><td>4</td><td>4</td><td>46</td>
+    </tr><tr>
+        <td>8</td><td>5</td><td>4</td><td>4</td><td>3</td><td>47</td>
+    </tr><tr>
+        <td>9</td><td>4</td><td>4</td><td>3</td><td>3</td><td>47</td>
+    </tr><tr>
+        <td>9</td><td>5</td><td>3</td><td>3</td><td>3</td><td>48</td>
     </tr>
 </table>
 
@@ -176,9 +170,9 @@
     Every skill has a base ability and a cost.  Characters spend skill
     points which are multiplied by the value of the base ability to
     get the effective skill level.  To determine how many skill
-    points are needed to achieve <code>r</code> in a skill that costs
-    <code>c</code> points with a base ability <code>b</code>
-    compute <code>c(r + 1)r/2b</code> (round up) Given a number of
+    points are needed to achieve <code>r</code> ranks in a skill that
+    costs <code>c</code> points with a base ability <code>b</code>
+    compute <code>c(r + 1)r/2b</code> (round up).  Given a number of
     skill points <code>s</code>, base ability score <code>b</code> and
     cost <code>c</code> of ranks is:
     <code>(&radic;(8sb/c + 1) - 1) / 2</code> (round down)
@@ -239,32 +233,53 @@
 
 <h3>Skill Rolls</h3>
 <p>
-    Characters make skill rolls by determining the number of ranks
-    available.  This is usually the number of ranks in one or a small
-    number of skills.  At this point the character may sacrifice ranks
-    in order to active special abilities.  The remaining ranks are
-    converted into dice.  If the number of dice is greater than nine,
-    all dice beyond the first nine are converted to the value 3 and
-    added together.  The attacker may choose to replace some or all of
-    the dice above six with the value 5 instead of rolling.
+    Characters make skill rolls by rolling dice.  The number of dice
+    depend on the action but is usually equal to the number of ranks
+    the character has in a single skill.  Before a skill role is made
+    a character sometimes has the option to sacrifice ranks to
+    activate special abilities.  At most nine dice may be rolled for
+    any skill roll.  Any dice beyond nine are dropped and three points
+    for each are added to the result.  Players can choose to replace
+    any dice abouve five with the value four instead.
 </p>
 
 <p>
+    For example, a character with 10 ranks in a skill can choose to
+    roll 9 dice and add (1 &times; 3) = 3 or can choose to roll as few
+    as 5 dice, adding (4 &times; 4) + (1 &times; 3) = 16 + 3 = 19.
+</p>
+
+<table>
+    <tr><th>Dice</th><th>Ranks</th><th>Add</th>
+        <th>Ranks</th><th>Add</th><th>Ranks</th><th>Add</th></tr>
+    <tr><td>9</td><td>10</td><td>3</td><td>11</td><td>6</td>
+        <td>12</td><td>9</td></tr>
+    <tr><td>8</td><td>10</td><td>7</td><td>11</td><td>10</td>
+        <td>12</td><td>13</td></tr>
+    <tr><td>7</td><td>10</td><td>11</td><td>11</td><td>14</td>
+        <td>12</td><td>13</td></tr>
+    <tr><td>6</td><td>10</td><td>15</td><td>11</td><td>18</td>
+        <td>12</td><td>21</td></tr>
+    <tr><td>5</td><td>10</td><td>19</td><td>11</td><td>22</td>
+        <td>12</td><td>25</td></tr>
+</table>
+
+<p>
     The remaining dice are resolved by rolling according to the d10*
-    process.  Results of 0 through 8 are converted to their face
-    value.  Results of 9 are converted to 9 plus the result of another
-    d10* process.
+    process.  Roll a ten sided die.  Results of 0 through 8 are added
+    at their face value.  Results of 9 are converted to 9 plus the
+    result of another d10* process.
 </p>
 
 <p>
     For example, suppose a character has 8 ranks in a skill.  She
     chooses to use a special ability that costs one rank, leaving 7
-    ranks.  She decides to convert one die to a 5 and roll the
+    ranks.  She decides to convert one die to a 4 and roll the
     remaining six.  The face value of the dice are: 5, 3, 9, 2, 7.
     Since one of the dice was a 9 she rolls one more, which comes up
-    0.  The result of the skill role is 5 + 5 + 3 + 9 + 2 + 7 + 0,
-    which is 31.  This is slightly below the expected value 7 dice,
-    which would be 35.  The character was a little unlucky.
+    0.  The result of the skill role is 4 + 5 + 3 + 9 + 2 + 7 + 0 =
+    30.  This is slightly below the expected value 7 dice, which would
+    be 35.  The character was a little unlucky.
 </p>
 
 <h3>Combat</h3>
@@ -413,13 +428,47 @@
     useful...)
 </p>
 
+<table>
+    <caption>Weapons (Medieval)</caption>
+    <tr><th>Name</th><th>Difficulty</th><th>Reach/Speed</th>
+        <th>Craft</th></tr>
+    <tr><td>Knife</td><td>5</td><td>1/6</td><td>Blacksmith 10</td></tr>
+    <tr><td>Dagger</td><td>5</td><td>1/6</td><td>Blacksmith 10</td></tr>
+    <tr><td>Handaxe</td><td>5</td><td>1/6</td><td>Blacksmith 10</td></tr>
+    <tr><td>Shortsword</td><td>5</td><td>1/6</td><td>Blacksmith 10</td></tr>
+    <tr><td>Broadsword</td><td>5</td><td>1/6</td><td>Blacksmith 10</td></tr>
+    <tr><td>Longsword</td><td>5</td><td>1/6</td><td>Blacksmith 10</td></tr>
+    <tr><td>Spear</td><td>5</td><td>1/6</td><td>Blacksmith 10</td></tr>
+    <tr><td>Poleaxe</td><td>5</td><td>1/6</td><td>Blacksmith 10</td></tr>
+    <tr><td>Halbard</td><td>5</td><td>1/6</td><td>Blacksmith 10</td></tr>
+    <tr><td>Pike</td><td>5</td><td>1/6</td><td>Blacksmith 10</td></tr>
+    <tr><td>Lance</td><td>5</td><td>1/6</td><td>Blacksmith 10</td></tr>
+    <tr><td>Glaive</td><td>5</td><td>1/6</td><td>Blacksmith 10</td></tr>
+    <tr><td>Partisan</td><td>5</td><td>1/6</td><td>Blacksmith 10</td></tr>
+    <tr><td>Warhammer</td><td>5</td><td>1/6</td><td>Blacksmith 10</td></tr>
+    <tr><td>Mace</td><td>5</td><td>1/6</td><td>Blacksmith 10</td></tr>
+    <tr><td>Flail</td><td>5</td><td>1/6</td><td>Blacksmith 10</td></tr>
+    <tr><td>Crossbow</td><td>5</td><td>1/6</td><td>Blacksmith 10</td></tr>
+    <tr><td>Bow</td><td>5</td><td>1/6</td><td>Blacksmith 10</td></tr>
+    <tr><td>Longbow</td><td>5</td><td>1/6</td><td>Blacksmith 10</td></tr>
+</table>
+
+<p>
+    Each weapon has a context in which it makes the most sense.
+    Some factors that affect a weapons advantages include: reach,
+    range, shields, mounts, terrain, close quarters and so on.
+</p>
+
 <h3>Shields</h3>
 <p>???</p>
 
 <h3>Armor</h3>
 <p>???</p>
 
-<h3>Regions</h3>
+<table>
+</table>
+
+<h3>Hit Regions</h3>
 <p>
     Every character has hit regions.  For humans these regions are:
 </p>
