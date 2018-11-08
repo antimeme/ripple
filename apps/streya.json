@@ -56,7 +56,7 @@
             "eyeColor": "rgb(32, 32, 224)",
             "speed": 0.01,
             "turnSpeed": 0.01,
-            "inventory": [{"type": "keycard"}]
+            "inventory": [{"type": "keycard"}, {"type": "gun"}]
         }
     },
     "abilities": {

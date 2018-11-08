@@ -31,17 +31,3 @@ html, body
     padding-top: 0.5em;
 }
 .streya-menu li:hover { background: #55e; }
-
-.bbar {
-    position: fixed;
-    display: block; z-index: 2;
-    margin: auto; border-radius: 10px }
-.bbar div { display: inline-block; height: 100% }
-.bbar button:first-child {
-    border-top-left-radius: 15px;
-    border-bottom-left-radius: 15px;
-}
-.bbar button:last-child {
-    border-top-right-radius: 15px;
-    border-bottom-right-radius: 15px;
-}

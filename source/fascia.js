@@ -332,8 +332,9 @@
     };
 
     /**
-     * A character is a representation of a humanoid create.
-     * Characters have the following properties:
+     * A character is a representation of a humanoid creature.  It might
+     * be a human, robot, monster or something else.  Characters have
+     * the following properties:
      *
      *   position: vector representing location
      *   direction: radians angle with x axis
@@ -358,7 +359,7 @@
 
         config.inventory && config.inventory.forEach(function(item) {
             if (item && item.type && config.itemSystem)
-                inventory.push(config.itemSystem.createItem(item));
+                inventory.push(config.itemSystem.create(item));
         });
 
         return {
@@ -530,7 +531,7 @@
         this.itemdefs = itemdefs || {};
     };
 
-    fascia.itemSystem.prototype.createItem = function(item) {
+    fascia.itemSystem.prototype.create = function(item) {
         var result = {
             type: item.type,
             weight: item.weight || 0,
@@ -556,23 +557,21 @@
 
     fascia.imageSystem.prototype.resize = function(width, height) {
         this.size = fasciaButtonSize(width, height);
-        document.querySelectorAll('.fascia-button').forEach(
+        document.querySelectorAll('.fascia-item').forEach(
             function(button) {
                 button.style.width = this.size + 'px';
                 button.style.height = this.size + 'px';
             }, this);
     };
 
-    fascia.imageSystem.prototype.createButton = function(
-        config, fn, context) {
+    fascia.imageSystem.prototype.applyItem = function(config, element) {
         var position = 'center';
         var backsize = 'contain';
         var imgdef;
         var image;
         var settings;
-        var className = 'fascia-button';
+        var className = 'fascia-item';
 
-        var result = document.createElement('button');
         if (!config)
             settings = this.icons['default'] || {};
         else if (typeof config === 'string')
@@ -583,11 +582,45 @@
             if (config.className)
                 className += ' ' + config.className;
             if (config.title)
-                result.setAttribute('title', config.title);
+                element.setAttribute('title', config.title);
             if (config.data)
                 Object.keys(config.data).forEach(function(key) {
-                    result.setAttribute(
+                    element.setAttribute(
                         'data-' + key, config.data[key]); });
+            if (config.drag) {
+                element.style.cursor = 'move';
+                element.setAttribute('draggable', true);
+                element.addEventListener('dragstart', function(event) {
+                    event.target.classList.add('dragging');
+                    event.dataTransfer.effectAllowed = 'move';
+                    event.dataTransfer.setData(
+                        'text/json', JSON.stringify(config.drag));
+                });
+                element.addEventListener('dragend', function(event) {
+                    event.target.classList.remove('dragging');
+                });
+            }
+            if (config.drop) {
+                element.addEventListener('dragover', function(event) {
+                    if (event.preventDefault)
+                        event.preventDefault();
+                    event.dataTransfer.dropEffect = 'move';
+                    return false;
+                });
+                element.addEventListener('dragenter', function(event) {
+                    event.target.classList.add('over');
+                });
+                element.addEventListener('dragleave', function(event) {
+                    event.target.classList.remove('over');
+                });
+                element.addEventListener('drop', function(event) {
+                    if (event.stopPropagation)
+                        event.stopPropagation();
+                    config.drop(JSON.parse(event.dataTransfer.getData(
+                        'text/json')))
+                    return false;
+                });
+            }
         };
 
         imgdef = this.images[settings.image || 'default'];
@@ -602,15 +635,26 @@
                         (imgdef.cols - 1)) + '% ' +
                     Math.floor(100 * settings.row /
                         (imgdef.rows - 1)) + '%');
-            }
+                }
         } else image = settings.image;
 
-        result.setAttribute('class', className);
-        result.style['background-image'] = image;
-        result.style['background-position'] = position;
-        result.style['background-size'] = backsize;
-        result.style.width = this.size + 'px';
-        result.style.height = this.size + 'px';
+        element.setAttribute('class', className);
+        element.style['background-image'] = image;
+        element.style['background-position'] = position;
+        element.style['background-size'] = backsize;
+        element.style.width = this.size + 'px';
+        element.style.height = this.size + 'px';
+        return element;
+    };
+
+    fascia.imageSystem.prototype.createItem = function(config) {
+        var result = document.createElement('div');
+        return this.applyItem(config, result);
+    };
+
+    fascia.imageSystem.prototype.createButton = function(
+        config, fn, context) {
+        var result = document.createElement('button');
         result.addEventListener('mousedown', function(event) {
             fn.apply(context, arguments);
             return false;
@@ -619,7 +663,7 @@
             fn.apply(context, arguments);
             return false;
         });
-        return result;
+        return this.applyItem(config, result);
     };
 
     fascia.screen = function(container, options) {
@@ -751,6 +795,14 @@
                 this.imageSystem.createButton(
                     {icon: 'close', className: 'inventory-close'},
                     function(event) { this.hide(); }, this),
+                this.imageSystem.createItem(
+                    {icon: 'lhand', className: 'inventory-lhand',
+                     drop: function(value) {
+                         console.log('DEBUG-lhand-drop', value); }}),
+                this.imageSystem.createItem(
+                    {icon: 'rhand', className: 'inventory-rhand',
+                     drop: function(value) {
+                         console.log('DEBUG-rhand-drop', value); }}),
                 this.imageSystem.createButton(
                     {icon: 'take', className: 'inventory-givetake'},
                     take, this),
@@ -824,10 +876,14 @@
 
     fascia.inventoryScreen.prototype.addItem = function(
         item, index, itemPane) {
-        itemPane.appendChild(this.imageSystem.createButton(
-            {icon: item.icon, title: item.toString(),
-             data: {index: index}}, function(event) {
-                 ripple.toggleClass(event.target, 'selected'); }));
+        var element = document.createElement('div');
+
+        element = this.imageSystem.applyItem(
+            {icon: item.icon, title: item.toString(), drag: item,
+             data: {index: index}}, element);
+        element.addEventListener('click', function(event) {
+            ripple.toggleClass(event.target, 'selected'); });
+        itemPane.appendChild(element);
         return this;
     };
 

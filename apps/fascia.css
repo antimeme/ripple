@@ -1,8 +1,8 @@
-.fascia-button {
+.fascia-item {
     display: inline-block;
     background-repeat: no-repeat;
     background-color: rgba(223,223,223,0.8); }
-.fascia-button.selected { background-color: rgba(168,168,223,0.8); }
+.fascia-item.selected { background-color: rgba(168,168,223,0.8); }
 
 .fascia-screen {
     position: absolute; top: 0; left: 0; z-index: 3;
@@ -10,41 +10,51 @@
     background-color: #ddd;
     border-radius: 20px;
     border-width: 5px;
-    box-sizing: border-box;
-}
+    box-sizing: border-box; }
 
 .fascia-screen h1, .fascia-screen h2, .fascia-screen h3 {
     display: inline-block;
     margin-left: 1em;
-    font-family: sans-serif;
-}
+    font-family: sans-serif; }
 
 .inventory-pane {
     position: absolute;
     box-sizing: border-box;
     overflow-y: auto; }
+
 .inventory-header {
     top: 0; left: 0; right: 0;
-    background-color: rgba(180, 180, 240, 0.5);
+    //background-color: rgba(180, 180, 240, 0.5);
     border-top-left-radius: 15px;
     border-top-right-radius: 15px; }
+
 .inventory-footer {
     position: absolute; bottom: 0; left: 0; right: 0;
-    background-color: rgba(180, 180, 240, 0.5);
+    //background-color: rgba(180, 180, 240, 0.5);
     border-bottom-left-radius: 15px;
-    border-bottom-right-radius: 15px;
-}
+    border-bottom-right-radius: 15px; }
+
 .inventory-self {
-    left: 0; width: 50%;
-    background-color: rgba(200, 200, 240, 0.5);
-}
+    //background-color: rgba(200, 200, 240, 0.5);
+    left: 0; width: 50%; }
+
 .inventory-other {
-    right: 0; width: 50%;
-    background-color: rgba(48, 144, 48, 0.5);
-}
+    //background-color: rgba(48, 144, 48, 0.5);
+    right: 0; width: 50%; }
+
 .inventory-portrait {
     right: 0; top: 0; width: 50%; height: 100%;
     background-color: #ddd;
     border-top-right-radius: 15px;
-    border-bottom-right-radius: 15px;
-}
+    border-bottom-right-radius: 15px; }
+
+.bbar {
+    position: fixed; display: block; z-index: 2;
+    margin: auto; border-radius: 10px; }
+.bbar button, .bbar div { float: left; }
+.bbar :first-child {
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px; }
+.bbar :last-child {
+    border-top-right-radius: 15px;
+    border-bottom-right-radius: 15px; }
