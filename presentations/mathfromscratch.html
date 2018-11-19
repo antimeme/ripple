@@ -588,7 +588,7 @@
         <section>
             <h2>Specification (Schema)</h2>
             <p>
-                &#x2200;a,P&#x2203;b &#x2200;c
+                &#x2200;a,P &#x2203;b &#x2200;c
                 c&#x2208;b &#x27fa; (c&#x2208;a &and; P(c))
             </p>
             <p>
@@ -607,7 +607,7 @@
         <section>
             <h2>Replacement (Schema)</h2>
             <p>
-                &#x2200;a,f&#x2203;b &#x2200;c
+                &#x2200;a,f &#x2203;b &#x2200;c
                 c&#x2208;b &#x27fa; &#x2203;d&#x2208;a f(c) = d
             </p>
             <p>
@@ -706,7 +706,7 @@
                 <tr>
                     <td>Specification (S)</td>
                     <td><small>
-                        &#x2200;a,p&#x2203;b &#x2200;c
+                        &#x2200;a,P &#x2203;b &#x2200;c
                         c&#x2208;b &#x27fa;
                         (c&#x2208;a &and; P(c))
                     </small></td>
@@ -714,7 +714,7 @@
                 <tr>
                     <td>Replacement (S)</td>
                     <td><small>
-                        &#x2200;a,f&#x2203;b &#x2200;c
+                        &#x2200;a,f &#x2203;b &#x2200;c
                         c&#x2208;b &#x27fa;
                         &#x2203;d&#x2208;a f(c) = d
                     </small></td>
@@ -791,8 +791,8 @@
             <p>
                 &#x2200;a,b (a &times; b) &#x225d;<br />
                 <span class="fragment">
-                    { &#x27e8;a', b'&#x27e9; : &#x27e8;a', b'&#x27e9;
-                    &#x2208; &#x2118;&#x2118;(a &cup; b) &and;
+                    { &#x27e8;a', b'&#x27e9;
+                    &#x2208; &#x2118;&#x2118;(a &cup; b) :
                     a'&#x2208;a &and; b'&#x2208;b }</span>
             </p>
             <p class="fragment">
@@ -1169,11 +1169,11 @@
                 successors, so order is reflexive.
             </p>
             <ul>
-                <li>
-                    &#x2200;a&#x2208;&#x2115; a&#x2208;&cup;{a, {a, a}}
-                </li><li>
+                <li class="fragment">
                     &#x2200;a&#x2208;&#x2115; a&#x2208;succ(a)
-                </li><li>
+                </li><li class="fragment">
+                    &#x2200;a&#x2208;&#x2115; a&#x2208;&cup;{a, {a, a}}
+                </li><li class="fragment">
                     &#x2200;a&#x2208;&#x2115; a &le; a
                 </li>
             </ul>
@@ -1191,14 +1191,14 @@
                 antisymmetric due to regularity.
             </p>
             <ul>
-                <li>
+                <li class="fragment">
                     &#x2200;a&#x2208;&#x2115; a &#x2209; a
                     &#x27f9; succ(a) &#x2209; a
-                </li><li>
+                </li><li class="fragment">
                     &#x2200;a,b&#x2208;&#x2115;
                     (a &#x2208; succ(b)) &and;
                     (b &#x2208; succ(a)) &#x27f9; (a = b)
-                </li><li>
+                </li><li class="fragment">
                     &#x2200;a,b&#x2208;&#x2115; (a &le; b) &and;
                     (b &le; a) &#x27f9; (a = b)
                 </li>
