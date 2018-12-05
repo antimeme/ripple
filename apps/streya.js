@@ -258,6 +258,7 @@
                 var node = this.__unindexCell(id);
                 fn.call(context, this.getCell(node), node);
             }, this);
+            return this;
         },
 
         eachApparatus: function(fn, context) {
@@ -265,6 +266,7 @@
                 if (cell && cell.apparatus)
                     fn.call(context, cell.apparatus, node);
             });
+            return this;
         },
 
         eachWall: function(fn, context) {
@@ -970,6 +972,9 @@
             }
         });
 
+        // This is the fascia entry point.  Methods on this object
+        // are called to start the application and respond to user
+        // input.
         var game = {
             init: function(container, viewport, fasciaRedraw) {
                 container.appendChild(menuframe);
@@ -1105,13 +1110,7 @@
                 }
             },
 
-            // Move the center of the screen within limts
-            pan: function(vector) {
-                tform.pan(vector);
-            },
-
-            // Change the magnification within limits
-            zoom: function(factor) {
+            zoom: function(factor) { // Change magnification within limits
                 var extents = ship.extents();
                 var max = Math.min(
                     this.width, this.height) / ship.grid.size();
@@ -1121,8 +1120,7 @@
                 tform.zoom(factor, min * 4 / 5, max);
             },
 
-            // Center the ship to get a good overall view
-            center: function() {
+            center: function() { // Center the ship for overall view
                 var extents = ship.extents();
                 tform.reset();
                 tform.pan({ x: (extents.sx + extents.ex) / 2,
