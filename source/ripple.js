@@ -63,6 +63,9 @@
         var go = null;
         var results = {};
 
+        if (typeof(urls) === 'string')
+            urls = [urls];
+
         urls.forEach(function(url) {
             var request = new XMLHttpRequest();
             request.open("GET", url, true);
