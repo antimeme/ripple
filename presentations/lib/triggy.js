@@ -342,7 +342,8 @@
             canvas.setAttribute('data-angle' + anum, angle);
     };
 
-    var pointify = function(canvas, bounds, event, scalefn) {
+    // TODO: fold bounds into scalefn so this matches ripple.js
+    var getInputPoints = function(event, canvas, bounds, scalefn) {
         var result = null;
         var brect = canvas.getBoundingClientRect();
         if (!scalefn) // identity scaling if no scale function provided
@@ -393,7 +394,8 @@
             canvas.addEventListener('mousedown', function(event) {
                 var canvas = event.target;
                 var bounds = computeBounds(canvas);
-                var point = pointify(canvas, bounds, event, scalefn);
+                var point = getInputPoints(
+                    event, canvas, bounds, scalefn);
                 dragging = closestAngle(canvas, bounds, point);
                 draw(canvas, bounds);
                 return false;
@@ -402,8 +404,8 @@
                 var canvas = event.target;
                 var bounds = computeBounds(canvas);
                 if (dragging) {
-                    var point = pointify(
-                        canvas, bounds, event, scalefn);
+                    var point = getInputPoints(
+                        event, canvas, bounds, scalefn);
                     setAngle(canvas, bounds, point, dragging);
                     draw(canvas, bounds);
                 }
@@ -417,7 +419,8 @@
             canvas.addEventListener('touchstart', function(event) {
                 var canvas = event.target;
                 var bounds = computeBounds(canvas);
-                var point = pointify(canvas, bounds, event, scalefn);
+                var point = getInputPoints(
+                    event, canvas, bounds, scalefn);
                 dragging = closestAngle(canvas, bounds, point);
                 draw(canvas, bounds);
                 return false;
@@ -426,8 +429,8 @@
                 var canvas = event.target;
                 var bounds = computeBounds(canvas);
                 if (dragging) {
-                    var point = pointify(
-                        canvas, bounds, event, scalefn);
+                    var point = getInputPoints(
+                        event, canvas, bounds, scalefn);
                     setAngle(canvas, bounds, point, dragging);
                     draw(canvas, bounds);
                 }
