@@ -278,7 +278,7 @@
                 // Reserve right and middle clicks for browser menus
                 return true;
             } else {
-                point = ripple.createTouches(event);
+                point = ripple.getInputPoints(event);
                 best = -1; selected = null;
                 for (index in players) {
                     player = players[index];
@@ -334,7 +334,7 @@
         var moveEvent = function(event) {
             var point, vec;
             if (selected) {
-                point = ripple.createTouches(event);
+                point = ripple.getInputPoints(event);
                 target = field.position(point.x, point.y);
                 redraw();
             }

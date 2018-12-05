@@ -187,9 +187,13 @@
 
     /**
      * Create a normalized data structure to represent a mouse or
-     * multi-touch event with coordinates scaled to the element. */
-    ripple.getInputPoints = function(element, event, scalefn) {
-        var brect = element.getBoundingClientRect();
+     * multi-touch event with coordinates scaled to the element.  When
+     * there are touches the coordinates of the first one will be
+     * copied to the top level object x and y.  Applications can use
+     * that consistently unless multitouch support is needed. */
+    ripple.getInputPoints = function(event, element, scalefn) {
+        var brect = (element ? element : event.target)
+            .getBoundingClientRect();
         if (!scalefn) // identity if no scale function provided
             scalefn = function(value) { return value; };
         var transform = function(id, x, y) {
@@ -430,60 +434,6 @@
         return value;
     };
 
-    // === User interface utilities
-
-    var setTransform = function(event, transform) {
-        // An undefined transform means we should attempt to remove
-        // the component offset, giving coordinates relative to the
-        // element itself rather than the page as a whole
-        if (typeof(transform) === 'undefined') {
-            var offset = (typeof(jQuery) !== 'undefined') ?
-                         jQuery(event.target).offset() :
-                         {top: 0, left: 0};
-            transform = function(touch) {
-                return {x: touch.x - offset.left,
-                        y: touch.y - offset.top, id: touch.id}; };
-        } else if (!transform) // null transform is identity
-            transform = function(touch) { return touch; };
-        return transform;
-    };
-
-    ripple.createTouches = function(event, transform) {
-        var result = {current: [], changed: []};
-        var touches, touch, ii;
-
-        transform = setTransform(event, transform);
-        if (event.originalEvent && event.originalEvent.targetTouches) {
-            touches = event.originalEvent.targetTouches;
-            for (ii = 0; ii < touches.length; ++ii) {
-                touch = touches.item(ii);
-                result.current.push(
-                    transform({id: touch.identifier,
-                               x: touch.pageX, y: touch.pageY}));
-            }
-        } else if ((event.type !== 'mouseup') &&
-                   (event.type !== 'touchend'))
-            result.current.push(
-                transform({id: 0, x: event.pageX, y: event.pageY}));
-
-        if (event.originalEvent && event.originalEvent.changedTouches) {
-            touches = event.originalEvent.targetTouches;
-            for (ii = 0; ii < touches.length; ++ii) {
-                touch = touches.item(ii);
-                result.changed.push(
-                    transform({id: touch.identifier,
-                               x: touch.pageX, y: touch.pageY}));
-            }
-        } else result.changed.push(
-            transform({id: 0, x: event.pageX, y: event.pageY}));
-
-        if (result.current.length > 0) {
-            result.x = result.current[0].x;
-            result.y = result.current[0].y;
-        }
-        return result;
-    };
-
     // Gestur ==========================================================
 
     var gesturStates = {
@@ -554,7 +504,7 @@
     ripple.gestur.prototype.onStart = function(event, touching) {
         var now = new Date().getTime();
         var points = ripple.getInputPoints(
-            this.target, event, this.scalefn);
+            event, this.target, this.scalefn);
 
         if (this.start && this.start.touching !== touching)
             return false;
@@ -648,7 +598,7 @@
     ripple.gestur.prototype.onMove = function(event, touching) {
         var now = new Date().getTime();
         var points = ripple.getInputPoints(
-            this.target, event, this.scalefn);
+            event, this.target, this.scalefn);
         var current = findCurrent(points, this.touchOne);
         var pinchOne, pinchTwo;
 
@@ -713,7 +663,7 @@
     ripple.gestur.prototype.onEnd = function(event, touching) {
         var now = new Date().getTime();
         var points = ripple.getInputPoints(
-            this.target, event, this.scalefn);
+            event, this.target, this.scalefn);
         var current = findCurrent(points, this.touchOne);
 
         if (this.start && this.start.touching !== touching)

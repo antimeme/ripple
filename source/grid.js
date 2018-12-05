@@ -1127,7 +1127,7 @@
                  1 + 0.1 * event.deltaY);
         });
         var downEvent = function(event) {
-            var targets = ripple.getInputPoints(self, event);
+            var targets = ripple.getInputPoints(event, self);
             ripple.hide(menu);
             if (event.which > 1) {
                 // Reserve right and middle clicks for browser menus
@@ -1179,7 +1179,7 @@
         var moveEvent = function(event) {
             if (drag) {
                 animation.stop();
-                tap = ripple.getInputPoints(self, event);
+                tap = ripple.getInputPoints(event, self);
                 var goff = instance.offset();
                 instance.offset(goff.left + tap.x - drag.x,
                                 goff.top + tap.y - drag.y);
@@ -1190,7 +1190,7 @@
             }
             if (zooming) {
                 animation.stop();
-                var targets = ripple.getInputPoints(self, event);
+                var targets = ripple.getInputPoints(event, self);
                 var factor;
                 if (zooming.diameter && targets.targets.length == 2) {
                     var t0 = targets.targets[0];

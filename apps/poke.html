@@ -90,8 +90,7 @@
       "mousedown", "mousemove", "mouseup",
       "click", "dblclick"].forEach(function(eventName) {
           canvas.addEventListener(eventName, function(event) {
-              post(event.type, ripple.getInputPoints(
-                  event.target, event));
+              post(event.type, ripple.getInputPoints(event));
               return false;
           });
       });

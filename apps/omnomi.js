@@ -310,13 +310,13 @@
                  1 + 0.1 * event.deltaY);
         });
         self.on('mousedown touchstart', function(event) {
-            var targets = ripple.createTouches(event);
+            var targets = ripple.getInputPoints(event);
             if (event.which > 1) {
                 // Reserve right and middle clicks for browser menus
-            } else if (targets.current.length > 1) {
-                if (targets.current.length == 2) {
-                    var t0 = targets.current[0];
-                    var t1 = targets.current[1];
+            } else if (targets.targets > 1) {
+                if (targets.targets.length == 2) {
+                    var t0 = targets.targets[0];
+                    var t1 = targets.targets[1];
                     zooming = {
                         diameter: Math.sqrt(sqdist(t0, t1)),
                         x: (t0.x + t1.x) / 2, y: (t0.y + t1.y) / 2,
@@ -335,11 +335,12 @@
         });
         self.on('mousemove touchmove', function(event) {
             if (zooming) {
-                var targets = ripple.createTargets(event);
+                var targets = ripple.getInputPoints(event);
                 var factor;
-                if (zooming.diameter && targets.current.length == 2) {
-                    var t0 = targets.current[0];
-                    var t1 = targets.current[1];
+                if (zooming.diameter &&
+                    targets.targets && targets.targets.length == 2) {
+                    var t0 = targets.targets[0];
+                    var t1 = targets.targets[1];
                     var diameter = Math.sqrt(sqdist(t0, t1));
                     factor = diameter / zooming.diameter;
                 }
