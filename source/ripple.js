@@ -197,11 +197,9 @@
     ripple.getInputPoints = function(event, element, scalefn) {
         var brect = (element ? element : event.target)
             .getBoundingClientRect();
-        if (!scalefn) // identity if no scale function provided
-            scalefn = function(value) { return value; };
         var transform = function(id, x, y) {
-            return scalefn({
-                id: id, x: x - brect.left, y: y - brect.top });
+            var result = {id: id, x: x - brect.left, y: y - brect.top };
+            return scalefn ? scalefn(result) : result;
         };
         var ii;
         var result = (!isNaN(event.pageX) && !isNaN(event.pageY)) ?
