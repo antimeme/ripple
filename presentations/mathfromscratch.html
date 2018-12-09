@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="lib/reveal/sky.css">
 <style>
  canvas.triggy { width: 100%; height: 100%; }
+ .intro { color: blue; font-weight: bold; }
 </style>
 <!-- Slides use Reveal.js: https://github.com/hakimel/reveal.js/ -->
 
@@ -140,13 +141,13 @@
             </p>
             <table>
                 <tr>
-                    <td>&#x2200;a P(a)</td>
+                    <td><span class="intro">&#x2200;</span>a P(a)</td>
                     <td>P is true for all values of a</td>
                 </tr><tr>
-                    <td>&#x2203;a P(a)</td>
+                    <td><span class="intro">&#x2203;</span>a P(a)</td>
                     <td>P is true for some value of a</td>
                 </tr><tr>
-                    <td>&#x2204;a P(a)</td>
+                    <td><span class="intro">&#x2204;</span>a P(a)</td>
                     <td>P is false for all values of a</td>
                 </tr>
             </table>
@@ -169,19 +170,19 @@
             </p>
             <table>
                 <tr>
-                    <td>&not;P</td>
+                    <td><span class="intro">&not;</span>P</td>
                     <td>not P (P is false)</td>
                 </tr><tr>
-                    <td>(P &and; Q)</td>
+                    <td>(P <span class="intro">&and;</span> Q)</td>
                     <td>both P and Q are true</td>
                 </tr><tr>
-                    <td>(P &or; Q)</td>
+                    <td>(P <span class="intro">&or;</span> Q)</td>
                     <td>at least one of P and Q are true</td>
                 </tr><tr>
-                    <td>(P &#x27f9; Q)</td>
+                    <td>(P <span class="intro">&#x27f9;</span> Q)</td>
                     <td>if P then Q (implication)</td>
                 </tr><tr>
-                    <td>(P &#x27fa; Q)</td>
+                    <td>(P <span class="intro">&#x27fa;</span> Q)</td>
                     <td>if and only if P then Q (biconditional)</td>
                 </tr>
             </table>
@@ -382,27 +383,33 @@
             <h3>Set Predicates</h3>
             <table>
                 <tr>
-                    <td>a &#x2208; {a, b, c}</td>
-                    <td>member of</td>
+                    <td>a <span class="intro">&#x2208;</span>
+                        {a, b, c}</td><td>member of</td>
                 </tr>
                 <tr>
                     <td>
-                        a &#x2209; {b, c} &#x27f9;<br />
-                        (b&ne;a &and; c&ne;a)
+                        a <span class="intro">&#x2209;</span>
+                        {b, c} &#x27f9;<br /> (b&ne;a &and; c&ne;a)
                     </td>
                     <td>
                         not a member of<br />
-                        (a &#x2209; b) &#x225d; &not;(a &#x2208; b)
+                        (a <span class="intro">&#x2209;</span> b)
+                        &#x225d; &not;(a
+                        <span class="intro">&#x2208;</span> b)
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        {a} &#x2286; {a, b}<br />
-                        {a, b} &#x2286; {a, b}
+                        {a} <span class="intro">&#x2286;</span>
+                        {a, b}<br />{a, b}
+                        <span class="intro">&#x2286;</span> {a, b}
                     </td><td>
                         subset of<br />
-                        (a &#x2286; b) &#x225d;
-                        &#x2200;c&#x2208;a c&#x2208;b
+                        (a <span class="intro">&#x2286;</span> b)
+                        &#x225d; &#x2200;c
+                        c<span class="intro">&#x2208;</span>a
+                        &#x27f9;
+                        c<span class="intro">&#x2208;</span>b
                     </td>
                 </tr>
             </table>
@@ -425,17 +432,22 @@
             </p>
             <table>
                 <tr>
-                    <td>{ a, b, c }</td>
+                    <td><span class="intro">{</span> a, b, c
+                        <span class="intro">}</span></td>
                     <td>Enumeration</td>
                 </tr>
                 <tr>
-                    <td>{ a&#x2208;b&nbsp;:&nbsp;P(a) }</td>
+                    <td><span class="intro">{</span>
+                        a&#x2208;b <span class="intro">:</span> P(a)
+                        <span class="intro">}</span></td>
                     <td>
                         Specification (filtered by predicate)
                     </td>
                 </tr>
                 <tr>
-                    <td>{ f(a)&nbsp;:&nbsp;a&#x2208;b }</td>
+                    <td><span class="intro">{</span>
+                        f(a) <span class="intro">:</span> a&#x2208;b
+                        <span class="intro">}</span></td>
                     <td>Replacement (function outputs)</td>
                 </tr>
             </table>
@@ -450,7 +462,10 @@
         </section>
         <section>
             <h3>Empty Set</h3>
-            <p>&#x2203;{} &#x2200;a a&#x2209;{}</p>
+            <p>
+                &#x2203;<span class="intro">{}</span>
+                &#x2200;a a&#x2209;<span class="intro">{}</span>
+            </p>
             <p>
                 The empty set is a set that doesn't contain anything.
             </p>
@@ -499,7 +514,8 @@
             <p>
                 &#x2200;a,b,c (c &#x2208; a &#x27fa; c &#x2208; b)
                 &#x27f9; <br />
-                (a &#x2286; b) &and; (b &#x2286; a) &#x27f9; (a = b)
+                (a &#x2286; b) &and; (b &#x2286; a) &#x27f9;
+                (a <span class="intro">=</span> b)
             </p><p>
                 Two sets that contain the same elements are the
                 same set.
@@ -529,7 +545,8 @@
         <section>
             <h2>Union</h2>
             <p>
-                &#x2200;a &#x2203;&cup;a &#x2200;b&#x2208;&cup;a
+                &#x2200;a &#x2203;<span class="intro">&cup;</span>a
+                &#x2200;b&#x2208;<span class="intro">&cup;</span>a
                 (&#x2203;c&#x2208;a b&#x2208;c)
             </p>
             <p>
@@ -537,7 +554,8 @@
                 all the members of its members.
             </p>
             <p>
-                &cup;{{a, b}, {b, c}} = {a, b, c}
+                <span class="intro">&cup;</span>{{a, b}, {b, c}} =
+                {a, b, c}
             </p>
             <aside class="notes">
                 Union allows us to combine the members of the
@@ -549,14 +567,15 @@
         <section>
             <h2>Power Set</h2>
             <p>
-                &#x2200;a &#x2203;&#x2118;a &#x2200;b
-                (b&#x2208;&#x2118;a &#x27fa; b&#x2286;a)
+                &#x2200;a &#x2203;<span class="intro">&#x2118;</span>a
+                &#x2200;b (b&#x2208;<span class="intro">&#x2118;</span>a
+                &#x27fa; b&#x2286;a)
             </p>
             <p>
                 Any set can be used to create a set of its subsets.
             </p>
             <p>
-                &#x2118;{a, b, c} =<br />
+                <span class="intro">&#x2118;</span>{a, b, c} =<br />
                 {{}, {a}, {b}, {c}, {a, b}, {b, c}, {a, c},
                 {a, b, c}}
             </p>
@@ -597,6 +616,7 @@
                 the predicate is true.  This allows us to filter
                 sets.
             </p>
+            <p>Notation: { a&#x2208;b : P(a) }</p>
             <aside class="notes">
                 Specification is actually an axiom schema because
                 there is technically one axiom for every possible
@@ -615,6 +635,7 @@
                 other set there is a set which contains all the
                 function outputs for all members of the set.
             </p>
+            <p>Notation: { f(a) : a&#x2208;b }</p>
             <aside class="notes">
                 Replacement is another schema but this time it
                 allows us to use a function to create one set from
@@ -755,69 +776,92 @@
             <p class="fragment">Let's impose some order on them!</p>
         </section>
         <section>
-            <h2>Ordered Pairs</h2>
+            <h3>Ordered Pairs</h3>
             <p>
-                &#x27e8;a, b&#x27e9; &#x225d;
-                {{a}, {a, b}} (Kuratowski 1921 CE)
+                <span class="intro">&#x27e8;</span>a,
+                b<span class="intro">&#x27e9;</span>
+                &#x225d; {{a, a}, {a, b}} (Kuratowski 1921 CE)
             </p>
             <ul>
-                <li class="fragment"><ul>
-                    <li>
-                        &#x2200;a,b (a &ne; b) &#x27fa;
-                        (&#x27e8;a, b&#x27e9; &ne; &#x27e8;b,
-                        a&#x27e9;)
-                    </li><li class="fragment">
-                        &#x2200;a,b (a &ne; b) &#x27fa;
-                        {{a}, {a, b}} &ne; {{b}, {a, b}}
-                    </li>
-                </ul></li><li class="fragment">
-                    a is first in &#x27e8;a, b&#x27e9; &#x225d;
+                <li class="fragment">
+                    &#x2200;a,b (a &ne; b) &#x27fa;
+                    (<span class="intro">&#x27e8;</span>a,
+                    b<span class="intro">&#x27e9;</span> &ne;
+                    <span class="intro">&#x27e8;</span>b,
+                    a<span class="intro">&#x27e9;</span>)
+                </li><li class="fragment">
+                    &#x2200;a,b (a &ne; b) &#x27fa;
+                    {{a, a}, {a, b}} &ne; {{b, b}, {b, a}}
+                </li><li class="fragment">
+                    &#x2200;a,b (a &ne; b) &#x27fa;
+                    {{a}, {a, b}} &ne; {{b}, {a, b}}
+                </li><li class="fragment">
+                    a <span class="intro">is first</span> in
+                    &#x27e8;a, b&#x27e9; &#x225d;
                     &#x2200;c&#x2208;&#x27e8;a, b&#x27e9;
                     a&#x2208;c
                 </li><li class="fragment">
-                    b is second in &#x27e8;a, b&#x27e9; &#x225d;
+                    b <span class="intro">is second</span> in
+                    &#x27e8;a, b&#x27e9; &#x225d;
                     (&#x2203;c&#x2208;&#x27e8;a, b&#x27e9;
                     b&#x2208;c) &and;<br />
                     (&#x2200;c,d&#x2208;&#x27e8;a, b&#x27e9; c
                     &ne; d &#x27f9; b&#x2209;c &or; b&#x2209;d)
-                </li><li class="fragment">
-                    &cup;&#x27e8;a, b&#x27e9; =
-                    &cup;{{a}, {a, b}} = {a, b}
                 </li>
             </ul>
         </section>
         <section>
             <h3>Cartesian Product</h3>
             <p>
-                &#x2200;a,b (a &times; b) &#x225d;<br />
-                <span class="fragment">
-                    { &#x27e8;a', b'&#x27e9;
-                    &#x2208; &#x2118;&#x2118;(a &cup; b) :
-                    a'&#x2208;a &and; b'&#x2208;b }</span>
+                &#x2200;a,b (a <span class="intro">&times;</span> b)
+                &#x225d;<br /> { &#x27e8;a<sub>i</sub>,
+                b<sub>i</sub>&#x27e9; &#x2208;
+                &#x2118;&#x2118;(a &cup; b) :
+                a<sub>i</sub>&#x2208;a &and; b<sub>i</sub>&#x2208;b }
             </p>
             <p class="fragment">
-                Pairing, union and power set and specification can
-                be used to create a set product.
+                We can use pairing, union and powerset axioms to
+                construct all possible ordered pairs from two sets.
             </p>
             <p class="fragment">
-                {a, b, c} &times; {c, d} =<br /> {
-                &#x27e8;a, c&#x27e9;, &#x27e8;a, d&#x27e9;,
+                {a, b, c} <span class="intro">&times;</span> {c, d}
+                =<br /> { &#x27e8;a, c&#x27e9;, &#x27e8;a, d&#x27e9;,
                 &#x27e8;b, c&#x27e9;, &#x27e8;b, d&#x27e9;,
                 &#x27e8;c, c&#x27e9;, &#x27e8;c, d&#x27e9; }
             </p>
         </section>
         <section>
+            <h3>Unordering Pairs</h3>
+            <p>
+                &cup;&#x27e8;a, b&#x27e9; =
+                &cup;{{a, a}, {a, b}} = {a, b}
+            </p>
+            <p class="fragment">
+                A union operator turns an ordered pair into an
+                unordered set containing both elements.
+                <span class="fragment">Two union operators collapses
+                    a set of ordered pairs:</span>
+            </p>
+            <p class="fragment">
+                <span class="intro">&cup;&cup;</span>{&#x27e8;a,
+                b&#x27e9;, &#x27e8;b, c&#x27e9;, &#x27e8;c,
+                a&#x27e9;} =<br /><span class="fragment">&cup;{{a},
+                    {a, b}, {b}, {b, c}, {c}, {c, a}} =</span><br />
+                <span class="fragment">{a, b, c}</span>
+            </p>
+        </section>
+        <section>
             <h3>Relation</h3>
             <p>
-                a R b &#x225d; &#x27e8;a, b&#x27e9;&#x2208;R
+                a <span class="intro">R</span> b &#x225d;
+                &#x27e8;a, b&#x27e9;&#x2208;R
             </p>
             <p>
-                A relation is a set of ordered pairs.
+                A relation is a set of ordered pairs.  The axiom of
+                specification can separate domain and range.
             </p>
             <ul>
                 <li class="fragment">
-                    &cup;&cup;R contains all members
-                </li><li class="fragment">
                     Domain(R) &#x225d; { a&#x2208;&cup;&cup;R :
                     &#x2203;b&#x2208;&cup;&cup;R
                     &#x27e8;a, b&#x27e9;&#x2208;R }
@@ -825,13 +869,15 @@
                     Range(R) &#x225d; { b&#x2208;&cup;&cup;R :
                     &#x2203;a&#x2208;&cup;&cup;R
                     &#x27e8;a, b&#x27e9;&#x2208;R }
-                </li><li class="fragment">
-                    R &#x2286; Domain(R) &times; Range(R)
                 </li>
             </ul>
         </section>
         <section>
-            <h2>Relation Properties</h2>
+            <h3>Relations are Subsets</h3>
+            <p>R &#x2286; Domain(R) &times; Range(R)</p>
+        </section>
+        <section>
+            <h3>Relation Properties</h3>
             <ul>
                 <li class="fragment">
                     Reflexive: &#x2200;a&#x2208;&cup;&cup;R (a R a)
@@ -945,7 +991,7 @@
                 <li class="fragment">
                     (a = b) &#x27f9; (P(a) &#x27fa; P(b)) :: Leibniz's Law
                 </li><li class="fragment">
-                    (a = b) &#x27f9; (P(b) &#x27fa; P(b))
+                    (a = b) &#x27f9; (P(b) &#x27fa; P(a))
                     :: Symmetric Biconditional
                 </li><li class="fragment">
                     (a = b) &#x27f9; (b = a) :: Leibniz's Law
@@ -957,9 +1003,6 @@
             <p>&#x2200;a,b,c (a = b) &and; (b = c) &#x27f9; (a = c)</p>
             <ul>
                 <li class="fragment">
-                    (a = b) &and; (b = c) &#x27f9; (P(a) &#x27fa; P(b))
-                    :: Leibniz's Law
-                </li><li class="fragment">
                     (a = b) &and; (b = c) &#x27f9; (P(a) &#x27fa; P(b))
                     &and; (P(b) &#x27fa; P(c)) :: Leibniz's Law
                 </li><li class="fragment">
@@ -1035,15 +1078,263 @@
         </section>
     </section>
 
+    <section>
+        <section>
+            <h2>Tuples</h2>
+            <p>
+                Ordered pairs can be used to build general tuples
+                that can order an aribtrary number of members
+            </p>
+        </section>
+        <section>
+            <h3>Tuple Definition</h3>
+            <p>
+                A tuple is either the empty set or an ordered
+                pair with a tuple as the second member.
+            </p>
+            <ul>
+                <li class="fragment">&#x27ec;&#x27ed; &#x225d; {}
+                </li><li class="fragment">
+                    &#x27ec;a&#x27ed; &#x225d;
+                    &#x27e8;a, {}&#x27e9;
+                </li><li class="fragment">
+                    &#x27ec;a, b&#x27ed; &#x225d;
+                    &#x27e8;a, &#x27e8;b, {}&#x27e9;&#x27e9;
+                </li><li class="fragment">
+                    &#x27ec;a, b, c&#x27ed; &#x225d;
+                    &#x27e8;a, &#x27e8;b, &#x27e8;c,
+                    {}&#x27e9;&#x27e9;&#x27e9;
+                </li><li class="fragment">...</li>
+            </ul>
+        </section>
+        <section>
+            <h3>Tuple Equivalence</h3>
+            <p>
+                When using an equivalence relation other than set
+                equality elements must be compared recursively
+            </p>
+            <ul>
+                <li>&#x27ec;&#x27ed; &#x2251; &#x27ec;&#x27ed;</li>
+                <li>
+                    &#x2200;a,b,t
+                    (&#x27e8;a, t&#x27e9; &#x2251; &#x27e8;b, t&#x27e9;)
+                    &#x27fa; (a &#x2251; b)
+                </li>
+            </ul>
+            <aside class="notes">
+            </aside>
+        </section>
+        <section>
+            <h3>Tuple Concatenation</h3>
+            <p>
+                &#x2200;n,m&#x2208;&#x2115;
+                &#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
+                a<sub>n</sub>&#x27ed; &#x2a01;
+                &#x27ec;b<sub>0</sub>, b<sub>1</sub>, ...
+                b<sub>m</sub>&#x27ed; =<br />
+                &#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
+                a<sub>n</sub>, b<sub>0</sub>, b<sub>1</sub>, ...
+                b<sub>m</sub>&#x27ed;
+            </p>
+            <ul>
+                <li>
+                    &#x27ec;&#x27ed; &#x2a01; b =
+                    {} &#x2a01; b &#x225d; b
+                </li>
+                <li>
+                    &#x27ec;a, ...&#x27ed; &#x2a01; b =
+                    &#x27e8;a, t<sub>a</sub>&#x27e9; &#x2a01; b
+                    &#x225d; &#x27e8;a, t<sub>a</sub>
+                    &#x2a01; b&#x27e9;
+                </li>
+            </ul>
+            <p>
+                Tuples can be linked together in a recursive way.
+            </p>
+            <aside class="notes">
+                Concatenating an empty tuple with another tuple
+                leaves the other tuple unchanged.  Concatenating a
+                tuple with one element with a tuple means
+                replacing the empty set that is the second element
+                of hte first tuple with the second tuple.
+                Concatenating a tuple with more than one member
+                can be done by recursively concatenating the
+                second member of the ordered pair with the second
+                tuple, which implicitly finds the end of the first
+                tuple one step at a time.
+            </aside>
+        </section>
+        <section>
+            <h3>Tuple Reversal</h3>
+            <p>
+                &#x2200;n&#x2208;&#x2115;
+                reverse(&#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
+                a<sub>n</sub>&#x27ed;) =
+                &#x27ec;a<sub>n</sub>, ... a<sub>1</sub>,
+                a<sub>0</sub>&#x27ed;
+            </p>
+            <ul>
+                <li>
+                    reverse(&#x27ec;&#x27ed;) &#x225d;
+                    &#x27ec;&#x27ed;
+                </li><li>
+                    reverse(&#x27ec;a, ...&#x27ed;) =
+                    reverse(&#x27e8;a, t<sub>a</sub>&#x27e9;)
+                    &#x225d;<br />
+                    reverse(t<sub>a</sub>) &#x2a01;
+                    &#x27ec;a&#x27ed;
+                </li>
+            </ul>
+            <p>
+                Reversing a tuple means concatenating each
+                element to the end.
+            </p>
+            <aside class="notes">
+                We build on concatenation to recursively
+                describe a process for reversing tuples.
+            </aside>
+        </section>
+    </section>
+
+    <section id="function">
+        <section>
+            <h2>Functions</h2>
+            <p>
+                A function is a special kind of relation which maps
+                every member of the domain to the exactly one member
+                of the range.  Because of this we can use functions
+                to replace members of a set to create a new set.
+            </p>
+            <aside class="notes">
+                A function is a relation with the special property
+                that every member of the domain appears in exactly
+                one ordered pair.  In other words, functions
+                always map every element in their domains.
+            </aside>
+        </section>
+        <section>
+            <h2>Functions</h2>
+            <p>
+                (f : D &#x27f6; R) &#x225d;
+                &#x2200;a&#x2208;D (&#x2203;b&#x2208;R
+                &#x27e8;a, b&#x27e9;&#x2208;f) &and;<br />
+                (&#x2200;b,c&#x2208;R
+                (&#x27e8;a, b&#x27e9;&#x2208;f &and;
+                &#x27e8;a, c&#x27e9;&#x2208;f)
+                &#x27f9; b = c)
+            </p>
+            <ul>
+                <li class="fragment">&#x2200;a&#x2208;D
+                    &#x2203;b&#x2208;R &#x27e8;a, b&#x27e9;&#x2208;f
+                </li><li class="fragment">
+                    <span class="intro">f(a) = b</span></li>
+            </ul>
+            <aside class="notes">
+                We denote function application different than
+                relations.  Rather than saying <q>a relates b</q>
+                we say <q>f of a equals b</q>.
+            </aside>
+        </section>
+        <section>
+            <h3>Meet the Jections</h3>
+            <p>
+                Given function f : D &#x27f6; R
+            </p>
+            <ul>
+                <li class="fragment">
+                    Injection: <span class="intro">&#x2200;a,b&#x2208;D
+                    f(a) = f(b) &#x27f9; (a = b)</span><br />
+                    No two members of the domain are mapped to the
+                    same member of the range
+                </li><li class="fragment">
+                    Surjection: <span class="intro">&#x2200;b&#x2208;R
+                    &#x2203;a&#x2208;D f(a) = b</span><br />
+                    Every member of the range is mapped from at
+                    least one member of domain
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Back It Up</h3>
+            <p>
+                Given function f : D &#x27f6; R
+            </p>
+            <ul>
+                <li class="fragment">
+                    Bijection: both an injection and a surjection
+                </li><li class="fragment">
+                    Inverse: <span class="intro">f<sup>-1</sup> :
+                    R &#x27f6; D</span><br />
+                    &#x2200;a&#x2208;D,b&#x2208;R
+                    (f(a) = b) &#x27fa; (f<sup>-1</sup>(b) = a)
+                </li><li class="fragment">
+                    Cardinality: two sets have the same cardinality
+                    if and only if a bijection exists between them
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Multivariable Functions</h3>
+            <p>A function can have more than one argument.</p>
+            <ul>
+                <li class="fragment">
+                    f : D<sub>1</sub> &times; D<sub>2</sub>
+                    &#x27f6; R &#x27f9;
+                    <span class="intro">
+                        f(a<sub>1</sub>, a<sub>2</sub>) = b</span>
+                </li><li class="fragment">
+                    f : D<sub>1</sub> &times; D<sub>2</sub> &times;
+                    D<sub>3</sub> &#x27f6; R &#x27f9;
+                    <span class="intro">
+                        f(a<sub>1</sub>, a<sub>2</sub>,
+                        a<sub>3</sub>) = b</span>
+                </li><li class="fragment">
+                    ...
+                </li>
+            </ul>
+            <p class="fragment">
+                This is the same as having a domain consisting of
+                ordered pairs or tuples.
+            </p>
+        </section>
+        <section>
+            <h3>Multivariable Functions</h3>
+            <p>Function can return ordered pairs or tuples.</p>
+            <ul>
+                <li class="fragment">
+                    f : D &#x27f6; R<sub>1</sub> &times;
+                    R<sub>2</sub> &#x27f9;
+                    <span class="intro">
+                        f(a) = &#x27e8;b<sub>1</sub>,
+                        b<sub>2</sub>&#x27e9;</span>
+                </li><li class="fragment">
+                    f : D &#x27f6; R<sub>1</sub> &times;
+                    R<sub>2</sub> &times; R<sub>3</sub> &#x27f9;
+                    <span class="intro">
+                        f(a) = &#x27ec;b<sub>1</sub>, b<sub>2</sub>,
+                        b<sub>3</sub>&#x27ed;</span>
+                </li><li class="fragment">
+                    ...
+                </li>
+            </ul>
+            <p class="fragment">
+                This is the same as having a range consisting of
+                ordered pairs or tuples.
+            </p>
+        </section>
+    </section>
+
     <section id="natural-numbers">
         <section>
             <h2>Natural Numbers &#x2115;</h2>
             <p>
-                succ(a) &#x225d; &cup;{a, {a, a}} = a &cup; {a}
+                <span class="intro">succ(a)</span> &#x225d;
+                &cup;{a, {a, a}} = a &cup; {a}
             </p>
             <p>
-                &#x2115; &#x225d; { a : (a = {}) &or;
-                &#x2203;b&#x2208;&#x2115; a = succ(b) }
+                <span class="intro">&#x2115;</span> &#x225d;
+                { a : (a = {}) &or; &#x2203;b&#x2208;&#x2115;
+                a = <span class="intro">succ(b)</span> }
             </p>
             <p>
                 Natural numbers are an effective way to represent
@@ -1106,8 +1397,8 @@
             </p>
             <ul>
                 <li class="fragment">
-                    10&#x2115; &#x225d; succ(9) =
-                    {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+                    <span class="intro">1</span>0&#x2115;
+                    &#x225d; succ(9) = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
                 </li><li class="fragment">
                     11&#x2115; &#x225d; succ(10) =
                     {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
@@ -1116,7 +1407,8 @@
                 </li><li class="fragment">
                     19&#x2115; &#x225d; succ(18)
                 </li><li class="fragment">
-                    20&#x2115; &#x225d; succ(19)
+                    <span class="intro">2</span>0&#x2115;
+                    &#x225d; succ(19)
                 </li><li class="fragment">
                     ...
                 </li>
@@ -1144,18 +1436,20 @@
             <table>
                 <tr><td>
                     &#x2200;a,b&#x2208;&#x2115;
-                    a &le; b &#x225d; a &#x2208; succ(b)
+                    a <span class="intro">&le;</span>
+                    b &#x225d; a &#x2208; succ(b)
                 </td></tr><tr><td>
                     &#x2200;a,b&#x2208;&#x2115;
-                    a &ge; b &#x225d; b &#x2208; succ(a)
+                    a <span class="intro">&ge;</span>
+                    b &#x225d; b &#x2208; succ(a)
                 </td></tr><tr><td>
                     &#x2200;a,b&#x2208;&#x2115;
-                    a &lt; b &#x225d; &not;(a &ge; b) &#x27fa;
-                    (a &#x2208; b)
+                    a <span class="intro">&lt;</span>
+                    b &#x225d; &not;(a &ge; b) &#x27fa; (a &#x2208; b)
                 </td></tr><tr><td>
                     &#x2200;a,b&#x2208;&#x2115;
-                    a &gt; b &#x225d; &not;(a &le; b) &#x27fa;
-                    (b &#x2208; a)
+                    a <span class="intro">&gt;</span>
+                    b &#x225d; &not;(a &le; b) &#x27fa; (b &#x2208; a)
                 </td></tr>
             </table>
             <p>
@@ -1279,11 +1573,12 @@
             <ul>
                 <li>
                     Base: &#x2200;a&#x2208;&#x2115;
-                    a + 0 &#x225d; a
+                    <span class="intro">a + 0 &#x225d; a</span>
                 </li>
                 <li>
                     Step: &#x2200;a,b&#x2208;&#x2115;
-                    a + succ(b) &#x225d; succ(a + b)
+                    <span class="intro">a + succ(b) &#x225d;
+                        succ(a + b)</span>
                 </li>
             </ul>
         </section>
@@ -1512,12 +1807,12 @@
             <ul>
                 <li>
                     Base: &#x2200;a&#x2208;&#x2115;
-                    a &times; 0 &#x225d; 0
+                    <span class="intro">a &times; 0 &#x225d; 0</span>
                 </li>
                 <li>
                     Step: &#x2200;a,b&#x2208;&#x2115;
-                    a &times; succ(b) &#x225d;
-                    a + (a &times; b)
+                    <span class="intro">a &times; succ(b) &#x225d;
+                        a + (a &times; b)</span>
                 </li>
             </ul>
         </section>
@@ -1911,13 +2206,12 @@
         <section>
             <h2>Integers &#x2124;</h2>
             <p>
-                &#x2124; &#x225d; { &#x27e8;a, b&#x27e9; :
-                a,b&#x2208;&#x2115; }
+                <span class="intro">&#x2124; &#x225d; { &#x27e8;a,
+                    b&#x27e9;&#x2208;&#x2115;&times;&#x2115; }</span>
             </p>
             <p>
-                [a - b] &#x225d;
-                { &#x27e8;c<sub>1</sub>, c<sub>2</sub>&#x27e9; :
-                c<sub>1</sub>,c<sub>2</sub>&#x2208;&#x2115; &and;
+                [a - b] &#x225d; { &#x27e8;c<sub>1</sub>,
+                c<sub>2</sub>&#x27e9;&#x2208;&#x2115;&times;&#x2115; :
                 (a + c<sub>2</sub> = c<sub>1</sub> + b) }
             </p>
             <p>
@@ -1933,10 +2227,11 @@
                 a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
                 b<sub>2</sub>&#x27e9;&#x2208;&#x2124;
                 <br />
-                (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
-                =&#x2124; &#x27e8;b<sub>1</sub>,
-                b<sub>2</sub>&#x27e9;) &#x225d; (a<sub>1</sub> +
-                b<sub>2</sub> = a<sub>2</sub> + b<sub>1</sub>)
+                <span class="intro">(&#x27e8;a<sub>1</sub>,
+                    a<sub>2</sub>&#x27e9; =&#x2124;
+                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;)
+                    &#x225d; (a<sub>1</sub> + b<sub>2</sub> =&#x2115;
+                    a<sub>2</sub> + b<sub>1</sub>)</span>
             </p>
             <ul>
                 <li class="fragment">
@@ -1977,7 +2272,8 @@
             <h3>Successor Equality</h3>
             <p>
                 &#x2200;a,b&#x2208;&#x2115;
-                &#x27e8;a, b&#x27e9; = &#x27e8;succ(a), succ(b)&#x27e9;
+                <span class="intro">&#x27e8;a, b&#x27e9; =
+                    &#x27e8;succ(a), succ(b)&#x27e9;</span>
             </p>
             <ul>
                 <li class="fragment">
@@ -1999,11 +2295,12 @@
                 &#x2200;&#x27e8;a<sub>1</sub>,
                 a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
                 b<sub>2</sub>&#x27e9;&#x2208;&#x2124; <br />
-                (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; &le;
-                &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) &#x225d;
-                &#x2203;c&#x2208;&#x2115;
-                a<sub>1</sub> + b<sub>2</sub> + c =
-                a<sub>2</sub> + b<sub>1</sub>
+                <span class="intro">(&#x27e8;a<sub>1</sub>,
+                    a<sub>2</sub>&#x27e9; &le; &#x27e8;b<sub>1</sub>,
+                    b<sub>2</sub>&#x27e9;) &#x225d;
+                    &#x2203;c&#x2208;&#x2115;
+                    a<sub>1</sub> + b<sub>2</sub> + c =&#x2115;
+                    a<sub>2</sub> + b<sub>1</sub></span>
             </p>
             <ul>
                 <li class="fragment">
@@ -2069,8 +2366,8 @@
             <h2>Integers &#x2124;</h2>
             <ul>
                 <li>
-                    &#x2124; &#x225d; { &#x27e8;a, b&#x27e9; :
-                    a,b&#x2208;&#x2115; }
+                    &#x2124; &#x225d; { &#x27e8;a,
+                    b&#x27e9;&#x2208;&#x2115;&times;&#x2115; }
                 </li><li>
                     Equality: &#x2200;&#x27e8;a<sub>1</sub>,
                     a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
@@ -2078,15 +2375,16 @@
                     (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     =&#x2124; &#x27e8;b<sub>1</sub>,
                     b<sub>2</sub>&#x27e9;) &#x225d; (a<sub>1</sub> +
-                    b<sub>2</sub> = a<sub>2</sub> + b<sub>1</sub>)
+                    b<sub>2</sub> =&#x2115; a<sub>2</sub> + b<sub>1</sub>)
                 </li><li>
                     Order: &#x2200;&#x27e8;a<sub>1</sub>,
                     a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
                     b<sub>2</sub>&#x27e9;&#x2208;&#x2124; <br />
-                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; &le;
-                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;) &#x225d;
+                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
+                    &le;&#x2124; &#x27e8;b<sub>1</sub>,
+                    b<sub>2</sub>&#x27e9;) &#x225d;
                     &#x2203;c&#x2208;&#x2115;
-                    a<sub>1</sub> + b<sub>2</sub> + c =
+                    a<sub>1</sub> + b<sub>2</sub> + c =&#x2115;
                     a<sub>2</sub> + b<sub>1</sub>
                 </li>
             </ul>
@@ -2106,10 +2404,11 @@
                 &#x2200;&#x27e8;a<sub>1</sub>,
                 a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
                 b<sub>2</sub>&#x27e9;&#x2208;&#x2124;<br />
-                &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
-                &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; &#x225d;
-                &#x27e8;a<sub>1</sub> + b<sub>1</sub>,
-                a<sub>2</sub> + b<sub>2</sub>&#x27e9;
+                <span class="intro">
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;
+                    &#x225d; &#x27e8;a<sub>1</sub> + b<sub>1</sub>,
+                    a<sub>2</sub> + b<sub>2</sub>&#x27e9;</span>
             </p>
         </section>
         <section>
@@ -2371,13 +2670,14 @@
                 &#x2200;&#x27e8;a<sub>1</sub>,
                 a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
                 b<sub>2</sub>&#x27e9;&#x2208;&#x2124;
-                &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; &times;
-                &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;
-                &#x225d;<br />
-                &#x27e8;(a<sub>1</sub> &times; b<sub>1</sub>) +
-                (a<sub>2</sub> &times; b<sub>2</sub>),
-                (a<sub>1</sub> &times; b<sub>2</sub>) +
-                (a<sub>2</sub> &times; b<sub>1</sub>)&#x27e9;
+                <span class="intro">
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; &times;
+                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;
+                    &#x225d;<br />
+                    &#x27e8;(a<sub>1</sub> &times; b<sub>1</sub>) +
+                    (a<sub>2</sub> &times; b<sub>2</sub>),
+                    (a<sub>1</sub> &times; b<sub>2</sub>) +
+                    (a<sub>2</sub> &times; b<sub>1</sub>)&#x27e9;</span>
             </p>
         </section>
         <section>
@@ -2724,18 +3024,16 @@
         <section>
             <h2>Rational Numbers &#x211a;</h2>
             <p>
-                &#x211a; &#x225d; { &#x27e8;a, b&#x27e9; :
-                a&#x2208;&#x2124; &and; b&#x2208;&#x2124; &and;
-                b &gt; 0&#x2124; }
+                <span class="intro">&#x211a; &#x225d; { &#x27e8;a,
+                    b&#x27e9;&#x2208;&#x2124;&times;&#x2124; :
+                    b &gt; 0&#x2124; }</span>
             </p>
             <p>
-                [a / b] &#x225d;
-                { &#x27e8;c<sub>1</sub>, c<sub>2</sub>&#x27e9; :
-                c<sub>1</sub>&#x2208;&#x2124; &and;
-                c<sub>2</sub>&#x2208;&#x2124; &and;
-                c<sub>2</sub> &gt; 0&#x2124; &and;<br />
-                c<sub>1</sub> &times; b =
-                c<sub>2</sub> &times; a }
+                [a / b] &#x225d; { &#x27e8;c<sub>1</sub>,
+                c<sub>2</sub>&#x27e9;&#x2208;&#x2124;&times;&#x2124; :
+                c<sub>2</sub> &gt; 0&#x2124; &and;
+                (c<sub>1</sub> &times; b =
+                c<sub>2</sub> &times; a) }
             </p>
             <p>
                 Rational numbers extend the integers.  They
@@ -2750,12 +3048,12 @@
                 a<sub>2</sub>&#x27e9;&#x2208;&#x211a;,
                 &#x27e8;b<sub>1</sub>,
                 b<sub>2</sub>&#x27e9;&#x2208;&#x211a;<br />
-                (&#x27e8;a<sub>1</sub>,a<sub>2</sub>&#x27e9;
-                =&#x211a;
-                &#x27e8;b<sub>1</sub>,b<sub>2</sub>&#x27e9;)
-                &#x225d;
-                (a<sub>1</sub> &times; b<sub>2</sub> =
-                a<sub>2</sub> &times; b<sub>1</sub>)
+                <span class="intro">(&#x27e8;a<sub>1</sub>,
+                    a<sub>2</sub>&#x27e9; =&#x211a;
+                    &#x27e8;b<sub>1</sub>,b<sub>2</sub>&#x27e9;)
+                    &#x225d; (a<sub>1</sub> &times; b<sub>2</sub>
+                    =&#x2124; a<sub>2</sub> &times;
+                    b<sub>1</sub>)</span>
             </p>
             <ul>
                 <li class="fragment">
@@ -2802,11 +3100,13 @@
             <p>
                 &#x2200;&#x27e8;a<sub>1</sub>,
                 a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
-                b<sub>2</sub>&#x27e9;&#x2208;&#x2124;<br />
-                (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; &le;
-                &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;)
-                &#x225d; (a<sub>1</sub> &times; b<sub>2</sub> &le;
-                a<sub>2</sub> &times; b<sub>1</sub>)
+                b<sub>2</sub>&#x27e9;&#x2208;&#x211a;<br />
+                <span class="intro">(&#x27e8;a<sub>1</sub>,
+                    a<sub>2</sub>&#x27e9; &le;&#x211a;
+                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;)
+                    &#x225d; (a<sub>1</sub> &times; b<sub>2</sub>
+                    &le;&#x2124; a<sub>2</sub> &times;
+                    b<sub>1</sub>)</span>
             </p>
             <ul>
                 <li class="fragment">
@@ -2908,27 +3208,28 @@
             <h2>Rational Numbers &#x211a;</h2>
             <ul>
                 <li>
-                    &#x211a; &#x225d; {
-                    &#x27e8;a, b&#x27e9; : a&#x2208;&#x2124; &and;
-                    b&#x2208;&#x2124; &and; b &gt; 0&#x2124; }
+                    &#x211a; &#x225d; { &#x27e8;a,
+                    b&#x27e9;&#x2208;&#x2124;&times;&#x2124; :
+                    b &gt; 0&#x2124; }
                 </li><li>
                     Equality: &#x2200;&#x27e8;a<sub>1</sub>,
                     a<sub>2</sub>&#x27e9;&#x2208;&#x211a;,
                     &#x27e8;b<sub>1</sub>,
                     b<sub>2</sub>&#x27e9;&#x2208;&#x211a;<br />
-                    (&#x27e8;a<sub>1</sub>,a<sub>2</sub>&#x27e9;
-                    =&#x211a;
-                    &#x27e8;b<sub>1</sub>,b<sub>2</sub>&#x27e9;)
-                    &#x225d;
-                    (a<sub>1</sub> &times; b<sub>2</sub> =
+                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
+                    =&#x211a; &#x27e8;b<sub>1</sub>,
+                    b<sub>2</sub>&#x27e9;) &#x225d;
+                    (a<sub>1</sub> &times; b<sub>2</sub> =&#x2124;
                     a<sub>2</sub> &times; b<sub>1</sub>)
                 </li><li>
                     Order: &#x2200;&#x27e8;a<sub>1</sub>,
                     a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
                     b<sub>2</sub>&#x27e9;&#x2208;&#x2124;<br />
-                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; &le;
+                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
+                    &le;&#x211a;
                     &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;)
-                    &#x225d; (a<sub>1</sub> &times; b<sub>2</sub> &le;
+                    &#x225d; (a<sub>1</sub> &times; b<sub>2</sub>
+                    &le;&#x2124;
                     a<sub>2</sub> &times; b<sub>1</sub>)
                 </li>
             </ul>
@@ -2945,12 +3246,14 @@
                 between two rational numbers: a + b
             </p>
             <p>
-                &#x2200;a,b&#x2208;&#x211a; a + b &#x225d;
-                &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
-                &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; =<br />
-                &#x27e8;(a<sub>1</sub> &times; b<sub>2</sub>) +
-                (a<sub>2</sub> &times; b<sub>1</sub>),
-                a<sub>2</sub> &times; b<sub>2</sub>&#x27e9;
+                &#x2200;a,b&#x2208;&#x211a;
+                <span class="intro">a + b &#x225d;
+                    &#x27e8;a<sub>1</sub>,
+                    a<sub>2</sub>&#x27e9; +
+                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; =<br />
+                    &#x27e8;(a<sub>1</sub> &times; b<sub>2</sub>) +
+                    (a<sub>2</sub> &times; b<sub>1</sub>),
+                    a<sub>2</sub> &times; b<sub>2</sub>&#x27e9;</span>
             </p>
         </section>
         <section>
@@ -3241,12 +3544,13 @@
                 sign between two rational numbers: a &times; b
             </p>
             <p>
-                &#x2200;a,b&#x2208;&#x211a; a &times; b &#x225d;
-                &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
-                &times; &#x27e8;b<sub>1</sub>,
-                b<sub>2</sub>&#x27e9; = &#x27e8;a<sub>1</sub>
-                &times; b<sub>1</sub>, a<sub>2</sub> &times;
-                b<sub>2</sub>&#x27e9;
+                &#x2200;a,b&#x2208;&#x211a;
+                <span class="intro">a &times; b &#x225d;
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
+                    &times; &#x27e8;b<sub>1</sub>,
+                    b<sub>2</sub>&#x27e9; = &#x27e8;a<sub>1</sub>
+                    &times; b<sub>1</sub>, a<sub>2</sub> &times;
+                    b<sub>2</sub>&#x27e9;</span>
             </p>
         </section>
         <section>
@@ -3622,8 +3926,9 @@
         <section>
             <h2>Real Numbers &#x211d;</h2>
             <p>
-                &#x211d; &#x225d; { &#x27e8;L,U&#x27e9; :
-                L,U&#x2286;&#x211a; &and; dedekind(L, U) }
+                <span class="intro">&#x211d; &#x225d; {
+                    &#x27e8;L,U&#x27e9; :
+                    L,U&#x2286;&#x211a; &and; dedekind(L, U) }</span>
             </p>
             <p>
                 Real numbers extend the rational numbers.  They
@@ -3635,7 +3940,8 @@
         <section>
             <h3>Dedekind Cuts</h3>
             <p>
-                &#x2200;L,U&#x2286;&#x211a; dedekind(L, U) &#x225d;
+                <span class="intro">&#x2200;L,U&#x2286;&#x211a;
+                    dedekind(L, U) &#x225d;</span>
             </p>
             <table><tr><td><ul>
                 <li class="fragment">
@@ -3986,66 +4292,6 @@
 
     <section>
         <section>
-            <h2>Function</h2>
-            <p>
-                (f : D &#x27f6; R) &#x225d;
-                &#x2200;a&#x2208;D (&#x2203;b&#x2208;R
-                &#x27e8;a, b&#x27e9;&#x2208;f) &and;<br />
-                (&#x2200;b,c&#x2208;R
-                (&#x27e8;a, b&#x27e9;&#x2208;f &and;
-                &#x27e8;a, c&#x27e9;&#x2208;f)
-                &#x27f9; b = c)
-            </p>
-            <p>
-                A function is a relation which maps every
-                member of the domain to the exactly one member
-                of the range: &#x2200;a&#x2208;D
-                <span class="fragment highlight-red">f(a)
-                    = b</span>&#x2208;R
-            </p>
-            <aside class="notes">
-                A function is a relation with the special property
-                that every member of the domain appears in exactly
-                one ordered pair.  In other words, functions
-                always map their entire domain.  We denote function
-                application different than relations.
-            </aside>
-        </section>
-        <section>
-            <h2>Meet the Jections</h2>
-            <p>
-                Given function f : D &#x27f6; R
-            </p>
-            <ul>
-                <li class="fragment">
-                    Injection: &#x2200;a,b&#x2208;D
-                    f(a) = f(b) &#x27f9; (a = b)<br />
-                    No two members of the domain are mapped to the
-                    same member of the range
-                </li><li class="fragment">
-                    Surjection: &#x2200;b&#x2208;R
-                    &#x2203;a&#x2208;D f(a) = b<br />
-                    Every member of the range is mapped from at
-                    least one member of domain
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h2>Back It Up</h2>
-            <p>
-                Given function f : D &#x27f6; R
-            </p>
-            <ul>
-                <li class="fragment">
-                    Bijection: both an injection and a surjection
-                </li><li class="fragment">
-                    Inverse: f<sup>-1</sup> : R &#x27f6; D<br />
-                    &#x2200;a&#x2208;D,b&#x2208;R
-                    (f(a) = b) &#x27fa; (f<sup>-1</sup>(b) = a)
-                </li>
-            </ul>
-        </section>
-        <section>
             <h2>Cardinality</h2>
             <p>
                 If a bijection exists between two sets we say the
@@ -4171,118 +4417,6 @@
             <h3>Real Numbers &#x211d;: Cardinality</h3>
             <p>TODO: prove more than naturals, integers and rationals
                 using Cantor diagonalization</p>
-        </section>
-    </section>
-
-    <section>
-        <section>
-            <h3>Tuples</h3>
-            <p>
-                Ordered pairs can be used to build general tuples
-                that can order an aribtrary number of members
-            </p>
-            <ul>
-                <li>&#x27ec;&#x27ed; &#x225d; {}</li>
-                <li>
-                    &#x27ec;a&#x27ed; &#x225d;
-                    &#x27e8;a, {}&#x27e9;
-                </li>
-                <li>
-                    &#x27ec;a, b&#x27ed; &#x225d;
-                    &#x27e8;a, &#x27e8;b, {}&#x27e9;&#x27e9;
-                </li><li>
-                    &#x27ec;a, b, c&#x27ed; &#x225d;
-                    &#x27e8;a, &#x27e8;b, &#x27e8;c,
-                    {}&#x27e9;&#x27e9;&#x27e9;
-                </li>
-                <li>...</li>
-            </ul>
-        </section>
-        <section>
-            <h3>Tuple Equality</h3>
-            <ul>
-                <li>&#x27ec;&#x27ed; = &#x27ec;&#x27ed;</li>
-                <li>
-                    &#x2200;a,b,t
-                    (&#x27e8;a, t&#x27e9; =* &#x27e8;b, t&#x27e9;)
-                    &#x27fa; (a =* b)
-                </li>
-            </ul>
-            <p>
-                Tuples are equal if their contents are equal.
-            </p>
-            <aside class="notes">
-            </aside>
-        </section>
-        <section>
-            <h3>Tuple Concatenation</h3>
-            <p>
-                &#x2200;n,m&#x2208;&#x2115;
-                &#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
-                a<sub>n</sub>&#x27ed; &#x2a01;
-                &#x27ec;b<sub>0</sub>, b<sub>1</sub>, ...
-                b<sub>m</sub>&#x27ed; =<br />
-                &#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
-                a<sub>n</sub>, b<sub>0</sub>, b<sub>1</sub>, ...
-                b<sub>m</sub>&#x27ed;
-            </p>
-            <ul>
-                <li>
-                    &#x27ec;&#x27ed; &#x2a01; b =
-                    {} &#x2a01; b &#x225d; b
-                </li>
-                <li>
-                    &#x27ec;a, ...&#x27ed; &#x2a01; b =
-                    &#x27e8;a, t<sub>a</sub>&#x27e9; &#x2a01; b
-                    &#x225d; &#x27e8;a, t<sub>a</sub>
-                    &#x2a01; b&#x27e9;
-                </li>
-            </ul>
-            <p>
-                Tuples can be linked together in a recursive way.
-            </p>
-            <aside class="notes">
-                Concatenating an empty tuple with another tuple
-                leaves the other tuple unchanged.  Concatenating a
-                tuple with one element with a tuple means
-                replacing the empty set that is the second element
-                of hte first tuple with the second tuple.
-                Concatenating a tuple with more than one member
-                can be done by recursively concatenating the
-                second member of the ordered pair with the second
-                tuple, which implicitly finds the end of the first
-                tuple one step at a time.
-            </aside>
-        </section>
-        <section>
-            <h3>Tuple Reversal</h3>
-            <p>
-                &#x2200;n&#x2208;&#x2115;
-                reverse(&#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
-                a<sub>n</sub>&#x27ed;) =
-                &#x27ec;a<sub>n</sub>, ... a<sub>1</sub>,
-                a<sub>0</sub>&#x27ed;
-            </p>
-            <ul>
-                <li>
-                    reverse(&#x27ec;&#x27ed;) &#x225d;
-                    &#x27ec;&#x27ed;
-                </li><li>
-                    reverse(&#x27ec;a, ...&#x27ed;) =
-                    reverse(&#x27e8;a, t<sub>a</sub>&#x27e9;)
-                    &#x225d;<br />
-                    reverse(t<sub>a</sub>) &#x2a01;
-                    &#x27ec;a&#x27ed;
-                </li>
-            </ul>
-            <p>
-                Reversing a tuple means concatenating each
-                element to the end.
-            </p>
-            <aside class="notes">
-                We build on concatenation to recursively
-                describe a process for reversing tuples.
-            </aside>
         </section>
     </section>
 
