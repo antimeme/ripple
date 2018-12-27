@@ -3205,10 +3205,10 @@
     <section id="rational-numbers">
         <section>
             <h2>Rational Numbers &#x211a;</h2>
-            <p>
-                <span class="intro">&#x211a; &#x225d; { &#x27e8;a,
-                    b&#x27e9;&#x2208;&#x2124;&times;&#x2124; :
-                    b &gt; 0&#x2124; }</span>
+            <p class="intro">
+                &#x211a; &#x225d; { &#x27e8;a,
+                b&#x27e9;&#x2208;&#x2124;&times;&#x2124; :
+                b &gt; 0&#x2124; }
             </p>
             <p>
                 [a / b] &#x225d; { &#x27e8;c<sub>1</sub>,
@@ -3428,9 +3428,8 @@
                 between two rational numbers: a + b
             </p>
             <p>
-                &#x2200;a,b&#x2208;&#x211a;
-                <span class="intro">a + b &#x225d;
-                    &#x27e8;a<sub>1</sub>,
+                &#x2200;a,b&#x2208;&#x211a; a + b &#x225d;
+                <span class="intro">&#x27e8;a<sub>1</sub>,
                     a<sub>2</sub>&#x27e9; +
                     &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; =<br />
                     &#x27e8;(a<sub>1</sub> &times; b<sub>2</sub>) +
@@ -3570,7 +3569,7 @@
                     (b<sub>2</sub> &times; c<sub>2</sub>)&#x27e9;
                     <br />:: Arithmetic &#x2124;
                 </li><li class="fragment">
-                    We need a bit more space...
+                    ...
                 </li>
             </ul>
         </section>
@@ -3714,6 +3713,7 @@
             </ul>
         </section>
     </section>
+
     <section>
         <section>
             <h2>Multiplication &#x211a;</h2>
@@ -3726,8 +3726,8 @@
                 sign between two rational numbers: a &times; b
             </p>
             <p>
-                &#x2200;a,b&#x2208;&#x211a;
-                <span class="intro">a &times; b &#x225d;
+                &#x2200;a,b&#x2208;&#x211a; a &times; b &#x225d;
+                <span class="intro">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &times; &#x27e8;b<sub>1</sub>,
                     b<sub>2</sub>&#x27e9; = &#x27e8;a<sub>1</sub>
@@ -3958,7 +3958,7 @@
                     b<sub>2</sub> &times; c<sub>2</sub>&#x27e9;
                     :: Equality &#x211a;
                 </li><li class="fragment">
-                    We need a bit more space...
+                    ...
                 </li>
             </ul>
         </section>
@@ -4100,6 +4100,151 @@
                     a &times; a<sup>-1</sup> = 1&#x211a;
                 </li>
             </ul>
+        </section>
+    </section>
+
+    <section>
+        <section>
+            <h2>&#x211a; Revisited</h2>
+            <p>
+                &#x211a; &#x225d; { &#x27e8;a,
+                b&#x27e9;&#x2208;&#x2124;&times;&#x2124; :
+                b &gt; 0&#x2124; }
+            </p>
+            <p>
+                Our construction excludes ordered pairs without
+                positive integers for the second member.  Why?  What
+                would the consequences be?
+            </p>
+        </section>
+        <section>
+            <h3>Negative Denominators &#x211a;</h3>
+            <p>
+                &#x2200;a<sub>1</sub>,a<sub>2</sub>&#x2208;&#x2124;
+                &#x27e8;a<sub>1</sub>,-a<sub>2</sub>&#x27e9; =&#x211a;
+                &#x27e8;-a<sub>1</sub>,a<sub>2</sub>&#x27e9;
+            </p>
+            <ul>
+                <li class="fragment">
+                    a<sub>1</sub> &times; a<sub>2</sub> =&#x2124;
+                    (-a<sub>1</sub>) &times; (-a<sub>2</sub>)
+                </li><li class="fragment">
+                    a<sub>1</sub> &times; a<sub>2</sub> =&#x2124;
+                    (-1) &times; (-1) &times; a<sub>1</sub> &times;
+                    a<sub>2</sub>
+                </li>
+            </ul>
+            <p class="fragment">
+                Every negative denominator rational is equivalent to
+                some positive denominator rational.  Excluding
+                negative values is convenient but not necessary.
+            </p>
+        </section>
+        <section>
+            <h3>Zero Denominators &#x211a;</h3>
+            <p>
+                &#x2200;a,b&#x2208;&#x2124;
+                &#x27e8;a, 0&#x27e9; =&#x211a; &#x27e8;b, 0&#x27e9;
+            </p>
+            <ul>
+                <li class="fragment">
+                    a &times; 0 =&#x2124; b &times 0
+                </li><li class="fragment">
+                    0 =&#x2124; 0
+                </li>
+            </ul>
+            <p class="fragment">
+                All zero denominator rational numbers are equal to
+                one another.  We will use the term <q>infinity</q>
+                to refert to this special rational number.
+            </p>
+        </section>
+        <section>
+            <h3>&#x211a; Infinity: Addition</h3>
+            <p>
+                &#x2200;a,b,c&#x2208;&#x2124;
+                &#x27e8;a, b&#x27e9; + &#x27e8;c, 0&#x27e9;
+                =&#x211a; &#x27e8;c, 0&#x27e9;
+            </p>
+            <ul>
+                <li class="fragment">
+                    &#x27e8;(a &times; 0) + (b &times; c),
+                    b &times 0&#x27e9; =&#x211a; &#x27e8;c, 0&#x27e9;
+                </li><li class="fragment">
+                    ((a &times; 0) + (b &times; c)) &times; 0 =&#x2124;
+                    (b &times 0) &times c
+                </li><li class="fragment">
+                    0 =&#x2124; 0
+                </li>
+            </ul>
+            <p class="fragment">
+                Adding a rational number to infinity gives infinity.
+            </p>
+        </section>
+        <section>
+            <h3>&#x211a; Infinity: Multiplication</h3>
+            <p>
+                &#x2200;a,b,c&#x2208;&#x2124;
+                &#x27e8;a, b&#x27e9; &times; &#x27e8;c, 0&#x27e9;
+                =&#x211a; &#x27e8;c, 0&#x27e9;
+            </p>
+            <ul>
+                <li class="fragment">
+                    &#x27e8;a &times; c, b &times; 0&#x27e9; =&#x211a;
+                    &#x27e8;c, 0&#x27e9;
+                </li><li class="fragment">
+                    (a &times c) &times; 0 =&#x2124;
+                    (b &times 0) &times; c
+                </li><li class="fragment">
+                    0 =&#x2124; 0
+                </li>
+            </ul>
+            <p class="fragment">
+                Multiplying a rational number by infinity gives infinity.
+            </p>
+        </section>
+        <section>
+            <h3>&#x211a; No Zero Inverse</h3>
+            <p>
+                &#x2200;a,b&#x2208;&#x2124;
+                &#x27e8;a, 0&#x27e9; &times; &#x27e8;0, b&#x27e9;
+                &#x225f;&#x211a; &#x27e8;1, 1&#x27e9;
+            </p>
+            <ul>
+                <li class="fragment">
+                    &#x27e8;a &times; b, 0 &times; 0&#x27e9;
+                    &#x225f;&#x211a; &#x27e8;1, 1&#x27e9;
+                </li><li class="fragment">
+                    (a &times b) &times; 1 &#x225f;&#x2124;
+                    (0 &times 0) &times; 1
+                </li><li class="fragment">
+                    a &times; b &ne;&#x2124; 0
+                </li>
+            </ul>
+            <p class="fragment">
+                While interesting, infinity doesn't function as an
+                inverse for zero.  Multiplying by zero destroys
+                information and there's no way to recover it.
+            </p>
+        </section>
+        <section>
+            <h3>&#x211a; Breakdown</h3>
+            <p>
+                &#x2200;a,b&#x2208;&#x2124;
+                &#x27e8;a, b&#x27e9; =&#x211a; &#x27e8;0, 0&#x27e9;
+            </p>
+            <ul>
+                <li class="fragment">
+                    a &times 0 =&#x2124; 0 &times b
+                </li><li class="fragment">
+                    0 =&#x2124; 0
+                </li>
+            </ul>
+            <p class="fragment">
+                Rational number zero over zero is equal to everything,
+                which destroys the transitive property of equality.
+                This breaks the rational numbers.  We must exclude it.
+            </p>
         </section>
     </section>
 
