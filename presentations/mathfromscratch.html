@@ -88,8 +88,13 @@
                 <li>Emmy Noether</li>
                 <li>John von Neumann</li>
                 <li>Norman Wildberger</li>
-                <li>And an apparently infinite series of
-                    mathematical minds who made this work possible
+            </ul>
+        </section>
+        <section>
+            <h2>Acknowledgements</h2>
+            <ul>
+                <li>An apparently infinite series of mathematical
+                    minds who made this work possible
                 </li>
             </ul>
         </section>
@@ -111,6 +116,66 @@
                 complex topic and addresses many concepts in the
                 wider world.  We only need a few relatively simple
                 ideas here.
+            </aside>
+        </section>
+        <section>
+            <h3>Formal Systems</h3>
+            <ul>
+                <li>
+                    Rules of Inference: ways statements can be
+                    combined <span class="intro">(this section)</span>
+                </li><li>
+                    Axioms: statements accepted as true
+                </li><li>
+                    Theorem: statements proven as true using rules
+                    on axioms and other theorems
+                </li><li>
+                    Definitions: short hand for concepts
+                    (notation: <span class="intro">&#x225d;</span>)
+                </li>
+            </ul>
+            <aside class="notes">
+                We're going to build a formal system, though we're
+                going to do it in an infromal and not entirely
+                rigorous way.  We know patience is a limited
+                resource.  A formal system is made up of four
+                important parts.  First, we have axioms.  These
+                are things we accept as true without proof.  They
+                are the foundation of the formal system.  Second
+                we have rules of inference which control what
+                we're allowed to do when constructing a proof.
+                Third we have theorems.  These are statements that
+                we prove using rules of inference with axioms and
+                other theorems.  Finally we have definitions which
+                allow us to represent complex concepts in a more
+                compact way.
+            </aside>
+        </section>
+        <section>
+            <h3>Incompleteness</h3>
+            <p>Desirable properties of a formal system:</p>
+            <ul>
+                <li>
+                    Consistent: no statement can be proven both
+                    true and false (no paradoxes)
+                </li><li>
+                    Complete: all statements can be proven either
+                    true or false (nothing missing)
+                </li>
+            </ul>
+            <p>
+                Any formal system containing basic arithmetic is
+                either inconsistent or incomplete.<br />(Gödel 1931 CE)
+            </p>
+            <aside class="notes">
+                We would like our formal system to be both
+                consistent and complete.  Consistency means that
+                no theorem can be proven both true and false.
+                Complete means that all possible theorems can
+                be proven one way or the other.  Unfortunately,
+                Kurt Gödel proved that no sufficiently expressive
+                system can be both.  So we will have to accept
+                some limitations.
             </aside>
         </section>
         <section>
@@ -181,9 +246,6 @@
                 </tr><tr>
                     <td>(P <span class="intro">&#x27f9;</span> Q)</td>
                     <td>if P then Q (implication)</td>
-                </tr><tr>
-                    <td>(P <span class="intro">&#x27fa;</span> Q)</td>
-                    <td>if and only if P then Q (biconditional)</td>
                 </tr>
             </table>
             <aside class="notes">
@@ -208,16 +270,19 @@
         <section>
             <h3>Biconditional Laws</h3>
             <p>
-                &#x2200;P,Q (P &#x27fa; Q) &#x225d;
-                (P &#x27f9; Q) &and; (Q &#x27f9; P)
+                &#x2200;P,Q (P <span class="intro">&#x27fa;</span> Q)
+                &#x225d; (P &#x27f9; Q) &and; (Q &#x27f9; P)
             </p>
             <p>
-                Symmetric: &#x2200;P,Q (P &#x27fa; Q) &#x27f9;
-                (Q &#x27fa; P)
+                <span class="intro">Symmetric</span>:
+                &#x2200;P,Q (P <span class="intro">&#x27fa;</span> Q)
+                &#x27f9; (Q <span class="intro">&#x27fa;</span> P)
             </p>
             <p>
-                Transitive: &#x2200;P,Q,R (P &#x27fa; Q) &and;
-                (Q &#x27fa; R) &#x27f9; (P &#x27fa; R)
+                <span class="intro">Transitive</span>:
+                &#x2200;P,Q,R (P <span class="intro">&#x27fa;</span> Q)
+                &and; (Q <span class="intro">&#x27fa;</span> R)
+                &#x27f9; (P <span class="intro">&#x27fa;</span> R)
             </p>
             <p>
                 Biconditional predicates can be swapped and
@@ -226,8 +291,10 @@
         </section>
         <section>
             <h3>Liebniz's Law</h3>
-            <p>&#x2200;a,b (a = b) &#x27f9; (P(a) &#x27fa; P(b))</p>
             <p>
+                &#x2200;a,b <span class="intro">(a = b)</span> &#x27f9;
+                <span class="intro">(P(a) &#x27fa; P(b))</span>
+            </p><p>
                 When a and b are equal the value of any predicate
                 using a is the same as the same predicate using b.
                 We can substitute equal values without changing
@@ -295,65 +362,6 @@
                 any rung we could reach the next one.  We'll ingore
                 practical constraints like getting tired or being
                 afraid of heights.
-            </aside>
-        </section>
-        <section>
-            <h3>Formal Systems</h3>
-            <ul>
-                <li>
-                    Rules of Inference: ways statements can be
-                    combined
-                </li><li>
-                    Axioms: statements accepted as true
-                </li><li>
-                    Theorem: statements proven as true using rules
-                    on axioms and other theorems
-                </li><li>
-                    Definitions: short hand for concepts
-                </li>
-            </ul>
-            <aside class="notes">
-                We're going to build a formal system, though we're
-                going to do it in an infromal and not entirely
-                rigorous way.  We know patience is a limited
-                resource.  A formal system is made up of four
-                important parts.  First, we have axioms.  These
-                are things we accept as true without proof.  They
-                are the foundation of the formal system.  Second
-                we have rules of inference which control what
-                we're allowed to do when constructing a proof.
-                Third we have theorems.  These are statements that
-                we prove using rules of inference with axioms and
-                other theorems.  Finally we have definitions which
-                allow us to represent complex concepts in a more
-                compact way.
-            </aside>
-        </section>
-        <section>
-            <h3>Incompleteness</h3>
-            <p>Desirable properties of a formal system:</p>
-            <ul>
-                <li>
-                    Consistent: no statement can be proven both
-                    true and false (no paradoxes)
-                </li><li>
-                    Complete: all statements can be proven either
-                    true or false (nothing missing)
-                </li>
-            </ul>
-            <p>
-                Any formal system containing basic arithmetic is
-                either inconsistent or incomplete.<br />(Gödel 1931 CE)
-            </p>
-            <aside class="notes">
-                We would like our formal system to be both
-                consistent and complete.  Consistency means that
-                no theorem can be proven both true and false.
-                Complete means that all possible theorems can
-                be proven one way or the other.  Unfortunately,
-                Kurt Gödel proved that no sufficiently expressive
-                system can be both.  So we will have to accept
-                some limitations.
             </aside>
         </section>
     </section>
@@ -432,6 +440,13 @@
             </p>
             <table>
                 <tr>
+                    <td class="intro">{}</td>
+                    <td>
+                        Empty Set: &#x2203;<span class="intro">{}</span>
+                        &#x2200;a a&#x2209;<span class="intro">{}</span>
+                    </td>
+                </tr>
+                <tr>
                     <td><span class="intro">{</span> a, b, c
                         <span class="intro">}</span></td>
                     <td>Enumeration</td>
@@ -459,16 +474,6 @@
                 describe them using a predicate which selects
                 members from some other set.
             </aside>
-        </section>
-        <section>
-            <h3>Empty Set</h3>
-            <p>
-                &#x2203;<span class="intro">{}</span>
-                &#x2200;a a&#x2209;<span class="intro">{}</span>
-            </p>
-            <p>
-                The empty set is a set that doesn't contain anything.
-            </p>
         </section>
         <section>
             <table>
@@ -510,11 +515,12 @@
         </section>
 
         <section>
-            <h2>Extensionality</h2>
+            <h2>Axiom of Extensionality</h2>
             <p>
-                &#x2200;a,b,c (c &#x2208; a &#x27fa; c &#x2208; b)
-                &#x27f9; <br />
-                (a &#x2286; b) &and; (b &#x2286; a) &#x27f9;
+                &#x2200;a,b,c (a <span class="intro">=</span> b)
+                &#x27fa; (c &#x2208; a &#x27fa; c &#x2208; b)
+            </p><p>
+                &#x2200;a,b (a &#x2286; b) &and; (b &#x2286; a) &#x27fa;
                 (a <span class="intro">=</span> b)
             </p><p>
                 Two sets that contain the same elements are the
@@ -526,7 +532,7 @@
             </aside>
         </section>
         <section>
-            <h2>Pairing</h2>
+            <h2>Axiom of Pairing</h2>
             <p>
                 &#x2200;a,b &#x2203;{a, b} &#x2200;c
                 (c&#x2208;{a, b} &#x27fa; (c = a &or; c = b))
@@ -543,7 +549,7 @@
             </aside>
         </section>
         <section>
-            <h2>Union</h2>
+            <h2>Axiom of Union</h2>
             <p>
                 &#x2200;a &#x2203;<span class="intro">&cup;</span>a
                 &#x2200;b&#x2208;<span class="intro">&cup;</span>a
@@ -565,7 +571,7 @@
             </aside>
         </section>
         <section>
-            <h2>Power Set</h2>
+            <h2>Axiom of Power Set</h2>
             <p>
                 &#x2200;a &#x2203;<span class="intro">&#x2118;</span>a
                 &#x2200;b (b&#x2208;<span class="intro">&#x2118;</span>a
@@ -585,7 +591,7 @@
             </aside>
         </section>
         <section>
-            <h2>Regularity</h2>
+            <h2>Axiom of Regularity</h2>
             <p>
                 &#x2200;a &#x2203;b&#x2208;a &#x27f9;
                 &#x2203;c&#x2208;a
@@ -605,7 +611,7 @@
             </aside>
         </section>
         <section>
-            <h2>Specification (Schema)</h2>
+            <h2>Axiom (Schema) of Specification</h2>
             <p>
                 &#x2200;a,P &#x2203;b &#x2200;c
                 c&#x2208;b &#x27fa; (c&#x2208;a &and; P(c))
@@ -625,7 +631,7 @@
             </aside>
         </section>
         <section>
-            <h2>Replacement (Schema)</h2>
+            <h2>Axiom (Schema) of Replacement</h2>
             <p>
                 &#x2200;a,f &#x2203;b &#x2200;c
                 c&#x2208;b &#x27fa; &#x2203;d&#x2208;a f(c) = d
@@ -646,7 +652,7 @@
             </aside>
         </section>
         <section>
-            <h2>Infinity</h2>
+            <h2>Axiom of Infinity</h2>
             <p>
                 &#x2203;a (({}&#x2208;a) &and;
                 (&#x2200;b&#x2208;a &cup;{b, {b, b}} &#x2208; a))
@@ -665,7 +671,7 @@
             </aside>
         </section>
         <section>
-            <h2>Choice</h2>
+            <h2>Axiom of Choice</h2>
             <p>
                 &#x2200;a {}&#x2209;a &#x27f9; &#x2203;f:
                 a &#x27f6; &cup;a &#x2200;b&#x2208;a
@@ -689,10 +695,8 @@
                 <tr>
                     <td>Extensionality</td>
                     <td><small>
-                        &#x2200;a,b,c (c &#x2208; a
-                        &#x27fa; c &#x2208; b) &#x27f9;<br />
-                        (a &#x2286; b) &and; (b &#x2286; a)
-                        &#x27f9; (a = b)
+                        &#x2200;a,b,c (a = b)
+                        &#x27fa; (c &#x2208; a &#x27fa; c &#x2208; b)
                     </small></td>
                 </tr>
                 <tr><td>Pairing</td>
@@ -862,11 +866,13 @@
             </p>
             <ul>
                 <li class="fragment">
-                    Domain(R) &#x225d; { a&#x2208;&cup;&cup;R :
+                    <span class="intro">Domain(R)</span> &#x225d;
+                    { a&#x2208;&cup;&cup;R :
                     &#x2203;b&#x2208;&cup;&cup;R
                     &#x27e8;a, b&#x27e9;&#x2208;R }
                 </li><li class="fragment">
-                    Range(R) &#x225d; { b&#x2208;&cup;&cup;R :
+                    <span class="intro">Range(R)</span> &#x225d; {
+                    b&#x2208;&cup;&cup;R :
                     &#x2203;a&#x2208;&cup;&cup;R
                     &#x27e8;a, b&#x27e9;&#x2208;R }
                 </li>
@@ -880,18 +886,23 @@
             <h3>Relation Properties</h3>
             <ul>
                 <li class="fragment">
-                    Reflexive: &#x2200;a&#x2208;&cup;&cup;R (a R a)
+                    <span class="intro">Reflexive</span>:
+                    &#x2200;a&#x2208;&cup;&cup;R (a R a)
                 </li><li class="fragment">
-                    Symmetric: &#x2200;a,b&#x2208;&cup;&cup;R (a R b)
+                    <span class="intro">Symmetric</span>:
+                    &#x2200;a,b&#x2208;&cup;&cup;R (a R b)
                     &#x27fa; (b R a)
                 </li><li class="fragment">
-                    Antisymmetric:<br /> &#x2200;a,b&#x2208;&cup;&cup;R
+                    <span class="intro">Antisymmetric</span>:<br />
+                    &#x2200;a,b&#x2208;&cup;&cup;R
                     (a R b) &and; (b R a) &#x27f9; (a = b)
                 </li><li class="fragment">
-                    Transitive: &#x2200;a,b,c&#x2208;&cup;&cup;R
+                    <span class="intro">Transitive</span>:
+                    &#x2200;a,b,c&#x2208;&cup;&cup;R
                     (a R b) &and; (b R c) &#x27fa; (a R c)
                 </li><li class="fragment">
-                    Connex: &#x2200;a,b&#x2208;&cup;&cup;R
+                    <span class="intro">Connex</span>:
+                    &#x2200;a,b&#x2208;&cup;&cup;R
                     (a R b) &or; (b R a)
                 </li>
             </ul>
@@ -1025,8 +1036,8 @@
         <section>
             <h3>Equality: Equivalence</h3>
             <p>
-                &#x2200;a &#x2203;{ &#x27e8;b, c&#x27e9; :
-                b&#x2208;a &and; c&#x2208;a &and; b = c }
+                &#x2200;a &#x2203;<span class="intro">{ &#x27e8;b,
+                c&#x27e9;&#x2208;a&times;a : b = c }</span>
             </p>
             <p>
                 Set equality can be used to construct an equivalence
@@ -1073,8 +1084,8 @@
         <section>
             <h3>Subsets: Partial Order</h3>
             <p>
-                &#x2200;a &#x2203;{ &#x27e8;b, c&#x27e9; :
-                b&#x2208;a &and; c&#x2208;a &and; b &#x2286; c }
+                &#x2200;a &#x2203;<span class="intro">{ &#x27e8;b,
+                c&#x27e9;&#x2208;a&times;a : b &#x2286; c }</span>
             </p>
             <p>
                 Subset relationships can be used to construct a
@@ -1143,7 +1154,8 @@
             <p>
                 &#x2200;n,m&#x2208;&#x2115;
                 &#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
-                a<sub>n</sub>&#x27ed; &#x2a01;
+                a<sub>n</sub>&#x27ed;
+                <span class="intro">&#x2a01;</span>
                 &#x27ec;b<sub>0</sub>, b<sub>1</sub>, ...
                 b<sub>m</sub>&#x27ed; =<br />
                 &#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
@@ -1152,14 +1164,17 @@
             </p>
             <ul>
                 <li>
-                    &#x27ec;&#x27ed; &#x2a01; b =
-                    {} &#x2a01; b &#x225d; b
+                    &#x27ec;&#x27ed; <span class="intro">&#x2a01;</span>
+                    b = {} <span class="intro">&#x2a01;</span>
+                    b &#x225d; b
                 </li>
                 <li>
-                    &#x27ec;a, ...&#x27ed; &#x2a01; b =
-                    &#x27e8;a, t<sub>a</sub>&#x27e9; &#x2a01; b
-                    &#x225d; &#x27e8;a, t<sub>a</sub>
-                    &#x2a01; b&#x27e9;
+                    &#x27ec;a, ...&#x27ed;
+                    <span class="intro">&#x2a01;</span> b =
+                    &#x27e8;a, t&#x27e9;
+                    <span class="intro">&#x2a01;</span> b
+                    &#x225d; &#x27e8;a, t
+                    <span class="intro">&#x2a01;</span> b&#x27e9;
                 </li>
             </ul>
             <p>
@@ -1182,21 +1197,22 @@
             <h3>Tuple Reversal</h3>
             <p>
                 &#x2200;n&#x2208;&#x2115;
-                reverse(&#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
-                a<sub>n</sub>&#x27ed;) =
+                <span class="intro">reverse</span>(&#x27ec;a<sub>0</sub>,
+                a<sub>1</sub>, ... a<sub>n</sub>&#x27ed;) =
                 &#x27ec;a<sub>n</sub>, ... a<sub>1</sub>,
                 a<sub>0</sub>&#x27ed;
             </p>
             <ul>
                 <li>
-                    reverse(&#x27ec;&#x27ed;) &#x225d;
-                    &#x27ec;&#x27ed;
+                    <span class="intro">reverse</span>(&#x27ec;&#x27ed;)
+                    &#x225d; &#x27ec;&#x27ed;
                 </li><li>
-                    reverse(&#x27ec;a, ...&#x27ed;) =
-                    reverse(&#x27e8;a, t<sub>a</sub>&#x27e9;)
-                    &#x225d;<br />
-                    reverse(t<sub>a</sub>) &#x2a01;
-                    &#x27ec;a&#x27ed;
+                    <span class="intro">reverse</span>(&#x27ec;a,
+                    ...&#x27ed;) =
+                    <span class="intro">reverse</span>(&#x27e8;a,
+                    t<sub>a</sub>&#x27e9;) &#x225d;<br />
+                    <span class="intro">reverse</span>(t<sub>a</sub>)
+                    &#x2a01; &#x27ec;a&#x27ed;
                 </li>
             </ul>
             <p>
@@ -1229,7 +1245,7 @@
         <section>
             <h2>Functions</h2>
             <p>
-                (f : D &#x27f6; R) &#x225d;
+                (<span class="intro">f : D &#x27f6; R</span>) &#x225d;
                 &#x2200;a&#x2208;D (&#x2203;b&#x2208;R
                 &#x27e8;a, b&#x27e9;&#x2208;f) &and;<br />
                 (&#x2200;b,c&#x2208;R
@@ -1256,15 +1272,15 @@
             </p>
             <ul>
                 <li class="fragment">
-                    Injection: <span class="intro">&#x2200;a,b&#x2208;D
-                    f(a) = f(b) &#x27f9; (a = b)</span><br />
-                    No two members of the domain are mapped to the
-                    same member of the range
+                    <span class="intro">Injection</span>:
+                    &#x2200;a,b&#x2208;D f(a) = f(b) &#x27f9;
+                    (a = b)<br /> No two members of the domain are
+                    mapped to the same member of the range
                 </li><li class="fragment">
-                    Surjection: <span class="intro">&#x2200;b&#x2208;R
-                    &#x2203;a&#x2208;D f(a) = b</span><br />
-                    Every member of the range is mapped from at
-                    least one member of domain
+                    <span class="intro">Surjection</span>:
+                    &#x2200;b&#x2208;R &#x2203;a&#x2208;D
+                    f(a) = b</span><br /> Every member of the range
+                    is mapped from at least one member of domain
                 </li>
             </ul>
         </section>
@@ -1275,15 +1291,17 @@
             </p>
             <ul>
                 <li class="fragment">
-                    Bijection: both an injection and a surjection
+                    <span class="intro">Bijection</span>: both an
+                    injection and a surjection
                 </li><li class="fragment">
                     Inverse: <span class="intro">f<sup>-1</sup> :
                     R &#x27f6; D</span><br />
                     &#x2200;a&#x2208;D,b&#x2208;R
                     (f(a) = b) &#x27fa; (f<sup>-1</sup>(b) = a)
                 </li><li class="fragment">
-                    Cardinality: two sets have the same cardinality
-                    if and only if a bijection exists between them
+                    <span class="intro">Cardinality</span>: two sets
+                    have the same cardinality if and only if a
+                    bijection exists between them
                 </li>
             </ul>
         </section>
@@ -1359,17 +1377,20 @@
         <section>
             <h3>Natural Numbers &#x2115;: Examples</h3>
             <ul>
-                <li class="fragment">0&#x2115; &#x225d; {}
+                <li class="fragment">
+                    <span class="intro">0&#x2115;</span> &#x225d; {}
                 </li><li class="fragment">
-                    1&#x2115; &#x225d; succ(0) = {0} = {{}}
+                    <span class="intro">1&#x2115;</span> &#x225d;
+                    succ(0) = {0} = {{}}
                 </li><li class="fragment">
-                    2&#x2115; &#x225d; succ(1) = {0, 1} = {{}, {{}}}
+                    <span class="intro">2&#x2115;</span> &#x225d;
+                    succ(1) = {0, 1} = {{}, {{}}}
                 </li><li class="fragment">
-                    3&#x2115; &#x225d; succ(2) = {0, 1, 2} =
-                    {{}, {{}}, {{}, {{}}}}
+                    <span class="intro">3&#x2115;</span> &#x225d;
+                    succ(2) = {0, 1, 2} = {{}, {{}}, {{}, {{}}}}
                 </li><li class="fragment">
-                    4&#x2115; &#x225d; succ(3) = {0, 1, 2, 3} =
-                    <br />
+                    <span class="intro">4&#x2115;</span> &#x225d;
+                    succ(3) = {0, 1, 2, 3} =<br />
                     {{}, {{}}, {{}, {{}}}, {{{}, {{}}, {{}, {{}}}}}}
                 </li>
             </ul>
@@ -1385,17 +1406,20 @@
             <h3>Natural Numbers &#x2115;: Examples</h3>
             <ul>
                 <li class="fragment">
-                    5&#x2115; &#x225d; succ(4) = {0, 1, 2, 3, 4}
+                    <span class="intro">5&#x2115;</span> &#x225d;
+                    succ(4) = {0, 1, 2, 3, 4}
                 </li><li class="fragment">
-                    6&#x2115; &#x225d; succ(5) = {0, 1, 2, 3, 4, 5}
+                    <span class="intro">6&#x2115;</span> &#x225d;
+                    succ(5) = {0, 1, 2, 3, 4, 5}
                 </li><li class="fragment">
-                    7&#x2115; &#x225d; succ(6) = {0, 1, 2, 3, 4, 5, 6}
+                    <span class="intro">7&#x2115;</span> &#x225d;
+                    succ(6) = {0, 1, 2, 3, 4, 5, 6}
                 </li><li class="fragment">
-                    8&#x2115; &#x225d; succ(7) =
-                    {0, 1, 2, 3, 4, 5, 6, 7}
+                    <span class="intro">8&#x2115;</span> &#x225d;
+                    succ(7) = {0, 1, 2, 3, 4, 5, 6, 7}
                 </li><li class="fragment">
-                    9&#x2115; &#x225d; succ(8) =
-                    {0, 1, 2, 3, 4, 5, 6, 7, 8}
+                    <span class="intro">9&#x2115;</span> &#x225d;
+                    succ(8) = {0, 1, 2, 3, 4, 5, 6, 7, 8}
                 </li>
             </ul>
 
@@ -1414,12 +1438,14 @@
                     <span class="intro">1</span>0&#x2115;
                     &#x225d; succ(9) = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
                 </li><li class="fragment">
-                    11&#x2115; &#x225d; succ(10) =
+                    <span class="intro">1</span>1&#x2115;
+                    &#x225d; succ(10) =
                     {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
                 </li><li class="fragment">
                     ...
                 </li><li class="fragment">
-                    19&#x2115; &#x225d; succ(18)
+                    <span class="intro">1</span>9&#x2115;
+                    &#x225d; succ(18)
                 </li><li class="fragment">
                     <span class="intro">2</span>0&#x2115;
                     &#x225d; succ(19)
@@ -1459,11 +1485,13 @@
                 </td></tr><tr><td>
                     &#x2200;a,b&#x2208;&#x2115;
                     a <span class="intro">&lt;</span>
-                    b &#x225d; &not;(a &ge; b) &#x27fa; (a &#x2208; b)
+                    b &#x225d; &not;(a <span class="intro">&ge;</span>
+                    b) &#x27fa; (a &#x2208; b)
                 </td></tr><tr><td>
                     &#x2200;a,b&#x2208;&#x2115;
                     a <span class="intro">&gt;</span>
-                    b &#x225d; &not;(a &le; b) &#x27fa; (b &#x2208; a)
+                    b &#x225d; &not;(a <span class="intro">&le;</span>
+                    b) &#x27fa; (b &#x2208; a)
                 </td></tr>
             </table>
             <p>
@@ -2418,11 +2446,11 @@
                 &#x2200;&#x27e8;a<sub>1</sub>,
                 a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
                 b<sub>2</sub>&#x27e9;&#x2208;&#x2124;<br />
-                <span class="intro">
-                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
-                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;
-                    &#x225d; &#x27e8;a<sub>1</sub> + b<sub>1</sub>,
-                    a<sub>2</sub> + b<sub>2</sub>&#x27e9;</span>
+                &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;
+                &#x225d; <span class="intro">
+                &#x27e8;a<sub>1</sub> + b<sub>1</sub>,
+                a<sub>2</sub> + b<sub>2</sub>&#x27e9;</span>
             </p>
         </section>
         <section>
@@ -2483,6 +2511,43 @@
                 numbers results in the natural number their sum
                 would match.
             </p>
+        </section>
+        <section>
+            <h3>Addition &#x2124;: Equivalent</h3>
+            <p>
+                &#x2200; a,b,c&#x2208;&#x2124;
+                (a = b) &#x27f9; ((a + c) = (b + c))
+            </p>
+            <ul>
+                <li class="fragment">
+                    (a = b) &#x27f9; (a<sub>1</sub> + b<sub>2</sub> =
+                    a<sub>2</sub> + b<sub>1</sub>) :: Equality &#x2124;
+                </li><li class="fragment">
+                    a<sub>1</sub> + b<sub>2</sub> +
+                    c<sub>1</sub> + c<sub>2</sub> =
+                    a<sub>2</sub> + b<sub>1</sub> +
+                    c<sub>1</sub> + c<sub>2</sub> :: Arithmetic &#x2115;
+                </li><li class="fragment">
+                    a<sub>1</sub> + c<sub>1</sub> +
+                    b<sub>2</sub> + c<sub>2</sub> =
+                    a<sub>2</sub> + c<sub>2</sub> +
+                    b<sub>1</sub> + c<sub>1</sub> :: Arithmetic &#x2115;
+                </li><li class="fragment">
+                    &#x27e8;a<sub>1</sub> + c<sub>1</sub>,
+                    a<sub>2</sub> + c<sub>2</sub>&#x27e9; =
+                    &#x27e8;b<sub>1</sub> + c<sub>1</sub>,
+                    b<sub>2</sub> + c<sub>2</sub>&#x27e9;
+                    :: Definition &#x2124;
+                </li><li class="fragment">
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
+                    &#x27e8;c<sub>1</sub>, c<sub>2</sub>&#x27e9; =
+                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; +
+                    &#x27e8;c<sub>1</sub>, c<sub>2</sub>&#x27e9;
+                    :: Addition &#x2124;
+                </li><li class="fragment">
+                    (a = b) &#x27f9; ((a + c) = (b + c))
+                </li>
+            </ul>
         </section>
         <section>
             <h3>Addition &#x2124;: Closed</h3>
@@ -2684,10 +2749,10 @@
                 &#x2200;&#x27e8;a<sub>1</sub>,
                 a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
                 b<sub>2</sub>&#x27e9;&#x2208;&#x2124;
+                &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; &times;
+                &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;
+                &#x225d;<br />
                 <span class="intro">
-                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; &times;
-                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;
-                    &#x225d;<br />
                     &#x27e8;(a<sub>1</sub> &times; b<sub>1</sub>) +
                     (a<sub>2</sub> &times; b<sub>2</sub>),
                     (a<sub>1</sub> &times; b<sub>2</sub>) +
@@ -2772,6 +2837,108 @@
             </p>
         </section>
         <section>
+            <h3>Multiplication &#x2124;: Equivalent</h3>
+            <p>
+                &#x2200; a,b,c&#x2208;&#x2124;
+                (a = b) &#x27f9; ((a &times; c) = (b &times; c))
+            </p>
+            <ul>
+                <li class="fragment">
+                    (a = b) &#x27f9; (a<sub>1</sub> + b<sub>2</sub> =
+                    a<sub>2</sub> + b<sub>1</sub>) :: Equality &#x2124;
+                </li><li class="fragment">
+                    (a<sub>1</sub> + b<sub>2</sub>) &times;
+                    c<sub>1</sub> = (a<sub>2</sub> + b<sub>1</sub>)
+                    &times; c<sub>1</sub> :: Arithmetic &#x2115;
+                </li><li class="fragment">
+                    (a<sub>1</sub> &times; c<sub>1</sub>) +
+                    (b<sub>2</sub> &times; c<sub>1</sub>) =<br />
+                    (a<sub>2</sub> &times; c<sub>1</sub>) +
+                    (b<sub>1</sub> &times; c<sub>1</sub>)
+                    :: Arithmetic &#x2115;
+                </li><li class="fragment">
+                    ...
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Multiplication &#x2124;: Equivalent</h3>
+            <p>
+                &#x2200; a,b,c&#x2208;&#x2124;
+                (a = b) &#x27f9; ((a &times; c) = (b &times; c))
+            </p>
+            <ul>
+                <li class="fragment">
+                    (a = b) &#x27f9; (b = a) &#x27f9; (b<sub>1</sub> +
+                    a<sub>2</sub> = b<sub>2</sub> + a<sub>1</sub>)
+                    :: Equality &#x2124;
+                </li><li class="fragment">
+                    (a<sub>2</sub> + b<sub>1</sub> =
+                    a<sub>1</sub> + b<sub>2</sub>)
+                    :: Arithmetic &#x2115;
+                </li><li class="fragment">
+                    (a<sub>2</sub> + b<sub>1</sub>) &times;
+                    c<sub>2</sub> = (a<sub>1</sub> + b<sub>2</sub>)
+                    &times; c<sub>2</sub> :: Arithmetic &#x2115;
+                </li><li class="fragment">
+                    (a<sub>1</sub> &times; c<sub>2</sub>) +
+                    (b<sub>2</sub> &times; c<sub>2</sub>) =<br />
+                    (a<sub>2</sub> &times; c<sub>2</sub>) +
+                    (b<sub>1</sub> &times; c<sub>2</sub>)
+                    :: Arithmetic &#x2115;
+                </li><li class="fragment">
+                    ...
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Multiplication &#x2124;: Equivalent</h3>
+            <p>
+                &#x2200; a,b,c&#x2208;&#x2124;
+                (a = b) &#x27f9; ((a &times; c) = (b &times; c))
+            </p>
+            <ul>
+                <li>
+                    ((a<sub>1</sub> &times; c<sub>1</sub>) +
+                    (b<sub>2</sub> &times; c<sub>1</sub>)) +
+                    ((a<sub>2</sub> &times; c<sub>2</sub>) +
+                    (b<sub>1</sub> &times; c<sub>2</sub>)) =<br />
+                    ((a<sub>2</sub> &times; c<sub>1</sub>) +
+                    (b<sub>1</sub> &times; c<sub>1</sub>)) +
+                    ((a<sub>1</sub> &times; c<sub>2</sub>) +
+                    (b<sub>2</sub> &times; c<sub>2</sub>))
+                </li><li class="fragment">
+                    (a<sub>1</sub> &times; c<sub>1</sub>) +
+                    (a<sub>2</sub> &times; c<sub>2</sub>) +
+                    (b<sub>1</sub> &times; c<sub>2</sub>) +
+                    (b<sub>2</sub> &times; c<sub>1</sub>) =
+                    (a<sub>1</sub> &times; c<sub>2</sub>) +
+                    (a<sub>2</sub> &times; c<sub>1</sub>) +
+                    (b<sub>1</sub> &times; c<sub>1</sub>) +
+                    (b<sub>2</sub> &times; c<sub>2</sub>)
+                    :: Arithmetic
+                </li><li class="fragment">
+                    &#x27e8;(a<sub>1</sub> &times; c<sub>1</sub>) +
+                    (a<sub>2</sub> &times; c<sub>2</sub>),
+                    (a<sub>1</sub> &times; c<sub>2</sub>) +
+                    (a<sub>2</sub> &times; c<sub>1</sub>)&#x27e9; =
+                    &#x27e8;(b<sub>1</sub> &times; c<sub>1</sub>) +
+                    (b<sub>2</sub> &times; c<sub>2</sub>),
+                    (b<sub>1</sub> &times; c<sub>2</sub>) +
+                    (b<sub>2</sub> &times; c<sub>1</sub>)&#x27e9;
+                    :: Definition &#x2124;
+                </li><li class="fragment">
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; &times;
+                    &#x27e8;c<sub>1</sub>, c<sub>2</sub>&#x27e9; =
+                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; &times;
+                    &#x27e8;c<sub>1</sub>, c<sub>2</sub>&#x27e9;
+                    :: Addition &#x2124;
+                </li><li class="fragment">
+                    (a = b) &#x27f9; ((a &times; c) = (b &times; c))
+                </li>
+            </ul>
+        </section>
+        <section>
             <h3>Multiplication &#x2124;: Closed</h3>
             <p>
                 &#x2200;a,b&#x2208;&#x2124;
@@ -2810,7 +2977,8 @@
                     &#x27e8;(a<sub>1</sub> &times; 1) +
                     (a<sub>2</sub> &times; 0),<br />
                     (a<sub>1</sub> &times; 0) +
-                    (a<sub>2</sub> &times; 1)&#x27e9; :: Definition
+                    (a<sub>2</sub> &times; 1)&#x27e9;
+                    :: Definition &times;
                 </li><li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &times; &#x27e8;1, 0&#x27e9; =
@@ -2868,7 +3036,7 @@
                     c<sub>2</sub>) + (((a<sub>1</sub> &times;
                     b<sub>2</sub>) + (a<sub>2</sub> &times;
                     b<sub>1</sub>)) &times; c<sub>1</sub>))&#x27e9;
-                    :: Definition
+                    :: Definition &times;
                 </li><li class="fragment">
                     (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &times; &#x27e8;b<sub>1</sub>,
@@ -2884,7 +3052,7 @@
                     c<sub>1</sub>))) + (a<sub>2</sub> &times;
                     ((b<sub>1</sub> &times; c<sub>1</sub>) +
                     (b<sub>2</sub> &times; c<sub>2</sub>)))&#x27e9;
-                    :: Addition &#x2115;
+                    :: Arithmetic &#x2115;
                 </li><li class="fragment">
                     (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &times; &#x27e8;b<sub>1</sub>,
@@ -2895,7 +3063,7 @@
                     &times; (&#x27e8;b<sub>1</sub>,
                     b<sub>2</sub>&#x27e9; &times;
                     &#x27e8;c<sub>1</sub>,c<sub>2</sub>&#x27e9;) ::
-                    Definition
+                    Definition &times;
                 </li>
             </ul>
         </section>
@@ -2923,7 +3091,7 @@
                     (b<sub>2</sub> &times; a<sub>2</sub>),<br />
                     (b<sub>1</sub> &times; a<sub>2</sub>) +
                     (b<sub>2</sub> &times; a<sub>1</sub>)&#x27e9;
-                    :: Multiplication &#x2115;
+                    :: Arithmetic &#x2115;
                 </li><li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &times; &#x27e8;b<sub>1</sub>,
@@ -2957,13 +3125,13 @@
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &times; (&#x27e8;b<sub>1</sub>,
                     b<sub>2</sub>&#x27e9; + &#x27e8;c<sub>1</sub>,
-                    c<sub>2</sub>&#x27e9;) = &#x27e8;(a<sub>1</sub>
+                    c<sub>2</sub>&#x27e9;) =<br /> &#x27e8;(a<sub>1</sub>
                     &times; (b<sub>1</sub> + c<sub>1</sub>)) +
                     (a<sub>2</sub> &#x00d7 (b<sub>2</sub> +
-                    c<sub>2</sub>)), (a<sub>1</sub> &times;
+                    c<sub>2</sub>)),<br /> (a<sub>1</sub> &times;
                     (b<sub>2</sub> + c<sub>2</sub>)) + (a<sub>2</sub>
                     &times; (b<sub>1</sub> + c<sub>1</sub>))&#x27e9;
-                    :: Definition
+                    :: Definition &times;
                 </li><li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &times; (&#x27e8;b<sub>1</sub>,
@@ -2988,7 +3156,7 @@
                     b<sub>2</sub>&#x27e9;) +
                     (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &times; &#x27e8;c<sub>1</sub>,
-                    c<sub>2</sub>&#x27e9;) :: Definition
+                    c<sub>2</sub>&#x27e9;) :: Definition &times;
                 </li>
             </ul>
         </section>
@@ -4448,28 +4616,34 @@
             </aside>
         </section>
         <section>
-            <h3>Group &#x27ec;G, &#x2218;&#x27ed;</h3>
+            <h3>
+                Group <span class="intro">&#x27ec;G,
+                &#x2218;&#x27ed;</span>
+            </h3>
             <p>
                 A group is a set and a binary function G
                 &#x2218; G &#x27f6; G:
             </p>
             <ul>
-                <li>Closed: &#x2200;a,b&#x2208;G :
-                    a &#x2218; b &#x2208;G</li>
-                <li>Associative: &#x2200;a,b,c&#x2208;G
-                    (a &#x2218; b) &#x2218; c =
-                    a &#x2218; (b &#x2218; c)</li>
-                <li>
-                    Identity: &#x2203;e<sub>&#x2218;</sub>&#x2208;G
+                <li class="fragment">
+                    <span class="intro">Closed</span>:
+                    &#x2200;a,b&#x2208;G : a &#x2218; b &#x2208;G
+                </li><li class="fragment">
+                    <span class="intro">Associative</span>:
+                    &#x2200;a,b,c&#x2208;G (a &#x2218; b) &#x2218; c =
+                    a &#x2218; (b &#x2218; c)
+                </li><li class="fragment">
+                    <span class="intro">Identity</span>:
+                    &#x2203;e<sub>&#x2218;</sub>&#x2208;G
                     &#x2200;a&#x2208;G a &#x2218;
                     e<sub>&#x2218;</sub> = a
-                </li><li>
-                    Inverses: &#x2200;a&#x2208;G
-                    &#x2203;a<sup>-1</sup>&#x2208;G
+                </li><li class="fragment">
+                    <span class="intro">Inverses</span>:
+                    &#x2200;a&#x2208;G &#x2203;a<sup>-1</sup>&#x2208;G
                     a &#x2218; a<sup>-1</sup> = e<sub>&#x2218;</sub>
                 </li>
             </ul>
-            <p>
+            <p class="fragment">
                 A group is the simplest mathematical structure
                 that makes algebra possible.
             </p>
@@ -4481,58 +4655,59 @@
                 applied from the right.
             </p>
             <ul>
-                <li>
+                <li class="fragment">
                     Identity: &#x2203;e<sub>&#x2218;</sub>&#x2208;G
                     &#x2200;a&#x2208;G a &#x2218;
                     e<sub>&#x2218;</sub> = a
-                </li><li>
+                </li><li class="fragment">
                     Inverses: &#x2200;a&#x2208;G
                     &#x2203;a<sup>-1</sup>&#x2208;G
                     a &#x2218; a<sup>-1</sup> = e<sub>&#x2218;</sub>
                 </li>
             </ul>
-            <p>
+            <p class="fragment">
                 Do these work from the left?
             </p>
             <ul>
-                <li>
+                <li class="fragment">
                     &#x2203;e<sub>&#x2218;</sub>&#x2208;G
-                    &#x2200;a&#x2208;G e<sub>&#x2218;</sub>
-                    &#x2218; a &#x225f; a
-                </li><li>
+                    &#x2200;a&#x2208;G
+                    <span class="intro">e<sub>&#x2218;</sub>
+                        &#x2218; a &#x225f; a</span>
+                </li><li class="fragment">
                     &#x2200;a&#x2208;G
                     &#x2203;a<sup>-1</sup>&#x2208;G
-                    a<sup>-1</sup> &#x2218; a &#x225f;
-                    e<sub>&#x2218;</sub>
+                    <span class="intro">a<sup>-1</sup> &#x2218; a
+                        &#x225f; e<sub>&#x2218;</sub></span>
                 </li>
             </ul>
         </section>
         <section>
             <h3>Proof: Commutative Inverses</h3>
             <ul>
-                <li>
+                <li class="fragment">
                     e<sub>&#x2218;</sub> = a<sup>-1</sup> &#x2218;
                     (a<sup>-1</sup>)<sup>-1</sup> :: Inverses
-                </li><li>
+                </li><li class="fragment">
                     e<sub>&#x2218;</sub> = (a<sup>-1</sup> &#x2218;
                     e<sub>&#x2218;</sub>) &#x2218;
                     (a<sup>-1</sup>)<sup>-1</sup> :: Identity
-                </li><li>
+                </li><li class="fragment">
                     e<sub>&#x2218;</sub> = (a<sup>-1</sup> &#x2218;
                     (a &#x2218; a<sup>-1</sup>)) &#x2218;
                     (a<sup>-1</sup>)<sup>-1</sup> :: Inverses
-                </li><li>
+                </li><li class="fragment">
                     e<sub>&#x2218;</sub> = ((a<sup>-1</sup> &#x2218;
                     a) &#x2218; a<sup>-1</sup>) &#x2218;
                     (a<sup>-1</sup>)<sup>-1</sup> :: Associativity
-                </li><li>
+                </li><li class="fragment">
                     e<sub>&#x2218;</sub> = (a<sup>-1</sup> &#x2218;
                     a) &#x2218; (a<sup>-1</sup> &#x2218;
                     (a<sup>-1</sup>)<sup>-1</sup>) :: Associativity
-                </li><li>
+                </li><li class="fragment">
                     e<sub>&#x2218;</sub> = (a<sup>-1</sup> &#x2218;
                     a) &#x2218; e<sub>&#x2218;</sub> :: Inverses
-                </li><li>
+                </li><li class="fragment">
                     e<sub>&#x2218;</sub> = a<sup>-1</sup> &#x2218;
                     a :: Identity
                 </li>
@@ -4541,16 +4716,16 @@
         <section>
             <h3>Proof: Commutative Identity</h3>
             <ul>
-                <li>
+                <li class="fragment">
                     e<sub>&#x2218;</sub> &#x2218; a =
                     (a &#x2218; a<sup>-1</sup>) &#x2218; a :: Inverses
-                </li><li>
+                </li><li class="fragment">
                     e<sub>&#x2218;</sub> &#x2218; a = a &#x2218;
                     (a<sup>-1</sup> &#x2218; a) :: Associativity
-                </li><li>
+                </li><li class="fragment">
                     e<sub>&#x2218;</sub> &#x2218; a = a &#x2218;
                     e<sub>&#x2218;</sub> :: Inverses
-                </li><li>
+                </li><li class="fragment">
                     e<sub>&#x2218;</sub> &#x2218; a = a :: Identity
                 </li>
             </ul>
@@ -4561,56 +4736,67 @@
                 Suppose we have know a, b and (a &#x2218; x = b):
             </p>
             <ul>
-                <li>
+                <li class="fragment">
                     a<sup>-1</sup> &#x2218; (a &#x2218; x) =
                     a<sup>-1</sup> &#x2218; b :: Equality
-                </li><li>
+                </li><li class="fragment">
                     (a<sup>-1</sup> &#x2218; a) &#x2218; x =
                     a<sup>-1</sup> &#x2218; b :: Associativity
-                </li><li>
+                </li><li class="fragment">
                     e<sub>&#x2218;</sub> &#x2218; x =
                     a<sup>-1</sup> &#x2218; b :: Inverses
-                </li><li>
+                </li><li class="fragment">
                     x = a<sup>-1</sup> &#x2218; b :: Identity
                 </li>
             </ul>
         </section>
         <section>
-            <h3>Abelian Group &#x27ec;G, &#x2218&#x27ed;</h3>
+            <h3>
+                Abelian Group <span class="intro">&#x27ec;G,
+                &#x2218&#x27ed;</span>
+            </h3>
             <p>
                 An abelian group has a commutative function:
             </p>
             <ul>
-                <li>&#x27ec;G, &#x2218&#x27ed; is a group</li>
-                <li>Commutative: &#x2200;a,b,c&#x2208;G
-                    (a &#x2218; b) = (b &#x2218; a)
+                <li class="fragment">
+                    &#x27ec;G, &#x2218&#x27ed; is a group
+                </li><li class="fragment">
+                    <span class="intro">Commutative</span>:
+                    &#x2200;a,b&#x2208;G (a &#x2218; b) =
+                    (b &#x2218; a)
                 </li>
             </ul>
-            <p>
+            <p class="fragment">
                 Integers with addition are an abelian group:
                 &#x27ec;&#x2124;, +&#x27ed;
             </p>
         </section>
         <section>
-            <h3>Ring &#x27ec;R, &#x2218;, &#x229a;&#x27ed;</h3>
+            <h3>
+                Ring <span class="intro">&#x27ec;R, &#x2218;,
+                &#x229a;&#x27ed;</span>
+            </h3>
             <p>
                 A ring is a set and two binary functions
                 R &#x2218; R &#x27f6; R and R &#x229a; R
                 &#x27f6; R with four properties:
             </p>
             <ul>
-                <li>
+                <li class="fragment">
                     &#x27ec;R, &#x2218&#x27ed; is an abelian group
-                </li>
-                <li>Closed: &#x2200;a,b&#x2208;R :
-                    a &#x229a; b &#x2208; R</li>
-                <li>Associative: (a &#x229a; b) &#x229a;c =
-                    a &#x229a; (b &#x229a; c)</li>
-                <li>Distributive: &#x2200;a,b,c&#x2208;R<br />
+                </li><li class="fragment">
+                    <span class="intro">Closed</span>:
+                    &#x2200;a,b&#x2208;R : a &#x229a; b &#x2208; R
+                </li><li class="fragment">
+                    <span class="intro">Associative</span>:
+                    (a &#x229a; b) &#x229a;c = a &#x229a; (b &#x229a; c)
+                </li><li class="fragment">
+                    <span class="intro">Distributive</span>:
+                    &#x2200;a,b,c&#x2208;R<br />
                     (a &#x229a; (b &#x2218; c) =
                     (a &#x229a; b) &#x2218; (a &#x229a; c)) &and;
-                    <br />
-                    ((b &#x2218; c) &#x229a; a =
+                    <br />((b &#x2218; c) &#x229a; a =
                     (b &#x229a; a) &#x2218; (c &#x229a; a))
                 </li>
             </ul>
@@ -4621,21 +4807,22 @@
         </section>
         <section>
             <h3>
-                Commutative Ring &#x27ec;R, &#x2218,
-                &#x229a;&#x27ed;
+                Commutative Ring <span class="intro">&#x27ec;R, &#x2218,
+                &#x229a;&#x27ed;</span>
             </h3>
             <p>
                 A commutative ring has commutative functions:
             </p>
             <ul>
-                <li>
+                <li class="fragment">
                     &#x27ec;R, &#x2218, &#x229a;&#x27ed; is a ring
-                </li>
-                <li>Commutative: &#x2200;a,b,c&#x2208;R
-                    (a &#x229a; b) = (b &#x229a; a)
+                </li><li class="fragment">
+                    <span class="intro">Commutative</span>:
+                    &#x2200;a,b,c&#x2208;R (a &#x229a; b) =
+                    (b &#x229a; a)
                 </li>
             </ul>
-            <p>
+            <p class="fragment">
                 Integers with addition and multiplication form a
                 commutative ring &#x27ec;&#x2124;, +,
                 &times;&#x27ed;
@@ -4643,73 +4830,79 @@
         </section>
         <section>
             <h3>
-                Unitary Ring &#x27ec;R, &#x2218;, &#x229a;&#x27ed;
+                Unitary Ring <span class="intro">&#x27ec;R, &#x2218;,
+                &#x229a;&#x27ed;</span>
             </h3>
             <p>
                 A unitary ring has an identity element for the second
                 function:
             </p>
             <ul>
-                <li>
+                <li class="fragment">
                     &#x27ec;R, &#x2218, &#x229a;&#x27ed; is a ring
-                </li>
-                <li>
-                    Identity: &#x2203;e<sub>&#x229a;</sub>&#x2208;R
+                </li><li class="fragment">
+                    <span class="intro">Identity</span>:
+                    &#x2203;e<sub>&#x229a;</sub>&#x2208;R
                     &#x2200;a&#x2208;R a &#x229a;
                     e<sub>&#x229a;</sub> = a
                 </li>
             </ul>
-            <p>
+            <p class="fragment">
                 Integers with addition and multiplication form a
                 unitary ring &#x27ec;&#x2124;, +, &times;&#x27ed;
             </p>
         </section>
         <section>
-            <h3>Field &#x27ec;F, &#x2218;, &#x229a;&#x27ed;</h3>
+            <h3>
+                Field <span class="intro">&#x27ec;F, &#x2218;,
+                &#x229a;&#x27ed;</span>
+            </h3>
             <p>
                 A field is a commutative, unitary ring with
                 inverses:
             </p>
             <ul>
-                <li>
+                <li class="fragment">
                     &#x27ec;F, &#x2218, &#x229a;&#x27ed; is a ring
-                </li>
-                <li>
-                    Unitary: &#x2203;e<sub>&#x229a;</sub>&#x2208;F
+                </li><li class="fragment">
+                    <span class="intro">Unitary</span>:
+                    &#x2203;e<sub>&#x229a;</sub>&#x2208;F
                     &#x2200;a&#x2208;F a &#x229a;
                     e<sub>&#x229a;</sub> = a
-                </li>
-                <li>Commutative: &#x2200;a,b,c&#x2208;F
+                </li><li class="fragment">
+                    <span class="intro">Commutative</span>:
+                    &#x2200;a,b,c&#x2208;F
                     (a &#x229a; b) = (b &#x229a; a)
-                </li>
-                <li>
-                    Inverses: &#x2200;a&#x2208;U a &ne;
-                    e<sub>&#x2218;</sub>
+                </li><li class="fragment">
+                    <span class="intro">Inverses</span>:
+                    &#x2200;a&#x2208;U a &ne; e<sub>&#x2218;</sub>
                     &#x27f9; &#x2203;a<sup>-1</sup>&#x2208;U
-                    a &#x229a; a<sup>-1</sup> =
-                    e<sub>&#x229a;</sub>
+                    a &#x229a; a<sup>-1</sup> = e<sub>&#x229a;</sub>
                 </li>
             </ul>
-            <p>
+            <p class="fragment">
                 Rational numbers with addition and multiplication
                 are a field: &#x27ec;&#x211a;, +, &times;&#x27ed;
             </p>
         </section>
         <section>
             <h3>
-                Finite Field &#x27ec;F, &#x2218;, &#x229a;&#x27ed;
+                Finite Field <span class="intro">&#x27ec;F, &#x2218;,
+                &#x229a;&#x27ed;</span>
             </h3>
             <p>
                 A finite field is a field with a finite number of
                 members.  An example a field is integers modulo a
-                prime integer with addition and multiplication:
-                &#x27ec;&#x2124;/p&#x2124;, +, &times;&#x27ed;
+                positive integer greater than one with addition and
+                multiplication: &#x27ec;&#x2124;/a&#x2124;, +,
+                &times;&#x27ed;
             </p>
         </section>
         <section>
             <h3>
                 Finite Field Example:
-                &#x27ec;&#x2124;/5&#x2124;, +, &times;&#x27ed;
+                <span class="intro">&#x27ec;&#x2124;/5&#x2124;, +,
+                    &times;&#x27ed;</span>
             </h3>
             <table style="float: left">
                 <tr><th>+</th><th>0</th><th>1</th><th>2</th>
@@ -4752,51 +4945,6 @@
                 numeric systems with a variable is named <q>x</q>:
                 <br />ax &#x225d; a &times; x
             </p>
-        </section>
-        <section>
-            <h3>Exponents</h3>
-            <p>
-                A natural way to extend our notation for inverses
-                is to use an integer superscript to represent
-                repeated application of the second operation.
-            </p>
-            <ul>
-                <li>a<sup>0</sup> &#x225d; e<sub>&#x229a;</sub></li>
-                <li>a<sup>1</sup> &#x225d; a</li>
-                <li>a<sup>2</sup> &#x225d; a &#x229a; a</li>
-                <li>
-                    a<sup>3</sup> &#x225d; a &#x229a; a &#x229a; a
-                </li>
-            </ul>
-            <ul>
-                <li>a<sup>-1</sup> (a &ne; e<sub>&#x2218;</sub>)</li>
-                <li>
-                    a<sup>-2</sup> &#x225d; a<sup>-1</sup> &#x229a;
-                    a<sup>-1</sup>
-                </li>
-                <li>
-                    a<sup>-3</sup> &#x225d; a<sup>-1</sup> &#x229a;
-                    a<sup>-1</sup> &#x229a; a<sup>-1</sup>
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h3>Exponents</h3>
-            <p>
-                Exponents defined this way obey simple rules:
-            </p>
-            <ul>
-                <li>
-                    a<sup>b</sup>a<sup>c</sup> = a<sup>b + c</sup>
-                </li><li>
-                    a<sup>b</sup>/a<sup>c</sup> =
-                    a<sup>b</sup>a<sup>-c</sup> =
-                    a<sup>b + (-c)</sup>
-                </li><li>
-                    (a<sup>b</sup>)<sup>c</sup> =
-                    a<sup>b &times; c</sup> = a<sup>bc</sup>
-                </li>
-            </ul>
         </section>
         <section>
             <h3>
@@ -4891,6 +5039,111 @@
                 Tuples can be used to generalize the vector space
                 created by ordered pairs.
             </p>
+        </section>
+    </section>
+
+    <section>
+        <section>
+            <h2>Exponents</h2>
+            <blockquote>
+                <q>
+                    Pure mathematics is, in its way, the poetry
+                    of logical ideas.
+                </q>
+                <br />— Albert Einstein
+            </blockquote>
+        </section>
+        <section>
+            <h3>Exponents &#x2115;</h3>
+            <p>
+                Repeating the successor operation gives addition.<br />
+                Repeating addition gives multiplication.<br />
+                Repeating multiplication gives exponentiation.
+            </p>
+            <ul>
+                <li class="fragment">
+                    a<sup>0</sup> &#x225d; e<sub>&#x229a;</sub>
+                </li><li class="fragment">
+                    a<sup>1</sup> &#x225d; a
+                </li><li class="fragment">
+                    a<sup>2</sup> &#x225d; a &#x229a; a
+                </li><li class="fragment">
+                    a<sup>3</sup> &#x225d; a &#x229a; a &#x229a; a
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Exponents: Distributive</h3>
+            <p>
+                As the distributive property connects addition and
+                multiplication, the exponent rule connects
+                multiplication and exponetiation
+            </p>
+            <p>
+                a<sup>b</sup>a<sup>c</sup> = a<sup>b + c</sup>
+            </p>
+        </section>
+        <section>
+            <h3>Exponents &#x2124;</h3>
+            <p>
+                A natural way to extend our notation for inverses is
+                to use integer exponents.
+            </p>
+            <ul>
+                <li class="fragment">
+                    a<sup>-1</sup> (a &ne; e<sub>&#x2218;</sub>)
+                </li><li class="fragment">
+                    a<sup>-2</sup> &#x225d; a<sup>-1</sup> &#x229a;
+                    a<sup>-1</sup>
+                </li><li class="fragment">
+                    a<sup>-3</sup> &#x225d; a<sup>-1</sup> &#x229a;
+                    a<sup>-1</sup> &#x229a; a<sup>-1</sup>
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Exponents: Negation</h3>
+            <p>
+                Negative exponents also obey the exponent rule
+            </p>
+            <p>
+                a<sup>b</sup>/a<sup>c</sup> =
+                a<sup>b</sup>a<sup>-c</sup> =
+                a<sup>b + (-c)</sup>
+            </p>
+        </section>
+        <section>
+            <h3>Exponents &#x211a;</h3>
+            <p>
+                What could it mean to use rational numbers as exponents?
+            </p>
+            <ul>
+                <li class="fragment">
+                    a<sup>1/2</sup> &#x229a; a<sup>1/2</sup>
+                    <span class="fragment"> = a<sup>1/2 + 1/2</sup>
+                        <span class="fragment"> =
+                            a<sup>1</sup> = a</span>
+                </li><li class="fragment">
+                    a<sup>2/3</sup> &#x229a; a<sup>2/3</sup> &#x229a;
+                    a<sup>2/3</sup> = a<sup>2/3 + 2/3 + 2/3</sup> =
+                    a<sup>6/3</sup> = a<sup>2</sup>
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Exponent Rules</h3>
+            <ul>
+                <li>
+                    a<sup>b</sup>a<sup>c</sup> = a<sup>b + c</sup>
+                </li><li>
+                    a<sup>b</sup>/a<sup>c</sup> =
+                    a<sup>b</sup>a<sup>-c</sup> =
+                    a<sup>b + (-c)</sup>
+                </li><li>
+                    (a<sup>b</sup>)<sup>c</sup> =
+                    a<sup>b &times; c</sup> = a<sup>bc</sup>
+                </li>
+            </ul>
         </section>
     </section>
 
