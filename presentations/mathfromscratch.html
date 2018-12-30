@@ -391,8 +391,9 @@
             <h3>Set Predicates</h3>
             <table>
                 <tr>
-                    <td>a <span class="intro">&#x2208;</span>
-                        {a, b, c}</td><td>member of</td>
+                    <td>&spades; <span class="intro">&#x2208;</span>
+                        {&spades; &hearts;, &diams;
+                        &clubs;}</td><td>member of</td>
                 </tr>
                 <tr>
                     <td>
@@ -406,31 +407,13 @@
                         <span class="intro">&#x2208;</span> b)
                     </td>
                 </tr>
-                <tr>
-                    <td>
-                        {a} <span class="intro">&#x2286;</span>
-                        {a, b}<br />{a, b}
-                        <span class="intro">&#x2286;</span> {a, b}
-                    </td><td>
-                        subset of<br />
-                        (a <span class="intro">&#x2286;</span> b)
-                        &#x225d; &#x2200;c
-                        c<span class="intro">&#x2208;</span>a
-                        &#x27f9;
-                        c<span class="intro">&#x2208;</span>b
-                    </td>
-                </tr>
             </table>
 
             <aside class="notes">
                 We use a symbol that resembles a lower case e to
                 indicate that something is a member of a set.
                 We'll put a line through it as a compact way to
-                invert the predicate.  We'll use a sideways letter
-                U with a line under it to indicate that one set is
-                a subset of a second set, which means all members
-                of the first set are also members of the second.
-                Notice that every set is a subset of itself.
+                invert the predicate.
             </aside>
         </section>
         <section>
@@ -490,14 +473,14 @@
                     <td>Power Set</td>
                     <td>Sets of subsets exist</td>
                 </tr><tr>
-                    <td>Regularity</td>
-                    <td>Sets can't contain themselves</td>
-                </tr><tr>
                     <td>Specification</td>
                     <td>A subset exists for any predicate</td>
                 </tr><tr>
                     <td>Replacement</td>
                     <td>A set exists for any function</td>
+                </tr><tr>
+                    <td>Regularity</td>
+                    <td>Sets can't contain themselves</td>
                 </tr><tr>
                     <td>Infinity</td>
                     <td>There is at least one infinite set</td>
@@ -517,11 +500,8 @@
         <section>
             <h2>Axiom of Extensionality</h2>
             <p>
-                &#x2200;a,b,c (a <span class="intro">=</span> b)
-                &#x27fa; (c &#x2208; a &#x27fa; c &#x2208; b)
-            </p><p>
-                &#x2200;a,b (a &#x2286; b) &and; (b &#x2286; a) &#x27fa;
-                (a <span class="intro">=</span> b)
+                &#x2200;a,b (a <span class="intro">=</span> b)
+                &#x27fa; (&#x2200;c c&#x2208;a &#x27fa; c&#x2208;b)
             </p><p>
                 Two sets that contain the same elements are the
                 same set.
@@ -535,7 +515,7 @@
             <h2>Axiom of Pairing</h2>
             <p>
                 &#x2200;a,b &#x2203;{a, b} &#x2200;c
-                (c&#x2208;{a, b} &#x27fa; (c = a &or; c = b))
+                (c&#x2208;{a, b} &#x27fa; (c=a &or; c=b))
             </p>
             <p>
                 Any two sets can be used to create a third set
@@ -560,14 +540,37 @@
                 all the members of its members.
             </p>
             <p>
-                <span class="intro">&cup;</span>{{a, b}, {b, c}} =
-                {a, b, c}
+                <span class="intro">&cup;</span>{
+                {&spades;, &hearts;}, {&hearts;, &diams;, &clubs;} } =
+                {&spades;, &hearts;, &diams;, &clubs;}
             </p>
             <aside class="notes">
                 Union allows us to combine the members of the
                 members of a set.  We can use this along with the
                 axiom of pairing to create a union operator which
                 combines two sets into one.
+            </aside>
+        </section>
+        <section>
+            <h3>Subsets</h3>
+            <p>
+                &#x2200;a,b (a <span class="intro">&#x2286;</span> b)
+                &#x225d; (&cup;{a, b} = b)
+            </p><p>
+                One set is a subset of another if the union operator
+                leaves the other set unchanged.  This gives us an
+                alternative way to think about equality:
+            </p><p>
+                &#x2200;a,b (a <span class="intro">&#x2286;</span> b)
+                &and; (b <span class="intro">&#x2286;</span> a)
+                &#x27fa; (a = b)
+            </p>
+            <aside class="notes">
+                We'll use a sideways letter U with a line under it to
+                indicate that one set is a subset of a second set,
+                which means all members of the first set are also
+                members of the second.  Notice that every set is a
+                subset of itself.
             </aside>
         </section>
         <section>
@@ -581,33 +584,15 @@
                 Any set can be used to create a set of its subsets.
             </p>
             <p>
-                <span class="intro">&#x2118;</span>{a, b, c} =<br />
-                {{}, {a}, {b}, {c}, {a, b}, {b, c}, {a, c},
-                {a, b, c}}
+                <span class="intro">&#x2118;</span>{
+                &spades;, &hearts;, &diams;} =<br />
+                {{}, {&spades;}, {&hearts;}, {&diams;},
+                {&spades;, &hearts;}, {&hearts;, &diams;},
+                {&spades;, &diams;}, {&spades;, &hearts;, &diams;}}
             </p>
             <aside class="notes">
                 Every set has a power set, which is the set of
                 all subsets of the original set.
-            </aside>
-        </section>
-        <section>
-            <h2>Axiom of Regularity</h2>
-            <p>
-                &#x2200;a &#x2203;b&#x2208;a &#x27f9;
-                &#x2203;c&#x2208;a
-                &#x2204;d (d&#x2208;a &and; d&#x2208;c)
-            </p>
-            <p>
-                A set that contains any members must contain at
-                least one member that does not share any members
-                with itself.  No set can contain itself.
-            </p>
-            <aside class="notes">
-                Regularity prevents sets from containing
-                themselves. The form given here prevents chains of
-                sets that eventually come back to themselves and
-                other such tricks.  This axiom prevents paradoxes
-                that afflicted earlier set theories.
             </aside>
         </section>
         <section>
@@ -649,6 +634,26 @@
                 mapping.  We haven't yet explained what a function
                 is or how to construct one.  We will do that once
                 we've established a few important tools.
+            </aside>
+        </section>
+        <section>
+            <h2>Axiom of Regularity</h2>
+            <p>
+                &#x2200;a &#x2203;b&#x2208;a &#x27f9;
+                &#x2203;c&#x2208;a
+                &#x2204;d (d&#x2208;a &and; d&#x2208;c)
+            </p>
+            <p>
+                A set that contains any members must contain at
+                least one member that does not share any members
+                with itself.  No set can contain itself.
+            </p>
+            <aside class="notes">
+                Regularity prevents sets from containing
+                themselves. The form given here prevents chains of
+                sets that eventually come back to themselves and
+                other such tricks.  This axiom prevents paradoxes
+                that afflicted earlier set theories.
             </aside>
         </section>
         <section>
@@ -695,15 +700,15 @@
                 <tr>
                     <td>Extensionality</td>
                     <td><small>
-                        &#x2200;a,b,c (a = b)
-                        &#x27fa; (c &#x2208; a &#x27fa; c &#x2208; b)
+                        &#x2200;a,b (a = b) &#x27fa;
+                        (&#x2200;c c&#x2208;a &#x27fa; c&#x2208;b)
                     </small></td>
                 </tr>
                 <tr><td>Pairing</td>
                     <td><small>
                         &#x2200;a,b &#x2203;{a, b} &#x2200;c
                         (c&#x2208;{a, b} &#x27fa;
-                        (c = a &or; c = b))
+                        (c=a &or; c=b))
                     </small></td>
                 </tr>
                 <tr>
@@ -721,14 +726,6 @@
                     </small></td>
                 </tr>
                 <tr>
-                    <td>Regularity</td>
-                    <td><small>
-                        &#x2200;a &#x2203;b&#x2208;a &#x27f9;
-                        &#x2203;c&#x2208;a
-                        &#x2204;d (d&#x2208;a &and; d&#x2208;c)
-                    </small></td>
-                </tr>
-                <tr>
                     <td>Specification (S)</td>
                     <td><small>
                         &#x2200;a,P &#x2203;b &#x2200;c
@@ -742,6 +739,14 @@
                         &#x2200;a,f &#x2203;b &#x2200;c
                         c&#x2208;b &#x27fa;
                         &#x2203;d&#x2208;a f(c) = d
+                    </small></td>
+                </tr>
+                <tr>
+                    <td>Regularity</td>
+                    <td><small>
+                        &#x2200;a &#x2203;b&#x2208;a &#x27f9;
+                        &#x2203;c&#x2208;a
+                        &#x2204;d (d&#x2208;a &and; d&#x2208;c)
                     </small></td>
                 </tr>
                 <tr>
@@ -784,7 +789,7 @@
             <p>
                 <span class="intro">&#x27e8;</span>a,
                 b<span class="intro">&#x27e9;</span>
-                &#x225d; {{a, a}, {a, b}} (Kuratowski 1921 CE)
+                &#x225d; {{a}, {a, b}} (Kuratowski 1921 CE)
             </p>
             <ul>
                 <li class="fragment">
@@ -795,63 +800,165 @@
                     a<span class="intro">&#x27e9;</span>)
                 </li><li class="fragment">
                     &#x2200;a,b (a &ne; b) &#x27fa;
-                    {{a, a}, {a, b}} &ne; {{b, b}, {b, a}}
-                </li><li class="fragment">
-                    &#x2200;a,b (a &ne; b) &#x27fa;
                     {{a}, {a, b}} &ne; {{b}, {a, b}}
                 </li><li class="fragment">
-                    a <span class="intro">is first</span> in
-                    &#x27e8;a, b&#x27e9; &#x225d;
-                    &#x2200;c&#x2208;&#x27e8;a, b&#x27e9;
-                    a&#x2208;c
+                    a is <span class="intro">first</span> in
+                    <span class="intro">&#x27e8;</span>a,
+                    b<span class="intro">&#x27e9;</span> &#x225d;
+                    &#x2200;c&#x2208;<span class="intro">&#x27e8;</span>a,
+                    b<span class="intro">&#x27e9;</span> a&#x2208;c
                 </li><li class="fragment">
-                    b <span class="intro">is second</span> in
-                    &#x27e8;a, b&#x27e9; &#x225d;
-                    (&#x2203;c&#x2208;&#x27e8;a, b&#x27e9;
-                    b&#x2208;c) &and;<br />
-                    (&#x2200;c,d&#x2208;&#x27e8;a, b&#x27e9; c
-                    &ne; d &#x27f9; b&#x2209;c &or; b&#x2209;d)
+                    b is <span class="intro">last</span> in
+                    <span class="intro">&#x27e8;</span>a,
+                    b<span class="intro">&#x27e9;</span> &#x225d;
+                    (&#x2203;c&#x2208;<span class="intro">&#x27e8;</span>a,
+                    b<span class="intro">&#x27e9;</span> b&#x2208;c)
+                    &and;<br /> (&#x2200;c,d&#x2208;&#x27e8;a, b&#x27e9;
+                    c &ne; d &#x27f9; b&#x2209;c &or; b&#x2209;d)
                 </li>
             </ul>
         </section>
         <section>
+            <h3>Power Sets and Pairs</h3>
+            <p>
+                &#x2200;a,b,c (b&#x2208;a &and; c&#x2208;a)
+                &#x27f9;<br /> (({b} &#x2286; a) &and;
+                ({b, c} &#x2286; a)
+                <span class="fragment">&#x27f9;<br />
+                    {{b}, {b, c}}&#x2286;&#x2118;a</span>
+                <span class="fragment">&#x27f9;
+                    &#x27e8;b, c&#x27e9;&#x2286;&#x2118;a</span>
+            </p>
+            <p class="fragment">
+                A power set always contains all possible ordered pairs
+                of the members of the original set.
+            </p>
+            <aside class="notes">
+                Given any set and two members of that set, it's clear
+                from the definition of a subset that sets containing
+                one or both of these members are subsets of the
+                original set.  Since these are subsets they must be
+                members of the power set too.  That means we can
+                always construct a ordered pair from any two members
+                of the original set and find it in the power set.  Not
+                all members of a power set are ordered pairs, but all
+                ordered pairs are members of the power set.
+            </aside>
+        </section>
+        <section>
             <h3>Cartesian Product</h3>
             <p>
-                &#x2200;a,b (a <span class="intro">&times;</span> b)
-                &#x225d;<br /> { &#x27e8;a<sub>i</sub>,
-                b<sub>i</sub>&#x27e9; &#x2208;
-                &#x2118;&#x2118;(a &cup; b) :
-                a<sub>i</sub>&#x2208;a &and; b<sub>i</sub>&#x2208;b }
+                &#x2200;a,b,c,d (a <span class="intro">&times;</span> b)
+                &#x225d; { &#x27e8;c, d&#x27e9; &#x2208;
+                &#x2118;(a &cup; b) : c&#x2208;a &and; d&#x2208;b }
             </p>
             <p class="fragment">
                 We can use pairing, union and powerset axioms to
                 construct all possible ordered pairs from two sets.
             </p>
             <p class="fragment">
-                {a, b, c} <span class="intro">&times;</span> {c, d}
-                =<br /> { &#x27e8;a, c&#x27e9;, &#x27e8;a, d&#x27e9;,
-                &#x27e8;b, c&#x27e9;, &#x27e8;b, d&#x27e9;,
-                &#x27e8;c, c&#x27e9;, &#x27e8;c, d&#x27e9; }
+                { &spades;, &hearts;, &diams;, &clubs; }
+                <span class="intro">&times;</span>
+                { &#x25c7;, &#x25b3; } = {
+                &#x27e8;&spades;, &#x25c7;&#x27e9;,
+                &#x27e8;&spades;, &#x25b3;&#x27e9;,
+                &#x27e8;&hearts;, &#x25c7;&#x27e9;,
+                &#x27e8;&hearts;, &#x25b3;&#x27e9;,
+                &#x27e8;&diams;, &#x25c7;&#x27e9;,
+                &#x27e8;&diams;, &#x25b3;&#x27e9;,
+                &#x27e8;&clubs;, &#x25c7;&#x27e9;,
+                &#x27e8;&clubs;, &#x25b3;&#x27e9; }
+            </p>
+            <aside class="notes">
+                Starting with the result from the previous slide, we
+                can use the axiom of union and the axiom schema of
+                specification to construct a set of ordered pairs with
+                the first element from one set and the last element
+                from the second.
+            </aside>
+        </section>
+        <section>
+            <h3>Ordered Tuples</h3>
+            <ul>
+                <li>
+                    <span class="intro">&#x27e8;</span>a, b,
+                    c<span class="intro">&#x27e9;</span>
+                    &#x225d; {{a}, {a, b}, {a, b, c}}
+                </li><li>
+                    <span class="intro">&#x27e8;</span>a, b, c,
+                    d<span class="intro">&#x27e9;</span>
+                    &#x225d; {{a}, {a, b}, {a, b, c}, {a, b, c, d}}
+                </li><li>
+                    ...
+                </li>
+            </ul>
+            <p>
+                Ordered pairs extend naturally to tuples which are
+                not limited to pairs of elements.
             </p>
         </section>
         <section>
-            <h3>Unordering Pairs</h3>
+            <h3>Cartesian Product Extended</h3>
             <p>
-                &cup;&#x27e8;a, b&#x27e9; =
-                &cup;{{a, a}, {a, b}} = {a, b}
+                &#x2200;a,b,c (a <span class="intro">&times;</span> b
+                <span class="intro">&times;</span> c)
+                &#x225d;<br /> { &#x27e8;a<sub>i</sub>,
+                b<sub>i</sub>, c<sub>i</sub>&#x27e9; &#x2208;
+                &#x2118;&cup;{a, b, c} :
+                a<sub>i</sub>&#x2208;a &and; b<sub>i</sub>&#x2208;b
+                &and; c<sub>i</sub>&#x2208;c }
             </p>
             <p class="fragment">
-                A union operator turns an ordered pair into an
-                unordered set containing both elements.
+                Cartesian products can make tuples
+            </p>
+            <p class="fragment">
+                { &spades;, &hearts;, &diams;, &clubs; }
+                <span class="intro">&times;</span>
+                { &#x1f603;, &#x1f61e; }
+                <span class="intro">&times;</span>
+                { &#x25a1;, &#x25b3; } =<br />
+                { &#x27e8;&spades;, &#x1f603;, &#x25a1;&#x27e9;,
+                &#x27e8;&spades;, &#x1f603;, &#x25b3;&#x27e9;,
+                &#x27e8;&spades;, &#x1f61e;, &#x25a1;&#x27e9;,
+                &#x27e8;&spades;, &#x1f61e;, &#x25b3;&#x27e9;,<br />
+                &#x27e8;&hearts;, &#x1f603;, &#x25a1;&#x27e9;,
+                &#x27e8;&hearts;, &#x1f603;, &#x25b3;&#x27e9;,
+                &#x27e8;&hearts;, &#x1f61e;, &#x25a1;&#x27e9;,
+                &#x27e8;&hearts;, &#x1f61e;, &#x25b3;&#x27e9;,<br />
+                &#x27e8;&diams;, &#x1f603;, &#x25a1;&#x27e9;,
+                &#x27e8;&diams;, &#x1f603;, &#x25b3;&#x27e9;,
+                &#x27e8;&diams;, &#x1f61e;, &#x25a1;&#x27e9;,
+                &#x27e8;&diams;, &#x1f61e;, &#x25b3;&#x27e9;,<br />
+                &#x27e8;&clubs;, &#x1f603;, &#x25a1;&#x27e9;,
+                &#x27e8;&clubs;, &#x1f603;, &#x25b3;&#x27e9;,
+                &#x27e8;&clubs;, &#x1f61e;, &#x25a1;&#x27e9;,
+                &#x27e8;&clubs;, &#x1f61e;, &#x25b3;&#x27e9; }
+            </p>
+        </section>
+        <section>
+            <h3>Unordering Tuples</h3>
+            <p>
+                &cup;&#x27e8;&spades;, &clubs;&#x27e9; =
+                &cup;{{&spades;}, {&spades;, &clubs;}} =
+                {&spades;, &clubs;}
+            </p>
+            <p class="fragment">
+                A union operator turns an ordered tuple into an
+                unordered set containing all elements.
                 <span class="fragment">Two union operators collapses
                     a set of ordered pairs:</span>
             </p>
             <p class="fragment">
-                <span class="intro">&cup;&cup;</span>{&#x27e8;a,
-                b&#x27e9;, &#x27e8;b, c&#x27e9;, &#x27e8;c,
-                a&#x27e9;} =<br /><span class="fragment">&cup;{{a},
-                    {a, b}, {b}, {b, c}, {c}, {c, a}} =</span><br />
-                <span class="fragment">{a, b, c}</span>
+                <span class="intro">&cup;&cup;</span>{
+                &#x27e8;&spades;, &hearts;&#x27e9;,
+                &#x27e8;&hearts;, &diams;&#x27e9;,
+                &#x27e8;&diams;, &clubs;&#x27e9;} =<br />
+                <span class="fragment">&cup;{{&spades;},
+                    {&spades;, &hearts;},
+                    {&hearts;}, {&hearts;, &diams;},
+                    {&diams;}, {&diams;, &clubs;}} =</span><br />
+                <span class="fragment">{
+                    &spades;, &hearts;, &diams;, &clubs;}</span>
             </p>
         </section>
         <section>
@@ -1094,134 +1201,13 @@
                 <span class="fragment"> It's not always connex,
                     so subset is not always a total order:</span>
             </p>
-            <p class="fragment">{{a, b}, {a}, {a, c}}</p>
-        </section>
-    </section>
-
-    <section>
-        <section>
-            <h2>Tuples</h2>
-            <p>
-                Ordered pairs can be used to build general tuples
-                that can order an aribtrary number of members
-            </p>
-        </section>
-        <section>
-            <h3>Tuple Definition</h3>
-            <p>
-                A tuple is either the empty set or an ordered
-                pair with a tuple as the second member.
-            </p>
-            <ul>
-                <li class="fragment">
-                    <span class="intro">&#x27ec;&#x27ed;</span>
-                    &#x225d; {}
-                </li><li class="fragment">
-                    <span class="intro"
-                    >&#x27ec;</span>a<span class="intro">&#x27ed;</span>
-                    &#x225d; &#x27e8;a, {}&#x27e9;
-                </li><li class="fragment">
-                    <span class="intro">&#x27ec;</span>a,
-                    b<span class="intro">&#x27ed;</span>
-                    &#x225d; &#x27e8;a, &#x27e8;b, {}&#x27e9;&#x27e9;
-                </li><li class="fragment">
-                    <span class="intro">&#x27ec;</span>a, b,
-                    c<span class="intro">&#x27ed;</span> &#x225d;
-                    &#x27e8;a, &#x27e8;b, &#x27e8;c,
-                    {}&#x27e9;&#x27e9;&#x27e9;
-                </li><li class="fragment">...</li>
-            </ul>
-        </section>
-        <section>
-            <h3>Tuple Equivalence</h3>
-            <p>
-                When using an equivalence relation other than set
-                equality elements must be compared recursively
-            </p>
-            <ul>
-                <li>&#x27ec;&#x27ed; &#x2251; &#x27ec;&#x27ed;</li>
-                <li>
-                    &#x2200;a,b,t
-                    (&#x27e8;a, t&#x27e9; &#x2251; &#x27e8;b, t&#x27e9;)
-                    &#x27fa; (a &#x2251; b)
-                </li>
-            </ul>
+            <p class="fragment">{{&spades;, &hearts;}, {&spades;},
+                {&spades;, &diams;}}</p>
             <aside class="notes">
-            </aside>
-        </section>
-        <section>
-            <h3>Tuple Concatenation</h3>
-            <p>
-                &#x2200;n,m&#x2208;&#x2115;
-                &#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
-                a<sub>n</sub>&#x27ed;
-                <span class="intro">&#x2a01;</span>
-                &#x27ec;b<sub>0</sub>, b<sub>1</sub>, ...
-                b<sub>m</sub>&#x27ed; =<br />
-                &#x27ec;a<sub>0</sub>, a<sub>1</sub>, ...
-                a<sub>n</sub>, b<sub>0</sub>, b<sub>1</sub>, ...
-                b<sub>m</sub>&#x27ed;
-            </p>
-            <ul>
-                <li>
-                    &#x27ec;&#x27ed; <span class="intro">&#x2a01;</span>
-                    b = {} <span class="intro">&#x2a01;</span>
-                    b &#x225d; b
-                </li>
-                <li>
-                    &#x27ec;a, ...&#x27ed;
-                    <span class="intro">&#x2a01;</span> b =
-                    &#x27e8;a, t&#x27e9;
-                    <span class="intro">&#x2a01;</span> b
-                    &#x225d; &#x27e8;a, t
-                    <span class="intro">&#x2a01;</span> b&#x27e9;
-                </li>
-            </ul>
-            <p>
-                Tuples can be linked together in a recursive way.
-            </p>
-            <aside class="notes">
-                Concatenating an empty tuple with another tuple
-                leaves the other tuple unchanged.  Concatenating a
-                tuple with one element with a tuple means
-                replacing the empty set that is the second element
-                of hte first tuple with the second tuple.
-                Concatenating a tuple with more than one member
-                can be done by recursively concatenating the
-                second member of the ordered pair with the second
-                tuple, which implicitly finds the end of the first
-                tuple one step at a time.
-            </aside>
-        </section>
-        <section>
-            <h3>Tuple Reversal</h3>
-            <p>
-                &#x2200;n&#x2208;&#x2115;
-                <span class="intro">reverse</span>(&#x27ec;a<sub>0</sub>,
-                a<sub>1</sub>, ... a<sub>n</sub>&#x27ed;) =
-                &#x27ec;a<sub>n</sub>, ... a<sub>1</sub>,
-                a<sub>0</sub>&#x27ed;
-            </p>
-            <ul>
-                <li>
-                    <span class="intro">reverse</span>(&#x27ec;&#x27ed;)
-                    &#x225d; &#x27ec;&#x27ed;
-                </li><li>
-                    <span class="intro">reverse</span>(&#x27ec;a,
-                    ...&#x27ed;) =
-                    <span class="intro">reverse</span>(&#x27e8;a,
-                    t<sub>a</sub>&#x27e9;) &#x225d;<br />
-                    <span class="intro">reverse</span>(t<sub>a</sub>)
-                    &#x2a01; &#x27ec;a&#x27ed;
-                </li>
-            </ul>
-            <p>
-                Reversing a tuple means concatenating each
-                element to the end.
-            </p>
-            <aside class="notes">
-                We build on concatenation to recursively
-                describe a process for reversing tuples.
+                This is a simple example of a set on which the subset
+                operator forms a partial but not a total order.  Most
+                of the time subset is not connex, but we could
+                easily construct sets where it is.
             </aside>
         </section>
     </section>
@@ -1343,8 +1329,8 @@
                     f : D &#x27f6; R<sub>1</sub> &times;
                     R<sub>2</sub> &times; R<sub>3</sub> &#x27f9;
                     <span class="intro">
-                        f(a) = &#x27ec;b<sub>1</sub>, b<sub>2</sub>,
-                        b<sub>3</sub>&#x27ed;</span>
+                        f(a) = &#x27e8;b<sub>1</sub>, b<sub>2</sub>,
+                        b<sub>3</sub>&#x27e9;</span>
                 </li><li class="fragment">
                     ...
                 </li>
@@ -1476,114 +1462,57 @@
             <table>
                 <tr><td>
                     &#x2200;a,b&#x2208;&#x2115;
-                    a <span class="intro">&le;</span>
-                    b &#x225d; a &#x2208; succ(b)
+                    (a <span class="intro">&le;</span> b) &#x225d;
+                    (a &#x2286; b)
                 </td></tr><tr><td>
                     &#x2200;a,b&#x2208;&#x2115;
-                    a <span class="intro">&ge;</span>
-                    b &#x225d; b &#x2208; succ(a)
+                    (a <span class="intro">&ge;</span> b) &#x225d;
+                    (b &#x2286; a)
                 </td></tr><tr><td>
                     &#x2200;a,b&#x2208;&#x2115;
-                    a <span class="intro">&lt;</span>
-                    b &#x225d; &not;(a <span class="intro">&ge;</span>
-                    b) &#x27fa; (a &#x2208; b)
+                    (a <span class="intro">&lt;</span> b) &#x225d;
+                    (&not;(a <span class="intro">&ge;</span>
+                    b) &#x27fa; (a &#x2208; b))
                 </td></tr><tr><td>
                     &#x2200;a,b&#x2208;&#x2115;
-                    a <span class="intro">&gt;</span>
-                    b &#x225d; &not;(a <span class="intro">&le;</span>
-                    b) &#x27fa; (b &#x2208; a)
+                    (a <span class="intro">&gt;</span> b) &#x225d;
+                    (&not;(a <span class="intro">&le;</span>
+                    b) &#x27fa; (b &#x2208; a))
                 </td></tr>
             </table>
             <p>
-                Natural number order is built on set membership.
+                Natural number order is built on subset relationships.
             </p>
         </section>
         <section>
-            <h3>Order &#x2115;: Reflexive</h3>
+            <h3>Order &#x2115;: Partial Order</h3>
             <p>
-                Natural numbers are always contained within their
-                successors, so order is reflexive.
+                Subset relationships are always reflexive,
+                antisymmetric and transitive so this relationship
+                necessarily forms a partial order for natural numbers.
+                We only need the connex property to have a total order.
             </p>
-            <ul>
-                <li class="fragment">
-                    &#x2200;a&#x2208;&#x2115; a&#x2208;succ(a)
-                </li><li class="fragment">
-                    &#x2200;a&#x2208;&#x2115; a&#x2208;&cup;{a, {a, a}}
-                </li><li class="fragment">
-                    &#x2200;a&#x2208;&#x2115; a &le; a
-                </li>
-            </ul>
             <aside class="notes">
-                Natural number order is reflexive because every
-                natural number is contained in its own successor.
-                This is a clear consequence of the union operator.
-            </aside>
-        </section>
-        <section>
-            <h3>Order &#x2115;: Antisymmetric</h3>
-            <p>
-                Every natural number is a subset of all of its
-                successors.  This makes natural number order
-                antisymmetric due to regularity.
-            </p>
-            <ul>
-                <li class="fragment">
-                    &#x2200;a&#x2208;&#x2115; a &#x2209; a
-                    &#x27f9; succ(a) &#x2209; a
-                </li><li class="fragment">
-                    &#x2200;a,b&#x2208;&#x2115;
-                    (a &#x2208; succ(b)) &and;
-                    (b &#x2208; succ(a)) &#x27f9; (a = b)
-                </li><li class="fragment">
-                    &#x2200;a,b&#x2208;&#x2115; (a &le; b) &and;
-                    (b &le; a) &#x27f9; (a = b)
-                </li>
-            </ul>
-            <aside class="notes">
-            </aside>
-        </section>
-        <section>
-            <h3>Order &#x2115;: Transitive</h3>
-            <p>
-                Every natural number contains all predecessors.  This
-                means each contains not only its own predecessors but
-                also the predecessors of those predecessors.
-            </p>
-            <ul>
-                <li>
-                    &#x2200;a,b,c&#x2208;&#x2115;
-                    (a&#x2208;succ(b)) &and; (b&#x2208;succ(c)) &#x27f9;
-                    (a&#x2208;succ(c))
-                </li><li>
-                    &#x2200;a,b,c&#x2208;&#x2115;
-                    (a &le; b) &and; (b &le; c) &#x27f9; (a &le; c)
-                </li>
-            </ul>
-            <aside class="notes">
-                Every natural number is contained in its successor
-                and indeed in the successor of its successor.  So
-                if a is less than b and b is less than c, then a
-                is contained in b and b is contained in c.  Since
-                a is contained in b it's contained in all of b's
-                successors, including c.
             </aside>
         </section>
         <section>
             <h3>Order &#x2115;: Connex</h3>
-            <p>
-                Every pair of natural numbers has an order.  Either
-                the first is less than or equal to the second, the
-                second is less than or equal to the first or both.
-            </p>
             <ul>
                 <li>
                     &#x2200;a,b&#x2208;&#x2115;
-                    (a&#x2208;succ(b)) &or; (b&#x2208;succ(a))
+                    (a &le; b) &or; (b &le; a)
                 </li><li>
                     &#x2200;a,b&#x2208;&#x2115;
-                    (a &le; b) &or; (b &le; a)
+                    (a &#x2286; b) &or; (b &#x2286; a)
                 </li>
             </ul>
+            <p>
+                Each natural number contains all the natural numbers
+                that come before it.  That means any two natural
+                numbers must have a subset relationship on one
+                direction or the other.  So the subset relation forms
+                a total order.
+            </p>
             <aside class="notes">
             </aside>
         </section>
@@ -1596,10 +1525,10 @@
                     &#x2115; &#x225d; { a : (a = {}) &or;
                     &#x2203;b&#x2208;&#x2115; a = succ(b) }
                 </li><li>
-                    Equality: Set Equality
+                    Equality: set equality
                 </li><li>
                     Order: &#x2200;a,b&#x2208;&#x2115;
-                    a &le; b &#x225d; a &#x2208; succ(b)
+                    (a &le; b) &#x225d; (a &#x2286; b)
                 </li>
             </ul>
         </section>
