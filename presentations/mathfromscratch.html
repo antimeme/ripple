@@ -6,6 +6,9 @@
 <style>
  canvas.triggy { width: 100%; height: 100%; }
  .intro { color: blue; font-weight: bold; }
+ .true { color: green; font-weight: bold; }
+ .false { color: red; font-weight: bold; }
+ ul.symbolic { list-style-type: none; }
 </style>
 <!-- Slides use Reveal.js: https://github.com/hakimel/reveal.js/ -->
 
@@ -52,7 +55,10 @@
         <section>
             <p>
                 This is an attempt to build a powerful set of tools
-                from simple foundations.
+                from simple foundations.  We will begin with
+                structures even simpler than numbers.  We'll show that
+                we can construct numbers and other complex structures
+                from them.
             </p>
             <aside class="notes">
                 We will build familiar mathematics from the simplest
@@ -71,8 +77,14 @@
                     <a href="https://github.com/hakimel/reveal.js/"
                     >https://github.com/hakimel/reveal.js/</a>
                 </li>
-                <li>Abraham Fraenkel, Ernst Zermello and
-                    Thoraf Skolem</li>
+            </ul>
+        </section>
+        <section>
+            <h2>Acknowledgements</h2>
+            <ul>
+                <li>Abraham Fraenkel</li>
+                <li>Ernst Zermello</li>
+                <li>Thoraf Skolem</li>
                 <li>Kazimierz Kuratowski</li>
                 <li>Hermann Grassman</li>
                 <li>Georg Cantor</li>
@@ -93,7 +105,8 @@
         <section>
             <h2>Acknowledgements</h2>
             <ul>
-                <li>An apparently infinite series of mathematical
+                <li>...</li>
+                <li>An unfathomably long series of mathematical
                     minds who made this work possible
                 </li>
             </ul>
@@ -122,16 +135,23 @@
             <h3>Formal Systems</h3>
             <ul>
                 <li>
-                    Rules of Inference: ways statements can be
-                    combined <span class="intro">(this section)</span>
+                    Statements: things that might be true or false
+                    <ul>
+                        <li>
+                            Axioms: fundamental ideas accepted as true
+                        </li><li>
+                            Theorem: proven using axioms and other
+                            theorems according to rules of inference
+                        </li>
+                    </ul>
                 </li><li>
-                    Axioms: statements accepted as true
+                    Rules of Inference: acceptable ways to combine
+                    statements to make new statements
+                    <span class="intro">(logic!)</span>
                 </li><li>
-                    Theorem: statements proven as true using rules
-                    on axioms and other theorems
-                </li><li>
-                    Definitions: short hand for concepts
-                    (notation: <span class="intro">&#x225d;</span>)
+                    Definitions (<span class="intro">&#x225d;</span>):
+                    short hand that can be replaced with more
+                    fundamental concepts
                 </li>
             </ul>
             <aside class="notes">
@@ -156,11 +176,13 @@
             <p>Desirable properties of a formal system:</p>
             <ul>
                 <li>
-                    Consistent: no statement can be proven both
-                    true and false (no paradoxes)
+                    <span class="intro">Consistent</span>: no
+                    statement can be proven both true and false (no
+                    contradictions)
                 </li><li>
-                    Complete: all statements can be proven either
-                    true or false (nothing missing)
+                    <span class="intro">Complete</span>: all
+                    statements can be proven either true or false
+                    (nothing missing)
                 </li>
             </ul>
             <p>
@@ -186,8 +208,10 @@
             </p>
             <ul>
                 <li>Example: _____ is a fruit</li>
-                <li>An apple is a fruit (true)</li>
-                <li>A carrot is a fruit (false)</li>
+                <li><span class="intro">An apple</span> is a fruit
+                    (<span class="true">true</span>)</li>
+                <li><span class="intro">A carrot</span> is a fruit
+                    (<span class="false">false</span>)</li>
             </ul>
             <aside class="notes">
                 A predicate is a statement with one or more
@@ -207,10 +231,12 @@
             <table>
                 <tr>
                     <td><span class="intro">&#x2200;</span>a P(a)</td>
-                    <td>P is true for all values of a</td>
+                    <td>P is true <span class="intro">for all</span>
+                        values of a</td>
                 </tr><tr>
                     <td><span class="intro">&#x2203;</span>a P(a)</td>
-                    <td>P is true for some value of a</td>
+                    <td>P is true <span class="intro">for at least
+                        one</span> value of a</td>
                 </tr><tr>
                     <td><span class="intro">&#x2204;</span>a P(a)</td>
                     <td>P is false for all values of a</td>
@@ -388,81 +414,13 @@
             </aside>
         </section>
         <section>
-            <h3>Set Predicates</h3>
-            <table>
-                <tr>
-                    <td>&spades; <span class="intro">&#x2208;</span>
-                        {&spades; &hearts;, &diams;
-                        &clubs;}</td><td>member of</td>
-                </tr>
-                <tr>
-                    <td>
-                        a <span class="intro">&#x2209;</span>
-                        {b, c} &#x27f9;<br /> (b&ne;a &and; c&ne;a)
-                    </td>
-                    <td>
-                        not a member of<br />
-                        (a <span class="intro">&#x2209;</span> b)
-                        &#x225d; &not;(a
-                        <span class="intro">&#x2208;</span> b)
-                    </td>
-                </tr>
-            </table>
-
-            <aside class="notes">
-                We use a symbol that resembles a lower case e to
-                indicate that something is a member of a set.
-                We'll put a line through it as a compact way to
-                invert the predicate.
-            </aside>
-        </section>
-        <section>
-            <h3>Set Contents</h3>
-            <p>
-                We describe sets using one of these forms.
-            </p>
-            <table>
-                <tr>
-                    <td class="intro">{}</td>
-                    <td>
-                        Empty Set: &#x2203;<span class="intro">{}</span>
-                        &#x2200;a a&#x2209;<span class="intro">{}</span>
-                    </td>
-                </tr>
-                <tr>
-                    <td><span class="intro">{</span> a, b, c
-                        <span class="intro">}</span></td>
-                    <td>Enumeration</td>
-                </tr>
-                <tr>
-                    <td><span class="intro">{</span>
-                        a&#x2208;b <span class="intro">:</span> P(a)
-                        <span class="intro">}</span></td>
-                    <td>
-                        Specification (filtered by predicate)
-                    </td>
-                </tr>
-                <tr>
-                    <td><span class="intro">{</span>
-                        f(a) <span class="intro">:</span> a&#x2208;b
-                        <span class="intro">}</span></td>
-                    <td>Replacement (function outputs)</td>
-                </tr>
-            </table>
-            <aside class="notes">
-                We usually describe sets in one of these two ways.
-                When a set contains only a few selected members,
-                we enumerate them, separated by commas.  Larger
-                sets are difficult to represent this way so we
-                describe them using a predicate which selects
-                members from some other set.
-            </aside>
-        </section>
-        <section>
             <table>
                 <tr>
                     <td>Extensionality</td>
                     <td>Same members, same set</td>
+                </tr><tr>
+                    <td>Specification</td>
+                    <td>A subset exists for any predicate</td>
                 </tr><tr>
                     <td>Pairing</td>
                     <td>Make a set with two members</td>
@@ -473,11 +431,8 @@
                     <td>Power Set</td>
                     <td>Sets of subsets exist</td>
                 </tr><tr>
-                    <td>Specification</td>
-                    <td>A subset exists for any predicate</td>
-                </tr><tr>
                     <td>Replacement</td>
-                    <td>A set exists for any function</td>
+                    <td>Any function can map a set</td>
                 </tr><tr>
                     <td>Regularity</td>
                     <td>Sets can't contain themselves</td>
@@ -496,7 +451,49 @@
                 We'll describe each axiom in detail.
             </aside>
         </section>
+        <section>
+            <h3>Set Enumeration</h3>
+            <p>
+                The simplest way to describe a set by enumerating its
+                members.
+            </p>
+            <p>
+                <span class="intro">{</span>
+                &spades;<span class="intro">,</span>
+                &hearts;<span class="intro">,</span>
+                &diams;<span class="intro">,</span>
+                &clubs; <span class="intro">}</span>
+            </p>
+        </section>
+        <section>
+            <h3>Set Membership</h3>
+            <table>
+                <tr>
+                    <td>&spades; <span class="intro">&#x2208;</span>
+                        {&spades;, &hearts;, &diams;,
+                        &clubs;}</td><td>member of</td>
+                </tr>
+                <tr>
+                    <td>
+                        a <span class="intro">&#x2209;</span>
+                        {b, c} &#x27f9;<br /> (a&ne;b &and; a&ne;c)
+                    </td>
+                    <td>
+                        not a member of<br />
+                        (a <span class="intro">&#x2209;</span> b)
+                        &#x225d; &not;(a
+                        <span class="intro">&#x2208;</span> b)
+                    </td>
+                </tr>
+            </table>
 
+            <aside class="notes">
+                We use a symbol that resembles a lower case e to
+                indicate that something is a member of a set.
+                We'll put a line through it as a compact way to
+                invert the predicate.
+            </aside>
+        </section>
         <section>
             <h2>Axiom of Extensionality</h2>
             <p>
@@ -512,15 +509,63 @@
             </aside>
         </section>
         <section>
+            <h2>Axiom (Schema) of Specification</h2>
+            <p>
+                &#x2200;a,P &#x2203;b &#x2200;c
+                c&#x2208;b &#x27fa; (c&#x2208;a &and; P(c))
+            </p>
+            <p>
+                Given a set and a predicate there is a set which
+                contains only members for which the predicate is true.
+                Any predicate can filter any set.
+            </p>
+            <p>
+                Notation: <span class="intro">{</span>
+                a&#x2208;b <span class="intro">:</span> P(a)
+                <span class="intro">}</span>
+            </p>
+            <aside class="notes">
+                Specification is actually an axiom schema because
+                there is technically one axiom for every possible
+                predicate.  This schema allows us to use any
+                predicate to filter the elmeents of any set.
+            </aside>
+        </section>
+        <section>
+            <h3>Empty Set</h3>
+            <p>
+                &#x2203;<span class="intro">{}</span>
+                &#x2200;a a&#x2209;<span class="intro">{}</span>
+            </p><p>
+                The empty set doesn't contain anything.
+            </p><p class="fragment">
+                Extensionality means this set must be unique.
+            </p><div class="fragment"><p>
+                If any set exists specification allows us to prove
+                that the empty set also exists:
+            </p><p>
+                &#x2200;a <span class="intro">{}</span> &#x225d; {
+                b&#x2208;a : b &ne; b }
+            </p>
+        </section>
+        <section>
             <h2>Axiom of Pairing</h2>
             <p>
                 &#x2200;a,b &#x2203;{a, b} &#x2200;c
                 (c&#x2208;{a, b} &#x27fa; (c=a &or; c=b))
             </p>
             <p>
-                Any two sets can be used to create a third set
-                which contains only those two sets as members.
+                Any two sets can be used to create a set which
+                contains only those two sets as members.
             </p>
+            <div class="fragment">
+                <p>
+                    Elements of the pair may be equal. Extensionality
+                    proves there is only one member:
+                </p><p>
+                    { &spades;, &spades; } = { &spades; }
+                </p>
+            </div>
             <aside class="notes">
                 Pairing allows us to use any two sets to create a
                 third set with only those two sets as members.  We
@@ -539,10 +584,14 @@
                 Any set can be used to create a set by combining
                 all the members of its members.
             </p>
-            <p>
+            <p class="fragment">
                 <span class="intro">&cup;</span>{
                 {&spades;, &hearts;}, {&hearts;, &diams;, &clubs;} } =
                 {&spades;, &hearts;, &diams;, &clubs;}
+            </p>
+            <p class="fragment">
+                (a <span class="intro">&cup;</span> b)
+                &#x225d; <span class="intro">&cup;</span>{ a, b }
             </p>
             <aside class="notes">
                 Union allows us to combine the members of the
@@ -550,6 +599,51 @@
                 axiom of pairing to create a union operator which
                 combines two sets into one.
             </aside>
+        </section>
+        <section>
+            <h3>Union Identities</h3>
+            <ul>
+                <li>&#x2200;a &cup;{ a, {} } = a &cup; {} = a</li>
+                <li>&#x2200;a &cup;{ a, a } = a &cup; a = a</li>
+                <li>
+                    &#x2200;a,b (a &cup; b = b &cup; a) &#x27fa;
+                    (&cup;{a, b} = &cup;{b, a})
+                </li>
+                <li>
+                    &#x2200;a,b,c ((a &cup; b) &cup; c =
+                    a &cup; (b &cup; c)) &#x27fa;<br />
+                    (&cup;{ &cup;{ a, b }, c } =
+                    &cup;{ a, &cup;{ b, c } })
+                </li>
+            </ul>
+            <p>
+                These easily follow from extensionality and the
+                definition of the union operation.
+            </p>
+        </section>
+        <section>
+            <h3>Some Assembly Required</h3>
+            <p>
+                Pairing and union axioms allow us to create sets of
+                any size from whatever elements exist.
+            </p>
+            <ul class="symbolic">
+                <li class="fragment">
+                    &cup;{ { &spades;, &spades; },
+                    { &hearts;, &diams; } } = {
+                    &spades;, &hearts;, &diams; }
+                </li><li class="fragment">
+                    &cup;{ { &spades;, &hearts; },
+                    { &diams;, &clubs; } } = {
+                    &spades;, &hearts;, &diams;, &clubs; }
+                </li><li class="fragment">
+                    &cup;{ &cup;{ { &#x1f603;, &#x1f61e; },
+                    { &#x1f609;, &#x1f609; } },
+                    { &#x1f620;, &#x1f61d; } } =<br />
+                    { &#x1f603;, &#x1f61e;, &#x1f609;, &#x1f620;,
+                    &#x1f61d; }
+                </li><li class="fragment">...</li>
+            </ul>
         </section>
         <section>
             <h3>Subsets</h3>
@@ -581,38 +675,28 @@
                 &#x27fa; b&#x2286;a)
             </p>
             <p>
-                Any set can be used to create a set of its subsets.
+                The subsets of any set make up a set of their own.
             </p>
             <p>
                 <span class="intro">&#x2118;</span>{
-                &spades;, &hearts;, &diams;} =<br />
-                {{}, {&spades;}, {&hearts;}, {&diams;},
-                {&spades;, &hearts;}, {&hearts;, &diams;},
-                {&spades;, &diams;}, {&spades;, &hearts;, &diams;}}
+                &spades;, &hearts;, &diams;, &clubs; } =
+                {{}, {&spades;}, {&hearts;}, {&diams;}, {&clubs;},<br />
+                {&spades;, &hearts;}, {&spades;, &diams;},
+                {&spades;, &clubs;}, {&hearts;, &diams;},
+                {&hearts;, &clubs;}, {&diams;, &clubs;},<br />
+                {&hearts;, &diams;, &clubs;},
+                {&spades;, &diams;, &clubs;},
+                {&spades;, &hearts;, &clubs;},
+                {&spades;, &hearts;, &diams;},<br />
+                {&spades;, &hearts;, &diams;, &clubs;}}
             </p>
             <aside class="notes">
-                Every set has a power set, which is the set of
-                all subsets of the original set.
-            </aside>
-        </section>
-        <section>
-            <h2>Axiom (Schema) of Specification</h2>
-            <p>
-                &#x2200;a,P &#x2203;b &#x2200;c
-                c&#x2208;b &#x27fa; (c&#x2208;a &and; P(c))
-            </p>
-            <p>
-                Given a set and a predicate there is another set
-                which contains all members of the set for which
-                the predicate is true.  This allows us to filter
-                sets.
-            </p>
-            <p>Notation: { a&#x2208;b : P(a) }</p>
-            <aside class="notes">
-                Specification is actually an axiom schema because
-                there is technically one axiom for every possible
-                predicate.  This schema allows us to use any
-                predicate to filter the elmeents of any set.
+                Every set has a power set, which is the set of all
+                subsets of the original set.  Adding an element to the
+                original set doubles the size of the power set.  Each
+                member of the previous power set must still be
+                included and we must add another member for each of
+                those that contains the new element.
             </aside>
         </section>
         <section>
@@ -622,11 +706,14 @@
                 c&#x2208;b &#x27fa; &#x2203;d&#x2208;a f(c) = d
             </p>
             <p>
-                Given a set and a function from that set to some
-                other set there is a set which contains all the
-                function outputs for all members of the set.
+                Given a function and a subset of the domain there is a
+                set which contains all the function outputs for all
+                members of the set.
             </p>
-            <p>Notation: { f(a) : a&#x2208;b }</p>
+            <p>
+                Notation: <span class="intro">{</span> f(a)
+                <span class="intro">:</span> a&#x2208;b
+                <span class="intro">}</span></p>
             <aside class="notes">
                 Replacement is another schema but this time it
                 allows us to use a function to create one set from
@@ -703,60 +790,53 @@
                         &#x2200;a,b (a = b) &#x27fa;
                         (&#x2200;c c&#x2208;a &#x27fa; c&#x2208;b)
                     </small></td>
-                </tr>
-                <tr><td>Pairing</td>
-                    <td><small>
-                        &#x2200;a,b &#x2203;{a, b} &#x2200;c
-                        (c&#x2208;{a, b} &#x27fa;
-                        (c=a &or; c=b))
-                    </small></td>
-                </tr>
-                <tr>
-                    <td>Union</td>
-                    <td><small>
-                        &#x2200;a &#x2203;&cup;a &#x2200;b&#x2208;&cup;a
-                        (&#x2203;c&#x2208;a b&#x2208;c)
-                    </small></td>
-                </tr>
-                <tr>
-                    <td>Power Set</td>
-                    <td><small>
-                        &#x2200;a &#x2203;&#x2118;a &#x2200;b
-                        (b&#x2208;&#x2118;a &#x27fa; b&#x2286;a)
-                    </small></td>
-                </tr>
-                <tr>
+                </tr><tr>
                     <td>Specification (S)</td>
                     <td><small>
                         &#x2200;a,P &#x2203;b &#x2200;c
                         c&#x2208;b &#x27fa;
                         (c&#x2208;a &and; P(c))
                     </small></td>
-                </tr>
-                <tr>
+                </tr><tr>
+                    <td>Pairing</td>
+                    <td><small>
+                        &#x2200;a,b &#x2203;{a, b} &#x2200;c
+                        (c&#x2208;{a, b} &#x27fa;
+                        (c=a &or; c=b))
+                    </small></td>
+                </tr><tr>
+                    <td>Union</td>
+                    <td><small>
+                        &#x2200;a &#x2203;&cup;a &#x2200;b&#x2208;&cup;a
+                        (&#x2203;c&#x2208;a b&#x2208;c)
+                    </small></td>
+                </tr><tr>
+                    <td>Power Set</td>
+                    <td><small>
+                        &#x2200;a &#x2203;&#x2118;a &#x2200;b
+                        (b&#x2208;&#x2118;a &#x27fa; b&#x2286;a)
+                    </small></td>
+                </tr><tr>
                     <td>Replacement (S)</td>
                     <td><small>
                         &#x2200;a,f &#x2203;b &#x2200;c
                         c&#x2208;b &#x27fa;
                         &#x2203;d&#x2208;a f(c) = d
                     </small></td>
-                </tr>
-                <tr>
+                </tr><tr>
                     <td>Regularity</td>
                     <td><small>
                         &#x2200;a &#x2203;b&#x2208;a &#x27f9;
                         &#x2203;c&#x2208;a
                         &#x2204;d (d&#x2208;a &and; d&#x2208;c)
                     </small></td>
-                </tr>
-                <tr>
+                </tr><tr>
                     <td>Infinity</td>
                     <td><small>
                         &#x2203;a (({}&#x2208;a) &and;
                         (&#x2200;b&#x2208;a b&cup;{b} &#x2208; a))
                     </small></td>
-                </tr>
-                <tr>
+                </tr><tr>
                     <td>Choice</td>
                     <td><small>
                         &#x2200;a {}&#x2209;a &#x27f9; &#x2203;f:
@@ -766,17 +846,62 @@
                 </tr>
             </table>
         </section>
+        <section>
+            <h3>Set Contents</h3>
+            <p>
+                We describe sets using one of these forms.
+            </p>
+            <table>
+                <tr>
+                    <td class="intro">{}</td>
+                    <td>
+                        Empty Set: &#x2203;<span class="intro">{}</span>
+                        &#x2200;a a&#x2209;<span class="intro">{}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="intro">{</span> a, b, c
+                        <span class="intro">}</span></td>
+                    <td>Enumeration</td>
+                </tr>
+                <tr>
+                    <td><span class="intro">{</span>
+                        a&#x2208;b <span class="intro">:</span> P(a)
+                        <span class="intro">}</span></td>
+                    <td>
+                        Specification (filtered by predicate)
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="intro">{</span>
+                        f(a) <span class="intro">:</span> a&#x2208;b
+                        <span class="intro">}</span></td>
+                    <td>Replacement (function outputs)</td>
+                </tr>
+            </table>
+            <aside class="notes">
+                We usually describe sets in one of these two ways.
+                When a set contains only a few selected members,
+                we enumerate them, separated by commas.  Larger
+                sets are difficult to represent this way so we
+                describe them using a predicate which selects
+                members from some other set.
+            </aside>
+        </section>
     </section>
 
     <section id="relations">
         <section>
             <h2>Relations</h2>
             <p>
-                A relation describes, paritions or orders a set.  Of
-                course a relation is also a set.
+                A relation is a set that embodies a relationship
+                between other sets.  Examples of relations include
+                equivalence, order and functions.  Relations can
+                also represent complex data.
             </p>
         </section>
         <section>
+            <h3>But First: A Point of Order</h3>
             <p>
                 Extensionality means that members of a set have no
                 meaningful order.
@@ -800,7 +925,7 @@
                     a<span class="intro">&#x27e9;</span>)
                 </li><li class="fragment">
                     &#x2200;a,b (a &ne; b) &#x27fa;
-                    {{a}, {a, b}} &ne; {{b}, {a, b}}
+                    {{a}, {a, b}} &ne; {{b}, {b, a}}
                 </li><li class="fragment">
                     a is <span class="intro">first</span> in
                     <span class="intro">&#x27e8;</span>a,
@@ -828,10 +953,15 @@
                     {{b}, {b, c}}&#x2286;&#x2118;a</span>
                 <span class="fragment">&#x27f9;
                     &#x27e8;b, c&#x27e9;&#x2286;&#x2118;a</span>
+                <span class="fragment">&#x27f9;
+                    <span class="intro">&#x27e8;b,
+                        c&#x27e9;&#x2208;&#x2118;&#x2118;a</span>
+                </span>
             </p>
             <p class="fragment">
-                A power set always contains all possible ordered pairs
-                of the members of the original set.
+                All possible ordered pairs of members of a set are
+                themselves members of the power set of the power set
+                of that set.
             </p>
             <aside class="notes">
                 Given any set and two members of that set, it's clear
@@ -849,26 +979,29 @@
             <h3>Cartesian Product</h3>
             <p>
                 &#x2200;a,b,c,d (a <span class="intro">&times;</span> b)
-                &#x225d; { &#x27e8;c, d&#x27e9; &#x2208;
-                &#x2118;(a &cup; b) : c&#x2208;a &and; d&#x2208;b }
+                &#x225d;<br /> { &#x27e8;c, d&#x27e9; &#x2208;
+                &#x2118;&#x2118;&cup;{ a, b } :
+                c&#x2208;a &and; d&#x2208;b }
             </p>
-            <p class="fragment">
-                We can use pairing, union and powerset axioms to
-                construct all possible ordered pairs from two sets.
-            </p>
-            <p class="fragment">
-                { &spades;, &hearts;, &diams;, &clubs; }
-                <span class="intro">&times;</span>
-                { &#x25c7;, &#x25b3; } = {
-                &#x27e8;&spades;, &#x25c7;&#x27e9;,
-                &#x27e8;&spades;, &#x25b3;&#x27e9;,
-                &#x27e8;&hearts;, &#x25c7;&#x27e9;,
-                &#x27e8;&hearts;, &#x25b3;&#x27e9;,
-                &#x27e8;&diams;, &#x25c7;&#x27e9;,
-                &#x27e8;&diams;, &#x25b3;&#x27e9;,
-                &#x27e8;&clubs;, &#x25c7;&#x27e9;,
-                &#x27e8;&clubs;, &#x25b3;&#x27e9; }
-            </p>
+            <div class="fragment">
+                <p>
+                    We can use pairing, union and powerset axioms to
+                    construct all possible ordered pairs from two sets.
+                </p>
+                <p>
+                    { &spades;, &hearts;, &diams;, &clubs; }
+                    <span class="intro">&times;</span>
+                    { &#x25c7;, &#x25b3; } = {
+                    &#x27e8;&spades;, &#x25c7;&#x27e9;,
+                    &#x27e8;&spades;, &#x25b3;&#x27e9;,
+                    &#x27e8;&hearts;, &#x25c7;&#x27e9;,
+                    &#x27e8;&hearts;, &#x25b3;&#x27e9;,
+                    &#x27e8;&diams;, &#x25c7;&#x27e9;,
+                    &#x27e8;&diams;, &#x25b3;&#x27e9;,
+                    &#x27e8;&clubs;, &#x25c7;&#x27e9;,
+                    &#x27e8;&clubs;, &#x25b3;&#x27e9; }
+                </p>
+            </div>
             <aside class="notes">
                 Starting with the result from the previous slide, we
                 can use the axiom of union and the axiom schema of
@@ -898,42 +1031,43 @@
             </p>
         </section>
         <section>
-            <h3>Cartesian Product Extended</h3>
+            <h3>Extended Cartesian Product</h3>
             <p>
-                &#x2200;a,b,c (a <span class="intro">&times;</span> b
+                &#x2200;a,b,c,d,e,f (a
+                <span class="intro">&times;</span> b
                 <span class="intro">&times;</span> c)
-                &#x225d;<br /> { &#x27e8;a<sub>i</sub>,
-                b<sub>i</sub>, c<sub>i</sub>&#x27e9; &#x2208;
-                &#x2118;&cup;{a, b, c} :
-                a<sub>i</sub>&#x2208;a &and; b<sub>i</sub>&#x2208;b
-                &and; c<sub>i</sub>&#x2208;c }
+                &#x225d;<br /> { &#x27e8;d, e, f&#x27e9; &#x2208;
+                &#x2118;&#x2118;&cup;{a, b, c} :
+                d&#x2208;a &and; e&#x2208;b &and; f&#x2208;c }
             </p>
-            <p class="fragment">
-                Cartesian products can make tuples
-            </p>
-            <p class="fragment">
-                { &spades;, &hearts;, &diams;, &clubs; }
-                <span class="intro">&times;</span>
-                { &#x1f603;, &#x1f61e; }
-                <span class="intro">&times;</span>
-                { &#x25a1;, &#x25b3; } =<br />
-                { &#x27e8;&spades;, &#x1f603;, &#x25a1;&#x27e9;,
-                &#x27e8;&spades;, &#x1f603;, &#x25b3;&#x27e9;,
-                &#x27e8;&spades;, &#x1f61e;, &#x25a1;&#x27e9;,
-                &#x27e8;&spades;, &#x1f61e;, &#x25b3;&#x27e9;,<br />
-                &#x27e8;&hearts;, &#x1f603;, &#x25a1;&#x27e9;,
-                &#x27e8;&hearts;, &#x1f603;, &#x25b3;&#x27e9;,
-                &#x27e8;&hearts;, &#x1f61e;, &#x25a1;&#x27e9;,
-                &#x27e8;&hearts;, &#x1f61e;, &#x25b3;&#x27e9;,<br />
-                &#x27e8;&diams;, &#x1f603;, &#x25a1;&#x27e9;,
-                &#x27e8;&diams;, &#x1f603;, &#x25b3;&#x27e9;,
-                &#x27e8;&diams;, &#x1f61e;, &#x25a1;&#x27e9;,
-                &#x27e8;&diams;, &#x1f61e;, &#x25b3;&#x27e9;,<br />
-                &#x27e8;&clubs;, &#x1f603;, &#x25a1;&#x27e9;,
-                &#x27e8;&clubs;, &#x1f603;, &#x25b3;&#x27e9;,
-                &#x27e8;&clubs;, &#x1f61e;, &#x25a1;&#x27e9;,
-                &#x27e8;&clubs;, &#x1f61e;, &#x25b3;&#x27e9; }
-            </p>
+            <div class="fragment">
+                <p>
+                    Cartesian products can make tuples
+                </p>
+                <p>
+                    { &spades;, &hearts;, &diams;, &clubs; }
+                    <span class="intro">&times;</span>
+                    { &#x1f603;, &#x1f61e; }
+                    <span class="intro">&times;</span>
+                    { &#x25a1;, &#x25b3; } =<br />
+                    { &#x27e8;&spades;, &#x1f603;, &#x25a1;&#x27e9;,
+                    &#x27e8;&spades;, &#x1f603;, &#x25b3;&#x27e9;,
+                    &#x27e8;&spades;, &#x1f61e;, &#x25a1;&#x27e9;,
+                    &#x27e8;&spades;, &#x1f61e;, &#x25b3;&#x27e9;,<br />
+                    &#x27e8;&hearts;, &#x1f603;, &#x25a1;&#x27e9;,
+                    &#x27e8;&hearts;, &#x1f603;, &#x25b3;&#x27e9;,
+                    &#x27e8;&hearts;, &#x1f61e;, &#x25a1;&#x27e9;,
+                    &#x27e8;&hearts;, &#x1f61e;, &#x25b3;&#x27e9;,<br />
+                    &#x27e8;&diams;, &#x1f603;, &#x25a1;&#x27e9;,
+                    &#x27e8;&diams;, &#x1f603;, &#x25b3;&#x27e9;,
+                    &#x27e8;&diams;, &#x1f61e;, &#x25a1;&#x27e9;,
+                    &#x27e8;&diams;, &#x1f61e;, &#x25b3;&#x27e9;,<br />
+                    &#x27e8;&clubs;, &#x1f603;, &#x25a1;&#x27e9;,
+                    &#x27e8;&clubs;, &#x1f603;, &#x25b3;&#x27e9;,
+                    &#x27e8;&clubs;, &#x1f61e;, &#x25a1;&#x27e9;,
+                    &#x27e8;&clubs;, &#x1f61e;, &#x25b3;&#x27e9; }
+                </p>
+            </div>
         </section>
         <section>
             <h3>Unordering Tuples</h3>
