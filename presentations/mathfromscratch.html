@@ -13,7 +13,7 @@
 <!-- Slides use Reveal.js: https://github.com/hakimel/reveal.js/ -->
 
 <div class="reveal"><div class="slides">
-    <section>
+    <section id="mathfromscratch">
         <section>
             <h1>Math From Scratch</h1>
 
@@ -113,7 +113,7 @@
         </section>
     </section>
 
-    <section>
+    <section id="logic">
         <section>
             <h2>Logic</h2>
             <blockquote>
@@ -392,7 +392,7 @@
         </section>
     </section>
 
-    <section>
+    <section id="set-theory">
         <section>
             <h2>Nothing But Set</h2>
             <p>
@@ -1006,7 +1006,7 @@
             </p>
             <div class="fragment">
                 <p>
-                    We can use pairing, union and powerset axioms to
+                    We can use pairing, union and power set axioms to
                     construct all possible ordered pairs from two sets.
                 </p>
                 <p>
@@ -1367,7 +1367,7 @@
         </section>
     </section>
 
-    <section id="function">
+    <section id="functions">
         <section>
             <h2>Functions</h2>
             <p>
@@ -1505,10 +1505,9 @@
                 <span class="intro">succ(a)</span> &#x225d;
                 &cup;{a, {a, a}} = a &cup; {a}
             </p>
-            <p>
-                <span class="intro">&#x2115;</span> &#x225d;
-                { a : (a = {}) &or; &#x2203;b&#x2208;&#x2115;
-                a = <span class="intro">succ(b)</span> }
+            <p class="intro">
+                &#x2115; &#x225d; { a : (a = {}) &or;
+                &#x2203;b&#x2208;&#x2115; a = succ(b) }
             </p>
             <p>
                 Natural numbers are an effective way to represent
@@ -1685,7 +1684,8 @@
                     &#x2115; &#x225d; { a : (a = {}) &or;
                     &#x2203;b&#x2208;&#x2115; a = succ(b) }
                 </li><li>
-                    Equality: set equality
+                    Equality: &#x2200;a,b&#x2208;&#x2115;
+                    (a =<sub>&#x2115;</sub> b) &#x225d; (a = b)
                 </li><li>
                     Order: &#x2200;a,b&#x2208;&#x2115;
                     (a &le;<sub>&#x2115;</sub> b) &#x225d; (a &#x2286; b)
@@ -1693,7 +1693,8 @@
             </ul>
         </section>
     </section>
-    <section>
+
+    <section id="natural-number-addition">
         <section>
             <h2>Addition &#x2115;</h2>
             <p>
@@ -1926,7 +1927,8 @@
             </ul>
         </section>
     </section>
-    <section>
+
+    <section id="natural-number-multiplication">
         <section>
             <h2>Multiplication &#x2115;</h2>
             <p>
@@ -2357,12 +2359,13 @@
                 &#x2200;&#x27e8;a<sub>1</sub>,
                 a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
                 b<sub>2</sub>&#x27e9;&#x2208;&#x2124;
-                <br />
-                <span class="intro">(&#x27e8;a<sub>1</sub>,
-                    a<sub>2</sub>&#x27e9; =<sub>&#x2124;</sub>
-                    &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9;)
-                    &#x225d; (a<sub>1</sub> + b<sub>2</sub> =
-                    a<sub>2</sub> + b<sub>1</sub>)</span>
+                (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
+                =<sub>&#x2124;</sub> &#x27e8;b<sub>1</sub>,
+                b<sub>2</sub>&#x27e9;) &#x225d;<br />
+                <span class="intro">
+                    (a<sub>1</sub> + b<sub>2</sub> =
+                    a<sub>2</sub> + b<sub>1</sub>)
+                </span>
             </p>
             <ul>
                 <li class="fragment">
@@ -2403,9 +2406,10 @@
             <h3>Successor Equality</h3>
             <p>
                 &#x2200;a,b&#x2208;&#x2115;
-                <span class="intro">&#x27e8;a, b&#x27e9;
-                    =<sub>&#x2124;</sub>
-                    &#x27e8;succ(a), succ(b)&#x27e9;</span>
+                <span class="intro">
+                    &#x27e8;a, b&#x27e9; =<sub>&#x2124;</sub>
+                    &#x27e8;succ(a), succ(b)&#x27e9;
+                </span>
             </p>
             <ul>
                 <li class="fragment">
@@ -2413,7 +2417,7 @@
                 </li><li class="fragment">
                     a + (b + 1) = (a + 1) + b :: Successor + 1
                 </li><li class="fragment">
-                    (a + b) + 1 = (a + b) + 1 :: Addition &#x2115;
+                    (a + b) + 1 = (a + b) + 1 :: Arithmetic &#x2115;
                 </li>
             </ul>
             <p class="fragment">
@@ -2426,23 +2430,23 @@
             <p>
                 &#x2200;&#x27e8;a<sub>1</sub>,
                 a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
-                b<sub>2</sub>&#x27e9;&#x2208;&#x2124; <br />
-                <span class="intro">(&#x27e8;a<sub>1</sub>,
-                    a<sub>2</sub>&#x27e9; &le;<sub>&#x2124;</sub>
-                    &#x27e8;b<sub>1</sub>,
-                    b<sub>2</sub>&#x27e9;) &#x225d;
-                    &#x2203;c&#x2208;&#x2115;
-                    a<sub>1</sub> + b<sub>2</sub> + c =
-                    a<sub>2</sub> + b<sub>1</sub></span>
+                b<sub>2</sub>&#x27e9;&#x2208;&#x2124;
+                (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
+                &le;<sub>&#x2124;</sub> &#x27e8;b<sub>1</sub>,
+                b<sub>2</sub>&#x27e9;) &#x225d;<br />
+                <span class="intro">
+                    (a<sub>1</sub> + b<sub>2</sub>
+                    &#x2286; a<sub>2</sub> + b<sub>1</sub>)
+                </span>
             </p>
             <ul>
                 <li class="fragment">
-                    Reflexive:
-                    (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
-                    &le;<sub>&#x2124;</sub>
+                    Reflexive: (&#x27e8;a<sub>1</sub>,
+                    a<sub>2</sub>&#x27e9; &le;<sub>&#x2124;</sub>
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;)
-                    &#x27f9;<br /> a<sub>1</sub> + a<sub>2</sub> + 0 =
-                    a<sub>2</sub> + a<sub>1</sub>
+                    &#x27f9; (a<sub>1</sub> + a<sub>2</sub>
+                    &le;<sub>&#x2115;</sub> a<sub>2</sub> +
+                    a<sub>1</sub>)
                 </li><li class="fragment">
                     Antisymmetric:
                     (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
@@ -2484,11 +2488,38 @@
             <h3>Integers &#x2124;: Examples</h3>
             <ul>
                 <li class="fragment">
-                    3<sub>&#x2124;</sub> = &#x27e8;3, 0&#x27e9; =
+                    [0<sub>&#x2124;</sub>] &#x220b;
+                    &#x27e8;0, 0&#x27e9; = {{0}, {0, 0}} = {{{}}}
+                </li><li class="fragment">
+                    [1<sub>&#x2124;</sub>] &#x220b;
+                    &#x27e8;1, 0&#x27e9; =
+                    {{1}, {1, 0}} = {{{{}}}, {{{}}, {}}}
+                </li><li class="fragment">
+                    [2<sub>&#x2124;</sub>] &#x220b;
+                    &#x27e8;2, 0&#x27e9; = {{2}, {2, 0}} =<br />
+                    {{{{{}}, {}}}, {{{{}}, {}}, {}}}
+                </li><li class="fragment">
+                    [-1<sub>&#x2124;</sub>] &#x220b;
+                    &#x27e8;0, 1&#x27e9; =
+                    {{0}, {0, 1}} = {{{}}, {{}, {{}}}}
+                </li><li class="fragment">
+                    [-2<sub>&#x2124;</sub>] &#x220b;
+                    &#x27e8;0, 1&#x27e9; =
+                    {{0}, {0, 2}} = {{{}}, {{}, {{}, {{}}}}}
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Integers &#x2124;: Examples</h3>
+            <ul>
+                <li class="fragment">
+                    [3<sub>&#x2124;</sub>] &#x220b;
+                    &#x27e8;3, 0&#x27e9; =
                     {{3}, {3, 0}} = {{{{}, {{}}, {{}, {{}}}}},
                     {{{}, {{}}, {{}, {{}}}}, {}}}
                 </li><li class="fragment">
-                    3<sub>&#x2124;</sub> = &#x27e8;5, 2&#x27e9; =
+                    [3<sub>&#x2124;</sub>] &#x220b;
+                    &#x27e8;5, 2&#x27e9; =
                     {{5}, {5, 2}} = {{{{}, {{}}, {{{}, {{}}}},
                     {{{}, {{}}, {{{}, {{}}}}}},
                     {{{}, {{}}, {{{}, {{}}}},
@@ -2496,11 +2527,10 @@
                     {{{}, {{}}, {{{}, {{}}}}, {{{}, {{}},
                     {{{}, {{}}}}}}, {{{}, {{}}, {{{}, {{}}}},
                     {{{}, {{}}, {{{}, {{}}}}}}}}},
-                    {{{}, {{}}}}}} <em>(Notice: 5 + 0 = 3 + 2)</em>
-                </li><li class="fragment">
-                    -4<sub>&#x2124;</sub> = &#x27e8;0, 4&#x27e9; =
-                    {{0}, {0, 4}} = {{{}}, {{}, {{}, {{}},
-                    {{}, {{}}}, {{}, {{}}, {{}, {{}}}}}}}
+                    {{{}, {{}}}}}}
+                    <span class="fragment">
+                        <em>(Notice: 5 + 0 = 3 + 2)</em>
+                    </span>
                 </li>
             </ul>
         </section>
@@ -2525,15 +2555,14 @@
                     (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &le;<sub>&#x2124;</sub> &#x27e8;b<sub>1</sub>,
                     b<sub>2</sub>&#x27e9;) &#x225d;
-                    &#x2203;c&#x2208;&#x2115;
-                    a<sub>1</sub> + b<sub>2</sub> + c =
-                    a<sub>2</sub> + b<sub>1</sub>
+                    (a<sub>1</sub> + b<sub>2</sub> &#x2286;
+                    a<sub>2</sub> + b<sub>1</sub>)
                 </li>
             </ul>
         </section>
     </section>
 
-    <section>
+    <section id="integer-addition">
         <section>
             <h2>Addition &#x2124;</h2>
             <p>
@@ -2568,6 +2597,9 @@
                 </li><li class="fragment">
                     3<sub>&#x2124;</sub> + 2<sub>&#x2124;</sub> =
                     &#x27e8;5, 0&#x27e9;
+                    <span class="fragment">
+                        <em>(Because 8 + 0 = 5 + 3)</em>
+                    </span>
                 </li><li class="fragment">
                     3<sub>&#x2124;</sub> + 2<sub>&#x2124;</sub> =
                     5<sub>&#x2124;</sub>
@@ -2594,6 +2626,9 @@
                 </li><li class="fragment">
                     3<sub>&#x2124;</sub> + (-2<sub>&#x2124;</sub>) =
                     &#x27e8;1, 0&#x27e9;
+                    <span class="fragment">
+                        <em>(3 + 0 = 1 + 2)</em>
+                    </span>
                 </li><li class="fragment">
                     3<sub>&#x2124;</sub> + (-2<sub>&#x2124;</sub>) =
                     1<sub>&#x2124;</sub>
@@ -2846,7 +2881,7 @@
         </section>
     </section>
 
-    <section>
+    <section id="integer-multiplication">
         <section>
             <h2>Multiplication &#x2124;</h2>
             <p>
@@ -2874,6 +2909,28 @@
             <ul>
                 <li class="fragment">
                     3<sub>&#x2124;</sub> &times; 2<sub>&#x2124;</sub> =
+                    &#x27e8;3, 0&#x27e9; &times; &#x27e8;2, 0&#x27e9;
+                </li><li class="fragment">
+                    3<sub>&#x2124;</sub> &times; 2<sub>&#x2124;</sub> =
+                    &#x27e8;(3 &times; 2) + (0 &times; 0),
+                    (3 &times; 0) + (0 &times; 2)&#x27e9;
+                </li><li class="fragment">
+                    3<sub>&#x2124;</sub> &times; 2<sub>&#x2124;</sub> =
+                    &#x27e8;6 + 0, 0 + 0&#x27e9;
+                </li><li class="fragment">
+                    3<sub>&#x2124;</sub> &times; 2<sub>&#x2124;</sub> =
+                    &#x27e8;6, 0&#x27e9;
+                </li><li class="fragment">
+                    3<sub>&#x2124;</sub> &times; 2<sub>&#x2124;</sub> =
+                    6<sub>&#x2124;</sub>
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Multiplication &#x2124; Example: 3 &times; 2</h3>
+            <ul>
+                <li class="fragment">
+                    3<sub>&#x2124;</sub> &times; 2<sub>&#x2124;</sub> =
                     &#x27e8;3, 0&#x27e9; &times; &#x27e8;4, 2&#x27e9;
                 </li><li class="fragment">
                     3<sub>&#x2124;</sub> &times; 2<sub>&#x2124;</sub> =
@@ -2885,6 +2942,12 @@
                 </li><li class="fragment">
                     3<sub>&#x2124;</sub> &times; 2<sub>&#x2124;</sub> =
                     &#x27e8;12, 6&#x27e9;
+                </li><li class="fragment">
+                    3<sub>&#x2124;</sub> &times; 2<sub>&#x2124;</sub> =
+                    &#x27e8;6, 0&#x27e9;
+                    <span class="fragment">
+                        <em>(Because 12 + 0 = 6 + 6)</em>
+                    </span>
                 </li><li class="fragment">
                     3<sub>&#x2124;</sub> &times; 2<sub>&#x2124;</sub> =
                     6<sub>&#x2124;</sub>
@@ -2935,6 +2998,12 @@
                 </li><li class="fragment">
                     3<sub>&#x2124;</sub> &times;
                     (-1)<sub>&#x2124;</sub> = &#x27e8;6, 9&#x27e9;
+                </li><li class="fragment">
+                    3<sub>&#x2124;</sub> &times;
+                    (-1)<sub>&#x2124;</sub> = &#x27e8;0, 3#x27e9;
+                    <span class="fragment">
+                        <em>(6 + 3 = 9 + 0)</em>
+                    </span>
                 </li><li class="fragment">
                     3<sub>&#x2124;</sub> &times;
                     (-1)<sub>&#x2124;</sub> = (-3)<sub>&#x2124;</sub>
@@ -3465,7 +3534,7 @@
             </ul>
         </section>
         <section>
-            <h3>Rational Numbers &#x211a; Example</h3>
+            <h3>Rational Numbers &#x211a; Examples</h3>
             <p>
                 -4/3<sub>&#x211a;</sub> = &#x27e8;-4<sub>&#x2124;</sub>,
                 3<sub>&#x2124;</sub>&#x27e9; = &#x27e8;&#x27e8;0, 4&#x27e9;,
@@ -3482,7 +3551,7 @@
             </p>
         </section>
         <section>
-            <h3>Rational Numbers &#x211a; Example</h3>
+            <h3>Rational Numbers &#x211a; Examples</h3>
             <p>
                 2<sub>&#x211a;</sub> = 2/1<sub>&#x211a;</sub> =
                 &#x27e8;2<sub>&#x2124;</sub>,
@@ -3497,7 +3566,7 @@
             </p>
         </section>
         <section>
-            <h3>Rational Numbers &#x211a; Example</h3>
+            <h3>Rational Numbers &#x211a; Examples</h3>
             <p>
                 (&#x27e8;4<sub>&#x2124;</sub>,
                 2<sub>&#x2124;</sub>&#x27e9; =<sub>&#x211a;</sub>
@@ -3555,7 +3624,8 @@
             </ul>
         </section>
     </section>
-    <section>
+
+    <section id="rational-number-addition">
         <section>
             <h2>Addition &#x211a;</h2>
             <p>
@@ -3859,7 +3929,7 @@
         </section>
     </section>
 
-    <section>
+    <section id="rational-number-multiplication">
         <section>
             <h2>Multiplication &#x211a;</h2>
             <p>
@@ -4254,7 +4324,7 @@
         </section>
     </section>
 
-    <section>
+    <section id="rational-numbers-revisited">
         <section>
             <h2>&#x211a; Revisited</h2>
             <p>
@@ -4436,9 +4506,13 @@
         <section>
             <h2>Real Numbers &#x211d;</h2>
             <p>
-                <span class="intro">&#x211d; &#x225d; {
-                    &#x27e8;L,U&#x27e9; :
-                    L,U&#x2286;&#x211a; &and; dedekind(L, U) }</span>
+                <span class="intro">
+                    &#x211d; &#x225d; { a&#x2208;&#x2118;&#x211a; :
+                    (a &ne; {}) &and; (a &ne; &#x211a;) &and;<br />
+                    (&#x2200;b,c&#x2208;&#x211a; (b&#x2208;a &and;
+                    c&le;b) &#x27f9; c&#x2208;a) &and;<br />
+                    (&#x2200;b&#x2208;a &#x2203;c&#x2208;a c&gt;b) }
+                </span>
             </p>
             <p>
                 Real numbers extend the rational numbers.  They
@@ -4450,110 +4524,130 @@
         <section>
             <h3>Dedekind Cuts</h3>
             <p>
-                <span class="intro">&#x2200;L,U&#x2286;&#x211a;
-                    dedekind(L, U) &#x225d;</span>
+                Dedekind cuts are continuous partitions of &#x211a;
             </p>
-            <table><tr><td><ul>
+            <ul>
                 <li class="fragment">
-                    &#x2203;a&#x2208;&#x211a; a&#x2208;L
+                    Rational Subset:
+                    &#x2200;a&#x2208;&#x211d; a&#x2286;&#x211a;
+                    <span class="fragment">
+                        &#x27f9; &#x211d;&#x2286;&#x2118;&#x211a;
+                    </span>
                 </li><li class="fragment">
-                    &#x2200;a,b&#x2208;&#x211a;
-                    (a &#x2208; L) &and;<br />
-                    (b &lt; a) &#x27f9; (b &#x2208; L)
+                    Proper and not empty: &#x2200;a&#x2208;&#x211d;
+                    (a&ne;&#x211a; &and; a&ne;{})
                 </li><li class="fragment">
-                    &#x2200;a,b&#x2208;&#x211a;
-                    (b &#x2209; U) &and;<br />
-                    (a &lt; b) &#x27f9; (a &#x2208; L)
-                </li><li class="fragment">
-                    &#x2200;a,b&#x2208;&#x211a;
-                    (a &#x2208; L) &#x27f9;<br />
-                    &#x2203;c&#x2208;&#x211a;
-                    (c&gt;a) &and; (c&#x2208;L)
-                </li>
-            </ul></td>
-            <td><ul>
-                <li class="fragment">
-                    &#x2203;b&#x2208;&#x211a; b&#x2208;U
-                </li><li class="fragment">
-                    &#x2200;a,b&#x2208;&#x211a;
-                    (b &#x2208; U) &and;<br />
-                    (a &gt; b) &#x27f9; (a &#x2208; U)
-                </li><li class="fragment">
-                    &#x2200;a,b&#x2208;&#x211a;
-                    (a &#x2209; L) &and;<br />
-                    (b &gt; a) &#x27f9; (b &#x2208; U)
-                </li><li class="fragment">
-                    &#x2200;a,b&#x2208;&#x211a;
-                    (b &#x2208; U) &#x27f9;<br />
-                    &#x2203;c&#x2208;&#x211a;
-                    (c&lt;b) &and; c&#x2208;U
-                </li>
-            </ul></tr></table>
+                    Closed Downward: &#x2200;a&#x2208;&#x211d;
+                    &#x2200;b,c&#x2208;&#x211a;<br />
+                    (b&#x2208;a &and; c&le;b) &#x27f9; c&#x2208;a                                   </li><li class="fragment">
+                    No Largest Member: &#x2200;a&#x2208;&#x211d;
+                    &#x2200;b&#x2208;a &#x2203;c&#x2208;a c&gt;b
+                    </li>
+            </ul>
         </section>
         <section>
-            <h3>Real Numbers &#x211d; Example</h3>
+            <h3>Lemma: Half Negatives</h3>
             <p>
-                0&#x211d; &#x225d;
-                &#x27e8;{a&#x2208;&#x211a; : a &lt; 0&#x211a;},
-                {b&#x2208;&#x211a; : b &gt; 0&#x211a;}&#x27e9;
+                &#x2200;a&#x2208;&#x211a; (a &lt; 0) &#x27f9;
+                (a &times; 1/2<sub>&#x211a;</sub> &gt; a)
             </p>
-            <p class="fragment">
-                Real number 0 is constructed by separating rational
-                numbers less than 0 and greater than 0.
+            <ul>
+                <li class="fragment">
+                    (a<sub>1</sub> &lt; 0) &#x27f9;
+                    &not; (&#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
+                    &times; &#x27e8;1, 2&#x27e9; &le;
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;)
+                </li><li class="fragment">
+                    (a<sub>1</sub> &lt; 0) &#x27f9;
+                    &not; (&#x27e8;a<sub>1</sub> &times; 1,
+                    a<sub>2</sub> &times; 2&#x27e9; &le;
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;)
+                </li><li class="fragment">
+                    (a<sub>1</sub> &lt; 0) &#x27f9;
+                    &not; (a<sub>1</sub> &times; 1 &times; a<sub>2</sub>
+                    &le; a<sub>2</sub> &times; 2 &times; a<sub>1</sub>)
+                </li><li class="fragment">
+                    (a<sub>1</sub> &lt; 0) &#x27f9;
+                    &not; (a<sub>1</sub> &times; a<sub>2</sub>
+                    &le; 2 &times; a<sub>1</sub> &times; a<sub>2</sub>)
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Real Numbers &#x211d; Examples</h3>
+            <p>
+                0<sub>&#x211d;</sub> &#x225d;
+                { a&#x2208;&#x211a; : a &lt; 0<sub>&#x211a;</sub> }
+            </p>
+            <ul>
+                <li class="fragment">
+                    (-1<sub>&#x211a;</sub> &#x2208;
+                    0<sub>&#x211d;</sub>) &and; (0<sub>&#x211a;</sub>
+                    &#x2209; 0<sub>&#x211d;</sub>)
+                </li><li class="fragment">
+                    Closed Downward: &#x2200;a,b&#x2208;&#x211a;
+                    <ul>
+                        <li class="fragment">
+                            a&#x2208;0<sub>&#x211d;</sub>
+                            &#x27f9; a &lt; 0<sub>&#x211a;</sub>
+                            :: Definition 0<sub>&#x211d;</sub>
+                        </li><li class="fragment">
+                            a &lt; 0<sub>&#x211a;</sub> &and; b &lt; a
+                            &#x27f9; b &lt; 0<sub>&#x211a;</sub>
+                            :: Transitive &le;<sub>&#x211a;</sub>
+                        </li>
+                    </ul>
+                </li><li class="fragment">
+                    No Largest Member: &#x2200;a&#x2208;&#x211a;
+                    <ul>
+                        <li class="fragment">
+                            a&#x2208;0<sub>&#x211d;</sub>
+                            &#x27f9; a &lt; 0<sub>&#x211a;</sub>
+                            :: Definition 0<sub>&#x211d;</sub>
+                        </li><li class="fragment">
+                            a &lt; 0 &#x27f9; (a &times;
+                            1/2<sub>&#x211a;</sub> &gt; a)
+                            :: Half Negatives
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Real Numbers &#x211d; Non-Examples</h3>
+            <p>
+                { a&#x2208;&#x211a; : a &le; 0<sub>&#x211a;</sub> }
+                &#x2209;&#x211d;
+            </p>
+            <p>
+                This set is closed downward but it has a largest
+                member: 0<sub>&#x211a;</sub> This set is not a real
+                number.
             </p>
         </section>
         <section>
-            <h3>Real Numbers &#x211d; Example</h3>
+            <h3>Real Numbers &#x211d; Non-Examples</h3>
             <p>
-                &#x2200;a&#x2208;&#x211a; &#x2203;
-                &#x27e8;{b&#x2208;&#x211a; : b &lt; a},
-                {c&#x2208;&#x211a; : c &gt; a}&#x27e9;
+                { a&#x2208;&#x211a; : (a &gt; -1<sub>&#x211a;</sub>)
+                &and; (a &lt; 0<sub>&#x211a;</sub>) } &#x2209;&#x211d;
+            </p>
+            <p>
+                This set has no largest member but it's not closed
+                downward.  -2<sub>&#x211a;</sub> is not a member of
+                this set even though it's less than
+                -1/2<sub>&#x211a;</sub> which is. This set is not a
+                real number.
+            </p>
+        </section>
+        <section>
+            <h3>Real Numbers &#x211d; Examples</h3>
+            <p>
+                &#x2200;a&#x2208;&#x211a; &#x2203;{ b&#x2208;&#x211a; :
+                b &lt; a }&#x2208;&#x211d;
             </p>
             <p class="fragment">
                 All rational numbers can be used to construct
                 a real number.
-            </p>
-        </section>
-        <section>
-            <h3>Real Numbers &#x211d; Example</h3>
-            <p>
-                +&#x221a;2&#x211d; &#x225d;
-                &#x27e8;{a&#x2208;&#x211a; :
-                (a &lt; 0&#x211a;) &or;
-                (a &times; a &lt; 2&#x211a;)},
-                <br />{b&#x2208;&#x211a; :
-                (b &gt; 0&#x211a;) &and;
-                (b &times; b &gt; 2&#x211a;)}&#x27e9;
-            </p>
-            <p class="fragment">
-                This real number is one of two that squares
-                to two.
-            </p>
-            <p class="fragment">
-                -&#x221a;2&#x211d; &#x225d;
-                &#x27e8;{a&#x2208;&#x211a; :
-                (a &lt; 0&#x211a;) &and;
-                (a &times; a &gt; 2&#x211a;)},
-                <br />{b&#x2208;&#x211a; :
-                (b &gt; 0&#x211a;) &or;
-                (b &times; b &lt; 2&#x211a;)}&#x27e9;
-            </p>
-            <p class="fragment">
-                This is the other.
-            </p>
-        </section>
-        <section>
-            <h3>Real Numbers &#x211d; Irrational</h3>
-            <p>
-                &#x2200;&#x27e8;L,U&#x27e9;&#x2208;&#x211d;
-                (L &cup; U = &#x211a;) &#x27f9;
-                &#x27e8;L,U&#x27e9; is irrational
-            </p>
-            <p class="fragment">
-                An irrational number is a real number that does
-                not correspond to any rational number.  This is
-                true when the union of the upper and lower set is
-                equal to the entire set of rational numbers.
             </p>
         </section>
         <section>
@@ -4568,85 +4662,133 @@
         <section>
             <h3>Real Numbers &#x211d; Order</h3>
             <p>
-                (&#x27e8;A<sub>L</sub>,A<sub>U</sub>&#x27e9; &le;
-                &#x27e8;B<sub>L</sub>,B<sub>U</sub>&#x27e9;) &#x225d;
-                (A<sub>L</sub> &#x2286; B<sub>L</sub>) &and;
-                (B<sub>U</sub> &#x2286; A<sub>U</sub>)
+                &#x2200;a,b&#x2208;&#x211d; (a &le; b) &#x225d;
+                <span class="intro">(a &#x2286; b)</span>
             </p>
             <p class="fragment">
-                A real number is less than or equal to another if its
-                lower set is a subset of the others lower set.  This
-                is reflexive, antisymmetric, transitive and connex
-                because the subset operator is all of these things.
+                Real number order is defined by the subset relation.
+                This is always reflexive, antisymmetric and transitive.
+                We only have to prove the connex property to have a
+                total order.
             </p>
+        </section>
+        <section>
+            <h3>Real Numbers &#x211d; Connex</h3>
+            <p>
+                &#x2200;a,b&#x2208;&#x211d; (a &le; b) &or; (b &le; a)
+            </p>
+            <ul>
+                <li class="fragment">
+                    &#x2200;a,b&#x2208;&#x211d; &not;(a &#x2286; b)
+                    <span class="fragment">&#x27f9; &#x2203;c&#x2208;a
+                        c&#x2209;b :: Subset</span>
+                </li><li class="fragment">
+                    &#x2200;d&#x2208;&#x211a; (d &lt; c) &#x27f9;
+                    (c&#x2208;a) :: a is Closed Downward
+                </li><li class="fragment">
+                    &#x2200;d&#x2208;&#x211a; (d &ge; c) &#x27f9;
+                    (c&#x2209;b) :: b is Closed Downward
+                </li><li class="fragment">
+                    &#x2200;a,b&#x2208;&#x211d; &not;(a &#x2286; b)
+                    &#x27f9; (b &#x2286; a)
+                </li><li class="fragment">
+                    &#x2200;a,b&#x2208;&#x211d; (a &#x2286; b)
+                    &or; (b &#x2286; a)
+                </li><li class="fragment">
+                    &#x2200;a,b&#x2208;&#x211d;
+                    (a &le;<sub>&#x211d;</sub> b)
+                    &or; (b &le;<sub>&#x211d;</sub> a) :: Connex
+                </li>
+            </ul>
         </section>
         <section>
             <h2>Real Numbers &#x211d;</h2>
             <ul>
                 <li>
-                    &#x211d; &#x225d; { &#x27e8;L,U&#x27e9; :
-                    L,U&#x2286;&#x211a; &and; dedekind(L, U) }
+                    &#x211d; &#x225d; { a&#x2208;&#x2118;&#x211a; :
+                    (a &ne; {}) &and; (a &ne; &#x211a;) &and;<br />
+                    (&#x2200;b,c&#x2208;&#x211a; (b&#x2208;a &and;
+                    c&le;b) &#x27f9; c&#x2208;a) &and;<br />
+                    (&#x2200;b&#x2208;a &#x2203;c&#x2208;a c&gt;b) }
                 </li><li>
-                    Equality: Set Equality
+                    Equality: &#x2200;a,b&#x2208;&#x211d;
+                    (a =<sub>&#x211d;</sub> b) &#x225d; (a = b)
                 </li><li>
-                    Order:
-                    (&#x27e8;A<sub>L</sub>,A<sub>U</sub>&#x27e9; &le;
-                    &#x27e8;B<sub>L</sub>,B<sub>U</sub>&#x27e9;)
-                    &#x225d;
-                    (A<sub>L</sub> &#x2286; B<sub>L</sub>) &and;
-                    (B<sub>U</sub> &#x2286; A<sub>U</sub>)
+                    Order: &#x2200;a,b&#x2208;&#x211d;
+                    (a &le;<sub>&#x211d;</sub> b) &#x225d;
+                    (a &#x2286; b)
                 </li>
             </ul>
         </section>
     </section>
-    <section>
+
+    <section id="real-number-addition">
         <section>
             <h2>Addition &#x211d;</h2>
             <p>
-                Real number addition preserves the important
-                properties of rational number addition.  We will
-                represent this with a <q>+</q> sign between two
-                rational numbers: a + b
+                Let's define <q>addition</q> which maps two real
+                numbers to another.  This will preserve all properties
+                of rational addition, including inverses.  As with
+                rational numbers we will represent this with a <q>+</q>
+                sign between two rational numbers: a + b
             </p>
             <p>
-                &#x27e8;A<sub>L</sub>,A<sub>H</sub>&#x27e9; +
-                &#x27e8;B<sub>L</sub>,B<sub>H</sub>&#x27e9; &#x225d;
-                <br />&#x27e8;{ &#x2200;c&#x2208;&#x211a; :
-                &#x2203;a&#x2208;A<sub>L</sub>, b&#x2208;B<sub>L</sub>
-                c &lt; a + b},<br />
-                &#x2200;c&#x2208;&#x211a; :
-                &#x2203;a&#x2208;A<sub>U</sub>,
-                b&#x2208;B<sub>U</sub> c &gt; a + b}&#x27e9;
+                &#x2200;a,b&#x2208;&#x211d; a + b &#x225d;
+                { (c + d)&#x2208;&#x211a; : c&#x2208;a &and; d&#x2208;b }
             </p>
         </section>
         <section>
             <h3>Addition &#x211d; Example: 3 + 2 = 5</h3>
             <ul>
-                <li>3&#x211d; + 2&#x211d; = 5&#x211d;</li>
-                <li>
-                    &#x27e8;{a&#x2208;&#x211a; : a &lt; 5&#x211a;},
-                    {b&#x2208;&#x211a; : b &gt; 5&#x211a;}&#x27e9; =
-                    <br />
-                    &#x27e8;{ a&#x2208;&#x211a; :
-                    &#x2203;c&lt;3,d&lt;2&#x2208;&#x211a;
-                    a &lt c + d },<br /> { b&#x2208;&#x211a; :
-                    &#x2203;c&lt;3,d&lt;2&#x2208;&#x211a;
-                    b &gt c + d }&#x27e9;
+                <li class="fragment">
+                    3<sub>&#x211d;</sub> + 2<sub>&#x211d;</sub> =
+                    5<sub>&#x211d;</sub>
+                </li><li class="fragment">
+                    { (b + c)&#x2208;&#x211a; :
+                    b&#x2208;3<sub>&#x211d;</sub> &and;
+                    c&#x2208;2<sub>&#x211d;</sub> } =
+                    { a&#x2208;&#x211a; : a&lt;5<sub>&#x211a;</sub> }
+                </li><li class="fragment">
+                    &#x2200;b,c&#x2208;&#x211a;
+                    (b &lt; 3<sub>&#x211a;</sub> &and;
+                    c &lt; 2<sub>&#x211a;</sub>)
+                    <span class="fragment">&#x27f9;
+                        (b + c) &lt; 5<sub>&#x211a;</sub></span>
+                    <span class="fragment">&#x27f9;<br />
+                        3<sub>&#x211d;</sub> + 2<sub>&#x211d;</sub>
+                        &#x2286; 5<sub>&#x211d;</sub></span>
+                </li><li class="fragment">
+                    &#x2200;b,c&#x2208;&#x211a;
+                    (b &ge; 3<sub>&#x211a;</sub> &and;
+                    c &ge; 2<sub>&#x211a;</sub>)
+                    <span class="fragment">&#x27f9;
+                        (b + c) &ge; 5<sub>&#x211a;</sub></span>
+                    <span class="fragment">&#x27f9;<br />
+                        5<sub>&#x211d;</sub> &#x2286;
+                        3<sub>&#x211d;</sub> +
+                        2<sub>&#x211d;</sub></span>
                 </li>
             </ul>
         </section>
         <section>
-            <h2>Addition &#x211d; Closed</h2>
+            <h2>Addition &#x211d;: Closed</h2>
             <p>
                 &#x2200;a,b&#x2208;&#x211d;
                 a + b &#x2208;&#x211d;
             </p>
-            <p>
-                TODO
-            </p>
+            <ul>
+                <li>
+                    (&#x2203;c&#x2208;a &and; &#x2203;d&#x2208;b)
+                    &#x27f9; (c + d) &#x2208; (a + b)
+                </li><li>
+                    Closed Downward:
+                </li><li>
+                    No Largest Member:
+                </li>
+            </ul>
         </section>
         <section>
-            <h2>Addition &#x211d; Associative</h2>
+            <h2>Addition &#x211d;: Associative</h2>
             <p>
                 &#x2200;a,b,c&#x2208;&#x211d;
                 (a + b) + c = a + (b + c)
@@ -4656,50 +4798,114 @@
             </p>
         </section>
         <section>
-            <h2>Addition &#x211d; Commutative</h2>
+            <h3>Addition &#x211d;: Commutative</h3>
             <p>
                 &#x2200;a,b&#x2208;&#x211d;
                 a + b = b + a
             </p>
             <p>
+                { c&#x2208;&#x211a; : &#x2203;d&#x2208;a,e&#x2208;b
+                (d + e = c) } =<br />
+                { c&#x2208;&#x211a; : &#x2203;e&#x2208;b,d&#x2208;a
+                (e + d = c) }
+            </p>
+            <ul>
+                <li class="fragment">
+                    &#x2200;d,e&#x2208;&#x211a; d + e = e + d
+                    :: Commutative &#x211a;+
+                </li><li class="fragment">
+                    &#x2200;c&#x2208;&#x211a; <span class="fragment">
+                    c&#x2208;(a + b) &#x27fa; c&#x2208;(b + a)</span>
+                </li><li class="fragment">
+                    &#x2200;a,b&#x2208;&#x211d; (a + b) = (b + a)
+                    :: Extensionality
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Addition &#x211d;: Identity</h3>
+            <p>
+                &#x2200;a&#x2208;&#x211d; a + 0<sub>&#x211d;</sub> =
+                a = 0<sub>&#x211d;</sub> + a
+            </p>
+            <p>
                 TODO
             </p>
         </section>
         <section>
-            <h2>Addition &#x211d; Identity</h2>
-            <p>
-                &#x2200;a&#x2208;&#x211d;
-                a + 0 = a = 0 + a
-            </p>
-            <p>
-                TODO
-            </p>
-        </section>
-        <section>
-            <h2>Addition &#x211d; Inverses</h2>
+            <h3>Addition &#x211d;: Inverses</h3>
             <p>
                 &#x2200;a&#x2208;&#x211d;
                 &#x2203;(-a)&#x2208;&#x211d;
-                a + (-a) = 0
+                a + (-a) = 0<sub>&#x211d;</sub>
+            </p>
+            <p class="fragment">
+                &#x2200;a&#x2208;&#x211d; -a &#x225d; {
+                b&#x2208;&#x211a; : &#x2203;c&#x2208;&#x211a;
+                (c &gt; b) &and; (-c &#x2209; a) }
+            </p>
+            <ul>
+                <li class="fragment">
+                    &#x2203;b&#x2209;a &#x27f9;
+                    (b + 1<sub>&#x211a;</sub>)&#x2209;a &#x27f9;
+                    -(b + 1<sub>&#x211a;</sub>)&#x2208;(-a)
+                </li><li class="fragment">
+                    Closed Downward: &#x2200;b,c&#x2208;&#x211a;
+                    <ul>
+                        <li class="fragment">
+                            b&#x2208;(-a) &#x27f9; (-b)&#x2209;a
+                            :: Definition
+                        </li><li class="fragment">
+                            (c &lt; b) &#x27f9; (-c &gt; -b) &#x27f9;
+                            (-c &#x2209; a) :: a &#x2208; &#x211d;
+                        </li>
+                    </ul>
+                </li><li class="fragment">
+                    No Largest Element: &#x2200;b,c&#x2208;&#x211a;
+                    (c &gt; b) &and; (-c &#x2209; a)
+                    <ul>
+                        <li class="fragment">
+                            &#x2203;d&#x2208;&#x211a; d = (c + b)
+                            &times; 1/2<sub>&#x211a;</sub>
+                        </li><li class="fragment">
+                            (d &gt; b) &and; ((d &lt c) &#x27f9;
+                            (-d &gt -c) &#x27f9; (-d&#x2209;a))
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Addition &#x211d;: Inverses</h3>
+            <p>
+                &#x2200;a&#x2208;&#x211d;
+                &#x2203;(-a)&#x2208;&#x211d;
+                a + (-a) = 0<sub>&#x211d;</sub>
             </p>
             <p>
-                TODO
+                Suppose we could add something from a and (-a) to get
+                0<sub>&#x211a;</sub> or greater.
             </p>
+            <ul>
+                <li class="fragment">
+                    &#x2203;b&#x2208;a,c&#x2208;(-a) b + c &ge;
+                    0<sub>&#x211a;</sub>
+                </li><li class="fragment">
+                    b &#x2208
+                </li><li class="fragment">
+                </li>
+            </ul>
         </section>
         <section>
             <h2>Addition &#x211d;</h2>
             <ul>
                 <li>
-                    Definition:
-                    &#x27e8;A<sub>L</sub>,A<sub>H</sub>&#x27e9; +
-                    &#x27e8;B<sub>L</sub>,B<sub>H</sub>&#x27e9; &#x225d;
-                    <br />&#x27e8;{&#x2200;a&#x2208;A<sub>L</sub>,
-                    b&#x2208;B<sub>L</sub>: a + b},
-                    {&#x2200;a&#x2208;A<sub>H</sub>,
-                    b&#x2208;B<sub>H</sub>: a + b}&#x27e9;
+                    Definition: &#x2200;a,b&#x2208;&#x211d;
+                    a + b &#x225d;<br /> { c&#x2208;&#x211a; :
+                    &#x2203;d&#x2208;a,e&#x2208;b (d + e = c) }
                 </li><li>
                     Closed: &#x2200;a,b&#x2208;&#x211d;
-                    a + b &#x2208;&#x211d;
+                    (a + b) &#x2208;&#x211d;
                 </li><li>
                     Associative: &#x2200;a,b,c&#x2208;&#x211d;
                     (a + b) + c = a + (b + c)
@@ -4707,56 +4913,53 @@
                     Commutative: &#x2200;a,b&#x2208;&#x211d;
                     a + b = b + a
                 </li><li>
-                    Identity: &#x2200;a&#x2208;&#x211d;
-                    a + 0 = a = 0 + a
+                    Identity: &#x2200;a&#x2208;&#x211d; a +
+                    0<sub>&#x211d;</sub> = a = 0<sub>&#x211d;</sub> + a
                 </li><li>
                     Inverses: &#x2200;a&#x2208;&#x211d;
                     &#x2203;(-a)&#x2208;&#x211d;
-                    a + (-a) = 0
+                    a + (-a) = 0<sub>&#x211d;</sub>
                 </li>
             </ul>
         </section>
     </section>
-    <section>
+
+    <section id="real-number-multiplication">
         <section>
             <h2>Multiplication &#x211d;</h2>
             <p>
-                Real number multiplication preserves the important
-                properties of rational number multiplication.  We
-                will represent this with a <q>&times;</q> sign
-                between two rational numbers: a &times; b
-            </p>
-            <p>
-                &#x27e8;A<sub>L</sub>,A<sub>H</sub>&#x27e9; &times;
-                &#x27e8;B<sub>L</sub>,B<sub>H</sub>&#x27e9; =
-                <br />&#x27e8;{&#x2200;a&#x2208;A<sub>L</sub>,
-                b&#x2208;B<sub>L</sub>: &plusmn;(a &times; b)},
-                {&#x2200;a&#x2208;A<sub>H</sub>,
-                b&#x2208;B<sub>H</sub>: &plusmn(a &times; b)}&#x27e9;
-            </p>
-        </section>
-        <section>
-            <h2>Multiplication &#x211d;</h2>
-            <p>
-                Sign changes in rational multiplication complicates
-                the definition of real number multiplication.
+                Let's define <q>multiplication</q> which maps two real
+                numbers to another. As with rational numbers we will
+                represent this with a <q>&times;</q>
+                sign between two rational numbers: a &times; b
             </p>
             <ul>
                 <li>
-                    (0&#x2209;A<sub>L</sub> &and;
-                    0&#x2209;A<sub>H</sub> &and;
-                    0&#x2209;B<sub>L</sub> &and;
-                    0&#x2209;B<sub>H</sub>) &#x27f9;
-                    &#x27e8;A<sub>L</sub>,A<sub>H</sub>&#x27e9; &times;
-                    &#x27e8;B<sub>L</sub>,B<sub>H</sub>&#x27e9; &#x225d;
-                    0&#x211d;
+                    &#x2200;a,b&#x2208;&#x211d;
+                    ((a&ge;0<sub>&#x211d;</sub> &and;
+                    b&ge;0<sub>&#x211d;</sub>) &or;
+                    (a&lt;0<sub>&#x211d;</sub> &and;
+                    b&lt;0<sub>&#x211d;</sub>)) &#x27f9;<br />
+                    a &times b &#x225d; 0<sub>&#x211d;</sub> &cup;
+                    { (|c| &times; |d|)&#x2208;&#x211a; :
+                    c&#x2208;a &and; d&#x2208;b }
+                </li><li>
+                    &#x2200;a,b&#x2208;&#x211d;
+                    ((a&ge;0<sub>&#x211d;</sub> &and;
+                    b&lt;0<sub>&#x211d;</sub>) &or;
+                    (a&lt;0<sub>&#x211d;</sub> &and;
+                    b&ge;0<sub>&#x211d;</sub>)) &#x27f9;<br />
+                    a &times b &#x225d;
+                    { -(|c| &times; |d|)&#x2208;&#x211a; :
+                    c&#x2208;a &and; d&#x2208;b }
                 </li>
-                <li></li>
-                <li></li>
-                <li></li>
-                <li></li>
-                <li></li>
             </ul>
+        </section>
+        <section>
+            <h3>Absolute Value &#x211d;</h3>
+            <p>
+                &#x2200;a&#x2208;&#x211d; |a| &#x225d; a &cup; (-a)
+            </p>
         </section>
         <section>
             <h2>Multiplication &#x211d;</h2>
@@ -4770,7 +4973,23 @@
             <h2>Multiplication &#x211d;</h2>
             <ul>
                 <li>
-                    Definition: TODO
+                    &#x2200;a,b&#x2208;&#x211d;
+                    ((a&ge;0<sub>&#x211d;</sub> &and;
+                    b&ge;0<sub>&#x211d;</sub>) &or;
+                    (a&lt;0<sub>&#x211d;</sub> &and;
+                    b&lt;0<sub>&#x211d;</sub>)) &#x27f9;<br />
+                    a &times b &#x225d; 0<sub>&#x211d;</sub> &cup;
+                    { (|c| &times; |d|)&#x2208;&#x211a; :
+                    c&#x2208;a &and; d&#x2208;b }
+                </li><li>
+                    &#x2200;a,b&#x2208;&#x211d;
+                    ((a&ge;0<sub>&#x211d;</sub> &and;
+                    b&lt;0<sub>&#x211d;</sub>) &or;
+                    (a&lt;0<sub>&#x211d;</sub> &and;
+                    b&ge;0<sub>&#x211d;</sub>)) &#x27f9;<br />
+                    a &times b &#x225d;
+                    { -(|c| &times; |d|)&#x2208;&#x211a; :
+                    c&#x2208;a &and; d&#x2208;b }
                 </li><li>
                     Closed: &#x2200;a,b&#x2208;&#x211d;
                     a &times; b &#x2208;&#x211d;
@@ -4783,24 +5002,22 @@
                     a &times; b = b &times; a
                 </li><li>
                     Distributive:  &#x2200;a,b,c&#x2208;&#x211d;
-                    <br />
-                    (a &times; (b + c) =
-                    (a &times; b) + (a &times; c)) &and;<br />
-                    ((b + c) &times; a =
-                    (b &times; a) + (c &times; a))
+                    a &times; (b + c) = (a &times; b) + (a &times; c)
                 </li><li>
                     Identity: &#x2200;a&#x2208;&#x211d;
-                    a &times; 1 = a = 1 &times; a
+                    a &times; 1<sub>&#x211d;</sub> = a =
+                    1<sub>&#x211d;</sub> &times; a
                 </li><li>
-                    Inverses: &#x2200;a&ne;0&#x2208;&#x211d;
+                    Inverses: &#x2200;a&#x2208;&#x211d;
+                    a&ne;0<sub>&#x211d;</sub> &#x27f9;
                     &#x2203;a<sup>-1</sup>&#x2208;&#x211d;
-                    a &times; a<sup>-1</sup> = 1
+                    a &times; a<sup>-1</sup> = 1<sub>&#x211d;</sub>
                 </li>
             </ul>
         </section>
     </section>
 
-    <section>
+    <section id="cardinality">
         <section>
             <h2>Cardinality</h2>
             <p>
