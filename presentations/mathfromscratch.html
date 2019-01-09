@@ -172,10 +172,14 @@
             </aside>
         </section>
         <section>
-            <h3>Incompleteness</h3>
+            <h3>Formal Systems: Properties</h3>
             <p>Desirable properties of a formal system:</p>
             <ul>
                 <li>
+                    <span class="intro">Useful</span>: statements
+                    match measurable physical processes and make
+                    falsifiable preditions
+                </li><li>
                     <span class="intro">Consistent</span>: no
                     statement can be proven both true and false (no
                     contradictions)
@@ -185,16 +189,23 @@
                     (nothing missing)
                 </li>
             </ul>
+            <aside class="notes">
+                Consistency means that no theorem can be proven both
+                true and false.  Complete means that all possible
+                theorems can be proven one way or the other.
+            </aside>
+        </section>
+        <section>
+            <h3>Incompleteness</h3>
             <p>
                 Any formal system containing basic arithmetic is
-                either inconsistent or incomplete.<br />(Gödel 1931 CE)
+                either <span class="intro">inconsistent</span> or
+                <span class="intro">incomplete</span>.
+                (Gödel 1931 CE)
             </p>
             <aside class="notes">
                 We would like our formal system to be both
-                consistent and complete.  Consistency means that
-                no theorem can be proven both true and false.
-                Complete means that all possible theorems can
-                be proven one way or the other.  Unfortunately,
+                consistent and complete.  Unfortunately,
                 Kurt Gödel proved that no sufficiently expressive
                 system can be both.  So we will have to accept
                 some limitations.
@@ -207,11 +218,15 @@
                 false based on the value of its variables.
             </p>
             <ul>
-                <li>Example: _____ is a fruit</li>
-                <li><span class="intro">An apple</span> is a fruit
-                    (<span class="true">true</span>)</li>
-                <li><span class="intro">A carrot</span> is a fruit
-                    (<span class="false">false</span>)</li>
+                <li>
+                    Example: A _____ is a fruit
+                </li><li>
+                    An <span class="intro">apple</span> is a fruit
+                    (<span class="true">true</span>)
+                </li><li>
+                    A <span class="intro">carrot</span> is a fruit
+                    (<span class="false">false</span>)
+                </li>
             </ul>
             <aside class="notes">
                 A predicate is a statement with one or more
@@ -398,9 +413,10 @@
             <p>
                 We will use set theory to construct relations,
                 functions, numbers, arithmetic, algebra and geometry.
-                Set theory is a formal system in which the only
-                objects are sets and the only thing sets can do is
-                contain other objects. (Zermelo-Fraenkel 1908-1922 CE)
+                <span class="intro">Set theory</span> is a formal
+                system in which the only objects are sets and the only
+                thing sets can do is contain other
+                objects. (Zermelo-Fraenkel 1908-1922 CE)
             </p>
             <aside class="notes">
                 Axiomatic set theory is the foundation of this
@@ -566,7 +582,7 @@
             <div class="fragment">
                 <p>
                     Elements of the pair may be equal. Extensionality
-                    proves there only a single member:
+                    means that there only a single member:
                 </p><p>
                     { &spades;, &spades; } = { &spades; }
                 </p>
@@ -636,14 +652,17 @@
             </p>
             <ul>
                 <li class="fragment">
-                    Identity: &#x2200;a (a &cup; {}) = &cup;{ a, {} } = a
+                    <span class="intro">Identity</span>:
+                    &#x2200;a (a &cup; {}) = &cup;{ a, {} } = a
                 </li><li class="fragment">
-                    Idempotent: &#x2200;a (a &cup; a) = &cup;{ a, a } = a
+                    <span class="intro">Idempotent</span>:
+                    &#x2200;a (a &cup; a) = &cup;{ a, a } = a
                 </li><li class="fragment">
-                    Communtative: &#x2200;a,b (a &cup; b = b &cup; a)
+                    <span class="intro">Communtative</span>:
+                    &#x2200;a,b (a &cup; b = b &cup; a)
                     &#x27fa;<br /> (&cup;{a, b} = &cup;{b, a})
                 </li><li class="fragment">
-                    Associative:
+                    <span class="intro">Associative</span>:
                     &#x2200;a,b,c ((a &cup; b) &cup; c =
                     a &cup; (b &cup; c)) &#x27fa;<br />
                     (&cup;{ &cup;{ a, b }, c } =
@@ -959,8 +978,10 @@
                     b<span class="intro">&#x27e9;</span> &#x225d;
                     (&#x2203;c&#x2208;<span class="intro">&#x27e8;</span>a,
                     b<span class="intro">&#x27e9;</span> b&#x2208;c)
-                    &and;<br /> (&#x2200;c,d&#x2208;&#x27e8;a, b&#x27e9;
-                    c &ne; d &#x27f9; b&#x2209;c &or; b&#x2209;d)
+                    &and;<br />
+                    (&#x2200;c,d&#x2208;<span class="intro">&#x27e8;</span>a,
+                    b<span class="intro">&#x27e9;</span>
+                    (c &ne; d) &#x27f9; b&#x2209;c &or; b&#x2209;d)
                 </li>
             </ul>
         </section>
@@ -968,8 +989,9 @@
             <h3>Power Sets and Pairs</h3>
             <p>
                 &#x2200;a,b,c (b&#x2208;a &and; c&#x2208;a)
-                &#x27f9;<br /> (({b} &#x2286; a) &and;
-                ({b, c} &#x2286; a)
+                <span class="fragment">
+                    &#x27f9;<br /> (({b} &#x2286; a) &and;
+                    ({b, c} &#x2286; a)</span>
                 <span class="fragment">&#x27f9;<br />
                     {{b}, {b, c}}&#x2286;&#x2118;a</span>
                 <span class="fragment">&#x27f9;
@@ -1372,9 +1394,10 @@
             <h2>Functions</h2>
             <p>
                 A function is a special kind of relation which maps
-                every member of the domain to the exactly one member
-                of the range.  Because of this we can use functions
-                to replace members of a set to create a new set.
+                every member of its domain to the exactly one member
+                of its range.  There is no ambiguity about what the
+                second element of the ordered pair could be.  Because
+                of this we can use functions to transform sets.
             </p>
             <aside class="notes">
                 A function is a relation with the special property
@@ -4665,7 +4688,8 @@
         <section>
             <h3>Real Numbers &#x211d; Order</h3>
             <p>
-                &#x2200;a,b&#x2208;&#x211d; (a &le; b) &#x225d;
+                &#x2200;a,b&#x2208;&#x211d;
+                (a &le;<sub>&#x211d;</sub> b) &#x225d;
                 <span class="intro">(a &#x2286; b)</span>
             </p>
             <p class="fragment">
