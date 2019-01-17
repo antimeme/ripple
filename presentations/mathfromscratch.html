@@ -9,6 +9,10 @@
  .true { color: green; font-weight: bold; }
  .false { color: red; font-weight: bold; }
  ul.symbolic { list-style-type: none; }
+ .left { float: left; }
+ .right { float: right; }
+ table.cayley th { color: blue; }
+ .redsuit { color: red; }
 </style>
 <!-- Slides use Reveal.js: https://github.com/hakimel/reveal.js/ -->
 
@@ -476,17 +480,22 @@
             <p>
                 <span class="intro">{</span>
                 &spades;<span class="intro">,</span>
-                &hearts;<span class="intro">,</span>
+                <span class="redsuit">&hearts;</span>
+                <span class="intro">,</span>
                 &clubs;<span class="intro">,</span>
-                &diams;<span class="intro">}</span>
+                <span class="redsuit">&diams;</span>
+                <span class="intro">}</span>
             </p>
         </section>
         <section>
             <h3>Set Membership</h3>
             <table>
                 <tr>
-                    <td>&spades; <span class="intro">&#x2208;</span>
-                        {&spades;, &hearts;, &clubs;, &diams;}</td>
+                    <td>
+                        &spades; <span class="intro">&#x2208;</span>
+                        {&spades;, <span class="redsuit">&hearts;</span>,
+                        &clubs;, <span class="redsuit">&diams;</span>}
+                    </td>
                     <td>member of</td>
                 </tr>
                 <tr>
@@ -520,8 +529,11 @@
                 same set.
             </p>
             <p class="fragment">
-                { &clubs;, &clubs;, &diams;, &spades;, &hearts; } =
-                { &spades;, &hearts;, &clubs;, &diams; }
+                { &clubs;, &clubs;,
+                <span class="redsuit">&diams;</span>, &spades;,
+                <span class="redsuit">&hearts;</span> } =
+                { &spades;, <span class="redsuit">&hearts;</span>,
+                &clubs;, <span class="redsuit">&diams;</span> }
             </p>
             <aside class="notes">
                 Extensionality means that any two sets that
@@ -607,8 +619,11 @@
             </p>
             <p class="fragment">
                 <span class="intro">&cup;</span>{
-                {&spades;, &hearts;}, {&hearts;, &diams;, &clubs;} } =
-                {&spades;, &hearts;, &clubs;, &diams;}
+                {&spades;, <span class="redsuit">&hearts;</span>},
+                {<span class="redsuit">&hearts;</span>,
+                <span class="redsuit">&diams;</span>, &clubs;} } =
+                {&spades;, <span class="redsuit">&hearts;</span>,
+                &clubs;, <span class="redsuit">&diams;</span>}
             </p>
             <p class="fragment">
                 (a <span class="intro">&cup;</span> b)
@@ -622,6 +637,45 @@
             </aside>
         </section>
         <section>
+            <h3>Intersection</h3>
+            <p>
+                &#x2200;a &cap;a &#x225d; {
+                c&#x2208;&cup;a : &#x2200;b&#x2208;a c&#x2208;b }
+            </p>
+            <p>
+                The intersection of a set of sets contains all members
+                that are present in all the members.  This can be
+                defined on a pair of sets.
+            </p>
+            <p>
+                &#x2200;a,b (a &cap; b) &#x225d; &cap;{ a, b }
+            </p>
+            <p>
+                { &spades;, <span class="redsuit">&hearts;</span> }
+                &cap;
+                { &spades;, <span class="redsuit">&diams;</span> } =
+                { &spades; }
+            </p>
+        </section>
+        <section>
+            <h3>Difference</h3>
+            <p>
+                &#x2200;a,b (a &#x2296; b) &#x225d; {
+                c&#x2208;a : c&#x2209;b }
+            </p>
+            <p>
+                The difference between two sets contains only the
+                elements of the first that are not in the second.
+            </p>
+            <p>
+                { &spades;, <span class="redsuit">&hearts;</span>,
+                &clubs;, <span class="redsuit">&diams;</span> } &#x2296;
+                { <span class="redsuit">&hearts;</span>,
+                <span class="redsuit">&diams;</span> } =
+                { &spades;, &clubs; }
+            </p>
+        </section>
+        <section>
             <h3>Some Assembly Required</h3>
             <p>
                 Pairing and union axioms allow us to create sets of
@@ -630,12 +684,16 @@
             <ul class="symbolic">
                 <li class="fragment">
                     &cup;{ { &spades;, &spades; },
-                    { &hearts;, &diams; } } = {
-                    &spades;, &hearts;, &diams; }
+                    { <span class="redsuit">&hearts;</span>,
+                    <span class="redsuit">&diams;</span> } } = {
+                    &spades;, <span class="redsuit">&hearts;</span>,
+                    <span class="redsuit">&diams;</span> }
                 </li><li class="fragment">
-                    &cup;{ { &spades;, &hearts; },
-                    { &diams;, &clubs; } } = {
-                    &spades;, &hearts;, &diams;, &clubs; }
+                    &cup;{ { &spades;,
+                    <span class="redsuit">&hearts;</span> },
+                    { <span class="redsuit">&diams;</span>, &clubs; } }
+                    = { &spades;, <span class="redsuit">&hearts;</span>,
+                    &clubs;, <span class="redsuit">&diams;</span> }
                 </li><li class="fragment">
                     &cup;{ &cup;{ { &#x1f603;, &#x1f61e; },
                     { &#x1f609;, &#x1f609; } },
@@ -726,16 +784,28 @@
             </p>
             <p class="fragment">
                 <span class="intro">&#x2118;</span>{&spades;,
-                &hearts;, &clubs;, &diams;} =
-                {{}, {&spades;}, {&hearts;}, {&clubs;}, {&diams;},<br />
-                {&spades;, &hearts;}, {&spades;, &clubs;},
-                {&spades;, &diams;}, {&hearts;, &clubs;},
-                {&hearts;, &diams;}, {&clubs;, &diams;},<br />
-                {&hearts;, &clubs;, &diams;},
-                {&spades;, &clubs;, &diams;},
-                {&spades;, &hearts;, &clubs;},
-                {&spades;, &hearts;, &diams;},<br />
-                {&spades;, &hearts;, &clubs;, &diams;}}
+                <span class="redsuit">&hearts;</span>, &clubs;,
+                <span class="redsuit">&diams;</span>} =
+                {{}, {&spades;},
+                {<span class="redsuit">&hearts;</span>},
+                {&clubs;}, {<span class="redsuit">&diams;</span>},<br />
+                {&spades;, <span class="redsuit">&hearts;</span>},
+                {&spades;, &clubs;},
+                {&spades;, <span class="redsuit">&diams;</span>},
+                {<span class="redsuit">&hearts;</span>, &clubs;},
+                {<span class="redsuit">&hearts;</span>,
+                <span class="redsuit">&diams;</span>},
+                {&clubs;, <span class="redsuit">&diams;</span>},<br />
+                {<span class="redsuit">&hearts;</span>, &clubs;,
+                <span class="redsuit">&diams;</span>},
+                {&spades;, &clubs;,
+                <span class="redsuit">&diams;</span>},
+                {&spades;, <span class="redsuit">&hearts;</span>,
+                &clubs;}, {&spades;,
+                <span class="redsuit">&hearts;</span>,
+                <span class="redsuit">&diams;</span>},<br />
+                {&spades;, <span class="redsuit">&hearts;</span>,
+                &clubs;, <span class="redsuit">&diams;</span>}}
             </p>
             <aside class="notes">
                 Every set has a power set, which is the set of all
@@ -918,9 +988,7 @@
                     <td><span class="intro">{</span>
                         a&#x2208;b <span class="intro">:</span> P(a)
                         <span class="intro">}</span></td>
-                    <td>
-                        Specification (filtered by predicate)
-                    </td>
+                    <td>Specification (predicate filter)</td>
                 </tr>
                 <tr>
                     <td><span class="intro">{</span>
@@ -1037,19 +1105,104 @@
             </p>
             <p class="fragment">
                 <span class="intro">&cup;&cup;</span>{
-                &#x27e8;&spades;, &hearts;&#x27e9;,
-                &#x27e8;&hearts;, &diams;&#x27e9;,
-                &#x27e8;&diams;, &clubs;&#x27e9;}
+                &#x27e8;&spades;,
+                <span class="redsuit">&hearts;</span>&#x27e9;,
+                &#x27e8;<span class="redsuit">&hearts;</span>,
+                <span class="redsuit">&diams;</span>&#x27e9;,
+                &#x27e8;<span class="redsuit">&diams;</span>,
+                &clubs;&#x27e9;}
                 <span class="fragment">
-                    =<br /> &cup;{{&spades;}, {&spades;, &hearts;},
-                    {&hearts;}, {&hearts;, &diams;},
-                    {&diams;}, {&diams;, &clubs;}}
+                    =<br /> &cup;{{&spades;}, {&spades;,
+                    <span class="redsuit">&hearts;</span>},
+                    {<span class="redsuit">&hearts;</span>},
+                    {<span class="redsuit">&hearts;</span>,
+                    <span class="redsuit">&diams;</span>},
+                    {<span class="redsuit">&diams;</span>},
+                    {<span class="redsuit">&diams;</span>, &clubs;}}
                 </span>
                 <span class="fragment">
                     =<br />{
-                    &spades;, &hearts;, &diams;, &clubs;}
+                    &spades;, <span class="redsuit">&hearts;</span>,
+                    <span class="redsuit">&diams;</span>, &clubs;}
                 </span>
             </p>
+        </section>
+        <section>
+            <h3>Relation</h3>
+            <p>
+                &#x2200;a,b (a <span class="intro">R</span> b) &#x225d;
+                &#x27e8;a, b&#x27e9;&#x2208;R
+            </p>
+            <p>
+                A relation is a set of ordered pairs that represents
+                a relationship between elements
+            </p>
+            <ul>
+                <li class="fragment">
+                    <span class="intro">Domain(R)</span> &#x225d;
+                    { a&#x2208;&cup;&cup;R :
+                    &#x2203;b&#x2208;&cup;&cup;R
+                    &#x27e8;a, b&#x27e9;&#x2208;R }
+                </li><li class="fragment">
+                    <span class="intro">Range(R)</span> &#x225d; {
+                    b&#x2208;&cup;&cup;R :
+                    &#x2203;a&#x2208;&cup;&cup;R
+                    &#x27e8;a, b&#x27e9;&#x2208;R }
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Relation Example</h3>
+            <p>
+                is-husband-of &#x225d; {
+                &#x27e8;James, Mary&#x27e9;,<br />
+                &#x27e8;John, Patrica&#x27e9;,
+                &#x27e8;Robert, Jennifer&#x27e9;,<br />
+                &#x27e8;Michael, William&#x27e9;,
+                &#x27e8;William, Michael&#x27e9;}
+            </p>
+            <p>
+                is-wife-of &#x225d; {
+                &#x27e8;Mary, James&#x27e9;,<br />
+                &#x27e8;Patrica, John&#x27e9;,
+                &#x27e8;Jennifer, Robert&#x27e9;,<br />
+                &#x27e8;Linda, Elizabeth&#x27e9;,
+                &#x27e8;Elizabeth, Linda&#x27e9;}
+            </p>
+            <p>is-spouse-of &#x225d; is-husband-of &cup; is-wife-of</p>
+            <aside class="notes">
+                https://www.ssa.gov/oact/babynames/decades/century.html
+            </aside>
+        </section>
+        <section>
+            <h3>Relation Properties</h3>
+            <ul>
+                <li class="fragment">
+                    <span class="intro">Reflexive</span>:
+                    &#x2200;a&#x2208;&cup;&cup;R (a R a)
+                </li><li class="fragment">
+                    <span class="intro">Symmetric</span>:
+                    &#x2200;a,b&#x2208;&cup;&cup;R (a R b)
+                    &#x27fa; (b R a)
+                </li><li class="fragment">
+                    <span class="intro">Antisymmetric</span>:<br />
+                    &#x2200;a,b&#x2208;&cup;&cup;R
+                    (a R b) &and; (b R a) &#x27f9; (a = b)
+                </li><li class="fragment">
+                    <span class="intro">Transitive</span>:
+                    &#x2200;a,b,c&#x2208;&cup;&cup;R
+                    (a R b) &and; (b R c) &#x27fa; (a R c)
+                </li><li class="fragment">
+                    <span class="intro">Connex</span>:
+                    &#x2200;a,b&#x2208;&cup;&cup;R
+                    (a R b) &or; (b R a)
+                </li>
+            </ul>
+            <aside class="notes">
+                These are some properties a relation might have.  We
+                will use these as building blocks for higher level
+                concepts.
+            </aside>
         </section>
         <section>
             <h3>Power Sets and Pairs</h3>
@@ -1087,7 +1240,7 @@
         <section>
             <h3>Cartesian Product</h3>
             <p>
-                &#x2200;a,b (a <span class="intro">&times;</span> b)
+                &#x2200;a,b (a <span class="intro">&#x2297;</span> b)
                 &#x225d; { &#x27e8;c, d&#x27e9; &#x2208;
                 &#x2118;&#x2118;&cup;{ a, b } :
                 c&#x2208;a &and; d&#x2208;b }
@@ -1098,17 +1251,22 @@
                     construct all possible ordered pairs from two sets.
                 </p>
                 <p>
-                    { &spades;, &hearts;, &diams;, &clubs; }
-                    <span class="intro">&times;</span>
+                    { &spades;, <span class="redsuit">&hearts;</span>,
+                    &clubs;, <span class="redsuit">&diams;</span> }
+                    <span class="intro">&#x2297;</span>
                     { &#x25c7;, &#x25b3; } = {
                     &#x27e8;&spades;, &#x25c7;&#x27e9;,
                     &#x27e8;&spades;, &#x25b3;&#x27e9;,
-                    &#x27e8;&hearts;, &#x25c7;&#x27e9;,
-                    &#x27e8;&hearts;, &#x25b3;&#x27e9;,
-                    &#x27e8;&diams;, &#x25c7;&#x27e9;,
-                    &#x27e8;&diams;, &#x25b3;&#x27e9;,
+                    &#x27e8;<span class="redsuit">&hearts;</span>,
+                    &#x25c7;&#x27e9;,
+                    &#x27e8;<span class="redsuit">&hearts;</span>,
+                    &#x25b3;&#x27e9;,
                     &#x27e8;&clubs;, &#x25c7;&#x27e9;,
-                    &#x27e8;&clubs;, &#x25b3;&#x27e9; }
+                    &#x27e8;&clubs;, &#x25b3;&#x27e9;,
+                    &#x27e8;<span class="redsuit">&diams;</span>,
+                    &#x25c7;&#x27e9;,
+                    &#x27e8;<span class="redsuit">&diams;</span>,
+                    &#x25b3;&#x27e9; }
                 </p>
             </div>
             <aside class="notes">
@@ -1123,8 +1281,8 @@
             <h3>Extended Cartesian Product</h3>
             <p>
                 &#x2200;a,b,c (a
-                <span class="intro">&times;</span> b
-                <span class="intro">&times;</span> c)
+                <span class="intro">&#x2297;</span> b
+                <span class="intro">&#x2297;</span> c)
                 &#x225d;<br /> { &#x27e8;d, e, f&#x27e9; &#x2208;
                 &#x2118;&#x2118;&cup;{a, b, c} :
                 d&#x2208;a &and; e&#x2208;b &and; f&#x2208;c }
@@ -1134,87 +1292,42 @@
                     Cartesian products can make tuples
                 </p>
                 <p>
-                    { &spades;, &hearts;, &diams;, &clubs; }
-                    <span class="intro">&times;</span>
+                    { &spades;, <span class="redsuit">&hearts;</span>,
+                    &clubs;, <span class="redsuit">&diams;</span> }
+                    <span class="intro">&#x2297;</span>
                     { &#x1f603;, &#x1f61e; }
-                    <span class="intro">&times;</span>
+                    <span class="intro">&#x2297;</span>
                     { &#x25a1;, &#x25b3; } =<br />
                     { &#x27e8;&spades;, &#x1f603;, &#x25a1;&#x27e9;,
                     &#x27e8;&spades;, &#x1f603;, &#x25b3;&#x27e9;,
                     &#x27e8;&spades;, &#x1f61e;, &#x25a1;&#x27e9;,
                     &#x27e8;&spades;, &#x1f61e;, &#x25b3;&#x27e9;,<br />
-                    &#x27e8;&hearts;, &#x1f603;, &#x25a1;&#x27e9;,
-                    &#x27e8;&hearts;, &#x1f603;, &#x25b3;&#x27e9;,
-                    &#x27e8;&hearts;, &#x1f61e;, &#x25a1;&#x27e9;,
-                    &#x27e8;&hearts;, &#x1f61e;, &#x25b3;&#x27e9;,<br />
-                    &#x27e8;&diams;, &#x1f603;, &#x25a1;&#x27e9;,
-                    &#x27e8;&diams;, &#x1f603;, &#x25b3;&#x27e9;,
-                    &#x27e8;&diams;, &#x1f61e;, &#x25a1;&#x27e9;,
-                    &#x27e8;&diams;, &#x1f61e;, &#x25b3;&#x27e9;,<br />
+                    &#x27e8;<span class="redsuit">&hearts;</span>,
+                    &#x1f603;, &#x25a1;&#x27e9;,
+                    &#x27e8;<span class="redsuit">&hearts;</span>,
+                    &#x1f603;, &#x25b3;&#x27e9;,
+                    &#x27e8;<span class="redsuit">&hearts;</span>,
+                    &#x1f61e;, &#x25a1;&#x27e9;,
+                    &#x27e8;<span class="redsuit">&hearts;</span>,
+                    &#x1f61e;, &#x25b3;&#x27e9;,<br />
                     &#x27e8;&clubs;, &#x1f603;, &#x25a1;&#x27e9;,
                     &#x27e8;&clubs;, &#x1f603;, &#x25b3;&#x27e9;,
                     &#x27e8;&clubs;, &#x1f61e;, &#x25a1;&#x27e9;,
-                    &#x27e8;&clubs;, &#x1f61e;, &#x25b3;&#x27e9; }
+                    &#x27e8;&clubs;, &#x1f61e;, &#x25b3;&#x27e9;,<br />
+                    &#x27e8;<span class="redsuit">&diams;</span>,
+                    &#x1f603;, &#x25a1;&#x27e9;,
+                    &#x27e8;<span class="redsuit">&diams;</span>,
+                    &#x1f603;, &#x25b3;&#x27e9;,
+                    &#x27e8;<span class="redsuit">&diams;</span>,
+                    &#x1f61e;, &#x25a1;&#x27e9;,
+                    &#x27e8;<span class="redsuit">&diams;</span>,
+                    &#x1f61e;, &#x25b3;&#x27e9; }
                 </p>
             </div>
         </section>
         <section>
-            <h3>Relation</h3>
-            <p>
-                &#x2200;a,b (a <span class="intro">R</span> b) &#x225d;
-                &#x27e8;a, b&#x27e9;&#x2208;R
-            </p>
-            <p>
-                A relation is a set of ordered pairs that represents
-                a relationship between elements
-            </p>
-            <ul>
-                <li class="fragment">
-                    <span class="intro">Domain(R)</span> &#x225d;
-                    { a&#x2208;&cup;&cup;R :
-                    &#x2203;b&#x2208;&cup;&cup;R
-                    &#x27e8;a, b&#x27e9;&#x2208;R }
-                </li><li class="fragment">
-                    <span class="intro">Range(R)</span> &#x225d; {
-                    b&#x2208;&cup;&cup;R :
-                    &#x2203;a&#x2208;&cup;&cup;R
-                    &#x27e8;a, b&#x27e9;&#x2208;R }
-                </li>
-            </ul>
-        </section>
-        <section>
             <h3>Relations are Subsets</h3>
-            <p>R &#x2286; Domain(R) &times; Range(R)</p>
-        </section>
-        <section>
-            <h3>Relation Properties</h3>
-            <ul>
-                <li class="fragment">
-                    <span class="intro">Reflexive</span>:
-                    &#x2200;a&#x2208;&cup;&cup;R (a R a)
-                </li><li class="fragment">
-                    <span class="intro">Symmetric</span>:
-                    &#x2200;a,b&#x2208;&cup;&cup;R (a R b)
-                    &#x27fa; (b R a)
-                </li><li class="fragment">
-                    <span class="intro">Antisymmetric</span>:<br />
-                    &#x2200;a,b&#x2208;&cup;&cup;R
-                    (a R b) &and; (b R a) &#x27f9; (a = b)
-                </li><li class="fragment">
-                    <span class="intro">Transitive</span>:
-                    &#x2200;a,b,c&#x2208;&cup;&cup;R
-                    (a R b) &and; (b R c) &#x27fa; (a R c)
-                </li><li class="fragment">
-                    <span class="intro">Connex</span>:
-                    &#x2200;a,b&#x2208;&cup;&cup;R
-                    (a R b) &or; (b R a)
-                </li>
-            </ul>
-            <aside class="notes">
-                These are some properties a relation might have.  We
-                will use these as building blocks for higher level
-                concepts.
-            </aside>
+            <p>R &#x2286; Domain(R) &#x2297; Range(R)</p>
         </section>
         <section>
             <h2>Equivalence</h2>
@@ -1341,7 +1454,7 @@
             <h3>Equality: Equivalence</h3>
             <p>
                 &#x2200;a &#x2203;<span class="intro">{ &#x27e8;b,
-                c&#x27e9;&#x2208;a&times;a : b = c }</span>
+                c&#x27e9;&#x2208;a&#x2297;a : b = c }</span>
             </p>
             <p>
                 Set equality can be used to construct an equivalence
@@ -1389,7 +1502,7 @@
             <h3>Subsets: Partial Order</h3>
             <p>
                 &#x2200;a &#x2203;<span class="intro">{ &#x27e8;b,
-                c&#x27e9;&#x2208;a&times;a : b &#x2286; c }</span>
+                c&#x27e9;&#x2208;a&#x2297;a : b &#x2286; c }</span>
             </p>
             <p>
                 Subset relationships can be used to construct a
@@ -1397,14 +1510,161 @@
                 antisymmetric and transitive.
             </p>
             <p class="fragment">
-                Not always connex: {{&spades;, &hearts;}, {&spades;},
-                {&spades;, &diams;}}</p>
+                Not always connex: {{&spades;,
+                <span class="redsuit">&hearts;</span>}, {&spades;},
+                {&spades;, <span class="redsuit">&diams;</span>}}</p>
             <aside class="notes">
                 This is a simple example of a set on which the subset
                 operator forms a partial but not a total order.  Most
                 of the time subset is not connex, but we could
                 easily construct sets where it is.
             </aside>
+        </section>
+    </section>
+
+    <section id="functions">
+        <section>
+            <h2>Functions</h2>
+            <p>
+                A function is a special kind of relation which maps
+                every member of its domain to the exactly one member
+                of its range.  There is no ambiguity about what the
+                second element of the ordered pair could be.  Because
+                of this we can use functions to transform sets.
+            </p>
+            <aside class="notes">
+                A function is a relation with the special property
+                that every member of the domain appears in exactly
+                one ordered pair.  In other words, functions
+                always map every element in their domains.
+            </aside>
+        </section>
+        <section>
+            <h2>Functions</h2>
+            <p>
+                (<span class="intro">f : D &#x27f6; R</span>) &#x225d;
+                &#x2200;a&#x2208;D (&#x2203;b&#x2208;R
+                &#x27e8;a, b&#x27e9;&#x2208;f) &and;<br />
+                (&#x2200;b,c&#x2208;R
+                (&#x27e8;a, b&#x27e9;&#x2208;f &and;
+                &#x27e8;a, c&#x27e9;&#x2208;f)
+                &#x27f9; b = c)
+            </p>
+            <ul>
+                <li class="fragment">&#x2200;a&#x2208;D
+                    &#x2203;b&#x2208;R &#x27e8;a, b&#x27e9;&#x2208;f
+                </li><li class="fragment">
+                    <span class="intro">f(a) = b</span></li>
+            </ul>
+            <aside class="notes">
+                We denote function application different than
+                relations.  Rather than saying <q>a relates b</q>
+                we say <q>f of a equals b</q>.
+            </aside>
+        </section>
+        <section>
+            <h3>Meet the Jections</h3>
+            <p>
+                Given function f : D &#x27f6; R
+            </p>
+            <ul>
+                <li class="fragment">
+                    <span class="intro">Injection</span> (one-to-one):
+                    Each member of the domain maps to a distinct member
+                    of the range<br />
+                    &#x2200;a,b&#x2208;D (f(a) = f(b)) &#x27f9;
+                    (a = b)
+                </li><li class="fragment">
+                    <span class="intro">Surjection</span> (onto):
+                    Each member of the range is mapped from at least
+                    one member of domain<br /> &#x2200;b&#x2208;R
+                    &#x2203;a&#x2208;D f(a) = b
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Back It Up</h3>
+            <p>
+                Given function f : D &#x27f6; R
+            </p>
+            <ul>
+                <li class="fragment">
+                    <span class="intro">Bijection</span>: both an
+                    injection and a surjection
+                </li><li class="fragment">
+                    Inverse: <span class="intro">f<sup>-1</sup> :
+                    R &#x27f6; D</span><br />
+                    &#x2200;a&#x2208;D,b&#x2208;R
+                    (f(a) = b) &#x27fa; (f<sup>-1</sup>(b) = a)
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Cardinality</h3>
+            <p>
+                <span class="intro">Cardinality</span> is a property
+                of every set.  We will define it using bijections.
+                The domain and range of any bijection have the same
+                cardinality.  If a bijection cannot exist between a
+                pair of sets they have different cardinality.
+            </p>
+            <aside class="notes">
+                Cardinality formalizes our intuitive notion of size.
+                For now we will define it indirectly: any pair of sets
+                for which some bijection exists have the same
+                cardinality.  We can prove that a pair of sets have
+                different cardinality if we show that no bijection can
+                exist between them.
+            </aside>
+        </section>
+        <section>
+            <h3>Multivariable Functions</h3>
+            <p>A function can have more than one argument.</p>
+            <ul>
+                <li class="fragment">
+                    f : D<sub>1</sub> &#x2297; D<sub>2</sub>
+                    &#x27f6; R &#x27f9;
+                    <span class="intro">
+                        f(a<sub>1</sub>, a<sub>2</sub>) = b</span>
+                </li><li class="fragment">
+                    f : D<sub>1</sub> &#x2297; D<sub>2</sub> &#x2297;
+                    D<sub>3</sub> &#x27f6; R &#x27f9;
+                    <span class="intro">
+                        f(a<sub>1</sub>, a<sub>2</sub>,
+                        a<sub>3</sub>) = b</span>
+                </li><li class="fragment">
+                    ...
+                </li>
+            </ul>
+            <p class="fragment">
+                This is the same as having a domain consisting of
+                ordered pairs or tuples.
+            </p>
+        </section>
+        <section>
+            <h3>Multivariable Functions</h3>
+            <p>Function can return ordered pairs or tuples.</p>
+            <ul>
+                <li class="fragment">
+                    f : D &#x27f6; R<sub>1</sub> &#x2297;
+                    R<sub>2</sub> &#x27f9;
+                    <span class="intro">
+                        f(a) = &#x27e8;b<sub>1</sub>,
+                        b<sub>2</sub>&#x27e9;</span>
+                </li><li class="fragment">
+                    f : D &#x27f6; R<sub>1</sub> &#x2297;
+                    R<sub>2</sub> &#x2297; R<sub>3</sub> &#x27f9;
+                    <span class="intro">
+                        f(a) = &#x27e8;b<sub>1</sub>, b<sub>2</sub>,
+                        b<sub>3</sub>&#x27e9;</span>
+                </li><li class="fragment">
+                    ...
+                </li>
+            </ul>
+            <p class="fragment">
+                This is the same as having a range consisting of
+                ordered pairs or tuples.
+            </p>
         </section>
     </section>
 
@@ -1427,8 +1687,8 @@
                 &#x2218;&#x27ed;</span>
             </h3>
             <p>
-                A group is a set and a binary function G
-                &#x2218; G &#x27f6; G:
+                A group is a set and a binary function<br />
+                &#x2218;: G &#x2297; G &#x27f6; G
             </p>
             <ul>
                 <li class="fragment">
@@ -1489,7 +1749,7 @@
             </ul>
         </section>
         <section>
-            <h3>Proof: Commutative Inverses</h3>
+            <h3>Proof: Left Inverses</h3>
             <ul>
                 <li class="fragment">
                     e<sub>&#x2218;</sub> = a<sup>-1</sup> &#x2218;
@@ -1520,7 +1780,7 @@
             </ul>
         </section>
         <section>
-            <h3>Proof: Commutative Identity</h3>
+            <h3>Proof: Left Identity</h3>
             <ul>
                 <li class="fragment">
                     e<sub>&#x2218;</sub> &#x2218; a =
@@ -1530,7 +1790,7 @@
                     (a<sup>-1</sup> &#x2218; a) :: Associativity
                 </li><li class="fragment">
                     e<sub>&#x2218;</sub> &#x2218; a = a &#x2218;
-                    e<sub>&#x2218;</sub> :: Inverses
+                    e<sub>&#x2218;</sub> :: Left Inverses
                 </li><li class="fragment">
                     e<sub>&#x2218;</sub> &#x2218; a = a :: Identity
                 </li>
@@ -1580,9 +1840,10 @@
                 &#x229a;&#x27ed;</span>
             </h3>
             <p>
-                A ring is a set and two binary functions
-                R &#x2218; R &#x27f6; R and R &#x229a; R
-                &#x27f6; R with four properties:
+                A ring is a set and two binary functions<br />
+                (&#x2218;: R &#x2297; R &#x27f6; R) and
+                (&#x229a;: R &#x2297; R &#x27f6; R) with four
+                properties:
             </p>
             <ul>
                 <li class="fragment">
@@ -1681,36 +1942,51 @@
             </h3>
             <p>
                 A finite field is a field with a finite number of
-                members.
+                members.  Finite fields can sometimes be expressed
+                using tables (Cayley 1854 CE)
             </p>
         </section>
         <section>
             <h3>
                 Finite Field Example
             </h3>
-            <table style="float: left">
+            <table class="cayley left">
                 <tr><th>&#x2218;</th><th>&spades;</th><th>&hearts;</th>
                     <th>&clubs;</th><th>&diams;</th></tr>
-                <tr><th>&spades;</th><td>&spades;</td><td>&hearts;</td>
-                    <td>&clubs;</td><td>&diams;</td></tr>
-                <tr><th>&hearts;</th><td>&hearts;</td><td>&clubs;</td>
-                    <td>&diams;</td><td>&spades;</td></tr>
-                <tr><th>&clubs;</th><td>&clubs;</td><td>&diams;</td>
-                    <td>&spades;</td><td>&hearts;</td></tr>
-                <tr><th>&diams;</th><td>&diams;</td><td>&spades;</td>
-                    <td>&hearts;</td><td>&clubs;</td></tr>
+                <tr><th>&spades;</th><td>&spades;</td>
+                    <td><span class="redsuit">&hearts;</span></td>
+                    <td>&clubs;</td>
+                    <td><span class="redsuit">&diams;</span></td></tr>
+                <tr><th>&hearts;</th>
+                    <td><span class="redsuit">&hearts;</span></td>
+                    <td>&clubs;</td>
+                    <td><span class="redsuit">&diams;</span></td>
+                    <td>&spades;</td></tr>
+                <tr><th>&clubs;</th><td>&clubs;</td>
+                    <td><span class="redsuit">&diams;</span></td>
+                    <td>&spades;</td>
+                    <td><span class="redsuit">&hearts;</span></td></tr>
+                <tr><th>&diams;</th>
+                    <td><span class="redsuit">&diams;</span></td>
+                    <td>&spades;</td>
+                    <td><span class="redsuit">&hearts;</span></td>
+                    <td>&clubs;</td></tr>
             </table>
-            <table style="float: right">
+            <table class="cayley right">
                 <tr><th>&#x229a;</th><th>&spades;</th><th>&hearts;</th>
                     <th>&clubs;</th><th>&diams;</th></tr>
                 <tr><th>&spades;</th><td>&spades;</td><td>&spades;</td>
                     <td>&spades;</td><td>&spades;</td></tr>
-                <tr><th>&hearts;</th><td>&spades;</td><td>&hearts;</td>
-                    <td>&clubs;</td><td>&diams;</td></tr>
+                <tr><th>&hearts;</th><td>&spades;</td>
+                    <td><span class="redsuit">&hearts;</span></td>
+                    <td>&clubs;</td>
+                    <td><span class="redsuit">&diams;</span></td></tr>
                 <tr><th>&clubs;</th><td>&spades;</td><td>&clubs;</td>
                     <td>&spades;</td><td>&clubs;</td></tr>
-                <tr><th>&diams;</th><td>&spades;</td><td>&diams;</td>
-                    <td>&clubs;</td><td>&hearts;</td></tr>
+                <tr><th>&diams;</th><td>&spades;</td>
+                    <td><span class="redsuit">&diams;</span></td>
+                    <td>&clubs;</td>
+                    <td><span class="redsuit">&hearts;</span></td></tr>
             </table>
         </section>
     </section>
@@ -1728,12 +2004,12 @@
             </p>
             <p>
                 Natural numbers are an effective way to represent
-                discrete and indivisible quantities. (Von Neumann
-                1923 CE)
+                discrete and indivisible quantities.
             </p>
         </section>
         <section>
             <h3>Natural Numbers &#x2115;: Examples</h3>
+            <p>Peano 1889 CE and Von Neumann 1923 CE</p>
             <ul>
                 <li class="fragment">
                     <span class="intro">0<sub>&#x2115;</sub></span>
@@ -2657,11 +2933,11 @@
             <h2>Integers &#x2124;</h2>
             <p>
                 <span class="intro">&#x2124; &#x225d; { &#x27e8;a,
-                    b&#x27e9;&#x2208;&#x2115;&times;&#x2115; }</span>
+                    b&#x27e9;&#x2208;&#x2115;&#x2297;&#x2115; }</span>
             </p>
             <p>
                 [a - b] &#x225d; { &#x27e8;c<sub>1</sub>,
-                c<sub>2</sub>&#x27e9;&#x2208;&#x2115;&times;&#x2115; :
+                c<sub>2</sub>&#x27e9;&#x2208;&#x2115;&#x2297;&#x2115; :
                 (a + c<sub>2</sub> = c<sub>1</sub> + b) }
             </p>
             <p>
@@ -2899,7 +3175,7 @@
             <ul>
                 <li>
                     &#x2124; &#x225d; { &#x27e8;a,
-                    b&#x27e9;&#x2208;&#x2115;&times;&#x2115; }
+                    b&#x27e9;&#x2208;&#x2115;&#x2297;&#x2115; }
                 </li><li>
                     Equality: &#x2200;&#x27e8;a<sub>1</sub>,
                     a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
@@ -3760,12 +4036,12 @@
             <h2>Rational Numbers &#x211a;</h2>
             <p class="intro">
                 &#x211a; &#x225d; { &#x27e8;a,
-                b&#x27e9;&#x2208;&#x2124;&times;&#x2124; :
+                b&#x27e9;&#x2208;&#x2124;&#x2297;&#x2124; :
                 b &gt; 0<sub>&#x2124;</sub> }
             </p>
             <p>
                 [a / b] &#x225d; { &#x27e8;c<sub>1</sub>,
-                c<sub>2</sub>&#x27e9;&#x2208;&#x2124;&times;&#x2124; :
+                c<sub>2</sub>&#x27e9;&#x2208;&#x2124;&#x2297;&#x2124; :
                 c<sub>2</sub> &gt; 0<sub>&#x2124;</sub> &and;
                 (c<sub>1</sub> &times; b =
                 c<sub>2</sub> &times; a) }
@@ -3960,7 +4236,7 @@
             <ul>
                 <li>
                     &#x211a; &#x225d; { &#x27e8;a,
-                    b&#x27e9;&#x2208;&#x2124;&times;&#x2124; :
+                    b&#x27e9;&#x2208;&#x2124;&#x2297;&#x2124; :
                     b &gt; 0<sub>&#x2124;</sub> }
                 </li><li>
                     Equality: &#x2200;&#x27e8;a<sub>1</sub>,
@@ -4809,7 +5085,7 @@
                 </li><li class="fragment">
                     a &times; 1<sub>&#x211a;</sub>
                     &lt;<sub>&#x211a;</sub> (a + b) &times;
-                        1/2<sub>&#x211a;</sub>
+                    1/2<sub>&#x211a;</sub>
                 </li><li class="fragment">
                     a &lt;<sub>&#x211a;</sub> (a + b) &times;
                     1/2<sub>&#x211a;</sub></sub>
@@ -5330,7 +5606,7 @@
             <h2>&#x211a; Revisited</h2>
             <p>
                 &#x211a; &#x225d; { &#x27e8;a,
-                b&#x27e9;&#x2208;&#x2124;&times;&#x2124; :
+                b&#x27e9;&#x2208;&#x2124;&#x2297;&#x2124; :
                 b &gt; 0<sub>&#x2124;</sub> }
             </p>
             <p>
@@ -5498,138 +5774,6 @@
                 Rational number zero over zero is equal to everything,
                 which destroys the transitive property of equality.
                 This breaks the rational numbers.  We must exclude it.
-            </p>
-        </section>
-    </section>
-
-    <section id="functions">
-        <section>
-            <h2>Functions</h2>
-            <p>
-                A function is a special kind of relation which maps
-                every member of its domain to the exactly one member
-                of its range.  There is no ambiguity about what the
-                second element of the ordered pair could be.  Because
-                of this we can use functions to transform sets.
-            </p>
-            <aside class="notes">
-                A function is a relation with the special property
-                that every member of the domain appears in exactly
-                one ordered pair.  In other words, functions
-                always map every element in their domains.
-            </aside>
-        </section>
-        <section>
-            <h2>Functions</h2>
-            <p>
-                (<span class="intro">f : D &#x27f6; R</span>) &#x225d;
-                &#x2200;a&#x2208;D (&#x2203;b&#x2208;R
-                &#x27e8;a, b&#x27e9;&#x2208;f) &and;<br />
-                (&#x2200;b,c&#x2208;R
-                (&#x27e8;a, b&#x27e9;&#x2208;f &and;
-                &#x27e8;a, c&#x27e9;&#x2208;f)
-                &#x27f9; b = c)
-            </p>
-            <ul>
-                <li class="fragment">&#x2200;a&#x2208;D
-                    &#x2203;b&#x2208;R &#x27e8;a, b&#x27e9;&#x2208;f
-                </li><li class="fragment">
-                    <span class="intro">f(a) = b</span></li>
-            </ul>
-            <aside class="notes">
-                We denote function application different than
-                relations.  Rather than saying <q>a relates b</q>
-                we say <q>f of a equals b</q>.
-            </aside>
-        </section>
-        <section>
-            <h3>Meet the Jections</h3>
-            <p>
-                Given function f : D &#x27f6; R
-            </p>
-            <ul>
-                <li class="fragment">
-                    <span class="intro">Injection</span> (one-to-one):
-                    Each member of the domain maps to a distinct member
-                    of the range<br />
-                    &#x2200;a,b&#x2208;D (f(a) = f(b)) &#x27f9;
-                    (a = b)
-                </li><li class="fragment">
-                    <span class="intro">Surjection</span> (onto):
-                    Each member of the range is mapped from at least
-                    one member of domain<br /> &#x2200;b&#x2208;R
-                    &#x2203;a&#x2208;D f(a) = b
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h3>Back It Up</h3>
-            <p>
-                Given function f : D &#x27f6; R
-            </p>
-            <ul>
-                <li class="fragment">
-                    <span class="intro">Bijection</span>: both an
-                    injection and a surjection
-                </li><li class="fragment">
-                    Inverse: <span class="intro">f<sup>-1</sup> :
-                    R &#x27f6; D</span><br />
-                    &#x2200;a&#x2208;D,b&#x2208;R
-                    (f(a) = b) &#x27fa; (f<sup>-1</sup>(b) = a)
-                </li><li class="fragment">
-                    <span class="intro">Cardinality</span>: two sets
-                    have the same cardinality if and only if a
-                    bijection exists between them
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h3>Multivariable Functions</h3>
-            <p>A function can have more than one argument.</p>
-            <ul>
-                <li class="fragment">
-                    f : D<sub>1</sub> &times; D<sub>2</sub>
-                    &#x27f6; R &#x27f9;
-                    <span class="intro">
-                        f(a<sub>1</sub>, a<sub>2</sub>) = b</span>
-                </li><li class="fragment">
-                    f : D<sub>1</sub> &times; D<sub>2</sub> &times;
-                    D<sub>3</sub> &#x27f6; R &#x27f9;
-                    <span class="intro">
-                        f(a<sub>1</sub>, a<sub>2</sub>,
-                        a<sub>3</sub>) = b</span>
-                </li><li class="fragment">
-                    ...
-                </li>
-            </ul>
-            <p class="fragment">
-                This is the same as having a domain consisting of
-                ordered pairs or tuples.
-            </p>
-        </section>
-        <section>
-            <h3>Multivariable Functions</h3>
-            <p>Function can return ordered pairs or tuples.</p>
-            <ul>
-                <li class="fragment">
-                    f : D &#x27f6; R<sub>1</sub> &times;
-                    R<sub>2</sub> &#x27f9;
-                    <span class="intro">
-                        f(a) = &#x27e8;b<sub>1</sub>,
-                        b<sub>2</sub>&#x27e9;</span>
-                </li><li class="fragment">
-                    f : D &#x27f6; R<sub>1</sub> &times;
-                    R<sub>2</sub> &times; R<sub>3</sub> &#x27f9;
-                    <span class="intro">
-                        f(a) = &#x27e8;b<sub>1</sub>, b<sub>2</sub>,
-                        b<sub>3</sub>&#x27e9;</span>
-                </li><li class="fragment">
-                    ...
-                </li>
-            </ul>
-            <p class="fragment">
-                This is the same as having a range consisting of
-                ordered pairs or tuples.
             </p>
         </section>
     </section>
