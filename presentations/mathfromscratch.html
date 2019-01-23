@@ -80,23 +80,23 @@
                     Reveal.js for slide technology<br />
                     <a href="https://github.com/hakimel/reveal.js/"
                     >https://github.com/hakimel/reveal.js/</a>
+                </li><li>
+                    Metamath Proof Explorer<br />
+                    <a href="http://us.metamath.org/index.html"
+                    >http://us.metamath.org/index.html</a>
                 </li>
             </ul>
         </section>
         <section>
             <h2>Acknowledgements</h2>
-            <ul>
+            <table><tr><td><ul>
                 <li>Abraham Fraenkel</li>
                 <li>Ernst Zermello</li>
                 <li>Thoraf Skolem</li>
                 <li>Kazimierz Kuratowski</li>
                 <li>Hermann Grassman</li>
                 <li>Georg Cantor</li>
-            </ul>
-        </section>
-        <section>
-            <h2>Acknowledgements</h2>
-            <ul>
+            </ul></td><td><ul>
                 <li>Euclid</li>
                 <li>al-Khwārizmī</li>
                 <li>Gottfried Wilhelm Leibniz</li>
@@ -104,7 +104,7 @@
                 <li>Emmy Noether</li>
                 <li>John von Neumann</li>
                 <li>Norman Wildberger</li>
-            </ul>
+            </ul></td></tr></table>
         </section>
         <section>
             <h2>Acknowledgements</h2>
@@ -177,13 +177,9 @@
         </section>
         <section>
             <h3>Formal Systems: Properties</h3>
-            <p>Desirable properties of a formal system:</p>
+            <p>Desirable properties of a formal system include:</p>
             <ul>
                 <li>
-                    <span class="intro">Useful</span>: statements
-                    match measurable physical processes and make
-                    falsifiable preditions
-                </li><li>
                     <span class="intro">Consistent</span>: no
                     statement can be proven both true and false (no
                     contradictions)
@@ -191,6 +187,10 @@
                     <span class="intro">Complete</span>: all
                     statements can be proven either true or false
                     (nothing missing)
+                </li><li>
+                    <span class="intro">Useful</span>: statements
+                    match measurable physical processes and make
+                    falsifiable preditions
                 </li>
             </ul>
             <aside class="notes">
@@ -214,6 +214,372 @@
                 system can be both.  So we will have to accept
                 some limitations.
             </aside>
+        </section>
+        <section>
+            <h3>Propositional Calculus</h3>
+            <p>
+                Propositional calculus (Frege 1879 CE and Łukasiewicz
+                1930 CE) deals with statements with values limited to
+                <span class="true">true</span> and
+                <span class="false">false</span>.  Statements can be
+                represented by variables such as
+                <span class="intro">P</span>,
+                <span class="intro">Q</span>,
+                <span class="intro">R</span> and so on to indicate
+                that they cannot be further decomposed -- these are
+                called atomic propositions.
+            </p>
+            <aside class="notes">
+                We now introduce our first formal system: propositional
+                calculus.  This is sometimes called zero-order logic
+                because we will introduce first and second order logic
+                later on.  First proposed by Frege in 1879, propositional
+                calculus was improved by woo-kah-SHAY-vitch around 1930.
+            </aside>
+        </section>
+        <section>
+            <h3>Propositional Operators</h3>
+            <ul>
+                <li>
+                    Negation: <span class="intro">&not;</span>P
+                    (not P <q>P is false</q>)
+                </li><li>
+                    Implication: P <span class="intro">&#x27f9;</span> Q
+                    (P implies Q <q>if P then Q</q>)
+                </li>
+            </ul>
+            <table>
+                <tr>
+                    <th>P</th><th>Q</th>
+                    <th><span class="intro">&not;</span>P</th>
+                    <th><span class="intro">&not;</span>Q</th>
+                    <th>P <span class="intro">&#x27f9;</span> Q</th>
+                    <th>Q <span class="intro">&#x27f9;</span> P</th>
+                </tr><tr>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                </tr><tr>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                </tr><tr>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                </tr><tr>
+                    <td class="false">false</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                </tr>
+            </table>
+        </section>
+        <section>
+            <h3>Conjunction</h3>
+            <p>
+                (P <span class="intro">&and;</span> Q) &#x225d;
+                &not;(P &#x27f9; &not;Q)
+            </p><p>
+                A <span class="intro">conjunction</span> of two
+                propositions is true when both the first
+                <span class="intro">and</span> the second are true.
+            </p>
+            <table><tr>
+                <th>P</th><th>Q</th>
+                <th>&not;(P&nbsp;&#x27f9;&nbsp;&not;Q)</th>
+                <th>
+                    P&nbsp;<span class="intro">&and;</span>&nbsp;Q
+                </th>
+            </tr><tr>
+                <td class="true">true</td>
+                <td class="true">true</td>
+                <td class="true">true</td>
+                <td class="true">true</td>
+            </tr><tr>
+                <td class="true">true</td>
+                <td class="false">false</td>
+                <td class="false">false</td>
+                <td class="false">false</td>
+            </tr><tr>
+                <td class="false">false</td>
+                <td class="true">true</td>
+                <td class="false">false</td>
+                <td class="false">false</td>
+            </tr><tr>
+                <td class="false">false</td>
+                <td class="false">false</td>
+                <td class="false">false</td>
+                <td class="false">false</td>
+            </tr></table>
+        </section>
+        <section>
+            <h3>Disjunction</h3>
+            <p>
+                (P <span class="intro">&or;</span> Q) &#x225d;
+                (&not;P) &#x27f9; Q
+            </p><p>
+                A <span class="intro">disjunction</span> of two
+                propositions is true when either the first
+                <span class="intro">or</span> the second is true.
+            </p>
+            <table><tr>
+                <th>P</th><th>Q</th>
+                <th>(&not;P)&nbsp;&#x27f9;&nbsp;Q</th><th>
+                    P&nbsp;<span class="intro">&or;</span>&nbsp;Q
+                </th>
+            </tr><tr>
+                <td class="true">true</td>
+                <td class="true">true</td>
+                <td class="true">true</td>
+                <td class="true">true</td>
+            </tr><tr>
+                <td class="true">true</td>
+                <td class="false">false</td>
+                <td class="true">true</td>
+                <td class="true">true</td>
+            </tr><tr>
+                <td class="false">false</td>
+                <td class="true">true</td>
+                <td class="true">true</td>
+                <td class="true">true</td>
+            </tr><tr>
+                <td class="false">false</td>
+                <td class="false">false</td>
+                <td class="false">false</td>
+                <td class="false">false</td>
+            </tr></table>
+        </section>
+        <section>
+            <h3>Biconditional</h3>
+            <p>
+                (P <span class="intro">&#x27fa;</span> Q)
+                &#x225d; (P &#x27f9; Q) &and; (Q &#x27f9; P)
+            </p>
+            <p>
+                A biconditional expresses implication in both
+                directions.  It represents binary equality.
+            </p>
+            <table>
+                <tr>
+                    <th>P</th><th>Q</th>
+                    <th>(P &#x27f9; Q) &and; (Q &#x27f9; P)</th>
+                    <th>P <span class="intro">&#x27fa;</span> Q</th>
+                </tr><tr>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                </tr><tr>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                    <td class="false">false</td>
+                    <td class="false">false</td>
+                </tr><tr>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                    <td class="false">false</td>
+                </tr><tr>
+                    <td class="false">false</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                </tr>
+            </table>
+            <aside class="notes">
+                A biconditional expresses implication in both
+                directions.
+            </aside>
+        </section>
+        <section>
+            <h3>Propositional Axioms</h3>
+            <p>
+            </p>
+            <ul>
+                <li>
+                    Simplification: P &#x27f9; (Q &#x27f9; P)
+                </li><li>
+                    Frege: ((P &#x27f9; (Q &#x27f9; R)) &#x27f9;<br />
+                    ((P &#x27f9; Q) &#x27f9; (P &#x27f9; R)))
+                </li><li>
+                    Transposition: ((&not;P &#x27f9; &not;Q) &#x27f9;
+                    (Q &#x27f9; P))
+                </li><li>
+                    Modus Ponens: ((P &#x27f9; Q) &and; P) &#x27f9; Q
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Proof: Modus Ponens Deduction</h3>
+            <p>
+                ((P &#x27f9; Q) &and; (P &#x27f9; (Q &#x27f9; R)))
+                &#x27f9; (P &#x27f9; R)
+            </p>
+            <ul>
+                <li>
+                    (P &#x27f9; (Q &#x27f9; R)) &#x27f9;<br />
+                    ((P &#x27f9; Q) &#x27f9; (P &#x27f9; R)) :: Fregge
+                </li><li>
+                    (((P &#x27f9; Q) &#x27f9; (P &#x27f9; R)) &and;
+                    (P &#x27f9; Q)) &#x27f9;<br />
+                    (P &#x27f9; R) :: Modus Ponens
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Proof: Principal of Identity</h3>
+            <p>P &#x27f9; P</p>
+            <ul>
+                <li>
+                    P &#x27f9; (P &#x27f9; P) :: Simplification
+                </li><li>
+                    P &#x27f9; ((P &#x27f9; P) &#x27f9; P) ::
+                    Simplification
+                </li><li>
+                    P &#x27f9; P :: Modus Ponens Deduction
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Proof: DeMorgan's Laws</h3>
+            <p>
+                &not;(P &and; Q) &#x27fa; &not;P &or; &not;Q
+            </p>
+            <ul>
+                <li>
+                    &not;&not;(P &#x27f9; &not;Q) &#x27fa;
+                    (&not;&not;P &#x27f9; &not;Q) :: Definition
+                </li><li>
+                    (P &#x27f9; &not;Q) &#x27fa;
+                    (P &#x27f9; &not;Q) :: Double Negation
+                </li>
+            </ul>
+            <p>
+                &not;(P &or; Q) &#x27fa; &not;P &and; &not;Q
+            </p>
+            <ul>
+                <li>
+                    &not;(&not;P &#x27f9; Q) &#x27fa;
+                    &not;(&not;P &#x27f9; &not;&not;Q)  :: Definition
+                </li><li>
+                    &not;(&not;P &#x27f9; Q) &#x27fa;
+                    &not;(&not;P &#x27f9; Q)  :: Double Negation
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Proof: Syllogism</h3>
+            <p>
+                ((P &#x27f9; Q) &and; (Q &#x27f9; R)) &#x27f9;
+                (P &#x27f9; R)
+            </p>
+            <ul>
+                <li>
+                    (Q &#x27f9; R) &#x27f9; (P &#x27f9; (Q &#x27f9; R))
+                    :: Simplification
+                </li><li>
+                    ((P &#x27f9; (Q &#x27f9; R)) &and; (P &#x27f9; Q))
+                    &#x27f9;<br /> (P &#x27f9; R) ::
+                    Modus Ponens Deduction
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Proof: Contradiction</h3>
+            <p>
+                ((P &#x27f9; Q) &and; (P &#x27f9; &not;Q)) &#x27f9; &not;P
+            </p>
+            <ul>
+                <li>
+                    ???
+                </li><li>
+                    ???
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Proof: Modus Tollens</h3>
+            <p>
+                ((P &#x27f9; Q) &and; &not;Q) &#x27f9; &not;P
+            </p>
+            <ul>
+                <li>
+                    &not;Q &#x27f9; (P &#x27f9; &not;Q) :: Simplification
+                </li><li>
+                    ((P &#x27f9; Q) &and; (P &#x27f9; &not;Q))
+                    &#x27f9; &not;P :: Contradiction
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Proof: Conjunction Elimination</h3>
+            <p>
+                (P &and; Q) &#x27f9; P
+            </p>
+            <ul>
+                <li>
+                    (P &and; Q) &#x27f9; &not;(P &#x27f9; &not;Q)
+                    :: Conjunction
+                </li><li>
+                    ???
+                </li><li>
+                    ???
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Proof: Symmetric Biconditional</h3>
+            <p>
+                <span class="intro">Symmetric</span>:
+                (P &#x27fa; Q) &#x27f9; (Q &#x27fa; P)
+            </p>
+            <ul>
+                <li>
+                    ((P &#x27f9; Q) &and; (Q &#x27f9; P)) &#x27f9;<br />
+                    (P &#x27f9; Q) :: Conjunction Elimination
+                </li><li>
+                    ((P &#x27f9; Q) &and; (Q &#x27f9; P)) &#x27f9;<br />
+                    (Q &#x27f9; P) :: Conjunction Elimination
+                </li><li>
+                    ((P &#x27f9; Q) &and; (Q &#x27f9; P)) &#x27f9;<br />
+                    ((Q &#x27f9; P) &and; (P &#x27f9; Q)) :: Conjunction
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Proof: Transitive Biconditional</h3>
+            <p>
+                <span class="intro">Transitive</span>:
+                (P &#x27fa; Q) &and; (Q &#x27fa; R)
+                &#x27f9; (P &#x27fa; R)
+            </p>
+            <ul>
+                <li>
+                    ((P &#x27f9; Q) &and; (Q &#x27f9; P))
+                    :: Biconditional
+                </li><li>
+                    ((Q &#x27f9; R) &and; (R &#x27f9; Q))
+                    :: Biconditional
+                </li><li>
+                    ((P &#x27f9; Q) &and; (Q &#x27f9; R)) &#x27f9;
+                    (P &#x27f9; R) :: Syllogism
+                </li><li>
+                    ((R &#x27f9; Q) &and; (Q &#x27f9; P)) &#x27f9;
+                    (R &#x27f9; P) :: Syllogism
+                </li>
+            </ul>
         </section>
         <section>
             <h3>Predicate</h3>
@@ -273,68 +639,6 @@
             </aside>
         </section>
         <section>
-            <h3>Compound Predicates</h3
-            <p>
-                Given predicates P and Q the following are
-                also predicates:
-            </p>
-            <table>
-                <tr>
-                    <td><span class="intro">&not;</span>P</td>
-                    <td>not P (P is false)</td>
-                </tr><tr>
-                    <td>(P <span class="intro">&and;</span> Q)</td>
-                    <td>both P and Q are true</td>
-                </tr><tr>
-                    <td>(P <span class="intro">&or;</span> Q)</td>
-                    <td>at least one of P and Q are true</td>
-                </tr><tr>
-                    <td>(P <span class="intro">&#x27f9;</span> Q)</td>
-                    <td>if P then Q (implication)</td>
-                </tr>
-            </table>
-            <aside class="notes">
-                We can combine simpler predicates into compound
-                predicates in a few ways.  We can negate a
-                predicate by asserting that it is false.  For
-                example, if <q>it is raining</q> is a predicate
-                then <q>it is not raining</q> is also a predicate.
-                We can use logical and to assert that two
-                predicates are both true.  For example, we can say
-                <q>it is raining</q> and <q>the ground is wet</q>.
-                We can use logical or to assert that at least one
-                of two predicates are true.  For example,
-                <q>it is raining</q> or <q>the ground is wet</q>.
-                Finally we can combine predicates conditionally.
-                For example, if it is raining then the ground is
-                wet.  This can be applied in both directions.
-                For example, if and only if it is raining then
-                the ground is wet.
-            </aside>
-        </section>
-        <section>
-            <h3>Biconditional Laws</h3>
-            <p>
-                &#x2200;P,Q (P <span class="intro">&#x27fa;</span> Q)
-                &#x225d; (P &#x27f9; Q) &and; (Q &#x27f9; P)
-            </p>
-            <p>
-                <span class="intro">Symmetric</span>:
-                &#x2200;P,Q (P <span class="intro">&#x27fa;</span> Q)
-                &#x27f9; (Q <span class="intro">&#x27fa;</span> P)
-            </p>
-            <p>
-                <span class="intro">Transitive</span>:
-                &#x2200;P,Q,R (P <span class="intro">&#x27fa;</span> Q)
-                &and; (Q <span class="intro">&#x27fa;</span> R)
-                &#x27f9; (P <span class="intro">&#x27fa;</span> R)
-            </p>
-            <p>
-                Biconditional predicates can be swapped and
-                transferred without changing results.
-            </p>
-        </section>
-        <section>
             <h3>Liebniz's Law</h3>
             <p>
                 &#x2200;a,b <span class="intro">(a = b)</span> &#x27f9;
@@ -345,43 +649,6 @@
                 We can substitute equal values without changing
                 any results.
             </p>
-        </section>
-        <section>
-            <h3>Deduction</h3>
-            <p>
-                Deduction applies general rules to reach specific
-                conclusions.
-            </p>
-            <ul>
-                <li>Modus ponens:
-                    ((P &#x27f9; Q) &and; P) &#x27f9; Q
-                </li>
-                <li>Modus tollens:
-                    ((P &#x27f9; Q) &and; &not;Q) &#x27f9; &not;P
-                </li>
-                <li>Syllogism:
-                    ((P &#x27f9; Q) &and; (Q &#x27f9; R)) &#x27f9;
-                    (P &#x27f9; R)
-                </li>
-                <li>And so on...</li>
-            </ul>
-            <aside class="notes">
-                Deduction allows us to derive specific conlusions
-                from general rules.  These are some deductive
-                rules.  Modus ponens allows us to prove
-                consequences.  So if we've proven both <q>if it
-                is raining then the ground is wet</q> and
-                <q>it is raining</q> then modus ponens proves that
-                the ground is wet.  Modus tollens is similar but
-                instead lets us combine the same conditional with
-                <q>the ground is not wet</q> to prove that it is
-                not raining.  Syllogism lets us combine
-                conditionals in a transitive way.  So given
-                <q>if it is raining the ground is wet</q> and
-                <q>if the ground is wet the grass grows</q> we can
-                use syllogism to prove that if it is raining the
-                grass grows.
-            </aside>
         </section>
         <section>
             <h3>Induction</h3>
@@ -7645,6 +7912,65 @@
                 <li>
                     Zero wedge product to test line, plane,
                     circle, sphere membership
+                </li>
+            </ul>
+        </section>
+    </section>
+
+    <section id="lambda-calculus">
+        <!-- TODO: derive true, false, not, and, or, boolean-eq,
+             (maybe implies?), successor, add, multiply, power,
+             pair, phi, predecessor, subtract -->
+        <section>
+            <h2>Lambda Calculus</h2>
+            <p>
+                Expressions
+            </p>
+            <ul>
+                <li>
+                    Variable: a
+                </li><li>
+                    Abstraction: &#x03bb;a.E
+                </li><li>
+                    Application: E<sub>1</sub> E<sub>2</sub>
+                </li><li>
+                    Grouping: (E)
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Combinators</h3>
+            <p>
+                A combinator is a function with no free variables.  That
+                is, all variables appear inside abstractions for which
+                they are parameters.
+            </p>
+        </section>
+        <section>
+            <h3>Starling and Kestral</h3>
+            <ul>
+                <li>
+                    Ibis(Identity): &#x03bb;a.a
+                </li><li>
+                    Mockingbird(Self-Apply): &#x03bb;a.a a
+                </li><li>
+                    Kestral(True): &#x03bb;ab.a
+                </li><li>
+                    Kite(False): &#x03bb;ab.a
+                </li><li>
+                    Cardinal: &#x03bb;fab.f b a
+                </li><li>
+                    Bluebird(Compose):
+                    &#x03bb;fga.f (g a)
+                </li><li>
+                    Thrush: &#x03bb;af.f a
+                </li><li>
+                    Vireo(Pair): &#x03bb;abf.f a b
+                </li><li>
+                    Blackbird:
+                    &#x03bb;fgab.f (g a b)
+                </li><li>
+                    Starling: &#x03bb;abc.a c (b c)
                 </li>
             </ul>
         </section>
