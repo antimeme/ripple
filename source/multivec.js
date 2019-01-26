@@ -1,5 +1,5 @@
 // multivec.js
-// Copyright (C) 2017-2018 by Jeff Gold.
+// Copyright (C) 2017-2019 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -680,6 +680,10 @@
             result = v.multiply(result).multiply(v.conjugate());
         }
         return result;
+    };
+
+    multivec.prototype.reflect = function(v) {
+        return this.applyVersor(v);
     };
 
     multivec.prototype.rotate = function(v, w) {

@@ -78,9 +78,9 @@
             "apple",
             "cookie"];
         var result = [
-            itemSystem.createItem({'type': items[Math.floor(
+            itemSystem.create({'type': items[Math.floor(
                 Math.random() * items.length)]}),
-            itemSystem.createItem({'type': items[Math.floor(
+            itemSystem.create({'type': items[Math.floor(
                 Math.random() * items.length)]})];
         return result;
     };
@@ -256,7 +256,7 @@
                     .addClass('page').addClass('settings').hide()
                     .append('<h2>Settings</h2>')
                     .appendTo(container);
-                this.inventory = fascia.inventoryPane(
+                this.inventory = fascia.inventoryScreen(
                     container, this.player,
                     this.itemSystem, this.imageSystem);
 
@@ -279,7 +279,8 @@
                 });
 
                 this.imageSystem.resize(width, height);
-                this.inventory.resize(width, height);
+                if (this.inventory)
+                    this.inventory.resize(width, height);
             },
 
             draw: function(ctx, width, height, now, last) {
