@@ -62,66 +62,82 @@
              if (!isNaN(width) && !isNaN(height))
                  this.center();
          },
-         drawQueen: function(ctx, x, y, size) {
-             ctx.moveTo(x - size / 4, y + size / 4);
-             ctx.lineTo(x + size / 4, y + size / 4);
-
-             ctx.moveTo(x - size / 4, y + size / 6);
-             ctx.lineTo(x + size / 4, y + size / 6);
-             ctx.lineTo(x + size / 3, y - size / 5);
-             ctx.lineTo(x + size / 6, y);
-             ctx.lineTo(x, y - size / 3);
-             ctx.lineTo(x - size / 6, y);
-             ctx.lineTo(x - size / 3, y - size / 5);
-             ctx.lineTo(x - size / 4, y + size / 6);
-
-             ctx.moveTo(x + size * 0.45, y);
-             ctx.arc(x, y, size * 0.45, 0, 2 * Math.PI);
-         },
-         eachBoard: function(fn, context) {
-             for (row = 0; row < 8; ++row)
-                 for (col = 0; col < 8; ++col)
+         eachSquare: function(fn, context) {
+             for (var row = 0; row < 8; ++row)
+                 for (var col = 0; col < 8; ++col)
                      fn.call(context || this, row, col);
+         },
+         eachQueen: function(fn, context) {
+             for (var ii = 0; ii < this.queens.length; ++ii)
+                 fn.call(context || this, this.queens[ii]);
+         },
+         drawQueen: function(queen, ctx) {
+             var size = this.grid.size();
+
+             ctx.beginPath();
+             ctx.moveTo(queen.x - size / 4,
+                        queen.y + size / 4);
+             ctx.lineTo(queen.x + size / 4,
+                        queen.y + size / 4);
+             ctx.moveTo(queen.x - size / 4,
+                        queen.y + size / 6);
+             ctx.lineTo(queen.x + size / 4,
+                        queen.y + size / 6);
+             ctx.lineTo(queen.x + size / 3,
+                        queen.y - size / 5);
+             ctx.lineTo(queen.x + size / 6, queen.y);
+             ctx.lineTo(queen.x, queen.y - size / 3);
+             ctx.lineTo(queen.x - size / 6, queen.y);
+             ctx.lineTo(queen.x - size / 3,
+                        queen.y - size / 5);
+             ctx.lineTo(queen.x - size / 4,
+                        queen.y + size / 6);
+             ctx.fillStyle = (this.queens.length >= 8) ?
+                             colorSuccess : colorQueen;
+             ctx.fill();
+
+             ctx.moveTo(queen.x + size * 0.45, queen.y);
+             ctx.arc(queen.x, queen.y, size * 0.45,
+                     0, 2 * Math.PI);
+             ctx.strokeStyle = (this.queens.length >= 8) ?
+                               colorSuccess : colorQueen;
+             ctx.stroke();
          },
          isCaptured: function(row, col) {
              var capture = false;
 
-             for (var ii = 0; ii < this.queens.length; ++ii) {
-                 var queen = this.queens[ii];
-
+             this.eachQueen(function(queen) {
                  if (queen.row === row ||
                      queen.col === col ||
                      (queen.row - row === queen.col - col) ||
                      (queen.row - row === col - queen.col))
                      capture = true;
-             }
+             });
              return capture;
          },
          hasQueen: function(row, col) {
-             for (var ii = 0; ii < this.queens.length; ++ii) {
-                 var queen = this.queens[ii];
-
+             var result = false;
+             this.eachQueen(function(queen) {
                  if (queen.row === row && queen.col === col)
-                     return true;
-             }
-             return false;
+                     result = true;
+             });
+             return result;
          },
          removeQueen: function(row, col) {
              var result = [];
-             for (var ii = 0; ii < this.queens.length; ++ii) {
-                 var queen = this.queens[ii];
-
+             this.eachQueen(function(queen) {
                  if (queen.row !== row || queen.col !== col)
                      result.push(queen);
-             }
+             });
              this.queens = result;
          },
          draw: function(ctx, width, height) {
              ctx.save();
              this.camera.setupContext(ctx);
 
+             // Black squares
              ctx.beginPath();
-             this.eachBoard(function(row, col) {
+             this.eachSquare(function(row, col) {
                  if ((row + col) % 2)
                      this.grid.draw(ctx, this.grid.coordinate(
                          {row: row, col: col}));
@@ -129,8 +145,9 @@
              ctx.fillStyle = colorBlack;
              ctx.fill();
 
+             // White squares
              ctx.beginPath();
-             this.eachBoard(function(row, col) {
+             this.eachSquare(function(row, col) {
                  if (!((row + col) % 2))
                      this.grid.draw(ctx, this.grid.coordinate(
                          {row: row, col: col}));
@@ -138,8 +155,9 @@
              ctx.fillStyle = colorWhite;
              ctx.fill();
 
+             // Capture highlights
              ctx.beginPath();
-             this.eachBoard(function(row, col) {
+             this.eachSquare(function(row, col) {
                  if (this.isCaptured(row, col))
                      this.grid.draw(ctx, this.grid.coordinate(
                          {row: row, col: col}));
@@ -147,6 +165,7 @@
              ctx.fillStyle = colorCapture;
              ctx.fill();
 
+             // Draw the board outline
              ctx.beginPath();
              for (row = 0; row < 8; ++row)
                  for (col = 0; col < 8; ++col) {
@@ -157,14 +176,8 @@
                                colorSuccess : colorBoundary;
              ctx.stroke();
 
-             ctx.beginPath();
-             for (ii = 0; ii < this.queens.length; ++ii)
-                 this.drawQueen(ctx, this.queens[ii].x,
-                                this.queens[ii].y, this.grid.size());
-             ctx.strokeStyle = (this.queens.length >= 8) ?
-                               colorSuccess : colorQueen;
-             ctx.stroke();
-
+             this.eachQueen(function(queen) {
+                 this.drawQueen(queen, ctx); });
              ctx.restore();
          },
          tap: function(event, redraw) {
