@@ -62,6 +62,22 @@
              if (!isNaN(width) && !isNaN(height))
                  this.center();
          },
+         drawQueen: function(ctx, x, y, size) {
+             ctx.moveTo(x - size / 4, y + size / 4);
+             ctx.lineTo(x + size / 4, y + size / 4);
+
+             ctx.moveTo(x - size / 4, y + size / 6);
+             ctx.lineTo(x + size / 4, y + size / 6);
+             ctx.lineTo(x + size / 3, y - size / 5);
+             ctx.lineTo(x + size / 6, y);
+             ctx.lineTo(x, y - size / 3);
+             ctx.lineTo(x - size / 6, y);
+             ctx.lineTo(x - size / 3, y - size / 5);
+             ctx.lineTo(x - size / 4, y + size / 6);
+
+             ctx.moveTo(x + size * 0.45, y);
+             ctx.arc(x, y, size * 0.45, 0, 2 * Math.PI);
+         },
          eachBoard: function(fn, context) {
              for (row = 0; row < 8; ++row)
                  for (col = 0; col < 8; ++col)
@@ -142,14 +158,12 @@
              ctx.stroke();
 
              ctx.beginPath();
-             for (ii = 0; ii < this.queens.length; ++ii) {
-                 ctx.moveTo(this.queens[ii].x, this.queens[ii].y);
-                 ctx.arc(this.queens[ii].x, this.queens[ii].y,
-                         this.grid.size() * 0.45, 0, 2 * Math.PI);
-             }
-             ctx.fillStyle = (this.queens.length >= 8) ?
-                             colorSuccess : colorQueen;
-             ctx.fill();
+             for (ii = 0; ii < this.queens.length; ++ii)
+                 this.drawQueen(ctx, this.queens[ii].x,
+                                this.queens[ii].y, this.grid.size());
+             ctx.strokeStyle = (this.queens.length >= 8) ?
+                               colorSuccess : colorQueen;
+             ctx.stroke();
 
              ctx.restore();
          },
