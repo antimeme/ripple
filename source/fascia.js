@@ -917,8 +917,8 @@
     // Framework for canvas applications
     // Object passed as the app is expected to have the following:
     //
-    // app.init(container, viewport)
-    // app.draw(ctx, width, height, now)
+    // app.init(container, viewport, redraw)
+    // app.draw(ctx, width, height, now, last)
     // app.resize(width, height)
     // app.keydown(event, redraw)
     // app.keyup(event, redraw)
@@ -961,12 +961,10 @@
         viewport.addEventListener('resize', function(event) {
             var width = viewport.innerWidth || viewport.clientWidth;
             var height = viewport.innerHeight || viewport.clientHeight;
-
             if (!width || !height)
                 return;
-            canvas.width = width;
-	    canvas.height = height;
-
+            canvas.style.width  = canvas.width  = width;
+            canvas.style.height = canvas.height = height;
             if (app.resize)
                 app.resize(width, height, container);
             redraw();
