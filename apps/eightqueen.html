@@ -147,7 +147,8 @@
                  ctx.arc(this.queens[ii].x, this.queens[ii].y,
                          this.grid.size() * 0.45, 0, 2 * Math.PI);
              }
-             ctx.fillStyle = colorQueen;
+             ctx.fillStyle = (this.queens.length >= 8) ?
+                             colorSuccess : colorQueen;
              ctx.fill();
 
              ctx.restore();
