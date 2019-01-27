@@ -793,39 +793,60 @@
         return this;
     };
 
-    ripple.transform = function(width, height) {
-        if (!(this instanceof ripple.transform))
-            return new ripple.transform(width, height);
+    /**
+     * Represents a screen which can be resized, panned, scaled
+     * and so on. */
+    ripple.camera = function(width, height) {
+        if (!(this instanceof ripple.camera))
+            return new ripple.camera(width, height);
         this.resize(width, height);
         this.reset();
     };
-    ripple.transform.prototype.reset = function() {
+
+    ripple.camera.prototype.reset = function() {
         this.scale = 1;
         this.x = 0;
         this.y = 0;
         this.radians = 0;
+        this.extents = null;
         return this;
     };
-    ripple.transform.prototype.resize = function(width, height) {
+
+    ripple.camera.prototype.resize = function(width, height) {
         this.width  = width;
         this.height = height;
         return this;
     };
-    ripple.transform.prototype.pan = function(vector) {
+
+    ripple.camera.prototype.pan = function(vector) {
         this.x += vector.x;
         this.y += vector.y;
         return this;
     };
-    ripple.transform.prototype.position = function(vector) {
+
+    ripple.camera.prototype.position = function(vector) {
         this.x = vector.x;
         this.y = vector.y;
         return this;
     };
-    ripple.transform.prototype.rotate = function(radians) {
-        this.radians += radians;
+
+    ripple.camera.prototype.rotate = function(radians) {
+        return this.setAngle(this.radians + radians);
+    };
+
+    ripple.camera.prototype.setAngle = function(radians) {
+        this.radians = radians;
         return this;
     };
-    ripple.transform.prototype.setScale = function(factor, min, max) {
+
+    ripple.camera.prototype.zoom = function(factor, min, max) {
+        return this.setScale(this.scale * factor, min, max);
+    };
+
+    ripple.camera.prototype.setScale = function(factor, min, max) {
+        if (this.extents) {
+        }
+
         if (!isNaN(factor)) {
             if (!isNaN(max) && (factor > max))
                 factor = max;
@@ -835,10 +856,14 @@
         }
         return this;
     };
-    ripple.transform.prototype.zoom = function(factor, min, max) {
-        return this.setScale(this.scale * factor, min, max);
-    };
-    ripple.transform.prototype.toScreenFromWorld = function(point) {
+
+    ripple.camera.prototype.setExtents = function(
+        startX, startY, endX, endY) {
+        this.extents = {sx: startX, sy: startY, ex: endX, ey: endY};
+        return this;
+    }
+
+    ripple.camera.prototype.toScreenFromWorld = function(point) {
         var place = { x: point.x, y: point.y };
         place.x -= this.x;
         place.y -= this.y;
@@ -847,7 +872,8 @@
         place.y = place.y * this.scale + this.height / 2;
         return place;
     };
-    ripple.transform.prototype.toWorldFromScreen = function(place) {
+
+    ripple.camera.prototype.toWorldFromScreen = function(place) {
         var point = { x: place.x, y: place.y };
         point.x = (point.x - this.width / 2) / this.scale;
         point.y = (point.y - this.height / 2) / this.scale;
@@ -856,7 +882,8 @@
         point.y += this.y;
         return point;
     };
-    ripple.transform.prototype.setupContext = function(ctx) {
+
+    ripple.camera.prototype.setupContext = function(ctx) {
         ctx.translate(this.width / 2, this.height / 2);
         ctx.scale(this.scale, this.scale);
         ctx.rotate(this.angle);

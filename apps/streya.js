@@ -13,9 +13,9 @@
 (function(streya) {
     'use strict';
     if (typeof require !== 'undefined') {
-        this.ripple = require('./ripple/ripple.js');
+        this.ripple   = require('./ripple/ripple.js');
         this.multivec = require('./ripple/multivec.js');
-        this.fascia = require('./ripple/fascia.js');
+        this.fascia   = require('./ripple/fascia.js');
     }
 
     // === Apparatus
@@ -517,7 +517,7 @@
     streya.game = function(data) {
         var game, redraw, tap, selected, drag, zooming;
         var colorSelected = 'rgba(192, 192, 0, 0.2)';
-        var tform = ripple.transform();
+        var camera = ripple.camera();
         var imageSystem = fascia.imageSystem(data.imageSystem);
         var itemSystem = fascia.itemSystem(data.itemSystem);
         var inventoryScreen;
@@ -602,7 +602,7 @@
 
                     previous = selected;
                     selected = ship.grid.position(
-                        tform.toWorldFromScreen(point));
+                        camera.toWorldFromScreen(point));
 
                     cell = ship.getCell(selected);
                     if (mode.value === 'extend' && !cell) {
@@ -661,24 +661,24 @@
                     ship.undoMark();
                 },
                 drag: function(event) {
-                    tform.pan({
+                    camera.pan({
                         x: (event.last.x - event.current.x) /
-                        tform.scale,
+                        camera.scale,
                         y: (event.last.y - event.current.y) /
-                        tform.scale });
+                        camera.scale });
                 },
                 pinchStart: function(event) {
-                    this._pinchScale = tform.scale;
+                    this._pinchScale = camera.scale;
                 },
                 pinchMove: function(event) {
                     var extents = ship.extents();
                     var min = Math.min(
-                        game.width / (extents.ex - extents.sx),
-                        game.height / (extents.ey - extents.sy));
-                    tform.setScale(
+                        camera.width / (extents.ex - extents.sx),
+                        camera.height / (extents.ey - extents.sy));
+                    camera.setScale(
                         this._pinchScale * event.length,
                         min / 2, Math.min(
-                            game.width, game.height) /
+                            camera.width, camera.height) /
                         ship.grid.size());
                 },
                 draw: function(ctx, now) {
@@ -736,26 +736,26 @@
                 singleTap: function(point) {
                     this.update();
                     player.control.setTarget(
-                        tform.toWorldFromScreen(point));
+                        camera.toWorldFromScreen(point));
                 },
                 doubleTap: function(point) {
                     this.update();
                     player.control.setArrow(
                         true, player.position,
-                        tform.toWorldFromScreen(point));
+                        camera.toWorldFromScreen(point));
                 },
                 pinchStart: function(event) {
-                    this._pinchScale = tform.scale;
+                    this._pinchScale = camera.scale;
                 },
                 pinchMove: function(event) {
                     var extents = ship.extents();
                     var min = Math.min(
-                        game.width / (extents.ex - extents.sx),
-                        game.height / (extents.ey - extents.sy));
-                    tform.setScale(
+                        camera.width / (extents.ex - extents.sx),
+                        camera.height / (extents.ey - extents.sy));
+                    camera.setScale(
                         this._pinchScale * event.length,
                         min / 2, Math.min(
-                            game.width, game.height) /
+                            camera.width, camera.height) /
                         ship.grid.size());
                 },
                 draw: function(ctx, now) { player.draw(ctx, now); },
@@ -784,7 +784,7 @@
                             ship.activeApparatus = apparatus;
                         } else apparatus.active = false;
                     });
-                    tform.position(player.position);
+                    camera.position(player.position);
                 }
             },
         };
@@ -980,18 +980,18 @@
                 container.appendChild(menuframe);
                 container.appendChild(bbarLeft);
                 container.appendChild(bbarRight);
-                imageSystem.resize(this.width, this.height);
+                imageSystem.resize(camera.width, camera.height);
 
                 settingsScreen = fascia.screen(
                     container, {imageSystem: imageSystem,
                                 title: 'Settings'}, settingsMenu);
-                settingsScreen.resize(this.width, this.height);
+                settingsScreen.resize(camera.width, camera.height);
                 apparatusScreen = fascia.screen(
                     container, {imageSystem: imageSystem});
-                apparatusScreen.resize(this.width, this.height);
+                apparatusScreen.resize(camera.width, camera.height);
                 inventoryScreen = fascia.inventoryScreen(
                     container, player, itemSystem, imageSystem);
-                inventoryScreen.resize(this.width, this.height);
+                inventoryScreen.resize(camera.width, camera.height);
 
                 this.center();
                 system = systems.edit;
@@ -1007,8 +1007,8 @@
 
             resize: function(width, height, container) {
                 var size = Math.min(width, height);
-                this.width = width;
-                this.height = height;
+                camera.width = width;
+                camera.height = height;
 
                 menuframe.style.borderRadius =
                     Math.floor(size / 50) + 'px';
@@ -1029,7 +1029,7 @@
                             height - Math.floor(size / 20 + size / 11);
                     });
 
-                tform.resize(width, height);
+                camera.resize(width, height);
                 [imageSystem, inventoryScreen,
                  apparatusScreen,
                  settingsScreen].forEach(function(system) {
@@ -1048,8 +1048,8 @@
 
                 ctx.save();
                 ctx.fillStyle = 'rgb(32, 32, 32)';
-                ctx.fillRect(0, 0, this.width, this.height);
-                tform.setupContext(ctx);
+                ctx.fillRect(0, 0, camera.width, camera.height);
+                camera.setupContext(ctx);
 
                 ship.drawBackground(ctx);
                 if (system.draw)
@@ -1113,21 +1113,21 @@
             zoom: function(factor) { // Change magnification within limits
                 var extents = ship.extents();
                 var max = Math.min(
-                    this.width, this.height) / ship.grid.size();
+                    camera.width, camera.height) / ship.grid.size();
                 var min = Math.min(
-                    this.width / (extents.ex - extents.sx),
-                    this.height / (extents.ey - extents.sy));
-                tform.zoom(factor, min * 4 / 5, max);
+                    camera.width / (extents.ex - extents.sx),
+                    camera.height / (extents.ey - extents.sy));
+                camera.zoom(factor, min * 4 / 5, max);
             },
 
             center: function() { // Center the ship for overall view
                 var extents = ship.extents();
-                tform.reset();
-                tform.pan({ x: (extents.sx + extents.ex) / 2,
-                            y: (extents.sy + extents.ey) / 2 });
-                tform.zoom(Math.min(
-                    this.width / (extents.ex - extents.sx),
-                    this.height / (extents.ey - extents.sy)) * 4 / 5);
+                camera.reset();
+                camera.pan({ x: (extents.sx + extents.ex) / 2,
+                             y: (extents.sy + extents.ey) / 2 });
+                camera.zoom(Math.min(
+                    camera.width / (extents.ex - extents.sx),
+                    camera.height / (extents.ey - extents.sy)) * 4 / 5);
             },
         };
         return game;
