@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<link rel="stylesheet" type="text/css" href="fascia.css" />
+<style>
+ table.main { width: 100%; height: 100%; }
+ td#game { background: #dddddd; }
+ td.info { width: 30%; background: #8888ee; vertical-align: top; }
+ td.footer { width: 30%; background: #ee8888; vertical-align: bottom; }
+</style>
+<title>Bubbly</title>
+
+<table class="main">
+    <tr>
+        <td id="game" rowspan="2">
+        </td><td class="info">
+            Each player must click once inside at least one bubble on
+            their turn.  All bubbles that include the clicked location
+            are popped.  The winner is the player who pops the final
+            bubble.
+        </td>
+    </tr><tr>
+        <td class="footer">
+            Inspired by a math puzzle at <a href="https://fivethirtyeight.com/features/time-for-some-abstract-math-drink-up/">FiveThirtyEight</a>
+        </td>
+    </tr>
+</table>
+<audio id="pop" preload="auto">
+    <source src="sounds/pop.wav" type="audio/wav" />
+</audio>
+
+<script src="ripple/polyfill.js"></script>
+<script src="ripple/ripple.js"></script>
+<script src="ripple/fascia.js"></script>
+<script src="ripple/grid.js"></script>
+<script src="ripple/multivec.js"></script>
+<script src="ripple/pathf.js"></script>
+<script src="streya.js"></script>
+<script>//<![CDATA[
+ ripple.ready(function() {
+     var game = document.querySelector('#game');
+     fascia.app({
+         camera: ripple.camera(),
+         sounds: {
+             pop: new Audio('sounds/pop.wav')
+         },
+         bubbles: [],
+         resize: function(width, height) {
+             if (!isNaN(width) && !isNaN(height)) {
+                 this.camera.resize(width, height);
+             }
+         },
+
+         init: function() {
+             var width = this.camera.width;
+             var height = this.camera.height;
+             var size = Math.min(width, height);
+
+             this.bubbles.push({x: width / 4, y: -height / 4,
+                                r: size / 8});
+
+             this.bubbles.push({x: -width / 4, y: height / 4,
+                                r: size / 7});
+
+             this.bubbles.push({x: -width * 1 / 4, y: -height / 4,
+                                r: size / 5});
+             this.bubbles.push({x: -width * 31 / 128, y: -height / 4,
+                                r: size / 6.5});
+             this.bubbles.push({x: -width * 32 / 128, y: -height / 4,
+                                r: size / 10});
+
+             this.bubbles.push({x: width / 4, y: height / 4,
+                                r: size / 5});
+             this.bubbles.push({x: width * 17 / 64, y: height / 4,
+                                r: size / 10});
+         },
+
+         eachBubble: function(fn, context) {
+             for (var ii = 0; ii < this.bubbles.length; ++ii)
+                 fn.call(context || this, this.bubbles[ii]);
+             return this;
+         },
+
+         drawBubble: function(bubble) {
+             this.beginPath();
+             this.moveTo(bubble.x + bubble.r, bubble.y);
+             this.arc(bubble.x, bubble.y, bubble.r, 0, 2 * Math.PI);
+             this.fillStyle = this.createRadialGradient(
+                 bubble.x, bubble.y, bubble.r,
+                 bubble.x, bubble.y, bubble.r / 4);
+             this.fillStyle.addColorStop(0, 'rgba(128, 128, 224, 0.9)');
+             this.fillStyle.addColorStop(1, 'rgba(192, 192, 224, 0.1)');
+             this.fill();
+         },
+
+         draw: function(ctx, width, height, now, last) {
+             ctx.save();
+             this.camera.setupContext(ctx);
+             this.eachBubble(this.drawBubble, ctx);
+             ctx.restore();
+         },
+
+         tap: function(event, redraw) {
+             var pos = this.camera.toWorldFromScreen(event.point);
+             var bubbles = [];
+
+             this.eachBubble(function(bubble) {
+                 var delta = {
+                     x: bubble.x - pos.x, y: bubble.y - pos.y };
+
+                 if (delta.x * delta.x + delta.y * delta.y >
+                     bubble.r * bubble.r)
+                     bubbles.push(bubble);
+                 else console.log('POP!', bubble.x, bubble.y);
+             });
+
+             if (bubbles.length < this.bubbles.length) {
+                 this.sounds.pop.play();
+             }
+             this.bubbles = bubbles;
+             redraw();
+         }
+     }, game, game);
+ }); //]]></script>
