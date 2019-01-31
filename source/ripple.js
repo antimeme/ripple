@@ -465,6 +465,8 @@
         if (!(this instanceof ripple.gestur))
             return new ripple.gestur(config, target);
 
+        if (!config)
+            config = {};
         this.config = config;
         this.next = config.next || false;
         this.doubleThreshold = isNaN(config.doubleThreshold) ? 500 :
@@ -491,6 +493,12 @@
     ripple.gestur.prototype.fireEvent = function(evname) {
         if (this.config[evname])
             this.config[evname].apply(this, arguments);
+    };
+
+    ripple.gestur.prototype.fireDebug = function(evname, event) {
+        if (ripple.param('debug') && this.config[evname])
+            this.config[evname].call(
+                this, evname, ripple.getInputPoints(event));
     };
 
     ripple.gestur.prototype.reset = function() {
@@ -561,14 +569,13 @@
     };
 
     ripple.gestur.prototype.__createPinch = function(target, one, two) {
-        // It's actually mildly annoying to find the angle between two
-        // vectors.  Yes yes, we all know that
+        // Get the angle between two vectors.  To start, observe that:
         //   cos(theta) = v1 . v2 / (||v1|| ||v2||)
-        // However, this will give the same result for an angle to the
-        // left as for an angle to the right because cos(-x) = cos(x).
-        // To sort this out we first compute the dual of one vector and
-        // take the dot product of the other against it.  The angle
-        // should be positive exactly when this product is.
+        // However, because cos(-x) = cos(x) this will give the same
+        // result for an angle to the left as for an angle to the right.
+        // To recover the correct sign we compute the dual of one
+        // vector and take the dot product of the other against it.
+        // The angle should be positive exactly when this product is.
         var current = { x: two.x - one.x, y: two.y - one.y};
         var original = {
             x: this.touchTwo.x - this.touchOne.x,
@@ -757,34 +764,42 @@
         this.target = target;
 
         target.addEventListener('touchstart', function(event) {
+            self.fireDebug('touchstart', event);
             if (event.preventDefault)
                 event.preventDefault();
             return self.onStart(event, true); });
         target.addEventListener('touchmove', function(event) {
+            self.fireDebug('touchmove', event);
             if (event.preventDefault)
                 event.preventDefault();
             return self.onMove(event, true); });
         target.addEventListener('touchend', function(event) {
+            self.fireDebug('touchend', event);
             if (event.preventDefault)
                 event.preventDefault();
             return self.onEnd(event, true); });
         target.addEventListener('touchcancel', function(event) {
+            self.fireDebug('touchcancel', event);
             if (event.preventDefault)
                 event.preventDefault();
             return self.reset(); });
         target.addEventListener('mousedown', function(event) {
+            self.fireDebug('mousedown', event);
             if (event.preventDefault)
                 event.preventDefault();
             return self.onStart(event, false); });
         target.addEventListener('mousemove', function(event) {
+            self.fireDebug('mousemove', event);
             if (event.preventDefault)
                 event.preventDefault();
             return self.onMove(event, false); });
         target.addEventListener('mouseup', function(event) {
+            self.fireDebug('mouseup', event);
             if (event.preventDefault)
                 event.preventDefault();
             return self.onEnd(event, false); });
         target.addEventListener('mouseleave', function(event) {
+            self.fireDebug('mouseleave', event);
             if (event.preventDefault)
                 event.preventDefault();
             return self.reset(); });

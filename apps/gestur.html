@@ -166,6 +166,11 @@
          },
          pinchMove: function(name, event) {
              post(name, {length: event.length, angle: event.angle});
-         }
+         },
+
+         touchstart: function(name, event) { post(name, event); },
+         touchstop: function(name, event) { post(name, event); },
+         mousedown: function(name, event) { post(name, event); },
+         mouseup: function(name, event) { post(name, event); },
      }, canvas);
  }); //]]></script>
