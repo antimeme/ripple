@@ -141,6 +141,13 @@
      };
 
      ripple.gestur({
+         noprevent: ripple.paramBoolean('noprevent'),
+         baseEvents: ripple.paramBoolean('debug'),
+         touchstart: function(name, event) { post(name, event); },
+         touchstop: function(name, event) { post(name, event); },
+         mousedown: function(name, event) { post(name, event); },
+         mouseup: function(name, event) { post(name, event); },
+
          tap: function(name, event) {
              drawTap = event.point;
              post(name, event.point);
@@ -167,10 +174,5 @@
          pinchMove: function(name, event) {
              post(name, {length: event.length, angle: event.angle});
          },
-
-         touchstart: function(name, event) { post(name, event); },
-         touchstop: function(name, event) { post(name, event); },
-         mousedown: function(name, event) { post(name, event); },
-         mouseup: function(name, event) { post(name, event); },
      }, canvas);
  }); //]]></script>

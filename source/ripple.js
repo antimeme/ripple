@@ -45,6 +45,15 @@
         return __params[name];
     };
 
+    ripple.paramBoolean = function(name) {
+        var result = ripple.param(name);
+        ['false', 'f', 'no', 'n', 'off', 0].forEach(function(value) {
+            if (result === value)
+                result = undefined;
+        });
+        return result ? true : false;
+    };
+
     /**
      * Call given function when document is ready */
     ripple.ready = function(fn) {
@@ -495,8 +504,8 @@
             this.config[evname].apply(this, arguments);
     };
 
-    ripple.gestur.prototype.fireDebug = function(evname, event) {
-        if (ripple.param('debug') && this.config[evname])
+    ripple.gestur.prototype.fireBaseEvent = function(evname, event) {
+        if (this.config.baseEvents && this.config[evname])
             this.config[evname].call(
                 this, evname, ripple.getInputPoints(event));
     };
@@ -764,43 +773,43 @@
         this.target = target;
 
         target.addEventListener('touchstart', function(event) {
-            self.fireDebug('touchstart', event);
-            if (event.preventDefault)
+            self.fireBaseEvent('touchstart', event);
+            if (!self.config.noprevent && event.preventDefault)
                 event.preventDefault();
             return self.onStart(event, true); });
         target.addEventListener('touchmove', function(event) {
-            self.fireDebug('touchmove', event);
-            if (event.preventDefault)
+            self.fireBaseEvent('touchmove', event);
+            if (!self.config.noprevent && event.preventDefault)
                 event.preventDefault();
             return self.onMove(event, true); });
         target.addEventListener('touchend', function(event) {
-            self.fireDebug('touchend', event);
-            if (event.preventDefault)
+            self.fireBaseEvent('touchend', event);
+            if (!self.config.noprevent && event.preventDefault)
                 event.preventDefault();
             return self.onEnd(event, true); });
         target.addEventListener('touchcancel', function(event) {
-            self.fireDebug('touchcancel', event);
-            if (event.preventDefault)
+            self.fireBaseEvent('touchcancel', event);
+            if (!self.config.noprevent && event.preventDefault)
                 event.preventDefault();
             return self.reset(); });
         target.addEventListener('mousedown', function(event) {
-            self.fireDebug('mousedown', event);
-            if (event.preventDefault)
+            self.fireBaseEvent('mousedown', event);
+            if (!self.config.noprevent && event.preventDefault)
                 event.preventDefault();
             return self.onStart(event, false); });
         target.addEventListener('mousemove', function(event) {
-            self.fireDebug('mousemove', event);
-            if (event.preventDefault)
+            self.fireBaseEvent('mousemove', event);
+            if (!self.config.noprevent && event.preventDefault)
                 event.preventDefault();
             return self.onMove(event, false); });
         target.addEventListener('mouseup', function(event) {
-            self.fireDebug('mouseup', event);
-            if (event.preventDefault)
+            self.fireBaseEvent('mouseup', event);
+            if (!self.config.noprevent && event.preventDefault)
                 event.preventDefault();
             return self.onEnd(event, false); });
         target.addEventListener('mouseleave', function(event) {
-            self.fireDebug('mouseleave', event);
-            if (event.preventDefault)
+            self.fireBaseEvent('mouseleave', event);
+            if (!self.config.noprevent && event.preventDefault)
                 event.preventDefault();
             return self.reset(); });
         ripple.addWheelListener(target, function(event) {
