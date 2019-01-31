@@ -504,12 +504,6 @@
             this.config[evname].apply(this, arguments);
     };
 
-    ripple.gestur.prototype.fireBaseEvent = function(evname, event) {
-        if (this.config.baseEvents && this.config[evname])
-            this.config[evname].call(
-                this, evname, ripple.getInputPoints(event));
-    };
-
     ripple.gestur.prototype.reset = function() {
         this.start = undefined;
         this.touchOne = undefined;
@@ -519,13 +513,9 @@
         this.state = gesturStates.READY;
     };
 
-    ripple.gestur.prototype.onStart = function(event, touching) {
+    ripple.gestur.prototype.onStart = function(
+        target, points, touching) {
         var now = new Date().getTime();
-        var points = ripple.getInputPoints(
-            event, this.target, this.scalefn);
-
-        if (this.start && this.start.touching !== touching)
-            return false;
 
         switch (this.state) {
             case gesturStates.READY:
@@ -536,14 +526,14 @@
                     this.touchTwo = points.targets[1];
                     this.state = gesturStates.PINCH;
                     this.fireEvent('pinchStart', this.__createPinch(
-                        event.target, this.touchOne, this.touchTwo));
+                        target, this.touchOne, this.touchTwo));
                 } else if (!isNaN(points.x) && !isNaN(points.y)) {
                     this.touchOne = points;
                     this.touchTwo = undefined;
                     this.state = gesturStates.TAP;
                 } else this.reset();
                 break;
-            case gesturStates.TAP:
+            case gesturStates.TAP: /* fall through */
             case gesturStates.DRAG:
                 if (points.targets)
                     points.targets.forEach(function(touch) {
@@ -552,7 +542,7 @@
                             this.state = gesturStates.PINCH;
                             this.fireEvent(
                                 'pinchStart', this.__createPinch(
-                                    event.target, this.touchOne,
+                                    target, this.touchOne,
                                     this.touchTwo));
                         }
                     }, this);
@@ -612,15 +602,11 @@
         return result;
     };
 
-    ripple.gestur.prototype.onMove = function(event, touching) {
+    ripple.gestur.prototype.onMove = function(
+        target, points, touching) {
         var now = new Date().getTime();
-        var points = ripple.getInputPoints(
-            event, this.target, this.scalefn);
         var current = findCurrent(points, this.touchOne);
         var pinchOne, pinchTwo;
-
-        if (this.start && this.start.touching !== touching)
-            return false;
 
         switch (this.state) {
             case gesturStates.READY: /* ignore */ break;
@@ -646,7 +632,7 @@
                         this.swipe = false;
 
                     this.fireEvent('drag', {
-                        target: event.target,
+                        target: target,
                         swipe: this.swipe,
                         start: this.touchOne,
                         last: this.drag, current: current});
@@ -666,7 +652,7 @@
                 }, this);
                 if (pinchOne && pinchTwo)
                     this.fireEvent('pinchMove', this.__createPinch(
-                        event.target, pinchOne, pinchTwo));
+                        target, pinchOne, pinchTwo));
                 break;
             case gesturStates.RESOLV:
                 // check safety threshold
@@ -677,35 +663,34 @@
         return false;
     };
 
-    ripple.gestur.prototype.onEnd = function(event, touching) {
+    ripple.gestur.prototype.onEnd = function(target, points, touching) {
         var now = new Date().getTime();
-        var points = ripple.getInputPoints(
-            event, this.target, this.scalefn);
         var current = findCurrent(points, this.touchOne);
-
-        if (this.start && this.start.touching !== touching)
-            return false;
 
         switch (this.state) {
             case gesturStates.READY: break;
             case gesturStates.TAP:
-                this.fireEvent('tap', {
-                    target: event.target,
-                    point: this.touchOne});
+                if (this.start && this.start.touching === touching) {
+                    this.fireEvent('tap', {
+                        target: target, point: this.touchOne });
 
-                // If the previous tap was close to this one in both
-                // time and space then this is a double tap
-                if (this.lastTap && !isNaN(this.lastTap.when) &&
-                    ((now - this.lastTap.when) <
-                        this.doubleThreshold) &&
-                    (dot({x: this.touchOne.x - this.lastTap.where.x,
-                          y: this.touchOne.y - this.lastTap.where.y}) <
-                        this.doubleDistance)) {
-                    this.fireEvent('doubleTap', {
-                        target: event.target,
-                        point: this.touchOne});
+                    // If the previous tap was close to this one in both
+                    // time and space then this is a double tap
+                    if (this.lastTap && !isNaN(this.lastTap.when) &&
+                        (this.lastTap.touching === touching) &&
+                        ((now - this.lastTap.when) <
+                            this.doubleThreshold) &&
+                        (dot({
+                            x: this.touchOne.x - this.lastTap.where.x,
+                            y: this.touchOne.y - this.lastTap.where.y
+                        }) < this.doubleDistance)) {
+                        this.fireEvent('doubleTap', {
+                            target: target, point: this.touchOne});
+                    }
+                    this.lastTap = {
+                        when: now, touching: touching,
+                        where: this.touchOne };
                 }
-                this.lastTap = { when: now, where: this.touchOne };
                 this.reset();
                 break;
             case gesturStates.PRESS:
@@ -739,10 +724,9 @@
                             current.y - this.touchOne.y) <
                         this.swipeMinDistance)
                         this.fireEvent('tap', {
-                            target: event.target,
-                            point: current});
+                            target: target, point: current});
                     else this.fireEvent('swipe', {
-                        target: event.target,
+                        target: target,
                         start: this.touchOne, end: current});
                 }
                 // fall through
@@ -773,33 +757,57 @@
         this.target = target;
 
         target.addEventListener('touchstart', function(event) {
-            self.fireBaseEvent('touchstart', event);
-            return self.onStart(event, true); });
+            var points = ripple.getInputPoints(
+                event, target, this.scalefn);
+            self.fireEvent('touchstart', points);
+            self.onStart(target, points, true);
+            return false; });
         target.addEventListener('touchmove', function(event) {
-            self.fireBaseEvent('touchmove', event);
+            var points = ripple.getInputPoints(
+                event, target, this.scalefn);
+            self.fireEvent('touchmove', points);
             if (event.preventDefault)
                 event.preventDefault();
-            return self.onMove(event, true); });
+            self.onMove(event, true);
+            return false; });
         target.addEventListener('touchend', function(event) {
-            self.fireBaseEvent('touchend', event);
-            return self.onEnd(event, true); });
+            var points = ripple.getInputPoints(
+                event, target, this.scalefn);
+            self.fireEvent('touchend', points);
+            self.onEnd(target, points, true);
+            return false; });
         target.addEventListener('touchcancel', function(event) {
-            self.fireBaseEvent('touchcancel', event);
-            return self.reset(); });
+            var points = ripple.getInputPoints(
+                event, target, this.scalefn);
+            self.fireEvent('touchcancel', points);
+            self.reset();
+            return false; });
         target.addEventListener('mousedown', function(event) {
-            self.fireBaseEvent('mousedown', event);
-            return self.onStart(event, false); });
+            var points = ripple.getInputPoints(
+                event, target, this.scalefn);
+            self.fireEvent('mousedown', points);
+            self.onStart(target, points, false);
+            return false; });
         target.addEventListener('mousemove', function(event) {
-            self.fireBaseEvent('mousemove', event);
-            return self.onMove(event, false); });
+            var points = ripple.getInputPoints(
+                event, target, this.scalefn);
+            self.onMove(target, points, false);
+            return false; });
         target.addEventListener('mouseup', function(event) {
-            self.fireBaseEvent('mouseup', event);
-            return self.onEnd(event, false); });
+            var points = ripple.getInputPoints(
+                event, target, this.scalefn);
+            self.fireEvent('mouseup', points);
+            self.onEnd(target, points, false);
+            return false; });
         target.addEventListener('mouseleave', function(event) {
-            self.fireBaseEvent('mouseleave', event);
-            return self.reset(); });
+            var points = ripple.getInputPoints(
+                event, target, this.scalefn);
+            self.fireEvent('mouseleave', points);
+            self.reset();
+            return false; });
         ripple.addWheelListener(target, function(event) {
-            return self.onWheel(event); });
+            self.onWheel(event);
+            return false; });
         return this;
     };
 
