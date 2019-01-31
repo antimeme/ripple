@@ -670,14 +670,22 @@
         switch (this.state) {
             case gesturStates.READY: break;
             case gesturStates.TAP:
-                if (this.start && this.start.touching === touching) {
+                // There are two possible types of tap: mouse and touch.
+                // On most systems a touch tap is followed by a
+                // synthetic mouse tap for compatibility with code that
+                // only understand the mouse.  We want to recognize both
+                // but filter out these sythnetic mouse taps.  We ignore
+                // taps that don't match the starting type and we don't
+                // update the last tap if the type has changed.
+                if (this.start && this.start.touching === touching &&
+                    ((!this.lastTap ||
+                      this.lastTap.touching === touching))) {
                     this.fireEvent('tap', {
                         target: target, point: this.touchOne });
 
                     // If the previous tap was close to this one in both
                     // time and space then this is a double tap
                     if (this.lastTap && !isNaN(this.lastTap.when) &&
-                        (this.lastTap.touching === touching) &&
                         ((now - this.lastTap.when) <
                             this.doubleThreshold) &&
                         (dot({
@@ -687,9 +695,9 @@
                         this.fireEvent('doubleTap', {
                             target: target, point: this.touchOne});
                     }
-                    this.lastTap = {
-                        when: now, touching: touching,
-                        where: this.touchOne };
+
+                    this.lastTap = { when: now, touching: touching,
+                                     where: this.touchOne };
                 }
                 this.reset();
                 break;
