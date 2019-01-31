@@ -774,8 +774,6 @@
 
         target.addEventListener('touchstart', function(event) {
             self.fireBaseEvent('touchstart', event);
-            if (!self.config.noprevent && event.preventDefault)
-                event.preventDefault();
             return self.onStart(event, true); });
         target.addEventListener('touchmove', function(event) {
             self.fireBaseEvent('touchmove', event);
@@ -784,33 +782,21 @@
             return self.onMove(event, true); });
         target.addEventListener('touchend', function(event) {
             self.fireBaseEvent('touchend', event);
-            if (!self.config.noprevent && event.preventDefault)
-                event.preventDefault();
             return self.onEnd(event, true); });
         target.addEventListener('touchcancel', function(event) {
             self.fireBaseEvent('touchcancel', event);
-            if (!self.config.noprevent && event.preventDefault)
-                event.preventDefault();
             return self.reset(); });
         target.addEventListener('mousedown', function(event) {
             self.fireBaseEvent('mousedown', event);
-            if (!self.config.noprevent && event.preventDefault)
-                event.preventDefault();
             return self.onStart(event, false); });
         target.addEventListener('mousemove', function(event) {
             self.fireBaseEvent('mousemove', event);
-            if (!self.config.noprevent && event.preventDefault)
-                event.preventDefault();
             return self.onMove(event, false); });
         target.addEventListener('mouseup', function(event) {
             self.fireBaseEvent('mouseup', event);
-            if (!self.config.noprevent && event.preventDefault)
-                event.preventDefault();
             return self.onEnd(event, false); });
         target.addEventListener('mouseleave', function(event) {
             self.fireBaseEvent('mouseleave', event);
-            if (!self.config.noprevent && event.preventDefault)
-                event.preventDefault();
             return self.reset(); });
         ripple.addWheelListener(target, function(event) {
             return self.onWheel(event); });
