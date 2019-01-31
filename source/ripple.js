@@ -202,10 +202,10 @@
      * multi-touch event with coordinates scaled to the element.  When
      * there are touches the coordinates of the first one will be
      * copied to the top level object x and y.  Applications can use
-     * that consistently unless multitouch support is needed. */
+     * that unless multitouch support is needed. */
     ripple.getInputPoints = function(event, element, scalefn) {
-        var brect = (element ? element : event.target)
-            .getBoundingClientRect();
+        var target = element ? element : event.target;
+        var brect = target.getBoundingClientRect();
         var transform = function(id, x, y) {
             var result = {id: id, x: x - brect.left, y: y - brect.top };
             return scalefn ? scalefn(result) : result;
@@ -245,6 +245,7 @@
             result.x = result.changed[0].x;
             result.y = result.changed[0].y;
         }
+        result.target = target;
         return result;
     };
 
@@ -591,52 +592,50 @@
     };
 
     var findCurrent = function(points, match) {
-        var result = undefined;
+        // Attempt to identify which of the current touches matches
+        // the previous touch.
+        var result = points;
         if (points.targets && match)
             points.targets.forEach(function(touch) {
                 if (touch.id === match.id)
-                    result = touch;
-            }, this);
-        if (!result)
-            result = points;
+                    result = touch; });
         return result;
     };
 
     ripple.gestur.prototype.onMove = function(
         target, points, touching) {
         var now = new Date().getTime();
-        var current = findCurrent(points, this.touchOne);
-        var pinchOne, pinchTwo;
+        var current, pinchOne, pinchTwo;
 
         switch (this.state) {
             case gesturStates.READY: /* ignore */ break;
             case gesturStates.PRESS:
             case gesturStates.TAP:
+                // Move events within a small enough amount of time
+                // and distance should not interrupt a tap.
                 if (((now - this.start.when) < this.dragThreshold) &&
                     (dot({x: this.touchOne.x - points.x,
                           y: this.touchOne.y - points.y}) <
-                        this.dragDistance)) {
-                    this.reset();
+                        this.dragDistance))
                     break;
-                }
+
                 this.drag = this.touchOne;
                 this.state = gesturStates.DRAG;
-                // fall though...
+                /* fall though... */
             case gesturStates.DRAG:
                 if ((now - this.start.when) > this.swipeThreshold)
                     this.swipe = false;
 
-                if (current) {
-                    if (!checkLine(this.swipeAngle, this.touchOne,
-                                   this.drag, current))
-                        this.swipe = false;
+                current = findCurrent(points, this.touchOne);
+                if (!checkLine(this.swipeAngle, this.touchOne,
+                               this.drag, current))
+                    this.swipe = false;
 
-                    this.fireEvent('drag', {
-                        target: target,
-                        swipe: this.swipe,
-                        start: this.touchOne,
-                        last: this.drag, current: current});
-                }
+                this.fireEvent('drag', {
+                    target: target,
+                    swipe: this.swipe,
+                    start: this.touchOne,
+                    last: this.drag, current: current});
                 this.drag = current;
                 break;
             case gesturStates.PTAP:
