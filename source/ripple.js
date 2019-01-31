@@ -481,12 +481,12 @@
         this.next = config.next || false;
         this.doubleThreshold = isNaN(config.doubleThreshold) ? 500 :
                                config.doubleThreshold;
-        this.doubleDistance = isNaN(config.doubleDistance) ? 400 : (
+        this.doubleQuadrance = isNaN(config.doubleDistance) ? 400 : (
             config.doubleDistance * config.doubleDistance);
         this.dragThreshold = isNaN(config.dragThreshold) ? 100 :
                              config.dragThreshold;
-        this.dragDistance = isNaN(config.doubleDistance) ? 400 :
-                            (config.dragDistance * config.dragDistance);
+        this.dragQuadrance = isNaN(config.dragDistance) ? 400 : (
+            config.dragDistance * config.dragDistance);
         this.swipeThreshold = isNaN(config.swipeThreshold) ? 500 :
                               config.swipeThreshold;
         this.swipeMinDistance = isNaN(config.swipeMinDistance) ? 500 : (
@@ -616,7 +616,7 @@
                 if (((now - this.start.when) < this.dragThreshold) &&
                     (dot({x: this.touchOne.x - points.x,
                           y: this.touchOne.y - points.y}) <
-                        this.dragDistance))
+                        this.dragQuadrance))
                     break;
 
                 this.drag = this.touchOne;
@@ -690,7 +690,7 @@
                         (dot({
                             x: this.touchOne.x - this.lastTap.where.x,
                             y: this.touchOne.y - this.lastTap.where.y
-                        }) < this.doubleDistance)) {
+                        }) < this.doubleQuadrance)) {
                         this.fireEvent('doubleTap', {
                             target: target, point: this.touchOne});
                     }
@@ -775,7 +775,7 @@
             self.fireEvent('touchmove', points);
             if (event.preventDefault)
                 event.preventDefault();
-            self.onMove(event, true);
+            self.onMove(event, points, true);
             return false; });
         target.addEventListener('touchend', function(event) {
             var points = ripple.getInputPoints(
