@@ -779,7 +779,7 @@
             return self.onStart(event, true); });
         target.addEventListener('touchmove', function(event) {
             self.fireBaseEvent('touchmove', event);
-            if (!self.config.noprevent && event.preventDefault)
+            if (event.preventDefault)
                 event.preventDefault();
             return self.onMove(event, true); });
         target.addEventListener('touchend', function(event) {
