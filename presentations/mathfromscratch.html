@@ -36,41 +36,61 @@
             </aside>
         </section>
         <section>
-            <p>
-                Mathematics has no generally accepted definition.  We
-                will describe it as a collection of tools for
-                understanding patterns and for studying structure and
-                change.  People have studied mathematics for centuries
-                and found applications for it in every field of
-                science and technology.
-            </p>
+            <h3>Formal Systems</h3>
+            <ul>
+                <li>
+                    Statements: things that might be true or false
+                    <ul>
+                        <li>
+                            Axioms: fundamental ideas accepted as true
+                        </li><li>
+                            Theorem: proven using axioms and other
+                            theorems according to rules of inference
+                        </li>
+                    </ul>
+                </li><li>
+                    Rules of Inference: acceptable ways to combine
+                    statements to make new statements
+                </li><li>
+                    Definitions (<span class="intro">&#x225d;</span>):
+                    short hand that can be replaced with more
+                    fundamental concepts
+                </li>
+            </ul>
             <aside class="notes">
-                What is mathematics?  It may be surprising but there
-                is no generally accpeted definition.  The best we can
-                do is to say it's a collection of tools for
-                understanding patterns and studying structure and
-                change.  We're not the first people to consider this
-                question.  People have been studying mathematics for
-                thousands of years, so we'll steal all of their best
-                ideas.  We'll try to give credit as much as possible
-                without distracting too much from the topic.
             </aside>
         </section>
         <section>
+            <h3>Formal Systems: Properties</h3>
+            <p>Desirable properties of a formal system include:</p>
+            <ul>
+                <li>
+                    <span class="intro">Consistent</span>: no
+                    statement can be proven both true and false (no
+                    contradictions)
+                </li><li>
+                    <span class="intro">Complete</span>: all
+                    statements can be proven either true or false
+                    (nothing missing)
+                </li><li>
+                    <span class="intro">Useful</span>: statements
+                    match measurable physical processes and make
+                    falsifiable preditions
+                </li>
+            </ul>
+            <aside class="notes">
+            </aside>
+        </section>
+        <section>
+            <h3>Incompleteness</h3>
             <p>
-                This is an attempt to build a powerful set of tools
-                from simple foundations.  We will begin with
-                structures even simpler than numbers.  We'll show that
-                we can construct numbers and other complex structures
-                from them.
+                Any formal system containing basic arithmetic is
+                either <span class="intro">inconsistent</span> or
+                <span class="intro">incomplete</span>.
+                (Gödel 1931 CE)
             </p>
             <aside class="notes">
-                We will build familiar mathematics from the simplest
-                possible foundations.  For the purpose of this
-                presentation, forget everything you know about
-                mathematics.  We're going to start from scratch.  With
-                a few carefully chosen exceptions, if we haven't
-                proven it here you don't have to remember it.
+                Kurt Gödel stuck a dagger in the heart of mathematics.
             </aside>
         </section>
         <section>
@@ -136,98 +156,17 @@
             </aside>
         </section>
         <section>
-            <h3>Formal Systems</h3>
-            <ul>
-                <li>
-                    Statements: things that might be true or false
-                    <ul>
-                        <li>
-                            Axioms: fundamental ideas accepted as true
-                        </li><li>
-                            Theorem: proven using axioms and other
-                            theorems according to rules of inference
-                        </li>
-                    </ul>
-                </li><li>
-                    Rules of Inference: acceptable ways to combine
-                    statements to make new statements
-                    <span class="intro">(logic!)</span>
-                </li><li>
-                    Definitions (<span class="intro">&#x225d;</span>):
-                    short hand that can be replaced with more
-                    fundamental concepts
-                </li>
-            </ul>
-            <aside class="notes">
-                We're going to build a formal system, though we're
-                going to do it in an infromal and not entirely
-                rigorous way.  We know patience is a limited
-                resource.  A formal system is made up of four
-                important parts.  First, we have axioms.  These
-                are things we accept as true without proof.  They
-                are the foundation of the formal system.  Second
-                we have rules of inference which control what
-                we're allowed to do when constructing a proof.
-                Third we have theorems.  These are statements that
-                we prove using rules of inference with axioms and
-                other theorems.  Finally we have definitions which
-                allow us to represent complex concepts in a more
-                compact way.
-            </aside>
-        </section>
-        <section>
-            <h3>Formal Systems: Properties</h3>
-            <p>Desirable properties of a formal system include:</p>
-            <ul>
-                <li>
-                    <span class="intro">Consistent</span>: no
-                    statement can be proven both true and false (no
-                    contradictions)
-                </li><li>
-                    <span class="intro">Complete</span>: all
-                    statements can be proven either true or false
-                    (nothing missing)
-                </li><li>
-                    <span class="intro">Useful</span>: statements
-                    match measurable physical processes and make
-                    falsifiable preditions
-                </li>
-            </ul>
-            <aside class="notes">
-                Consistency means that no theorem can be proven both
-                true and false.  Complete means that all possible
-                theorems can be proven one way or the other.
-            </aside>
-        </section>
-        <section>
-            <h3>Incompleteness</h3>
-            <p>
-                Any formal system containing basic arithmetic is
-                either <span class="intro">inconsistent</span> or
-                <span class="intro">incomplete</span>.
-                (Gödel 1931 CE)
-            </p>
-            <aside class="notes">
-                We would like our formal system to be both
-                consistent and complete.  Unfortunately,
-                Kurt Gödel proved that no sufficiently expressive
-                system can be both.  So we will have to accept
-                some limitations.
-            </aside>
-        </section>
-        <section>
             <h3>Propositional Calculus</h3>
             <p>
                 Propositional calculus (Frege 1879 CE and Łukasiewicz
-                1930 CE) deals with statements with values limited to
-                <span class="true">true</span> and
-                <span class="false">false</span>.  Statements can be
-                represented by variables such as
+                1930 CE) deals with statements which are either
+                <span class="true">true</span> or
+                <span class="false">false</span>.  Atomic statements
+                are represented by variables such as
                 <span class="intro">P</span>,
                 <span class="intro">Q</span>,
-                <span class="intro">R</span> and so on to indicate
-                that they cannot be further decomposed -- these are
-                called atomic propositions.
+                <span class="intro">R</span> and so on.  These cannot
+                be decomposed into simpler components.
             </p>
             <aside class="notes">
                 We now introduce our first formal system: propositional
@@ -238,28 +177,51 @@
             </aside>
         </section>
         <section>
-            <h3>Propositional Operators</h3>
-            <ul>
-                <li>
-                    Negation: <span class="intro">&not;</span>P
-                    (not P <q>P is false</q>)
-                </li><li>
-                    Implication: P <span class="intro">&#x27f9;</span> Q
-                    (P implies Q <q>if P then Q</q>)
-                </li>
-            </ul>
-            <table>
+            <h3>Propositional Calculus</h3>
+            <table><tr>
+                <th>Rules</th><th>Axioms</th>
+            </tr><tr><td>
+                Implication:<br />
+                P <span class="intro">&#x27f9;</span> Q
+            </td><td>
+                Simplification:<br />
+                <small>P &#x27f9; (Q &#x27f9; P)</small>
+            </td></tr><tr><td>
+                Negation: <span class="intro">&not;</span>P
+            </td><td>
+                Distribution:<br />
+                <small>
+                    (P &#x27f9; (Q &#x27f9; R)) &#x27f9;<br />
+                    ((P &#x27f9; Q) &#x27f9; (P &#x27f9; R))
+                </small>
+            </td></tr><tr><td>
+                Modus Ponens:<br />
+                <small>(P &#x27f9; Q), P &#x22a2; Q</small>
+            </td><td>
+                Transposition:<br />
+                <small>
+                    (&not;P &#x27f9; &not;Q) &#x27f9; (Q &#x27f9; P)
+                </small>
+            </td></tr></table>
+            <aside class="notes">
+            </aside>
+        </section>
+        <section>
+            <h3>Implication</h3>
+            <p>
+                <span class="intro">Implication</span> has an
+                an antecedant that implies a consequent:
+                P <span class="intro">&#x27f9;</span> Q
+                (<q>P implies Q</q> or <q>if P then Q</q>)
+            </p>
+            <table class="fragment">
                 <tr>
                     <th>P</th><th>Q</th>
-                    <th><span class="intro">&not;</span>P</th>
-                    <th><span class="intro">&not;</span>Q</th>
                     <th>P <span class="intro">&#x27f9;</span> Q</th>
                     <th>Q <span class="intro">&#x27f9;</span> P</th>
                 </tr><tr>
                     <td class="true">true</td>
                     <td class="true">true</td>
-                    <td class="false">false</td>
-                    <td class="false">false</td>
                     <td class="true">true</td>
                     <td class="true">true</td>
                 </tr><tr>
@@ -267,24 +229,51 @@
                     <td class="false">false</td>
                     <td class="false">false</td>
                     <td class="true">true</td>
-                    <td class="false">false</td>
-                    <td class="true">true</td>
                 </tr><tr>
                     <td class="false">false</td>
                     <td class="true">true</td>
                     <td class="true">true</td>
                     <td class="false">false</td>
-                    <td class="true">true</td>
-                    <td class="false">false</td>
                 </tr><tr>
                     <td class="false">false</td>
                     <td class="false">false</td>
-                    <td class="true">true</td>
-                    <td class="true">true</td>
                     <td class="true">true</td>
                     <td class="true">true</td>
                 </tr>
             </table>
+        </section>
+        <section>
+            <h3>Negation</h3>
+            <p>
+                <span class="intro">Negation</span> inverts the
+                truth of a statement:<br />
+                <span class="intro">&not;</span>P (<q>not P</q> or
+                <q>P is false</q>)
+            </p>
+            <table class="fragment">
+                <tr>
+                    <th>P</th>
+                    <th><span class="intro">&not;</span>P</th>
+                    <th><span class="intro">&not;&not;</span>P</th>
+                </tr><tr>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                </tr><tr>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                </tr>
+            </table>
+        </section>
+        <section>
+            <h3>Negation Elimination</h3>
+            <p>&not;&not;P &#x27f9; P</p>
+            <p>
+                Negation can be eliminated when it occurs twice on the same
+                statement.
+            </p>
+            <!-- Metamath: http://us.metamath.org/mpeuni/notnot.html -->
         </section>
         <section>
             <h3>Conjunction</h3>
@@ -296,7 +285,7 @@
                 propositions is true when both the first
                 <span class="intro">and</span> the second are true.
             </p>
-            <table><tr>
+            <table class="fragment"><tr>
                 <th>P</th><th>Q</th>
                 <th>&not;(P&nbsp;&#x27f9;&nbsp;&not;Q)</th>
                 <th>
@@ -325,18 +314,32 @@
             </tr></table>
         </section>
         <section>
+            <h3>Conjunction Elimination</h3>
+            <p>
+                (P &and; Q) &#x27f9; P
+            </p>
+            <p>
+                (P &and; Q) &#x27f9; Q
+            </p>
+            <p>
+                When two statements are part of a conjunction we can
+                extract either by itself.
+            </p>
+            <!-- Metamath: http://us.metamath.org/mpegif/simpl.html -->
+        </section>
+        <section>
             <h3>Disjunction</h3>
             <p>
                 (P <span class="intro">&or;</span> Q) &#x225d;
-                (&not;P) &#x27f9; Q
+                &not;P &#x27f9; Q
             </p><p>
                 A <span class="intro">disjunction</span> of two
                 propositions is true when either the first
                 <span class="intro">or</span> the second is true.
             </p>
-            <table><tr>
+            <table class="fragment"><tr>
                 <th>P</th><th>Q</th>
-                <th>(&not;P)&nbsp;&#x27f9;&nbsp;Q</th><th>
+                <th>&not;P &#x27f9; Q</th><th>
                     P&nbsp;<span class="intro">&or;</span>&nbsp;Q
                 </th>
             </tr><tr>
@@ -360,6 +363,17 @@
                 <td class="false">false</td>
                 <td class="false">false</td>
             </tr></table>
+        </section>
+        <section>
+            <h3>Disjunction Elimination</h3>
+            <p>
+                ((P &or; Q) &and; (P &#x27f9; R) &and; (Q &#x27f9; R))
+                &#x27f9; R
+            </p>
+            <p>
+                When two statements are part of a disjunction and they
+                both imply something we can accept that consequent.
+            </p>
         </section>
         <section>
             <h3>Biconditional</h3>
@@ -404,25 +418,50 @@
             </aside>
         </section>
         <section>
-            <h3>Propositional Axioms</h3>
+            <h3>Modus Ponens</h3>
             <p>
+                (P &#x27f9; Q), P &#x22a2; Q
             </p>
-            <ul>
-                <li>
-                    Simplification: P &#x27f9; (Q &#x27f9; P)
-                </li><li>
-                    Frege: ((P &#x27f9; (Q &#x27f9; R)) &#x27f9;<br />
-                    ((P &#x27f9; Q) &#x27f9; (P &#x27f9; R)))
-                </li><li>
-                    Transposition: ((&not;P &#x27f9; &not;Q) &#x27f9;
-                    (Q &#x27f9; P))
-                </li><li>
-                    Modus Ponens: ((P &#x27f9; Q) &and; P) &#x27f9; Q
-                </li>
-            </ul>
+            <p>
+                Given an implication along with its antecedant,
+                we can conclude the consequent.  This is the fundamental
+                rule of propositional calculus.  Sometimes it is called
+                implication elmination.
+            </p>
         </section>
         <section>
-            <h3>Proof: Modus Ponens Deduction</h3>
+            <h3>Axiom of Simplification</h3>
+            <p>P &#x27f9; (Q &#x27f9; P)</p>
+            <p>
+                Any true proposition is implied by any other proposition.
+                <q>If it's raining then <q>the ground is wet</q>
+                    implies it's raining.</q>  But also, <q>If it's raining
+                    then <q>it's not raining</q>
+                    implies that it's raining.</q>  This is sometimes called
+                implication introduction.
+            </p>
+        </section>
+        <section>
+            <h3>Axiom of Distribution</h3>
+            <p>
+                (P &#x27f9; (Q &#x27f9; R)) &#x27f9;<br />
+                ((P &#x27f9; Q) &#x27f9; (P &#x27f9; R))
+            </p>
+            <p>
+                An antecedant can be distributed over its consequents.
+            </p>
+        </section>
+        <section>
+            <h3>Axiom of Transposition</h3>
+            <p>(&not;P &#x27f9; &not;Q) &#x27f9; (Q &#x27f9; P)</p>
+            <p>
+                We can swap consequents and antecedants using negation.
+                <q>If the ground isn't wet it's not raining</q> implies
+                <q>if it's raining the ground is wet.</q>
+            </p>
+        </section>
+        <section>
+            <h3>Deduction from Modus Ponens</h3>
             <p>
                 ((P &#x27f9; Q) &and; (P &#x27f9; (Q &#x27f9; R)))
                 &#x27f9; (P &#x27f9; R)
@@ -430,7 +469,8 @@
             <ul>
                 <li>
                     (P &#x27f9; (Q &#x27f9; R)) &#x27f9;<br />
-                    ((P &#x27f9; Q) &#x27f9; (P &#x27f9; R)) :: Fregge
+                    ((P &#x27f9; Q) &#x27f9; (P &#x27f9; R))
+                    :: Fregge Axiom
                 </li><li>
                     (((P &#x27f9; Q) &#x27f9; (P &#x27f9; R)) &and;
                     (P &#x27f9; Q)) &#x27f9;<br />
@@ -439,48 +479,51 @@
             </ul>
         </section>
         <section>
-            <h3>Proof: Principal of Identity</h3>
+            <h3>Principal of Identity</h3>
             <p>P &#x27f9; P</p>
             <ul>
                 <li>
-                    P &#x27f9; (P &#x27f9; P) :: Simplification
+                    P &#x27f9; (P &#x27f9; P) ::<br />
+                    Simplification Axiom (P is P and Q is P)
                 </li><li>
-                    P &#x27f9; ((P &#x27f9; P) &#x27f9; P) ::
-                    Simplification
+                    P &#x27f9; ((P &#x27f9; P) &#x27f9; P) ::<br />
+                    Simplification Axiom (P is P and Q is
+                    (P &#x27f9; P))
                 </li><li>
-                    P &#x27f9; P :: Modus Ponens Deduction
+                    P &#x27f9; P :: Deduction from Modus Ponens<br />
+                    (Q is (P &#x27f9; P) and R is P)
                 </li>
             </ul>
         </section>
         <section>
-            <h3>Proof: DeMorgan's Laws</h3>
-            <p>
+            <h3>DeMorgan's Laws</h3>
+            <p class="fragment">
                 &not;(P &and; Q) &#x27fa; &not;P &or; &not;Q
             </p>
             <ul>
-                <li>
+                <li class="fragment">
                     &not;&not;(P &#x27f9; &not;Q) &#x27fa;
                     (&not;&not;P &#x27f9; &not;Q) :: Definition
-                </li><li>
+                </li><li class="fragment">
                     (P &#x27f9; &not;Q) &#x27fa;
-                    (P &#x27f9; &not;Q) :: Double Negation
+                    (P &#x27f9; &not;Q) :: Negation Elimination
                 </li>
             </ul>
-            <p>
+            <p class="fragment">
                 &not;(P &or; Q) &#x27fa; &not;P &and; &not;Q
             </p>
             <ul>
-                <li>
+                <li class="fragment">
                     &not;(&not;P &#x27f9; Q) &#x27fa;
                     &not;(&not;P &#x27f9; &not;&not;Q)  :: Definition
-                </li><li>
+                </li><li class="fragment">
                     &not;(&not;P &#x27f9; Q) &#x27fa;
-                    &not;(&not;P &#x27f9; Q)  :: Double Negation
+                    &not;(&not;P &#x27f9; Q) :: Negation Elimination
                 </li>
             </ul>
         </section>
         <section>
-            <h3>Proof: Syllogism</h3>
+            <h3>Syllogism</h3>
             <p>
                 ((P &#x27f9; Q) &and; (Q &#x27f9; R)) &#x27f9;
                 (P &#x27f9; R)
@@ -488,24 +531,46 @@
             <ul>
                 <li>
                     (Q &#x27f9; R) &#x27f9; (P &#x27f9; (Q &#x27f9; R))
-                    :: Simplification
+                    :: <br />Simplification Axiom
+                    (P is (Q &#x27f9; R) and Q is P)
                 </li><li>
                     ((P &#x27f9; (Q &#x27f9; R)) &and; (P &#x27f9; Q))
                     &#x27f9;<br /> (P &#x27f9; R) ::
-                    Modus Ponens Deduction
+                    Deduction from Modus Ponens
                 </li>
             </ul>
         </section>
         <section>
-            <h3>Proof: Contradiction</h3>
+            <h3>Contradictions</h3>
             <p>
-                ((P &#x27f9; Q) &and; (P &#x27f9; &not;Q)) &#x27f9; &not;P
+                &not;P &#x27f9; (P &#x27f9; Q)
+            </p>
+            <p>A contradiction can imply anything.</p>
+            <ul>
+                <li>
+                    &not;P :: Assumption
+                </li><li>
+                    &not;P &#x27f9; (&not;Q &#x27f9; &not;P)
+                    :: Simplification Axiom
+                </li><li>
+                    &not;P &#x27f9; (P &#x27f9; Q)
+                    :: Transposition Axiom
+                </li>
+            </ul>
+            <!-- Metamath:
+                 http://us.metamath.org/mpeuni/pm2.21d.html -->
+        </section>
+        <section>
+            <!-- Metamath: http://us.metamath.org/mpegif/imp.html -->
+            <h3>Contradiction Proof</h3>
+            <p>
+                ((P &#x27f9; Q) &and; (P &#x27f9; &not;Q)) &#x27f9;
+                &not;P
             </p>
             <ul>
                 <li>
-                    ???
                 </li><li>
-                    ???
+                </li><li>
                 </li>
             </ul>
         </section>
@@ -524,42 +589,42 @@
             </ul>
         </section>
         <section>
-            <h3>Proof: Conjunction Elimination</h3>
+            <h3>Reflexive Biconditional</h3>
             <p>
-                (P &and; Q) &#x27f9; P
+                <span class="intro">Reflexive</span>:
+                P &#x27fa; P
             </p>
             <ul>
-                <li>
-                    (P &and; Q) &#x27f9; &not;(P &#x27f9; &not;Q)
-                    :: Conjunction
-                </li><li>
-                    ???
-                </li><li>
-                    ???
+                <li class="fragment">
+                    P &#x27f9; P :: Principal of Identity
+                </li><li class="fragment">
+                    (P &#x27f9; P) &and; (P &#x27f9; P) :: Conjunction
+                </li><li class="fragment">
+                    P &#x27fa; P :: Biconditional Definition
                 </li>
             </ul>
         </section>
         <section>
-            <h3>Proof: Symmetric Biconditional</h3>
+            <h3>Symmetric Biconditional</h3>
             <p>
                 <span class="intro">Symmetric</span>:
                 (P &#x27fa; Q) &#x27f9; (Q &#x27fa; P)
             </p>
             <ul>
-                <li>
-                    ((P &#x27f9; Q) &and; (Q &#x27f9; P)) &#x27f9;<br />
-                    (P &#x27f9; Q) :: Conjunction Elimination
-                </li><li>
+                <li class="fragment">
                     ((P &#x27f9; Q) &and; (Q &#x27f9; P)) &#x27f9;<br />
                     (Q &#x27f9; P) :: Conjunction Elimination
-                </li><li>
+                </li><li class="fragment">
+                    ((P &#x27f9; Q) &and; (Q &#x27f9; P)) &#x27f9;<br />
+                    (P &#x27f9; Q) :: Conjunction Elimination
+                </li><li class="fragment">
                     ((P &#x27f9; Q) &and; (Q &#x27f9; P)) &#x27f9;<br />
                     ((Q &#x27f9; P) &and; (P &#x27f9; Q)) :: Conjunction
                 </li>
             </ul>
         </section>
         <section>
-            <h3>Proof: Transitive Biconditional</h3>
+            <h3>Transitive Biconditional</h3>
             <p>
                 <span class="intro">Transitive</span>:
                 (P &#x27fa; Q) &and; (Q &#x27fa; R)
@@ -582,10 +647,11 @@
             </ul>
         </section>
         <section>
-            <h3>Predicate</h3>
+            <h3>Predicate Calculus</h3>
             <p>
                 A predicate is a statement that may be true or
-                false based on the value of its variables.
+                false based on the value of its variables.  This is
+                also called first order logic.
             </p>
             <ul>
                 <li>
@@ -7947,7 +8013,7 @@
             </p>
         </section>
         <section>
-            <h3>Starling and Kestral</h3>
+            <h3>Combinator Birds</h3>
             <ul>
                 <li>
                     Ibis(Identity): &#x03bb;a.a
@@ -7956,7 +8022,7 @@
                 </li><li>
                     Kestral(True): &#x03bb;ab.a
                 </li><li>
-                    Kite(False): &#x03bb;ab.a
+                    Kite(False): &#x03bb;ab.b
                 </li><li>
                     Cardinal: &#x03bb;fab.f b a
                 </li><li>
@@ -7971,6 +8037,136 @@
                     &#x03bb;fgab.f (g a b)
                 </li><li>
                     Starling: &#x03bb;abc.a c (b c)
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Combinator Data Structures</h3>
+            <ul>
+                <li>
+                    PAIR: &#x03bb;abf.f a b [Verio]
+                </li><li>
+                    FIRST: &#x03bb;p.p &#x03bb;ab.a
+                    [&#x03bb;p.p Kestral]
+                </li><li>
+                    REST: &#x03bb;p.p &#x03bb;ab.b
+                    [&#x03bb;p.p Kite]
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Combinator Logic</h3>
+            <ul>
+                <li>
+                    TRUE: &#x03bb;ab.a [Kestral]
+                </li><li>
+                    FALSE: &#x03bb;ab.b [Kite]
+                </li><li>
+                    NOT: &#x03bb;p.p FALSE TRUE
+                </li><li>
+                    AND: &#x03bb;pq.p q p
+                </li><li>
+                    OR: &#x03bb;pq.p p q
+                </li><li>
+                    BOOLEQ: &#x03bb;pq.p q (NOT q)
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Combinator Numbers</h3>
+            <ul>
+                <li>
+                    ZERO: &#x03bb;ab.b [Kite/FALSE]
+                </li><li>
+                    SUCCESSOR: &#x03bb;nfa.f (n f a)
+                </li><li>
+                    ADD: &#x03bb;nk.n SUCCESSOR k
+                </li><li>
+                    MULTIPLY: &#x03bb;nkf.n (k f) [Bluebird]
+                </li><li>
+                    POWER: &#x03bb;nk.k n [Thrush]
+                </li><li>
+                    ISZERO: &#x03bb;n.n (k FALSE) TRUE
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Combinator Subtraction</h3>
+            <ul>
+                <li>
+                    PHI: &#x03bb;p.PAIR (REST p) (SUCCESSOR (REST p))
+                </li><li>
+                    PREDECESSOR: &#x03bb;n.FIRST
+                    (n PHI (PAIR ZERO ZERO))
+                </li><li>
+                    SUBTRACT: &#x03bb;nk.k PREDECESSOR n
+                </li><li>
+                    LESSEQ: &#x03bb;nk.ISZERO (SUB n k)
+                </li><li>
+                    EQ: &#x03bb;nk.AND (LESSEQ n k) (LESSEQ k n)
+                </li><li>
+                    GREATER: &#x03bb;nk.NOT (LESSEQ n k)
+                    [Blackbird NOT LESSEQ]
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Combinator Basis: S and K</h3>
+            <ul>
+                <li>
+                    Ibis: I = S K K = S K S
+                </li><li>
+                    Vireo: V = (S (K ((S ((S (K ((S (K S)) K))) S))
+                    (K K)))) ((S (K (S ((S K) K)))) K)
+                </li><li>
+                    Mockingbird: M = ((S((SK)K))((SK)K))
+                </li><li>
+                    Kite: Ki = (K((SK)K))
+                </li><li>
+                    Cardinal: C = ((S((S(K((S(KS))K)))S))(KK))
+                </li><li>
+                    Bluebird: B = ((S(KS))K)
+                </li><li>
+                    Thrush: Th = ((S(K(S((SK)K))))K)
+                </li><li>
+                    Vireo: V = (S (K ((S ((S (K ((S (K S)) K))) S))
+                    (K K)))) ((S (K (S ((S K) K)))) K)
+                </li><li>
+                    Blackbird: Bl = ((S(K((S(KS))K)))((S(KS))K)) 
+                </li><li>
+                    Kestral: K
+                </li><li>
+                    Starling: S
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Combinator Basis</h3>
+            <p>
+                Basis: K I C B M
+            </p>
+            <ul>
+                <li>
+                    Ki = K I = C K
+                </li><li>
+                    Bl = B B B
+                </li><li>
+                    Th = C I
+                </li><li>
+                    V = B C Th = B C (C I)
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Y Combinator</h3>
+            <ul>
+                <li>
+                    Y = &#x03bb;f.(&#x03bb;a.f (a a))
+                    (&#x03bb;a.f (a a))
+                </li><li>
+                    Y g = g (Y g) = g (g (Y g)) = ...
+                </li><li>
+                    Y = S (K (S I I)) (S (S (K S) K) (K (S I I)))
                 </li>
             </ul>
         </section>
