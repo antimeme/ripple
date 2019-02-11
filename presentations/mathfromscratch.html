@@ -36,64 +36,6 @@
             </aside>
         </section>
         <section>
-            <h3>Formal Systems</h3>
-            <ul>
-                <li>
-                    Statements: things that might be true or false
-                    <ul>
-                        <li>
-                            Axioms: fundamental ideas accepted as true
-                        </li><li>
-                            Theorem: proven using axioms and other
-                            theorems according to rules of inference
-                        </li>
-                    </ul>
-                </li><li>
-                    Rules of Inference: acceptable ways to combine
-                    statements to make new statements
-                </li><li>
-                    Definitions (<span class="intro">&#x225d;</span>):
-                    short hand that can be replaced with more
-                    fundamental concepts
-                </li>
-            </ul>
-            <aside class="notes">
-            </aside>
-        </section>
-        <section>
-            <h3>Formal Systems: Properties</h3>
-            <p>Desirable properties of a formal system include:</p>
-            <ul>
-                <li>
-                    <span class="intro">Consistent</span>: no
-                    statement can be proven both true and false (no
-                    contradictions)
-                </li><li>
-                    <span class="intro">Complete</span>: all
-                    statements can be proven either true or false
-                    (nothing missing)
-                </li><li>
-                    <span class="intro">Useful</span>: statements
-                    match measurable physical processes and make
-                    falsifiable preditions
-                </li>
-            </ul>
-            <aside class="notes">
-            </aside>
-        </section>
-        <section>
-            <h3>Incompleteness</h3>
-            <p>
-                Any formal system containing basic arithmetic is
-                either <span class="intro">inconsistent</span> or
-                <span class="intro">incomplete</span>.
-                (Gödel 1931 CE)
-            </p>
-            <aside class="notes">
-                Kurt Gödel stuck a dagger in the heart of mathematics.
-            </aside>
-        </section>
-        <section>
             <h2>Acknowledgements</h2>
             <ul>
                 <li>
@@ -156,7 +98,70 @@
             </aside>
         </section>
         <section>
-            <h3>Propositional Calculus</h3>
+            <h3>Formal Systems</h3>
+            <ul>
+                <li>
+                    <span class="intro">Statements</span>:
+                    things that might be true or false
+                    <ul>
+                        <li>
+                            Axioms: fundamental ideas accepted as true
+                        </li><li>
+                            Theorem: proven using axioms and other
+                            theorems according to rules of inference
+                        </li>
+                    </ul>
+                </li><li>
+                    <span class="intro">Rules of Inference</span>:
+                    acceptable ways to combine statements to make new
+                    statements
+                </li><li>
+                    <span class="intro">Definitions</span>
+                    (<span class="intro">&#x225d;</span>):
+                    short hand that can be replaced with more
+                    fundamental concepts
+                </li>
+            </ul>
+            <aside class="notes">
+            </aside>
+        </section>
+        <section>
+            <h3>Formal Systems: Properties</h3>
+            <p>Desirable properties of a formal system include:</p>
+            <ul>
+                <li>
+                    <span class="intro">Consistent</span>: no
+                    statement can be proven both true and false (no
+                    contradictions)
+                </li><li>
+                    <span class="intro">Complete</span>: all
+                    statements can be proven either true or false
+                    (nothing missing)
+                </li><li>
+                    <span class="intro">Useful</span>: statements
+                    match measurable physical processes and make
+                    falsifiable preditions
+                </li>
+            </ul>
+            <aside class="notes">
+            </aside>
+        </section>
+        <section>
+            <h3>Incompleteness</h3>
+            <p>
+                Any formal system containing basic arithmetic is
+                either <span class="intro">inconsistent</span> or
+                <span class="intro">incomplete</span>.
+                (Gödel 1931 CE)
+            </p>
+            <aside class="notes">
+                Kurt Gödel stuck a dagger in the heart of mathematics.
+            </aside>
+        </section>
+    </section>
+    <section>
+        <section>
+            <h2>Propositional Calculus</h2>
             <p>
                 Propositional calculus (Frege 1879 CE and Łukasiewicz
                 1930 CE) deals with statements which are either
@@ -181,13 +186,13 @@
             <table><tr>
                 <th>Rules</th><th>Axioms</th>
             </tr><tr><td>
-                Implication:<br />
-                P <span class="intro">&#x27f9;</span> Q
+                Negation: <span class="intro">&not;</span>P
             </td><td>
                 Simplification:<br />
                 <small>P &#x27f9; (Q &#x27f9; P)</small>
             </td></tr><tr><td>
-                Negation: <span class="intro">&not;</span>P
+                Implication:<br />
+                P <span class="intro">&#x27f9;</span> Q
             </td><td>
                 Distribution:<br />
                 <small>
@@ -205,6 +210,30 @@
             </td></tr></table>
             <aside class="notes">
             </aside>
+        </section>
+        <section>
+            <h3>Negation</h3>
+            <p>
+                <span class="intro">Negation</span> inverts the
+                truth of a statement:<br />
+                <span class="intro">&not;</span>P (<q>not P</q> or
+                <q>P is false</q>)
+            </p>
+            <table class="fragment">
+                <tr>
+                    <th>P</th>
+                    <th><span class="intro">&not;</span>P</th>
+                    <th><span class="intro">&not;&not;</span>P</th>
+                </tr><tr>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                </tr><tr>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                </tr>
+            </table>
         </section>
         <section>
             <h3>Implication</h3>
@@ -243,37 +272,48 @@
             </table>
         </section>
         <section>
-            <h3>Negation</h3>
-            <p>
-                <span class="intro">Negation</span> inverts the
-                truth of a statement:<br />
-                <span class="intro">&not;</span>P (<q>not P</q> or
-                <q>P is false</q>)
+            <h3>Modus Ponens</h3>
+            <p class="intro">
+                (P &#x27f9; Q), P &#x22a2; Q
             </p>
-            <table class="fragment">
-                <tr>
-                    <th>P</th>
-                    <th><span class="intro">&not;</span>P</th>
-                    <th><span class="intro">&not;&not;</span>P</th>
-                </tr><tr>
-                    <td class="true">true</td>
-                    <td class="false">false</td>
-                    <td class="true">true</td>
-                </tr><tr>
-                    <td class="false">false</td>
-                    <td class="true">true</td>
-                    <td class="false">false</td>
-                </tr>
-            </table>
+            <p>
+                Given an implication along with its antecedant,
+                we can conclude the consequent.  This is the fundamental
+                rule of propositional calculus.  Sometimes it is called
+                implication elmination.
+            </p>
         </section>
         <section>
-            <h3>Negation Elimination</h3>
-            <p>&not;&not;P &#x27f9; P</p>
+            <h3>Axiom of Simplification</h3>
+            <p class="intro">P &#x27f9; (Q &#x27f9; P)</p>
             <p>
-                Negation can be eliminated when it occurs twice on the same
-                statement.
+                Any true proposition is implied by any other proposition.
+                <q>If it's raining then <q>the ground is wet</q>
+                    implies it's raining.</q>  But also, <q>If it's raining
+                    then <q>it's not raining</q>
+                    implies that it's raining.</q>  This is sometimes called
+                implication introduction.
             </p>
-            <!-- Metamath: http://us.metamath.org/mpeuni/notnot.html -->
+        </section>
+        <section>
+            <h3>Axiom of Distribution</h3>
+            <p class="intro">
+                (P &#x27f9; (Q &#x27f9; R)) &#x27f9;<br />
+                ((P &#x27f9; Q) &#x27f9; (P &#x27f9; R))
+            </p>
+            <p>
+                An antecedant can be distributed over its consequents.
+            </p>
+        </section>
+        <section>
+            <h3>Axiom of Transposition</h3>
+            <p class="intro">
+                (&not;P &#x27f9; &not;Q) &#x27f9; (Q &#x27f9; P)
+            </p><p>
+                We can swap consequents and antecedants using negation.
+                <q>If the ground isn't wet it's not raining</q> implies
+                <q>if it's raining the ground is wet.</q>
+            </p>
         </section>
         <section>
             <h3>Conjunction</h3>
@@ -287,6 +327,7 @@
             </p>
             <table class="fragment"><tr>
                 <th>P</th><th>Q</th>
+                <th>P&nbsp;&#x27f9;&nbsp;&not;Q</th>
                 <th>&not;(P&nbsp;&#x27f9;&nbsp;&not;Q)</th>
                 <th>
                     P&nbsp;<span class="intro">&and;</span>&nbsp;Q
@@ -294,38 +335,28 @@
             </tr><tr>
                 <td class="true">true</td>
                 <td class="true">true</td>
+                <td class="false">false</td>
                 <td class="true">true</td>
                 <td class="true">true</td>
             </tr><tr>
                 <td class="true">true</td>
-                <td class="false">false</td>
-                <td class="false">false</td>
-                <td class="false">false</td>
-            </tr><tr>
                 <td class="false">false</td>
                 <td class="true">true</td>
                 <td class="false">false</td>
                 <td class="false">false</td>
             </tr><tr>
                 <td class="false">false</td>
+                <td class="true">true</td>
+                <td class="true">true</td>
                 <td class="false">false</td>
+                <td class="false">false</td>
+            </tr><tr>
+                <td class="false">false</td>
+                <td class="false">false</td>
+                <td class="true">true</td>
                 <td class="false">false</td>
                 <td class="false">false</td>
             </tr></table>
-        </section>
-        <section>
-            <h3>Conjunction Elimination</h3>
-            <p>
-                (P &and; Q) &#x27f9; P
-            </p>
-            <p>
-                (P &and; Q) &#x27f9; Q
-            </p>
-            <p>
-                When two statements are part of a conjunction we can
-                extract either by itself.
-            </p>
-            <!-- Metamath: http://us.metamath.org/mpegif/simpl.html -->
         </section>
         <section>
             <h3>Disjunction</h3>
@@ -363,17 +394,6 @@
                 <td class="false">false</td>
                 <td class="false">false</td>
             </tr></table>
-        </section>
-        <section>
-            <h3>Disjunction Elimination</h3>
-            <p>
-                ((P &or; Q) &and; (P &#x27f9; R) &and; (Q &#x27f9; R))
-                &#x27f9; R
-            </p>
-            <p>
-                When two statements are part of a disjunction and they
-                both imply something we can accept that consequent.
-            </p>
         </section>
         <section>
             <h3>Biconditional</h3>
@@ -418,60 +438,17 @@
             </aside>
         </section>
         <section>
-            <h3>Modus Ponens</h3>
-            <p>
-                (P &#x27f9; Q), P &#x22a2; Q
-            </p>
-            <p>
-                Given an implication along with its antecedant,
-                we can conclude the consequent.  This is the fundamental
-                rule of propositional calculus.  Sometimes it is called
-                implication elmination.
-            </p>
-        </section>
-        <section>
-            <h3>Axiom of Simplification</h3>
-            <p>P &#x27f9; (Q &#x27f9; P)</p>
-            <p>
-                Any true proposition is implied by any other proposition.
-                <q>If it's raining then <q>the ground is wet</q>
-                    implies it's raining.</q>  But also, <q>If it's raining
-                    then <q>it's not raining</q>
-                    implies that it's raining.</q>  This is sometimes called
-                implication introduction.
-            </p>
-        </section>
-        <section>
-            <h3>Axiom of Distribution</h3>
-            <p>
-                (P &#x27f9; (Q &#x27f9; R)) &#x27f9;<br />
-                ((P &#x27f9; Q) &#x27f9; (P &#x27f9; R))
-            </p>
-            <p>
-                An antecedant can be distributed over its consequents.
-            </p>
-        </section>
-        <section>
-            <h3>Axiom of Transposition</h3>
-            <p>(&not;P &#x27f9; &not;Q) &#x27f9; (Q &#x27f9; P)</p>
-            <p>
-                We can swap consequents and antecedants using negation.
-                <q>If the ground isn't wet it's not raining</q> implies
-                <q>if it's raining the ground is wet.</q>
-            </p>
-        </section>
-        <section>
             <h3>Deduction from Modus Ponens</h3>
             <p>
                 ((P &#x27f9; Q) &and; (P &#x27f9; (Q &#x27f9; R)))
                 &#x27f9; (P &#x27f9; R)
             </p>
             <ul>
-                <li>
+                <li class="fragment">
                     (P &#x27f9; (Q &#x27f9; R)) &#x27f9;<br />
                     ((P &#x27f9; Q) &#x27f9; (P &#x27f9; R))
-                    :: Fregge Axiom
-                </li><li>
+                    :: Axiom of Distribution
+                </li><li class="fragment">
                     (((P &#x27f9; Q) &#x27f9; (P &#x27f9; R)) &and;
                     (P &#x27f9; Q)) &#x27f9;<br />
                     (P &#x27f9; R) :: Modus Ponens
@@ -482,43 +459,16 @@
             <h3>Principal of Identity</h3>
             <p>P &#x27f9; P</p>
             <ul>
-                <li>
+                <li class="fragment">
                     P &#x27f9; (P &#x27f9; P) ::<br />
                     Simplification Axiom (P is P and Q is P)
-                </li><li>
+                </li><li class="fragment">
                     P &#x27f9; ((P &#x27f9; P) &#x27f9; P) ::<br />
                     Simplification Axiom (P is P and Q is
                     (P &#x27f9; P))
-                </li><li>
+                </li><li class="fragment">
                     P &#x27f9; P :: Deduction from Modus Ponens<br />
                     (Q is (P &#x27f9; P) and R is P)
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h3>DeMorgan's Laws</h3>
-            <p class="fragment">
-                &not;(P &and; Q) &#x27fa; &not;P &or; &not;Q
-            </p>
-            <ul>
-                <li class="fragment">
-                    &not;&not;(P &#x27f9; &not;Q) &#x27fa;
-                    (&not;&not;P &#x27f9; &not;Q) :: Definition
-                </li><li class="fragment">
-                    (P &#x27f9; &not;Q) &#x27fa;
-                    (P &#x27f9; &not;Q) :: Negation Elimination
-                </li>
-            </ul>
-            <p class="fragment">
-                &not;(P &or; Q) &#x27fa; &not;P &and; &not;Q
-            </p>
-            <ul>
-                <li class="fragment">
-                    &not;(&not;P &#x27f9; Q) &#x27fa;
-                    &not;(&not;P &#x27f9; &not;&not;Q)  :: Definition
-                </li><li class="fragment">
-                    &not;(&not;P &#x27f9; Q) &#x27fa;
-                    &not;(&not;P &#x27f9; Q) :: Negation Elimination
                 </li>
             </ul>
         </section>
@@ -529,48 +479,55 @@
                 (P &#x27f9; R)
             </p>
             <ul>
-                <li>
+                <li class="fragment">
                     (Q &#x27f9; R) &#x27f9; (P &#x27f9; (Q &#x27f9; R))
                     :: <br />Simplification Axiom
                     (P is (Q &#x27f9; R) and Q is P)
-                </li><li>
-                    ((P &#x27f9; (Q &#x27f9; R)) &and; (P &#x27f9; Q))
+                </li><li class="fragment">
+                    ((P &#x27f9; Q) &and; (P &#x27f9; (Q &#x27f9; R)))
                     &#x27f9;<br /> (P &#x27f9; R) ::
                     Deduction from Modus Ponens
                 </li>
             </ul>
         </section>
         <section>
-            <h3>Contradictions</h3>
+            <h3>Contradiction</h3>
             <p>
                 &not;P &#x27f9; (P &#x27f9; Q)
             </p>
-            <p>A contradiction can imply anything.</p>
             <ul>
-                <li>
+                <li class="fragment">
                     &not;P :: Assumption
-                </li><li>
+                </li><li class="fragment">
                     &not;P &#x27f9; (&not;Q &#x27f9; &not;P)
                     :: Simplification Axiom
-                </li><li>
+                </li><li class="fragment">
                     &not;P &#x27f9; (P &#x27f9; Q)
                     :: Transposition Axiom
                 </li>
             </ul>
+            <p class="fragment">A contradiction can imply anything.</p>
             <!-- Metamath:
                  http://us.metamath.org/mpeuni/pm2.21d.html -->
         </section>
         <section>
+            <!-- Metamath: http://us.metamath.org/mpeuni/pm2.61i.html -->
             <!-- Metamath: http://us.metamath.org/mpegif/imp.html -->
-            <h3>Contradiction Proof</h3>
+            <h3>Proof by Contradiction</h3>
             <p>
                 ((P &#x27f9; Q) &and; (P &#x27f9; &not;Q)) &#x27f9;
                 &not;P
             </p>
             <ul>
                 <li>
+                    (P &#x27f9; &not;Q) &#x27f9; (Q &#x27f9; &not;P)
+                    :: Axiom of Transposition
                 </li><li>
+                    (P &#x27f9; Q) &#x27f9; (&not;Q &#x27f9; &not;P)
+                    :: Axiom of Transposition
                 </li><li>
+                    ((Q &#x27f9; &not;P) &and; (&not;Q &#x27f9; &not;P))
+                    &#x27f9; &not;P :: ???
                 </li>
             </ul>
         </section>
@@ -585,6 +542,70 @@
                 </li><li>
                     ((P &#x27f9; Q) &and; (P &#x27f9; &not;Q))
                     &#x27f9; &not;P :: Contradiction
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Conjunction Elimination</h3>
+            <p>
+                (P &and; Q) &#x27f9; P
+            </p>
+            <p>
+                (P &and; Q) &#x27f9; Q
+            </p>
+            <p>
+                When two statements are part of a conjunction we can
+                extract either by itself.
+            </p>
+            <!-- Metamath: http://us.metamath.org/mpeuni/simpl.html -->
+            <!-- Metamath: http://us.metamath.org/mpeuni/imp.html -->
+            <!-- Metamath: http://us.metamath.org/mpeuni/impi.html -->
+            <!-- Metamath: http://us.metamath.org/mpeuni/sylbi.html -->
+        </section>
+        <section>
+            <h3>Disjunction Elimination</h3>
+            <p>
+                ((P &or; Q) &and; (P &#x27f9; R) &and; (Q &#x27f9; R))
+                &#x27f9; R
+            </p>
+            <p>
+                When two statements are part of a disjunction and they
+                both imply something we can accept that consequent.
+            </p>
+        </section>
+        <section>
+            <h3>Negation Elimination</h3>
+            <p>&not;&not;P &#x27f9; P</p>
+            <p>
+                Negation can be eliminated when it occurs twice on the same
+                statement.
+            </p>
+            <!-- Metamath: http://us.metamath.org/mpeuni/notnot2.html -->
+        </section>
+        <section>
+            <h3>DeMorgan's Laws</h3>
+            <p class="fragment intro">
+                &not;(P &and; Q) &#x27fa; &not;P &or; &not;Q
+            </p>
+            <ul>
+                <li class="fragment">
+                    &not;&not;(P &#x27f9; &not;Q) &#x27fa;
+                    (&not;&not;P &#x27f9; &not;Q) :: Definition
+                </li><li class="fragment">
+                    (P &#x27f9; &not;Q) &#x27fa;
+                    (P &#x27f9; &not;Q) :: Negation Elimination
+                </li>
+            </ul>
+            <p class="fragment intro">
+                &not;(P &or; Q) &#x27fa; &not;P &and; &not;Q
+            </p>
+            <ul>
+                <li class="fragment">
+                    &not;(&not;P &#x27f9; Q) &#x27fa;
+                    &not;(&not;P &#x27f9; &not;&not;Q)  :: Definition
+                </li><li class="fragment">
+                    &not;(&not;P &#x27f9; Q) &#x27fa;
+                    &not;(&not;P &#x27f9; Q) :: Negation Elimination
                 </li>
             </ul>
         </section>
@@ -646,8 +667,10 @@
                 </li>
             </ul>
         </section>
+    </section>
+    <section>
         <section>
-            <h3>Predicate Calculus</h3>
+            <h2>Predicate Calculus</h2>
             <p>
                 A predicate is a statement that may be true or
                 false based on the value of its variables.  This is
@@ -674,35 +697,59 @@
             </aside>
         </section>
         <section>
-            <h3>Bound Variables</h3>
-            <p>
-                If P is a predicate with variable then the
-                following are also predicates:
-            </p>
+            <h3>Predicate Calculus</h3>
             <table>
-                <tr>
-                    <td><span class="intro">&#x2200;</span>a P(a)</td>
-                    <td>P is true <span class="intro">for all</span>
-                        values of a</td>
-                </tr><tr>
-                    <td><span class="intro">&#x2203;</span>a P(a)</td>
-                    <td>P is true <span class="intro">for at least
-                        one</span> value of a</td>
-                </tr><tr>
-                    <td><span class="intro">&#x2204;</span>a P(a)</td>
-                    <td>P is false for all values of a</td>
-                </tr>
+                <tr><td>
+                    <span class="intro">Rule of Generalization</span>:
+                    P &#x22a2; &#x2200;a P
+                </td></tr><tr><td>
+                    <span class="intro">Quantified Implication</span>:
+                    <br />(&#x2200;a (P &#x27f9; Q)) &#x27f9;
+                    ((&#x2200;a P) &#x27f9; (&#x2200;a Q))
+                </td></tr><tr><td>
+                    <span class="intro">Distinctness</span>:
+                    P &#x27f9; &#x2200;a P
+                </td></tr><tr><td>
+                    <span class="intro">Existance</span>:
+                    &not;&#x2200;a &not;(a = b)
+                </td></tr><tr><td>
+                    <span class="intro">Equality</span>:
+                    (a = b) &#x27f9; ((a = c) &#x27f9; (b = c))
+                </td></tr>
             </table>
-            <aside class="notes">
-                We can bind variables in predicates.  The simplest
-                ways to do this are the ones shown here.  An upside
-                down A asserts that the predicate is true for all
-                values of a, sometimes with further qualitifaction.
-                A backwards E asserts that some value for a exists
-                for which the predicate is true.  A backwards E
-                with a line through it asserts that there is no
-                value for a that makes the predicate true.
-            </aside>
+        </section>
+        <section>
+            <h3>Universal Quantifier</h3>
+            <p>
+                <span class="intro">&#x2200;</span>a P(a)
+            </p>
+            <p>
+                A universal quantifier asserts that a predicate is true
+                for all possible values of a variable.  Often we will
+                further qualify a variable.
+            </p>
+        </section>
+        <section>
+            <h3>Existential Quantifier</h3>
+            <p>
+                <span class="intro">&#x2203;</span>a P(a) &#x225d;
+                &not;(&#x2200;a &not;P(a))
+            </p>
+            <p>
+                From the universal quantifier we construct the existential
+                quantifier.  This asserts that some value of a
+                variable satisfies the predicate.
+            </p>
+            <div  class="fragment">
+                <p>
+                    The negation of this quantifier is sometimes useful.
+                </p>
+                <p>
+                    <span class="intro">&#x2204;</span>a P(a) &#x225d;
+                    &not;(<span class="intro">&#x2203;</span>a P(a))
+                    &#x27fa; &#x2200;a &not;P(a)
+                </p>
+            </div>
         </section>
         <section>
             <h3>Liebniz's Law</h3>
@@ -715,32 +762,6 @@
                 We can substitute equal values without changing
                 any results.
             </p>
-        </section>
-        <section>
-            <h3>Induction</h3>
-            <p>
-                Induction uses specific statements to prove
-                more general conclusions.  A base establishes
-                a starting point and a step can be repeated
-                indefinitely.
-            </p>
-            <ul>
-                <li>
-                    P(a) &and; (P(b) &#x27f9; P(next(b)))
-                </li><li>
-                    P(b) is true for anything that follows a
-                </li>
-            </ul>
-            <aside class="notes">
-                Induction allows us to build general rules from
-                specific starting points.  For example, suppose we
-                have a ladder and we want to prove that we can climb
-                to the top.  We would need to show first that we
-                can climb onto the bottom rung and second that from
-                any rung we could reach the next one.  We'll ingore
-                practical constraints like getting tired or being
-                afraid of heights.
-            </aside>
         </section>
     </section>
 
@@ -821,7 +842,7 @@
             </p>
         </section>
         <section>
-            <h3>Set Membership</h3>
+            <h3>Predicate: Set Membership</h3>
             <table>
                 <tr>
                     <td>
@@ -1002,7 +1023,7 @@
             </p>
             <p>
                 { &spades;, <span class="redsuit">&hearts;</span>,
-                &clubs;, <span class="redsuit">&diams;</span> } &#x2296;
+                &clubs; } &#x2296;
                 { <span class="redsuit">&hearts;</span>,
                 <span class="redsuit">&diams;</span> } =
                 { &spades;, &clubs; }
@@ -1343,7 +1364,7 @@
 
     <section id="relations">
         <section>
-            <h2>Relations</h2>
+            <h2>Can you relate?</h2>
             <p>
                 A relation is a set that embodies a relationship
                 between other sets.  Examples of relations include
@@ -1419,6 +1440,23 @@
                 Ordered pairs extend naturally to tuples which are
                 not limited to pairs of elements.
             </p>
+        </section>
+        <section>
+            <h3>Reducing Tuples</h3>
+            <p>
+                REST(t) &#x225d; { a &#x2296; {FIRST(t)} :<br />
+                a &#x2208; t &and; (a &#x2296; {FIRST(t)}) &ne; {} }
+            </p>
+            <ul>
+                <li>
+                    REST({{a}, {a, b}}) = {{b}}
+                </li><li>
+                    REST({{a}, {a, b}, {a, b, c}}) = {{b}, {b, c}}
+                </li><li>
+                    REST({{a}, {a, b}, {a, b, c}, {a, b, c, d}) =
+                    {{b}, {b, c}, {b, c, d}}
+                </li>
+            </ul>
         </section>
         <section>
             <h3>Unordering Tuples</h3>
@@ -1794,6 +1832,10 @@
                 relation over any set: this is always reflexive,
                 symmetric and transitive.
             </p>
+            <aside class="notes">
+                This is not the only way create an equivalence relation
+                but we can always do it.
+            </aside>
         </section>
         <section>
             <h3>Subset: Reflexive</h3>
@@ -1847,10 +1889,9 @@
                 <span class="redsuit">&hearts;</span>}, {&spades;},
                 {&spades;, <span class="redsuit">&diams;</span>}}</p>
             <aside class="notes">
-                This is a simple example of a set on which the subset
-                operator forms a partial but not a total order.  Most
-                of the time subset is not connex, but we could
-                easily construct sets where it is.
+                This is not the only way create an order relation but
+                we can always do it.  Subsets are not always connex
+                so this doesn't always produce a total order.
             </aside>
         </section>
     </section>
@@ -2486,6 +2527,18 @@
             </aside>
         </section>
         <section>
+            <h3>Induction</h3>
+            <p>
+                Any set that contains 0<sub>&#x2115;</sub> and
+                is closed under the successor operation contains
+                all natural numbers.  We prove this by showing
+                that something is true for a base case (usually
+                0<sub>&#x2115;</sub>), then assume it's true for
+                some natural number and show that this implies that
+                it's true for its successor.
+            </p>
+        </section>
+        <section>
             <h3>Order &#x2115;: Connex</h3>
             <p>
                 &#x2200;a,b&#x2208;&#x2115;
@@ -2721,15 +2774,16 @@
                     a + 1<sub>&#x2115;</sub> =
                     1<sub>&#x2115;</sub> + a :: Assumption
                 </li><li class="fragment">
-                    succ(a) + 1<sub>&#x2115;</sub> = succ(a) + succ(0)
+                    succ(a) + 1<sub>&#x2115;</sub> = succ(a) +
+                    succ(0<sub>&#x2115;</sub>)
                     :: Definition of 1<sub>&#x2115;</sub>
                 </li><li class="fragment">
                     succ(a) + 1<sub>&#x2115;</sub> =
                     succ(succ(a) + 0<sub>&#x2115;</sub>) :: Step +
                 </li><li class="fragment">
                     succ(a) + 1<sub>&#x2115;</sub> =
-                    succ((a + 1<sub>&#x2115;</sub>) + 0)
-                    :: Successor + 1
+                    succ((a + 1<sub>&#x2115;</sub>) +
+                    0<sub>&#x2115;</sub>) :: Successor + 1
                 </li><li class="fragment">
                     succ(a) + 1<sub>&#x2115;</sub> =
                     succ(a + 1<sub>&#x2115;</sub>) :: Base +
@@ -3314,9 +3368,9 @@
                     c<sub>2</sub>&#x27e9;&#x2208;&#x2124;
                     <br />
                     (a<sub>1</sub> + b<sub>2</sub> =
-                    b<sub>1</sub> + a<sub>2</sub>) &and;
+                    a<sub>2</sub> + b<sub>1</sub>) &and;
                     (b<sub>1</sub> + c<sub>2</sub> =
-                    c<sub>1</sub> + b<sub>2</sub>)
+                    b<sub>2</sub> + c<sub>1</sub>)
                     &#x27fa;<br />
                     (a<sub>1</sub> + c<sub>2</sub> =
                     a<sub>2</sub> + c<sub>1</sub>)
@@ -5342,30 +5396,6 @@
             </p>
         </section>
         <section>
-            <h3>Dedekind Cuts</h3>
-            <p>
-                Dedekind cuts are continuous partitions of &#x211a;
-            </p>
-            <ul>
-                <li class="fragment">
-                    Rational Subset:
-                    &#x2200;a&#x2208;&#x211d; a&#x2286;&#x211a;
-                    <span class="fragment">
-                        &#x27f9; &#x211d;&#x2286;&#x2118;&#x211a;
-                    </span>
-                </li><li class="fragment">
-                    Proper and not empty: &#x2200;a&#x2208;&#x211d;
-                    (a&ne;&#x211a; &and; a&ne;{})
-                </li><li class="fragment">
-                    Closed Downward: &#x2200;a&#x2208;&#x211d;
-                    &#x2200;b,c&#x2208;&#x211a;<br />
-                    (b&#x2208;a &and; c&le;b) &#x27f9; c&#x2208;a                                   </li><li class="fragment">
-                    No Largest Member: &#x2200;a&#x2208;&#x211d;
-                    &#x2200;b&#x2208;a &#x2203;c&#x2208;a c&gt;b
-                    </li>
-            </ul>
-        </section>
-        <section>
             <h3>Between &#x211a;</h3>
             <p>
                 &#x2200;a,b&#x2208;&#x211a; (a &lt;<sub>&#x211a;</sub>
@@ -5381,49 +5411,119 @@
         <section>
             <h3>Between &#x211a;</h3>
             <p>
-                &#x2200;a,b&#x2208;&#x211a;
-                (a &lt;<sub>&#x211a;</sub> b)
+                &#x2200;a,b&#x2208;&#x211a; (a &lt;<sub>&#x211a;</sub>
+                b) &#x27f9;
+                <span class="intro">
+                    a &lt;<sub>&#x211a;</sub> ((a + b) &times;
+                    1/2<sub>&#x211a;</sub>)
+                </span>
+                &lt;<sub>&#x211a;</sub> b
             </p>
-            <table><tr><td><ul>
+            <ul>
                 <li class="fragment">
-                    a + b &lt;<sub>&#x211a;</sub> b + b
+                    (a &lt;<sub>&#x211a;</sub>
+                    b) &#x27f9; a + a &lt;<sub>&#x211a;</sub> a + b
+                </li><li class="fragment">
+                    (a + a) &times; 1/2<sub>&#x211a;</sub>
+                    &lt;<sub>&#x211a;</sub> (a + b) &times;
+                    1/2<sub>&#x211a;</sub>
+                </li><li class="fragment">
+                    a &times 2<sub>&#x211a;</sub> &times;
+                    1/2<sub>&#x211a;</sub> &lt;<sub>&#x211a;</sub>
+                    (a + b) &times; 1/2<sub>&#x211a;</sub>
+                </li><li class="fragment">
+                    a &times; 1<sub>&#x211a;</sub>
+                    &lt;<sub>&#x211a;</sub> (a + b) &times;
+                    1/2<sub>&#x211a;</sub>
+                </li><li class="fragment intro">
+                    a &lt;<sub>&#x211a;</sub> (a + b) &times;
+                    1/2<sub>&#x211a;</sub></sub>
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Between &#x211a;</h3>
+            <p>
+                &#x2200;a,b&#x2208;&#x211a; (a &lt;<sub>&#x211a;</sub>
+                b) &#x27f9; a &lt;<sub>&#x211a;</sub>
+                <span class="intro">
+                    ((a + b) &times; 1/2<sub>&#x211a;</sub>)
+                    &lt;<sub>&#x211a;</sub> b
+                </span>
+            </p>
+            <ul>
+                <li class="fragment">
+                    (a &lt;<sub>&#x211a;</sub>
+                    b) &#x27f9; a + b &lt;<sub>&#x211a;</sub> b + b
                 </li><li class="fragment">
                     (a + b) &times; 1/2<sub>&#x211a;</sub>
-                    &lt;<sub>&#x211a;</sub><br /> (b + b) &times;
+                    &lt;<sub>&#x211a;</sub> (b + b) &times;
                     1/2<sub>&#x211a;</sub>
                 </li><li class="fragment">
                     (a + b) &times; 1/2<sub>&#x211a;</sub>
-                    &lt;<sub>&#x211a;</sub><br /> b &times;
+                    &lt;<sub>&#x211a;</sub> b &times;
                     2<sub>&#x211a;</sub> &times;
                     1/2<sub>&#x211a;</sub>
                 </li><li class="fragment">
                     (a + b) &times; 1/2<sub>&#x211a;</sub>
                     &lt;<sub>&#x211a;</sub> b &times;
                     1<sub>&#x211a;</sub>
-                </li><li class="fragment">
+                </li><li class="fragment intro">
                     (a + b) &times; 1/2<sub>&#x211a;</sub>
                     &lt;<sub>&#x211a;</sub> b</sub>
                 </li>
-            </ul></td><td><ul>
+            </ul>
+        </section>
+        <section>
+            <h3>Dedekind Cuts</h3>
+            <p>
+                Dedekind cuts are continuous partitions of &#x211a;
+            </p>
+            <ul>
                 <li class="fragment">
-                    a + a &lt;<sub>&#x211a;</sub> a + b
+                    <span class="intro">
+                        Proper, non-empty Rational Subset</span>:<br />
+                    &#x2200;a&#x2208;&#x211d; a&#x2286;&#x211a; &and;
+                    a&ne;&#x211a; &and; a&ne;{}
+                    <span class="fragment">
+                        &#x27f9; &#x211d;&#x2286;&#x2118;&#x211a;
+                    </span>
                 </li><li class="fragment">
-                    (a + a) &times; 1/2<sub>&#x211a;</sub>
-                    &lt;<sub>&#x211a;</sub><br /> (a + b) &times;
-                    1/2<sub>&#x211a;</sub>
-                </li><li class="fragment">
-                    a &times 2<sub>&#x211a;</sub> &times;
-                    1/2<sub>&#x211a;</sub> &lt;<sub>&#x211a;</sub>
-                    <br /> (a + b) &times; 1/2<sub>&#x211a;</sub>
-                </li><li class="fragment">
-                    a &times; 1<sub>&#x211a;</sub>
-                    &lt;<sub>&#x211a;</sub> (a + b) &times;
-                    1/2<sub>&#x211a;</sub>
-                </li><li class="fragment">
-                    a &lt;<sub>&#x211a;</sub> (a + b) &times;
-                    1/2<sub>&#x211a;</sub></sub>
-                </li>
-            </ul></td></tr></table>
+                    <span class="intro">Closed Downward</span>:
+                    &#x2200;a&#x2208;&#x211d;
+                    &#x2200;b,c&#x2208;&#x211a;<br />
+                    (b&#x2208;a &and; c&le;b) &#x27f9; c&#x2208;a                                   </li><li class="fragment">
+                        <span class="intro">No Largest Member</span>:
+                        &#x2200;a&#x2208;&#x211d;
+                        &#x2200;b&#x2208;a &#x2203;c&#x2208;a c&gt;b
+                    </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Real Numbers &#x211d; Non-Examples</h3>
+            <p>
+                { a&#x2208;&#x211a; : a &le; 0<sub>&#x211a;</sub> }
+                &#x2209;&#x211d;
+            </p>
+            <p>
+                This set is closed downward but it has a largest
+                member: 0<sub>&#x211a;</sub> This set is not a real
+                number.
+            </p>
+        </section>
+        <section>
+            <h3>Real Numbers &#x211d; Non-Examples</h3>
+            <p>
+                { a&#x2208;&#x211a; : (a &gt; -1<sub>&#x211a;</sub>)
+                &and; (a &lt; 0<sub>&#x211a;</sub>) } &#x2209;&#x211d;
+            </p>
+            <p>
+                This set has no largest member but it's not closed
+                downward.  -2<sub>&#x211a;</sub> is not a member of
+                this set even though it's less than
+                -1/2<sub>&#x211a;</sub> which is. This set is not a
+                real number.
+            </p>
         </section>
         <section>
             <h3>Real Numbers &#x211d; Examples</h3>
@@ -5474,32 +5574,6 @@
             </ul>
         </section>
         <section>
-            <h3>Real Numbers &#x211d; Non-Examples</h3>
-            <p>
-                { a&#x2208;&#x211a; : a &le; 0<sub>&#x211a;</sub> }
-                &#x2209;&#x211d;
-            </p>
-            <p>
-                This set is closed downward but it has a largest
-                member: 0<sub>&#x211a;</sub> This set is not a real
-                number.
-            </p>
-        </section>
-        <section>
-            <h3>Real Numbers &#x211d; Non-Examples</h3>
-            <p>
-                { a&#x2208;&#x211a; : (a &gt; -1<sub>&#x211a;</sub>)
-                &and; (a &lt; 0<sub>&#x211a;</sub>) } &#x2209;&#x211d;
-            </p>
-            <p>
-                This set has no largest member but it's not closed
-                downward.  -2<sub>&#x211a;</sub> is not a member of
-                this set even though it's less than
-                -1/2<sub>&#x211a;</sub> which is. This set is not a
-                real number.
-            </p>
-        </section>
-        <section>
             <h3>Real Numbers &#x211d; Examples</h3>
             <p>
                 &#x2200;a&#x2208;&#x211a; &#x2203;{ b&#x2208;&#x211a; :
@@ -5546,6 +5620,11 @@
         <section>
             <h3>Real Numbers &#x211d; Equality</h3>
             <p>
+                &#x2200;a,b&#x2208;&#x211d;
+                (a =<sub>&#x211d;</sub> b) &#x225d;
+                <span class="intro">(a = b)</span>
+            </p>
+            <p class="fragment">
                 Real numbers are equal if and only if the sets
                 that represent them are equal.  This is reflexive
                 symmetric and transitive because set equality
@@ -5586,10 +5665,10 @@
                     (c&#x2209;b) :: b is Closed Downward
                 </li><li class="fragment">
                     &#x2200;a,b&#x2208;&#x211d; &not;(a &#x2286; b)
-                    &#x27f9; (b &#x2286; a)
+                    &#x27f9; (b &#x2286; a) :: Connex &le;<sub>&#x211a;</sub>
                 </li><li class="fragment">
                     &#x2200;a,b&#x2208;&#x211d; (a &#x2286; b)
-                    &or; (b &#x2286; a)
+                    &or; (b &#x2286; a) :: Disjunction Definition
                 </li><li class="fragment">
                     &#x2200;a,b&#x2208;&#x211d;
                     (a &le;<sub>&#x211d;</sub> b)
@@ -5630,7 +5709,10 @@
             </p>
             <p>
                 &#x2200;a,b&#x2208;&#x211d; a + b &#x225d;
-                { (c + d)&#x2208;&#x211a; : c&#x2208;a &and; d&#x2208;b }
+                <span class="intro">
+                    { (c + d)&#x2208;&#x211a; : c&#x2208;a &and;
+                    d&#x2208;b }
+                </span>
             </p>
         </section>
         <section>
@@ -6256,289 +6338,6 @@
         </section>
         <section>
             <h3>
-                Group <span class="intro">&#x27ec;G,
-                &#x2218;&#x27ed;</span>
-            </h3>
-            <p>
-                A group is a set and a binary function G
-                &#x2218; G &#x27f6; G:
-            </p>
-            <ul>
-                <li class="fragment">
-                    <span class="intro">Closed</span>:
-                    &#x2200;a,b&#x2208;G : a &#x2218; b &#x2208;G
-                </li><li class="fragment">
-                    <span class="intro">Associative</span>:
-                    &#x2200;a,b,c&#x2208;G (a &#x2218; b) &#x2218; c =
-                    a &#x2218; (b &#x2218; c)
-                </li><li class="fragment">
-                    <span class="intro">Identity</span>:
-                    &#x2203;e<sub>&#x2218;</sub>&#x2208;G
-                    &#x2200;a&#x2208;G a &#x2218;
-                    e<sub>&#x2218;</sub> = a
-                </li><li class="fragment">
-                    <span class="intro">Inverses</span>:
-                    &#x2200;a&#x2208;G &#x2203;a<sup>-1</sup>&#x2208;G
-                    a &#x2218; a<sup>-1</sup> = e<sub>&#x2218;</sub>
-                </li>
-            </ul>
-            <p class="fragment">
-                A group is the simplest mathematical structure
-                that makes algebra possible.
-            </p>
-        </section>
-        <section>
-            <h3>Abstraction</h3>
-            <p>
-                By definition identity and inverses work when
-                applied from the right.
-            </p>
-            <ul>
-                <li class="fragment">
-                    Identity: &#x2203;e<sub>&#x2218;</sub>&#x2208;G
-                    &#x2200;a&#x2208;G a &#x2218;
-                    e<sub>&#x2218;</sub> = a
-                </li><li class="fragment">
-                    Inverses: &#x2200;a&#x2208;G
-                    &#x2203;a<sup>-1</sup>&#x2208;G
-                    a &#x2218; a<sup>-1</sup> = e<sub>&#x2218;</sub>
-                </li>
-            </ul>
-            <p class="fragment">
-                Do these work from the left?
-            </p>
-            <ul>
-                <li class="fragment">
-                    &#x2203;e<sub>&#x2218;</sub>&#x2208;G
-                    &#x2200;a&#x2208;G
-                    <span class="intro">e<sub>&#x2218;</sub>
-                        &#x2218; a &#x225f; a</span>
-                </li><li class="fragment">
-                    &#x2200;a&#x2208;G
-                    &#x2203;a<sup>-1</sup>&#x2208;G
-                    <span class="intro">a<sup>-1</sup> &#x2218; a
-                        &#x225f; e<sub>&#x2218;</sub></span>
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h3>Proof: Commutative Inverses</h3>
-            <ul>
-                <li class="fragment">
-                    e<sub>&#x2218;</sub> = a<sup>-1</sup> &#x2218;
-                    (a<sup>-1</sup>)<sup>-1</sup> :: Inverses
-                </li><li class="fragment">
-                    e<sub>&#x2218;</sub> = (a<sup>-1</sup> &#x2218;
-                    e<sub>&#x2218;</sub>) &#x2218;
-                    (a<sup>-1</sup>)<sup>-1</sup> :: Identity
-                </li><li class="fragment">
-                    e<sub>&#x2218;</sub> = (a<sup>-1</sup> &#x2218;
-                    (a &#x2218; a<sup>-1</sup>)) &#x2218;
-                    (a<sup>-1</sup>)<sup>-1</sup> :: Inverses
-                </li><li class="fragment">
-                    e<sub>&#x2218;</sub> = ((a<sup>-1</sup> &#x2218;
-                    a) &#x2218; a<sup>-1</sup>) &#x2218;
-                    (a<sup>-1</sup>)<sup>-1</sup> :: Associativity
-                </li><li class="fragment">
-                    e<sub>&#x2218;</sub> = (a<sup>-1</sup> &#x2218;
-                    a) &#x2218; (a<sup>-1</sup> &#x2218;
-                    (a<sup>-1</sup>)<sup>-1</sup>) :: Associativity
-                </li><li class="fragment">
-                    e<sub>&#x2218;</sub> = (a<sup>-1</sup> &#x2218;
-                    a) &#x2218; e<sub>&#x2218;</sub> :: Inverses
-                </li><li class="fragment">
-                    e<sub>&#x2218;</sub> = a<sup>-1</sup> &#x2218;
-                    a :: Identity
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h3>Proof: Commutative Identity</h3>
-            <ul>
-                <li class="fragment">
-                    e<sub>&#x2218;</sub> &#x2218; a =
-                    (a &#x2218; a<sup>-1</sup>) &#x2218; a :: Inverses
-                </li><li class="fragment">
-                    e<sub>&#x2218;</sub> &#x2218; a = a &#x2218;
-                    (a<sup>-1</sup> &#x2218; a) :: Associativity
-                </li><li class="fragment">
-                    e<sub>&#x2218;</sub> &#x2218; a = a &#x2218;
-                    e<sub>&#x2218;</sub> :: Inverses
-                </li><li class="fragment">
-                    e<sub>&#x2218;</sub> &#x2218; a = a :: Identity
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h3>Equation Solving</h3>
-            <p>
-                Suppose we have know a, b and (a &#x2218; x = b):
-            </p>
-            <ul>
-                <li class="fragment">
-                    a<sup>-1</sup> &#x2218; (a &#x2218; x) =
-                    a<sup>-1</sup> &#x2218; b :: Equality
-                </li><li class="fragment">
-                    (a<sup>-1</sup> &#x2218; a) &#x2218; x =
-                    a<sup>-1</sup> &#x2218; b :: Associativity
-                </li><li class="fragment">
-                    e<sub>&#x2218;</sub> &#x2218; x =
-                    a<sup>-1</sup> &#x2218; b :: Inverses
-                </li><li class="fragment">
-                    x = a<sup>-1</sup> &#x2218; b :: Identity
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h3>
-                Abelian Group <span class="intro">&#x27ec;G,
-                &#x2218&#x27ed;</span>
-            </h3>
-            <p>
-                An abelian group has a commutative function:
-            </p>
-            <ul>
-                <li class="fragment">
-                    &#x27ec;G, &#x2218&#x27ed; is a group
-                </li><li class="fragment">
-                    <span class="intro">Commutative</span>:
-                    &#x2200;a,b&#x2208;G (a &#x2218; b) =
-                    (b &#x2218; a)
-                </li>
-            </ul>
-            <p class="fragment">
-                Integers with addition are an abelian group:
-                &#x27ec;&#x2124;, +&#x27ed;
-            </p>
-        </section>
-        <section>
-            <h3>
-                Ring <span class="intro">&#x27ec;R, &#x2218;,
-                &#x229a;&#x27ed;</span>
-            </h3>
-            <p>
-                A ring is a set and two binary functions
-                R &#x2218; R &#x27f6; R and R &#x229a; R
-                &#x27f6; R with four properties:
-            </p>
-            <ul>
-                <li class="fragment">
-                    &#x27ec;R, &#x2218&#x27ed; is an abelian group
-                </li><li class="fragment">
-                    <span class="intro">Closed</span>:
-                    &#x2200;a,b&#x2208;R : a &#x229a; b &#x2208; R
-                </li><li class="fragment">
-                    <span class="intro">Associative</span>:
-                    (a &#x229a; b) &#x229a;c = a &#x229a; (b &#x229a; c)
-                </li><li class="fragment">
-                    <span class="intro">Distributive</span>:
-                    &#x2200;a,b,c&#x2208;R<br />
-                    (a &#x229a; (b &#x2218; c) =
-                    (a &#x229a; b) &#x2218; (a &#x229a; c)) &and;
-                    <br />((b &#x2218; c) &#x229a; a =
-                    (b &#x229a; a) &#x2218; (c &#x229a; a))
-                </li>
-            </ul>
-            <aside class="notes">
-                We like math don't we?  As Beyonce tells us, if
-                we like it we should have put a ring on it.
-            </aside>
-        </section>
-        <section>
-            <h3>
-                Commutative Ring <span class="intro">&#x27ec;R, &#x2218,
-                &#x229a;&#x27ed;</span>
-            </h3>
-            <p>
-                A commutative ring has commutative functions:
-            </p>
-            <ul>
-                <li class="fragment">
-                    &#x27ec;R, &#x2218, &#x229a;&#x27ed; is a ring
-                </li><li class="fragment">
-                    <span class="intro">Commutative</span>:
-                    &#x2200;a,b,c&#x2208;R (a &#x229a; b) =
-                    (b &#x229a; a)
-                </li>
-            </ul>
-            <p class="fragment">
-                Integers with addition and multiplication form a
-                commutative ring &#x27ec;&#x2124;, +,
-                &times;&#x27ed;
-            </p>
-        </section>
-        <section>
-            <h3>
-                Unitary Ring <span class="intro">&#x27ec;R, &#x2218;,
-                &#x229a;&#x27ed;</span>
-            </h3>
-            <p>
-                A unitary ring has an identity element for the second
-                function:
-            </p>
-            <ul>
-                <li class="fragment">
-                    &#x27ec;R, &#x2218, &#x229a;&#x27ed; is a ring
-                </li><li class="fragment">
-                    <span class="intro">Identity</span>:
-                    &#x2203;e<sub>&#x229a;</sub>&#x2208;R
-                    &#x2200;a&#x2208;R a &#x229a;
-                    e<sub>&#x229a;</sub> = a
-                </li>
-            </ul>
-            <p class="fragment">
-                Integers with addition and multiplication form a
-                unitary ring &#x27ec;&#x2124;, +, &times;&#x27ed;
-            </p>
-        </section>
-        <section>
-            <h3>
-                Field <span class="intro">&#x27ec;F, &#x2218;,
-                &#x229a;&#x27ed;</span>
-            </h3>
-            <p>
-                A field is a commutative, unitary ring with
-                inverses:
-            </p>
-            <ul>
-                <li class="fragment">
-                    &#x27ec;F, &#x2218, &#x229a;&#x27ed; is a ring
-                </li><li class="fragment">
-                    <span class="intro">Unitary</span>:
-                    &#x2203;e<sub>&#x229a;</sub>&#x2208;F
-                    &#x2200;a&#x2208;F a &#x229a;
-                    e<sub>&#x229a;</sub> = a
-                </li><li class="fragment">
-                    <span class="intro">Commutative</span>:
-                    &#x2200;a,b,c&#x2208;F
-                    (a &#x229a; b) = (b &#x229a; a)
-                </li><li class="fragment">
-                    <span class="intro">Inverses</span>:
-                    &#x2200;a&#x2208;U a &ne; e<sub>&#x2218;</sub>
-                    &#x27f9; &#x2203;a<sup>-1</sup>&#x2208;U
-                    a &#x229a; a<sup>-1</sup> = e<sub>&#x229a;</sub>
-                </li>
-            </ul>
-            <p class="fragment">
-                Rational numbers with addition and multiplication
-                are a field: &#x27ec;&#x211a;, +, &times;&#x27ed;
-            </p>
-        </section>
-        <section>
-            <h3>
-                Finite Field <span class="intro">&#x27ec;F, &#x2218;,
-                &#x229a;&#x27ed;</span>
-            </h3>
-            <p>
-                A finite field is a field with a finite number of
-                members.  An example a field is integers modulo a
-                positive integer greater than one with addition and
-                multiplication: &#x27ec;&#x2124;/a&#x2124;, +,
-                &times;&#x27ed;
-            </p>
-        </section>
-        <section>
-            <h3>
                 Finite Field Example:
                 <span class="intro">&#x27ec;&#x2124;/5&#x2124;, +,
                     &times;&#x27ed;</span>
@@ -6693,34 +6492,49 @@
             </blockquote>
         </section>
         <section>
+            <h3>Exponents: Distributive</h3>
+            <p class="fragment">
+                Repeating successor creates addition.
+                <span class="fragment">
+                    Repeating addition creates multiplication.
+                </span><span class="fragment">
+                    Repeating multiplication creates
+                    exponentiation.
+                </span><span class="fragment">
+                    Addition and multiplication are connected by
+                    the distributive property.
+                </span><span class="fragment">
+                    Mutiplication and exponentiantion are connected
+                    by the exponent product rule.
+                </span>
+            </p>
+            <p class="fragment">
+                a<sup>b</sup> &#x229a; a<sup>c</sup> = a<sup>b + c</sup>
+            </p>
+        </section>
+        <section>
             <h3>Exponents &#x2115;</h3>
             <p>
-                Repeating the successor operation gives addition.<br />
-                Repeating addition gives multiplication.<br />
-                Repeating multiplication gives exponentiation.
+                Any natural number can be used as an exponent in a
+                straightforward way.
             </p>
             <ul>
                 <li class="fragment">
                     a<sup>0</sup> &#x225d; e<sub>&#x229a;</sub>
                 </li><li class="fragment">
-                    a<sup>1</sup> &#x225d; a
+                    a<sup>1</sup> &#x225d;
+                    e<sub>&#x229a;</sub> &#x229a; a
                 </li><li class="fragment">
-                    a<sup>2</sup> &#x225d; a &#x229a; a
+                    a<sup>2</sup> &#x225d;
+                    e<sub>&#x229a;</sub> &#x229a; a &#x229a; a
                 </li><li class="fragment">
-                    a<sup>3</sup> &#x225d; a &#x229a; a &#x229a; a
+                    a<sup>3</sup> &#x225d;
+                    e<sub>&#x229a;</sub> &#x229a; a &#x229a; a
+                    &#x229a; a
+                </li><li class="fragment">
+                    ...
                 </li>
             </ul>
-        </section>
-        <section>
-            <h3>Exponents: Distributive</h3>
-            <p>
-                As the distributive property connects addition and
-                multiplication, the exponent rule connects
-                multiplication and exponetiation
-            </p>
-            <p>
-                a<sup>b</sup>a<sup>c</sup> = a<sup>b + c</sup>
-            </p>
         </section>
         <section>
             <h3>Exponents &#x2124;</h3>
@@ -6737,19 +6551,10 @@
                 </li><li class="fragment">
                     a<sup>-3</sup> &#x225d; a<sup>-1</sup> &#x229a;
                     a<sup>-1</sup> &#x229a; a<sup>-1</sup>
+                </li><li class="fragment">
+                    ...
                 </li>
             </ul>
-        </section>
-        <section>
-            <h3>Exponents: Negation</h3>
-            <p>
-                Negative exponents also obey the exponent rule
-            </p>
-            <p>
-                a<sup>b</sup>/a<sup>c</sup> =
-                a<sup>b</sup>a<sup>-c</sup> =
-                a<sup>b + (-c)</sup>
-            </p>
         </section>
         <section>
             <h3>Exponents &#x211a;</h3>
@@ -6758,29 +6563,65 @@
             </p>
             <ul>
                 <li class="fragment">
-                    a<sup>1/2</sup> &#x229a; a<sup>1/2</sup>
-                    <span class="fragment"> = a<sup>1/2 + 1/2</sup>
-                        <span class="fragment"> =
-                            a<sup>1</sup> = a</span>
+                    a<sup>1/2</sup>
+                    <span class="fragment">
+                        &#x229a; a<sup>1/2</sup>
+                    </span><span class="fragment">
+                        = a<sup>1/2 + 1/2</sup>
+                    </span><span class="fragment"> = a<sup>1</sup>
+                    </span><span class="fragment"> = a</span>
                 </li><li class="fragment">
-                    a<sup>2/3</sup> &#x229a; a<sup>2/3</sup> &#x229a;
-                    a<sup>2/3</sup> = a<sup>2/3 + 2/3 + 2/3</sup> =
-                    a<sup>6/3</sup> = a<sup>2</sup>
+                    a<sup>2/3</sup>
+                    <span class="fragment">
+                        &#x229a; a<sup>2/3</sup> &#x229a;
+                        a<sup>2/3</sup>
+                    </span><span class="fragment">
+                        = a<sup>2/3 + 2/3 + 2/3</sup>
+                    </span><span class="fragment">
+                        = a<sup>6/3</sup> = a<sup>2</sup>
+                    </span>
                 </li>
             </ul>
+            <p class="fragment">
+                A field member with a rational exponent may or may not
+                exist, depending on the field.
+            </p>
+            <aside class="notes">
+                We might not understand what fractional exponents
+                mean but we'll know them whenw e see them.
+            </aside>
+        </section>
+        <section>
+            <h3>Exponents &#x211d;</h3>
+            <p>
+                Could we use real numbers as exponents?  Vectors?
+                <span class="fragment">
+                    We can!  And it will turn out to be useful
+                    (particularly for rotations).
+                </span>
+            </p>
         </section>
         <section>
             <h3>Exponent Rules</h3>
             <ul>
                 <li>
-                    a<sup>b</sup>a<sup>c</sup> = a<sup>b + c</sup>
+                    <span class="intro">Zero</span>:
+                    a<sup>0</sup> = e<sub>&#x229a;</sub>
+                    (a&#x2208;&#x211d; &#x27f9;
+                    (a<sup>0</sup> = 1<sub>&#x211d;</sub>))
                 </li><li>
-                    a<sup>b</sup>/a<sup>c</sup> =
-                    a<sup>b</sup>a<sup>-c</sup> =
-                    a<sup>b + (-c)</sup>
-                </li><li>
+                    <span class="intro">Power</span>:
                     (a<sup>b</sup>)<sup>c</sup> =
-                    a<sup>b &times; c</sup> = a<sup>bc</sup>
+                    a<sup>b &times; c</sup>
+                </li><li>
+                    <span class="intro">Product</span>:
+                    a<sup>b</sup> &#x229a; a<sup>c</sup> =
+                    a<sup>b + c</sup>
+                </li><li>
+                    <span class="intro">Negative</span>:
+                    a<sup>-n</sup> =
+                    (a<sup>-1</sup>)<sup>n</sup> =
+                    (a<sup>n</sup>)<sup>-1</sup>
                 </li>
             </ul>
         </section>
