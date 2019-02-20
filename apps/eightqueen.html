@@ -16,7 +16,7 @@
 <script src="ripple/fascia.js"></script>
 <script src="ripple/ripple.js"></script>
 <script>//<![CDATA[
- ripple.ready(function() {
+ fascia.ready(function() {
      var colorBlack    = 'rgb(48, 32, 32)';
      var colorWhite    = 'rgb(236, 236, 224)';
      var colorBoundary = 'rgb(198, 198, 198)';
@@ -24,20 +24,16 @@
      var colorCapture  = 'rgba(192, 128, 128, 0.6)';
      var colorQueen    = 'rgb(64, 160, 64)';
 
-     fascia.app({
-         camera: ripple.camera(),
+     return {
          grid: grid.create({type: 'square', size: 20}),
          queens: [],
 
-         center: function() {
-             var width  = this.camera.width;
-             var height = this.camera.height;
+         center: function(camera) {
              var boardEdge = this.grid.size() * 7;
-
-             this.camera.position(
+             camera.position(
                  {x: boardEdge / 2, y: boardEdge / 2});
-             this.camera.setScale(0.8 * Math.min(
-                 width / boardEdge, height / boardEdge));
+             camera.setScale(0.8 * Math.min(
+                 camera.width / boardEdge, camera.height / boardEdge));
          },
          init: function() {
              var param, queen, ii;
@@ -57,10 +53,8 @@
                      break;
              }
          },
-         resize: function(width, height) {
-             this.camera.resize(width, height);
-             if (!isNaN(width) && !isNaN(height))
-                 this.center();
+         resize: function(camera) {
+             this.center(camera);
          },
          eachSquare: function(fn, context) {
              for (var row = 0; row < 8; ++row)
@@ -131,10 +125,7 @@
              });
              this.queens = result;
          },
-         draw: function(ctx, width, height) {
-             ctx.save();
-             this.camera.setupContext(ctx);
-
+         draw: function(ctx, camera) {
              // Black squares
              ctx.beginPath();
              this.eachSquare(function(row, col) {
@@ -177,13 +168,13 @@
              ctx.stroke();
 
              this.eachQueen(function(queen) {
-                 this.drawQueen(queen, ctx); });
-             ctx.restore();
+                 this.drawQueen(queen, ctx);
+             });
          },
-         tap: function(event, redraw) {
+         tap: function(event, camera) {
              var capture = false;
              var position = this.grid.position(
-                 this.camera.toWorldFromScreen(event.point));
+                 camera.toWorldFromScreen(event.point));
              if ((position.row >= 0) && (position.row < 8) &&
                  (position.col >= 0) && (position.col < 8)) {
                  if (this.hasQueen(position.row, position.col))
@@ -191,28 +182,23 @@
                  else if (!this.isCaptured(position.row, position.col))
                      this.grid.coordinate(this.queens.push(position));
              }
-             redraw();
          },
-         drag: function(event, redraw) {
-             console.log('DEBUG drag', event);
-             this.camera.pan({
+         drag: function(event, camera) {
+             camera.pan({
                  x: (event.last.x - event.current.x) /
-                 this.camera.scale,
+                 camera.scale,
                  y: (event.last.y - event.current.y) /
-                 this.camera.scale});
-             redraw();
+                 camera.scale});
          },
-         wheel: function(event, redraw) {
-             var width  = this.camera.width;
-             var height = this.camera.height;
+         wheel: function(event, camera) {
              var boardEdge = this.grid.size() * 7;
              var size = this.grid.size();
 
-             this.camera.zoom(
+             camera.zoom(
                  1 + 0.1 * event.y, 0.8 * Math.min(
-                     width / boardEdge, height / boardEdge),
-                 Math.min(width / size, height / size));
-             redraw();
+                     camera.width / boardEdge,
+                     camera.height / boardEdge),
+                 Math.min(camera.width / size, camera.height / size));
          }
-     });
+     };
  }); //]]></script>

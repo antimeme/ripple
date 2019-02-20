@@ -11,14 +11,9 @@
 <script src="ripple/polyfill.js"></script>
 <script src="ripple/ripple.js"></script>
 <script src="ripple/fascia.js"></script>
-<script src="ripple/grid.js"></script>
 <script src="ripple/multivec.js"></script>
+<script src="ripple/grid.js"></script>
 <script src="ripple/pathf.js"></script>
 <script src="streya.js"></script>
 <script>//<![CDATA[
- ripple.ready(function() {
-     ripple.preload([
-         'streya.json'
-     ], function(results) {
-         fascia.app(streya.game(results['streya.json'])); });
- }); //]]></script>
+ fascia.ready(streya.game, ['streya.json']); //]]></script>

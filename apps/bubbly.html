@@ -40,38 +40,34 @@
  ripple.ready(function() {
      var game = document.querySelector('#game');
      fascia.app({
-         camera: ripple.camera(),
          sounds: {
              pop: new Audio('sounds/pop.wav')
          },
          bubbles: [],
-         resize: function(width, height) {
-             if (!isNaN(width) && !isNaN(height)) {
-                 this.camera.resize(width, height);
-             }
-         },
+         init: function(camera) {
+             var size = Math.min(camera.width, camera.height);
 
-         init: function() {
-             var width = this.camera.width;
-             var height = this.camera.height;
-             var size = Math.min(width, height);
+             this.bubbles.push({x: camera.width / 4,
+                                y: -camera.height / 4, r: size / 8});
 
-             this.bubbles.push({x: width / 4, y: -height / 4,
-                                r: size / 8});
+             this.bubbles.push({x: -camera.width / 4,
+                                y: camera.height / 4, r: size / 7});
 
-             this.bubbles.push({x: -width / 4, y: height / 4,
-                                r: size / 7});
-
-             this.bubbles.push({x: -width * 1 / 4, y: -height / 4,
+             this.bubbles.push({x: -camera.width * 1 / 4,
+                                y: -camera.height / 4,
                                 r: size / 5});
-             this.bubbles.push({x: -width * 31 / 128, y: -height / 4,
+             this.bubbles.push({x: -camera.width * 31 / 128,
+                                y: -camera.height / 4,
                                 r: size / 6.5});
-             this.bubbles.push({x: -width * 32 / 128, y: -height / 4,
+             this.bubbles.push({x: -camera.width * 32 / 128,
+                                y: -camera.height / 4,
                                 r: size / 10});
 
-             this.bubbles.push({x: width / 4, y: height / 4,
+             this.bubbles.push({x: camera.width / 4,
+                                y: camera.height / 4,
                                 r: size / 5});
-             this.bubbles.push({x: width * 17 / 64, y: height / 4,
+             this.bubbles.push({x: camera.width * 17 / 64,
+                                y: camera.height / 4,
                                 r: size / 10});
          },
 
@@ -93,15 +89,12 @@
              this.fill();
          },
 
-         draw: function(ctx, width, height, now, last) {
-             ctx.save();
-             this.camera.setupContext(ctx);
+         draw: function(ctx, camera, now, last) {
              this.eachBubble(this.drawBubble, ctx);
-             ctx.restore();
          },
 
-         tap: function(event, redraw) {
-             var pos = this.camera.toWorldFromScreen(event.point);
+         tap: function(event, camera) {
+             var pos = camera.toWorldFromScreen(event.point);
              var bubbles = [];
 
              this.eachBubble(function(bubble) {
@@ -111,14 +104,12 @@
                  if (delta.x * delta.x + delta.y * delta.y >
                      bubble.r * bubble.r)
                      bubbles.push(bubble);
-                 else console.log('POP!', bubble.x, bubble.y);
              });
 
              if (bubbles.length < this.bubbles.length) {
                  this.sounds.pop.play();
              }
              this.bubbles = bubbles;
-             redraw();
          }
      }, game, game);
  }); //]]></script>

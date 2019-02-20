@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<title>Fascia</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<style>
+ html, body
+ { position: absolute; padding: 0; margin: 0; overflow: hidden;  }
+</style>
+<script src="ripple/polyfill.js"></script>
+<script src="ripple/ripple.js"></script>
+<script src="ripple/fascia.js"></script>
+<script src="ripple/grid.js"></script>
+<script src="ripple/multivec.js"></script>
+<script src="ripple/pathf.js"></script>
+<script>//<![CDATA[
+ fascia.ready(function() {
+     taps = [];
+     return {
+         init: function(camera, canvas, container, redraw) {
+             canvas.style.background = 'rgb(192, 192, 192)';
+         },
+         draw: function(ctx, camera, now, last) {
+             ctx.lineCap = 'round';
+             ctx.lineWidth = 2;
+
+             ctx.beginPath();
+             ctx.moveTo(-camera.width/2, -camera.height/2);
+             ctx.lineTo(camera.width/2, camera.height/2);
+             ctx.strokeStyle = 'rgb(192, 32, 32)';
+             ctx.stroke();
+
+             ctx.beginPath();
+             taps.forEach(function(tap) {
+                 ctx.moveTo(tap.x + 9, tap.y);
+                 ctx.arc(tap.x, tap.y, 9, 0, Math.PI * 2);
+             });
+             ctx.fillStyle = 'rgb(32, 192, 32)';
+             ctx.fill();
+             ctx.strokeStyle = 'rgb(32, 32, 192)';
+             ctx.stroke();
+         },
+         tap: function(event, camera) {
+             taps.push(camera.toWorldFromScreen(event.point));
+             if (taps.length > 3)
+                 taps.shift();
+         },
+         wheel: function(event, camera) {
+             camera.zoom(1 + 0.1 * event.y, 1, 10);
+         },
+     }
+ }); //]]></script>

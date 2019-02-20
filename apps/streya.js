@@ -11,11 +11,13 @@
 // - compute cost and apply budget
 // - support more than one deck?
 (function(streya) {
-    'use strict';
-    if (typeof require !== 'undefined') {
-        this.ripple   = require('./ripple/ripple.js');
-        this.multivec = require('./ripple/multivec.js');
-        this.fascia   = require('./ripple/fascia.js');
+    "use strict";
+    if (typeof require === 'function') {
+        this.ripple   = require("./ripple/ripple.js");
+        this.fascia   = require("./ripple/fascia.js");
+        this.multivec = require("./ripple/multivec.js");
+        this.grid     = require("./ripple/grid.js");
+        this.pathf    = require("./ripple/pathf.js");
     }
 
     // === Apparatus
@@ -514,38 +516,44 @@
                     {theta: character.direction})) > spread));
     };
 
-    streya.game = function(data) {
-        var game, redraw, tap, selected, drag, zooming;
+    streya.game = function(preloads) {
+        var fasciaRedraw, tap, selected, drag, zooming;
+        var viewCenter = function() {
+            console.log("Premature viewCenter"); };
+        var viewZoom = function(factor) {
+            console.log("Premature viewZoom"); };
         var colorSelected = 'rgba(192, 192, 0, 0.2)';
-        var camera = ripple.camera();
-        var imageSystem = fascia.imageSystem(data.imageSystem);
-        var itemSystem = fascia.itemSystem(data.itemSystem);
+        var imageSystem = fascia.imageSystem(
+            preloads['streya.json'].imageSystem);
+        var itemSystem = fascia.itemSystem(
+            preloads['streya.json'].itemSystem);
         var inventoryScreen;
         var apparatusScreen;
         var settingsScreen;
         var player = fascia.createPlayer(
             ripple.mergeConfig(
-                (data.characterDefinitions &&
-                 data.characterDefinitions.player) || null, {
-                     position: {x: 0, y: 0},
-                     itemSystem: itemSystem,
-                     interact: function() {
-                         if (settingsScreen.isVisible()) {
-                             settingsScreen.hide();
-                             inventoryScreen.show();
-                         } else if (apparatusScreen.isVisible()) {
+                (preloads['streya.json'].characterDefinitions &&
+                 preloads['streya.json'].characterDefinitions.player) ||
+                null, {
+                    position: {x: 0, y: 0},
+                    itemSystem: itemSystem,
+                    interact: function() {
+                        if (settingsScreen.isVisible()) {
+                            settingsScreen.hide();
+                            inventoryScreen.show();
+                        } else if (apparatusScreen.isVisible()) {
                              apparatusScreen.hide()
-                         } else if (inventoryScreen.isVisible()) {
+                        } else if (inventoryScreen.isVisible()) {
                              inventoryScreen.hide();
-                         } else if (ship.activeApparatus) {
-                             apparatusScreen.title(
-                                 ship.activeApparatus.type);
-                             apparatusScreen.show();
-                             inventoryScreen.hide();
-                         } else {
-                             inventoryScreen.populate();
-                             inventoryScreen.show();
-                         } }}));
+                        } else if (ship.activeApparatus) {
+                            apparatusScreen.title(
+                                ship.activeApparatus.type);
+                            apparatusScreen.show();
+                            inventoryScreen.hide();
+                        } else {
+                            inventoryScreen.populate();
+                            inventoryScreen.show();
+                        } }}));
         var menu = document.createElement('ul');
         var menuframe = ripple.createElement(
             'fieldset', {'class': 'streya-menu', style: {
@@ -565,11 +573,13 @@
             return ship;
         };
 
-        streya.Apparatus.data = data.apparatus;
+        streya.Apparatus.data = preloads['streya.json'].apparatus;
         var ship = menuShipUpdate(streya.Ship.create(
             (ripple.param('ship') &&
-             ripple.param('ship') in data.shipDesigns) ?
-            data.shipDesigns[ripple.param('ship')] : undefined));
+             ripple.param('ship') in
+                preloads['streya.json'].shipDesigns) ?
+            preloads['streya.json'].shipDesigns[
+                ripple.param('ship')] : undefined));
 
         var system, systems = {
             edit: {
@@ -585,19 +595,19 @@
                         system = systems.tour;
                         system.start();
                     } else if (event.key === 'c') {
-                        game.center();
+                        viewCenter();
                     } else if (event.key === 'f') {
                         ripple.toggleFullscreen(
                             document.querySelect('.fascia-canvas')
                                     .parentElement);
                     } else if ((event.key === '+') ||
                                (event.key === '=')) {
-                        game.zoom(1.1);
+                        viewZoom(1.1);
                     } else if (event.key === '-') {
-                        game.zoom(0.909);
+                        viewZoom(0.909);
                     }
                 },
-                singleTap: function(point) {
+                singleTap: function(point, camera) {
                     var cell, previous;
 
                     previous = selected;
@@ -660,17 +670,17 @@
                     }
                     ship.undoMark();
                 },
-                drag: function(event) {
+                drag: function(event, camera) {
                     camera.pan({
                         x: (event.last.x - event.current.x) /
                         camera.scale,
                         y: (event.last.y - event.current.y) /
                         camera.scale });
                 },
-                pinchStart: function(event) {
+                pinchStart: function(event, camera) {
                     this._pinchScale = camera.scale;
                 },
-                pinchMove: function(event) {
+                pinchMove: function(event, camera) {
                     var extents = ship.extents();
                     var min = Math.min(
                         camera.width / (extents.ex - extents.sx),
@@ -681,7 +691,7 @@
                             camera.width, camera.height) /
                         ship.grid.size());
                 },
-                draw: function(ctx, now) {
+                draw: function(ctx, camera, now) {
                     if (selected) {
                         ctx.beginPath();
                         ship.grid.draw(ctx, selected);
@@ -714,40 +724,40 @@
                     ripple.show(bbarRight);
                     ripple.hide(menuframe);
                 },
-                keydown: function(event) {
+                keydown: function(event, camera) {
                     if (event.keyCode === 27 /* escape */) {
                         apparatusScreen.hide();
                         inventoryScreen.hide();
                         settingsScreen.show();
                     } else if ((event.key === '+') ||
                                (event.key === '=')) {
-                        game.zoom(1.1);
+                        viewZoom(1.1);
                     } else if (event.key === '-') {
-                        game.zoom(0.909);
+                        viewZoom(0.909);
                     } else {
                         player.control.keydown(event);
-                        this.update();
+                        this.update(camera);
                     }
                 },
-                keyup: function(event) {
+                keyup: function(event, camera) {
                     player.control.keyup(event);
-                    this.update();
+                    this.update(camera);
                 },
-                singleTap: function(point) {
-                    this.update();
+                singleTap: function(point, camera) {
+                    this.update(camera);
                     player.control.setTarget(
                         camera.toWorldFromScreen(point));
                 },
-                doubleTap: function(point) {
-                    this.update();
+                doubleTap: function(point, camera) {
+                    this.update(camera);
                     player.control.setArrow(
                         true, player.position,
                         camera.toWorldFromScreen(point));
                 },
-                pinchStart: function(event) {
+                pinchStart: function(event, camera) {
                     this._pinchScale = camera.scale;
                 },
-                pinchMove: function(event) {
+                pinchMove: function(event, camera) {
                     var extents = ship.extents();
                     var min = Math.min(
                         camera.width / (extents.ex - extents.sx),
@@ -758,15 +768,18 @@
                             camera.width, camera.height) /
                         ship.grid.size());
                 },
-                draw: function(ctx, now) { player.draw(ctx, now); },
-                update: function(now) {
+                draw: function(ctx, camera, now) {
+                    player.draw(ctx, now);
+                },
+                update: function(camera, now) {
                     if (isNaN(now))
                         now = Date.now();
 
                     player.destination = player.plan(now);
                     if (player.destination) {
-                        var collide = ship.checkCollision(
-                            player, collide);
+                        var collide = undefined;
+
+                        collide = ship.checkCollision(player, collide);
 
                         if (!isNaN(collide))
                             player.destination = player.replan(
@@ -774,6 +787,8 @@
                     }
 
                     player.update(now);
+                    camera.position(player.position);
+
                     ship.activeApparatus = null;
                     ship.eachApparatus(function(apparatus, node) {
                         if (apparatus.console &&
@@ -784,7 +799,6 @@
                             ship.activeApparatus = apparatus;
                         } else apparatus.active = false;
                     });
-                    camera.position(player.position);
                 }
             },
         };
@@ -872,7 +886,7 @@
             gconfig.size = parseInt(gsize.value);
             ship = menuShipUpdate(streya.Ship.create({ grid: gconfig }));
             selected = ship.grid.coordinate(selected);
-            redraw();
+            fasciaRedraw();
         });
 
         var gsize = ripple.createElement(
@@ -884,7 +898,7 @@
             var gconfig = JSON.parse(decodeURI(gtype.value));
             ship.grid.size(parseInt(gsize.value));
             selected = ship.grid.coordinate(selected);
-            redraw();
+            fasciaRedraw();
         });
         menu.appendChild(ripple.createElement('li', null, gtype, gsize));
         menu.appendChild(ripple.createElement('hr'));
@@ -896,25 +910,27 @@
         menu.appendChild(ripple.createElement('li', null, shipName));
         var designs = ripple.createElement('select');
         designs.appendChild(ripple.createElement('option', null, '-'));
-        if (data.shipDesigns) {
-            Object.keys(data.shipDesigns).forEach(function(key) {
-                designs.appendChild(ripple.createElement(
-                    'option', null, key));
-            });
+        if (preloads['streya.json'].shipDesigns) {
+            Object.keys(preloads['streya.json'].shipDesigns)
+                  .forEach(function(key) {
+                      designs.appendChild(ripple.createElement(
+                          'option', null, key));
+                  });
             designs.addEventListener('change', function(event) {
                 if (designs.value !== '-') {
                     ship = menuShipUpdate(streya.Ship.create(
-                        data.shipDesigns[designs.value]));
+                        preloads['streya.json']
+                            .shipDesigns[designs.value]));
                     shipName.value = ship.name;
                 }
-                redraw();
+                fasciaRedraw();
             });
         }
         menu.appendChild(ripple.createElement('li', null, designs));
         menu.appendChild(ripple.createElement(
-            'li', null, 'Mass: ', ripple.createElement(
+            'li', null, ripple.createElement(
                 'span', {id: 'mass-meter'},
-                ship ? ship.mass() : 'unknown')));
+                ship ? ship.mass() : 'unknown'), 'kg'));
         menu.appendChild(ripple.createElement('li', {
             'data-action': 'undo'}, 'Undo'));
         menu.appendChild(ripple.createElement('li', {
@@ -933,8 +949,8 @@
                 return;
 
             switch (target.getAttribute('data-action')) {
-                case 'center': { game.center(); redraw(); } break;
-                case 'undo': { ship.undo(); redraw(); } break;
+                case 'center': { viewCenter(); fasciaRedraw(); } break;
+                case 'undo': { ship.undo(); fasciaRedraw(); } break;
                 case 'save': {
                     ripple.downloadJSON(ship, ship.name);
                 } break;
@@ -942,7 +958,7 @@
                     system = systems.tour;
                     if (system.start)
                         system.start();
-                    redraw();
+                    fasciaRedraw();
                 } break;
                 case 'full-screen': {
                     ripple.toggleFullscreen(
@@ -972,11 +988,9 @@
             }
         });
 
-        // This is the fascia entry point.  Methods on this object
-        // are called to start the application and respond to user
-        // input.
-        var game = {
-            init: function(container, viewport, fasciaRedraw) {
+        return {
+            init: function(camera, canvas, container, redraw) {
+                canvas.style.background = 'rgb(32,32,32)';
                 container.appendChild(menuframe);
                 container.appendChild(bbarLeft);
                 container.appendChild(bbarRight);
@@ -993,22 +1007,41 @@
                     container, player, itemSystem, imageSystem);
                 inventoryScreen.resize(camera.width, camera.height);
 
-                this.center();
+                viewZoom = function(factor) {
+                    // Change magnification within limits
+                    var extents = ship.extents();
+                    var max = Math.min(
+                        camera.width, camera.height) / ship.grid.size();
+                    var min = Math.min(
+                        camera.width / (extents.ex - extents.sx),
+                        camera.height / (extents.ey - extents.sy));
+                    camera.zoom(factor, min * 4 / 5, max);
+                };
+                viewCenter = function() {
+                    // Center the ship for overall view
+                    var extents = ship.extents();
+                    camera.reset();
+                    camera.pan({ x: (extents.sx + extents.ex) / 2,
+                                 y: (extents.sy + extents.ey) / 2 });
+                    camera.zoom(Math.min(
+                        camera.width / (extents.ex - extents.sx),
+                        camera.height / (extents.ey - extents.sy)) * 4 / 5);
+                };
+                viewCenter();
+
                 system = systems.edit;
                 if (system.start)
                     system.start();
 
-                redraw = fasciaRedraw; // needed for menu events
+                fasciaRedraw = redraw; // needed for menu events
             },
 
             isActive: function() {
                 return system && system.active && system.active();
             },
 
-            resize: function(width, height, container) {
-                var size = Math.min(width, height);
-                camera.width = width;
-                camera.height = height;
+            resize: function(camera, container) {
+                var size = Math.min(camera.width, camera.height);
 
                 menuframe.style.borderRadius =
                     Math.floor(size / 50) + 'px';
@@ -1029,111 +1062,59 @@
                             height - Math.floor(size / 20 + size / 11);
                     });
 
-                camera.resize(width, height);
                 [imageSystem, inventoryScreen,
                  apparatusScreen,
                  settingsScreen].forEach(function(system) {
                      if (system)
-                         system.resize(width, height); });
+                         system.resize(camera.width, camera.height); });
                 zooming = drag = undefined;
             },
 
-            draw: function(ctx, width, height, now) {
-                var neighbors, vector, radius;
-                var points, last, index;
-                var now = Date.now();
-
+            draw: function(ctx, camera, now) {
                 if (system.update)
-                    system.update(now);
-
-                ctx.save();
-                ctx.fillStyle = 'rgb(32, 32, 32)';
-                ctx.fillRect(0, 0, camera.width, camera.height);
-                camera.setupContext(ctx);
+                    system.update(camera, now);
 
                 ship.drawBackground(ctx);
                 if (system.draw)
-                    system.draw(ctx, now);
+                    system.draw(ctx, camera, now);
                 ship.draw(ctx);
-                ctx.restore();
             },
 
-            keydown: function(event, redraw) {
+            keydown: function(event, camera) {
                 if (system.keydown)
-                    system.keydown(event);
-                redraw();
+                    system.keydown(event, camera);
             },
-
-            keyup: function(event, redraw) {
+            keyup: function(event, camera) {
                 if (system.keyup)
-                    system.keyup(event);
-                redraw();
+                    system.keyup(event, camera);
             },
-
-            wheel: function(event, redraw) {
-                this.zoom(1 + 0.1 * event.y);
-                redraw();
+            wheel: function(event, camera) {
+                viewZoom(1 + 0.1 * event.y);
             },
-
-            tap: function(event, redraw) {
-                if (system.singleTap) {
-                    system.singleTap(event.point);
-                    redraw();
-                }
+            tap: function(event, camera) {
+                if (system.singleTap)
+                    system.singleTap(event.point, camera);
             },
-
-            doubleTap: function(event, redraw) {
-                if (system.doubleTap) {
-                    system.doubleTap(event.point);
-                    redraw();
-                }
+            doubleTap: function(event, camera) {
+                if (system.doubleTap)
+                    system.doubleTap(event.point, camera);
             },
-
-            drag: function(event, redraw) {
-                if (system.drag) {
-                    system.drag(event);
-                    redraw();
-                }
+            drag: function(event, camera) {
+                if (system.drag)
+                    system.drag(event, camera);
             },
-
-            pinchStart: function(event, redraw) {
-                if (system.pinchStart) {
-                    system.pinchStart(event);
-                    redraw();
-                }
+            pinchStart: function(event, camera) {
+                if (system.pinchStart)
+                    system.pinchStart(event, camera);
             },
-
-            pinchMove: function(event, redraw) {
-                if (system.pinchMove) {
-                    system.pinchMove(event);
-                    redraw();
-                }
-            },
-
-            zoom: function(factor) { // Change magnification within limits
-                var extents = ship.extents();
-                var max = Math.min(
-                    camera.width, camera.height) / ship.grid.size();
-                var min = Math.min(
-                    camera.width / (extents.ex - extents.sx),
-                    camera.height / (extents.ey - extents.sy));
-                camera.zoom(factor, min * 4 / 5, max);
-            },
-
-            center: function() { // Center the ship for overall view
-                var extents = ship.extents();
-                camera.reset();
-                camera.pan({ x: (extents.sx + extents.ex) / 2,
-                             y: (extents.sy + extents.ey) / 2 });
-                camera.zoom(Math.min(
-                    camera.width / (extents.ex - extents.sx),
-                    camera.height / (extents.ey - extents.sy)) * 4 / 5);
+            pinchMove: function(event, camera) {
+                if (system.pinchMove)
+                    system.pinchMove(event, camera);
             },
         };
-        return game;
     };
 
 }).call(this, typeof exports === 'undefined'?
-        (this.streya = {}):
+        (this.streya = {}) :
         ((typeof module !== undefined) ?
          (module.exports = exports) : exports));

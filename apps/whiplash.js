@@ -16,7 +16,6 @@
     var browserSettings = {
         debug: !!ripple.param('debug'),
         profiling: false,
-        rotateworld: !!ripple.param('rotateworld'),
         mazeType: ripple.param('mazeType') || undefined,
         mazeRings: Math.max(Math.min(parseInt(
             ripple.param('mazeRings'), 10), 8), 1),
@@ -198,25 +197,18 @@
     whiplash.game = function(data) {
         return {
             debug: browserSettings.debug && !data.schema.disableDebug,
-            rotateworld: browserSettings.rotateworld,
             mazeRings: browserSettings.mazeRings,
             mazeType: browserSettings.mazeType,
             startStage: browserSettings.startStage || data.startStage,
 
-            height: 320, width: 320,
-            zoom: {
-                value: 25, min: 10, max: 100, reference: 0,
-                change: function(value) {
-                    this.value = ripple.clamp(
-                        this.value * value, this.min, this.max);
-                    return this;
-                }},
             tap: null, mmove: null,
             player: null, update: update,
             itemSystem: fascia.itemSystem(data.itemdefs),
             imageSystem: fascia.imageSystem(data.images),
 
-            init: function(container, viewport) {
+            isActive: function() { return true; },
+
+            init: function(camera, canvas, container) {
                 var self = this;
 
                 $('<div>') // Left Action Bar
@@ -259,101 +251,79 @@
                 this.inventory = fascia.inventoryScreen(
                     container, this.player,
                     this.itemSystem, this.imageSystem);
+                this.inventory.resize(camera.width, camera.height);
 
-                this.setStage(this.startStage);
+                this.setStage(this.startStage, camera);
             },
 
-            resize: function(width, height) {
-                var size = Math.min(width, height);
-                this.width = width;
-                this.height = height;
+            resize: function(camera) {
+                var size = Math.min(camera.width, camera.height);
 
                 $('.page').css({
                     'border-width': Math.floor(size / 100),
                     'border-radius': Math.floor(size / 25),
                     top: Math.floor(size / 50),
                     left: Math.floor(size / 50),
-                    width: width - Math.floor(size / 20),
-                    height: height - Math.floor(
+                    width: camera.width - Math.floor(size / 20),
+                    height: camera.height - Math.floor(
                         size / 20 + size / 11)
                 });
 
-                this.imageSystem.resize(width, height);
+                this.imageSystem.resize(camera.width, camera.height);
                 if (this.inventory)
-                    this.inventory.resize(width, height);
+                    this.inventory.resize(camera.width, camera.height);
             },
 
-            draw: function(ctx, width, height, now, last) {
-                var size;
-                var lineWidth;
-                lineWidth = Math.max(width, height) / 50;
+            draw: function(ctx, camera, now, last) {
+                var size = Math.min(camera.height, camera.width);
+                ctx.lineWidth = Math.max(
+                    camera.width, camera.height) / 50;
 
+                camera.position(this.player.position);
                 this.update(now, last);
-                ctx.save(); // transform to world space
-                ctx.translate(width / 2, height / 2); // center origin
-                ctx.scale(this.zoom.value, this.zoom.value);
-                if (this.rotateworld) {
-                    if (height >= width) {
-                        ctx.translate(
-                            0, 0.4 * height / this.zoom.value);
-                        ctx.rotate(-Math.PI / 2);
-                    } else ctx.translate(
-                        -0.4 * width / this.zoom.value, 0);
-                    ctx.rotate(-this.player.direction);
-                }
-                ctx.translate((-1) * this.player.position.x,
-                              (-1) * this.player.position.y);
-                ctx.lineWidth = lineWidth;
 
                 this.characters.forEach(function(character) {
                     if (character.drawPre)
                         character.drawPre(ctx, this, now);
                 });
-
                 drawEnvironment(ctx, this, now);
                 (this.chests || []).forEach(function(chest) {
                     drawChest(ctx, chest, now);
                 }, this);
-
                 this.characters.forEach(function(character) {
                     if (character.draw)
                         character.draw(ctx, now);
                 }, this);
-
                 this.characters.forEach(function(character) {
                     if (character.drawPost)
                         character.drawPost(ctx, now);
                 }, this);
 
-                ctx.restore(); // return to screen space
-
-                size = Math.min(this.height, this.width);
                 if (this.debug) {
-                    if (this.rotateworld)
-                        multivec((this.height >= this.width) ?
-                                 [0, -1] : [1, 0])
-                        .draw(ctx, {
-                            center: {x: width / 2, y: height / 2},
-                            length: size / 4, color: 'black'});
                     multivec({theta: this.player.direction})
                         .draw(ctx, {
                             center: {x: width / 2, y: height / 2},
                             length: size / 4, color: 'red'});
                 }
+            },
+            drawBefore: function(ctx, camera) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'top';
-                ctx.font = 'bold ' + Math.round(size / 20) + 'px sans';
-                ctx.fillText(this.text, this.width / 2, size / 50);
+                ctx.font = 'bold ' + Math.round(
+                    Math.min(camera.height, camera.width) / 20) +
+                           'px sans';
+                ctx.fillText(
+                    this.text, camera.width / 2,
+                    Math.min(camera.height, camera.width) / 50);
             },
             text: 'Whiplash Paradox',
-            keydown: function(event, redraw) {
-                redraw();
+            keydown: function(event, camera) {
                 this.update();
                 if (event.key === '+' || event.key === '=') {
-                    this.zoom.change(1.1);
+                    camera.zoom(1.1);
                 } else if (event.key === '-') {
-                    this.zoom.change(0.9);
+                    camera.zoom(0.9);
                 } else if (this.player.control.keydown(event)) {
                 } else if (event.keyCode === 80 /* p */) {
                     if (debug) {
@@ -365,8 +335,7 @@
 	        } else if (this.debug)
                     console.log('down', event.keyCode);
             },
-            keyup: function(event, redraw) {
-                redraw();
+            keyup: function(event, camera) {
                 this.update();
                 if (event.keyCode === 80 /* p */) {
                 } else if (this.player.control.keyup(event)) {
@@ -374,16 +343,8 @@
                     console.log('up', event.keyCode);
             },
 
-            // Converts a screen coordinate to world space
-            toWorldSpace: function(point) {
-                return multivec(point)
-                    .subtract([this.width / 2, this.height / 2])
-                    .divide(this.zoom.value)
-                    .add(this.player.position);
-            },
-
-            tap: function(touch) {
-                var tapped = this.toWorldSpace(touch);
+            tap: function(touch, camera) {
+                var tapped = camera.toWorldFromScreen(touch);
                 var sqdist, angle;
                 var least = NaN;
                 var closest = null;
@@ -403,42 +364,32 @@
                 } else this.player.control.setTarget(tapped);
             },
 
-            doubleTap: function(touch) {
+            doubleTap: function(touch, camera) {
                 this.player.control.setArrow(
                     true, this.player.position,
-                    this.toWorldSpace(touch));
+                    camera.toWorldFromScreen(touch));
             },
 
-            drag: function(start, drag, current) {
-                this.player.control.setLook(this.toWorldSpace(current));
+            drag: function(event, camera) {
+                this.player.control.setLook(
+                    camera.toWorldFromScreen(event.current));
             },
 
-            flick: function(start, end) {
-                var swipe = multivec(end).minus(start);
-                if (this.rotateworld) {
-                    swipe = swipe.rotate(
-                        multivec((this.height >= this.width) ?
-                                 [0, -1] : [1, 0]),
-                        multivec({theta: this.player.direction}));
-                }
+            swipe: function(event, camera) {
+                var swipe = multivec(event.end).minus(event.start);
                 this.player.control.setArrow(false, swipe);
 
                 this.touches = null;
                 this.update();
-                return false;
             },
 
-            mwheel: function(event, redraw) {
-                if (event.deltaY)
-                    this.zoom.change(
-                        1 + (0.1 * (event.deltaY > 0 ? 1 : -1)));
-                redraw();
-                return false;
+            wheel: function(event, camera) {
+                camera.zoom(1 + (0.1 * (event.y > 0 ? 1 : -1)));
             },
             stages: data.stages,
             chardefs: data.chardefs,
-            setStage: function(stageName) {
-                var g, stage;
+            setStage: function(stageName, camera) {
+                var g, maze, stage;
 
                 this.characters = [this.player];
                 if (stageName && data.stages &&
@@ -461,14 +412,18 @@
                         stage.maze.type = this.mazeType;
                     if (this.mazeRings)
                         stage.maze.rings = this.mazeRings;
-                    g = grid.create(stage.maze).createMaze(stage.maze);
-                    g.walls.forEach(function(wall) {
+                    g = grid.create(stage.maze);
+                    camera.setScale(
+                        Math.min(camera.width, camera.height) /
+                        (3 * g.size()));
+
+                    maze = g.createMaze(stage.maze);
+                    maze.walls.forEach(function(wall) {
                         this.walls.push(
                             createWall({s: wall.points[0],
                                         e: wall.points[1]}));
                     }, this);
-
-                    g.nodes.forEach(function(node) {
+                    maze.nodes.forEach(function(node) {
                         if (node.ring === 0 && node.exits === 1) {
                             this.chests.push(createChest({
                                 position: { x: node.x, y: node.y },

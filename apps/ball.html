@@ -114,13 +114,8 @@
              ctx.lineWidth = 5;
              ctx.fillStyle = 'green';
              ctx.fill();
-             if (throttle + 1000 < now) {
-                 console.log("DEBUG ball=(" + Math.round(ball.x) +
-                             ", " + Math.round(ball.y) +
-                             ") delta=(" + Math.round(ball.dx) +
-                             ", " + Math.round(ball.dy) + ")");
+             if (throttle + 1000 < now)
                  throttle = now;
-             }
 
              ctx.restore();
              draw_id = requestAnimationFrame(draw);

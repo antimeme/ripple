@@ -20,8 +20,8 @@
 (function(fascia) {
     "use strict";
     if (typeof require !== 'undefined') {
+        this.ripple   = require('./ripple.js');
         this.multivec = require('./multivec.js');
-        this.multivec = require('./ripple.js');
     }
 
     // A playerControl stores state related to the direction a player
@@ -214,6 +214,8 @@
         ctx.scale(0.8, 1);
         ctx.beginPath();
         ctx.moveTo(size, 0);
+        // TODO: replace with ctx.ellipse
+        // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/ellipse
         ctx.arc(0, 0, size, 0, Math.PI * 2);
         ctx.fillStyle = character.bodyColor;
         ctx.fill();
@@ -914,106 +916,196 @@
         }
     };
 
-    // Framework for canvas applications
-    // Object passed as the app is expected to have the following:
+    // Fascia App is a framework for canvas applications that
+    // automatically handles resizing, canonicalizing touch and mouse
+    // events and more.  Here's an example of how an application might
+    // be defined:
     //
-    // app.init(container, viewport, redraw)
-    // app.draw(ctx, width, height, now, last)
-    // app.resize(width, height)
-    // app.keydown(event, redraw)
-    // app.keyup(event, redraw)
-    // app.mtdown(targets, event, redraw)
-    // app.mtup(targets, event, redraw)
-    // app.mtmove(targets, event, redraw)
-    // app.isActive() // return falsy if redraw not needed
-    // app.color
-    // app.background
+    // fascia.app(function() {
+    //     taps = [];
+    //     return {
+    //         init: function(camera, canvas, container, redraw) {
+    //             canvas.style.background = 'rgb(192, 192, 192)';
+    //         },
+    //         resize: function(camera) {},
+    //         draw: function(ctx, camera, now, last) {
+    //             ctx.lineCap = 'round';
+    //             ctx.lineWidth = 2;
+    //
+    //             ctx.beginPath();
+    //             ctx.moveTo(-camera.width/2, -camera.height/2);
+    //             ctx.lineTo(camera.width/2, camera.height/2);
+    //             ctx.strokeStyle = 'rgb(192, 32, 32)';
+    //             ctx.stroke();
+    //
+    //             ctx.beginPath();
+    //             taps.forEach(function(tap) {
+    //                 ctx.moveTo(tap.x + 9, tap.y);
+    //                 ctx.arc(tap.x, tap.y, 9, 0, Math.PI * 2);
+    //             });
+    //             ctx.fillStyle = 'rgb(32, 192, 32)';
+    //             ctx.fill();
+    //             ctx.strokeStyle = 'rgb(32, 32, 192)';
+    //             ctx.stroke();
+    //         },
+    //         tap: function(event, camera) {
+    //             taps.push(camera.toWorldFromScreen(event.point));
+    //             if (taps.length > 3)
+    //                 taps.shift();
+    //         },
+    //         doubleTap: function(event, camera) {},
+    //         drag: function(event, camera) {},
+    //         swipe: function(event, camera) {},
+    //         pinchStart: function(event, camera) {},
+    //         pinchMove: function(event, camera) {},
+    //         wheel: function(event, camera) {
+    //             camera.zoom(1 + 0.1 * event.y, 1, 10);
+    //         },
+    //         isActive: function() { return true; }
+    //     };
+    // });
+    //
+    // Fascia creates an HTML canvas element.  By default the entire
+    // document body is used.  Fascia always uses a single camera, so
+    // applications are allowed to store a pointer to it when it is
+    // presented in init or elsewhere.
+    //
+    // Gesture events automatically request a redraw unless the return
+    // value is truthy.  This may be somewhat unintuitive (since
+    // returning true means "do not redraw") but it does the sensible
+    // thing by default while still supporting optimization if desired.
+    //
+    // Use the isActive function to dymanically control whether the
+    // application should be continuously redrawn.  For example, this
+    // function might return true when an anmiation is in progress
+    // but false when it is complete.  Unconditionally returning true
+    // will cause the browser to redraw indefinitely.
     fascia.app = function(app, container, viewport) {
         if (!container)
             container = document.body;
         if (!viewport)
             viewport = window;
 
+        // Create an HTML canvas element and make it the first child
+        // of our container.  This makes the use of canvas an
+        // implementation detail that client code doesn't need to
+        // manage.  We could in principal replace this in the future.
         var canvas = ripple.createElement(
             'canvas', {'class': 'fascia-canvas'});
         container.insertBefore(canvas, container.firstChild);
 
+        var camera = ripple.camera();
+
+        // Our draw method gets the drawing context and sets up an
+        // idempotent redraw system.  This means applications can call
+        // redraw as often as they like.  Actual drawing will happen
+        // only as frequently as the browser can handle it.
         var draw_id = 0, draw_last = 0;
         var draw = function() {
             var ii, ctx, width, height;
             var now = Date.now();
             draw_id = 0;
 
-            width = canvas.clientWidth;
-            height = canvas.clientHeight;
+            camera.resize(canvas.clientWidth, canvas.clientHeight);
             ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, width, height);
+            ctx.save();
+            ctx.clearRect(0, 0, camera.width, camera.height);
+            if (app.drawBefore)
+                app.drawBefore(ctx, camera, now, draw_last);
+            camera.setupContext(ctx);
             if (app.draw)
-                app.draw(ctx, width, height, now, draw_last);
+                app.draw(ctx, camera, now, draw_last);
+            ctx.restore();
+
             draw_last = now;
             if (app.isActive && app.isActive())
                 redraw();
         };
-
         var redraw = function()
         { if (!draw_id) draw_id = requestAnimationFrame(draw); };
 
+        // We need to adjust the size of the canvas to match the
+        // viewport.  We also need to adjust the idea the canvas
+        // has about its own dimensions.  These are separate and a
+        // bit strange.  This has to be done once when we set up
+        // and then again whenever the browser is resized.
         viewport.addEventListener('resize', function(event) {
             var width = viewport.innerWidth || viewport.clientWidth;
             var height = viewport.innerHeight || viewport.clientHeight;
             if (!width || !height)
                 return;
+            camera.resize(width, height);
             canvas.style.width  = canvas.width  = width;
             canvas.style.height = canvas.height = height;
             if (app.resize)
-                app.resize(width, height, container);
+                app.resize(camera, container);
             redraw();
         });
         viewport.dispatchEvent(new Event('resize'));
-        if (app.init)
-            app.init(container, viewport, redraw);
 
+        if (app.init)
+            app.init(camera, canvas, container, redraw);
+        redraw();
+
+        // Combine mouse and touch events to give a consistent
+        // interface across modern browsers.
         var g = ripple.gestur({
             next: true,
             tap: function(name, event) {
-                if (app.tap)
-                    return app.tap(event, redraw);
+                if (app.tap && !app.tap(event, camera))
+                    redraw();
             },
             doubleTap: function(name, event) {
-                if (app.doubleTap)
-                    return app.doubleTap(event, redraw);
+                if (app.doubleTap && !app.doubleTap(event, camera))
+                    redraw();
             },
             swipe: function(name, event) {
-                if (app.swipe)
-                    return app.swipe(event, redraw);
+                if (app.swipe && !app.swipe(event, camera))
+                    redraw();
             },
             drag: function(name, event) {
-                if (app.drag)
-                    return app.drag(event, redraw);
+                if (app.drag && !app.drag(event, camera))
+                    redraw();
             },
             pinchStart: function(name, event) {
-                if (app.pinchStart)
-                    return app.pinchStart(event, redraw);
+                if (app.pinchStart && !app.pinchStart(event, camera))
+                    redraw();
             },
             pinchMove: function(name, event) {
-                if (app.pinchMove)
-                    return app.pinchMove(event, redraw);
+                if (app.pinchMove && !app.pinchMove(event, camera))
+                    redraw();
             },
             wheel: function(name, event) {
-                if (app.wheel)
-                    return app.wheel(event, redraw);
+                if (app.wheel && !app.wheel(event, camera))
+                    redraw();
             }
         }, canvas);
 
+        // Allow the application to process keyboard input.
 	viewport.addEventListener('keydown', function(event) {
-            if (app.keydown)
-                return app.keydown(event, redraw);
+            if (app.keydown && !app.keydown(event, camera))
+                redraw();
 	});
-
 	viewport.addEventListener('keyup', function(event) {
-            if (app.keyup)
-                return app.keyup(event, redraw);
+            if (app.keyup && !app.keyup(event, camera))
+                redraw();
 	});
+    };
+
+    // Bundles ripple.preload and ripple.ready with Fascia so
+    // applications can start with a single step.
+    fascia.ready = function(appfn) {
+        var urls = [];
+        var ii;
+
+        for (ii = 1; ii < arguments.length; ++ii)
+            urls.push(arguments[ii]);
+
+        ripple.ready(function() {
+            ripple.preload(urls, function(results) {
+                fascia.app(appfn(results));
+            });
+        });
     };
 
 }).call(this, typeof exports === 'undefined' ?
