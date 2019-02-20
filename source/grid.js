@@ -1,5 +1,5 @@
 // grid.js
-// Copyright (C) 2013-2018 by Jeff Gold.
+// Copyright (C) 2013-2019 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -16,39 +16,37 @@
 // <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-// Grid abstaction which performs calculations necessary to render and
-// translate input for a two dimensional grid.  Several kinds of grid
-// are supported and are listed in the grid.canonical array, each
-// entry of which is itself an array.  The first element of each entry
-// is a display name for the grid type.  The second, if present, is an
-// options object which should be passed to the grid.create function
-// to set up that kind of grid.  Use grid.create({type: entry[0]}) to
-// create that grid if the second element is undefined.
+// An abstraction that represents a variety of two dimensional grids.
+//
+// Supported grid types are listed in an array named grid.canonical.
+// Each entry in this array is an object which can be used as the
+// input ot grid.create to get this kind of grid.  The name property
+// can be used to describe that entry.
 //
 // Here's an example:
 //
 //     var g = grid.create({type: "square"});
-//     var points = g.points(grid.position({row: 2, col: 1}));
+//     var points = g.points(grid.markCenter({row: 2, col: 1}));
 //
 // This creates a square grid and collects the coordinates of the
-// points which make up the cell in row 2 column 1, perhaps for use
+// vertices which make up the cell in row 2 column 1, perhaps for use
 // in rendering for display.
 //
 // Creating a new grid usually means overriding these in BaseGrid:
 //
 //     * _update: calculate any sized based grid properties
-//     * _coordinate: fill in x and y position given row and col
-//     * _position: fill in row and col given x and y position
-//     * _neighbors: return a list of adjacent grid cells
+//     * _markCenter: fill in x and y position given row and col
+//     * _markCell: fill in row and col given x and y position
+//     * _eachNeighbor: call function for each adjacent cell
 //     * _pairpoints: fill in a pair of points defining the
 //                    boundary between two neighbors
 //     * points: return points in grid cell polygon
 //
 // Overriding _update is not required if the grid has no size-
-// dependant state.  The coordinate, position and neighbors functions
+// dependant state.  The markCenter, position and neighbors functions
 // in BaseGrid will automatically adjust for the grid offset, so
-// there's no need to account for this in the _coordinate, _position
-// and _neighbors functions.  Because the input to the points function
+// there's no need to account for this in the _markCenter, _markCell
+// and _eachNeighbor functions.  Because the input to the points function
 // is expected to already have correct x and y coordinates there's no
 // need to perform adjustments there either.
 (function(grid) {
@@ -69,12 +67,15 @@
     // thinks like a SquareGrid for the most part, it returns an empty
     // list of points for each cell.
     var BaseGrid = function(options) {
+        if (!(this instanceof BaseGrid))
+            return new BaseGrid(options);
+
         if (!options)
             options = {};
         this.type = options.type || 'square';
         this._offset = { left: 0, top: 0 };
         this._json = { type: this.type };
-        this.size(options && options.size ? options.size : 100);
+        this.size((options && options.size) ? options.size : 100);
         if (!isNaN(options.width) && !isNaN(options.height))
             this.center(options.width, options.height);
     };
@@ -91,14 +92,16 @@
     };
 
     BaseGrid.prototype.offset = function(left, top) {
+        // Return an object with the top and left offset coordinates
+        // of this grid, optionally after setting these from parameters.
         if (!isNaN(left))
             this._offset.left = left;
         if (!isNaN(top))
             this._offset.top = top;
-        return {top: this._offset.top, left: this._offset.left};
+        return this._offset;
     };
 
-    BaseGrid.prototype.adjust = function(node, invert) {
+    BaseGrid.prototype._applyOffset = function(node, invert) {
         if (!isNaN(node.x))
             node.x += (invert ? -1 : 1) * this._offset.left;
         if (!isNaN(node.y))
@@ -106,67 +109,77 @@
         return node;
     };
 
+    BaseGrid.prototype.markCenter = function(node) {
+        // Given a node with numeric row and column properties,
+        // calculuate x and y coordinates of the center of the node.
+        return this._applyOffset(this._markCenter(node));
+    };
     BaseGrid.prototype.coordinate = function(node) {
-        // Return a new object with x and y properties equal to the
-        // coordinates of the center of a cell for the row and column
-        // properties of the given node value.  This new object will
-        // also have the row and column.
-        return this.adjust(this._coordinate(node));
+        return this.markCenter({row: node.row, col: node.col});
     };
 
-    BaseGrid.prototype._coordinate = function(node) {
+    BaseGrid.prototype._markCenter = function(node) {
         // Default implementation replaced by specific grids
         var halfsize = this._size / 2;
-        return {x: node.col * this._size + halfsize,
-                y: node.row * this._size + halfsize,
-                row: node.row, col: node.col};
+        node.x = node.col * this._size + halfsize;
+        node.y = node.row * this._size + halfsize;
+        return node;
     };
 
+    BaseGrid.prototype.markCell = function(node) {
+        // Given a node with numeric x and y properties, calculuate
+        // row and column properties for the cell at those coordinates.
+        var point = this._markCell(this._applyOffset(
+            {x: node.x, y: node.y}, true));
+        node.row = point.row;
+        node.col = point.col;
+        return node;
+    };
     BaseGrid.prototype.position = function(node) {
-        // Return a new object with the row and column values for the
-        // grid cell represented by the coordinate x and y properties
-        // in the given node.  This new object will also have x and
-        // y properties, but these will be for the center of the grid
-        // cell rather than the original location.
-        return this.coordinate(
-            this._position(this.adjust({x: node.x, y: node.y}, true)));
+        return this.markCell({x: node.x, y: node.y});
     };
 
-    BaseGrid.prototype._position = function(node) {
+    BaseGrid.prototype._markCell = function(node) {
         // Default implementation replaced by specific grids
-        return {row: Math.floor(node.y / this._size),
-                col: Math.floor(node.x / this._size)};
+        node.row = Math.floor(node.y / this._size);
+        node.col = Math.floor(node.x / this._size);
+        return node;
     };
 
     BaseGrid.prototype.adjacent = function(nodeA, nodeB) {
-        return this.neighbors(nodeA).some(function(neigh) {
+        return this.eachNeighbor(nodeA).some(function(neigh) {
             return ((neigh.row === nodeB.row) &&
                     (neigh.col === nodeB.col));
         });
     };
 
-    BaseGrid.prototype.neighbors = function(node, options, fn, self) {
+    BaseGrid.prototype.eachNeighbor = function(
+        node, options, fn, context) {
         // Iterate over the neighbors of a specified node
         if (!fn)
-            return this.neighbors(node, options, function(neighbor) {
-                this.push(neighbor); }, []);
+            return this.eachNeighbor(
+                node, options, function(neighbor) {
+                    this.push(neighbor); }, []);
 
         if (options && options.points)
-            node = this.coordinate(node);
-        this._neighbors(node, function(neighbor) {
-            if ((options && options.coordinates) ||
+            node = this.markCenter({row: node.row, col: node.col});
+        var index = 0;
+        this._eachNeighbor(node, function(neighbor) {
+            if ((options && options.mark) ||
+                (options && options.coordinates) ||
                 (options && options.points))
-                neighbor = this.coordinate(neighbor);
+                this.markCenter(neighbor);
             if (options && options.points)
                 neighbor.points = this._pairpoints(node, neighbor);
             if (isNaN(neighbor.cost))
                 neighbor.cost = 1;
-            fn.call(self, neighbor);
+            fn.call(context, neighbor, index++);
         }, this);
-        return self || this;
+        return context || this;
     };
+    BaseGrid.prototype.neighbors = BaseGrid.prototype.eachNeighbor;
 
-    BaseGrid.prototype._neighbors = function(node, fn, self) {
+    BaseGrid.prototype._eachNeighbor = function(node, fn, self) {
         // Call a function for each neighbor of the grid cell specified
         fn.call(self, {row: node.row, col: node.col + 1});
         fn.call(self, {row: node.row, col: node.col - 1});
@@ -218,7 +231,7 @@
         // Adjusts the grid offset such that cell {row: 0, col: 0} is
         // in the center of a rectangular region.
         this.offset(0, 0);
-        var reference = this.position({x: 0, y: 0});
+        var reference = this.markCenter(this.markCell({x: 0, y: 0}));
         this.offset(width / 2 - reference.x, height / 2 - reference.y);
         return this;
     };
@@ -235,23 +248,27 @@
         // This method is conservative in that it may visit grid
         // locations that are unnecessary but will never omit
         // cells that qualify.
-        var start, end, radius;
+        var start, end, radius, index = 0;
 
         if ((typeof(options.start) === 'object') &&
             !isNaN(options.width) && !isNaN(options.height)) {
-            start = this.position(options.start);
-            end = this.position({x: start.x + options.width,
+            start = this.markCell(
+                {x: options.start.x, y: options.start.y});
+            end = this.markCell({x: start.x + options.width,
                                  y: start.y + options.height});
         } else if (!isNaN(options.width) && !isNaN(options.height)) {
-            start = this.position({x: 0, y: 0});
-            end = this.position({x: options.width, y: options.height});
+            start = this.markCell({x: 0, y: 0});
+            end = this.markCell({x: options.width, y: options.height});
         } else if ((typeof(options.start) === 'object') &&
                    (typeof(options.end) === 'object')) {
-            start = this.position(options.start);
-            end = this.position(options.end);
+            start = this.markCell(
+                {x: options.start.x, y: options.start.y});
+            end = this.markCell(
+                {x: options.end.x, y: options.end.y});
         } else if ((typeof(options.start) === 'object') &&
-                   !isNaN(options.radius)) {
-            start = this.position(options.start);
+                   !isNaN(options.radius) && (options.radius > 0)) {
+            start = this.markCell(
+                {x: options.start.x, y: options.start.y});
             radius = options.radius;
         } else throw "Options are invalid";
 
@@ -259,32 +276,32 @@
             // A good first approximation is to find the row and column
             // of the cells containing start and end.  Cell geometry
             // may require one cell of safety margin.
-            this.neighbors({row: start.row, col: start.col}, {},
-                           function(neighbor) {
-                               if (neighbor.row < start.row)
-                                   start.row = neighbor.row;
-                               if (neighbor.col < start.col)
-                                   start.col = neighbor.col;
-                       }, this);
-            this.neighbors({row: end.row, col: end.col}, {},
-                           function(neighbor) {
-                               if (neighbor.row > end.row)
-                                   end.row = neighbor.row;
-                               if (neighbor.col > end.col)
+            this.eachNeighbor({row: start.row, col: start.col}, {},
+                              function(neighbor) {
+                                  if (neighbor.row < start.row)
+                                      start.row = neighbor.row;
+                                  if (neighbor.col < start.col)
+                                      start.col = neighbor.col;
+                              }, this);
+            this.eachNeighbor({row: end.row, col: end.col}, {},
+                              function(neighbor) {
+                                  if (neighbor.row > end.row)
+                                      end.row = neighbor.row;
+                                  if (neighbor.col > end.col)
                                    end.col = neighbor.col;
-                           }, this);
+                              }, this);
 
             for (var row = start.row; row <= end.row; ++row)
                 for (var col = start.col; col <= end.col; ++col)
-                    fn.call(context, this.coordinate({
-                        row: row, col: col}));
+                    fn.call(context, this.markCenter({
+                        row: row, col: col}), index++);
         } else if (start && radius) {
             var visited = {};
             var current, tag, include;
-            var queue = [this.coordinate(start)];
+            var queue = [this.markCenter({
+                row: start.row, col: start.col})];
 
             while (queue.length > 0) {
-                console.log('DEBUG queue', queue.length);
                 current = queue.pop();
                 tag = ripple.pair(current.row, current.col);
 
@@ -295,17 +312,16 @@
                 include = false;
                 this.points(current).forEach(function(point) {
                     if ((point.x - start.x) * (point.x - start.x) +
-                        (point.y - start.y) * (point.y - start.y) <=
-                            radius * radius)
+                          (point.y - start.y) * (point.y - start.y) <=
+                              radius * radius)
                         include = true;
                 });
 
                 if (include) {
-                    fn.call(context, this.coordinate(current));
-                    this.neighbors(current, {coordinates: true},
-                                   function(neighbor) {
-                                       queue.push(neighbor);
-                                   });
+                    fn.call(context, current, index++);
+                    this.eachNeighbor(current, {
+                        mark: true}, function(neighbor) {
+                            queue.push(neighbor); });
                 }
             }
         }
@@ -375,8 +391,8 @@
             current.adjacent = [];
             current.exits = 0;
 
-            this.neighbors(current, {coordinates: true}).forEach(
-                function(node) {
+            this.eachNeighbor(current, {
+                coordinates: true}, function(node) {
                     index = canonicalizeNode(node);
                     if (index in contain) {
                         current.adjacent.push(contain[index]);
@@ -439,23 +455,22 @@
     };
     SquareGrid.prototype = Object.create(BaseGrid.prototype);
 
-    SquareGrid.prototype._coordinate = function(node) {
-        // Return a node with a cartesian coordinate (x and y) for the
-        // center of the square in the row and column specified within
-        // node.  The return value will have the given row and column.
-        return {x: node.col * this._size,
-                y: node.row * this._size,
-                row: node.row, col: node.col};
+    SquareGrid.prototype._markCenter = function(node) {
+        // Given a node with numeric row and column properties,
+        // calculuate x and y coordinates of the center of the node.
+        node.x = node.col * this._size;
+        node.y = node.row * this._size;
+        return node;
     };
-    SquareGrid.prototype._position = function(node) {
-        // Return a node with the row and column of the square in which
-        // the cartesian coordinate (x and y) is contained.  The return
-        // value will have an x and y value for the square center.
+    SquareGrid.prototype._markCell = function(node) {
+        // Given a node with numeric x and y properties, calculuate
+        // row and column properties for the cell at those coordinates.
         var halfsize = this._size / 2;
-        return {row: Math.floor((node.y + halfsize) / this._size),
-                col: Math.floor((node.x + halfsize) / this._size)};
+        node.row = Math.floor((node.y + halfsize) / this._size);
+        node.col = Math.floor((node.x + halfsize) / this._size);
+        return node;
     };
-    SquareGrid.prototype._neighbors = function(node, fn, self) {
+    SquareGrid.prototype._eachNeighbor = function(node, fn, self) {
         // Call a function for each neighbor of the grid cell specified
         fn.call(self, {row: node.row, col: node.col + 1});
         fn.call(self, {row: node.row, col: node.col - 1});
@@ -474,18 +489,13 @@
         return this;
     };
     SquareGrid.prototype._pairpoints = function(nodeA, nodeB) {
-        // Diagonal neighbors need special treatment because the base
-        // implemenation assumes two points
-        return (((nodeA.row - nodeB.row) * (nodeA.row - nodeB.row) +
-                    (nodeA.col - nodeB.col) * (nodeA.col - nodeB.col) > 1) ?
-                [{x: nodeA.x + (nodeB.x - nodeA.x) / 2,
-                  y: nodeA.y + (nodeB.y - nodeA.y) / 2}] :
-                BaseGrid.prototype._pairpoints.call(this, nodeA, nodeB));
+        // Diagonal neighbors need special treatment
+        if ((nodeA.row - nodeB.row) && (nodeA.col - nodeB.col))
+            return [{x: nodeA.x + (nodeB.x - nodeA.x) / 2,
+                     y: nodeA.y + (nodeB.y - nodeA.y) / 2}];
+        return BaseGrid.prototype._pairpoints.call(this, nodeA, nodeB);
     };
     SquareGrid.prototype.points = function(node) {
-        // Call a function for each neighbor of the grid cell specified
-        // Given a node with the coordinates for the center of a square,
-        // return a set of coordinates for each of its vertices.
         var halfsize = this._size / 2;
         return [{x: node.x - halfsize, y: node.y - halfsize},
                 {x: node.x + halfsize, y: node.y - halfsize},
@@ -567,23 +577,18 @@
         this.radius = ssqrt3 / 3;
         this.centerh = ssqrt3 / 6;
     };
-    TriangleGrid.prototype._coordinate = function(node) {
-        // Return a node with a cartesian coordinate (x and y) for the
-        // center of the triangle in the row and column specified
-        // within node.  The return value will have the given row and
-        // column as well.
-        var offset = ((node.row + node.col) % 2) ?
-                    -this.centerh : 0;
-        return {x: node.col * this._size / 2,
-                y: (node.row * this.rowh) + offset,
-                row: node.row, col: node.col};
+    TriangleGrid.prototype._markCenter = function(node) {
+        // Given a node with numeric row and column properties,
+        // calculuate x and y coordinates of the center of the node.
+        node.x = node.col * this._size / 2;
+        node.y = (node.row * this.rowh) + ((
+            (node.row + node.col) % 2) ? -this.centerh : 0);
+        return node;
     };
 
-    TriangleGrid.prototype._position = function(node) {
-        // Return a node with the row and column of the hexagon in
-        // which the cartesian coordinate (x and y) is contained.  The
-        // return value will have an x and y value for the center of
-        // the hexagon.
+    TriangleGrid.prototype._markCell = function(node) {
+        // Given a node with numeric x and y properties, calculuate
+        // row and column properties for the cell at those coordinates.
         var halfsize = this._size / 2;
         var row = Math.floor((node.y + this.radius) / this.rowh);
         var col = Math.floor(node.x / halfsize);
@@ -591,15 +596,18 @@
         var yfrac = (node.y + this.radius) / this.rowh;
         if ((row + col) % 2) {
             if ((yfrac - Math.ceil(yfrac)) +
-                    (xfrac - Math.floor(xfrac)) > 0)
+                      (xfrac - Math.floor(xfrac)) > 0)
                 col += 1;
         } else if ((yfrac - Math.floor(yfrac)) -
                    (xfrac - Math.floor(xfrac)) < 0)
             col += 1;
-        return {row: row, col: col};
+
+        node.row = row;
+        node.col = col;
+        return node;
     };
 
-    TriangleGrid.prototype._neighbors = function(node, fn, self) {
+    TriangleGrid.prototype._eachNeighbor = function(node, fn, self) {
         // Call a function for each neighbor of the grid cell specified
         fn.call(self, {row: node.row, col: node.col + 1});
         fn.call(self, {row: node.row, col: node.col - 1});
@@ -631,26 +639,23 @@
     };
     RTriangleGrid.prototype = Object.create(BaseGrid.prototype);
 
-    RTriangleGrid.prototype._coordinate = function(node) {
-        // Return a node with a cartesian coordinate (x and y) for the
-        // center of the cell in the row and column specified in node.
-        // The return value will have the row and column.
+    RTriangleGrid.prototype._markCenter = function(node) {
+        // Given a node with numeric row and column properties,
+        // calculuate x and y coordinates of the center of the node.
         var halfsize = this._size / 2;
         var fifth = this._size / 5;
         var x_sign = (node.col % 2) ? 1 : -1;
-        var y_sign = x_sign *
-        ((!this.regular && ((node.row < 0) ^ (node.col < 0))) ?
-        -1 : 1);
-        var x = Math.floor(node.col / 2) * this._size +
-                halfsize + fifth * x_sign;
-        var y = node.row * this._size + halfsize + fifth * y_sign;
-        return {row: node.row, col: node.col, x: x, y: y};
+        var y_sign = x_sign * ((!this.regular && ((node.row < 0) ^
+            (node.col < 0))) ? -1 : 1);
+        node.x = Math.floor(node.col / 2) * this._size +
+                 halfsize + fifth * x_sign;
+        node.y = node.row * this._size + halfsize + fifth * y_sign;
+        return node;
     };
 
-    RTriangleGrid.prototype._position = function(node) {
-        // Return a node with the row and column of the cell which
-        // contains cartesian coordinate (x and y).  The return value
-        // will have an x and y value for the square center.
+    RTriangleGrid.prototype._markCell = function(node) {
+        // Given a node with numeric x and y properties, calculuate
+        // row and column properties for the cell at those coordinates.
         var halfsize = this._size / 2;
         var xband = node.x / this._size;
         var yband = node.y / this._size;
@@ -663,10 +668,13 @@
         } else if (Math.abs(xband - Math.floor(xband)) -
                    Math.abs(yband - Math.floor(yband)) > 0)
             col += 1;
-        return {row: row, col: col};
+
+        node.row = row;
+        node.col = col;
+        return node;
     };
 
-    RTriangleGrid.prototype._neighbors = function(node, fn, self) {
+    RTriangleGrid.prototype._eachNeighbor = function(node, fn, self) {
         // Call a function for each neighbor of the grid cell specified
         var rmod = node.col % 2 ?  1 : -1;
         var cmod = node.col % 2 ? -1 :  1;
@@ -744,29 +752,19 @@
         this.hexw = _sqrt3 * this._size;
     };
 
-    // Return a node with a cartesian coordinate (x and y) for the
-    // center of the hexagon in the row and column specified within
-    // node.  The return value will have the given row and column.
-    HexGrid.prototype._coordinate = function(node) {
-        // At the origin is the center of the 0, 0 hexagon.  Others
-        // are tessellated around it in all directions.
-        var result = {row: node.row, col: node.col};
-        result[this.alpha] = (node[this.col] * this.hexw +
-                              this.hexw / 2 *
-            Math.abs(node[this.row] % 2));
-        result[this.beta] = node[this.row] * this._size * 3 / 2;
-        return result;
+    HexGrid.prototype._markCenter = function(node) {
+        // Given a node with numeric row and column properties,
+        // calculuate x and y coordinates of the center of the node.
+        node[this.alpha] = (node[this.col] * this.hexw +
+                            this.hexw / 2 * Math.abs(
+                                node[this.row] % 2));
+        node[this.beta] = node[this.row] * this._size * 3 / 2;
+        return node;
     };
 
-    // Return a node with the row and column of the hexagon in
-    // which the cartesian coordinate (x and y) is contained.  The
-    // return value will have an x and y value for the hex center.
-    HexGrid.prototype._position = function(node) {
-        // Divide the space up into alpha and beta bands which
-        // form a rectangular grid.  A hexagon spans two alpha
-        // bands and three beta bands.  Four of the six bands
-        // are simple but the last two have to be corrected if the
-        // position crosses a diagonal boundary.
+    HexGrid.prototype._markCell = function(node) {
+        // Given a node with numeric x and y properties, calculuate
+        // row and column properties for the cell at those coordinates.
         var halfsize = this._size / 2;
         var alpha_band = node[this.alpha] * 2 / this.hexw;
         var beta_band  = node[this.beta] / halfsize;
@@ -782,13 +780,13 @@
             } else if (beta_fraction > alpha_fraction)
                 col -= (++row % 2) ? 1 : 0;
         }
-        var result = {};
-        result[this.row] = row;
-        result[this.col] = col;
-        return result;
+
+        node[this.row] = row;
+        node[this.col] = col;
+        return node;
     };
 
-    HexGrid.prototype._neighbors = function(node, fn, self) {
+    HexGrid.prototype._eachNeighbor = function(node, fn, self) {
         // Call a function for each neighbor of the grid cell specified
         fn.call(self, {row: node.row + 1, col: node.col});
         fn.call(self, {row: node.row - 1, col: node.col});
@@ -934,10 +932,8 @@
             if (selected) {
                 ctx.beginPath();
                 instance.map(
-                    {start: selected, radius: 2 * instance.size()},
-                    function(node) {
-                        instance.draw(ctx, node);
-                    });
+                    {start: selected, radius: instance.size()},
+                    function(node) { instance.draw(ctx, node); });
                 ctx.fillStyle = colorRadius;
                 ctx.fill();
 
@@ -951,7 +947,7 @@
 
                 // Show the cells adjacent to the selected cell.
                 neighbors = instance.neighbors(
-                    selected, {coordinates: true, points: true});
+                    selected, {points: true});
                 ctx.beginPath();
                 neighbors.forEach(function(neighbor) {
                     instance.draw(ctx, neighbor); });
