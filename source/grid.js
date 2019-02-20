@@ -72,6 +72,7 @@
         if (!options)
             options = {};
         this.type = options.type || 'square';
+        this._offset = { left: 0, top: 0 };
         this._json = { type: this.type };
         this.size(options && options.size ? options.size : 100);
         if (!isNaN(options.width) && !isNaN(options.height))
@@ -80,10 +81,6 @@
 
     BaseGrid.prototype.toJSON = function() { return this._json; };
     BaseGrid.prototype._update = function() {};
-    BaseGrid.prototype._offset_init = function(left, top) {
-        if (!this._offset)
-            this._offset = {left: left || 0, top: top || 0};
-    };
 
     BaseGrid.prototype.size = function(value) {
         if (!isNaN(value) && (value > 0)) {
@@ -94,7 +91,6 @@
     };
 
     BaseGrid.prototype.offset = function(left, top) {
-        this._offset_init();
         if (!isNaN(left))
             this._offset.left = left;
         if (!isNaN(top))
@@ -103,7 +99,6 @@
     };
 
     BaseGrid.prototype.adjust = function(node, invert) {
-        this._offset_init();
         if (!isNaN(node.x))
             node.x += (invert ? -1 : 1) * this._offset.left;
         if (!isNaN(node.y))
@@ -228,21 +223,91 @@
         return this;
     };
 
-    BaseGrid.prototype.map = function(width, height, fn) {
-        // Apply a function to all cells reachable within a
-        // rectangular region.
-        // :FIXME: the boundaries aren't exactly right for all grids
-        //    The solution is to support an fudge factor method that
-        //    each grid type can override.
-        this._offset_init();
-        var start = this.position({x: 1 - this._size,
-                                   y: 1 - this._size});
-        var end = this.position({x: width + this._size - 1,
-                                 y: height + this._size - 1});
-        var row, col;
-        for (col = start.col; col <= end.col + 1; col++) {
-            for (row = start.row; row <= end.row + 1; row++)
-                fn(this.coordinate({row: row, col: col}));
+    BaseGrid.prototype.map = function(options, fn, context) {
+        // Apply a function to a set of cells.  The options parameter
+        // controls which cells are selected.  Passing an options
+        // value like {start: {x: 40, y: 50}, end: {x: 240, y: 350}}
+        // will call the function for all cells that could possibly
+        // intersect that rectangle.  A simpler way to specify a
+        // rectangle is to use {width: 360, height: 240} which starts
+        // the rectangle at coordinate (0, 0).
+        //
+        // This method is conservative in that it may visit grid
+        // locations that are unnecessary but will never omit
+        // cells that qualify.
+        var start, end, radius;
+
+        if ((typeof(options.start) === 'object') &&
+            !isNaN(options.width) && !isNaN(options.height)) {
+            start = this.position(options.start);
+            end = this.position({x: start.x + options.width,
+                                 y: start.y + options.height});
+        } else if (!isNaN(options.width) && !isNaN(options.height)) {
+            start = this.position({x: 0, y: 0});
+            end = this.position({x: options.width, y: options.height});
+        } else if ((typeof(options.start) === 'object') &&
+                   (typeof(options.end) === 'object')) {
+            start = this.position(options.start);
+            end = this.position(options.end);
+        } else if ((typeof(options.start) === 'object') &&
+                   !isNaN(options.radius)) {
+            start = this.position(options.start);
+            radius = options.radius;
+        } else throw "Options are invalid";
+
+        if (start && end) {
+            // A good first approximation is to find the row and column
+            // of the cells containing start and end.  Cell geometry
+            // may require one cell of safety margin.
+            this.neighbors({row: start.row, col: start.col}, {},
+                           function(neighbor) {
+                               if (neighbor.row < start.row)
+                                   start.row = neighbor.row;
+                               if (neighbor.col < start.col)
+                                   start.col = neighbor.col;
+                       }, this);
+            this.neighbors({row: end.row, col: end.col}, {},
+                           function(neighbor) {
+                               if (neighbor.row > end.row)
+                                   end.row = neighbor.row;
+                               if (neighbor.col > end.col)
+                                   end.col = neighbor.col;
+                           }, this);
+
+            for (var row = start.row; row <= end.row; ++row)
+                for (var col = start.col; col <= end.col; ++col)
+                    fn.call(context, this.coordinate({
+                        row: row, col: col}));
+        } else if (start && radius) {
+            var visited = {};
+            var current, tag, include;
+            var queue = [this.coordinate(start)];
+
+            while (queue.length > 0) {
+                console.log('DEBUG queue', queue.length);
+                current = queue.pop();
+                tag = ripple.pair(current.row, current.col);
+
+                if (visited[tag])
+                    continue;
+                visited[tag] = true;
+
+                include = false;
+                this.points(current).forEach(function(point) {
+                    if ((point.x - start.x) * (point.x - start.x) +
+                        (point.y - start.y) * (point.y - start.y) <=
+                            radius * radius)
+                        include = true;
+                });
+
+                if (include) {
+                    fn.call(context, this.coordinate(current));
+                    this.neighbors(current, {coordinates: true},
+                                   function(neighbor) {
+                                       queue.push(neighbor);
+                                   });
+                }
+            }
         }
         return this;
     };
@@ -801,6 +866,7 @@
         var colorTapOuter = 'rgba(128, 255, 128, 0.6)';
         var colorSelected = 'rgba(192, 192, 0, 0.6)';
         var colorNeighbor = 'rgba(128, 128, 0, 0.4)';
+        var colorRadius   = 'rgba(128, 128, 128, 0.2)';
         var colorLine     = 'rgba(128, 128, 224, 0.5)';
         var colorOccupied = 'rgba(128, 192, 128, 0.5)';
         var lineWidth = 0, lineFactor = 40;
@@ -832,34 +898,49 @@
             }
 
             ctx.save();
-            ctx.clearRect(0, 0, width, height);
+
+            // Clear to black to make holes in map obvious
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, width, height);
 
             // Create a grid
             ctx.beginPath();
             ctx.lineWidth = lineWidth;
             ctx.textAlign = 'center';
             ctx.font = 'bold ' + 12 + 'pt sans-serif';
-            instance.map(width, height, function(node) {
-                instance.draw(ctx, node); });
+            instance.map({width: width, height: height},
+                         function(node) { instance.draw(ctx, node); });
             ctx.fillStyle = style['background-color'];
             ctx.fill();
             ctx.strokeStyle = color;
             ctx.stroke();
             if (combined)
-                instance.map(width, height, function(node) {
-                    ctx.fillStyle = color;
-                    ctx.fillText(
-                        ripple.pair(node.row, node.col),
-                        node.x, node.y);
-                });
+                instance.map({width: width, height: height},
+                             function(node) {
+                                 ctx.fillStyle = color;
+                                 ctx.fillText(
+                                     ripple.pair(node.row, node.col),
+                                     node.x, node.y);
+                             });
             else if (numbers)
-                instance.map(width, height, function(node) {
-                    ctx.fillStyle = color;
-                    ctx.fillText('(' + node.row + ', ' +
-                                 node.col + ')', node.x, node.y);
-                });
+                instance.map(
+                    {width: width, height: height},
+                    function(node) {
+                        ctx.fillStyle = color;
+                        ctx.fillText('(' + node.row + ', ' +
+                                     node.col + ')', node.x, node.y);
+                    });
 
             if (selected) {
+                ctx.beginPath();
+                instance.map(
+                    {start: selected, radius: 2 * instance.size()},
+                    function(node) {
+                        instance.draw(ctx, node);
+                    });
+                ctx.fillStyle = colorRadius;
+                ctx.fill();
+
                 // Coordinates of the selected square must be
                 // updated in case the grid offsets have moved
                 // since the last draw call.
