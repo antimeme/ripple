@@ -158,6 +158,20 @@
                 Kurt Gödel stuck a dagger in the heart of mathematics.
             </aside>
         </section>
+        <section>
+            <h3>Foundation Systems</h3>
+            <ul>
+                <li>
+                    <span class="intro">Propositional Calculus</span>
+                </li><li>
+                    <span class="intro">Predicate Calculus</span>
+                </li><li>
+                    <span class="intro">Set Theory</span>
+                </li><li>
+                    <span class="intro">Geometry</span>
+                </li>
+            </ul>
+        </section>
     </section>
     <section>
         <section>
@@ -2007,7 +2021,11 @@
                         f(a<sub>1</sub>, a<sub>2</sub>,
                         a<sub>3</sub>) = b</span>
                 </li><li class="fragment">
-                    ...
+                    f : D<sub>1</sub> &#x2297; D<sub>2</sub> &#x2297;
+                    ... &#x27f6; R &#x27f9;
+                    <span class="intro">
+                        f(a<sub>1</sub>, a<sub>2</sub>,
+                        ...) = b</span>
                 </li>
             </ul>
             <p class="fragment">
@@ -2032,7 +2050,11 @@
                         f(a) = &#x27e8;b<sub>1</sub>, b<sub>2</sub>,
                         b<sub>3</sub>&#x27e9;</span>
                 </li><li class="fragment">
-                    ...
+                    f : D &#x27f6; R<sub>1</sub> &#x2297;
+                    R<sub>2</sub> &#x2297; ... &#x27f9;
+                    <span class="intro">
+                        f(a) = &#x27e8;b<sub>1</sub>, b<sub>2</sub>,
+                        ...&#x27e9;</span>
                 </li>
             </ul>
             <p class="fragment">
@@ -5396,6 +5418,31 @@
             </p>
         </section>
         <section>
+            <h3>Dedekind Cuts</h3>
+            <p>
+                Dedekind cuts are continuous partitions of &#x211a;
+            </p>
+            <ul>
+                <li class="fragment">
+                    <span class="intro">
+                        Proper, non-empty Rational Subset</span>:<br />
+                    &#x2200;a&#x2208;&#x211d; a&#x2286;&#x211a; &and;
+                    a&ne;&#x211a; &and; a&ne;{}
+                    <span class="fragment">
+                        &#x27f9; &#x211d;&#x2286;&#x2118;&#x211a;
+                    </span>
+                </li><li class="fragment">
+                    <span class="intro">Closed Downward</span>:
+                    &#x2200;a&#x2208;&#x211d;
+                    &#x2200;b,c&#x2208;&#x211a;<br />
+                    (b&#x2208;a &and; c&le;b) &#x27f9; c&#x2208;a                                   </li><li class="fragment">
+                        <span class="intro">No Largest Member</span>:
+                        &#x2200;a&#x2208;&#x211d;
+                        &#x2200;b&#x2208;a &#x2203;c&#x2208;a c&gt;b
+                    </li>
+            </ul>
+        </section>
+        <section>
             <h3>Between &#x211a;</h3>
             <p>
                 &#x2200;a,b&#x2208;&#x211a; (a &lt;<sub>&#x211a;</sub>
@@ -5475,31 +5522,6 @@
             </ul>
         </section>
         <section>
-            <h3>Dedekind Cuts</h3>
-            <p>
-                Dedekind cuts are continuous partitions of &#x211a;
-            </p>
-            <ul>
-                <li class="fragment">
-                    <span class="intro">
-                        Proper, non-empty Rational Subset</span>:<br />
-                    &#x2200;a&#x2208;&#x211d; a&#x2286;&#x211a; &and;
-                    a&ne;&#x211a; &and; a&ne;{}
-                    <span class="fragment">
-                        &#x27f9; &#x211d;&#x2286;&#x2118;&#x211a;
-                    </span>
-                </li><li class="fragment">
-                    <span class="intro">Closed Downward</span>:
-                    &#x2200;a&#x2208;&#x211d;
-                    &#x2200;b,c&#x2208;&#x211a;<br />
-                    (b&#x2208;a &and; c&le;b) &#x27f9; c&#x2208;a                                   </li><li class="fragment">
-                        <span class="intro">No Largest Member</span>:
-                        &#x2200;a&#x2208;&#x211d;
-                        &#x2200;b&#x2208;a &#x2203;c&#x2208;a c&gt;b
-                    </li>
-            </ul>
-        </section>
-        <section>
             <h3>Real Numbers &#x211d; Non-Examples</h3>
             <p>
                 { a&#x2208;&#x211a; : a &le; 0<sub>&#x211a;</sub> }
@@ -5547,8 +5569,8 @@
                             :: Transitive &le;<sub>&#x211a;</sub>
                         </li><li class="fragment">
                             b &lt 0<sub>&#x211a;</sub>
-                            &#x27f9; b&#x2208;a :: Definition
-                            0<sub>&#x211d;</sub>
+                            &#x27f9; b&#x2208;0<sub>&#x211d;</sub>
+                            :: Definition 0<sub>&#x211d;</sub>
                         </li>
                     </ul>
                 </li><li class="fragment">
@@ -5659,20 +5681,22 @@
                     </span>
                 </li><li class="fragment">
                     &#x2200;d&#x2208;&#x211a; (d &lt; c) &#x27f9;
-                    (c&#x2208;a) :: a is Closed Downward
+                    (d &#x2208; a) :: a is Closed Downward
                 </li><li class="fragment">
                     &#x2200;d&#x2208;&#x211a; (d &ge; c) &#x27f9;
-                    (c&#x2209;b) :: b is Closed Downward
+                    (d &#x2209; b) :: b is Closed Downward
+                </li><li class="fragment">
+                    &#x2200;d&#x2208;&#x211a; (d &#x2208; b)
+                    &#x27f9; (d &lt; c) :: Transposition
+                </li><li class="fragment">
+                    &#x2200;d&#x2208;&#x211a; (d &#x2208; b)
+                    &#x27f9; (d &#x2208; a) :: Deduction
                 </li><li class="fragment">
                     &#x2200;a,b&#x2208;&#x211d; &not;(a &#x2286; b)
-                    &#x27f9; (b &#x2286; a) :: Connex &le;<sub>&#x211a;</sub>
+                    &#x27f9; (b &#x2286; a) :: Subset
                 </li><li class="fragment">
                     &#x2200;a,b&#x2208;&#x211d; (a &#x2286; b)
                     &or; (b &#x2286; a) :: Disjunction Definition
-                </li><li class="fragment">
-                    &#x2200;a,b&#x2208;&#x211d;
-                    (a &le;<sub>&#x211d;</sub> b)
-                    &or; (b &le;<sub>&#x211d;</sub> a) :: Connex
                 </li>
             </ul>
         </section>
