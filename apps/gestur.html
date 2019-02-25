@@ -160,8 +160,7 @@
              post(name, drawSwipe);
          },
          drag: function(name, event) {
-             drawDrag = {start: event.start, last: event.last,
-                         current: event.current};
+             drawDrag = event;
              post(name, drawDrag);
          },
          wheel: function(name, event) {
