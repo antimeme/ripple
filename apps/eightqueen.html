@@ -173,14 +173,14 @@
          },
          tap: function(event, camera) {
              var capture = false;
-             var position = this.grid.position(
+             var position = this.grid.markCell(
                  camera.toWorldFromScreen(event.point));
              if ((position.row >= 0) && (position.row < 8) &&
                  (position.col >= 0) && (position.col < 8)) {
                  if (this.hasQueen(position.row, position.col))
                      this.removeQueen(position.row, position.col)
                  else if (!this.isCaptured(position.row, position.col))
-                     this.grid.coordinate(this.queens.push(position));
+                     this.queens.push(this.grid.markCenter(position));
              }
          },
          drag: function(event, camera) {
