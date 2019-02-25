@@ -3652,11 +3652,6 @@
                     5<sub>&#x2124;</sub>
                 </li>
             </ul>
-            <aside class="notes">
-                We can reduce an integer to its simplest form by
-                finding the predecessor of each member of the ordered
-                pair until one or the other is zero.
-            </aside>
         </section>
         <section>
             <h3>Addition &#x2124; Example: 3 + (-2)</h3>
@@ -3921,8 +3916,248 @@
                     a + b = b + a
                 </li>
                 <li>
-                    Inverses: &#x2200;a&#x2203;(-a) a + (-a) =
-                    0<sub>&#x2124;</sub>
+                    Inverses: &#x2200;a&#x2208;&#x2124;
+                    &#x2203;(-a)&#x2208;&#x2124;
+                    a + (-a) = 0<sub>&#x2124;</sub>
+                </li>
+            </ul>
+        </section>
+    </section>
+
+    <section id="integer-subtraction">
+        <section>
+            <h2>Subtraction &#x2124;</h2>
+            <p>
+                Let's define <q>subtraction</q> which maps two
+                integers to another integer.  We will represent this
+                with a <q>-</q> sign between two integers: a - b
+            </p>
+            <p>
+                &#x2200;a,b&#x2208;&#x2124; a - b &#x225d;
+                a + (-b)
+            </p>
+        </section>
+        <section>
+            <h3>Subtraction &#x2124; Example: 3 - 2</h3>
+            <ul>
+                <li class="fragment">
+                    3<sub>&#x2124;</sub> - 2<sub>&#x2124;</sub> =
+                    &#x27e8;3, 0&#x27e9; - &#x27e8;2, 0&#x27e9;
+                </li><li class="fragment">
+                    3<sub>&#x2124;</sub> - 2<sub>&#x2124;</sub> =
+                    &#x27e8;3, 0&#x27e9; + &#x27e8;0, 2&#x27e9;
+                </li><li class="fragment">
+                    3<sub>&#x2124;</sub> - 2<sub>&#x2124;</sub> =
+                    &#x27e8;3 + 0, 0 + 2&#x27e9;
+                </li><li class="fragment">
+                    3<sub>&#x2124;</sub> - 2<sub>&#x2124;</sub> =
+                    &#x27e8;3, 2&#x27e9;
+                </li><li class="fragment">
+                    3<sub>&#x2124;</sub> - 2<sub>&#x2124;</sub> =
+                    &#x27e8;1, 0&#x27e9;
+                    <span class="fragment">
+                        <em>(Because 3 + 0 = 2 + 1)</em>
+                    </span>
+                </li><li class="fragment">
+                    3<sub>&#x2124;</sub> - 2<sub>&#x2124;</sub> =
+                    1<sub>&#x2124;</sub>
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Subtraction &#x2124; Example: 3 - 5</h3>
+            <ul>
+                <li class="fragment">
+                    3<sub>&#x2124;</sub> - 5<sub>&#x2124;</sub> =
+                    &#x27e8;3, 0&#x27e9; - &#x27e8;5, 0&#x27e9;
+                </li><li class="fragment">
+                    3<sub>&#x2124;</sub> - 5<sub>&#x2124;</sub> =
+                    &#x27e8;3, 0&#x27e9; + &#x27e8;0, 5&#x27e9;
+                </li><li class="fragment">
+                    3<sub>&#x2124;</sub> - 5<sub>&#x2124;</sub> =
+                    &#x27e8;3 + 0, 0 + 5&#x27e9;
+                </li><li class="fragment">
+                    3<sub>&#x2124;</sub> - 5<sub>&#x2124;</sub> =
+                    &#x27e8;3, 5&#x27e9;
+                </li><li class="fragment">
+                    3<sub>&#x2124;</sub> - 5<sub>&#x2124;</sub> =
+                    &#x27e8;0, 2&#x27e9;
+                    <span class="fragment">
+                        <em>(3 + 2 = 5 + 0)</em>
+                    </span>
+                </li><li class="fragment">
+                    3<sub>&#x2124;</sub> - 5<sub>&#x2124;</sub> =
+                    -2<sub>&#x2124;</sub>
+                </li>
+            </ul>
+            <aside class="notes">
+                Here's another example, this time subtracting a larger
+                integer from a smaller one.
+            </aside>
+        </section>
+        <section>
+            <h3>Subtraction &#x2124;: Closed</h3>
+            <p>
+                &#x2200;a,b&#x2208;&#x2124;
+                a - b &#x2208;&#x2124;
+            </p>
+            <p>
+                &#x2200;&#x27e8;a<sub>1</sub>,
+                a<sub>2</sub>&#x27e9;,&#x27e8;b<sub>1</sub>,
+                b<sub>2</sub>&#x27e9;&#x2208;&#x2124;<br />
+                &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; -
+                &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; =
+                &#x27e8;a<sub>1</sub> + b<sub>2</sub>,
+                a<sub>2</sub> + b<sub>1</sub>&#x27e9;
+            </p>
+            <p>
+                Subtraction is closed because the result is always
+                an ordered pair of natural numbers and therefore
+                always another integer.
+            </p>
+        </section>
+        <section>
+            <h3>Subtraction &#x2124;: Right Identity</h3>
+            <p>
+                &#x2200;a&#x2208;&#x2124; a - 0<sub>&#x2124;</sub> =
+                a
+            </p>
+            <ul>
+                <li class="fragment">
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; -
+                    &#x27e8;0, 0&#x27e9; = &#x27e8;a<sub>1</sub>,
+                    a<sub>2</sub>&#x27e9; + &#x27e8;0, 0&#x27e9;
+                    :: Definition -
+                </li><li class="fragment">
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; -
+                    &#x27e8;0, 0&#x27e9; =
+                    &#x27e8;a<sub>1</sub> + 0,
+                    a<sub>2</sub> + 0&#x27e9; ::
+                    Definition +
+                </li><li class="fragment">
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; -
+                    &#x27e8;0, 0&#x27e9; =
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; ::
+                    Addition &#x2115;
+                </li>
+            </ul>
+            <p class="fragment">
+                Subtracting zero from the right leaves the number on
+                the left unchanged.
+            </p>
+        </section>
+        <section>
+            <h3>Subtraction &#x2124;: Left Identity?</h3>
+            <p>
+                &#x2200;a&#x2208;&#x2124; 0<sub>&#x2124;</sub> - a
+                &#x225f; a
+            </p>
+            <ul>
+                <li class="fragment">
+                    &#x27e8;0, 0&#x27e9; - &#x27e8;a<sub>1</sub>,
+                    a<sub>2</sub>&#x27e9; = &#x27e8;0, 0&#x27e9;
+                    + &#x27e8;a<sub>2</sub>, a<sub>1</sub>&#x27e9;
+                    :: Definition -
+                </li><li class="fragment">
+                    &#x27e8;0, 0&#x27e9; - &#x27e8;a<sub>1</sub>,
+                    a<sub>2</sub>&#x27e9; = &#x27e8;0 + a<sub>2</sub>,
+                    0 + a<sub>1</sub>&#x27e9; :: Definition +
+                </li><li class="fragment">
+                    &#x27e8;0, 0&#x27e9; - &#x27e8;a<sub>1</sub>,
+                    a<sub>2</sub>&#x27e9; = &#x27e8;a<sub>2</sub>,
+                    a<sub>1</sub>&#x27e9; :: Arithmetic &#x2115;
+                </li><li class="fragment">
+                    &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; &ne;
+                    &#x27e8;a<sub>2</sub>, a<sub>1</sub>&#x27e9;
+                </li>
+            </ul>
+            <p class="fragment">
+                Subtracting from zero gives the additive inverse, not
+                the element itself, so there's no left identity.
+            </p>
+        </section>
+        <section>
+            <h3>Subtraction &#x2124;: Associative?</h3>
+            <p>
+                &#x2200;a,b,c&#x2208;&#x2124;
+                (a - b) - c &#x225f; a - (b - c)
+            </p>
+            <ul>
+                <li class="fragment">
+                    (a + (-b)) + (-c) &#x225f; a + -(b + (-c))
+                    :: Definition -
+                </li><li class="fragment">
+                    (a + (-b)) + (-c) &#x225f; a + ((-b) + c)
+                    :: ???
+                </li><li class="fragment">
+                    (a + (-b)) + (-c) &#x225f; (a + (-b)) + c
+                    :: Associative +
+                </li><li class="fragment">
+                    -(a + (-b)) + (a + (-b)) + (-c) &#x225f;<br />
+                    -(a + (-b)) + (a + (-b)) + c :: Equality
+                </li><li class="fragment">
+                    -c &#x225f; c :: Inverses +
+                </li>
+            </ul>
+            <p class="fragment">
+                Subtraction is not generally associative.
+            </p>
+            <aside class="notes">
+            </aside>
+        </section>
+        <section>
+            <h3>Subtraction &#x2124;: Commutative?</h3>
+            <p>
+                &#x2200;a,b&#x2208;&#x2124; a - b &#x225f; b - a
+            </p>
+            <ul>
+                <li class="fragment">
+                    a + (-b) &#x225f; b + (-a) :: Definition -
+                </li><li class="fragment">
+                    a + (-b) &#x225f; (-a) + b :: Associative +
+                </li><li class="fragment">
+                    a + (-b) &#x225f; -(a + (-b)) :: ???
+                </li>
+            </ul>
+            <p class="fragment">
+                Subtraction is not generally commutative.
+            </p>
+        </section>
+        <section>
+            <h3>Subtraction &#x2124;: Inverses</h3>
+            <p>
+                &#x2200;a&#x2208;&#x2124;
+                a - a = 0<sub>&#x2124;</sub>
+            </p>
+            <ul>
+                <li class="fragment">
+                    a - a = a + (-a) :: Definition -
+                </li><li class="fragment">
+                    a - a = 0<sub>&#x2124;</sub> :: Inverses +
+                </li>
+            </ul>
+            <p class="fragment">
+                Every integer is its own subtractive inverse.
+            </p>
+        </section>
+        <section>
+            <h2>Subtraction &#x2124;</h2>
+            <ul>
+                <li>
+                    Definition: &#x2200;a,b&#x2208;&#x2124;
+                    a - b &#x225d; a + (-b)
+                </li>
+                <li>
+                    Closed: &#x2200;a,b&#x2208;&#x2124;
+                    a - b &#x2208;&#x2124;
+                </li>
+                <li>
+                    Right Identity: &#x2200;a&#x2208;&#x2124;
+                    a + 0<sub>&#x2124;</sub> = a
+                </li>
+                <li>
+                    Inverses: &#x2200;a&#x2208;&#x2124;
+                    a - a = 0<sub>&#x2124;</sub>
                 </li>
             </ul>
         </section>
@@ -4974,6 +5209,27 @@
                 </li>
             </ul>
         </section>
+        <section>
+            <h2>Subtraction &#x211a;</h2>
+            <ul>
+                <li>
+                    Definition: &#x2200;a,b&#x2208;&#x211a;
+                    a - b &#x225d; a + (-b)
+                </li>
+                <li>
+                    Closed: &#x2200;a,b&#x2208;&#x211a;
+                    a - b &#x2208;&#x211a;
+                </li>
+                <li>
+                    Right Identity: &#x2200;a&#x2208;&#x211a;
+                    a + 0<sub>&#x211a;</sub> = a
+                </li>
+                <li>
+                    Inverses: &#x2200;a&#x2208;&#x211a;
+                    a - a = 0<sub>&#x211a;</sub>
+                </li>
+            </ul>
+        </section>
     </section>
 
     <section id="rational-number-multiplication">
@@ -5524,7 +5780,8 @@
         <section>
             <h3>Real Numbers &#x211d; Non-Examples</h3>
             <p>
-                { a&#x2208;&#x211a; : a &le; 0<sub>&#x211a;</sub> }
+                { a&#x2208;&#x211a; :
+                <span class="intro">a &le; 0<sub>&#x211a;</sub></span> }
                 &#x2209;&#x211d;
             </p>
             <p>
@@ -5536,8 +5793,11 @@
         <section>
             <h3>Real Numbers &#x211d; Non-Examples</h3>
             <p>
-                { a&#x2208;&#x211a; : (a &gt; -1<sub>&#x211a;</sub>)
-                &and; (a &lt; 0<sub>&#x211a;</sub>) } &#x2209;&#x211d;
+                { a&#x2208;&#x211a; :
+                <span class="intro">
+                    (a &gt; -1<sub>&#x211a;</sub>)
+                    &and; (a &lt; 0<sub>&#x211a;</sub>)
+                </span> } &#x2209;&#x211d;
             </p>
             <p>
                 This set has no largest member but it's not closed
@@ -5550,8 +5810,8 @@
         <section>
             <h3>Real Numbers &#x211d; Examples</h3>
             <p>
-                0<sub>&#x211d;</sub> &#x225d;
-                { a&#x2208;&#x211a; : a &lt; 0<sub>&#x211a;</sub> }
+                0<sub>&#x211d;</sub> &#x225d; { a&#x2208;&#x211a; :
+                <span class="intro">a &lt; 0<sub>&#x211a;</sub></span> }
             </p>
             <ul>
                 <li class="fragment">
@@ -5599,7 +5859,7 @@
             <h3>Real Numbers &#x211d; Examples</h3>
             <p>
                 &#x2200;a&#x2208;&#x211a; &#x2203;{ b&#x2208;&#x211a; :
-                b &lt; a }&#x2208;&#x211d;
+                <span class="intro">b &lt; a</span> }&#x2208;&#x211d;
             </p>
             <ul>
                 <li class="fragment">
@@ -5732,64 +5992,81 @@
                 sign between two rational numbers: a + b
             </p>
             <p>
-                &#x2200;a,b&#x2208;&#x211d; a + b &#x225d;
+                &#x2200;a,b&#x2208;&#x211d; a + b &#x225d; {
                 <span class="intro">
-                    { (c + d)&#x2208;&#x211a; : c&#x2208;a &and;
-                    d&#x2208;b }
-                </span>
+                    (c + d)&#x2208;&#x211a; : c&#x2208;a &and;
+                    d&#x2208;b
+                </span>}
             </p>
+        </section>
+        <section>
+            <h3>Order Gaps &#x211a;</h3>
+            <p>
+                &#x2200;a,b&#x2208;&#x211a; (a &lt; b) &#x27f9;
+                &#x2203;c&#x2208;&#x211a; (c &gt; 0) &and; (a + c = b)
+            </p>
+            <ul>
+                <li>
+                    (a &lt; b) &#x27f9; &not;(a &ge; b)
+                </li><li>
+                </li><li>
+                </li><li>
+                </li><li>
+                    ???
+                </li>
+            </ul>
         </section>
         <section>
             <h3>Addition &#x211d; Example: 3 + 2 = 5</h3>
             <ul>
                 <li class="fragment">
-                    { (b + c)&#x2208;&#x211a; :
-                    b&#x2208;3<sub>&#x211a;</sub> &and;
-                    c&#x2208;2<sub>&#x211a;</sub> } =
-                    { a&#x2208;&#x211a; : a&lt;5<sub>&#x211a;</sub> }
-                </li><li class="fragment">
-                    &#x2200;b,c&#x2208;&#x211a;
+                    3<sub>&#x211d;</sub> + 2<sub>&#x211d;</sub> &#x2286;
+                    5<sub>&#x211d;</sub>
+                    <span class="fragment">
+                        &#x2200;a,b&#x2208;&#x211a;
+                    </span>
                     <ul>
                         <li class="fragment">
-                            (b &lt 3<sub>&#x211a;</sub>) &#x27f9;
-                            &#x2203;d&#x2208;&#x211a;
-                            (d &gt; 0<sub>&#x211a;</sub>) &and;
-                            (b + d = 3<sub>&#x211a;</sub>)
+                            (a + b)&#x2208;(3<sub>&#x211d;</sub> +
+                            2<sub>&#x211d;</sub>) &#x27f9;
+                            (a &lt; 3<sub>&#x211a;</sub>) &and;
+                            (b &lt; 2<sub>&#x211a;</sub>)
                         </li><li class="fragment">
-                            (c &lt 2<sub>&#x211a;</sub>) &#x27f9;
-                            &#x2203;e&#x2208;&#x211a;
-                            (e &gt; 0<sub>&#x211a;</sub>) &and;
-                            (c + e = 2<sub>&#x211a;</sub>)
+                            (a &lt; 3<sub>&#x211a;</sub>) &and;
+                            (b &lt; 2<sub>&#x211a;</sub>) &#x27f9;
+                            (a + b) &lt; (3<sub>&#x211a;</sub> +
+                            2<sub>&#x211a;</sub>)
                         </li><li class="fragment">
-                            (b &lt 3<sub>&#x211a;</sub>) &and;
-                            (c &lt 2<sub>&#x211a;</sub>) &#x27f9;
-                            (b + d) + (c + d) = 5<sub>&#x211a;</sub>
-                            <span class="fragment">
-                                &#x27f9;<br /> (b + c) &lt;
-                                5<sub>&#x211a;</sub>
-                            </span><span class="fragment">
-                                &#x27f9;  3<sub>&#x211d;</sub> +
-                                2<sub>&#x211d;</sub> &#x2286;
-                                5<sub>&#x211d;</sub>
-                            </span>
+                            (a + b) &lt; 5<sub>&#x211a;</sub> &#x27f9;
+                            (a + b) &#x2208; 5<sub>&#x211d;</sub>
                         </li>
                     </ul>
                 </li><li class="fragment">
-                    &#x2200;a&#x2208;&#x211a;
-                    a&#x2208;5<sub>&#x211d;</sub> &#x27f9;
-                    &#x2203;b&#x2208;&#x211a;
-                    (b &gt; 0<sub>&#x211a;</sub>) &and;
-                    (a + b = 5<sub>&#x211a;</sub>)
+                    5<sub>&#x211d;</sub> &#x2286;
+                    3<sub>&#x211d;</sub> + 2<sub>&#x211d;</sub>
                     <span class="fragment">
-                        &#x27f9;<br />
-                        &#x2203;c,d (c + (b &times;
-                        1/2<sub>&#x211a;</sub>) = 3<sub>&#x211a;</sub>)
-                        &and; (d + (b &times;
-                        1/2<sub>&#x211a;</sub>) = 2<sub>&#x211a;</sub>)
-                    </span><span class="fragment">
-                        &#x27f9;<br /> 5<sub>&#x211d;</sub> &#x2286;
-                        3<sub>&#x211d;</sub> + 2<sub>&#x211d;</sub>
+                        &#x2200;a,b&#x2208;&#x211a;
                     </span>
+                    <ul>
+                        <li class="fragment">
+                            (a &#x2208; 5<sub>&#x211d;</sub>) &#x27f9;
+                            (a &lt 5<sub>&#x211a;</sub>)
+                            <span class="fragment">
+                                &#x27f9;
+                                &#x2203;b&lt;0<sub>&#x211a;</sub>
+                                5<sub>&#x211a;</sub> + b = a
+                            </span>
+                        </li><li class="fragment">
+                            (3<sub>&#x211a;</sub> + (b &times; 1/2)) +
+                            (2<sub>&#x211a;</sub> + (b &times; 1/2)) =
+                            a
+                        </li><li class="fragment">
+                            (3<sub>&#x211a;</sub> + (b &times; 1/2))
+                            &#x2208;3<sub>&#x211d;</sub> &and;
+                            (2<sub>&#x211a;</sub> + (b &times; 1/2))
+                            &#x2208;2<sub>&#x211d;</sub>
+                        </li>
+                    </ul>
                 </li>
             </ul>
         </section>
@@ -5804,9 +6081,26 @@
                     (&#x2203;c&#x2208;a &and; &#x2203;d&#x2208;b)
                     &#x27f9; (c + d) &#x2208; (a + b)
                 </li><li>
-                    Closed Downward:
+                    Closed Downward: &#x2200;c,d&#x2208;&#x211a;
+                    (c&#x2208;a) &and; (d&#x2208;b)
+                    <ul>
+                        <li>
+                            &#x2200;e&#x2208;&#x211a; (e &lt; (c + d))
+                            &#x2203;f&gt;0<sub>&#x211a;</sub>
+                            (e + f) = (c + d)
+                        </li><li>
+                            (c + (-f) &lt; c) &#x27f9;
+                            (c + (-f)) &#x2208; a &#x27f9;
+                            (c + (-f)) + d &#x2208; (a + b)
+                        </li>
+                    </ul>
                 </li><li>
                     No Largest Member:
+                    <ul>
+                        <li>
+                        </li><li>
+                        </li>
+                    </ul>
                 </li>
             </ul>
         </section>
