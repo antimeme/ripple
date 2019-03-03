@@ -611,8 +611,8 @@
                     var cell, previous;
 
                     previous = selected;
-                    selected = ship.grid.position(
-                        camera.toWorldFromScreen(point));
+                    selected = ship.grid.markCenter(ship.grid.markCell(
+                        camera.toWorldFromScreen(point)));
 
                     cell = ship.getCell(selected);
                     if (mode.value === 'extend' && !cell) {
