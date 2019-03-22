@@ -94,11 +94,7 @@
         return value;
     };
 
-}(typeof exports === 'undefined' ? this.omnivore = {} : exports));
-
-if ((typeof require !== 'undefined') && (require.main === module)) {
-    var omnivore = exports;
-    var grammar = omnivore.grammar({
+    omnivore.example = omnivore.grammar({
         vowel: ['a', 'e', 'i', 'o', 'u'],
         consonant: [
             'b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm',
@@ -110,8 +106,12 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
         name: [{weight: 4, rule: ['%start', '%middle', '%end']},
                ['%start', '%end']],
     });
+}(typeof exports === 'undefined' ? this.omnivore = {} : exports));
+
+if ((typeof require !== 'undefined') && (require.main === module)) {
+    var omnivore = exports;
 
     console.log('Omnivore:');
     for (var ii = 0; ii < 10; ++ii)
-        console.log(' ', grammar.generate('name'));
+        console.log(' ', omnivore.example.generate('name'));
 }

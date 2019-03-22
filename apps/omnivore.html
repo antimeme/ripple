@@ -13,7 +13,6 @@
 
 <input id="text" type="text"></input>
 <button id="generate">Generate</button>
-
 <div id="list"></div>
 
 <script src="ripple/polyfill.js"></script>
@@ -21,25 +20,13 @@
 <script src="ripple/omnivore.js"></script>
 <script>//<![CDATA[
  ripple.ready(function() {
-     var example = omnivore.grammar({
-         vowel: ['a', 'e', 'i', 'o', 'u'],
-         consonant: [
-             'b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm',
-             'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'z'],
-         start: [['%consonant', '%vowel']],
-         middle: [{weight: 4, rule: ['%consonant', '%vowel']},
-                  ['%middle', '%middle']],
-         end: [['%consonant']],
-         name: [{weight: 4, rule: ['%start', '%middle', '%end']},
-                ['%start', '%end']],
-     });
-
      var list = document.getElementById('list');
      var generate = document.getElementById('generate');
      var text = document.getElementById('text');
      generate.addEventListener('click', function(event) {
          list.insertBefore(
-             ripple.createElement('p', null, text.value), list.childNodes[0]);
-         text.value = example.generate('name');
+             ripple.createElement('p', null, text.value),
+             list.childNodes[0]);
+         text.value = omnivore.example.generate('name');
      });
  }); //]]></script>
