@@ -63,8 +63,9 @@
     var getRule = function(descriptor) {
         return (!Array.isArray(descriptor) &&
                 (typeof descriptor === 'object')) ?
-               descriptor.rule : ((typeof descriptor === 'string') ?
-                                  [descriptor] : descriptor);
+               getRule(descriptor.rule) :
+               ((typeof descriptor === 'string') ?
+                [descriptor] : descriptor);
     };
 
     omnivore.grammar.prototype.generate = function(rule) {
