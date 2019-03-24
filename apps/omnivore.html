@@ -11,7 +11,11 @@
     canvas { background: white; color: #336; }
 </style>
 
-<input id="text" type="text"></input>
+<select id="rule">
+    <option>entry</option>
+    <option>male_name</option>
+    <option>female_name</option>
+</select>
 <button id="generate">Generate</button>
 <div id="list"></div>
 
@@ -22,11 +26,24 @@
  ripple.ready(function() {
      var list = document.getElementById('list');
      var generate = document.getElementById('generate');
-     var text = document.getElementById('text');
+     var select = document.getElementById('rule');
+     var rule = 'entry';
+
+     select.addEventListener('change', function(event) {
+         rule = event.target.value
+     });
+
      generate.addEventListener('click', function(event) {
          list.insertBefore(
-             ripple.createElement('p', null, text.value),
+             ripple.createElement(
+                 'p', null, omnivore.example.generate(rule)),
              list.childNodes[0]);
-         text.value = omnivore.example.generate('name');
      });
+
+     for (var ii = 0; ii < 8; ++ii)
+         list.insertBefore(
+             ripple.createElement(
+                 'p', null, omnivore.example.generate(rule)),
+             list.childNodes[0]);
+     
  }); //]]></script>
