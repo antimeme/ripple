@@ -123,7 +123,8 @@
                        (typeof(attrs[attr]) === 'object')) {
                 Object.keys(attrs[attr]).forEach(function(entry) {
                     result.style[entry] = attrs[attr][entry]; });
-            } else result.setAttribute(attr, attrs[attr]); });
+            } else if (typeof(attrs[attr]) !== 'undefined')
+                result.setAttribute(attr, attrs[attr]); });
 
         for (ii = 2; ii < arguments.length; ++ii)
             result.appendChild((typeof(arguments[ii]) === 'string' ||
