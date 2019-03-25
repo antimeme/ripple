@@ -29,6 +29,11 @@
         implies: {
             sigil: '&#x27f9;', devolve: function(list) {
                 // TODO: more than two arguments
+                if (Array.isArray(list[2]) &&
+                    (list[2].length === 3) && (list[2][0] === 'and')) {
+                    return ['stroke', list[1],
+                            ['stroke', list[2][1], list[2][2]]];
+                }
                 return ['stroke', list[1],
                         ['stroke', list[2], list[2]]]; }
         },
@@ -60,37 +65,97 @@
             if (config && config.variable)
                 result = config.variable(expression);
         } else if (Array.isArray(expression)) {
-            if (config && config.operator && (expression.length > 0))
-                expression = config.operator(expression);
-
             result = [];
+            if (config && config.down)
+                expression = config.down(expression);
+
             expression.forEach(function(thing, index) {
                 if (index > 0)
                     thing = transform(config, thing);
                 result.push(thing);
             });
+
+            if (config && config.up && (result.length > 0))
+                result = config.up(result);
         }
         return result;
     };
 
+    /**
+     * Returns truthy iff a and b are the same expression.
+     * This addresses intensional, not extensional, equality.  That
+     * means some expressions that yield the same value for all
+     * possible inputs will get false from this. */
     var equals = function(a, b) {
+        var result = false;
         if ((typeof(a) === 'string') && (typeof(b) === 'string')) {
-            return a === b;
+            result = (a === b);
         } else if (Array.isArray(a) && Array.isArray(b)) {
-            return a.every(function(element, index) {
+            if ((a.length === 3) && (a[0] === 'stroke') &&
+                (b.length === 3) && (b[0] === 'stroke')) {
+                result = ((equals(a[1], b[1]) && equals(a[2], b[2])) ||
+                          (equals(a[1], b[2]) && equals(a[2], b[1])));
+            } else result = a.every(function(element, index) {
                 return equals(a[index], b[index]); });
         }
-        return false;
+        return result;
     };
 
-    logic.expression = function(value) {
+    var easynegate = function(expression) {
+        var result = null;
+        if (Array.isArray(expression) && (expression.length > 1)) {
+            if (expression[0] === 'not')
+                result = expression[1];
+            else if (expression[0] === 'stroke')
+                result = ['and'].concat(expression.slice(1));
+        }
+        return result;
+    };
+
+    var tokenize = function(value) {
+        var states = {
+            ready: 1,
+        }, state;
+        var result = [];
+        for (var ii = 0; ii < value.length; ++ii)
+            switch (states[state]) {
+                case states.ready:
+                    if ((value.indexOf(' ', ii) === ii) ||
+                        (value.indexOf('\t', ii) === ii) ||
+                        (value.indexOf('\r', ii) === ii) ||
+                        (value.indexOf('\n', ii) === ii)) {
+                    }
+                default:
+            };
+        return result;
+    };
+
+    var parse = function(value) {
+        return value;
+    };
+
+    logic.expression = function(value) { // Constructor
         if (!(this instanceof logic.expression))
             return new logic.expression(value);
 
-        if ((Array.isArray(value)) || (typeof(value) === 'string'))
+        if (typeof(value) === 'string')
+            this.__value = parse(value);
+        else if (Array.isArray(value))
             this.__value = value;
-        else throw 'Unsupported: ' + value;
+        else if (value instanceof logic.expression)
+            this.__value = value.__value;
+        else throw Error('Unsupported expression: ' + value);
     };
+
+    logic.expression.prototype.equals = function() {
+        var result = true;
+        for (var ii = 0; ii < arguments.length; ++ii)
+            if (!equals(this.__value, logic.expression(
+                arguments[ii]).__value))
+                result = false;
+        return result;
+    };
+
     logic.expression.prototype.toString = function(config) {
         var result;
 
@@ -98,10 +163,11 @@
             var operator = operators[this.__value[0]];
             if (operator.unary) {
                 result = operator.sigil +
-                         logic.expression(this.__value[1]).toString();
+                         logic.expression(this.__value[1]).toString({
+                             parens: true});
             } else {
                 result = [];
-                this.__value.forEach(function(thing, index) {
+                this.__value.forEach(function(thing, index, arr) {
                     if (index > 1)
                         result.push(operator.sigil);
                     if (index > 0)
@@ -123,7 +189,7 @@
 
     logic.expression.prototype.devolve = function() {
         return logic.expression(transform({
-            operator: function(expression) {
+            down: function(expression) {
                 var operator = operators[expression[0]];
                 if (operator.devolve)
                     expression = operator.devolve(expression);
@@ -134,9 +200,54 @@
 
     logic.expression.prototype.simplify = function() {
         return logic.expression(transform({
-            operator: function(expression) {
-                if (expression[0] === 'stroke')
-                    expression = expression;
+            up: function(expression) {
+                var negate1, negate2;
+
+                // Change (a stroke a) to not a
+                if ((expression[0] === 'stroke') &&
+                    (equals(expression[1], expression[2])))
+                    expression = ['not', expression[1]];
+
+                // Change not-nand to and
+                if ((expression[0] === 'not') &&
+                    Array.isArray(expression[1]) &&
+                    (expression[1].length > 0) &&
+                    (expression[1][0] === 'stroke'))
+                    expression = ['and'].concat(
+                        expression[1].slice(1));
+
+                // Change nand-not-not to or
+                if ((expression[0] === 'stroke') &&
+                    (expression.length === 3) &&
+                    ((negate1 = easynegate(expression[1])) !== null) &&
+                    ((negate2 = easynegate(expression[2])) !== null))
+                    expression = ['or', negate1, negate2];
+
+                // Construct implications
+                if ((expression[0] === 'stroke') &&
+                    (expression.length === 3)) {
+
+                    if (Array.isArray(expression[2]) &&
+                        (expression[2].length === 2) &&
+                        (expression[2][0] === 'not'))
+                        expression = [
+                            'implies', expression[1], expression[2][1]];
+                    else if (Array.isArray(expression[2]) &&
+                             (expression[2].length === 3) &&
+                             (expression[2][0] === 'stroke') &&
+                             equals(expression[2][1], expression[1]))
+                        expression = [
+                            'implies', expression[1], expression[2][2]];
+                    else if ((negate2 = easynegate(
+                        expression[2])) !== null)
+                        expression = [
+                            'implies', expression[1], negate2];
+                    else if ((negate1 = easynegate(
+                        expression[1])) !== null)
+                        expression =
+                            ['implies', expression[2], negate1];
+                }
+
                 return expression;
             }
         }, this.__value));
@@ -160,55 +271,64 @@
         }, this.__value));
     };
 
+    logic.library = {
+        'Wajsberg': {
+            Axiom: ['stroke', ['stroke', '&phi;',
+                               ['stroke', '&psi;', '&chi;']],
+                    ['stroke', ['stroke', ['stroke', '&tau;', '&chi;'],
+                                ['stroke', ['stroke', '&phi;', '&tau;'],
+                                 ['stroke', '&phi;', '&tau;']]],
+                     ['stroke', '&phi;', ['stroke', '&phi;', '&psi;']]]],
+        },
+        'DEBUG': {
+            Thing: ['stroke', '&phi;',
+                    ['stroke', '&psi;', '&chi;']]
+        },
+        'Kleene': {
+            'Implication Introduction':
+            ['implies', '&phi;', ['implies', '&psi;', '&phi;']],
+            Deduction: ['implies', ['implies', '&phi;', '&psi;'],
+                        ['implies', ['implies', '&phi;',
+                                     ['implies', '&psi;', '&chi;']],
+                         ['implies', '&phi;', '&chi;']]],
+            'Conjunction Introduction':
+                       ['implies', '&phi;',
+                        ['implies', '&psi;',
+                         ['and', '&phi;', '&psi;']]],
+            'Conjunction Left Elimination':
+                       ['implies', ['and', '&phi;', '&psi;'], '&phi;'],
+            'Conjunction Right Elimination':
+                       ['implies', ['and', '&phi;', '&psi;'], '&psi;'],
+            'Disjunction Elimination':
+                       ['implies', ['implies', '&phi;', '&psi;'],
+                        ['implies', ['implies', '&chi;', '&psi;'],
+                         ['implies', ['or', '&phi;', '&chi;'], '&psi;']]],
+            'Disjunction Left Introduction':
+                       ['implies', '&phi;', ['or', '&phi;', '&psi;']],
+            'Disjunction Right Introduction':
+                       ['implies', '&phi;', ['or', '&psi;', '&phi;']],
+            'Contradiction': ['implies', ['implies', '&phi;', '&psi;'],
+                              ['implies', ['implies', '&phi;',
+                                           ['not', '&psi;']],
+                               ['not', '&phi;']]],
+            'Negation Elimination': [
+                'implies', ['not', ['not', '&phi;']], '&phi;']
+        },
+    };
+    logic.eachLibrary = function(fn, context) {
+        var index = 0;
+        Object.keys(logic.library).forEach(function(library) {
+            Object.keys(logic.library[library]).forEach(
+                function(formula) {
+                    var expression = logic.expression(
+                        logic.library[library][formula]);
+                    fn.call(context, expression,
+                            formula, library, index++);
+                });
+        });
+    };
 }(typeof exports === 'undefined' ? this.logic = {} : exports));
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
     var logic = exports;
-    var expressions = {
-        nicod: ['stroke', ['stroke', '&phi;',
-                           ['stroke', '&psi;', '&chi;']],
-                ['stroke', ['stroke', ['stroke', '&tau;', '&chi;'],
-                            ['stroke', ['stroke', '&phi;', '&tau;'],
-                             ['stroke', '&phi;', '&tau;']]],
-                 ['stroke', '&phi;', ['stroke', '&phi;', '&psi;']]]],
-        'kleene-impl-intro':
-               ['implies', '&phi;', ['implies', '&psi;', '&phi;']],
-        'kleene-deduction':
-               ['implies', ['implies', '&phi;', '&psi;'],
-                ['implies', ['implies', '&phi;',
-                             ['implies', '&psi;', '&chi;']],
-                 ['implies', '&phi;', '&chi;']]],
-        'kleene-conj-intro':
-               ['implies', '&phi;', ['implies', '&psi;',
-                                     ['and', '&phi;', '&psi;']]],
-        'kleene-conj-lelim':
-               ['implies', ['and', '&phi;', '&psi;'], '&phi;'],
-        'kleene-conj-relim':
-               ['implies', ['and', '&phi;', '&psi;'], '&psi;'],
-        'kleene-disj-intro':
-               ['implies', ['implies', '&phi;', '&psi;'],
-                ['implies', ['implies', '&chi;', '&psi;'],
-                 ['implies', ['or', '&phi;', '&chi;'], '&psi;']]],
-        'kleene-disj-lintro':
-               ['implies', '&phi;', ['or', '&phi;', '&psi;']],
-        'kleene-disj-rintro':
-               ['implies', '&phi;', ['or', '&psi;', '&phi;']],
-        'kleene-contradict': ['implies', ['implies', '&phi;', '&psi;'],
-                              ['implies', ['implies', '&phi;',
-                                           ['not', '&psi;']],
-                               ['not', '&phi;']]],
-        'kleene-neg-elim':
-               ['implies', ['not', ['not', '&phi;']], '&phi;']
-    };
-
-    console.log("<!DOCTYPE html>");
-    Object.keys(expressions).forEach(function(name) {
-        var expression = logic.expression(expressions[name]);
-        console.log('<p>');
-        console.log(' ', name, expression.toString());
-        console.log(' <br />&nbsp;&nbsp;&nbsp;&nbsp;',
-                    expression.getFree(),
-                    expression.devolve().toString());
-        console.log('</p>');
-    });
 }

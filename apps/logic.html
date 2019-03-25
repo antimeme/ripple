@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>Logic</title>
+<style>
+ td { border: 1px solid black; }
+</style>
+
+<h1>Logic</h1>
+<div>Formula: <select id="axioms"><option></option></select></div>
+<textarea id="display" readonly="true" rows="5" cols="40">
+</textarea>
+<div>
+    <button id="simplify">Simplify</button>
+    <button id="devolve">Devolve</button>
+</div>
+
+<table id="expressions">
+    <tr>
+        <th>Name</th>
+        <th>Free</th>
+        <th>Expression</th>
+    </tr>
+</table>
+
+<script src="ripple/polyfill.js"></script>
+<script src="ripple/ripple.js"></script>
+<script src="ripple/logic.js"></script>
+<script>//<![CDATA[
+ ripple.ready(function() {
+     var expression = null;
+     var display = document.getElementById("display");
+     var select = document.getElementById("axioms");
+     select.addEventListener("change", function(event) {
+         var foo = event.target.value.split(':');
+         var library = foo[0];
+         var formula = foo[1];
+         expression = logic.expression(logic.library[library][formula]);
+         display.innerHTML = expression.toString();
+     });
+     display.addEventListener("change", function(event) {
+         console.log('DEBUG', event.target.value);
+     });
+     document.getElementById(
+         "simplify").addEventListener("click", function(event) {
+             if (expression) {
+                 var altered = expression.simplify();
+                 console.log('DEBUG-devolve', expression.equals(altered),
+                             altered.equals(expression));
+                 expression = altered;
+                 display.innerHTML = expression.toString();
+             }
+         });
+     document.getElementById(
+         "devolve").addEventListener("click", function(event) {
+             if (expression) {
+                 var altered = expression.devolve();
+                 console.log('DEBUG-devolve', expression.equals(altered),
+                             altered.equals(expression));
+                 expression = altered;
+                 display.innerHTML = expression.toString();
+             }
+         });
+
+     var table = document.getElementById("expressions");
+     logic.eachLibrary(function(expression, formula, library) {
+         select.appendChild(ripple.createElement(
+             'option', {value: library + ':' + formula},
+             library, ' ', formula));
+
+         table.appendChild(ripple.createElement(
+             'tr', null,
+             ripple.createElement('td', {rowspan: 3},
+                                  library, ' ', formula),
+             ripple.createElement('td', {
+                 rowspan: 3,
+                 innerHTML: expression.getFree().toString()}),
+             ripple.createElement('td', {
+                 innerHTML: expression.toString()})));
+
+         var altered = expression.simplify();
+         if (expression.equals(altered))
+             altered = expression.devolve();
+         table.appendChild(
+             ripple.createElement(
+                 'tr', null, ripple.createElement('td', {
+                     innerHTML: altered.toString()})));
+
+         var restored = altered.simplify();
+         if (restored.equals(altered))
+             restored = restored.devolve();
+         table.appendChild(
+             ripple.createElement(
+                 'tr', null, ripple.createElement('td', {
+                     innerHTML: restored.toString()})));
+     });
+ }); //]]></script>
