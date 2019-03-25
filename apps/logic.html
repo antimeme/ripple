@@ -9,12 +9,18 @@
 </style>
 
 <h1>Logic</h1>
-<div>Formula: <select id="axioms"><option></option></select></div>
+<div>Formula: <select id="formula"><option></option></select></div>
 <textarea id="display" readonly="true" rows="5" cols="40">
 </textarea>
 <div>
     <button id="simplify">Simplify</button>
     <button id="devolve">Devolve</button>
+    <select id="variables"></select>
+    <select id="values">
+        <option>true</option>
+        <option>false</option>
+    </select>
+    <button id="replace">Replace</button>
 </div>
 
 <table id="expressions">
@@ -32,48 +38,52 @@
  ripple.ready(function() {
      var expression = null;
      var display = document.getElementById("display");
-     var select = document.getElementById("axioms");
-     select.addEventListener("change", function(event) {
-         var foo = event.target.value.split(':');
-         var library = foo[0];
-         var formula = foo[1];
-         expression = logic.expression(logic.library[library][formula]);
+     var variables = document.getElementById("variables");
+     var formula = document.getElementById("formula");
+
+     var apply = function(expr) {
+         for (var ii = variables.options.length - 1; ii >= 0; --ii)
+             variables.remove(ii);
+         expression = expr;
+         expression.getFree().forEach(function(variable) {
+             variables.appendChild(ripple.createElement('option', {
+                 value: variable, innerHTML: variable}));
+         });
          display.innerHTML = expression.toString();
+     };
+
+     formula.addEventListener("change", function(event) {
+         var parts = event.target.value.split(':');
+         apply(logic.expression(logic.library[parts[0]][parts[1]]));
      });
      display.addEventListener("change", function(event) {
-         console.log('DEBUG', event.target.value);
+         console.log('WARNING-display-change', event.target.value);
      });
      document.getElementById(
          "simplify").addEventListener("click", function(event) {
-             if (expression) {
-                 var altered = expression.simplify();
-                 console.log('DEBUG-devolve', expression.equals(altered),
-                             altered.equals(expression));
-                 expression = altered;
-                 display.innerHTML = expression.toString();
-             }
-         });
+             if (expression)
+                 apply(expression.simplify()); });
      document.getElementById(
          "devolve").addEventListener("click", function(event) {
-             if (expression) {
-                 var altered = expression.devolve();
-                 console.log('DEBUG-devolve', expression.equals(altered),
-                             altered.equals(expression));
-                 expression = altered;
-                 display.innerHTML = expression.toString();
-             }
-         });
+             if (expression)
+                 apply(expression.devolve()); });
+     document.getElementById(
+         "replace").addEventListener("click", function(event) {
+             if (expression)
+                 apply(expression.substitute(variables.value,
+                                             (values.value === 'true') ?
+                                             true : false)); });
 
      var table = document.getElementById("expressions");
-     logic.eachLibrary(function(expression, formula, library) {
-         select.appendChild(ripple.createElement(
-             'option', {value: library + ':' + formula},
-             library, ' ', formula));
+     logic.eachLibrary(function(expression, name, library) {
+         formula.appendChild(ripple.createElement(
+             'option', {value: library + ':' + name},
+             library, ' ', name));
 
          table.appendChild(ripple.createElement(
              'tr', null,
              ripple.createElement('td', {rowspan: 3},
-                                  library, ' ', formula),
+                                  library, ' ', name),
              ripple.createElement('td', {
                  rowspan: 3,
                  innerHTML: expression.getFree().toString()}),

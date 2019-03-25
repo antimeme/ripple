@@ -140,6 +140,8 @@
 
         if (typeof(value) === 'string')
             this.__value = parse(value);
+        else if (typeof(value) === 'boolean')
+            this.__value = value;
         else if (Array.isArray(value))
             this.__value = value;
         else if (value instanceof logic.expression)
@@ -181,6 +183,8 @@
             }
         } else if (typeof(this.__value) === 'string') {
             result = this.__value;
+        } else if (typeof(this.__value) === 'boolean') {
+            result = this.__value ? 'true' : 'false';
         } else {
             result = 'UNKNOWN';
         }
@@ -248,6 +252,52 @@
                             ['implies', expression[2], negate1];
                 }
 
+
+                // Simplify boolean constant expressions
+                if ((expression[0] === 'not') &&
+                    (expression.length === 2) &&
+                    (typeof(expression[1]) === 'boolean')) {
+                    expression = !expression[1];
+                } else if ((expression[0] === 'stroke') &&
+                           (expression.length === 3) &&
+                           (typeof(expression[1]) === 'boolean')) {
+                    if (expression[1]) {
+                        if (typeof(expression[2]) === 'boolean')
+                            expression = !expression[2];
+                        else expression = ['not', expression[2]];
+                    } else expression = true;
+                } else if ((expression[0] === 'stroke') &&
+                           (expression.length === 3) &&
+                           (typeof(expression[2]) === 'boolean')) {
+                    expression = expression[2] ?
+                                 ['not', expression[1]] : true;
+                } else if ((expression[0] === 'and') &&
+                           (expression.length === 3) &&
+                           (typeof(expression[1]) === 'boolean')) {
+                    expression = expression[1] ? expression[2] : false;
+                } else if ((expression[0] === 'and') &&
+                           (expression.length === 3) &&
+                           (typeof(expression[2]) === 'boolean')) {
+                    expression = expression[2] ? expression[1] : false;
+                } else if ((expression[0] === 'or') &&
+                           (expression.length === 3) &&
+                           (typeof(expression[1]) === 'boolean')) {
+                    expression = expression[1] ? true : expression[2];
+                } else if ((expression[0] === 'or') &&
+                           (expression.length === 3) &&
+                           (typeof(expression[2]) === 'boolean')) {
+                    expression = expression[2] ? true : expression[1];
+                } else if ((expression[0] === 'implies') &&
+                           (expression.length === 3) &&
+                           (typeof(expression[1]) === 'boolean')) {
+                    expression = expression[1] ? expression[2] : true;
+                } else if ((expression[0] === 'implies') &&
+                           (expression.length === 3) &&
+                           (typeof(expression[2]) === 'boolean')) {
+                    expression = expression[2] ? true :
+                                 ['not', expression[1]];
+                }
+
                 return expression;
             }
         }, this.__value));
@@ -279,10 +329,6 @@
                                 ['stroke', ['stroke', '&phi;', '&tau;'],
                                  ['stroke', '&phi;', '&tau;']]],
                      ['stroke', '&phi;', ['stroke', '&phi;', '&psi;']]]],
-        },
-        'DEBUG': {
-            Thing: ['stroke', '&phi;',
-                    ['stroke', '&psi;', '&chi;']]
         },
         'Kleene': {
             'Implication Introduction':
