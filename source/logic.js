@@ -101,6 +101,29 @@
         return result;
     };
 
+    var complexity = function(value) {
+        var result = 0;
+        if (typeof(value) === 'boolean')
+            result = 0;
+        else if (typeof(value) === 'string')
+            result = 1;
+        else if (Array.isArray(value)) {
+            value.forEach(function(item, index) {
+                if (index > 0) {
+                    var current = complexity(item);
+                    if (current > result)
+                        result = current;
+                }
+            });
+            result += 1;
+        }
+        return result;
+    };
+
+    // Returns the negation of an easily negated expression or null.
+    // What "easy" means here is a judgement call.  Obviously a "not"
+    // expression is easy to negate.  A "stroke" expression can be
+    // replaced by an "and" expression to negate it.
     var easynegate = function(expression) {
         var result = null;
         if (Array.isArray(expression) && (expression.length > 1)) {
@@ -110,6 +133,21 @@
                 result = ['and'].concat(expression.slice(1));
         }
         return result;
+    };
+
+    // Returns true iff the operator matches and either the count
+    // is falsy or contains the length of the expression.  This
+    // routine assumes the expression argument is an array and that
+    // count is either falsy or a positive integer.
+    var matchOp = function(expression, operator, count) {
+        return (expression.length >= 1) &&
+               (expression[0] === operator) &&
+               (!count || (expression.length === count));
+    };
+
+    var matchExprOp = function(expression, operator, count) {
+        return Array.isArray(expression) &&
+               matchOp(expression, operator, count);
     };
 
     var tokenize = function(value) {
@@ -146,7 +184,10 @@
             this.__value = value;
         else if (value instanceof logic.expression)
             this.__value = value.__value;
-        else throw Error('Unsupported expression: ' + value);
+        else {
+            console.log(value);
+            throw Error('Unsupported expression: ' + value);
+        }
     };
 
     logic.expression.prototype.equals = function() {
@@ -202,97 +243,97 @@
         }, this.__value));
     };
 
-    logic.expression.prototype.simplify = function() {
+    logic.expression.prototype.simplify = function(config) {
         return logic.expression(transform({
             up: function(expression) {
                 var negate1, negate2;
 
-                // Change (a stroke a) to not a
-                if ((expression[0] === 'stroke') &&
-                    (equals(expression[1], expression[2])))
+                // Conjunction Compression
+                if ((!config || (config.all || config.andsame)) &&
+                    (matchOp(expression, 'and', 3) &&
+                     equals(expression[1], expression[2])))
+                    expression = expression[1];
+
+                // Definition of NOT
+                if ((!config || (config.all || config.not)) &&
+                    matchOp(expression, 'stroke', 3) &&
+                    equals(expression[1], expression[2]))
                     expression = ['not', expression[1]];
 
-                // Change not-nand to and
-                if ((expression[0] === 'not') &&
-                    Array.isArray(expression[1]) &&
-                    (expression[1].length > 0) &&
-                    (expression[1][0] === 'stroke'))
+                // Definition of AND
+                if ((!config || (config.all || config.and)) &&
+                    matchOp(expression, 'not', 2) &&
+                    matchExprOp(expression[1], 'stroke'))
                     expression = ['and'].concat(
                         expression[1].slice(1));
 
-                // Change nand-not-not to or
-                if ((expression[0] === 'stroke') &&
-                    (expression.length === 3) &&
+                // Definition of IMPLICATION
+                if ((!config || (config.all || config.implies)) &&
+                    matchOp(expression, 'stroke', 3)) {
+                    negate1 = easynegate(expression[1]);
+                    negate2 = easynegate(expression[2]);
+
+                    if (negate1 && negate2)
+                        expression = (complexity(expression[2]) <
+                            complexity(expression[1])) ? [
+                                'implies', expression[1], negate2] : [
+                                    'implies', expression[2], negate1];
+                    else if (negate1)
+                        expression =
+                            ['implies', expression[2], negate1];
+                    else if (negate2)
+                        expression =
+                            ['implies', expression[1], negate2];
+                }
+
+                // Definition of OR
+                if ((!config || (config.all || config.or)) &&
+                    matchOp(expression, 'stroke', 3) &&
                     ((negate1 = easynegate(expression[1])) !== null) &&
                     ((negate2 = easynegate(expression[2])) !== null))
                     expression = ['or', negate1, negate2];
 
-                // Construct implications
-                if ((expression[0] === 'stroke') &&
-                    (expression.length === 3)) {
-
-                    if (Array.isArray(expression[2]) &&
-                        (expression[2].length === 2) &&
-                        (expression[2][0] === 'not'))
-                        expression = [
-                            'implies', expression[1], expression[2][1]];
-                    else if (Array.isArray(expression[2]) &&
-                             (expression[2].length === 3) &&
-                             (expression[2][0] === 'stroke') &&
-                             equals(expression[2][1], expression[1]))
-                        expression = [
-                            'implies', expression[1], expression[2][2]];
-                    else if ((negate2 = easynegate(
-                        expression[2])) !== null)
-                        expression = [
-                            'implies', expression[1], negate2];
-                    else if ((negate1 = easynegate(
-                        expression[1])) !== null)
-                        expression =
-                            ['implies', expression[2], negate1];
-                }
-
-
-                // Simplify boolean constant expressions
-                if ((expression[0] === 'not') &&
-                    (expression.length === 2) &&
+                // Simplify boolean constants
+                if (matchOp(expression, 'not', 2) &&
                     (typeof(expression[1]) === 'boolean')) {
                     expression = !expression[1];
-                } else if ((expression[0] === 'stroke') &&
-                           (expression.length === 3) &&
-                           (typeof(expression[1]) === 'boolean')) {
-                    if (expression[1]) {
+                } else if (matchOp(expression, 'stroke', 3)) {
+                    if (typeof(expression[1]) === 'boolean') {
                         if (typeof(expression[2]) === 'boolean')
-                            expression = !expression[2];
-                        else expression = ['not', expression[2]];
-                    } else expression = true;
-                } else if ((expression[0] === 'stroke') &&
-                           (expression.length === 3) &&
-                           (typeof(expression[2]) === 'boolean')) {
-                    expression = expression[2] ?
-                                 ['not', expression[1]] : true;
-                } else if ((expression[0] === 'and') &&
-                           (expression.length === 3) &&
+                            expression = !(expression[1] &&
+                                           expression[2]);
+                        else if (expression[1]) {
+                            expression =
+                                (!config || (config.all || config.not)) ?
+                                ['not', expression[2]] : [
+                                    'stroke', expression[2],
+                                    expression[2]];
+                        } else expression = true;
+                    } else if (typeof(expression[2]) === 'boolean') {
+                        if (expression[2]) {
+                            expression =
+                                (!config || (config.all || config.not)) ?
+                                ['not', expression[1]] : [
+                                    'stroke', expression[1],
+                                    expression[1]];
+                        } else expression = true;
+                    }
+                } else if (matchOp(expression, 'and', 3) &&
                            (typeof(expression[1]) === 'boolean')) {
                     expression = expression[1] ? expression[2] : false;
-                } else if ((expression[0] === 'and') &&
-                           (expression.length === 3) &&
+                } else if (matchOp(expression, 'and', 3) &&
                            (typeof(expression[2]) === 'boolean')) {
                     expression = expression[2] ? expression[1] : false;
-                } else if ((expression[0] === 'or') &&
-                           (expression.length === 3) &&
+                } else if (matchOp(expression, 'or', 3) &&
                            (typeof(expression[1]) === 'boolean')) {
                     expression = expression[1] ? true : expression[2];
-                } else if ((expression[0] === 'or') &&
-                           (expression.length === 3) &&
+                } else if (matchOp(expression, 'or', 3) &&
                            (typeof(expression[2]) === 'boolean')) {
                     expression = expression[2] ? true : expression[1];
-                } else if ((expression[0] === 'implies') &&
-                           (expression.length === 3) &&
+                } else if (matchOp(expression, 'implies', 3) &&
                            (typeof(expression[1]) === 'boolean')) {
                     expression = expression[1] ? expression[2] : true;
-                } else if ((expression[0] === 'implies') &&
-                           (expression.length === 3) &&
+                } else if (matchOp(expression, 'implies', 3) &&
                            (typeof(expression[2]) === 'boolean')) {
                     expression = expression[2] ? true :
                                  ['not', expression[1]];
@@ -321,14 +362,19 @@
         }, this.__value));
     };
 
-    logic.library = {
+    var library = {
         'Wajsberg': {
-            Axiom: ['stroke', ['stroke', '&phi;',
-                               ['stroke', '&psi;', '&chi;']],
-                    ['stroke', ['stroke', ['stroke', '&tau;', '&chi;'],
-                                ['stroke', ['stroke', '&phi;', '&tau;'],
-                                 ['stroke', '&phi;', '&tau;']]],
-                     ['stroke', '&phi;', ['stroke', '&phi;', '&psi;']]]],
+            Axiom: {
+                wajsberg: {},
+                rule: ['stroke', ['stroke', '&phi;',
+                                  ['stroke', '&psi;', '&chi;']],
+                       ['stroke', ['stroke',
+                                   ['stroke', '&tau;', '&chi;'],
+                                   ['stroke',
+                                    ['stroke', '&phi;', '&tau;'],
+                                    ['stroke', '&phi;', '&tau;']]],
+                        ['stroke', '&phi;',
+                         ['stroke', '&phi;', '&psi;']]]]},
         },
         'Kleene': {
             'Implication Introduction':
@@ -337,12 +383,14 @@
                         ['implies', ['implies', '&phi;',
                                      ['implies', '&psi;', '&chi;']],
                          ['implies', '&phi;', '&chi;']]],
-            'Conjunction Introduction':
-                       ['implies', '&phi;',
-                        ['implies', '&psi;',
-                         ['and', '&phi;', '&psi;']]],
-            'Conjunction Left Elimination':
-                       ['implies', ['and', '&phi;', '&psi;'], '&phi;'],
+            'Conjunction Introduction': {
+                wajsberg: {phi: true, psi: true},
+                rule: ['implies', '&phi;',
+                       ['implies', '&psi;',
+                        ['and', '&phi;', '&psi;']]]},
+            'Conjunction Left Elimination': {
+                wajsberg: {phi: true, tau: false},
+                rule: ['implies', ['and', '&phi;', '&psi;'], '&phi;']},
             'Conjunction Right Elimination':
                        ['implies', ['and', '&phi;', '&psi;'], '&psi;'],
             'Disjunction Elimination':
@@ -357,19 +405,31 @@
                               ['implies', ['implies', '&phi;',
                                            ['not', '&psi;']],
                                ['not', '&phi;']]],
-            'Negation Elimination': [
-                'implies', ['not', ['not', '&phi;']], '&phi;']
+            'Negation Elimination': {
+                wajsberg: {phi: true, chi: true, tau: true},
+                rule: [
+                    'implies', ['not', ['not', '&phi;']], '&phi;']}
         },
+    };
+    var getLibraryExpression = function(entry) {
+        return logic.expression(Array.isArray(entry) ?
+                                entry : entry.rule);
+    };
+    logic.findLibrary = function(name, formula) {
+        return getLibraryExpression(library[name][formula]);
     };
     logic.eachLibrary = function(fn, context) {
         var index = 0;
-        Object.keys(logic.library).forEach(function(library) {
-            Object.keys(logic.library[library]).forEach(
+        Object.keys(library).forEach(function(name) {
+            Object.keys(library[name]).forEach(
                 function(formula) {
-                    var expression = logic.expression(
-                        logic.library[library][formula]);
-                    fn.call(context, expression,
-                            formula, library, index++);
+                    var entry = library[name][formula];
+                    var wajsberg = Array.isArray(entry) ?
+                                   null : entry.wajsberg;
+                    var expression = getLibraryExpression(entry);
+                    fn.call(context, expression, {
+                        name: name, formula: formula,
+                        wajsberg: wajsberg, index: index++});
                 });
         });
     };

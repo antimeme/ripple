@@ -6,6 +6,7 @@
 <title>Logic</title>
 <style>
  td { border: 1px solid black; }
+ td.solved { background: lightgreen; }
 </style>
 
 <h1>Logic</h1>
@@ -14,11 +15,20 @@
 </textarea>
 <div>
     <button id="simplify">Simplify</button>
+    <button id="deconstant">Deconstant</button>
     <button id="devolve">Devolve</button>
+</div>
+<div>
     <select id="variables"></select>
     <select id="values">
         <option>true</option>
         <option>false</option>
+        <option value="&amp;phi;">&phi;</option>
+        <option value="&amp;psi;">&psi;</option>
+        <option value="&amp;chi;">&chi;</option>
+        <option value="&amp;tau;">&tau;</option>
+        <option value="&amp;alpha;">&alpha;</option>
+        <option value="&amp;beta;">&beta;</option>
     </select>
     <button id="replace">Replace</button>
 </div>
@@ -31,6 +41,23 @@
     </tr>
 </table>
 
+<!-- Constructing Kleene Axioms from Wajsberg's Axiom:
+     * Conjunction Introduction:
+   - Set psi to true; Simplify
+   - Set phi to true; Simplify
+   - Replace chi with phi; Replace tau with psi
+     * Conjunction Left Elimination
+   - Set phi to true; Simplify
+   - Set tau to false; Simplify
+   - Replace psi with phi and chi with psi
+-->
+
+<!-- Useful Theorems
+     * Commutative AND
+   - Set phi to true; Simplify
+   - Set tau to true; Simplify
+-->
+
 <script src="ripple/polyfill.js"></script>
 <script src="ripple/ripple.js"></script>
 <script src="ripple/logic.js"></script>
@@ -42,7 +69,8 @@
      var formula = document.getElementById("formula");
 
      var apply = function(expr) {
-         for (var ii = variables.options.length - 1; ii >= 0; --ii)
+         var ii;
+         for (ii = variables.options.length - 1; ii >= 0; --ii)
              variables.remove(ii);
          expression = expr;
          expression.getFree().forEach(function(variable) {
@@ -54,7 +82,8 @@
 
      formula.addEventListener("change", function(event) {
          var parts = event.target.value.split(':');
-         apply(logic.expression(logic.library[parts[0]][parts[1]]));
+         if (parts.length >= 2)
+             apply(logic.findLibrary(parts[0], parts[1]));
      });
      display.addEventListener("change", function(event) {
          console.log('WARNING-display-change', event.target.value);
@@ -64,26 +93,38 @@
              if (expression)
                  apply(expression.simplify()); });
      document.getElementById(
+         "deconstant").addEventListener("click", function(event) {
+             if (expression)
+                 apply(expression.simplify({})); });
+     document.getElementById(
          "devolve").addEventListener("click", function(event) {
              if (expression)
                  apply(expression.devolve()); });
      document.getElementById(
          "replace").addEventListener("click", function(event) {
+             var value = values.value;
+             if (value === 'true')
+                 value = true;
+             else if (value === 'false')
+                 value = false;
+
              if (expression)
-                 apply(expression.substitute(variables.value,
-                                             (values.value === 'true') ?
-                                             true : false)); });
+                 apply(expression.substitute(variables.value, value));
+         });
 
      var table = document.getElementById("expressions");
-     logic.eachLibrary(function(expression, name, library) {
+     logic.eachLibrary(function(expression, details) {
+         var label = details.name + ' ' + details.formula;
+         var tag = details.name + ':' + details.formula;
+
          formula.appendChild(ripple.createElement(
-             'option', {value: library + ':' + name},
-             library, ' ', name));
+             'option', {value: tag}, label));
 
          table.appendChild(ripple.createElement(
              'tr', null,
-             ripple.createElement('td', {rowspan: 3},
-                                  library, ' ', name),
+             ripple.createElement('td', {
+                 rowspan: 3, className: details.wajsberg ?
+                                        'solved' : undefined}, label),
              ripple.createElement('td', {
                  rowspan: 3,
                  innerHTML: expression.getFree().toString()}),
