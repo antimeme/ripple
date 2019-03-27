@@ -17,6 +17,13 @@
 //
 // ---------------------------------------------------------------------
 // A set of tools for exploring propositional calculus.
+//
+// A detailed system proving the most important results from a single
+// axiom (Łukasiewicz 1961) using single undefined operator and a
+// single detatchment rule (a modified form of modus ponens):
+//   https://projecteuclid.org/download/pdf_1/euclid.ndjfl/1093958259
+// Axiomatization of Propositional Calculus with Sheffer Functors
+// by Thomas W. Scharle.
 (function(logic) {
     'use strict';
     var operators = {
@@ -168,6 +175,53 @@
         return result;
     };
 
+    logic.parseLNotation = function(value) {
+        var current;
+        var index;
+        var last;
+        var stack = [];
+
+        var complete = function(entry) {
+            return (((entry[0] === 'stroke') ||
+                     (entry[0] === 'implies') ||
+                     (entry[0] === 'and') ||
+                     (entry[0] === 'or')) &&
+                    (entry.length >= 3)) ||
+                   ((entry[0] === 'not') && (entry.length >= 2));
+        };
+
+        for (index = 0; index < value.length; ++index) {
+            current = value[index];
+            if (current === 'D') {
+                stack.push(['stroke']);
+            } else if (current === 'N') {
+                stack.push(['not']);
+            } else if (current === 'C') {
+                stack.push(['implies']);
+            } else if (current === 'A') {
+                stack.push(['and']);
+            } else if (current === 'K') {
+                stack.push(['or']);
+            } else if ((current >= 'a') && (current <= 'z')) {
+                if (!stack.length)
+                    throw Error("Invalid L Notation: " + value);
+
+                // Complete entries on the way up
+                while (stack.length > 0) {
+                    last = stack.pop();
+                    last.push(current);
+                    if (complete(last)) {
+                        current = last;
+                    } else {
+                        stack.push(last);
+                        break;
+                    }
+                }
+            }
+        }
+        return last;
+    };
+
     var parse = function(value) {
         return value;
     };
@@ -184,10 +238,7 @@
             this.__value = value;
         else if (value instanceof logic.expression)
             this.__value = value.__value;
-        else {
-            console.log(value);
-            throw Error('Unsupported expression: ' + value);
-        }
+        else throw Error('Unsupported expression: ' + value);
     };
 
     logic.expression.prototype.equals = function() {
@@ -362,58 +413,64 @@
         }, this.__value));
     };
 
-    var library = {
-        'Wajsberg': {
-            Axiom: {
-                wajsberg: {},
-                rule: ['stroke', ['stroke', '&phi;',
-                                  ['stroke', '&psi;', '&chi;']],
-                       ['stroke', ['stroke',
-                                   ['stroke', '&tau;', '&chi;'],
-                                   ['stroke',
-                                    ['stroke', '&phi;', '&tau;'],
-                                    ['stroke', '&phi;', '&tau;']]],
-                        ['stroke', '&phi;',
-                         ['stroke', '&phi;', '&psi;']]]]},
+    var neolibrary = {
+        'Nicod': { theorems: { axiom: "DDpDqrDDtDttDDsqDDpsDps" } },
+        'Łukasiewicz': {
+            theorems: {
+                Axiom: "DDpDqrDDsDssDDsqDDpsDps",
+                AxiomAlternate: "DDpDqrDDpDrpDDsqDDpsDps"
+            },
         },
+        "Kleene": {
+            theorems: {
+                "Axiom Implication Introduction": "CpCqp",
+                "Axiom Deduction": "CCpqCCpCqrCpr",
+                "Axiom Conjunction Introduction": "CpCqApq",
+                "Axiom Conjunction Left Elimination": "CApqp",
+                "Axiom Conjunction Right Elimination": "CApqq",
+                "Axiom Disjunction Elimination": "CCpqCCrqCKprq",
+                "Axiom Disjunction Left Introduction": "CpKpq",
+                "Axiom Disjunction Right Introduction": "CpKqp",
+                "Axiom Contradiction": "CCpqCCpNqNp",
+                "Axiom Negation Elimination": "CNNpp",
+            },
+        }
+    };
+
+    var library = {
+        'Nicod': { Axiom: { rule: "DDpDqrDDtDttDDsqDDpsDps" } },
+        'Łukasiewicz': {
+            Axiom1: { rule: "DDpDqrDDsDssDDsqDDpsDps" },
+            Axiom2: { rule: "DDpDqrDDpDrpDDsqDDpsDps" },
+        },
+        'Wajsberg': { Axiom: { rule: "DDpDqrDDDsrDDpsDpsDpDpq" }, },
         'Kleene': {
-            'Implication Introduction':
-            ['implies', '&phi;', ['implies', '&psi;', '&phi;']],
-            Deduction: ['implies', ['implies', '&phi;', '&psi;'],
-                        ['implies', ['implies', '&phi;',
-                                     ['implies', '&psi;', '&chi;']],
-                         ['implies', '&phi;', '&chi;']]],
-            'Conjunction Introduction': {
-                wajsberg: {phi: true, psi: true},
-                rule: ['implies', '&phi;',
-                       ['implies', '&psi;',
-                        ['and', '&phi;', '&psi;']]]},
-            'Conjunction Left Elimination': {
-                wajsberg: {phi: true, tau: false},
-                rule: ['implies', ['and', '&phi;', '&psi;'], '&phi;']},
-            'Conjunction Right Elimination':
-                       ['implies', ['and', '&phi;', '&psi;'], '&psi;'],
-            'Disjunction Elimination':
-                       ['implies', ['implies', '&phi;', '&psi;'],
-                        ['implies', ['implies', '&chi;', '&psi;'],
-                         ['implies', ['or', '&phi;', '&chi;'], '&psi;']]],
-            'Disjunction Left Introduction':
-                       ['implies', '&phi;', ['or', '&phi;', '&psi;']],
-            'Disjunction Right Introduction':
-                       ['implies', '&phi;', ['or', '&psi;', '&phi;']],
-            'Contradiction': ['implies', ['implies', '&phi;', '&psi;'],
-                              ['implies', ['implies', '&phi;',
-                                           ['not', '&psi;']],
-                               ['not', '&phi;']]],
-            'Negation Elimination': {
-                wajsberg: {phi: true, chi: true, tau: true},
-                rule: [
-                    'implies', ['not', ['not', '&phi;']], '&phi;']}
+            'Implication Introduction': "CpCqp",
+            Deduction: "CCpqCCpCqrCpr",
+            'Conjunction Introduction': "CpCqApq",
+            'Conjunction Left Elimination': "CApqp",
+            'Conjunction Right Elimination': "CApqq",
+            'Disjunction Elimination': "CCpqCCrqCKprq",
+            'Disjunction Left Introduction': "CpKpq",
+            'Disjunction Right Introduction': "CpKqp",
+            'Contradiction': "CCpqCCpNqNp",
+            'Negation Elimination': "CNNpp"
         },
     };
     var getLibraryExpression = function(entry) {
-        return logic.expression(Array.isArray(entry) ?
-                                entry : entry.rule);
+        var value;
+
+        if (typeof(entry) === 'string') {
+            value = logic.parseLNotation(entry);
+        } else if (Array.isArray(entry)) {
+            value = entry;
+        } else if ((typeof(entry) === 'object') && entry.rule) {
+            if (typeof(entry.rule) === 'string')
+                value = logic.parseLNotation(entry.rule);
+            else if (Array.isArray(entry.rule))
+                value = entry.rule;
+        } else throw Error("Invalid library entry", entry);
+        return logic.expression(value);
     };
     logic.findLibrary = function(name, formula) {
         return getLibraryExpression(library[name][formula]);
@@ -437,4 +494,10 @@
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
     var logic = exports;
+
+    process.argv.forEach(function(value, index) {
+        if (index > 1)
+            console.log(logic.expression(
+                logic.parseLNotation(value)).toString());
+    });
 }
