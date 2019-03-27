@@ -175,7 +175,9 @@
         return result;
     };
 
-    logic.parseLNotation = function(value) {
+    // Converts a string in Łukasiewicz (prefix) notation into a
+    // raw expression suitable for use in this system.
+    var parseLNotation = function(value) {
         var current;
         var index;
         var last;
@@ -222,8 +224,9 @@
         return last;
     };
 
-    var parse = function(value) {
-        return value;
+    logic.parse = function(value) {
+        // TODO parse other expression formats
+        return logic.expression(parseLNotation(value));
     };
 
     logic.expression = function(value) { // Constructor
@@ -231,7 +234,7 @@
             return new logic.expression(value);
 
         if (typeof(value) === 'string')
-            this.__value = parse(value);
+            this.__value = value;
         else if (typeof(value) === 'boolean')
             this.__value = value;
         else if (Array.isArray(value))
@@ -413,15 +416,26 @@
         }, this.__value));
     };
 
-    var neolibrary = {
-        'Nicod': { theorems: { axiom: "DDpDqrDDtDttDDsqDDpsDps" } },
+    var library = {
+        Meredith: { theorems: { Axiom: "CCCCCpqCNrNsrtCCtpCsp" } },
+        Nicod: { theorems: { Axiom: "DDpDqrDDtDttDDsqDDpsDps" } },
         'Łukasiewicz': {
             theorems: {
                 Axiom: "DDpDqrDDsDssDDsqDDpsDps",
-                AxiomAlternate: "DDpDqrDDpDrpDDsqDDpsDps"
+                AxiomAlternate: "DDpDqrDDpDrpDDsqDDpsDps",
+                Theorem2: "DtDsDssDDDpDqrtDDpDqrt",
+                Theorem3: "DDwDDpDqrtDDDtDsDsswDDtDsDssw",
+                Theorem4: "DDDDsqDDpsDpsDtDttDpDqr",
+                Theorem5: "DDpDqrDDDstDDtsDtsDtDtt",
+                Theorem6: "DtDtt",
+                Theorem7: "DDstDDtsDts",
+                Theorem8: "DDttt",
+                Theorem9: "DDDtsDtsDst",
+                Theorem10: "DDpsDDDDtsDtspDDDtsDtsp",
             },
         },
-        "Kleene": {
+        Wajsberg: { theorems: { Axiom: "DDpDqrDDDsrDDpsDpsDpDpq" } },
+        Kleene: {
             theorems: {
                 "Axiom Implication Introduction": "CpCqp",
                 "Axiom Deduction": "CCpqCCpCqrCpr",
@@ -437,50 +451,30 @@
         }
     };
 
-    var library = {
-        'Nicod': { Axiom: { rule: "DDpDqrDDtDttDDsqDDpsDps" } },
-        'Łukasiewicz': {
-            Axiom1: { rule: "DDpDqrDDsDssDDsqDDpsDps" },
-            Axiom2: { rule: "DDpDqrDDpDrpDDsqDDpsDps" },
-        },
-        'Wajsberg': { Axiom: { rule: "DDpDqrDDDsrDDpsDpsDpDpq" }, },
-        'Kleene': {
-            'Implication Introduction': "CpCqp",
-            Deduction: "CCpqCCpCqrCpr",
-            'Conjunction Introduction': "CpCqApq",
-            'Conjunction Left Elimination': "CApqp",
-            'Conjunction Right Elimination': "CApqq",
-            'Disjunction Elimination': "CCpqCCrqCKprq",
-            'Disjunction Left Introduction': "CpKpq",
-            'Disjunction Right Introduction': "CpKqp",
-            'Contradiction': "CCpqCCpNqNp",
-            'Negation Elimination': "CNNpp"
-        },
-    };
     var getLibraryExpression = function(entry) {
         var value;
 
         if (typeof(entry) === 'string') {
-            value = logic.parseLNotation(entry);
+            value = parseLNotation(entry);
         } else if (Array.isArray(entry)) {
             value = entry;
         } else if ((typeof(entry) === 'object') && entry.rule) {
             if (typeof(entry.rule) === 'string')
-                value = logic.parseLNotation(entry.rule);
+                value = parseLNotation(entry.rule);
             else if (Array.isArray(entry.rule))
                 value = entry.rule;
         } else throw Error("Invalid library entry", entry);
         return logic.expression(value);
     };
     logic.findLibrary = function(name, formula) {
-        return getLibraryExpression(library[name][formula]);
+        return getLibraryExpression(library[name].theorems[formula]);
     };
     logic.eachLibrary = function(fn, context) {
         var index = 0;
         Object.keys(library).forEach(function(name) {
-            Object.keys(library[name]).forEach(
+            Object.keys(library[name].theorems).forEach(
                 function(formula) {
-                    var entry = library[name][formula];
+                    var entry = library[name].theorems[formula];
                     var wajsberg = Array.isArray(entry) ?
                                    null : entry.wajsberg;
                     var expression = getLibraryExpression(entry);
@@ -496,8 +490,10 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
     var logic = exports;
 
     process.argv.forEach(function(value, index) {
-        if (index > 1)
-            console.log(logic.expression(
-                logic.parseLNotation(value)).toString());
+        if (index > 1) {
+            var expression = logic.parse(value);
+            console.log(expression.toString());
+            console.log(" :: ", expression.simplify().toString());
+        }
     });
 }

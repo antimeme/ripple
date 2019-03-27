@@ -32,6 +32,10 @@
     </select>
     <button id="replace">Replace</button>
 </div>
+<div>
+    <input id="rawexpr" type="text" />
+    <button id="parse">Parse</button>
+</div>
 
 <table id="expressions">
     <tr>
@@ -67,6 +71,7 @@
      var display = document.getElementById("display");
      var variables = document.getElementById("variables");
      var formula = document.getElementById("formula");
+     var rawexpr = document.getElementById("rawexpr");
 
      var apply = function(expr) {
          var ii;
@@ -111,6 +116,12 @@
              if (expression)
                  apply(expression.substitute(variables.value, value));
          });
+     document.getElementById(
+         "parse").addEventListener("click", function(event) {
+             var expression = logic.parse(rawexpr.value.trim());
+             if (expression)
+                 apply(expression);
+         });
 
      var table = document.getElementById("expressions");
      logic.eachLibrary(function(expression, details) {
@@ -123,28 +134,11 @@
          table.appendChild(ripple.createElement(
              'tr', null,
              ripple.createElement('td', {
-                 rowspan: 3, className: details.wajsberg ?
-                                        'solved' : undefined}, label),
+                 className: details.wajsberg ?
+                            'solved' : undefined}, label),
              ripple.createElement('td', {
-                 rowspan: 3,
                  innerHTML: expression.getFree().toString()}),
              ripple.createElement('td', {
                  innerHTML: expression.toString()})));
-
-         var altered = expression.simplify();
-         if (expression.equals(altered))
-             altered = expression.devolve();
-         table.appendChild(
-             ripple.createElement(
-                 'tr', null, ripple.createElement('td', {
-                     innerHTML: altered.toString()})));
-
-         var restored = altered.simplify();
-         if (restored.equals(altered))
-             restored = restored.devolve();
-         table.appendChild(
-             ripple.createElement(
-                 'tr', null, ripple.createElement('td', {
-                     innerHTML: restored.toString()})));
      });
  }); //]]></script>
