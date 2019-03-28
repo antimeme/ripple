@@ -16,56 +16,66 @@
 // <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-// An abstract parsing and string generation system based on recursive
-// descent parsing.  A grammar can be constructed using a JSON
-// compatible object.  Each key in the object is the name of a rule
-// and each object is an array of descriptors.
+// Abstract parsing and string generation.  Parsing uses a recursive
+// descent algorithm.  A grammar can be constructed using a JSON
+// object.  Each key in the object is the name of a rule and each
+// value associated with a key is a production.
 //
-// A descriptor can be either a string, an array or an object.  A
-// string is either a literal value or a percent sign followed by the
-// name of a rule (two percent signs means it's a string that starts
-// with a single percent sign, not a rule).  An array must contain
-// strings with the same format as the single string.  They indicate a
-// chain of literals and rules.  Finally, an object is a detailed
-// descriptor for advanced uses.
+//     var language = {
+//         ws: [' ', '\t', '\r', '\n'],
+//         wsp: ['%ws', ['%ws', '%wsp']],
+//         digit: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+//         digits: ['%digit', ['%digit', '%digits']],
+//         number: ['%digits', ['%digits', '.', '%digits']],
+//     };
 //
-// An object descriptor has these fields:
-// - weight: positive number used to choose which rule to follow
-//           when generating strings
-// - rule: string or array of strings of non-object descriptors
+// A production can be either a string, an array or an object.
+//
+// A production string is either a literal or a rule reference.  The
+// difference is that a rule reference starts with a single '%' followed
+// by at least one other character that is not '%'.  A reference refers
+// is replaced by the result of following the rule it refers to.  A
+// literal either starts with a character that isn't '%' or starts with
+// two '%' characters (in which case these are unquoted to a single
+// one).  Literals refer directly to characters in the language.
+//
+// A production array is a series of alternatives, any one of which
+// can be used to satisfy the rule.  When an array appears as a member
+// of a production array, this represents a sequence of production
+// that must match in order.
+//
+// A production can also be an object for advanced usage.
+//
 (function(omnivore) {
-    omnivore.grammar = function(rules) {
-        if (!(this instanceof omnivore.grammar))
-            return new omnivore.grammar(rules);
-
-        this.__rules = rules;
-    }
 
     omnivore.quote = function(value) {
-        return value ? value.replace(/%/g, '%%') : value;
-    };
+        return value ? value.replace(/%/g, '%%') : value; };
 
     omnivore.unquote = function(value) {
-        return value ? value.replace(/%%/g, '%') : value;
-    };
+        return value ? value.replace(/%%/g, '%') : value; };
 
     var isRule = function(value) {
         return (typeof(value) === 'string') && (value.length >= 2) &&
                (value[0] === '%') && (value[1] !== '%');
     };
 
-    var getWeight = function(descriptor) {
-        return (!Array.isArray(descriptor) &&
-                (typeof descriptor === 'object')) ?
-               descriptor.weight : 1;
+    var getWeight = function(production) {
+        return (!Array.isArray(production) &&
+                (typeof production === 'object')) ?
+               production.weight : 1;
     }
 
-    var getRule = function(descriptor) {
-        return (!Array.isArray(descriptor) &&
-                (typeof descriptor === 'object')) ?
-               getRule(descriptor.rule) :
-               ((typeof descriptor === 'string') ?
-                [descriptor] : descriptor);
+    var getRule = function(production) {
+        return (Array.isArray(production) ? production :
+                ((typeof production === 'string') ?
+                 [production] : getRule(production.rule)));
+    };
+
+    omnivore.grammar = function(rules) {
+        if (!(this instanceof omnivore.grammar))
+            return new omnivore.grammar(rules);
+
+        this.__rules = rules;
     };
 
     omnivore.grammar.prototype.generate = function(rule) {
@@ -73,15 +83,15 @@
         var current = this.__rules[rule];
 
         if (current) {
-            current.forEach(function(descriptor, index) {
-                total += getWeight(descriptor); });
+            current.forEach(function(production, index) {
+                total += getWeight(production); });
             choice = Math.random() * total;
-            current.forEach(function(descriptor, index) {
-                var weight = getWeight(descriptor);
+            current.forEach(function(production, index) {
+                var weight = getWeight(production);
 
                 if (choice < 0) { // skip
                 } else if (choice < weight) {
-                    getRule(descriptor).forEach(function(component) {
+                    getRule(production).forEach(function(component) {
                         if (isRule(component))
                             value += this.generate(
                                 component.substring(1));
@@ -94,20 +104,82 @@
         return value;
     };
 
+    var matchString = function(match, current, value) {
+        return ((current + match.length < value.length) &&
+                (value.indexOf(match, current) === current)) ?
+               (current + match.length) : -1;
+    };
+
+    var parseRule = function(grammar, production, current, value) {
+        var maxmatch = -1;
+        production.forEach(function(member) {
+            var matched = -1;
+            if (typeof(member) === 'string') {
+                if (isRule(member)) {
+                    // TODO
+                } else {
+                    matched = matchString(omnivore.unquote(member),
+                                          current, value);
+                    if ((match >= 0) && (match > maxmatch))
+                        maxmatch = matched;
+                }
+            } else if (Array.isArray(member) || member.rule) {
+                // TODO
+            }
+        });
+    };
+
+    var parseInternal = function(grammar, rule, value) {
+        var result = null;
+        var current = 0;
+
+        parseRule(grammar, getRule(grammar.__rules[rule]),
+                  current, value);
+        return result;
+    };
+
+    // Return a function that accepts a string and partially
+    omnivore.grammar.prototype.parseBegin = function(rule) {
+        var chunks = [];
+        var grammar = this;
+        var result = function(value) {
+            if (value.length > 0) {
+                // TODO: parse partial input chunks to support
+                // sockets and other such streaming scenarios.
+                // At the moment only complete inputs can be
+                // processed because that's easier to implement.
+                chunks.push(value);
+            } else return parseInternal(grammar, rule, chunks.join(''));
+            return result;
+        };
+        return result;
+    };
+
+    // Return a syntax tree representation based on the given string.
+    // This is a one-step process.
+    omnivore.grammar.prototype.parse = function(rule, value) {
+        return this.parseBegin(rule)(value)(""); };
+
     omnivore.example = omnivore.grammar({
+        ws: [' ', {weight: 0, rule: '\t'}, {weight: 0, rule: '\r'},
+             {weight: 0, rule: '\n'}],
+        wsp: ['%ws', {weight: 0, rule: ['%ws', '%wsp']}],
+        wss: ['', '%wsp'],
         vowel: ['a', 'e', 'i', 'o', 'u'],
         consonant: [
             'b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm',
             'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'z'],
-        entry: [['%male_name', ' m ', '%notes'],
-                ['%female_name', ' f ', '%notes']],
-        notes: [['(', '%skill', ' ', '%quirk', ')']],
+        entry: [['%male_name', '%wsp', '%last_name',
+                 '%wsp', 'm', '%ws', '%notes'],
+                ['%female_name', '%wsp', '%last_name',
+                 '%wsp', 'f', '%ws', '%notes']],
+        notes: [['(', '%quirk', ' ', '%skill', ')']],
         skill: ['baker', 'cook', 'blacksmith', 'cobbler',
-                 'soldier', 'guard', 'carpenter', 'poet',
-                 'musician(lute)', 'musician(flute)'],
+                'soldier', 'guard', 'carpenter', 'poet',
+                'musician(lute)', 'musician(flute)'],
         quirk: ['quick-tempered', 'selfish', 'shy',
-                 'generous', 'gregarious', 'secretive',
-                 'stern', 'meddlesome', 'aloof'],
+                'generous', 'gregarious', 'secretive',
+                'stern', 'meddlesome', 'aloof'],
 
         male_name: ['Merek', 'Carac', 'Ulric', 'Tybalt', 'Borin',
                     'Sadon', 'Terrowin', 'Rowan', 'Forthwind', 'Brom',
@@ -127,7 +199,11 @@
                       'Josslyn', 'Victoria', 'Gwendolynn', 'Janet',
                       'Krea', 'Dimia', 'Ariana', 'Katrina', 'Loreena',
                       'Serephina', 'Duriana', 'Ryia', 'Ryla'],
-
+        last_name: [['%last_first', '%last_last']],
+        last_first: ['Yard', 'River', 'Stone', 'Cobble', 'Tangle',
+                     'Yarn', 'Loom', 'Fletch', 'Notch', 'Buckle'],
+        last_last: ['star', 'ran', 'mace', 'mance', 'alber',
+                    'ton', 'berry', 'merry', 'string'],
     });
 }(typeof exports === 'undefined' ? this.omnivore = {} : exports));
 
@@ -136,5 +212,5 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
 
     console.log('Omnivore:');
     for (var ii = 0; ii < 10; ++ii)
-        console.log(' ', omnivore.example.generate('name'));
+        console.log(' ', omnivore.example.generate('entry'));
 }
