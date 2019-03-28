@@ -110,6 +110,9 @@
         var ii;
 
         if (attrs) Object.keys(attrs).forEach(function(attr) {
+            if (typeof attrs[attr] === 'undefined')
+                return;
+
             if (attr === 'className')
                 result.className = attrs[attr];
             else if (attr === 'innerHTML')
@@ -123,8 +126,7 @@
                        (typeof(attrs[attr]) === 'object')) {
                 Object.keys(attrs[attr]).forEach(function(entry) {
                     result.style[entry] = attrs[attr][entry]; });
-            } else if (typeof(attrs[attr]) !== 'undefined')
-                result.setAttribute(attr, attrs[attr]); });
+            } else result.setAttribute(attr, attrs[attr]); });
 
         for (ii = 2; ii < arguments.length; ++ii)
             result.appendChild((typeof(arguments[ii]) === 'string' ||
