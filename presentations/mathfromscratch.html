@@ -98,6 +98,43 @@
             </aside>
         </section>
         <section>
+            <h3>Informal Logic</h3>
+            <p>A familiar argument:</p>
+            <ul>
+                <li>All men are mortal.</li>
+                <li>Socrates is a man.</li>
+            </ul>
+            <p>
+                Conclusion: Socrates is mortal.
+            </p>
+        </section>
+        <section>
+            <h3>Informal Logic</h3>
+            <p>A less familiar, but still sound, argument:</p>
+            <ul>
+                <li>All frobwaddles have napthroma.</li>
+                <li>Ghormnast is a frobwaddle.</li>
+            </ul>
+            <p>
+                Conclusion: Ghormnast has napthroma.
+            </p>
+        </section>
+        <section>
+            <h3>Formal Logic</h3>
+            <p>
+                Informal arguments rely on shared understandings and
+                intuition.  Formal arguments are constrained to
+                carefully enumerated concepts.
+            </p>
+            <ul>
+                <li>&spades; &#x27f9; &clubs;</li>
+                <li>&spades;</li>
+            </ul>
+            <p>
+                Conclusion: &clubs;
+            </p>
+        </section>
+        <section>
             <h3>Formal Systems</h3>
             <ul>
                 <li>
@@ -173,7 +210,7 @@
             </ul>
         </section>
     </section>
-    <section>
+    <section id="propositional-calculus">
         <section>
             <h2>Propositional Calculus</h2>
             <p>
@@ -181,11 +218,11 @@
                 1930 CE) deals with statements which are either
                 <span class="true">true</span> or
                 <span class="false">false</span>.  Atomic statements
-                are represented by variables such as
+                are represented by variables like
                 <span class="intro">P</span>,
                 <span class="intro">Q</span>,
-                <span class="intro">R</span> and so on.  These cannot
-                be decomposed into simpler components.
+                <span class="intro">R</span>,
+                <span class="intro">S</span> and so on.
             </p>
             <aside class="notes">
                 We now introduce our first formal system: propositional
@@ -196,55 +233,136 @@
             </aside>
         </section>
         <section>
+            <h3>Compound Statements</h3>
+            <p>
+                Operators applied to atomic statements create compound
+                statements, each of which belongs in exactly one of the
+                following categories:
+            </p>
+            <ul>
+                <li>
+                    A <span class="intro">tautology</span> is
+                    always <span class="true">true</span>: P &or; &not;P
+                </li><li>
+                    A <span class="intro">contradiction</span> is
+                    always <span class="false">false</span>:
+                    P &and; &not;P
+                </li><li>
+                    A <span class="intro">contingency</span> is
+                    either <span class="true">true</span> or
+                    <span class="false">false</span> depending
+                    on the values of the atomic propositions:
+                    &not;P
+                </li>
+            </ul>
+        </section>
+        <section>
+            <h3>Theorems and Tautologies</h3>
+            <p>
+                All theorems of propositional calculus are
+                tautologies.  All tautologies are theorems of
+                propositional calculus, which is both
+                <span class="intro">consistent</span> and
+                <span class="intro">complete</span>.  This is possible
+                because propositional calculus is not complex enough
+                to provoke Gödel.
+            </p>
+        </section>
+        <section>
             <h3>Propositional Calculus</h3>
-            <table><tr>
-                <th>Rules</th><th>Axioms</th>
-            </tr><tr><td>
-                Negation: <span class="intro">&not;</span>P
-            </td><td>
-                Simplification:<br />
-                <small>P &#x27f9; (Q &#x27f9; P)</small>
-            </td></tr><tr><td>
-                Implication:<br />
-                P <span class="intro">&#x27f9;</span> Q
-            </td><td>
-                Distribution:<br />
-                <small>
-                    (P &#x27f9; (Q &#x27f9; R)) &#x27f9;<br />
-                    ((P &#x27f9; Q) &#x27f9; (P &#x27f9; R))
-                </small>
-            </td></tr><tr><td>
-                Modus Ponens:<br />
-                <small>(P &#x27f9; Q), P &#x22a2; Q</small>
-            </td><td>
-                Transposition:<br />
-                <small>
-                    (&not;P &#x27f9; &not;Q) &#x27f9; (Q &#x27f9; P)
-                </small>
+            <p>
+                A single operator, rule and axiom can be used to
+                construct propositional calculus.
+            </p>
+            <table><tr><th>
+                Operator
+            </th><td>
+                Stroke (Sheffer 1913 CE):
+                P <span class="intro">&#x22bc;</span> Q
+            </td></tr><tr><th>
+                Rule
+            </th><td>
+                Modus Ponens: (P &#x22bc; (Q &#x22bc; R)), P
+                <span class="intro">&#x22a2;</span> R
+            </td></tr><tr><th>
+                Axiom
+            </th><td>
+                (Łukasiewicz 1931 CE):<br />
+                (P &#x22bc; (Q &#x22bc; R)) &#x22bc;
+                ((S &#x22bc; (S &#x22bc; S)) &#x22bc;
+                ((S &#x22bc; Q) &#x22bc; ((P &#x22bc; S) &#x22bc;
+                (P &#x22bc; S))))
             </td></tr></table>
             <aside class="notes">
+                This has been proven to be the simplest possible
+                formal system that completely represents propositional
+                calculus.  Simplicity refers to the number of symbols,
+                axioms and rules not how easy it is to use.  We'll
+                use this system to prove the axioms of a more friendly
+                system with more moving parts.
             </aside>
+        </section>
+        <section>
+            <h3>Sheffer Stroke</h3>
+            <p>
+                A <span class="intro">Sheffer Stroke</span> is
+                true when at least one of its terms is false:
+                P <span class="intro">&#x22bc;</span> Q
+            </p>
+            <table class="fragment">
+                <tr>
+                    <th>P</th><th>Q</th>
+                    <th>P <span class="intro">&#x22bc;</span> Q</th>
+                    <th>Q <span class="intro">&#x22bc;</span> P</th>
+                </tr><tr>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                    <td class="false">false</td>
+                </tr><tr>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                </tr><tr>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                </tr><tr>
+                    <td class="false">false</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                </tr>
+            </table>
         </section>
         <section>
             <h3>Negation</h3>
             <p>
-                <span class="intro">Negation</span> inverts the
-                truth of a statement:<br />
-                <span class="intro">&not;</span>P (<q>not P</q> or
-                <q>P is false</q>)
+                <span class="intro">Negation</span> inverts a
+                statement (<q>not P</q> or <q>P is false</q>):
+                <span class="intro">&not;</span>P &#x225d;
+                (P &#x22bc; P)
             </p>
             <table class="fragment">
                 <tr>
                     <th>P</th>
+                    <th>P &#x22bc; P</th>
                     <th><span class="intro">&not;</span>P</th>
-                    <th><span class="intro">&not;&not;</span>P</th>
+                    <th>(P &#x22bc; P) &#x22bc; (P &#x22bc; P)</th>
+                    <th><span class="intro">&not;&not;</span>P)</th>
                 </tr><tr>
                     <td class="true">true</td>
                     <td class="false">false</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
                     <td class="true">true</td>
                 </tr><tr>
                     <td class="false">false</td>
                     <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
                     <td class="false">false</td>
                 </tr>
             </table>
@@ -252,14 +370,31 @@
         <section>
             <h3>Implication</h3>
             <p>
-                <span class="intro">Implication</span> has an
-                an antecedant that implies a consequent:
-                P <span class="intro">&#x27f9;</span> Q
-                (<q>P implies Q</q> or <q>if P then Q</q>)
+                An <span class="intro">implication</span> has an
+                antecedant and a consequent (<q>P implies Q</q> or
+                <q>if P then Q</q>):<br />
+                P <span class="intro">&#x27f9;</span> Q &#x225d;
+                (P &#x22bc; (Q &#x22bc; Q)) =
+                (P &#x22bc; (P &#x22bc; Q))
+            </p><p>
+                Every implication has a converse, Q
+                <span class="intro">&#x27f9;</span> P, which
+                is not usually equivalent.  Every implication
+                has a contrapositive, &not;Q
+                <span class="intro">&#x27f9;</span> &not;P, which is
+                equivalent.
+        </section>
+        <section>
+            <h3>Implication</h3>
+            <p>
+                P <span class="intro">&#x27f9;</span> Q &#x225d;
+                (P &#x22bc; (Q &#x22bc; Q)) =
+                (P &#x22bc; (P &#x22bc; Q))
             </p>
-            <table class="fragment">
+            <table>
                 <tr>
                     <th>P</th><th>Q</th>
+                    <th>P &#x22bc; (Q &#x22bc; Q)</th>
                     <th>P <span class="intro">&#x27f9;</span> Q</th>
                     <th>Q <span class="intro">&#x27f9;</span> P</th>
                 </tr><tr>
@@ -267,73 +402,34 @@
                     <td class="true">true</td>
                     <td class="true">true</td>
                     <td class="true">true</td>
-                </tr><tr>
-                    <td class="true">true</td>
-                    <td class="false">false</td>
-                    <td class="false">false</td>
                     <td class="true">true</td>
                 </tr><tr>
+                    <td class="true">true</td>
                     <td class="false">false</td>
+                    <td class="false">false</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                </tr><tr>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
                     <td class="true">true</td>
                     <td class="true">true</td>
                     <td class="false">false</td>
                 </tr><tr>
                     <td class="false">false</td>
                     <td class="false">false</td>
+                    <td class="true">true</td>
                     <td class="true">true</td>
                     <td class="true">true</td>
                 </tr>
             </table>
         </section>
         <section>
-            <h3>Modus Ponens</h3>
-            <p class="intro">
-                (P &#x27f9; Q), P &#x22a2; Q
-            </p>
-            <p>
-                Given an implication along with its antecedant,
-                we can conclude the consequent.  This is the fundamental
-                rule of propositional calculus.  Sometimes it is called
-                implication elmination.
-            </p>
-        </section>
-        <section>
-            <h3>Axiom of Simplification</h3>
-            <p class="intro">P &#x27f9; (Q &#x27f9; P)</p>
-            <p>
-                Any true proposition is implied by any other proposition.
-                <q>If it's raining then <q>the ground is wet</q>
-                    implies it's raining.</q>  But also, <q>If it's raining
-                    then <q>it's not raining</q>
-                    implies that it's raining.</q>  This is sometimes called
-                implication introduction.
-            </p>
-        </section>
-        <section>
-            <h3>Axiom of Distribution</h3>
-            <p class="intro">
-                (P &#x27f9; (Q &#x27f9; R)) &#x27f9;<br />
-                ((P &#x27f9; Q) &#x27f9; (P &#x27f9; R))
-            </p>
-            <p>
-                An antecedant can be distributed over its consequents.
-            </p>
-        </section>
-        <section>
-            <h3>Axiom of Transposition</h3>
-            <p class="intro">
-                (&not;P &#x27f9; &not;Q) &#x27f9; (Q &#x27f9; P)
-            </p><p>
-                We can swap consequents and antecedants using negation.
-                <q>If the ground isn't wet it's not raining</q> implies
-                <q>if it's raining the ground is wet.</q>
-            </p>
-        </section>
-        <section>
             <h3>Conjunction</h3>
             <p>
                 (P <span class="intro">&and;</span> Q) &#x225d;
-                &not;(P &#x27f9; &not;Q)
+                &not;(P &#x27f9; &not;Q) = &not;(P &#x22bc; Q) =
+                (P &#x22bc; Q) &#x22bc; (P &#x22bc; Q)
             </p><p>
                 A <span class="intro">conjunction</span> of two
                 propositions is true when both the first
@@ -376,7 +472,8 @@
             <h3>Disjunction</h3>
             <p>
                 (P <span class="intro">&or;</span> Q) &#x225d;
-                &not;P &#x27f9; Q
+                &not;P &#x27f9; Q = &not;P &#x22bc; &not;Q =
+                (P &#x22bc; P) &#x22bc; (Q &#x22bc; Q)
             </p><p>
                 A <span class="intro">disjunction</span> of two
                 propositions is true when either the first
@@ -450,6 +547,155 @@
                 A biconditional expresses implication in both
                 directions.
             </aside>
+        </section>
+        <section>
+            <h3>Nicod's Modus Ponens</h3>
+            <p class="intro">
+                (P &#x22bc; (Q &#x22bc; R)), P &#x22a2; R
+            </p>
+            <p>
+                When P is true the first statement can be simplified
+                to &not;(Q &#x22bc; R) which is (Q &and; R).  Both
+                both Q and R must be true for that to work so we
+                can safely conclude that R is true.
+            </p>
+        </section>
+        <section>
+            <h3>Nicod's Modus Ponens</h3>
+            <p class="intro">
+                (P &#x22bc; (Q &#x22bc; R)), P &#x22a2; R
+            </p>
+            <table>
+                <tr>
+                    <th>P</th><th>Q</th><th>R</th>
+                    <th>Q &#x22bc; R</th>
+                    <th>P &#x22bc; (Q &#x22bc; R)</th>
+                </tr><tr>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                </tr><tr>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                </tr><tr>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="false">true</td>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                </tr><tr>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                    <td class="false">true</td>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                </tr>
+            </table>
+        </section>
+        <section>
+            <h3>Kleene Modus Ponens</h3>
+            <p class="intro">
+                (P &#x27f9; Q), P &#x22a2; Q
+            </p>
+            <p>
+                This simpler version of modus ponens is the basis of
+                Kleene's system (and most others).
+            </p>
+            <ul>
+                <li class="fragment">
+                    (P &#x22bc; (Q &#x22bc; Q))
+                    :: Nicod's Modus Ponens (Q = R)
+                </li><li class="fragment">
+                    (P &#x22bc; &not;Q) :: Definition of Negation
+                </li><li class="fragment">
+                    (P &#x27f9; Q) :: Definition of Implication
+                </li>
+            </ul>
+            <aside class="notes">
+                This is a more familiar form of modus ponens.  It
+                follows directly from Nicod's modus ponens.  When
+                Q and R are the same the two Sheffer strokes convert
+                to implication.  This is sometimes called
+                <q>implication elmination</q> because it converts an
+                implication to its consequent, using the known truth
+                of the antecedant.
+            </aside>
+        </section>
+        <section>
+            <h3>Kleene Axioms</h3>
+            <ul>
+                <li>
+                    Implication Introduction: P &#x27f9; (Q &#x27f9; P)
+                </li><li>
+                    (P &#x27f9; Q) &#x27f9; ((P &#x27f9; (Q &#x27f9; R))
+                    &#x27f9; (P &#x27f9; R))
+                </li><li>
+                    Conjunction Introduction:
+                    P &#x27f9; (Q &#x27f9; (P &and; Q))
+                </li><li>
+                    Conjunction Elimination: (P &and; Q) &#x27f9; P
+                </li><li>
+                    Conjunction Elimination: (P &and; Q) &#x27f9; Q
+                </li><li>
+                    (P &#x27f9; Q) &#x27f9; ((R &#x27f9; Q)
+                    &#x27f9; (P &or; R &#x27f9; Q))
+                </li><li>
+                    Disjunction Introduction: P &#x27f9; (P &or; Q)
+                </li><li>
+                    Disjunction Introduction: P &#x27f9; (Q &or; P)
+                </li><li>
+                    Contradiction: (P &#x27f9; Q) &#x27f9;
+                    ((P &#x27f9; &not;Q) &#x27f9; &not;P)
+                </li><li>
+                    Negation Elimination: &not;&not;P &#x27f9; P
+                </li>
+            </ul>
+        </section>
+
+
+
+        <section>
+            <h3>Axiom of Simplification</h3>
+            <p class="intro">P &#x27f9; (Q &#x27f9; P)</p>
+            <p>
+                Any true proposition is implied by any other proposition.
+                <q>
+                    If it's raining then <q>the ground is wet</q>
+                    implies it's raining.
+                </q>
+                But also,
+                <q>
+                    If it's raining
+                    then <q>it's not raining</q>
+                    implies that it's raining.
+                </q>
+                This is sometimes called implication introduction.
+            </p>
+        </section>
+        <section>
+            <h3>Axiom of Distribution</h3>
+            <p class="intro">
+                (P &#x27f9; (Q &#x27f9; R)) &#x27f9;<br />
+                ((P &#x27f9; Q) &#x27f9; (P &#x27f9; R))
+            </p>
+            <p>
+                An antecedant can be distributed over its consequents.
+            </p>
+        </section>
+        <section>
+            <h3>Axiom of Transposition</h3>
+            <p class="intro">
+                (&not;P &#x27f9; &not;Q) &#x27f9; (Q &#x27f9; P)
+            </p><p>
+                We can swap consequents and antecedants using negation.
+                <q>If the ground isn't wet it's not raining</q> implies
+                <q>if it's raining the ground is wet.</q>
+            </p>
         </section>
         <section>
             <h3>Deduction from Modus Ponens</h3>
@@ -732,6 +978,8 @@
                 </td></tr>
             </table>
         </section>
+        <!-- TODO: free and bound variables -->
+        <!-- TODO: tautology, contradiction and contingencies -->
         <section>
             <h3>Universal Quantifier</h3>
             <p>
@@ -8330,49 +8578,49 @@
             </ul>
         </section>
     </section>
-</div></div>
-<script src="lib/reveal/head.min.js"></script>
-<script src="lib/reveal/reveal.js"></script>
-<script src="lib/triggy.js"></script>
-<script>
- var link = document.createElement('link');
- link.rel = 'stylesheet';
- link.type = 'text/css';
- link.href = window.location.search.match(/document/gi) ?
-             'lib/reveal/pdf.css' : 'lib/reveal/paper.css';
- document.getElementsByTagName('head')[0].appendChild( link );
- Reveal.initialize({
-     slideNumber: 'h.v',
-     transition: 'convex', history: true,
-     showNotes: window.location.search.match(/shownotes/gi) ?
-                true : false,
-     dependencies: [
-	 /* { src: 'lib/js/classList.js',
-          *   condition: function() { return !document.body.classList; } },
-	    { src: 'plugin/markdown/marked.js',
-          *   condition: function() {
-          *       return !!document.querySelector( '[data-markdown]' );
-          *   } },
-	    { src: 'plugin/markdown/markdown.js',
-          *   condition: function() {
-          *       return !!document.querySelector( '[data-markdown]' );
-          *   } },
-	    { src: 'plugin/highlight/highlight.js',
-          *   async: true, callback: function() {
-          *       hljs.initHighlightingOnLoad(); } },
-	    { src: 'plugin/zoom-js/zoom.js', async: true },*/
-	 { src: 'lib/reveal/search.js', async: true },
-	 { src: 'lib/reveal/notes.js', async: true }
-     ]
- });
+            </div></div>
+            <script src="lib/reveal/head.min.js"></script>
+            <script src="lib/reveal/reveal.js"></script>
+            <script src="lib/triggy.js"></script>
+            <script>
+             var link = document.createElement('link');
+             link.rel = 'stylesheet';
+             link.type = 'text/css';
+             link.href = window.location.search.match(/document/gi) ?
+                         'lib/reveal/pdf.css' : 'lib/reveal/paper.css';
+             document.getElementsByTagName('head')[0].appendChild( link );
+             Reveal.initialize({
+                 slideNumber: 'h.v',
+                 transition: 'convex', history: true,
+                 showNotes: window.location.search.match(/shownotes/gi) ?
+                            true : false,
+                 dependencies: [
+	             /* { src: 'lib/js/classList.js',
+                      *   condition: function() { return !document.body.classList; } },
+	                { src: 'plugin/markdown/marked.js',
+                      *   condition: function() {
+                      *       return !!document.querySelector( '[data-markdown]' );
+                      *   } },
+	                { src: 'plugin/markdown/markdown.js',
+                      *   condition: function() {
+                      *       return !!document.querySelector( '[data-markdown]' );
+                      *   } },
+	                { src: 'plugin/highlight/highlight.js',
+                      *   async: true, callback: function() {
+                      *       hljs.initHighlightingOnLoad(); } },
+	                { src: 'plugin/zoom-js/zoom.js', async: true },*/
+	             { src: 'lib/reveal/search.js', async: true },
+	             { src: 'lib/reveal/notes.js', async: true }
+                 ]
+             });
 
- Reveal.addEventListener('ready', function(event) {
-     triggy.setup('canvas.triggy', function(value) {
-         return value / Reveal.getScale(); });
-     triggy.update('canvas.triggy', Reveal.getCurrentSlide());
- });
+             Reveal.addEventListener('ready', function(event) {
+                 triggy.setup('canvas.triggy', function(value) {
+                     return value / Reveal.getScale(); });
+                 triggy.update('canvas.triggy', Reveal.getCurrentSlide());
+             });
 
- Reveal.addEventListener('slidechanged', function(event) {
-     triggy.update('canvas.triggy', event.currentSlide);
- });
-</script>
+             Reveal.addEventListener('slidechanged', function(event) {
+                 triggy.update('canvas.triggy', event.currentSlide);
+             });
+            </script>
