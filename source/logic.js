@@ -27,38 +27,47 @@
 (function(logic) {
     'use strict';
     var operators = {
-        stroke:  {sigil: '&#x22bc;'},
-        not:     {
-            sigil: '&not;', unary: true, devolve: function(list) {
-                // TODO: support zero arguments?
-                return ['stroke', list[1], list[1]]; }
-        },
+        nand:  {sigil: '&#x22bc;', lnote: 'D'},
+        nor:   {sigil: '', lnote: 'S'},
+        not: {
+            sigil: '&not;', lnote: 'N', unary: true,
+            devolve: function(list) {
+                var value = list[1];
+                if (Array.isArray(value) &&
+                    (value.length === 2) && (value[0] === 'and'))
+                    return ['nand', value[1], value[2]];
+                return ['nand', value, value]; } },
         implies: {
-            sigil: '&#x27f9;', devolve: function(list) {
+            sigil: '&#x27f9;', lnote: 'C',
+            devolve: function(list) {
                 // TODO: more than two arguments
                 if (Array.isArray(list[2]) &&
                     (list[2].length === 3) && (list[2][0] === 'and')) {
-                    return ['stroke', list[1],
-                            ['stroke', list[2][1], list[2][2]]];
+                    return ['nand', list[1],
+                            ['nand', list[2][1], list[2][2]]];
                 }
-                return ['stroke', list[1],
-                        ['stroke', list[2], list[2]]]; }
+                return ['nand', list[1],
+                        ['nand', list[2], list[2]]]; }
         },
         and: {
-            sigil: '&and;', devolve: function(list) {
-                return ['stroke', ['stroke', list[1], list[2]],
-                        ['stroke', list[1], list[2]]];
+            sigil: '&and;', lnote: 'A',
+            devolve: function(list) {
+                // TODO: more than two arguments
+                return ['nand', ['nand', list[1], list[2]],
+                        ['nand', list[1], list[2]]];
             }
         },
         or:      {
-            // TODO: more than two arguments
-            sigil: '&or;', devolve: function(list) {
-                return ['stroke', ['stroke', list[1], list[1]],
-                        ['stroke', list[2], list[2]]];
+            sigil: '&or;', lnote: 'K',
+            devolve: function(list) {
+                // TODO: more than two arguments
+                return ['nand', ['nand', list[1], list[1]],
+                        ['nand', list[2], list[2]]];
             }
         },
         bicond: {
-            sigil: '&#x27fa;', devolve: function(list) {
+            sigil: '&#x27fa;', lnote: 'E',
+            devolve: function(list) {
                 // TODO: implement this
                 return list; }}
     };
@@ -98,8 +107,8 @@
         if ((typeof(a) === 'string') && (typeof(b) === 'string')) {
             result = (a === b);
         } else if (Array.isArray(a) && Array.isArray(b)) {
-            if ((a.length === 3) && (a[0] === 'stroke') &&
-                (b.length === 3) && (b[0] === 'stroke')) {
+            if ((a.length === 3) && (a[0] === 'nand') &&
+                (b.length === 3) && (b[0] === 'nand')) {
                 result = ((equals(a[1], b[1]) && equals(a[2], b[2])) ||
                           (equals(a[1], b[2]) && equals(a[2], b[1])));
             } else result = a.every(function(element, index) {
@@ -129,14 +138,14 @@
 
     // Returns the negation of an easily negated expression or null.
     // What "easy" means here is a judgement call.  Obviously a "not"
-    // expression is easy to negate.  A "stroke" expression can be
+    // expression is easy to negate.  A "nand" expression can be
     // replaced by an "and" expression to negate it.
     var easynegate = function(expression) {
         var result = null;
         if (Array.isArray(expression) && (expression.length > 1)) {
             if (expression[0] === 'not')
                 result = expression[1];
-            else if (expression[0] === 'stroke')
+            else if (expression[0] === 'nand')
                 result = ['and'].concat(expression.slice(1));
         }
         return result;
@@ -155,6 +164,33 @@
     var matchExprOp = function(expression, operator, count) {
         return Array.isArray(expression) &&
                matchOp(expression, operator, count);
+    };
+
+    // Applies Nicod's modus ponens iff the expression is an
+    // implication or a nand that matches the premise.
+    var detatch = function(expression, premise) {
+        if (matchExprOp(expression, 'nand', 3) &&
+            matchExprOp(expression[2], 'nand', 3) &&
+            equals(expression[1], premise))
+            expression = expression[2][2];
+        else if (matchExprOp(expression, 'implies', 3) &&
+                 equals(expression[1], premise))
+            expression = expression[2];
+        return expression;
+    };
+
+    var substitute = function(expression, variable, value) {
+        var table = (typeof(variable) === 'object') ?
+                    variable : {variable: value};
+        var inflate = ((typeof(variable) === 'object') &&
+                       (typeof(value) === 'function')) ?
+                      value : function(x) { return x; };
+        return transform({
+            variable: function(current) {
+                return (current in table) ?
+                       inflate(table[current]) : current;
+            }
+        }, expression);
     };
 
     var tokenize = function(value) {
@@ -184,7 +220,7 @@
         var stack = [];
 
         var complete = function(entry) {
-            return (((entry[0] === 'stroke') ||
+            return (((entry[0] === 'nand') ||
                      (entry[0] === 'implies') ||
                      (entry[0] === 'and') ||
                      (entry[0] === 'or')) &&
@@ -195,7 +231,9 @@
         for (index = 0; index < value.length; ++index) {
             current = value[index];
             if (current === 'D') {
-                stack.push(['stroke']);
+                stack.push(['nand']);
+            } else if (current === 'S') {
+                stack.push(['nor']);
             } else if (current === 'N') {
                 stack.push(['not']);
             } else if (current === 'C') {
@@ -205,9 +243,6 @@
             } else if (current === 'K') {
                 stack.push(['or']);
             } else if ((current >= 'a') && (current <= 'z')) {
-                if (!stack.length)
-                    throw Error("Invalid L Notation: " + value);
-
                 // Complete entries on the way up
                 while (stack.length > 0) {
                     last = stack.pop();
@@ -219,8 +254,13 @@
                         break;
                     }
                 }
-            }
+                last = current;
+            } else throw Error("Invalid L Notation (character: " +
+                               current + "): " + value);
         }
+        if (stack.length > 0)
+            throw Error("Invalid L Notation (stack: " +
+                        stack.length + "): " + value);
         return last;
     };
 
@@ -256,7 +296,30 @@
     logic.expression.prototype.toString = function(config) {
         var result;
 
-        if (Array.isArray(this.__value) && (this.__value.length > 0)) {
+        if (config && config.lnote) {
+            if (Array.isArray(this.__value) &&
+                (this.__value.length > 0)) {
+                var operator = operators[this.__value[0]];
+                if (operator.unary) {
+                    result = operator.lnote +
+                             logic.expression(this.__value[1])
+                                     .toString({lnote: true});
+                } else {
+                    result = [operator.lnote];
+                    this.__value.forEach(function(thing, index, arr) {
+                        if (index > 0)
+                            result.push(logic.expression(thing).toString({
+                                lnote: true}));
+                    }, this);
+                    result = result.join('');
+                }
+            } else if (typeof(this.__value) === 'string') {
+                result = this.__value;
+            } else if (typeof(this.__value) === 'boolean') {
+                result = this.__value ? 'T' : 'F';
+            } else result = '?';
+        } else if (Array.isArray(this.__value) &&
+                   (this.__value.length > 0)) {
             var operator = operators[this.__value[0]];
             if (operator.unary) {
                 result = operator.sigil +
@@ -280,12 +343,12 @@
             result = this.__value;
         } else if (typeof(this.__value) === 'boolean') {
             result = this.__value ? 'true' : 'false';
-        } else {
-            result = 'UNKNOWN';
-        }
+        } else result = 'UNKNOWN';
         return result;
     };
 
+    /**
+     * Reduce an expression to a single NAND operator */
     logic.expression.prototype.devolve = function() {
         return logic.expression(transform({
             down: function(expression) {
@@ -297,6 +360,9 @@
         }, this.__value));
     };
 
+    /**
+     * Replace complex constructs in expression with simpler
+     * alternatives to make it easier to read. */
     logic.expression.prototype.simplify = function(config) {
         return logic.expression(transform({
             up: function(expression) {
@@ -310,20 +376,20 @@
 
                 // Definition of NOT
                 if ((!config || (config.all || config.not)) &&
-                    matchOp(expression, 'stroke', 3) &&
+                    matchOp(expression, 'nand', 3) &&
                     equals(expression[1], expression[2]))
                     expression = ['not', expression[1]];
 
                 // Definition of AND
                 if ((!config || (config.all || config.and)) &&
                     matchOp(expression, 'not', 2) &&
-                    matchExprOp(expression[1], 'stroke'))
+                    matchExprOp(expression[1], 'nand'))
                     expression = ['and'].concat(
                         expression[1].slice(1));
 
                 // Definition of IMPLICATION
                 if ((!config || (config.all || config.implies)) &&
-                    matchOp(expression, 'stroke', 3)) {
+                    matchOp(expression, 'nand', 3)) {
                     negate1 = easynegate(expression[1]);
                     negate2 = easynegate(expression[2]);
 
@@ -342,7 +408,7 @@
 
                 // Definition of OR
                 if ((!config || (config.all || config.or)) &&
-                    matchOp(expression, 'stroke', 3) &&
+                    matchOp(expression, 'nand', 3) &&
                     ((negate1 = easynegate(expression[1])) !== null) &&
                     ((negate2 = easynegate(expression[2])) !== null))
                     expression = ['or', negate1, negate2];
@@ -351,7 +417,7 @@
                 if (matchOp(expression, 'not', 2) &&
                     (typeof(expression[1]) === 'boolean')) {
                     expression = !expression[1];
-                } else if (matchOp(expression, 'stroke', 3)) {
+                } else if (matchOp(expression, 'nand', 3)) {
                     if (typeof(expression[1]) === 'boolean') {
                         if (typeof(expression[2]) === 'boolean')
                             expression = !(expression[1] &&
@@ -360,7 +426,7 @@
                             expression =
                                 (!config || (config.all || config.not)) ?
                                 ['not', expression[2]] : [
-                                    'stroke', expression[2],
+                                    'nand', expression[2],
                                     expression[2]];
                         } else expression = true;
                     } else if (typeof(expression[2]) === 'boolean') {
@@ -368,7 +434,7 @@
                             expression =
                                 (!config || (config.all || config.not)) ?
                                 ['not', expression[1]] : [
-                                    'stroke', expression[1],
+                                    'nand', expression[1],
                                     expression[1]];
                         } else expression = true;
                     }
@@ -398,6 +464,8 @@
         }, this.__value));
     };
 
+    /**
+     * Return an array of all free variables in the expression */
     logic.expression.prototype.getFree = function() {
         var result = {};
         transform({variable: function(current) {
@@ -406,25 +474,33 @@
         return Object.keys(result).sort();
     };
 
+    /**
+     * Replace one or more variables in an expression. */
     logic.expression.prototype.substitute = function(variable, value) {
-        return logic.expression(transform({
-            variable: function(current) {
-                if (current === variable)
-                    current = value;
-                return current;
-            }
-        }, this.__value));
-    };
+        return logic.expression(substitute(
+            this.__value, variable, value)); };
 
-    var library = {
+    var internalLibrary = {
         Meredith: { theorems: { Axiom: "CCCCCpqCNrNsrtCCtpCsp" } },
         Nicod: { theorems: { Axiom: "DDpDqrDDtDttDDsqDDpsDps" } },
         'Łukasiewicz': {
+            comment: [
+                "https://projecteuclid.org/download/pdf_1/" +
+                "euclid.ndjfl/1093958259"],
             theorems: {
                 Axiom: "DDpDqrDDsDssDDsqDDpsDps",
                 AxiomAlternate: "DDpDqrDDpDrpDDsqDDpsDps",
-                Theorem2: "DtDsDssDDDpDqrtDDpDqrt",
-                Theorem3: "DDwDDpDqrtDDDtDsDsswDDtDsDssw",
+                Theorem2: {
+                    source: "Axiom", premise: "Axiom",
+                    substitute: {
+                        p: "DpDqr", q: "DsDss", r: "DDsqDDpsDps", s: "t"
+                    }, rule: "DDtDsDssDDDpDqrtDDpDqrt"},
+                Theorem3: {
+                    source: "Axiom", premise: "Axiom",
+                    rule: "DDwDDpDqrtDDDtDsDsswDDtDsDssw",
+                    substitute: {
+                        p: "DtDsDss", q: "DDpDqrt", r: "DDpDqrt", s: "w"
+                    }},
                 Theorem4: "DDDDsqDDpsDpsDtDttDpDqr",
                 Theorem5: "DDpDqrDDDstDDtsDtsDtDtt",
                 Theorem6: "DtDtt",
@@ -451,36 +527,62 @@
         }
     };
 
-    var getLibraryExpression = function(entry) {
-        var value;
+    /**
+     * Given a library entry and the name of a theorem this routine
+     * extracts the theorem as an expression object.  Library entries
+     * are key-value pairs.  Each value is either a string in
+     * Łukasiewicz notation, an internal expression represenation
+     * (always an array since atomic propositions can't be tautologies)
+     * or an object.  An object value usually has a rule which itself
+     * can be a string in Łukasiewicz notation or an internal expression
+     * representation (always an array). */
+    var getLibraryExpression = function(key, library) {
+        var result, entry;
+
+        if (Array.isArray(key)) {
+            if (key.length > 0)
+                entry = internalLibrary[key[0]].theorems[key[1]];
+            else entry = library.theorems[key[0]];
+        } else entry = library.theorems[key];
 
         if (typeof(entry) === 'string') {
-            value = parseLNotation(entry);
+            result = parseLNotation(entry);
         } else if (Array.isArray(entry)) {
-            value = entry;
-        } else if ((typeof(entry) === 'object') && entry.rule) {
-            if (typeof(entry.rule) === 'string')
-                value = parseLNotation(entry.rule);
-            else if (Array.isArray(entry.rule))
-                value = entry.rule;
+            result = entry;
+        } else if (typeof(entry) === 'object') {
+            if (entry.rule) {
+                if (typeof(entry.rule) === 'string')
+                    result = parseLNotation(entry.rule);
+                else if (Array.isArray(entry.rule))
+                    result = entry.rule;
+            } else if (entry.source && entry.premise) {
+                result = detatch(substitute(
+                    getLibraryExpression(
+                        entry.source.split(':'), library),
+                    entry.substitute ? entry.substitute : {},
+                    parseLNotation), getLibraryExpression(
+                        entry.premise.split(':'), library));
+            } else throw Error("Invalid library entry object", entry);
         } else throw Error("Invalid library entry", entry);
-        return logic.expression(value);
+        return result;
     };
+
     logic.findLibrary = function(name, formula) {
-        return getLibraryExpression(library[name].theorems[formula]);
+        return logic.expression(getLibraryExpression(
+            formula, internalLibrary[name]));
     };
+
     logic.eachLibrary = function(fn, context) {
         var index = 0;
-        Object.keys(library).forEach(function(name) {
-            Object.keys(library[name].theorems).forEach(
+        Object.keys(internalLibrary).forEach(function(name) {
+            Object.keys(internalLibrary[name].theorems).forEach(
                 function(formula) {
-                    var entry = library[name].theorems[formula];
-                    var wajsberg = Array.isArray(entry) ?
-                                   null : entry.wajsberg;
-                    var expression = getLibraryExpression(entry);
+                    var expression = logic.expression(
+                        getLibraryExpression(
+                            formula, internalLibrary[name]));
                     fn.call(context, expression, {
-                        name: name, formula: formula,
-                        wajsberg: wajsberg, index: index++});
+                        formula: formula, name: name,
+                    }, index++);
                 });
         });
     };

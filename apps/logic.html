@@ -67,7 +67,7 @@
 <script src="ripple/logic.js"></script>
 <script>//<![CDATA[
  ripple.ready(function() {
-     var expression = null;
+     var expression = ripple.param("expression");
      var display = document.getElementById("display");
      var variables = document.getElementById("variables");
      var formula = document.getElementById("formula");
@@ -83,6 +83,7 @@
                  value: variable, innerHTML: variable}));
          });
          display.innerHTML = expression.toString();
+         rawexpr.value = expression.toString({lnote: true});
      };
 
      formula.addEventListener("change", function(event) {
@@ -141,4 +142,6 @@
              ripple.createElement('td', {
                  innerHTML: expression.toString()})));
      });
+     if (expression)
+         apply(logic.parse(expression));
  }); //]]></script>
