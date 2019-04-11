@@ -484,14 +484,18 @@
         Meredith: { theorems: { Axiom: "CCCCCpqCNrNsrtCCtpCsp" } },
         Nicod: { theorems: { Axiom: "DDpDqrDDtDttDDsqDDpsDps" } },
         'Łukasiewicz': {
+            comment: ["woo-kay-SHAY-vitch"],
+            theorems: {
+                Axiom: "DDpDqrDDsDssDDsqDDpsDps",
+                AxiomAlternate: "DDpDqrDDpDrpDDsqDDpsDps" }},
+        'Scharle': {
             comment: [
                 "https://projecteuclid.org/download/pdf_1/" +
                 "euclid.ndjfl/1093958259"],
             theorems: {
-                Axiom: "DDpDqrDDsDssDDsqDDpsDps",
-                AxiomAlternate: "DDpDqrDDpDrpDDsqDDpsDps",
                 Theorem2: {
-                    source: "Axiom", premise: "Axiom",
+                    source: "Łukasiewicz:Axiom",
+                    premise: "Łukasiewicz:Axiom",
                     substitute: {
                         p: "DpDqr", q: "DsDss", r: "DDsqDDpsDps", s: "t"
                     }, rule: "DDtDsDssDDDpDqrtDDpDqrt"},
@@ -510,7 +514,9 @@
                 Theorem10: "DDpsDDDDtsDtspDDDtsDtsp",
             },
         },
-        Wajsberg: { theorems: { Axiom: "DDpDqrDDDsrDDpsDpsDpDpq" } },
+        Wajsberg: {
+            comment: ["VISE-berg"],
+            theorems: { Axiom: "DDpDqrDDDsrDDpsDpsDpDpq" } },
         Kleene: {
             theorems: {
                 "Axiom Implication Introduction": "CpCqp",
