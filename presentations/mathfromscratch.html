@@ -1,22 +1,24 @@
 <!DOCTYPE html>
-<title>Math From Scratch</title>
-<meta charset="utf-8" />
-<link rel="stylesheet" href="lib/reveal/reveal.css">
-<link rel="stylesheet" href="lib/reveal/sky.css">
-<style>
- canvas.triggy { width: 100%; height: 100%; }
- .intro { color: blue; font-weight: bold; }
- .true { color: green; font-weight: bold; }
- .false { color: red; font-weight: bold; }
- ul.symbolic { list-style-type: none; }
- .left { float: left; }
- .right { float: right; }
- table.cayley th { color: blue; }
- .redsuit { color: red; }
-</style>
-<!-- Slides use Reveal.js: https://github.com/hakimel/reveal.js/ -->
-
-<div class="reveal"><div class="slides">
+<html lang="en">
+    <head>
+        <title>Math From Scratch</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="lib/reveal/reveal.css">
+        <link rel="stylesheet" href="lib/reveal/sky.css">
+        <style>
+         canvas.triggy { width: 100%; height: 100%; }
+         .intro { color: blue; }
+         .true { color: green; }
+         .false { color: red; }
+         ul.symbolic { list-style-type: none; }
+         .left { float: left; }
+         .right { float: right; }
+         table.cayley th { color: blue; }
+         .redsuit { color: red; }
+        </style>
+    </head>
+    <!-- Slides use Reveal.js: https://github.com/hakimel/reveal.js/ -->
+    <body><div class="reveal"><div class="slides">
     <section id="mathfromscratch">
         <section>
             <h1>Math From Scratch</h1>
@@ -225,11 +227,10 @@
                 <span class="intro">S</span> and so on.
             </p>
             <aside class="notes">
-                We now introduce our first formal system: propositional
-                calculus.  This is sometimes called zero-order logic
-                because we will introduce first and second order logic
-                later on.  First proposed by Frege in 1879, propositional
-                calculus was improved by woo-kah-SHAY-vitch around 1930.
+                Propositional calculus is sometimes called zero-order
+                logic.  First proposed by Frege in 1879, propositional
+                calculus was improved by woo-kah-SHAY-vitch and others
+                starting around 1930.
             </aside>
         </section>
         <section>
@@ -241,18 +242,18 @@
             </p>
             <ul>
                 <li>
-                    A <span class="intro">tautology</span> is
-                    always <span class="true">true</span>: P &or; &not;P
-                </li><li>
-                    A <span class="intro">contradiction</span> is
-                    always <span class="false">false</span>:
-                    P &and; &not;P
-                </li><li>
                     A <span class="intro">contingency</span> is
                     either <span class="true">true</span> or
                     <span class="false">false</span> depending
-                    on the values of the atomic propositions:
-                    &not;P
+                    on proposition values: P, &not;P, P &#x27f9; Q
+                </li><li>
+                    A <span class="intro">contradiction</span> is
+                    always <span class="false">false</span>:
+                    P &and; &not;P, P &#x27fa; &not;P
+                </li><li>
+                    A <span class="intro">tautology</span> is
+                    always <span class="true">true</span>:
+                    P &or; &not;P, P &#x27f9; P
                 </li>
             </ul>
         </section>
@@ -272,41 +273,48 @@
             <h3>Propositional Calculus</h3>
             <p>
                 A single operator, rule and axiom can be used to
-                construct propositional calculus.
+                construct propositional calculus. (Sheffer 1913 CE and
+                Łukasiewicz 1961 CE)
             </p>
             <table><tr><th>
                 Operator
             </th><td>
-                Stroke (Sheffer 1913 CE):
+                Stroke (NAND):
                 P <span class="intro">&#x22bc;</span> Q
             </td></tr><tr><th>
                 Rule
             </th><td>
-                Modus Ponens: (P &#x22bc; (Q &#x22bc; R)), P
+                Modus Ponens: (P <span class="intro">&#x22bc;</span>
+                (Q <span class="intro">&#x22bc;</span> R)), P
                 <span class="intro">&#x22a2;</span> R
             </td></tr><tr><th>
                 Axiom
             </th><td>
-                (Łukasiewicz 1931 CE):<br />
-                (P &#x22bc; (Q &#x22bc; R)) &#x22bc;
-                ((S &#x22bc; (S &#x22bc; S)) &#x22bc;
-                ((S &#x22bc; Q) &#x22bc; ((P &#x22bc; S) &#x22bc;
-                (P &#x22bc; S))))
+                (P <span class="intro">&#x22bc;</span>
+                (Q <span class="intro">&#x22bc;</span> R))
+                <span class="intro">&#x22bc;</span>
+                ((S <span class="intro">&#x22bc;</span>
+                (S <span class="intro">&#x22bc;</span> S))
+                <span class="intro">&#x22bc;</span>
+                ((S <span class="intro">&#x22bc;</span> Q)
+                <span class="intro">&#x22bc;</span>
+                ((P <span class="intro">&#x22bc;</span> S)
+                <span class="intro">&#x22bc;</span>
+                (P <span class="intro">&#x22bc;</span> S))))
             </td></tr></table>
             <aside class="notes">
-                This has been proven to be the simplest possible
-                formal system that completely represents propositional
-                calculus.  Simplicity refers to the number of symbols,
-                axioms and rules not how easy it is to use.  We'll
-                use this system to prove the axioms of a more friendly
-                system with more moving parts.
+                There are many ways to define propositional calculus.
+                This is probably the simplest, but far from the most
+                convenient.  We are allowed to substitute any well
+                formed expression for any atomic proposition.
             </aside>
         </section>
         <section>
             <h3>Sheffer Stroke</h3>
             <p>
-                A <span class="intro">Sheffer Stroke</span> is
-                true when at least one of its terms is false:
+                A <span class="intro">stroke</span> of two
+                propositions is a commutative contingency that's true
+                if and only if one or both of its terms is false:
                 P <span class="intro">&#x22bc;</span> Q
             </p>
             <table class="fragment">
@@ -336,6 +344,8 @@
                     <td class="true">true</td>
                 </tr>
             </table>
+            <aside class="notes">
+            </aside>
         </section>
         <section>
             <h3>Negation</h3>
@@ -350,75 +360,12 @@
                     <th>P</th>
                     <th>P &#x22bc; P</th>
                     <th><span class="intro">&not;</span>P</th>
-                    <th>(P &#x22bc; P) &#x22bc; (P &#x22bc; P)</th>
-                    <th><span class="intro">&not;&not;</span>P)</th>
                 </tr><tr>
                     <td class="true">true</td>
                     <td class="false">false</td>
                     <td class="false">false</td>
-                    <td class="true">true</td>
-                    <td class="true">true</td>
                 </tr><tr>
                     <td class="false">false</td>
-                    <td class="true">true</td>
-                    <td class="true">true</td>
-                    <td class="false">false</td>
-                    <td class="false">false</td>
-                </tr>
-            </table>
-        </section>
-        <section>
-            <h3>Implication</h3>
-            <p>
-                An <span class="intro">implication</span> has an
-                antecedant and a consequent (<q>P implies Q</q> or
-                <q>if P then Q</q>):<br />
-                P <span class="intro">&#x27f9;</span> Q &#x225d;
-                (P &#x22bc; (Q &#x22bc; Q)) =
-                (P &#x22bc; (P &#x22bc; Q))
-            </p><p>
-                Every implication has a converse, Q
-                <span class="intro">&#x27f9;</span> P, which
-                is not usually equivalent.  Every implication
-                has a contrapositive, &not;Q
-                <span class="intro">&#x27f9;</span> &not;P, which is
-                equivalent.
-        </section>
-        <section>
-            <h3>Implication</h3>
-            <p>
-                P <span class="intro">&#x27f9;</span> Q &#x225d;
-                (P &#x22bc; (Q &#x22bc; Q)) =
-                (P &#x22bc; (P &#x22bc; Q))
-            </p>
-            <table>
-                <tr>
-                    <th>P</th><th>Q</th>
-                    <th>P &#x22bc; (Q &#x22bc; Q)</th>
-                    <th>P <span class="intro">&#x27f9;</span> Q</th>
-                    <th>Q <span class="intro">&#x27f9;</span> P</th>
-                </tr><tr>
-                    <td class="true">true</td>
-                    <td class="true">true</td>
-                    <td class="true">true</td>
-                    <td class="true">true</td>
-                    <td class="true">true</td>
-                </tr><tr>
-                    <td class="true">true</td>
-                    <td class="false">false</td>
-                    <td class="false">false</td>
-                    <td class="false">false</td>
-                    <td class="true">true</td>
-                </tr><tr>
-                    <td class="false">false</td>
-                    <td class="true">true</td>
-                    <td class="true">true</td>
-                    <td class="true">true</td>
-                    <td class="false">false</td>
-                </tr><tr>
-                    <td class="false">false</td>
-                    <td class="false">false</td>
-                    <td class="true">true</td>
                     <td class="true">true</td>
                     <td class="true">true</td>
                 </tr>
@@ -427,18 +374,18 @@
         <section>
             <h3>Conjunction</h3>
             <p>
-                (P <span class="intro">&and;</span> Q) &#x225d;
-                &not;(P &#x27f9; &not;Q) = &not;(P &#x22bc; Q) =
-                (P &#x22bc; Q) &#x22bc; (P &#x22bc; Q)
-            </p><p>
                 A <span class="intro">conjunction</span> of two
                 propositions is true when both the first
                 <span class="intro">and</span> the second are true.
+            </p><p>
+                (P <span class="intro">&and;</span> Q) &#x225d;
+                &not;(P &#x22bc; Q) =
+                (P &#x22bc; Q) &#x22bc; (P &#x22bc; Q)
             </p>
             <table class="fragment"><tr>
                 <th>P</th><th>Q</th>
-                <th>P&nbsp;&#x27f9;&nbsp;&not;Q</th>
-                <th>&not;(P&nbsp;&#x27f9;&nbsp;&not;Q)</th>
+                <th>P &#x22bc; Q</th>
+                <th>&not;(P &#x22bc; Q)</th>
                 <th>
                     P&nbsp;<span class="intro">&and;</span>&nbsp;Q
                 </th>
@@ -471,17 +418,17 @@
         <section>
             <h3>Disjunction</h3>
             <p>
-                (P <span class="intro">&or;</span> Q) &#x225d;
-                &not;P &#x27f9; Q = &not;P &#x22bc; &not;Q =
-                (P &#x22bc; P) &#x22bc; (Q &#x22bc; Q)
-            </p><p>
                 A <span class="intro">disjunction</span> of two
                 propositions is true when either the first
                 <span class="intro">or</span> the second is true.
+            </p><p>
+                (P <span class="intro">&or;</span> Q) &#x225d;
+                &not;P &#x22bc; &not;Q =
+                (P &#x22bc; P) &#x22bc; (Q &#x22bc; Q)
             </p>
             <table class="fragment"><tr>
                 <th>P</th><th>Q</th>
-                <th>&not;P &#x27f9; Q</th><th>
+                <th>&not;P &#x22bc; &not;Q</th><th>
                     P&nbsp;<span class="intro">&or;</span>&nbsp;Q
                 </th>
             </tr><tr>
@@ -505,22 +452,21 @@
                 <td class="false">false</td>
                 <td class="false">false</td>
             </tr></table>
-        </section>
+        </section> 
         <section>
-            <h3>Biconditional</h3>
+            <h3>Implication</h3>
             <p>
-                (P <span class="intro">&#x27fa;</span> Q)
-                &#x225d; (P &#x27f9; Q) &and; (Q &#x27f9; P)
-            </p>
-            <p>
-                A biconditional expresses implication in both
-                directions.  It represents binary equality.
+                An <span class="intro">antecedant</span> implies
+                a <span class="intro">consequent</span>
+                (<q>P implies Q</q> or <q>if P then Q</q>):<br />
+                (P <span class="intro">&#x27f9;</span> Q) &#x225d;
+                P &#x22bc; &not;Q = P &#x22bc; (Q &#x22bc; Q)
             </p>
             <table>
                 <tr>
                     <th>P</th><th>Q</th>
-                    <th>(P &#x27f9; Q) &and; (Q &#x27f9; P)</th>
-                    <th>P <span class="intro">&#x27fa;</span> Q</th>
+                    <th>P &#x22bc; &not;Q</th>
+                    <th>P <span class="intro">&#x27f9;</span> Q</th>
                 </tr><tr>
                     <td class="true">true</td>
                     <td class="true">true</td>
@@ -534,7 +480,88 @@
                 </tr><tr>
                     <td class="false">false</td>
                     <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                </tr><tr>
                     <td class="false">false</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                </tr>
+            </table>
+        </section>
+        <section>
+            <h3>Implication: Contrapositive</h3>
+            <p>
+                Every implication has a
+                <span class="intro">contrapositive</span>, which is
+                always equivalent.
+            </p>
+            <table>
+                <tr>
+                    <th>P</th><th>Q</th>
+                    <th>P <span class="intro">&#x27f9;</span> Q</th>
+                    <th>&not;Q</th><th>&not;P</th>
+                    <th>&not;Q <span class="intro">&#x27f9;</span>
+                        &not;P</th>
+                </tr><tr>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                </tr><tr>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                    <td class="false">false</td>
+                </tr><tr>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                </tr><tr>
+                    <td class="false">false</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                </tr>
+            </table>
+        </section>
+        <section>
+            <h3>Implication: Converse</h3>
+            <p>
+                Every implication has a
+                <span class="intro">converse</span>, which is
+                equivalent only when the antecedent and consequent
+                have the same value.
+            </p>
+            <table>
+                <tr>
+                    <th>P</th><th>Q</th>
+                    <th>P <span class="intro">&#x27f9;</span> Q</th>
+                    <th>Q <span class="intro">&#x27f9;</span> P</th>
+                </tr><tr>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                </tr><tr>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                </tr><tr>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
                     <td class="false">false</td>
                 </tr><tr>
                     <td class="false">false</td>
@@ -543,10 +570,95 @@
                     <td class="true">true</td>
                 </tr>
             </table>
+        </section>
+        <section>
+            <h3>Biconditional</h3>
+            <p>
+                An implication and its converse are a
+                <span class="intro">biconditional</span>.
+            </p>
+            <p>
+                (P <span class="intro">&#x27fa;</span> Q)
+                &#x225d; (P &#x27f9; Q) &and; (Q &#x27f9; P) =
+                ((P &#x22bc; (Q &#x22bc; Q)) &#x22bc;
+                (Q &#x22bc; (P &#x22bc; P))) &#x22bc;
+                ((P &#x22bc; (Q &#x22bc; Q)) &#x22bc;
+                (Q &#x22bc; (P &#x22bc; P)))
+            </p>
+            <table>
+                <tr>
+                    <th>P</th><th>Q</th>
+                    <th>P&nbsp;&#x27f9;&nbsp;Q</th>
+                    <th>Q&nbsp;&#x27f9;&nbsp;P</th>
+                    <th><small>(P&nbsp;&#x27f9;&nbsp;Q)&nbsp;&and;
+                        (Q&nbsp;&#x27f9;&nbsp;P)</small></th>
+                    <th>
+                        P&nbsp;<span class="intro"
+                               >&#x27fa;</span>&nbsp;Q
+                    </th>
+                </tr><tr>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                </tr><tr>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                    <td class="false">false</td>
+                </tr><tr>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="false">false</td>
+                    <td class="false">false</td>
+                    <td class="false">false</td>
+                </tr><tr>
+                    <td class="false">false</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                </tr>
+            </table>
             <aside class="notes">
                 A biconditional expresses implication in both
                 directions.
             </aside>
+        </section>
+        <section>
+            <h3>Operators</h3>
+            <ul>
+                <li>
+                    Stroke: P <span class="intro">&#x22bc;</span> Q
+                </li><li>
+                    Negation: <span class="intro">&not;</span>P
+                    &#x225d; P &#x22bc; P
+                </li><li>
+                    Conjunction: P <span class="intro">&and;</span> Q
+                    &#x225d; &not;(P &#x22bc; Q) =
+                    (P &#x22bc; Q) &#x22bc; (P &#x22bc; Q)
+                </li><li>
+                    Disjunction: P <span class="intro">&or;</span> Q
+                    &#x225d; &not;P &#x22bc; &not;Q =
+                    (P &#x22bc; P) &#x22bc; (Q &#x22bc; Q)
+                </li><li>
+                    Implication: P <span class="intro">&#x27f9;</span> Q
+                    &#x225d; P &#x22bc; (Q &#x22bc; Q)
+                </li><li>
+                    Biconditional: P <span class="intro">&#x27fa;</span>
+                    Q &#x225d; (P &#x27f9; Q) &and; (Q &#x27f9; P)
+                    =<br /> ((P &#x22bc; (Q &#x22bc; Q)) &#x22bc;
+                    (Q &#x22bc; (P &#x22bc; P))) &#x22bc;
+                    ((P &#x22bc; (Q &#x22bc; Q)) &#x22bc;
+                    (Q &#x22bc; (P &#x22bc; P)))
+                </li>
+            </ul>
         </section>
         <section>
             <h3>Nicod's Modus Ponens</h3>
@@ -596,20 +708,24 @@
                     <td class="false">false</td>
                 </tr>
             </table>
+            <aside class="notes">
+                This rule requires P to be true so for clarity we omit
+                the part of the truth table where P is false.
+            </aside>
         </section>
         <section>
-            <h3>Kleene Modus Ponens</h3>
+            <h3>Conventional Modus Ponens</h3>
             <p class="intro">
                 (P &#x27f9; Q), P &#x22a2; Q
             </p>
             <p>
-                This simpler version of modus ponens is the basis of
-                Kleene's system (and most others).
+                This simpler version of modus ponens is used in most
+                formulations of propositional calculus.
             </p>
             <ul>
                 <li class="fragment">
                     (P &#x22bc; (Q &#x22bc; Q))
-                    :: Nicod's Modus Ponens (Q = R)
+                    :: Nicod's Modus Ponens (R := Q)
                 </li><li class="fragment">
                     (P &#x22bc; &not;Q) :: Definition of Negation
                 </li><li class="fragment">
@@ -625,6 +741,25 @@
                 implication to its consequent, using the known truth
                 of the antecedant.
             </aside>
+        </section>
+        <section>
+            <h3>Scharle Theorems</h3>
+            <p>
+                Thomas Scharle worked through the process of proving
+                more convenient axioms from the single Łukasiewicz
+                axiom: <a href="https://projecteuclid.org/download/pdf_1/euclid.ndjfl/1093958259">
+                Axiomatization of Propositional Calculus with
+                Scheffer Functors</a> (Scharle 1965 CE)
+            </p>
+        </section>
+        <section>
+            <h3>Łukasiewicz Axioms</h3>
+            <ul>
+                <li>(&not;P &#x27f9; P) &#x27f9; P</li>
+                <li>(P &#x27f9; Q) &#x27f9; ((Q &#x27f9; R) &#x27f9;
+                    (P &#x27f9; R))</li>
+                <li>P &#x27f9; (&not;P &#x27f9; Q)</li>
+            </ul>
         </section>
         <section>
             <h3>Kleene Axioms</h3>
@@ -656,274 +791,16 @@
                 </li>
             </ul>
         </section>
-
-
-
         <section>
-            <h3>Axiom of Simplification</h3>
-            <p class="intro">P &#x27f9; (Q &#x27f9; P)</p>
-            <p>
-                Any true proposition is implied by any other proposition.
-                <q>
-                    If it's raining then <q>the ground is wet</q>
-                    implies it's raining.
-                </q>
-                But also,
-                <q>
-                    If it's raining
-                    then <q>it's not raining</q>
-                    implies that it's raining.
-                </q>
-                This is sometimes called implication introduction.
-            </p>
-        </section>
-        <section>
-            <h3>Axiom of Distribution</h3>
-            <p class="intro">
-                (P &#x27f9; (Q &#x27f9; R)) &#x27f9;<br />
-                ((P &#x27f9; Q) &#x27f9; (P &#x27f9; R))
-            </p>
-            <p>
-                An antecedant can be distributed over its consequents.
-            </p>
-        </section>
-        <section>
-            <h3>Axiom of Transposition</h3>
-            <p class="intro">
-                (&not;P &#x27f9; &not;Q) &#x27f9; (Q &#x27f9; P)
-            </p><p>
-                We can swap consequents and antecedants using negation.
-                <q>If the ground isn't wet it's not raining</q> implies
-                <q>if it's raining the ground is wet.</q>
-            </p>
-        </section>
-        <section>
-            <h3>Deduction from Modus Ponens</h3>
-            <p>
-                ((P &#x27f9; Q) &and; (P &#x27f9; (Q &#x27f9; R)))
-                &#x27f9; (P &#x27f9; R)
-            </p>
-            <ul>
-                <li class="fragment">
-                    (P &#x27f9; (Q &#x27f9; R)) &#x27f9;<br />
-                    ((P &#x27f9; Q) &#x27f9; (P &#x27f9; R))
-                    :: Axiom of Distribution
-                </li><li class="fragment">
-                    (((P &#x27f9; Q) &#x27f9; (P &#x27f9; R)) &and;
-                    (P &#x27f9; Q)) &#x27f9;<br />
-                    (P &#x27f9; R) :: Modus Ponens
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h3>Principal of Identity</h3>
-            <p>P &#x27f9; P</p>
-            <ul>
-                <li class="fragment">
-                    P &#x27f9; (P &#x27f9; P) ::<br />
-                    Simplification Axiom (P is P and Q is P)
-                </li><li class="fragment">
-                    P &#x27f9; ((P &#x27f9; P) &#x27f9; P) ::<br />
-                    Simplification Axiom (P is P and Q is
-                    (P &#x27f9; P))
-                </li><li class="fragment">
-                    P &#x27f9; P :: Deduction from Modus Ponens<br />
-                    (Q is (P &#x27f9; P) and R is P)
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h3>Syllogism</h3>
-            <p>
-                ((P &#x27f9; Q) &and; (Q &#x27f9; R)) &#x27f9;
-                (P &#x27f9; R)
-            </p>
-            <ul>
-                <li class="fragment">
-                    (Q &#x27f9; R) &#x27f9; (P &#x27f9; (Q &#x27f9; R))
-                    :: <br />Simplification Axiom
-                    (P is (Q &#x27f9; R) and Q is P)
-                </li><li class="fragment">
-                    ((P &#x27f9; Q) &and; (P &#x27f9; (Q &#x27f9; R)))
-                    &#x27f9;<br /> (P &#x27f9; R) ::
-                    Deduction from Modus Ponens
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h3>Contradiction</h3>
-            <p>
-                &not;P &#x27f9; (P &#x27f9; Q)
-            </p>
-            <ul>
-                <li class="fragment">
-                    &not;P :: Assumption
-                </li><li class="fragment">
-                    &not;P &#x27f9; (&not;Q &#x27f9; &not;P)
-                    :: Simplification Axiom
-                </li><li class="fragment">
-                    &not;P &#x27f9; (P &#x27f9; Q)
-                    :: Transposition Axiom
-                </li>
-            </ul>
-            <p class="fragment">A contradiction can imply anything.</p>
-            <!-- Metamath:
-                 http://us.metamath.org/mpeuni/pm2.21d.html -->
-        </section>
-        <section>
-            <!-- Metamath: http://us.metamath.org/mpeuni/pm2.61i.html -->
-            <!-- Metamath: http://us.metamath.org/mpegif/imp.html -->
-            <h3>Proof by Contradiction</h3>
-            <p>
-                ((P &#x27f9; Q) &and; (P &#x27f9; &not;Q)) &#x27f9;
-                &not;P
-            </p>
+            <h3>Biconditional Properties</h3>
             <ul>
                 <li>
-                    (P &#x27f9; &not;Q) &#x27f9; (Q &#x27f9; &not;P)
-                    :: Axiom of Transposition
+                    Reflexive: P &#x27fa; P
                 </li><li>
-                    (P &#x27f9; Q) &#x27f9; (&not;Q &#x27f9; &not;P)
-                    :: Axiom of Transposition
+                    Symmetric: (P &#x27fa; Q) &#x27f9; (Q &#x27fa; P)
                 </li><li>
-                    ((Q &#x27f9; &not;P) &and; (&not;Q &#x27f9; &not;P))
-                    &#x27f9; &not;P :: ???
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h3>Proof: Modus Tollens</h3>
-            <p>
-                ((P &#x27f9; Q) &and; &not;Q) &#x27f9; &not;P
-            </p>
-            <ul>
-                <li>
-                    &not;Q &#x27f9; (P &#x27f9; &not;Q) :: Simplification
-                </li><li>
-                    ((P &#x27f9; Q) &and; (P &#x27f9; &not;Q))
-                    &#x27f9; &not;P :: Contradiction
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h3>Conjunction Elimination</h3>
-            <p>
-                (P &and; Q) &#x27f9; P
-            </p>
-            <p>
-                (P &and; Q) &#x27f9; Q
-            </p>
-            <p>
-                When two statements are part of a conjunction we can
-                extract either by itself.
-            </p>
-            <!-- Metamath: http://us.metamath.org/mpeuni/simpl.html -->
-            <!-- Metamath: http://us.metamath.org/mpeuni/imp.html -->
-            <!-- Metamath: http://us.metamath.org/mpeuni/impi.html -->
-            <!-- Metamath: http://us.metamath.org/mpeuni/sylbi.html -->
-        </section>
-        <section>
-            <h3>Disjunction Elimination</h3>
-            <p>
-                ((P &or; Q) &and; (P &#x27f9; R) &and; (Q &#x27f9; R))
-                &#x27f9; R
-            </p>
-            <p>
-                When two statements are part of a disjunction and they
-                both imply something we can accept that consequent.
-            </p>
-        </section>
-        <section>
-            <h3>Negation Elimination</h3>
-            <p>&not;&not;P &#x27f9; P</p>
-            <p>
-                Negation can be eliminated when it occurs twice on the same
-                statement.
-            </p>
-            <!-- Metamath: http://us.metamath.org/mpeuni/notnot2.html -->
-        </section>
-        <section>
-            <h3>DeMorgan's Laws</h3>
-            <p class="fragment intro">
-                &not;(P &and; Q) &#x27fa; &not;P &or; &not;Q
-            </p>
-            <ul>
-                <li class="fragment">
-                    &not;&not;(P &#x27f9; &not;Q) &#x27fa;
-                    (&not;&not;P &#x27f9; &not;Q) :: Definition
-                </li><li class="fragment">
-                    (P &#x27f9; &not;Q) &#x27fa;
-                    (P &#x27f9; &not;Q) :: Negation Elimination
-                </li>
-            </ul>
-            <p class="fragment intro">
-                &not;(P &or; Q) &#x27fa; &not;P &and; &not;Q
-            </p>
-            <ul>
-                <li class="fragment">
-                    &not;(&not;P &#x27f9; Q) &#x27fa;
-                    &not;(&not;P &#x27f9; &not;&not;Q)  :: Definition
-                </li><li class="fragment">
-                    &not;(&not;P &#x27f9; Q) &#x27fa;
-                    &not;(&not;P &#x27f9; Q) :: Negation Elimination
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h3>Reflexive Biconditional</h3>
-            <p>
-                <span class="intro">Reflexive</span>:
-                P &#x27fa; P
-            </p>
-            <ul>
-                <li class="fragment">
-                    P &#x27f9; P :: Principal of Identity
-                </li><li class="fragment">
-                    (P &#x27f9; P) &and; (P &#x27f9; P) :: Conjunction
-                </li><li class="fragment">
-                    P &#x27fa; P :: Biconditional Definition
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h3>Symmetric Biconditional</h3>
-            <p>
-                <span class="intro">Symmetric</span>:
-                (P &#x27fa; Q) &#x27f9; (Q &#x27fa; P)
-            </p>
-            <ul>
-                <li class="fragment">
-                    ((P &#x27f9; Q) &and; (Q &#x27f9; P)) &#x27f9;<br />
-                    (Q &#x27f9; P) :: Conjunction Elimination
-                </li><li class="fragment">
-                    ((P &#x27f9; Q) &and; (Q &#x27f9; P)) &#x27f9;<br />
-                    (P &#x27f9; Q) :: Conjunction Elimination
-                </li><li class="fragment">
-                    ((P &#x27f9; Q) &and; (Q &#x27f9; P)) &#x27f9;<br />
-                    ((Q &#x27f9; P) &and; (P &#x27f9; Q)) :: Conjunction
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h3>Transitive Biconditional</h3>
-            <p>
-                <span class="intro">Transitive</span>:
-                (P &#x27fa; Q) &and; (Q &#x27fa; R)
-                &#x27f9; (P &#x27fa; R)
-            </p>
-            <ul>
-                <li>
-                    ((P &#x27f9; Q) &and; (Q &#x27f9; P))
-                    :: Biconditional
-                </li><li>
-                    ((Q &#x27f9; R) &and; (R &#x27f9; Q))
-                    :: Biconditional
-                </li><li>
-                    ((P &#x27f9; Q) &and; (Q &#x27f9; R)) &#x27f9;
-                    (P &#x27f9; R) :: Syllogism
-                </li><li>
-                    ((R &#x27f9; Q) &and; (Q &#x27f9; P)) &#x27f9;
-                    (R &#x27f9; P) :: Syllogism
+                    Transitive: (P &#x27fa; Q) &and; (Q &#x27fa; R)
+                    &#x27f9; (P &#x27fa; R)
                 </li>
             </ul>
         </section>
@@ -1188,10 +1065,10 @@
                 The empty set doesn't contain anything.
             </p><p class="fragment">
                 Extensionality means this set must be unique.
-            </p><div class="fragment"><p>
+            </p><p class="fragment">
                 If any set exists specification allows us to prove
                 that the empty set also exists:
-            </p><p>
+            </p><p class="fragment">
                 &#x2203;a &#x27f9; &#x2203;{ b&#x2208;a : b &ne; b }
                 = <span class="intro">{}</span>
             </p>
@@ -2079,7 +1956,8 @@
                     (a = b) &and; (b = c) &#x27f9; (P(a) &#x27fa; P(c))
                     :: Transitive Biconditional
                 </li><li class="fragment">
-                    (a = b) &and; (b = c) &#x27f9 (a = c) :: Leibniz's Law
+                    (a = b) &and; (b = c) &#x27f9; (a = c)
+                    :: Leibniz's Law
                 </li>
             </ul>
         </section>
@@ -2463,14 +2341,14 @@
         <section>
             <h3>
                 Abelian Group <span class="intro">&#x27ec;G,
-                &#x2218&#x27ed;</span>
+                &#x2218;&#x27ed;</span>
             </h3>
             <p>
                 An abelian group has a commutative function:
             </p>
             <ul>
                 <li class="fragment">
-                    &#x27ec;G, &#x2218&#x27ed; is a group
+                    &#x27ec;G, &#x2218;&#x27ed; is a group
                 </li><li class="fragment">
                     <span class="intro">Commutative</span>:
                     &#x2200;a,b&#x2208;G (a &#x2218; b) =
@@ -2491,7 +2369,7 @@
             </p>
             <ul>
                 <li class="fragment">
-                    &#x27ec;R, &#x2218&#x27ed; is an abelian group
+                    &#x27ec;R, &#x2218;&#x27ed; is an abelian group
                 </li><li class="fragment">
                     <span class="intro">Closed</span>:
                     &#x2200;a,b&#x2208;R : a &#x229a; b &#x2208; R
@@ -2514,15 +2392,15 @@
         </section>
         <section>
             <h3>
-                Commutative Ring <span class="intro">&#x27ec;R, &#x2218,
-                &#x229a;&#x27ed;</span>
+                Commutative Ring <span class="intro">&#x27ec;R,
+                &#x2218;, &#x229a;&#x27ed;</span>
             </h3>
             <p>
                 A commutative ring has commutative functions:
             </p>
             <ul>
                 <li class="fragment">
-                    &#x27ec;R, &#x2218, &#x229a;&#x27ed; is a ring
+                    &#x27ec;R, &#x2218;, &#x229a;&#x27ed; is a ring
                 </li><li class="fragment">
                     <span class="intro">Commutative</span>:
                     &#x2200;a,b,c&#x2208;R (a &#x229a; b) =
@@ -2541,7 +2419,7 @@
             </p>
             <ul>
                 <li class="fragment">
-                    &#x27ec;R, &#x2218, &#x229a;&#x27ed; is a ring
+                    &#x27ec;R, &#x2218;, &#x229a;&#x27ed; is a ring
                 </li><li class="fragment">
                     <span class="intro">Identity</span>:
                     &#x2203;e<sub>&#x229a;</sub>&#x2208;R
@@ -2561,7 +2439,7 @@
             </p>
             <ul>
                 <li class="fragment">
-                    &#x27ec;F, &#x2218, &#x229a;&#x27ed; is a ring
+                    &#x27ec;F, &#x2218;, &#x229a;&#x27ed; is a ring
                 </li><li class="fragment">
                     <span class="intro">Unitary</span>:
                     &#x2203;e<sub>&#x229a;</sub>&#x2208;F
@@ -3735,7 +3613,7 @@
                     &le;<sub>&#x2124;</sub>
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;)
                 </li>
-            </p>
+            </ul>
         </section>
         <section>
             <h3>Accentuate the Positive</h3>
@@ -4718,10 +4596,10 @@
                 </li><li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
                     &times; &#x27e8;1, 0&#x27e9; =
-                    &#x27e8;(1 &#x00d7 a<sub>1</sub>) +
+                    &#x27e8;(1 &#x00d7; a<sub>1</sub>) +
                     (0 &times; a<sub>2</sub>),<br />
-                    (0 &#x00d7 a<sub>1</sub>) +
-                    (1 &#x00d7 a<sub>2</sub>)&#x27e9;
+                    (0 &#x00d7; a<sub>1</sub>) +
+                    (1 &#x00d7; a<sub>2</sub>)&#x27e9;
                     :: Multiplication &#x2115;
                 </li><li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9;
@@ -4847,7 +4725,7 @@
                     b<sub>2</sub>&#x27e9; + &#x27e8;c<sub>1</sub>,
                     c<sub>2</sub>&#x27e9;) =<br /> &#x27e8;(a<sub>1</sub>
                     &times; (b<sub>1</sub> + c<sub>1</sub>)) +
-                    (a<sub>2</sub> &#x00d7 (b<sub>2</sub> +
+                    (a<sub>2</sub> &#x00d7; (b<sub>2</sub> +
                     c<sub>2</sub>)),<br /> (a<sub>1</sub> &times;
                     (b<sub>2</sub> + c<sub>2</sub>)) + (a<sub>2</sub>
                     &times; (b<sub>1</sub> + c<sub>1</sub>))&#x27e9;
@@ -5268,7 +5146,7 @@
                     a<sub>2</sub>&#x27e9; :: Arithmetic &#x2124;
                 </li><li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
-                    &#x27e8;0, 1&#x27e9; = &#x27e8;0, 1&#x27e9 +
+                    &#x27e8;0, 1&#x27e9; = &#x27e8;0, 1&#x27e9; +
                     &#x27e8;a<sub>1</sub>,a<sub>2</sub>&#x27e9;
                     :: Definition +
                 </li>
@@ -5361,7 +5239,7 @@
                 &#x2200;a,b&#x2208;&#x211a; a + b = b + a
             </p>
             <ul>
-                <li lass="fragment">
+                <li class="fragment">
                     &#x27e8;a<sub>1</sub>, a<sub>2</sub>&#x27e9; +
                     &#x27e8;b<sub>1</sub>, b<sub>2</sub>&#x27e9; =
                     &#x27e8;(a<sub>1</sub> &times; b<sub>2</sub>) +
@@ -5979,7 +5857,7 @@
                     &lt;<sub>&#x211a;</sub> (a + b) &times;
                     1/2<sub>&#x211a;</sub>
                 </li><li class="fragment">
-                    a &times 2<sub>&#x211a;</sub> &times;
+                    a &times; 2<sub>&#x211a;</sub> &times;
                     1/2<sub>&#x211a;</sub> &lt;<sub>&#x211a;</sub>
                     (a + b) &times; 1/2<sub>&#x211a;</sub>
                 </li><li class="fragment">
@@ -5988,7 +5866,7 @@
                     1/2<sub>&#x211a;</sub>
                 </li><li class="fragment intro">
                     a &lt;<sub>&#x211a;</sub> (a + b) &times;
-                    1/2<sub>&#x211a;</sub></sub>
+                    1/2<sub>&#x211a;</sub>
                 </li>
             </ul>
         </section>
@@ -6021,7 +5899,7 @@
                     1<sub>&#x211a;</sub>
                 </li><li class="fragment intro">
                     (a + b) &times; 1/2<sub>&#x211a;</sub>
-                    &lt;<sub>&#x211a;</sub> b</sub>
+                    &lt;<sub>&#x211a;</sub> b
                 </li>
             </ul>
         </section>
@@ -6076,7 +5954,7 @@
                             &#x27f9; b &lt; 0<sub>&#x211a;</sub>
                             :: Transitive &le;<sub>&#x211a;</sub>
                         </li><li class="fragment">
-                            b &lt 0<sub>&#x211a;</sub>
+                            b &lt; 0<sub>&#x211a;</sub>
                             &#x27f9; b&#x2208;0<sub>&#x211d;</sub>
                             :: Definition 0<sub>&#x211d;</sub>
                         </li>
@@ -6123,7 +6001,7 @@
                             &#x27f9; (d &lt; a)<sub>&#x211a;</sub>
                             :: Transitive &le;<sub>&#x211a;</sub>
                         </li><li class="fragment">
-                            (d &lt c) &#x27f9; (d &lt a) &#x27f9;
+                            (d &lt; c) &#x27f9; (d &lt; a) &#x27f9;
                             d&#x2208;{ b&#x2208;&#x211a; : b &lt; a }
                         </li>
                     </ul>
@@ -6298,7 +6176,7 @@
                     <ul>
                         <li class="fragment">
                             (a &#x2208; 5<sub>&#x211d;</sub>) &#x27f9;
-                            (a &lt 5<sub>&#x211a;</sub>)
+                            (a &lt; 5<sub>&#x211a;</sub>)
                             <span class="fragment">
                                 &#x27f9;
                                 &#x2203;b&lt;0<sub>&#x211a;</sub>
@@ -6433,8 +6311,8 @@
                             &#x2203;d&#x2208;&#x211a; d = (c + b)
                             &times; 1/2<sub>&#x211a;</sub>
                         </li><li class="fragment">
-                            (d &gt; b) &and; ((d &lt c) &#x27f9;
-                            (-d &gt -c) &#x27f9; (-d&#x2209;a))
+                            (d &gt; b) &and; ((d &lt; c) &#x27f9;
+                            (-d &gt; -c) &#x27f9; (-d&#x2209;a))
                         </li>
                     </ul>
                 </li>
@@ -6456,7 +6334,7 @@
                     &#x2203;b&#x2208;a,c&#x2208;(-a) b + c &ge;
                     0<sub>&#x211a;</sub>
                 </li><li class="fragment">
-                    b &#x2208
+                    b &#x2208;
                 </li><li class="fragment">
                 </li>
             </ul>
@@ -6505,7 +6383,7 @@
                     b&ge;0<sub>&#x211d;</sub>) &or;
                     (a&lt;0<sub>&#x211d;</sub> &and;
                     b&lt;0<sub>&#x211d;</sub>)) &#x27f9;<br />
-                    a &times b &#x225d; 0<sub>&#x211d;</sub> &cup;
+                    a &times; b &#x225d; 0<sub>&#x211d;</sub> &cup;
                     { (|c| &times; |d|)&#x2208;&#x211a; :
                     c&#x2208;a &and; d&#x2208;b }
                 </li><li>
@@ -6514,7 +6392,7 @@
                     b&lt;0<sub>&#x211d;</sub>) &or;
                     (a&lt;0<sub>&#x211d;</sub> &and;
                     b&ge;0<sub>&#x211d;</sub>)) &#x27f9;<br />
-                    a &times b &#x225d;
+                    a &times; b &#x225d;
                     { -(|c| &times; |d|)&#x2208;&#x211a; :
                     c&#x2208;a &and; d&#x2208;b }
                 </li>
@@ -6543,7 +6421,7 @@
                     b&ge;0<sub>&#x211d;</sub>) &or;
                     (a&lt;0<sub>&#x211d;</sub> &and;
                     b&lt;0<sub>&#x211d;</sub>)) &#x27f9;<br />
-                    a &times b &#x225d; 0<sub>&#x211d;</sub> &cup;
+                    a &times; b &#x225d; 0<sub>&#x211d;</sub> &cup;
                     { (|c| &times; |d|)&#x2208;&#x211a; :
                     c&#x2208;a &and; d&#x2208;b }
                 </li><li>
@@ -6552,7 +6430,7 @@
                     b&lt;0<sub>&#x211d;</sub>) &or;
                     (a&lt;0<sub>&#x211d;</sub> &and;
                     b&ge;0<sub>&#x211d;</sub>)) &#x27f9;<br />
-                    a &times b &#x225d;
+                    a &times; b &#x225d;
                     { -(|c| &times; |d|)&#x2208;&#x211a; :
                     c&#x2208;a &and; d&#x2208;b }
                 </li><li>
@@ -6637,7 +6515,7 @@
             <ul>
                 <li class="fragment">
                     a &times; 0<sub>&#x2124;</sub> =<sub>&#x2124;</sub>
-                    b &times 0<sub>&#x2124;</sub>
+                    b &times; 0<sub>&#x2124;</sub>
                 </li><li class="fragment">
                     0<sub>&#x2124;</sub> =<sub>&#x2124;</sub>
                     0<sub>&#x2124;</sub>
@@ -6661,13 +6539,14 @@
             <ul>
                 <li class="fragment">
                     &#x27e8;(a &times; 0<sub>&#x2124;</sub>) +
-                    (b &times; c), b &times 0<sub>&#x2124;</sub>&#x27e9;
+                    (b &times; c), b &times;
+                    0<sub>&#x2124;</sub>&#x27e9;
                     =<sub>&#x211a;</sub> &#x27e8;c,
                     0<sub>&#x2124;</sub>&#x27e9;
                 </li><li class="fragment">
                     ((a &times; 0<sub>&#x2124;</sub>) + (b &times; c))
                     &times; 0<sub>&#x2124;</sub> =<sub>&#x2124;</sub>
-                    (b &times 0<sub>&#x2124;</sub>) &times c
+                    (b &times; 0<sub>&#x2124;</sub>) &times; c
                 </li><li class="fragment">
                     0<sub>&#x2124;</sub> =<sub>&#x2124;</sub>
                     0<sub>&#x2124;</sub>
@@ -6691,9 +6570,9 @@
                     0<sub>&#x2124;</sub>&#x27e9; =<sub>&#x211a;</sub>
                     &#x27e8;c, 0<sub>&#x2124;</sub>&#x27e9;
                 </li><li class="fragment">
-                    (a &times c) &times; 0<sub>&#x2124;</sub>
-                    =<sub>&#x2124;</sub> (b &times 0<sub>&#x2124;</sub>)
-                    &times; c
+                    (a &times; c) &times; 0<sub>&#x2124;</sub>
+                    =<sub>&#x2124;</sub> (b &times;
+                    0<sub>&#x2124;</sub>) &times; c
                 </li><li class="fragment">
                     0<sub>&#x2124;</sub> =<sub>&#x2124;</sub>
                     0<sub>&#x2124;</sub>
@@ -6721,8 +6600,8 @@
                     &#x27e8;1<sub>&#x2124;</sub>,
                     1<sub>&#x2124;</sub>&#x27e9;
                 </li><li class="fragment">
-                    (a &times b) &times; 1 &#x225f;<sub>&#x2124;</sub>
-                    (0<sub>&#x2124;</sub> &times 0<sub>&#x2124;</sub>)
+                    (a &times; b) &times; 1 &#x225f;<sub>&#x2124;</sub>
+                    (0<sub>&#x2124;</sub> &times; 0<sub>&#x2124;</sub>)
                     &times; 1<sub>&#x2124;</sub>
                 </li><li class="fragment">
                     a &times; b &ne;<sub>&#x2124;</sub>
@@ -6744,8 +6623,8 @@
             </p>
             <ul>
                 <li class="fragment">
-                    a &times 0<sub>&#x2124;</sub> =<sub>&#x2124;</sub>
-                    0<sub>&#x2124;</sub> &times b
+                    a &times; 0<sub>&#x2124;</sub> =<sub>&#x2124;</sub>
+                    0<sub>&#x2124;</sub> &times; b
                 </li><li class="fragment">
                     0<sub>&#x2124;</sub> =<sub>&#x2124;</sub>
                     0<sub>&#x2124;</sub>
@@ -6818,53 +6697,51 @@
             <p>
                 How many rational numbers are there?
             </p>
-            <small>
-                <table>
-                    <caption>
-                        &#x27e8;0&#x2115;, 0/1&#x211a;&#x27e9;
-                    </caption>
-                    <tr>
-                        <td>&#x27e8;1&#x2115;,
-                            1/1&#x211a;&#x27e9;</td>
-                        <td>&#x27e8;2&#x2115;,
-                            1/2&#x211a;&#x27e9;</td>
-                        <td>&#x27e8;4&#x2115;,
-                            1/3&#x211a;&#x27e9;</td>
-                        <td>&#x27e8;7&#x2115;,
-                            1/4&#x211a;&#x27e9;</td>
-                    </tr>
-                    <tr>
-                        <td>&#x27e8;3&#x2115;,
-                            2/1&#x211a;&#x27e9;</td>
-                        <td>&#x27e8;5&#x2115;,
-                            2/2&#x211a;&#x27e9;</td>
-                        <td>&#x27e8;8&#x2115;,
-                            2/3&#x211a;&#x27e9;</td>
-                        <td>&#x27e8;12&#x2115;,
-                            2/4&#x211a;&#x27e9;</td>
-                    </tr>
-                    <tr>
-                        <td>&#x27e8;6&#x2115;,
-                            3/1&#x211a;&#x27e9;</td>
-                        <td>&#x27e8;9&#x2115;,
-                            3/2&#x211a;&#x27e9;</td>
-                        <td>&#x27e8;13&#x2115;,
-                            3/3&#x211a;&#x27e9;</td>
-                        <td>&#x27e8;18&#x2115;,
-                            3/4&#x211a;&#x27e9;</td>
-                    </tr>
-                    <tr>
-                        <td>&#x27e8;10&#x2115;,
-                            4/1&#x211a;&#x27e9;</td>
-                        <td>&#x27e8;14&#x2115;,
-                            4/2&#x211a;&#x27e9;</td>
-                        <td>&#x27e8;19&#x2115;,
-                            4/3&#x211a;&#x27e9;</td>
-                        <td>&#x27e8;25&#x2115;,
-                            4/4&#x211a;&#x27e9;</td>
-                    </tr>
-                </table>
-            </small>
+            <table>
+                <caption>
+                    &#x27e8;0&#x2115;, 0/1&#x211a;&#x27e9;
+                </caption>
+                <tr>
+                    <td>&#x27e8;1&#x2115;,
+                        1/1&#x211a;&#x27e9;</td>
+                    <td>&#x27e8;2&#x2115;,
+                        1/2&#x211a;&#x27e9;</td>
+                    <td>&#x27e8;4&#x2115;,
+                        1/3&#x211a;&#x27e9;</td>
+                    <td>&#x27e8;7&#x2115;,
+                        1/4&#x211a;&#x27e9;</td>
+                </tr>
+                <tr>
+                    <td>&#x27e8;3&#x2115;,
+                        2/1&#x211a;&#x27e9;</td>
+                    <td>&#x27e8;5&#x2115;,
+                        2/2&#x211a;&#x27e9;</td>
+                    <td>&#x27e8;8&#x2115;,
+                        2/3&#x211a;&#x27e9;</td>
+                    <td>&#x27e8;12&#x2115;,
+                        2/4&#x211a;&#x27e9;</td>
+                </tr>
+                <tr>
+                    <td>&#x27e8;6&#x2115;,
+                        3/1&#x211a;&#x27e9;</td>
+                    <td>&#x27e8;9&#x2115;,
+                        3/2&#x211a;&#x27e9;</td>
+                    <td>&#x27e8;13&#x2115;,
+                        3/3&#x211a;&#x27e9;</td>
+                    <td>&#x27e8;18&#x2115;,
+                        3/4&#x211a;&#x27e9;</td>
+                </tr>
+                <tr>
+                    <td>&#x27e8;10&#x2115;,
+                        4/1&#x211a;&#x27e9;</td>
+                    <td>&#x27e8;14&#x2115;,
+                        4/2&#x211a;&#x27e9;</td>
+                    <td>&#x27e8;19&#x2115;,
+                        4/3&#x211a;&#x27e9;</td>
+                    <td>&#x27e8;25&#x2115;,
+                        4/4&#x211a;&#x27e9;</td>
+                </tr>
+            </table>
             <p>
                 Skipping values already obtained and alternating
                 negative numbers would give a bijection between
@@ -6889,7 +6766,7 @@
         </section>
     </section>
 
-    <section id="algebra">
+    <section id="algebra2">
         <section>
             <h2>Algebra</h2>
             <blockquote>
@@ -7553,7 +7430,7 @@
                 </li>
                 <li>
                     &#x2200;a&#x2208;&#x211d;
-                    &#x2200;i<0&#x2208;&#x2124;
+                    &#x2200;i&lt;0&#x2208;&#x2124;
                     &#x27e8;a, &#x27e8;i, &#x27e8;i,
                     t&#x27e9;&#x27e9;&#x27e9; =&#x1d544;
                     &#x27e8;-a, t&#x27e9;
@@ -8577,50 +8454,51 @@
                 </li>
             </ul>
         </section>
-    </section>
-            </div></div>
-            <script src="lib/reveal/head.min.js"></script>
-            <script src="lib/reveal/reveal.js"></script>
-            <script src="lib/triggy.js"></script>
-            <script>
-             var link = document.createElement('link');
-             link.rel = 'stylesheet';
-             link.type = 'text/css';
-             link.href = window.location.search.match(/document/gi) ?
-                         'lib/reveal/pdf.css' : 'lib/reveal/paper.css';
-             document.getElementsByTagName('head')[0].appendChild( link );
-             Reveal.initialize({
-                 slideNumber: 'h.v',
-                 transition: 'convex', history: true,
-                 showNotes: window.location.search.match(/shownotes/gi) ?
-                            true : false,
-                 dependencies: [
-	             /* { src: 'lib/js/classList.js',
-                      *   condition: function() { return !document.body.classList; } },
-	                { src: 'plugin/markdown/marked.js',
-                      *   condition: function() {
-                      *       return !!document.querySelector( '[data-markdown]' );
-                      *   } },
-	                { src: 'plugin/markdown/markdown.js',
-                      *   condition: function() {
-                      *       return !!document.querySelector( '[data-markdown]' );
-                      *   } },
-	                { src: 'plugin/highlight/highlight.js',
-                      *   async: true, callback: function() {
-                      *       hljs.initHighlightingOnLoad(); } },
-	                { src: 'plugin/zoom-js/zoom.js', async: true },*/
-	             { src: 'lib/reveal/search.js', async: true },
-	             { src: 'lib/reveal/notes.js', async: true }
-                 ]
-             });
+    </section></div></div>
+    <script src="lib/reveal/head.min.js"></script>
+    <script src="lib/reveal/reveal.js"></script>
+    <script src="lib/triggy.js"></script>
+    <script>
+     var link = document.createElement('link');
+     link.rel = 'stylesheet';
+     link.type = 'text/css';
+     link.href = window.location.search.match(/document/gi) ?
+                 'lib/reveal/pdf.css' : 'lib/reveal/paper.css';
+     document.getElementsByTagName('head')[0].appendChild( link );
+     Reveal.initialize({
+         slideNumber: 'h.v',
+         transition: 'convex', history: true,
+         showNotes: window.location.search.match(/shownotes/gi) ?
+                    true : false,
+         dependencies: [
+	     /* { src: 'lib/js/classList.js',
+              *   condition: function() { return !document.body.classList; } },
+	        { src: 'plugin/markdown/marked.js',
+              *   condition: function() {
+              *       return !!document.querySelector( '[data-markdown]' );
+              *   } },
+	        { src: 'plugin/markdown/markdown.js',
+              *   condition: function() {
+              *       return !!document.querySelector( '[data-markdown]' );
+              *   } },
+	        { src: 'plugin/highlight/highlight.js',
+              *   async: true, callback: function() {
+              *       hljs.initHighlightingOnLoad(); } },
+	        { src: 'plugin/zoom-js/zoom.js', async: true },*/
+	     { src: 'lib/reveal/search.js', async: true },
+	     { src: 'lib/reveal/notes.js', async: true }
+         ]
+     });
 
-             Reveal.addEventListener('ready', function(event) {
-                 triggy.setup('canvas.triggy', function(value) {
-                     return value / Reveal.getScale(); });
-                 triggy.update('canvas.triggy', Reveal.getCurrentSlide());
-             });
+     Reveal.addEventListener('ready', function(event) {
+         triggy.setup('canvas.triggy', function(value) {
+             return value / Reveal.getScale(); });
+         triggy.update('canvas.triggy', Reveal.getCurrentSlide());
+     });
 
-             Reveal.addEventListener('slidechanged', function(event) {
-                 triggy.update('canvas.triggy', event.currentSlide);
-             });
-            </script>
+     Reveal.addEventListener('slidechanged', function(event) {
+         triggy.update('canvas.triggy', event.currentSlide);
+     });
+    </script>
+    </body>
+</html>
