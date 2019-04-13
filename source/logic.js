@@ -500,18 +500,150 @@
                         p: "DpDqr", q: "DsDss", r: "DDsqDDpsDps", s: "t"
                     }, rule: "DDtDsDssDDDpDqrtDDpDqrt"},
                 Theorem3: {
-                    source: "Axiom", premise: "Axiom",
-                    rule: "DDwDDpDqrtDDDtDsDsswDDtDsDssw",
+                    source: "Łukasiewicz:Axiom", premise: "Theorem2",
                     substitute: {
                         p: "DtDsDss", q: "DDpDqrt", r: "DDpDqrt", s: "w"
-                    }},
-                Theorem4: "DDDDsqDDpsDpsDtDttDpDqr",
-                Theorem5: "DDpDqrDDDstDDtsDtsDtDtt",
-                Theorem6: "DtDtt",
-                Theorem7: "DDstDDtsDts",
-                Theorem8: "DDttt",
-                Theorem9: "DDDtsDtsDst",
-                Theorem10: "DDpsDDDDtsDtspDDDtsDtsp",
+                    }, rule: "DDwDDpDqrtDDDtDsDsswDDtDsDssw"},
+                Theorem4: {
+                    source: "Theorem3", premise: "Łukasiewicz:Axiom",
+                    substitute: {
+                        w: "DpDqr", p: "s", q: "s", t: "DDsqDDpsDps"
+                    }, rule: "DDDDsqDDpsDpsDtDttDpDqr"},
+                Theorem5: {
+                    source: "Theorem2", premise: "Theorem4",
+                    substitute: {
+                        t: "DDDstDDtsDtsDtDtt", s: "t"
+                    }, rule: "DDpDqrDDDstDDtsDtsDtDtt"},
+                Theorem6: {
+                    source: "Theorem5", premise: "Theorem5",
+                    substitute: {
+                        p: "DpDqr", q: "DDstDDtsDts", r: "DtDtt"
+                    }, rule: "DtDtt"},
+                Theorem7: {
+                    source: "Łukasiewicz:Axiom", premise: "Theorem6",
+                    substitute: {
+                        p: "t", q: "t", r: "t"
+                    }, rule: "DDstDDtsDts"},
+                Theorem8: {
+                    source: "Theorem7", premise: "Theorem6",
+                    substitute: { s: "t", t: "Dtt" }, rule: "DDttt"},
+                Theorem9: {
+                    source: "Theorem7", premise: "Theorem7",
+                    substitute: { s: "Dst", t: "DDtsDts" },
+                    rule: "DDDtsDtsDst"},
+                Theorem10: {
+                    source: "Łukasiewicz:Axiom", premise: "Theorem9",
+                    substitute: {
+                        p: "DDtsDts", q: "s", r: "t", s: "p"
+                    }, rule: "DDpsDDDDtsDtspDDDtsDtsp"},
+                Theorem11: {
+                    source: "Theorem10", premise: "Theorem8",
+                    substitute: {
+                        p: "Dpp", s: "p", t: "s"
+                    }, rule: "DDDspDspDpp"},
+                Theorem12: {
+                    source: "Theorem7", premise: "Theorem11",
+                    substitute: {
+                        s: "DDspDsp", t: "Dpp"
+                    }, rule: "DDppDDspDsp"},
+                Theorem13: {
+                    source: "Łukasiewicz:Axiom", premise: "Theorem12",
+                    substitute: {
+                        p: "Dpp", q: "Dsp", r: "Dsp", s: "r"
+                    }, rule: "DDrDspDDDpprDDppr"},
+                Theorem14: {
+                    source: "Theorem13", premise: "Łukasiewicz:Axiom",
+                    substitute: {
+                        r: "DpDqr", s: "DtDtt", p: "DDsqDDpsDps"
+                    }, rule: "DDDDsqDDpsDpsDDsqDDpsDpsDpDqr"},
+                Theorem15: {
+                    source: "Theorem7", premise: "Theorem14",
+                    substitute: {
+                        s: "DDsqDDpsDps", t: "DpDqr"
+                    }, rule: "DDpDqrDDDsqDDpsDpsDDsqDDpsDps"},
+                Theorem16: {
+                    source: "Theorem15", premise: "Theorem7",
+                    substitute: {
+                        p: "Dst", q: "Dts", r: "Dts", s: "p"
+                    }, rule: "DDpDtsDDDstpDDstp"},
+                Theorem17: {
+                    source: "Theorem7", premise: "Theorem16",
+                    substitute: {
+                        s: "DpDts", t: "DDDstpDDstp"
+                    }, rule: "DDDDstpDDstpDpDts"},
+                Theorem18: {
+                    source: "Theorem16", premise: "Theorem17",
+                    substitute: {
+                        p: "DDDstpDDstp", t: "p", s: "Dts"
+                    }, rule: "DDDtspDDDstpDDstp"},
+                Theorem19: {
+                    source: "Theorem7", premise: "Theorem18",
+                    substitute: {
+                        s: "DDtsp", t: "DDDstpDDstp"
+                    }, rule: "DDDDstpDDstpDDtsp"},
+                Theorem20: {
+                    source: "Theorem15", premise: "Theorem15",
+                    substitute: {
+                        p: "DpDqr", q: "DDsqDDpsDps",
+                        r: "DDsqDDpsDps", s: "t"
+                    }, rule: "DDtDDsqDDpsDpsDDDpDqrtDDpDqrt"},
+                Theorem21: {
+                    source: "Theorem20", premise: "Theorem19",
+                    substitute: {
+                        t: "DDDqsDDpsDpsDDqsDDpsDps"
+                    }, rule: "DDpDqrDDDqsDDpsDpsDDqsDDpsDps"},
+                Theorem22: {
+                    source: "Łukasiewicz:Axiom", premise: "Theorem9",
+                    substitute: {
+                        p: "DDtsDts", q: "s", r: "t", s: "p"
+                    }, rule: "DDpsDDDDtsDtspDDDtsDtsp"},
+                Theorem23: {
+                    source: "Theorem22", premise: "Theorem6",
+                    substitute: { s: "Dpp" }, rule: "DDDtDppDtDppp"},
+                Theorem24: {
+                    source: "Theorem7", premise: "Theorem23",
+                    substitute: { s: "DDtDppDtDpp", t: "p" },
+                    rule: "DpDDtDppDtDpp"},
+                Theorem25: {
+                    source: "Łukasiewicz:Axiom", premise: "Theorem18",
+                    substitute: {
+                        p: "DDtsp", q: "DDstp", r: "DDstp", s: "q"
+                    }, rule: "DDqDDstpDDDDtspqDDDtspq"},
+                Theorem26: {
+                    source: "Theorem25", premise: "Theorem16",
+                    substitute: {
+                        q: "DpDts", s: "Dst", t: "p", p: "DDstp"
+                    }, rule: "DDDpDstDDstpDpDts"},
+                Theorem27: {
+                    source: "Theorem7", premise: "Theorem26",
+                    substitute: {
+                        s: "DDpDstDDstp", t: "DpDts"
+                    }, rule: "DDpDtsDDpDstDDstp"},
+                Theorem28: {
+                    source: "Theorem21", premise: "Theorem27",
+                    substitute: {
+                        p: "DpDts", q: "DpDst", r: "DDstp", s: "q"
+                    }, rule: "DDDpDstqDDDpDtsqDDpDtsq"},
+                Theorem29: {
+                    source: "Theorem28", premise: "Theorem18",
+                    substitute: {
+                        p: "Dts", q: "DDDstDpqDDstDpq", s: "p", t: "q"
+                    }, rule: "DDDtsDqpDDDstDpqDDstDpq"},
+                Theorem30: {
+                    source: "Łukasiewicz:Axiom", premise: "Theorem29",
+                    substitute: {
+                        p: "DDtsDqp", q: "DDstDpq", r: "DDstDpq", s: "r"
+                    }, rule: "DDrDDstDpqDDDDtsDqprDDDtsDqpr"},
+                Theorem31: {
+                    source: "Theorem30", premise: "Theorem24",
+                    substitute: {
+                        p: "t", q: "Dpp", r: "p", t: "Dpp"
+                    }, rule: "DDDDppsDDppsp"},
+                Theorem32: {
+                    source: "Theorem7", premise: "Theorem31",
+                    substitute: {
+                        s: "DDDppsDDpps", t: "p"
+                    }, rule: "DpDDDppsDDpps"},
             },
         },
         Wajsberg: {
@@ -546,9 +678,11 @@
         var result, entry;
 
         if (Array.isArray(key)) {
-            if (key.length > 0)
+            if (key.length >= 2)
                 entry = internalLibrary[key[0]].theorems[key[1]];
-            else entry = library.theorems[key[0]];
+            else if (key.length >= 1)
+                entry = library.theorems[key[0]];
+            else throw Error("Invalid key", key);
         } else entry = library.theorems[key];
 
         if (typeof(entry) === 'string') {
