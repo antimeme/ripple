@@ -799,11 +799,27 @@
                     function(event) { this.hide(); }, this),
                 this.imageSystem.createItem(
                     {icon: 'lhand', className: 'inventory-lhand',
+                     imageSystem: this.imageSystem,
                      drop: function(value) {
+                         document.querySelectorAll('.inventory-lhand')
+                                 .forEach(function(element) {
+                                     this.imageSystem.applyItem({
+                                         className: 'inventory-lhand',
+                                         icon: value.icon,
+                                     }, element);
+                                 }, this);
                          console.log('DEBUG-lhand-drop', value); }}),
                 this.imageSystem.createItem(
                     {icon: 'rhand', className: 'inventory-rhand',
+                     imageSystem: this.imageSystem,
                      drop: function(value) {
+                         document.querySelectorAll('.inventory-rhand')
+                                 .forEach(function(element) {
+                                     this.imageSystem.applyItem({
+                                         className: 'inventory-rhand',
+                                         icon: value.icon,
+                                     }, element);
+                                 }, this);
                          console.log('DEBUG-rhand-drop', value); }}),
                 this.imageSystem.createButton(
                     {icon: 'take', className: 'inventory-givetake'},
