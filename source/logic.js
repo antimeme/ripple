@@ -26,51 +26,178 @@
 // by Thomas W. Scharle.
 (function(logic) {
     'use strict';
+
+    // Returns true iff the operator matches and either the count
+    // is falsy or contains the length of the expression.  This
+    // routine assumes the expression argument is an array and that
+    // count is either falsy or a positive integer.
+    var matchOp = function(expression, operator, count) {
+        return (expression.length >= 1) &&
+               (expression[0] === operator) &&
+               (!count || (expression.length === count));
+    };
+
+    var matchExprOp = function(expression, operator, count) {
+        return Array.isArray(expression) &&
+               matchOp(expression, operator, count);
+    };
+
+    // Compute an estimate of an expression value's complexity
+    var complexity = function(value) {
+        var result = 0;
+        if (typeof(value) === 'boolean')
+            result = 0;
+        else if (typeof(value) === 'string')
+            result = 1;
+        else if (Array.isArray(value)) {
+            value.forEach(function(item, index) {
+                if (index > 0) {
+                    var current = complexity(item);
+                    if (current > result)
+                        result = current;
+                }
+            });
+            result += 1;
+        }
+        return result;
+    };
+
+    // Operator mappings. The operators variable is indexed by the
+    // operation name ("and", "or", "implies" and so on).  The lnotes
+    // table is indexed by Łukasiewicz notation characters ("A", "K",
+    // "C" and so on).
+    var lnotes = {};
     var operators = {
-        nand:  {sigil: '&#x22bc;', lnote: 'D'},
-        nor:   {sigil: '', lnote: 'S'},
+        nand:  {
+            sigil: '&#x22bc;', lnote: 'D',
+            deconstant: function(expr) {
+                if (expr.length !== 3) {
+                } else if (typeof(expr[1]) === 'boolean') {
+                    if (typeof(expr[2]) === 'boolean')
+                        expr = !(expr[1] && expr[2]);
+                    else expr = expr[1] ? ['not', expr[2]] : true;
+                } else if (typeof(expr[2]) === 'boolean')
+                    expr = expr[2] ? ['not', expr[1]] : true;
+                return expr; },
+            simplify: function(expr) {
+                if (expr.length !== 3) {
+                } else if (matchExprOp(expr[1], 'nand', 3) &&
+                           matchExprOp(expr[2], 'nand', 3) &&
+                           equals(expr[1][1], expr[2][1]) &&
+                           equals(expr[1][2], expr[2][2]))
+                    expr = ['and', expr[1][1], expr[1][2]];
+                else if (equals(expr[1], expr[2]))
+                    expr = ['not', expr[1]];
+                else {
+                    var negate1 = easynegate(expr[1]);
+                    var negate2 = easynegate(expr[2]);
+
+                    if (negate1 && negate2)
+                        expr = ['or', negate1, negate2];
+                    else if (negate1)
+                        expr = ['implies', expr[2], negate1];
+                    else if (negate2)
+                        expr = ['implies', expr[1], negate2];
+                }
+                return expr; }},
+        nor: {sigil: '', lnote: 'S'},
         not: {
             sigil: '&not;', lnote: 'N', unary: true,
-            devolve: function(list) {
-                var value = list[1];
-                if (Array.isArray(value) &&
-                    (value.length === 2) && (value[0] === 'and'))
+            devolve: function(expr) {
+                var value = expr[1];
+                if (matchExprOp(value, 'and', 3))
                     return ['nand', value[1], value[2]];
-                return ['nand', value, value]; } },
+                return ['nand', value, value]; },
+            deconstant: function(expr) {
+                if ((expr.length === 2) &&
+                    (typeof(expr[1]) === 'boolean'))
+                    expr = !expr[1];
+                return expr; },
+            simplify: function(expr) {
+                if ((expr.length === 2) &&
+                    matchExprOp(expr[1], 'nand'))
+                    expr = ['and'].concat(expr[1].slice(1));
+                return expr; }
+        },
         implies: {
             sigil: '&#x27f9;', lnote: 'C',
-            devolve: function(list) {
+            devolve: function(expr) {
                 // TODO: more than two arguments
-                if (Array.isArray(list[2]) &&
-                    (list[2].length === 3) && (list[2][0] === 'and')) {
-                    return ['nand', list[1],
-                            ['nand', list[2][1], list[2][2]]];
+                return matchExprOp(expr[2], 'and', 3) ?
+                       ['nand', expr[1],
+                        ['nand', expr[2][1], expr[2][2]]] :
+                       ['nand', expr[1], ['nand', expr[2], expr[2]]]; },
+            deconstant: function(expr) {
+                if (expr.length === 3) {
+                    if (typeof(expr[1]) === 'boolean')
+                        expr = expr[1] ? expr[2] : true;
+                    else if (typeof(expr[2]) === 'boolean')
+                        expr = expr[2] ? true : ['not', expr[1]];
                 }
-                return ['nand', list[1],
-                        ['nand', list[2], list[2]]]; }
+                return expr; },
+            simplify: function(expr) {
+                return expr; }
         },
         and: {
             sigil: '&and;', lnote: 'A',
-            devolve: function(list) {
+            devolve: function(expr) {
                 // TODO: more than two arguments
-                return ['nand', ['nand', list[1], list[2]],
-                        ['nand', list[1], list[2]]];
-            }
+                return ['nand', ['nand', expr[1], expr[2]],
+                        ['nand', expr[1], expr[2]]]; },
+            deconstant: function(expr) {
+                if (expr.length === 3) {
+                    if (typeof(expr[1]) === 'boolean')
+                        expr = expr[1] ? expr[2] : false;
+                    else if (typeof(expr[2]) === 'boolean')
+                        expr = expr[2] ? expr[1] : false;
+                }
+                return expr; },
+            simplify: function(expr) {
+                if ((expr.length === 3) && equals(expr[1], expr[2]))
+                    expr = expr[1];
+                return expr; }
         },
-        or:      {
+        or: {
             sigil: '&or;', lnote: 'K',
-            devolve: function(list) {
+            devolve: function(expr) {
                 // TODO: more than two arguments
-                return ['nand', ['nand', list[1], list[1]],
-                        ['nand', list[2], list[2]]];
-            }
+                return ['nand', ['nand', expr[1], expr[1]],
+                        ['nand', expr[2], expr[2]]]; },
+            deconstant: function(expr) {
+                if (expr.length === 3) {
+                    if (typeof(expr[1]) === 'boolean')
+                        expr = expr[1] ? true : expr[2];
+                    else if (typeof(expr[2]) === 'boolean')
+                        expr = expr[2] ? true : expr[1];
+                }
+                return expr; },
+            simplify: function(expr) {
+                return expr; }
         },
-        bicond: {
+        eq: {
             sigil: '&#x27fa;', lnote: 'E',
-            devolve: function(list) {
-                // TODO: implement this
-                return list; }}
+            devolve: function(expr) {
+                // TODO: more than two arguments
+                return operators['and'].devolve(
+                    ['and', operators['implies'].devolve(
+                        ['implies', expr[1], expr[2]]),
+                     operators['implies'].devolve(
+                         ['implies', expr[2], expr[1]])]); },
+            deconstant: function(expr) {
+                if ((expr.length === 3) &&
+                    (typeof(expr[1]) === 'boolean') &&
+                    (typeof(expr[2]) === 'boolean'))
+                    expr = (expr[1] === expr[2]);
+                return expr; },
+            simplify: function(expr) {
+                return expr; }
+        }
     };
+    Object.keys(operators).forEach(function(op) {
+        operators[op].tag = op;
+        if (operators[op].lnote)
+            lnotes[operators[op].lnote] = operators[op];
+    });
 
     /**
      * Recursively scan an expression and change variables and
@@ -117,25 +244,6 @@
         return result;
     };
 
-    var complexity = function(value) {
-        var result = 0;
-        if (typeof(value) === 'boolean')
-            result = 0;
-        else if (typeof(value) === 'string')
-            result = 1;
-        else if (Array.isArray(value)) {
-            value.forEach(function(item, index) {
-                if (index > 0) {
-                    var current = complexity(item);
-                    if (current > result)
-                        result = current;
-                }
-            });
-            result += 1;
-        }
-        return result;
-    };
-
     // Returns the negation of an easily negated expression or null.
     // What "easy" means here is a judgement call.  Obviously a "not"
     // expression is easy to negate.  A "nand" expression can be
@@ -149,21 +257,6 @@
                 result = ['and'].concat(expression.slice(1));
         }
         return result;
-    };
-
-    // Returns true iff the operator matches and either the count
-    // is falsy or contains the length of the expression.  This
-    // routine assumes the expression argument is an array and that
-    // count is either falsy or a positive integer.
-    var matchOp = function(expression, operator, count) {
-        return (expression.length >= 1) &&
-               (expression[0] === operator) &&
-               (!count || (expression.length === count));
-    };
-
-    var matchExprOp = function(expression, operator, count) {
-        return Array.isArray(expression) &&
-               matchOp(expression, operator, count);
     };
 
     // Applies Nicod's modus ponens iff the expression is an
@@ -220,28 +313,16 @@
         var stack = [];
 
         var complete = function(entry) {
-            return (((entry[0] === 'nand') ||
-                     (entry[0] === 'implies') ||
-                     (entry[0] === 'and') ||
-                     (entry[0] === 'or')) &&
-                    (entry.length >= 3)) ||
-                   ((entry[0] === 'not') && (entry.length >= 2));
+            return (entry[0] in operators) ?
+                   (operators[entry[0]].unary ?
+                    (entry.length >= 2) : (entry.length >= 3)) :
+                   (entry.length >= 3);
         };
 
         for (index = 0; index < value.length; ++index) {
             current = value[index];
-            if (current === 'D') {
-                stack.push(['nand']);
-            } else if (current === 'S') {
-                stack.push(['nor']);
-            } else if (current === 'N') {
-                stack.push(['not']);
-            } else if (current === 'C') {
-                stack.push(['implies']);
-            } else if (current === 'A') {
-                stack.push(['and']);
-            } else if (current === 'K') {
-                stack.push(['or']);
+            if (current in lnotes) {
+                stack.push([lnotes[current].tag]);
             } else if ((current >= 'a') && (current <= 'z')) {
                 // Complete entries on the way up
                 while (stack.length > 0) {
@@ -357,8 +438,17 @@
                     expression = operator.devolve(expression);
                 return expression;
             }
-        }, this.__value));
-    };
+        }, this.__value)); };
+
+    logic.expression.prototype.deconstant = function(config) {
+        return logic.expression(transform({
+            up: function(expression) {
+                var operator = operators[expression[0]];
+                if (operators.deconstant)
+                    expression = operator.deconstant(expression);
+                return expression;
+            }
+        }, this.__value)); };
 
     /**
      * Replace complex constructs in expression with simpler
@@ -366,103 +456,18 @@
     logic.expression.prototype.simplify = function(config) {
         return logic.expression(transform({
             up: function(expression) {
-                var negate1, negate2;
-
-                // Conjunction Compression
-                if ((!config || (config.all || config.andsame)) &&
-                    (matchOp(expression, 'and', 3) &&
-                     equals(expression[1], expression[2])))
-                    expression = expression[1];
-
-                // Definition of NOT
-                if ((!config || (config.all || config.not)) &&
-                    matchOp(expression, 'nand', 3) &&
-                    equals(expression[1], expression[2]))
-                    expression = ['not', expression[1]];
-
-                // Definition of AND
-                if ((!config || (config.all || config.and)) &&
-                    matchOp(expression, 'not', 2) &&
-                    matchExprOp(expression[1], 'nand'))
-                    expression = ['and'].concat(
-                        expression[1].slice(1));
-
-                // Definition of IMPLICATION
-                if ((!config || (config.all || config.implies)) &&
-                    matchOp(expression, 'nand', 3)) {
-                    negate1 = easynegate(expression[1]);
-                    negate2 = easynegate(expression[2]);
-
-                    if (negate1 && negate2)
-                        expression = (complexity(expression[2]) <
-                            complexity(expression[1])) ? [
-                                'implies', expression[1], negate2] : [
-                                    'implies', expression[2], negate1];
-                    else if (negate1)
-                        expression =
-                            ['implies', expression[2], negate1];
-                    else if (negate2)
-                        expression =
-                            ['implies', expression[1], negate2];
-                }
-
-                // Definition of OR
-                if ((!config || (config.all || config.or)) &&
-                    matchOp(expression, 'nand', 3) &&
-                    ((negate1 = easynegate(expression[1])) !== null) &&
-                    ((negate2 = easynegate(expression[2])) !== null))
-                    expression = ['or', negate1, negate2];
-
-                // Simplify boolean constants
-                if (matchOp(expression, 'not', 2) &&
-                    (typeof(expression[1]) === 'boolean')) {
-                    expression = !expression[1];
-                } else if (matchOp(expression, 'nand', 3)) {
-                    if (typeof(expression[1]) === 'boolean') {
-                        if (typeof(expression[2]) === 'boolean')
-                            expression = !(expression[1] &&
-                                           expression[2]);
-                        else if (expression[1]) {
-                            expression =
-                                (!config || (config.all || config.not)) ?
-                                ['not', expression[2]] : [
-                                    'nand', expression[2],
-                                    expression[2]];
-                        } else expression = true;
-                    } else if (typeof(expression[2]) === 'boolean') {
-                        if (expression[2]) {
-                            expression =
-                                (!config || (config.all || config.not)) ?
-                                ['not', expression[1]] : [
-                                    'nand', expression[1],
-                                    expression[1]];
-                        } else expression = true;
-                    }
-                } else if (matchOp(expression, 'and', 3) &&
-                           (typeof(expression[1]) === 'boolean')) {
-                    expression = expression[1] ? expression[2] : false;
-                } else if (matchOp(expression, 'and', 3) &&
-                           (typeof(expression[2]) === 'boolean')) {
-                    expression = expression[2] ? expression[1] : false;
-                } else if (matchOp(expression, 'or', 3) &&
-                           (typeof(expression[1]) === 'boolean')) {
-                    expression = expression[1] ? true : expression[2];
-                } else if (matchOp(expression, 'or', 3) &&
-                           (typeof(expression[2]) === 'boolean')) {
-                    expression = expression[2] ? true : expression[1];
-                } else if (matchOp(expression, 'implies', 3) &&
-                           (typeof(expression[1]) === 'boolean')) {
-                    expression = expression[1] ? expression[2] : true;
-                } else if (matchOp(expression, 'implies', 3) &&
-                           (typeof(expression[2]) === 'boolean')) {
-                    expression = expression[2] ? true :
-                                 ['not', expression[1]];
-                }
-
+                var operator = operators[expression[0]];
+                if (operator.deconstant)
+                    expression = operator.deconstant(expression);
+                return expression; }
+        }, transform({
+            up: function(expression) {
+                var operator = operators[expression[0]];
+                if (operator.simplify)
+                    expression = operator.simplify(expression);
                 return expression;
             }
-        }, this.__value));
-    };
+        }, this.__value))); };
 
     /**
      * Return an array of all free variables in the expression */

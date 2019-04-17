@@ -101,7 +101,7 @@
      document.getElementById(
          "deconstant").addEventListener("click", function(event) {
              if (expression)
-                 apply(expression.simplify({})); });
+                 apply(expression.deconstant()); });
      document.getElementById(
          "devolve").addEventListener("click", function(event) {
              if (expression)
