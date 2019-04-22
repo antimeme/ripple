@@ -1,5 +1,5 @@
 // triggy.js
-// Copyright (C) 2018 by Jeff Gold.
+// Copyright (C) 2018-2019 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -19,13 +19,80 @@
 // A library for visualizing trigonometry using HTML canvas elements.
 // The plan is to illustrate this:
 //   http://www.clowder.net/hop/cos(a+b).html
+//   https://math.stackexchange.com/questions/1292/how-can-i-understand-and-prove-the-sum-and-difference-formulas-in-trigonometry
 //
 // The following settings are available:
-// * data-enable="1,2,3" - Angles the user is allowed to move
+// * data-enableAngles="1,2,3" - Angles the user is allowed to move
 // * data-radii="2,3"    - Draw lines from origin to these points
 // * data-connect1="2,3" - Draw lines from point to these points
 (function(triggy) {
     'use strict';
+
+    /**
+     * Create a normalized data structure to represent a mouse or
+     * multi-touch event with coordinates scaled to the element.  When
+     * there are touches the coordinates of the first one will be
+     * copied to the top level object x and y.  Applications can use
+     * that unless multitouch support is needed. */
+    var getInputPoints = function(event, element, scalefn) {
+        var target = element ? element : event.target;
+        var brect = target.getBoundingClientRect();
+        var transform = function(id, x, y) {
+            var result = {id: id, x: x - brect.left, y: y - brect.top };
+            return scalefn ? scalefn(result) : result;
+        };
+        var ii;
+        var result = (!isNaN(event.pageX) && !isNaN(event.pageY)) ?
+                     transform(0, event.pageX, event.pageY) : {};
+
+        if (event.targetTouches) {
+            result.targets = [];
+            for (ii = 0; ii < event.targetTouches.length; ++ii) {
+                var touch = event.targetTouches.item(ii);
+                if (!isNaN(touch.pageX) && !isNaN(touch.pageY))
+                    result.targets.push(
+                        transform(touch.identifier,
+                                  touch.pageX, touch.pageY));
+            }
+        }
+
+        if (event.changedTouches) {
+            result.changed = [];
+            for (ii = 0; ii < event.changedTouches.length; ++ii) {
+                var touch = event.changedTouches.item(ii);
+                if (!isNaN(touch.pageX) && !isNaN(touch.pageY))
+                    result.changed.push(
+                        transform(touch.identifier,
+                                  touch.pageX, touch.pageY));
+            }
+        }
+
+        if (result.targets && result.targets.length > 0) {
+            result.id = result.targets[0].id;
+            result.x = result.targets[0].x;
+            result.y = result.targets[0].y;
+        } else if (result.changed && result.changed.length > 0) {
+            result.id = result.changed[0].id;
+            result.x = result.changed[0].x;
+            result.y = result.changed[0].y;
+        }
+        result.target = target;
+        return result;
+    };
+
+    var eachEntry = function(canvas, entry, fn, context) {
+        var value;
+        var index;
+        var nextEntry = function(canvas, entry, index) {
+            var result = canvas.getAttribute('data-' + entry + index);
+            return (result === null) ? undefined : result;
+        };
+
+        for (index = 1; typeof(value = nextEntry(
+            canvas, entry, index)) !== 'undefined'; ++index)
+            fn.call(context, value, index, canvas);
+        return context;
+    };
 
     var getDataList = function(canvas, attribute) {
         var result = {};
@@ -77,6 +144,117 @@
                                      result.bottom - result.top);
         }
 
+        return result;
+    };
+
+    var Vector = function(value, index) {
+        if (!(this instanceof Vector))
+            return new Vector(value, index);
+
+        this.index = index;
+        if (!Array.isArray(value))
+            value = value.split('/');
+        this.tail = {
+            x: parseFloat(value[0]),
+            y: parseFloat(value[1]) };
+        this.head = {
+            x: parseFloat(value[2]),
+            y: parseFloat(value[3]) };
+        this.color = value[4] || 'black';
+        this.fill = value[5] || value[4];
+        this.label = value[6];
+
+        this.x = this.head.x - this.tail.x;
+        this.y = this.head.y - this.tail.y;
+        var cross = {x: this.y, y: -this.x };
+        this.factor = Math.sqrt(cross.x * cross.x +
+                                cross.y * cross.y) * 15;
+        this.left = {
+            x: this.head.x - this.x / this.factor +
+               cross.x / this.factor / 2,
+            y: this.head.y - this.y / this.factor +
+               cross.y / this.factor / 2 };
+        this.right = {
+            x: this.head.x - this.x / this.factor -
+               cross.x / this.factor / 2,
+            y: this.head.y - this.y / this.factor -
+               cross.y / this.factor / 2};
+    };
+
+    Vector.prototype.draw = function(ctx, bounds) {
+        ctx.save();
+        ctx.translate(bounds.left, bounds.top);
+        ctx.scale(bounds.size, bounds.size);
+        ctx.fillStyle = this.fill;
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 4 / bounds.size;
+        ctx.lineCap = 'round';
+
+        ctx.beginPath();
+        ctx.moveTo(this.tail.x, this.tail.y);
+        ctx.lineTo(this.head.x, this.head.y);
+        ctx.moveTo(this.head.x, this.head.y);
+        ctx.lineTo(this.left.x, this.left.y);
+        ctx.bezierCurveTo(this.head.x, this.head.y,
+                          this.right.x, this.right.y,
+                          this.right.x, this.right.y);
+        ctx.lineTo(this.head.x, this.head.y);
+        ctx.stroke();
+        ctx.fill();
+        ctx.restore();
+        if (this.label) {
+            ctx.fillStyle = this.fill;
+            ctx.strokeStyle = this.color;
+            ctx.font = 24 + 'px sans';
+            ctx.fillText(this.label.trim().replace(/  */g, ' '),
+                         bounds.left + bounds.size * (
+                             this.head.x + this.x / this.factor),
+                         bounds.top + bounds.size * (
+                             this.head.y + this.y / this.factor));
+        }
+    };
+
+    Vector.prototype.place = function(canvas, bounds, point) {
+        this.head.x = point.x / bounds.size;
+        this.head.y = (bounds.bottom - point.y) / bounds.size;
+        this.tail.x = this.head.x - this.x;
+        this.tail.y = this.head.y - this.y;
+        console.log("DEBUG-place", this.index);
+        canvas.setAttribute("data-vector" + this.index,
+                            [this.tail.x, this.tail.y,
+                             this.head.x, this.head.y,
+                             this.color, this.fill,
+                             this.label].join('/'));
+    };
+
+    Vector.each = function(canvas, fn, context) {
+        eachEntry(canvas, 'vector', function(value, index) {
+            fn.call(context, Vector(value, index), index); }); };
+
+    Vector.closest = function(canvas, bounds, point, threshold) {
+        var result = undefined;
+        var dsquared = undefined;
+
+        console.log("DEBUG-closest", point.x, point.y, "::",
+                    bounds.size, bounds.top, bounds.left);
+        Vector.each(canvas, function(vector) {
+            var diff = {
+                x: vector.head.x * bounds.size,
+                y: bounds.bottom - vector.head.y * bounds.size };
+            console.log("DEBUG-diff-pre", vector.index, diff.x, diff.y);
+            diff.x -= point.x;
+            diff.y -= point.y;
+            diff = diff.x * diff.x + diff.y * diff.y;
+            if (threshold && (diff > threshold * threshold *
+                bounds.size * bounds.size)) {
+                // Ignore vectors that are too far away
+            } else if (isNaN(dsquared) || (dsquared > diff)) {
+                dsquared = diff;
+                result = vector;
+            }
+        });
+        if (result)
+            console.log("DEBUG-found", result.index);
         return result;
     };
 
@@ -202,9 +380,11 @@
         canvas.width  = bounds.width;
         canvas.height = bounds.height;
         if (!canvas.getContext) {
-            console.log('failed: no getContext', canvas); return;
+            console.log('failed: no getContext', canvas);
+            return;
         } else if (!(ctx = canvas.getContext('2d'))) {
-            console.log('failed: no context', canvas); return;
+            console.log('failed: no context', canvas);
+            return;
         }
         ctx.clearRect(0, 0, bounds.width, bounds.height);
 
@@ -230,23 +410,15 @@
             ctx.stroke();
         }
 
-        var angle, cos, sin, anum, prev = undefined;
+        var angle, cos, sin, index, prev = undefined;
         var arcs = canvas.getAttribute('data-arcs');
 
-        var nextAngle = function(canvas, anum) {
-            var result = canvas.getAttribute('data-angle' + anum);
-            if (result === null)
-                result = undefined;
-            return result;
-        };
-
-        for (anum = 1; !isNaN(angle = nextAngle(canvas, anum));
-             ++anum) {
+        eachEntry(canvas, 'angle', function(angle, index, canvas) {
             angle = parseFloat(angle);
             cos = Math.cos(angle);
             sin = Math.sin(angle);
 
-            var connects = getDataList(canvas, 'connect' + anum);
+            var connects = getDataList(canvas, 'connect' + index);
             if (Object.keys(connects).length > 0) {
                 ctx.beginPath();
                 Object.keys(connects).forEach(function(connect) {
@@ -265,7 +437,7 @@
             }
 
             if (arcs) {
-                if (anum > 0) {
+                if (index > 0) {
                     ctx.beginPath();
                     ctx.moveTo(bounds.origin.x + bounds.radius * cos,
                                bounds.origin.y - bounds.radius * sin);
@@ -277,27 +449,20 @@
                 }
                 prev = angle;
             }
-        }
+        });
 
-        if (canvas.getAttribute('data-arcs')) {
-            for (anum = 1; !isNaN(angle = nextAngle(canvas, anum));
-                 ++anum) {
-            }
-        }
-
-        for (anum = 1; !isNaN(angle = nextAngle(canvas, anum));
-             ++anum) {
+        eachEntry(canvas, 'angle', function(angle, index, canvas) {
             angle = parseFloat(angle);
             var cos = Math.cos(angle);
             var sin = Math.sin(angle);
-            var name = canvas.getAttribute('data-name' + anum);
-            var symbol = canvas.getAttribute('data-symbol' + anum);
-            var color = canvas.getAttribute('data-color' + anum);
-            var deco  = canvas.getAttribute('data-decorate' + anum);
+            var name = canvas.getAttribute('data-name' + index);
+            var symbol = canvas.getAttribute('data-symbol' + index);
+            var color = canvas.getAttribute('data-color' + index);
+            var deco  = canvas.getAttribute('data-decorate' + index);
 
             var angleDesc = angleTable[name];
             if (!angleDesc)
-                angleDesc = angleList[anum - 1];
+                angleDesc = angleList[index - 1];
             if (angleDesc && !symbol)
                 symbol = angleDesc.symbol;
             if (angleDesc && !color)
@@ -305,14 +470,66 @@
 
             if (deco)
                 drawDeco(ctx, bounds, symbol, angle, sin, cos);
-            drawRay(ctx, bounds, anum, color, angle, cos, sin);
-        }
+            drawRay(ctx, bounds, index, color, angle, cos, sin);
+        });
+
+        eachEntry(canvas, 'point', function(p, index, canvas) {
+            p = p.split('/');
+            var point = {
+                x: bounds.left + bounds.size * parseFloat(p[0]),
+                y: bounds.top  + bounds.size * parseFloat(p[1]),
+                label: p[2], color: p[3] || 'blue'
+            };
+
+            point.lx = (point.x < bounds.left + bounds.size / 2) ?
+                      -(bounds.radius / 20) : (bounds.radius / 60);
+            point.ly = (point.y < bounds.top + bounds.size / 2) ?
+                      -(bounds.radius / 30) : (bounds.radius / 15);
+
+            ctx.beginPath();
+            ctx.fillStyle = ctx.strokeStyle = point.color;
+            if (point.label) {
+                ctx.font = Math.floor(bounds.radius / 20) + 'px sans';
+                ctx.fillText(point.label, point.x + point.lx,
+                             point.y + point.ly);
+            }
+            ctx.arc(point.x, point.y,
+                    bounds.radius / 40, 0, 2 * Math.PI, true);
+            ctx.fill();
+            ctx.stroke();
+        });
+
+        Vector.each(canvas, function(vector, index, canvas) {
+            vector.draw(ctx, bounds);
+
+            /* ctx.beginPath();
+             * ctx.moveTo(bounds.left, bounds.top);
+             * ctx.lineTo(bounds.right, bounds.top);
+             * ctx.lineTo(bounds.right, bounds.bottom);
+             * ctx.lineTo(bounds.left, bounds.bottom);
+             * ctx.lineTo(bounds.left, bounds.top);
+             * ctx.lineWidth = 3;
+             * ctx.strokeStyle = 'black';
+             * ctx.stroke();
+             */
+            if (thunk && false) {
+                var tx = thunk.x + bounds.left;
+                var ty = bounds.bottom - thunk.y;
+                ctx.beginPath();
+                ctx.moveTo(tx, ty);
+                ctx.arc(tx, ty, 3, 0, 2 * Math.PI);
+                ctx.fillStyle = 'black';
+                ctx.fill();
+            }
+        });
     };
+
+    var thunk = undefined;
 
     var closestAngle = function(canvas, bounds, point) {
         var result = undefined;
         var best = undefined;
-        var enable = getDataList(canvas, 'enable');
+        var enable = getDataList(canvas, 'enableAngles');
 
         Object.keys(enable).forEach(function(key) {
             var angle = canvas.getAttribute('data-angle' + key);
@@ -342,48 +559,16 @@
             canvas.setAttribute('data-angle' + anum, angle);
     };
 
-    // TODO: fold bounds into scalefn so this matches ripple.js
-    var getInputPoints = function(event, canvas, bounds, scalefn) {
-        var result = null;
-        var brect = canvas.getBoundingClientRect();
-        if (!scalefn) // identity scaling if no scale function provided
-            scalefn = function(value) { return value; };
-        var transform = function(x, y) {
-            if (isNaN(x) || isNaN(y))
-                alert('ERROR point: ' + x + ', ' + y);
-            else if (isNaN(brect.left) || isNaN(brect.top))
-                alert('ERROR brect:' + brect.left + ', ' + brect.top);
-            else if (isNaN(bounds.origin.x) || isNaN(bounds.origin.y))
+    var boundsfn = function(bounds, scalefn) {
+        return function(value) {
+            if (isNaN(bounds.origin.x) || isNaN(bounds.origin.y))
                 alert('ERROR bounds.origin:' +
                       bounds.origin.x + ', ' + bounds.origin.y);
-            return { x: scalefn(x - brect.left) - bounds.origin.x,
-                     y: bounds.origin.y - scalefn(y - brect.top) };
+            else value = {
+                x: scalefn(value.x) - bounds.origin.x,
+                y: bounds.origin.y - scalefn(value.y) };
+            return value;
         };
-
-        if (event.targetTouches) {
-            var current = [];
-            var ii;
-
-            for (ii = 0; ii < event.targetTouches.length; ++ii) {
-                var touch = event.targetTouches.item(ii);
-                current.push(transform(touch.pageX, touch.pageY));
-            }
-
-            if (current.length > 0)
-                result = current[0];
-            else if (event.changedTouches) {
-                for (ii = 0; ii < event.changedTouches.length; ++ii) {
-                    var touch = event.changedTouches.item(ii);
-                    current.push(
-                        transform(touch.pageX, touch.pageY));
-                }
-
-                if (current.length > 0)
-                    result = current[0];
-                else alert('ERROR empty target and changed');
-            } else { alert('ERROR empty target but no changed'); }
-        } else result = transform(event.pageX, event.pageY);
-        return result;
     };
 
     triggy.setup = function(selector, scalefn) {
@@ -395,18 +580,23 @@
                 var canvas = event.target;
                 var bounds = computeBounds(canvas);
                 var point = getInputPoints(
-                    event, canvas, bounds, scalefn);
-                dragging = closestAngle(canvas, bounds, point);
+                    event, canvas, boundsfn(bounds, scalefn));
+                thunk = point;
+                if (!(dragging = Vector.closest(
+                    canvas, bounds, point, 0.25)))
+                    dragging = closestAngle(canvas, bounds, point);
                 draw(canvas, bounds);
                 return false;
             });
             canvas.addEventListener('mousemove', function(event) {
-                var canvas = event.target;
-                var bounds = computeBounds(canvas);
                 if (dragging) {
+                    var canvas = event.target;
+                    var bounds = computeBounds(canvas);
                     var point = getInputPoints(
-                        event, canvas, bounds, scalefn);
-                    setAngle(canvas, bounds, point, dragging);
+                        event, canvas, boundsfn(bounds, scalefn));
+                    if (dragging instanceof Vector) {
+                        dragging.place(canvas, bounds, point);
+                    } else setAngle(canvas, bounds, point, dragging);
                     draw(canvas, bounds);
                 }
                 return false;
@@ -420,7 +610,7 @@
                 var canvas = event.target;
                 var bounds = computeBounds(canvas);
                 var point = getInputPoints(
-                    event, canvas, bounds, scalefn);
+                    event, canvas, boundsfn(bounds, scalefn));
                 dragging = closestAngle(canvas, bounds, point);
                 draw(canvas, bounds);
                 return false;
@@ -430,7 +620,7 @@
                 var bounds = computeBounds(canvas);
                 if (dragging) {
                     var point = getInputPoints(
-                        event, canvas, bounds, scalefn);
+                        event, canvas, boundsfn(bounds, scalefn));
                     setAngle(canvas, bounds, point, dragging);
                     draw(canvas, bounds);
                 }
