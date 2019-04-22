@@ -806,7 +806,7 @@
             ctx.translate(config.center.x,
                           config.center.y);
         if (config && config.scale)
-            ctx.scale(config.scale);
+            ctx.scale(config.scale, config.scale);
 
         ctx.beginPath();
         ctx.moveTo(0, 0);
