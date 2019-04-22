@@ -786,30 +786,39 @@
     // Draw an arrow representing the o1 and o2 components of this
     // multi-vector (otherwise known as x and y)
     multivec.prototype.draw = function(ctx, config) {
-        var length = (config && config.length) ? config.length : 1;
-        var bar = multivec([-this.y, this.x]).multiply(0.1);
-        var lineTo = function(ctx, vector) {
-            ctx.lineTo(vector.x, vector.y);
-        };
+        var cross = this.normalize().divide('o1o2');
+        var headsize = Math.min((config && config.headsize) ?
+                                config.headsize : 15, this.norm() / 4);
+        var left = this.multiply(
+            (this.norm() - headsize) / this.norm()).plus(
+                cross.multiply(headsize / 2));
+        var right = this.multiply(
+            (this.norm() - headsize) / this.norm()).minus(
+                cross.multiply(headsize / 2));
 
+        console.log("DEBUG", this.toString());
         ctx.save();
-        ctx.lineCap = 'round';
         ctx.strokeStyle = (config && config.color) || 'black';
         ctx.fillStyle = (config && config.fill) || 'white';
-        ctx.lineWidth = (config && config.lineWidth) || 5;
-        if (config.center)
+        ctx.lineWidth = (config && config.lineWidth) || 1;
+        ctx.lineCap = 'round';
+        if (config && config.center)
             ctx.translate(config.center.x,
                           config.center.y);
+        if (config && config.scale)
+            ctx.scale(config.scale);
 
         ctx.beginPath();
         ctx.moveTo(0, 0);
-        lineTo(ctx, this.multiply(length * 0.9));
-        lineTo(ctx, this.add(bar).multiply(length * 0.9));
-        lineTo(ctx, this.multiply(length));
-        lineTo(ctx, this.add(bar.multiply(-1)).multiply(length * 0.9));
-        lineTo(ctx, this.multiply(length * 0.9));
-        ctx.fill();
+        ctx.lineTo(this.x, this.y);
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(left.x, left.y);
+        ctx.bezierCurveTo(this.x, this.y,
+                          right.x, right.y,
+                          right.x, right.y);
+        ctx.lineTo(this.x, this.y);
         ctx.stroke();
+        ctx.fill();
         ctx.restore();
     };
 
