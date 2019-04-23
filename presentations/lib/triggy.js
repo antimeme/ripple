@@ -153,15 +153,15 @@
 
         this.index = index;
         if (!Array.isArray(value))
-            value = value.split('/');
+            value = value.split('|');
         this.tail = {
             x: parseFloat(value[0]),
             y: parseFloat(value[1]) };
         this.head = {
             x: parseFloat(value[2]),
             y: parseFloat(value[3]) };
-        this.color = value[4] || 'black';
-        this.fill = value[5] || value[4];
+        this.color = value[4] || 'purple';
+        this.fill  = value[5] || this.color;
         this.label = value[6];
 
         this.x = this.head.x - this.tail.x;
@@ -214,17 +214,42 @@
         }
     };
 
-    Vector.prototype.place = function(canvas, bounds, point) {
-        this.head.x = point.x / bounds.size;
-        this.head.y = (bounds.bottom - point.y) / bounds.size;
-        this.tail.x = this.head.x - this.x;
-        this.tail.y = this.head.y - this.y;
-        console.log("DEBUG-place", this.index);
+    Vector.prototype.move = function(canvas, bounds, point) {
+        var adjusted, factor;
+        if (this.turn === 'stretch') {
+            adjusted = {
+                x: point.x / bounds.size,
+                y: (bounds.bottom - point.y) / bounds.size };
+            adjusted.x -= this.tail.x;
+            adjusted.y -= this.tail.y;
+            factor = Math.sqrt((adjusted.x * adjusted.x +
+                                adjusted.y * adjusted.y) /
+                (this.x * this.x + this.y * this.y));
+            if (adjusted.x * this.x + adjusted.y * this.y < 0)
+                factor = -1 * factor;
+            this.x *= factor;
+            this.y *= factor;
+            this.head.x = this.tail.x + this.x;
+            this.head.y = this.tail.y + this.y;
+        } else if (this.turn === 'rotate') {
+        } else if (this.turn) { // default or free
+            this.head.x = point.x / bounds.size;
+            this.head.y = (bounds.bottom - point.y) / bounds.size;
+            if (this.turn === 'default') {
+                this.tail.x = this.head.x - this.x;
+                this.tail.y = this.head.y - this.y;
+            }
+        } else {
+            this.tail.x = point.x / bounds.size;
+            this.tail.y = (bounds.bottom - point.y) / bounds.size;
+            this.head.x = this.tail.x + this.x;
+            this.head.y = this.tail.y + this.y;
+        }
         canvas.setAttribute("data-vector" + this.index,
                             [this.tail.x, this.tail.y,
                              this.head.x, this.head.y,
                              this.color, this.fill,
-                             this.label].join('/'));
+                             this.label].join('|'));
     };
 
     Vector.each = function(canvas, fn, context) {
@@ -233,28 +258,39 @@
 
     Vector.closest = function(canvas, bounds, point, threshold) {
         var result = undefined;
-        var dsquared = undefined;
+        var best = undefined;
+        if (threshold)
+            threshold *= bounds.size;
 
-        console.log("DEBUG-closest", point.x, point.y, "::",
-                    bounds.size, bounds.top, bounds.left);
         Vector.each(canvas, function(vector) {
-            var diff = {
+            var current;
+            var metric = function(point, target) {
+                var diff = { x: target.x - point.x,
+                             y: target.y - point.y };
+                return diff.x * diff.x + diff.y * diff.y;
+            };
+
+            current = metric(point, {
                 x: vector.head.x * bounds.size,
-                y: bounds.bottom - vector.head.y * bounds.size };
-            console.log("DEBUG-diff-pre", vector.index, diff.x, diff.y);
-            diff.x -= point.x;
-            diff.y -= point.y;
-            diff = diff.x * diff.x + diff.y * diff.y;
-            if (threshold && (diff > threshold * threshold *
-                bounds.size * bounds.size)) {
-                // Ignore vectors that are too far away
-            } else if (isNaN(dsquared) || (dsquared > diff)) {
-                dsquared = diff;
+                y: bounds.bottom - vector.head.y * bounds.size });
+            if ((!threshold || (current <= threshold * threshold)) &&
+                (isNaN(best) || (best > current))) {
+                best = current;
+                vector.turn = canvas.getAttribute('data-vector-turn') ||
+                              'default';
+                result = vector;
+            }
+
+            current = metric(point, {
+                x: vector.tail.x * bounds.size,
+                y: bounds.bottom - vector.tail.y * bounds.size });
+            if ((!threshold || (current <= threshold * threshold)) &&
+                (isNaN(best) || (best > current))) {
+                vector.turn = false;
+                best = current;
                 result = vector;
             }
         });
-        if (result)
-            console.log("DEBUG-found", result.index);
         return result;
     };
 
@@ -474,7 +510,7 @@
         });
 
         eachEntry(canvas, 'point', function(p, index, canvas) {
-            p = p.split('/');
+            p = p.split('|');
             var point = {
                 x: bounds.left + bounds.size * parseFloat(p[0]),
                 y: bounds.top  + bounds.size * parseFloat(p[1]),
@@ -595,7 +631,7 @@
                     var point = getInputPoints(
                         event, canvas, boundsfn(bounds, scalefn));
                     if (dragging instanceof Vector) {
-                        dragging.place(canvas, bounds, point);
+                        dragging.move(canvas, bounds, point);
                     } else setAngle(canvas, bounds, point, dragging);
                     draw(canvas, bounds);
                 }
