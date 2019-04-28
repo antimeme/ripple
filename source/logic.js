@@ -495,26 +495,29 @@
         'Łukasiewicz': {
             comment: ["woo-kay-SHAY-vitch"],
             theorems: {
-                Axiom: "DDpDqrDDsDssDDsqDDpsDps",
-                AxiomAlternate: "DDpDqrDDpDrpDDsqDDpsDps" }},
+                Single: "DDpDqrDDsDssDDsqDDpsDps",
+                SingleAlternate: "DDpDqrDDpDrpDDsqDDpsDps",
+                Axiom1: "CCpqCCqrCpr",
+                Axiom2: "CCNppp",
+                Axiom3: "CpCNpq"}},
         'Scharle': {
             comment: [
                 "https://projecteuclid.org/download/pdf_1/" +
                 "euclid.ndjfl/1093958259"],
             theorems: {
                 Theorem2: {
-                    source: "Łukasiewicz:Axiom",
-                    premise: "Łukasiewicz:Axiom",
+                    source: "Łukasiewicz:Single",
+                    premise: "Łukasiewicz:Single",
                     substitute: {
                         p: "DpDqr", q: "DsDss", r: "DDsqDDpsDps", s: "t"
                     }, rule: "DDtDsDssDDDpDqrtDDpDqrt"},
                 Theorem3: {
-                    source: "Łukasiewicz:Axiom", premise: "Theorem2",
+                    source: "Łukasiewicz:Single", premise: "Theorem2",
                     substitute: {
                         p: "DtDsDss", q: "DDpDqrt", r: "DDpDqrt", s: "w"
                     }, rule: "DDwDDpDqrtDDDtDsDsswDDtDsDssw"},
                 Theorem4: {
-                    source: "Theorem3", premise: "Łukasiewicz:Axiom",
+                    source: "Theorem3", premise: "Łukasiewicz:Single",
                     substitute: {
                         w: "DpDqr", p: "s", q: "s", t: "DDsqDDpsDps"
                     }, rule: "DDDDsqDDpsDpsDtDttDpDqr"},
@@ -529,7 +532,7 @@
                         p: "DpDqr", q: "DDstDDtsDts", r: "DtDtt"
                     }, rule: "DtDtt"},
                 Theorem7: {
-                    source: "Łukasiewicz:Axiom", premise: "Theorem6",
+                    source: "Łukasiewicz:Single", premise: "Theorem6",
                     substitute: {
                         p: "t", q: "t", r: "t"
                     }, rule: "DDstDDtsDts"},
@@ -541,7 +544,7 @@
                     substitute: { s: "Dst", t: "DDtsDts" },
                     rule: "DDDtsDtsDst"},
                 Theorem10: {
-                    source: "Łukasiewicz:Axiom", premise: "Theorem9",
+                    source: "Łukasiewicz:Single", premise: "Theorem9",
                     substitute: {
                         p: "DDtsDts", q: "s", r: "t", s: "p"
                     }, rule: "DDpsDDDDtsDtspDDDtsDtsp"},
@@ -556,12 +559,12 @@
                         s: "DDspDsp", t: "Dpp"
                     }, rule: "DDppDDspDsp"},
                 Theorem13: {
-                    source: "Łukasiewicz:Axiom", premise: "Theorem12",
+                    source: "Łukasiewicz:Single", premise: "Theorem12",
                     substitute: {
                         p: "Dpp", q: "Dsp", r: "Dsp", s: "r"
                     }, rule: "DDrDspDDDpprDDppr"},
                 Theorem14: {
-                    source: "Theorem13", premise: "Łukasiewicz:Axiom",
+                    source: "Theorem13", premise: "Łukasiewicz:Single",
                     substitute: {
                         r: "DpDqr", s: "DtDtt", p: "DDsqDDpsDps"
                     }, rule: "DDDDsqDDpsDpsDDsqDDpsDpsDpDqr"},
@@ -602,7 +605,7 @@
                         t: "DDDqsDDpsDpsDDqsDDpsDps"
                     }, rule: "DDpDqrDDDqsDDpsDpsDDqsDDpsDps"},
                 Theorem22: {
-                    source: "Łukasiewicz:Axiom", premise: "Theorem9",
+                    source: "Łukasiewicz:Single", premise: "Theorem9",
                     substitute: {
                         p: "DDtsDts", q: "s", r: "t", s: "p"
                     }, rule: "DDpsDDDDtsDtspDDDtsDtsp"},
@@ -614,7 +617,7 @@
                     substitute: { s: "DDtDppDtDpp", t: "p" },
                     rule: "DpDDtDppDtDpp"},
                 Theorem25: {
-                    source: "Łukasiewicz:Axiom", premise: "Theorem18",
+                    source: "Łukasiewicz:Single", premise: "Theorem18",
                     substitute: {
                         p: "DDtsp", q: "DDstp", r: "DDstp", s: "q"
                     }, rule: "DDqDDstpDDDDtspqDDDtspq"},
@@ -639,7 +642,7 @@
                         p: "Dts", q: "DDDstDpqDDstDpq", s: "p", t: "q"
                     }, rule: "DDDtsDqpDDDstDpqDDstDpq"},
                 Theorem30: {
-                    source: "Łukasiewicz:Axiom", premise: "Theorem29",
+                    source: "Łukasiewicz:Single", premise: "Theorem29",
                     substitute: {
                         p: "DDtsDqp", q: "DDstDpq", r: "DDstDpq", s: "r"
                     }, rule: "DDrDDstDpqDDDDtsDqprDDDtsDqpr"},
