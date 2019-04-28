@@ -273,11 +273,15 @@
     };
 
     var substitute = function(expression, variable, value) {
-        var table = (typeof(variable) === 'object') ?
-                    variable : {variable: value};
         var inflate = ((typeof(variable) === 'object') &&
                        (typeof(value) === 'function')) ?
                       value : function(x) { return x; };
+        var table;
+
+        if (typeof(variable) !== 'object') {
+            table = {};
+            table[variable] = value;
+        } else table = variable;
         return transform({
             variable: function(current) {
                 return (current in table) ?
