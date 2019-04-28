@@ -52,22 +52,28 @@
             </section>
             <section>
                 <h2>Acknowledgements</h2>
-                <table><tr><td><ul>
+                <ul>
+                    <li>Euclid</li>
+                    <li>al-Khwārizmī</li>
+                    <li>Gottlob Frege</li>
+                    <li>Jan Łukasiewicz</li>
+                    <li>Georg Cantor</li>
                     <li>Abraham Fraenkel</li>
                     <li>Ernst Zermello</li>
                     <li>Thoraf Skolem</li>
+                </ul>
+            </section>
+            <section>
+                <h2>Acknowledgements</h2>
+                <ul>
                     <li>Kazimierz Kuratowski</li>
                     <li>Hermann Grassman</li>
-                    <li>Georg Cantor</li>
-                </ul></td><td><ul>
-                    <li>Euclid</li>
-                    <li>al-Khwārizmī</li>
                     <li>Gottfried Wilhelm Leibniz</li>
                     <li>Isaac Newton</li>
                     <li>Emmy Noether</li>
                     <li>John von Neumann</li>
                     <li>Norman Wildberger</li>
-                </ul></td></tr></table>
+                </ul>
             </section>
             <section>
                 <h2>Acknowledgements</h2>
@@ -108,6 +114,10 @@
                 <p>
                     Conclusion: Socrates is mortal.
                 </p>
+                <aside class="notes">
+                    Words like <q>mortal</q> introduce ambiguity
+                    and can only be understood with context.
+                </aside>
             </section>
             <section>
                 <h3>Informal Logic</h3>
@@ -122,29 +132,24 @@
             </section>
             <section>
                 <h3>Formal Logic</h3>
-                <p>
-                    Informal arguments rely on shared understandings and
-                    intuition.  Formal arguments are constrained to
-                    carefully enumerated concepts.
-                </p>
                 <ul>
-                    <li>&spades; &#x27f9; &clubs;</li>
-                    <li>&spades;</li>
+                    <li>
+                        Separates logic from specialized knowledge
+                    </li><li>
+                        Supports exploration beyond our intuition
+                    </li>
                 </ul>
-                <p>
-                    Conclusion: &clubs;
-                </p>
             </section>
             <section>
                 <h3>Formal Systems</h3>
                 <ul>
                     <li>
-                        <span class="intro">Statements</span>:
-                        things that might be true or false
+                        <span class="intro">Theses</span>:
+                        things that are formally true
                         <ul>
                             <li>
                                 <span class="intro">Axioms</span>:
-                                fundamental ideas accepted as true
+                                foundational ideas accepted as true
                             </li><li>
                                 <span class="intro">Theorem</span>:
                                 proven using axioms and other theorems
@@ -153,8 +158,8 @@
                         </ul>
                     </li><li>
                         <span class="intro">Rules of Inference</span>:
-                        acceptable ways to combine statements to make
-                        new statements
+                        acceptable ways to combine theses to make
+                        new ones
                     </li><li>
                         <span class="intro">Definitions</span>
                         (<span class="intro">&#x225d;</span>): short
@@ -171,12 +176,10 @@
                 <ul>
                     <li>
                         <span class="intro">Consistent</span>: no
-                        statement can be proven both true and false (no
-                        contradictions)
+                        statement can be proven both true and false
                     </li><li>
                         <span class="intro">Complete</span>: all
                         statements can be proven either true or false
-                        (nothing missing)
                     </li><li>
                         <span class="intro">Useful</span>: statements
                         match measurable physical processes and make
@@ -232,21 +235,22 @@
             </section>
             <section>
                 <h3>Formal Propositional Calculus</h3>
-                <p>
-                    A single operator, rule and axiom can be used to
-                    construct propositional calculus.
-                </p>
                 <table><tr><th>
                     Operator
                 </th><td>
                     Stroke (NAND):
                     P <span class="intro">&#x22bc;</span> Q
                 </td></tr><tr><th>
-                    Rule
+                    Rules
                 </th><td>
-                    Detatchment: P <span class="intro">&#x22bc;</span>
-                    (Q <span class="intro">&#x22bc;</span> R), P
-                    <span class="intro">&#x22a2;</span> R
+                    <ul><li>
+                        Substitution
+                    </li><li>
+                        Detatchment: P
+                        <span class="intro">&#x22bc;</span>
+                        (Q <span class="intro">&#x22bc;</span> R), P
+                        <span class="intro">&#x22a2;</span> R
+                    </li></ul>
                 </td></tr><tr><th>
                     Axiom
                 </th><td>
@@ -272,10 +276,11 @@
             <section>
                 <h3>Sheffer Stroke</h3>
                 <p>
-                    A <span class="intro">stroke</span> (Sheffer 1913 CE)
-                    of two propositions is a commutative contingency
-                    that's true if and only if one or both of its terms is
-                    false: P <span class="intro">&#x22bc;</span> Q
+                    A <span class="intro">stroke</span> (Sheffer 1913
+                    CE) of two propositions is a commutative
+                    contingency that's true unless both the statements
+                    it comprises are true: P
+                    <span class="intro">&#x22bc;</span> Q
                 </p>
                 <table>
                     <tr>
@@ -623,16 +628,17 @@
             <section>
                 <h3>Statements</h3>
                 <p>
-                    Every statement in propositional calculus is one of the
-                    following:
+                    Every statement in propositional calculus is
+                    either atomic (P, Q, R, ...) or the stroke of two
+                    statements.
                 </p>
                 <ul>
                     <li>
                         A <span class="intro">contingency</span> is
                         sometimes <span class="true">true</span> and
-                        sometimes <span class="false">false</span> depending
-                        on variable value (every atomic statement is in
-                        this category)
+                        sometimes <span class="false">false</span>
+                        depending on variable value (every atomic
+                        statement is a contingency)
                     </li><li>
                         A <span class="intro">contradiction</span> is
                         always <span class="false">false</span>
@@ -714,10 +720,10 @@
                 </tr></table>
             </section>
             <section>
-                <h3>Theorems and Tautologies</h3>
+                <h3>Theses and Tautologies</h3>
                 <p>
-                    All theorems of propositional calculus are
-                    tautologies.  All tautologies are theorems of
+                    All theses of propositional calculus are
+                    tautologies.  All tautologies are theses of
                     propositional calculus, which is both
                     <span class="intro">consistent</span> and
                     <span class="intro">complete</span>.  This is possible
@@ -726,33 +732,27 @@
                 </p>
             </section>
             <section>
-                <h3>Substitution</h3>
+                <h3>Rule of Substitution</h3>
                 <p>
-                    Replacing any variable in a tautology with any statement
-                    results in a tautology.
+                    Substitution allows us to construct theorems by
+                    replacing variables in an established thesis with
+                    any well formed statement.
                 </p>
-                <ul>
-                    <li>
-                        P &#x27f9; P :: Principle of Identity
-                    </li><li>
-                        Q &#x27f9; Q :: Identity (P := Q)
-                    </li><li>
-                        (Q &and; R) &#x27f9; (Q &and; R) ::
-                        Identity (P := (Q &and; R))
-                    </li>
-                </ul>
+                <p>
+                    P <span class="intro">&#x22a2;</span>
+                    P (Q := Statement)
+                </p>
             </section>
             <section>
-                <h3>Detatchment</h3>
+                <h3>Rule of Detatchment</h3>
+                <p>
+                    Detatchment allows us to construct theorems by
+                    extracting part of a thesis once we've
+                    established another.
+                </p>
                 <p>
                     P &#x22bc; (Q &#x22bc; R), P
                     <span class="intro">&#x22a2;</span> R
-                </p>
-                <p>
-                    Detatchment allows us to construct theorems by
-                    making carefully considered substitutions and
-                    using axioms or previously established theorems
-                    to remove part of a statement.
                 </p>
             </section>
             <section>
@@ -793,8 +793,9 @@
                     </tr>
                 </table>
                 <aside class="notes">
-                    This rule requires P to be true so for clarity we omit
-                    the part of the truth table where P is false.
+                    We can't apply the rule of detatchment if P is
+                    false so that part of the truth table is omitted.
+                    The remaining rows show that Q and R must be true.
                 </aside>
             </section>
             <section>
@@ -844,6 +845,27 @@
                         (P &#x27f9; R))</li>
                     <li>P &#x27f9; (&not;P &#x27f9; Q)</li>
                 </ul>
+            </section>
+            <section>
+                <h3>De Morgan's Laws</h3>
+                <p>P &and; Q &#x27fa; &not;(&not;P &or; &not;Q)</p>
+                <ul><li>
+                    &not;(P &#x22bc; Q) &#x27fa;
+                    &not;(&not;&not;P &#x22bc; &not;&not;Q)
+                    :: Definition &and;,&or;
+                </li><li>
+                    &not;(P &#x22bc; Q) &#x27fa;
+                    &not;(P &#x22bc; Q) :: Double Negation
+                </li></ul>
+                <p>P &or; Q &#x27fa; &not;(&not;P &and; &not;Q)</p>
+                <ul><li>
+                    &not;P &#x22bc; &not;Q &#x27fa;
+                    &not;&not;(&not;P &#x22bc; &not;Q)
+                    :: Definition &and;,&or;
+                </li><li>
+                    &not;P &#x22bc; &not;Q &#x27fa;
+                    &not;P &#x22bc; &not;Q :: Double Negation
+                </li></ul>
             </section>
             <section>
                 <h3>Kleene Axioms</h3>
@@ -7449,7 +7471,8 @@
                         data-vector1="0.52|0.2|0.72|0.2|purple||v"
                         data-vector2="0.3|0.3|0.7|0.3|purple||2v"
                         data-vector3="0.35|0.4|0.65|0.4|purple||3/2v"
-                        data-vector4="0.48|0.2|0.28|0.2|purple||-v">
+                        data-vector4="0.48|0.2|0.28|0.2|purple||-v"
+                        data-vector-move="rotate">
                 </canvas>
             </section>
             <section>

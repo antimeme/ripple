@@ -232,6 +232,15 @@
             this.head.x = this.tail.x + this.x;
             this.head.y = this.tail.y + this.y;
         } else if (this.turn === 'rotate') {
+            adjusted = {
+                x: point.x / bounds.size,
+                y: (bounds.bottom - point.y) / bounds.size };
+            adjusted.x -= this.tail.x;
+            adjusted.y -= this.tail.y;
+            factor = Math.sqrt((this.x * this.x + this.y * this.y) /
+                (adjusted.x * adjusted.x + adjusted.y * adjusted.y));
+            this.head.x = this.tail.x + adusted.x * factor;
+            this.head.y = this.tail.y + adusted.y * factor;
         } else if (this.turn) { // default or free
             this.head.x = point.x / bounds.size;
             this.head.y = (bounds.bottom - point.y) / bounds.size;
@@ -239,7 +248,7 @@
                 this.tail.x = this.head.x - this.x;
                 this.tail.y = this.head.y - this.y;
             }
-        } else {
+        } else { // tail moves like default
             this.tail.x = point.x / bounds.size;
             this.tail.y = (bounds.bottom - point.y) / bounds.size;
             this.head.x = this.tail.x + this.x;
