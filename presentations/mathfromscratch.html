@@ -13,6 +13,7 @@
      ul.symbolic { list-style-type: none; }
      .left { float: left; }
      .right { float: right; }
+     th.vertical { vertical-align: top; }
      table.cayley th { color: blue; }
      .redsuit { color: red; }
     </style>
@@ -57,6 +58,7 @@
                     <li>al-Khwārizmī</li>
                     <li>Gottlob Frege</li>
                     <li>Jan Łukasiewicz</li>
+                    <li>Thomas Scharle</li>
                     <li>Georg Cantor</li>
                     <li>Abraham Fraenkel</li>
                     <li>Ernst Zermello</li>
@@ -234,24 +236,28 @@
                 </aside>
             </section>
             <section>
+                <h3>Informal Propositions</h3>
+                <ul><li>
+                    Example: It's raining outside
+                </li><li>
+                    Example: The ground is wet
+                </li><li>
+                    Example: You should carry an umbrella
+                </li></ul>
+                <p>
+                    Real examples are complicated by things like time,
+                    geography, scale and opinion.  Propositional
+                    calculus has no tools for dealing with these.
+                </p>
+            </section>
+            <section>
                 <h3>Formal Propositional Calculus</h3>
-                <table><tr><th>
+                <table><tr><th class="vertical">
                     Operator
                 </th><td>
                     Stroke (NAND):
                     P <span class="intro">&#x22bc;</span> Q
-                </td></tr><tr><th>
-                    Rules
-                </th><td>
-                    <ul><li>
-                        Substitution
-                    </li><li>
-                        Detatchment: P
-                        <span class="intro">&#x22bc;</span>
-                        (Q <span class="intro">&#x22bc;</span> R), P
-                        <span class="intro">&#x22a2;</span> R
-                    </li></ul>
-                </td></tr><tr><th>
+                </td></tr><tr><th class="vertical">
                     Axiom
                 </th><td>
                     Łukasiewicz: (P <span class="intro">&#x22bc;</span>
@@ -265,6 +271,19 @@
                     ((P <span class="intro">&#x22bc;</span> S)
                     <span class="intro">&#x22bc;</span>
                     (P <span class="intro">&#x22bc;</span> S))))
+                </td></tr><tr><th class="vertical">
+                    Rules
+                </th><td>
+                    <ul><li>
+                        Substitution (variables)
+                    </li><li>
+                        Replacement (definitions)
+                    </li><li>
+                        Detatchment: P
+                        <span class="intro">&#x22bc;</span>
+                        (Q <span class="intro">&#x22bc;</span> R), P
+                        <span class="intro">&#x22a2;</span> R
+                    </li></ul>
                 </td></tr></table>
                 <aside class="notes">
                     There are many ways to define propositional calculus.
@@ -393,27 +412,36 @@
                 </p>
                 <table><tr>
                     <th>P</th><th>Q</th>
+                    <th>&not;P</th><th>&not;Q</th>
                     <th>&not;P &#x22bc; &not;Q</th><th>
                         P&nbsp;<span class="intro">&or;</span>&nbsp;Q
                     </th>
                 </tr><tr>
                     <td class="true">true</td>
                     <td class="true">true</td>
+                    <td class="false">false</td>
+                    <td class="false">false</td>
                     <td class="true">true</td>
                     <td class="true">true</td>
                 </tr><tr>
                     <td class="true">true</td>
                     <td class="false">false</td>
-                    <td class="true">true</td>
-                    <td class="true">true</td>
-                </tr><tr>
                     <td class="false">false</td>
                     <td class="true">true</td>
                     <td class="true">true</td>
                     <td class="true">true</td>
                 </tr><tr>
                     <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
                     <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
+                </tr><tr>
+                    <td class="false">false</td>
+                    <td class="false">false</td>
+                    <td class="true">true</td>
+                    <td class="true">true</td>
                     <td class="false">false</td>
                     <td class="false">false</td>
                 </tr></table>
@@ -614,7 +642,8 @@
                         (P &#x22bc; P) &#x22bc; (Q &#x22bc; Q)
                     </li><li>
                         Implication: P <span class="intro">&#x27f9;</span> Q
-                        &#x225d; P &#x22bc; (Q &#x22bc; Q)
+                        &#x225d; P &#x22bc; &not;Q =
+                        P &#x22bc; (Q &#x22bc; Q)
                     </li><li>
                         Biconditional: P <span class="intro">&#x27fa;</span>
                         Q &#x225d; (P &#x27f9; Q) &and; (Q &#x27f9; P)
@@ -744,6 +773,40 @@
                 </p>
             </section>
             <section>
+                <h3>Substitution: Examples</h3>
+                <ul><li>
+                    P &#x27f9; (Q &#x27f9; P) &#x22a2;
+                    P &#x27f9; (P &#x27f9; P) :: Q := P
+                </li><li>
+                    P &#x27f9; (Q &#x27f9; P) &#x22a2;
+                    R &#x27f9; (S &#x27f9; R) :: P := R, Q := S
+                </li><li>
+                    P &#x27f9; (Q &#x27f9; P) &#x22a2
+                    (R &and; S) &#x27f9; (P &#x27f9; (R &and; S))
+                    :: <br /> P := (R &and; S), Q := P
+                </li></ul>
+            </section>
+            <section>
+                <h3>Rule of Replacement</h3>
+                <p>
+                    Replacement allows us to construct theorems by
+                    replacing expressions in an established thesis
+                    with definitions.
+                </p>
+            </section>
+            <section>
+                <h3>Replacement: Examples</h3>
+                <ul><li>
+                    P &#x22bc; (Q &#x22bc; Q) &#x22a2;
+                    P &#x27f9; Q :: Implication
+                </li><li>
+                    P &and; Q &#x22a2;
+                    (P &#x22bc; Q) &#x22bc; (P &#x22bc; Q)
+                    :: Conjunction
+                </li><li>
+                </li></ul>
+            </section>
+            <section>
                 <h3>Rule of Detatchment</h3>
                 <p>
                     Detatchment allows us to construct theorems by
@@ -809,12 +872,15 @@
                 </p>
                 <ul>
                     <li class="fragment">
+                        P &#x22bc; (Q &#x22bc; R)
+                        :: Detatchment
+                    </li><li class="fragment">
                         P &#x22bc; (Q &#x22bc; Q)
-                        :: Detatchment (R := Q)
+                        :: Substitution (R := Q)
                     </li><li class="fragment">
-                        P &#x22bc; &not;Q :: Definition of Negation
+                        P &#x22bc; &not;Q :: Replacement (Negation)
                     </li><li class="fragment">
-                        P &#x27f9; Q :: Definition of Implication
+                        P &#x27f9; Q :: Replacement (Implication)
                     </li>
                 </ul>
                 <aside class="notes">
@@ -911,13 +977,13 @@
                 </ul>
             </section>
         </section>
-        <section>
+        <section id="predicate-calculus">
             <section>
                 <h2>Predicate Calculus</h2>
                 <p>
-                    A predicate is a statement that may be true or
-                    false based on the value of its variables.  This is
-                    also called first order logic.
+                    A predicate is a proposition that is true or false
+                    based on the value of its variables.  This is also
+                    called first order logic.
                 </p>
                 <ul>
                     <li>
@@ -930,6 +996,7 @@
                         (<span class="false">false</span>)
                     </li>
                 </ul>
+                <p>Is an apple true or false?</p>
                 <aside class="notes">
                     A predicate is a statement with one or more
                     holes in it.  Depending on what we put in the
@@ -938,6 +1005,85 @@
                     we fill in the blank with apple but false if
                     we use carrot instead.
                 </aside>
+            </section>
+            <section>
+                <h3>Cast of Characters</h3>
+                <ul><li>
+                    <span class="intro">Object</span>:
+                    &spades;, <span class="redsuit">&hearts;</span>,
+                    &clubs;, <span class="redsuit">&diams;</span>
+                </li><li>
+                    <span class="intro">Variable</span> (Object):
+                    a, b, c, ...
+                </li><li>
+                    <span class="intro">Function</span> (Object):
+                    f(a), g(a, b), h, ...
+                    <table><tr><td><ul><li>
+                        next(&spades;) &#x27f6;
+                        <span class="redsuit">&hearts;</span>
+                    </li><li>
+                        next(<span class="redsuit">&hearts;</span>)
+                        &#x27f6; &clubs;
+                    </li></ul></td><td><ul><li>
+                        kestral(&spades;, &clubs;) &#x27f6;
+                        &spades;
+                    </li><li>
+                        kestral(<span class="redsuit">&diams;</span>,
+                        &clubs;) &#x27f6;
+                        <span class="redsuit">&diams;</span>
+                    </li></ul></td></tr></table>
+                </li><li>
+                    <span class="intro">Predicate</span>
+                    (<span class="true">true</span> or
+                    <span class="false">false</span>):
+                    P, Q(a), R(a, b), ...
+                    <table><tr><td><ul><li>
+                        BLACK(&spades;) :
+                        <span class="true">true</span>
+                    </li><li>
+                        BLACK(<span class="redsuit">&hearts;</span>)
+                        : <span class="false">false</span>
+                    </li></ul></td><td><ul><li>
+                        SAME(&spades;, &spades;) :
+                        <span class="true">true</span>
+                    </li><li>
+                        SAME(&spades;, &clubs;) :
+                        <span class="false">false</span>
+                    </li></ul></td></tr></table>
+                </li></ul>
+            </section>
+            <section>
+                <h3>Universal Quantifier</h3>
+                <p>
+                    <span class="intro">&#x2200;</span>a P
+                </p>
+                <p>
+                    A universal quantifier asserts that a predicate is
+                    true for all possible values of a variable.  This
+                    binds a variable so that it is no longer free in
+                    the predicate.
+                </p>
+            </section>
+            <section>
+                <h3>Existential Quantifier</h3>
+                <p>
+                    <span class="intro">&#x2203;</span>a P &#x225d;
+                    &not;&#x2200;a &not;P
+                </p>
+                <p>
+                    From the universal quantifier we construct the
+                    existential quantifier.  This asserts that some
+                    value of a variable satisfies the predicate.
+                </p>
+                <div  class="fragment"><p>
+                    The negation of this quantifier is sometimes useful.
+                </p><p>
+                    <span class="intro">&#x2204;</span>a P &#x225d;
+                    &not;<span class="intro">&#x2203;</span>a P
+                    <span class="fragment">
+                        &#x27fa; &#x2200;a &not;P
+                    </span>
+                </p></div>
             </section>
             <section>
                 <h3>Predicate Calculus</h3>
@@ -963,39 +1109,6 @@
             </section>
             <!-- TODO: free and bound variables -->
             <!-- TODO: tautology, contradiction and contingencies -->
-            <section>
-                <h3>Universal Quantifier</h3>
-                <p>
-                    <span class="intro">&#x2200;</span>a P(a)
-                </p>
-                <p>
-                    A universal quantifier asserts that a predicate is true
-                    for all possible values of a variable.  Often we will
-                    further qualify a variable.
-                </p>
-            </section>
-            <section>
-                <h3>Existential Quantifier</h3>
-                <p>
-                    <span class="intro">&#x2203;</span>a P(a) &#x225d;
-                    &not;(&#x2200;a &not;P(a))
-                </p>
-                <p>
-                    From the universal quantifier we construct the existential
-                    quantifier.  This asserts that some value of a
-                    variable satisfies the predicate.
-                </p>
-                <div  class="fragment">
-                    <p>
-                        The negation of this quantifier is sometimes useful.
-                    </p>
-                    <p>
-                        <span class="intro">&#x2204;</span>a P(a) &#x225d;
-                        &not;(<span class="intro">&#x2203;</span>a P(a))
-                        &#x27fa; &#x2200;a &not;P(a)
-                    </p>
-                </div>
-            </section>
             <section>
                 <h3>Liebniz's Law</h3>
                 <p>
@@ -7407,23 +7520,23 @@
                     tail of the second at the head of the first.
                 </p>
                 <ul><li>
-                    Closed: &#x2200; <strong>v</strong>,
-                    <strong>u</strong>&#x2208;&#x1d54d;
+                    Closed: &#x2200;<strong>v</strong>,
+                    <strong>u</strong> &#x2208;&#x1d54d;
                     <span class="intro">
                         <strong>v</strong> + <strong>u</strong>
                         &#x2208;&#x1d54d;</span>
                 </li><li>
-                    Commutative: &#x2200; <strong>v</strong>,
-                    <strong>u</strong>&#x2208;&#x1d54d;
+                    Commutative: &#x2200;<strong>v</strong>,
+                    <strong>u</strong> &#x2208;&#x1d54d;
                     <span class="intro">
                         <strong>v</strong> + <strong>u</strong>
                     </span> = <span class="intro">
                         <strong>u</strong> + <strong>v</strong>
                     </span>
                 </li><li>
-                    Associative: &#x2200; <strong>v</strong>,
+                    Associative: &#x2200;<strong>v</strong>,
                     <strong>u</strong>,
-                    <strong>w</strong>&#x2208;&#x1d54d;
+                    <strong>w</strong> &#x2208;&#x1d54d;
                     <span class="intro">
                         (<strong>v</strong> + <strong>u</strong>) +
                         <strong>w</strong>
@@ -7431,6 +7544,18 @@
                         <strong>v</strong> + (<strong>u</strong> +
                         <strong>w</strong>)
                     </span>
+                </li><li>
+                    Identity: &#x2203;<strong>0</strong>
+                    &#x2208;&#x1d54d; &#x2200;<strong>v</strong>
+                    &#x2208;&#x1d54d; <span class="intro">
+                    <strong>v</strong> +
+                    <strong>0</strong> = <strong>v</strong></span>
+                </li><li>
+                    Inverses: &#x2200;<strong>v</strong>
+                    &#x2208;&#x1d54d; &#x2203;-<strong>v</strong>
+                    &#x2208;&#x1d54d; <span class="intro">
+                    <strong>v</strong> +
+                    (-<strong>v</strong>) = <strong>0</strong></span>
                 </li></ul>
             </section>
             <section>
@@ -7442,8 +7567,7 @@
                         data-point4="0.9|0.6"
                         data-vector1="0.2|0.25|0.3|0.6|purple"
                         data-vector2="0.2|0.25|0.8|0.25|purple"
-                        data-vector3="0.2|0.25|0.9|0.6|green||
-                               (B - A) + (C - A)">
+                        data-vector3="0.2|0.25|0.9|0.6|green">
                 </canvas>
             </section>
             <section>
@@ -7480,10 +7604,6 @@
                 <p>
                     Only the zero vector lacks direction
                 </p>
-                <p>
-                    Axiom: &#x2203; <strong class="intro">0</strong>
-                    &#x2208;&#x1d54d;
-                </p>
                 <ul><li>
                     &#x2200;A&#x2208;&#x2119; A - A =
                     <strong class="intro">0</strong>
@@ -7494,10 +7614,6 @@
                     &#x2200;<strong>v</strong>&#x2208;&#x1d54d;
                     0<sub>&#x211d;</sub><strong>v</strong>
                     = <strong class="intro">0</strong>
-                </li><li>
-                    &#x2200;<strong>v</strong>&#x2208;&#x1d54d;
-                    <strong>v</strong> + <strong class="intro">0</strong> =
-                    <strong>v</strong>
                 </li><li>
                     &#x2200;a&#x2208;&#x211d;
                     a<strong class="intro">0</strong> =
@@ -7589,6 +7705,16 @@
                     point and all the vectors spanned by some original
                     vector.
                 </aside>
+            </section>
+            <section>
+                <h3>Spanning</h3>
+                <canvas class="triggy"
+                        data-vector1="0.4|0.3|0.6|0.3"
+                        data-vector2="0.3|0.6|0.3|0.4"
+                        data-vector3="0.7|0.4|0.5|0.6"
+                        data-vector4="0.55|0.65|0.75|0.45"
+                        data-vector-turn="stretch">
+                </canvas>
             </section>
             <section>
                 <h3>Independence</h3>
