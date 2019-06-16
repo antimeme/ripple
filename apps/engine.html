@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+
+<form><table><tr><td>
+    Dry Mass
+</td><td>
+    <input id="drymass" type="text" size="5" value="49" /> Mg
+</td></tr><tr><td>
+    Propellant
+</td><td>
+    <input id="propellant" type="text" size="5" value="50" /> Mg
+</td></tr><tr><td>
+    Reactor Fuel
+</td><td>
+    <input id="fuel" type="text" size="5" value="1" /> Mg
+</td></tr><tr><td>
+    Reactor Efficiency
+</td><td>
+    <input id="reff" type="text" size="5" value="10" /> %
+</td></tr><tr><td>
+    Engine Efficiency
+</td><td>
+    <input id="eeff" type="text" size="5" value="50" /> %
+</td></tr><tr><td>
+    Exhaust Velocity
+</td><td>
+    <input id="exhaust" type="text" size="5" value="10,000" /> km/s
+</td></tr><tr><td>
+    Thrust
+</td><td>
+    <input id="thrust" type="text" size="5" value="10" /> m/s<sup>2</sup>
+</td></tr></table></form>
+
+<hr />
+
+<table><tr><td>
+    Delta-V
+</td><td>
+    <input id="deltav" type="text" size="8" disabled="true" />
+    <span id="deltavtag">km/s</span>
+</td></tr><tr><td>
+    Burn Time
+</td><td>
+    <input id="burn" type="text" size="8" disabled="true" />
+    <span id="burntag">seconds</span>
+</td></tr><tr><td>
+    Energy
+</td><td>
+    <input id="energy" type="text" size="8" disabled="true" />
+    <span id="energytag">Joules</span>
+</td></tr><tr><td>
+    Deuterium
+</td><td>
+    <input id="deut" type="text" size="8" disabled="true" />
+    <span id="deuttag">kg</span>
+</td></tr></table>
+
+<script src="ripple/polyfill.js"></script>
+<script src="ripple/ripple.js"></script>
+<script>//<![CDATA[
+ var drymass;
+ var propellant;
+ var fuel;
+ var reff;
+ var eeff;
+ var exhaust;
+ var thrust;
+
+ var deltav;
+ var energy;
+ var energytag;
+ var burn;
+ var burntag;
+
+ var getValue = function(element) {
+     return parseFloat(element.value.replace(',', ''));
+ };
+
+ var setValue = function(element, value) {
+     element.value = value.toLocaleString('en-US');
+ };
+
+ var setMetric = function(element, tag, unit, value) {
+     if (value > 1000000000000000000) {
+         value /= 1000000000000000000;
+         tag.innerHTML = 'E' + unit;
+     } else if (value > 1000000000000000) {
+         value /= 1000000000000000;
+         tag.innerHTML = 'P' + unit;
+     } else if (value > 1000000000000) {
+         value /= 1000000000000;
+         tag.innerHTML = 'T' + unit;
+     } else if (value > 1000000000) {
+         value /= 1000000000;
+         tag.innerHTML = 'G' + unit;
+     } else if (value > 1000000) {
+         value /= 1000000;
+         tag.innerHTML = 'M' + unit;
+     } else if (value > 1000) {
+         value /= 1000;
+         tag.innerHTML = 'k' + unit;
+     } else tag.innerHTML = unit;
+     element.value = value.toLocaleString('en-US');
+ };
+
+ var setSeconds = function(element, tag, value) {
+     if (value > 24 * 60 * 60) {
+         value /= 24 * 60 * 60;
+         tag.innerHTML = 'days';
+     } else if (value > 60 * 60) {
+         value /= 60 * 60;
+         tag.innerHTML = 'hours';
+     } else if (value > 60) {
+         value /= 60;
+         tag.innerHTML = 'minutes';
+     } else tag.innerHTML = 'seconds';
+     element.value = value.toLocaleString('en-US');
+ };
+
+ var compute = function() {
+     var ve = getValue(exhaust);
+     var mf = getValue(drymass);
+     var rf = getValue(fuel);
+     var th = getValue(thrust);
+     var pr = getValue(propellant);
+     var dv = ve * Math.log((mf + pr + rf) / (mf + rf));
+     var bt = 1000 * dv / th;
+     var e = pr * 1000 * ve * 1000 * ve * 1000 / (getValue(eeff) / 100);
+
+     setMetric(deltav, deltavtag, 'm/s', 1000 * dv);
+     setSeconds(burn, burntag, bt);
+     setMetric(energy, energytag, 'Joules', e);
+     setMetric(deut, deuttag, 'g',
+               e / (739000000000 * getValue(reff)));
+ };
+
+ ripple.ready(function() {
+     drymass = document.getElementById("drymass");
+     propellant = document.getElementById("propellant");
+     fuel = document.getElementById("fuel");
+     reff = document.getElementById("reff");
+     eeff = document.getElementById("eeff");
+     exhaust = document.getElementById("exhaust");
+     thrust = document.getElementById("thrust");
+     deltav = document.getElementById("deltav");
+     deltavtag = document.getElementById("deltavtag");
+     energy = document.getElementById("energy");
+     energytag = document.getElementById("energytag");
+     burn = document.getElementById("burn");
+     burntag = document.getElementById("burntag");
+     deut = document.getElementById("deut");
+     deuttag = document.getElementById("deuttag");
+
+     [drymass, propellant, fuel, reff, eeff, exhaust, thrust]
+         .forEach(function(thing) {
+             thing.addEventListener("change", compute); });
+     compute();
+ });
+ //]]></script>
