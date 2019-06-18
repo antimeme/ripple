@@ -6,7 +6,7 @@
 <form><table><tr><td>
     Dry Mass
 </td><td>
-    <input id="drymass" type="text" size="5" value="49" /> tonnes
+    <input id="drymass" type="text" size="5" value="50" /> tonnes
 </td></tr><tr><td>
     Propellant
 </td><td>
@@ -15,7 +15,7 @@
     <select id="ftype">
     </select>
 </td><td>
-    <input id="fuel" type="text" size="5" value="1" /> tonnes
+    <input id="fuel" type="text" size="5" value="50" /> tonnes
 </td></tr><tr><td>
     Reactor Efficiency
 </td><td>
@@ -27,11 +27,11 @@
 </td></tr><tr><td>
     Exhaust Velocity
 </td><td>
-    <input id="exhaust" type="text" size="5" value="10,000" /> km/s
+    <input id="exhaust" type="text" size="5" value="12,157" /> km/s
 </td></tr><tr><td>
-    Thrust
+    Acceleration
 </td><td>
-    <input id="thrust" type="text" size="5" value="10" />
+    <input id="acceleration" type="text" size="5" value="10" />
     m/s<sup>2</sup>
 </td></tr></table></form>
 
@@ -50,16 +50,16 @@
     <input id="burn" type="text" size="8" disabled="true" />
     <span id="burntag">seconds</span>
 </td><td>
-    Delta-V / Thrust
+    Delta-V / Acceleration
 </td></tr><tr><td>
     Energy
 </td><td>
     <input id="energy" type="text" size="8" disabled="true" />
     <span id="energytag">Joules</span>
 </td><td>
-    Propellant-Mass * Exhaust-Velocity * Exhaut-Velocity
+    Propellant-Mass * Exhaust-Velocity * Exhaust-Velocity
 </td></tr><tr><td>
-    <span id="ftypeout">Fuel</span>
+    Spent <span id="ftypeout">Fuel</span>
 </td><td>
     <input id="fuelused" type="text" size="8" disabled="true" />
     <span id="fuelusedtag">kg</span>
@@ -77,7 +77,7 @@
  var reff;
  var eeff;
  var exhaust;
- var thrust;
+ var acceleration;
 
  var deltav;
  var energy;
@@ -90,12 +90,12 @@
 
  var ftypes = {
      hydrogen: {
-         label: "Hydrogen, Liquid",
+         label: "Hydrogen",
          Mjkg: 141.86
      },
      deuterium: {
          label: "Deuterium",
-         Mjkg: 73900000000
+         Mjkg: 73900000
      },
      antimatter: {
          label: "Antimatter",
@@ -169,12 +169,13 @@
      var ve = getValue(exhaust);
      var mf = getValue(drymass);
      var rf = getValue(fuel);
-     var th = getValue(thrust);
+     var th = getValue(acceleration);
      var pr = getValue(propellant);
      var dv = ve * Math.log((mf + pr + rf) / (mf + rf));
      var bt = 1000 * dv / th;
-     var e = (pr * 1000) * (ve * 1000) * (ve * 1000) / (getValue(eeff) / 100);
-     var fu = e / (ftypes[ftype.value].Mjkg * 1000000 * getValue(reff) / 100);
+     var e = (pr * 1000) * (ve * 1000) * (ve * 1000) / 2
+     var fu = 1000 * e / (ftypes[ftype.value].Mjkg * 1000000 *
+         (getValue(reff) / 100) * (getValue(eeff) / 100));
 
      setMetric(deltav, deltavtag, 'm/s', 1000 * dv);
      setSeconds(burn, burntag, bt);
@@ -200,7 +201,7 @@
      reff = document.getElementById("reff");
      eeff = document.getElementById("eeff");
      exhaust = document.getElementById("exhaust");
-     thrust = document.getElementById("thrust");
+     acceleration = document.getElementById("acceleration");
      deltav = document.getElementById("deltav");
      deltavtag = document.getElementById("deltavtag");
      energy = document.getElementById("energy");
@@ -211,7 +212,8 @@
      fuelusedtag = document.getElementById("fuelusedtag");
      ftypeout = document.getElementById("ftypeout");
 
-     [drymass, propellant, ftype, fuel, reff, eeff, exhaust, thrust]
+     [drymass, propellant, ftype, fuel, reff, eeff,
+      exhaust, acceleration]
          .forEach(function(thing) {
              thing.addEventListener("change", compute); });
      compute();
