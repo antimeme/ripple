@@ -8,18 +8,9 @@
 </td><td>
     <input id="drymass" type="text" size="5" value="50" /> tonnes
 </td></tr><tr><td>
-    Propellant
-</td><td>
-    <input id="propellant" type="text" size="5" value="50" /> tonnes
-</td></tr><tr><td>
-    <select id="ftype">
-    </select>
+    Propulsion: <select id="ftype"></select>
 </td><td>
     <input id="fuel" type="text" size="5" value="50" /> tonnes
-</td></tr><tr><td>
-    Reactor Efficiency
-</td><td>
-    <input id="reff" type="text" size="5" value="10" /> %
 </td></tr><tr><td>
     Engine Efficiency
 </td><td>
@@ -33,7 +24,11 @@
 </td><td>
     <input id="acceleration" type="text" size="5" value="10" />
     m/s<sup>2</sup>
-</td></tr></table></form>
+</td></tr><!-- tr><td>
+    Reactor Efficiency
+</td><td>
+    <input id="reff" type="text" size="5" value="10" /> %
+</td></tr--></table></form>
 
 <hr />
 
@@ -43,7 +38,7 @@
     <input id="deltav" type="text" size="8" disabled="true" />
     <span id="deltavtag">km/s</span>
 </td><td>
-    ln(Start-Mass/Dry-Mass) * Exhaust-Velocity
+    ln(Start-Mass/Dry-Mass) &times; Exhaust-Velocity
 </td></tr><tr><td>
     Burn Time
 </td><td>
@@ -52,26 +47,25 @@
 </td><td>
     Delta-V / Acceleration
 </td></tr><tr><td>
-    Energy
+    Kinetic Energy
 </td><td>
     <input id="energy" type="text" size="8" disabled="true" />
     <span id="energytag">Joules</span>
 </td><td>
-    Propellant-Mass * Exhaust-Velocity * Exhaust-Velocity
+    Fuel-Mass &times; Exhaust Velocity<sup>2</sup>
 </td></tr><tr><td>
-    Spent <span id="ftypeout">Fuel</span>
+    Reaction Energy
 </td><td>
-    <input id="fuelused" type="text" size="8" disabled="true" />
-    <span id="fuelusedtag">kg</span>
+    <input id="produced" type="text" size="8" disabled="true" />
+    <span id="producedtag">Joules</span>
 </td><td>
-    Energy / Energy-Density
+    Fuel-Mass &times; Energy-Density &times; Efficiency
 </td></tr></table>
 
 <script src="ripple/polyfill.js"></script>
 <script src="ripple/ripple.js"></script>
 <script>//<![CDATA[
  var drymass;
- var propellant;
  var ftype;
  var fuel;
  var reff;
@@ -80,27 +74,31 @@
  var acceleration;
 
  var deltav;
- var energy;
- var energytag;
  var burn;
  var burntag;
- var fuelused;
- var fuelusedtag;
+ var energy;
+ var energytag;
+ var produced;
+ var producedtag;
  var ftypeout;
 
  var ftypes = {
-     hydrogen: {
-         label: "Hydrogen",
-         Mjkg: 141.86
+     afusion: {
+         label: "D-He3",
+         Mjkg: 361000000
      },
      deuterium: {
          label: "Deuterium",
          Mjkg: 73900000
      },
-     antimatter: {
-         label: "Antimatter",
-         Mjkg: 89875517874
+     hydrogen: {
+         label: "H2-O2",
+         Mjkg: 141.86
      },
+     //antimatter: {
+     //    label: "Antimatter",
+     //    Mjkg: 89875517874
+     //},
  };
 
  var getValue = function(element) {
@@ -168,22 +166,19 @@
  var compute = function() {
      var ve = getValue(exhaust);
      var mf = getValue(drymass);
-     var rf = getValue(fuel);
+     var fu = getValue(fuel);
      var th = Math.abs(getValue(acceleration));
-     var pr = getValue(propellant);
-     var dv = ve * Math.log((mf + pr + rf) / (mf + rf));
-     var bt = 1000 * dv / th;
-     var e = (pr * 1000) * (ve * 1000) * (ve * 1000) / 2
-     var fu = 1000 * e / (ftypes[ftype.value].Mjkg * 1000000 *
-         (getValue(reff) / 100) * (getValue(eeff) / 100));
+     var dv = ve * Math.log((mf + fu) / mf);
+     var en = (fu * 1000) * (ve * 1000) * (ve * 1000) / 2
+     var pr = (fu * 1000 * ftypes[ftype.value].Mjkg * 1000000 *
+         (getValue(eeff) / 100));
 
      setMetric(deltav, deltavtag, 'm/s', 1000 * dv);
-     setSeconds(burn, burntag, bt);
-     setMetric(energy, energytag, 'Joules', e);
-     setMetric(fuelused, fuelusedtag, 'g', fu);
+     setSeconds(burn, burntag, 1000 * dv / th);
+     setMetric(energy, energytag, 'Joules', en);
+     setMetric(produced, producedtag, 'Joules', pr);
 
-     fuelused.className = (fu < rf * 1000000) ? 'success' : 'fail';
-     ftypeout.innerHTML = ftypes[ftype.value].label;
+     produced.className = (pr >= en) ? 'success' : 'fail';
  };
 
  ripple.ready(function() {
@@ -196,9 +191,8 @@
      });
 
      drymass = document.getElementById("drymass");
-     propellant = document.getElementById("propellant");
      fuel = document.getElementById("fuel");
-     reff = document.getElementById("reff");
+     //reff = document.getElementById("reff");
      eeff = document.getElementById("eeff");
      exhaust = document.getElementById("exhaust");
      acceleration = document.getElementById("acceleration");
@@ -206,14 +200,13 @@
      deltavtag = document.getElementById("deltavtag");
      energy = document.getElementById("energy");
      energytag = document.getElementById("energytag");
+     produced = document.getElementById("produced");
+     producedtag = document.getElementById("producedtag");
      burn = document.getElementById("burn");
      burntag = document.getElementById("burntag");
-     fuelused = document.getElementById("fuelused");
-     fuelusedtag = document.getElementById("fuelusedtag");
      ftypeout = document.getElementById("ftypeout");
 
-     [drymass, propellant, ftype, fuel, reff, eeff,
-      exhaust, acceleration]
+     [drymass, ftype, fuel, eeff, exhaust, acceleration]
          .forEach(function(thing) {
              thing.addEventListener("change", compute); });
      compute();
