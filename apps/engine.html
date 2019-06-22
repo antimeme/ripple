@@ -4,17 +4,21 @@
 </style>
 
 <form><table><tr><td>
-    Dry Mass
+    Payload
 </td><td>
-    <input id="drymass" type="text" size="5" value="50" /> tonnes
+    <input id="payload" type="text" size="5" value="50" /> tonnes
+</td></tr><tr><td>
+    Engine
+</td><td>
+    <input id="engine" type="text" size="5" value="10" /> tonnes
 </td></tr><tr><td>
     Propulsion: <select id="ftype"></select>
 </td><td>
-    <input id="fuel" type="text" size="5" value="50" /> tonnes
+    <input id="fuel" type="text" size="5" value="20" /> tonnes
 </td></tr><tr><td>
     Engine Efficiency
 </td><td>
-    <input id="eeff" type="text" size="5" value="50" /> %
+    <input id="eeff" type="text" size="5" value="22" /> %
 </td></tr><tr><td>
     Exhaust Velocity
 </td><td>
@@ -24,11 +28,16 @@
 </td><td>
     <input id="acceleration" type="text" size="5" value="10" />
     m/s<sup>2</sup>
-</td></tr><!-- tr><td>
-    Reactor Efficiency
+</td></tr><tr><td>
+    Crisis Time
 </td><td>
-    <input id="reff" type="text" size="5" value="10" /> %
-</td></tr--></table></form>
+    <input id="crisis" type="text" size="5" value="240" />
+    hours
+</td></tr><!-- tr><td>
+               Reactor Efficiency
+               </td><td>
+               <input id="reff" type="text" size="5" value="10" /> %
+               </td></tr--></table></form>
 
 <hr />
 
@@ -49,37 +58,47 @@
 </td></tr><tr><td>
     Kinetic Energy
 </td><td>
-    <input id="energy" type="text" size="8" disabled="true" />
-    <span id="energytag">Joules</span>
+    <input id="kinetic" type="text" size="8" disabled="true" />
+    <span id="kinetictag">Joules</span>
 </td><td>
     Fuel-Mass &times; Exhaust Velocity<sup>2</sup>
 </td></tr><tr><td>
     Reaction Energy
 </td><td>
-    <input id="produced" type="text" size="8" disabled="true" />
-    <span id="producedtag">Joules</span>
+    <input id="reaction" type="text" size="8" disabled="true" />
+    <span id="reactiontag">Joules</span>
 </td><td>
     Fuel-Mass &times; Energy-Density &times; Efficiency
+</td></tr><tr><td>
+    Range
+</td><td>
+    <input id="range" type="text" size="8" disabled="true" />
+    <span id="rangetag">km</span>
+</td><td>
+    Acceleration &times; (Crisis-Time / 2)<sup>2</sup>
 </td></tr></table>
 
 <script src="ripple/polyfill.js"></script>
 <script src="ripple/ripple.js"></script>
 <script>//<![CDATA[
- var drymass;
+ var payload;
+ var engine;
  var ftype;
  var fuel;
  var reff;
  var eeff;
  var exhaust;
  var acceleration;
+ var crisis;
 
  var deltav;
  var burn;
  var burntag;
- var energy;
- var energytag;
- var produced;
- var producedtag;
+ var kinetic;
+ var kinteictag;
+ var reaction;
+ var reactiontag;
+ var range;
  var ftypeout;
 
  var ftypes = {
@@ -111,8 +130,10 @@
 
  var setMetric = function(element, tag, unit, value) {
      if (unit === 'm/s') {
-         value /= 1000;
-         tag.innerHTML = 'km/s';
+         if (value > 1000) {
+             value /= 1000;
+             tag.innerHTML = 'km/s';
+         } else tag.innerHTML = unit;
      } else if (unit === 'g') {
          if (value > 1000000000000) {
              value /= 1000000000000;
@@ -164,21 +185,29 @@
  };
 
  var compute = function() {
+     var drymass = getValue(payload) + getValue(engine);
      var ve = getValue(exhaust);
-     var mf = getValue(drymass);
      var fu = getValue(fuel);
-     var th = Math.abs(getValue(acceleration));
-     var dv = ve * Math.log((mf + fu) / mf);
+     var acc = Math.abs(getValue(acceleration));
+     var dv = ve * Math.log((drymass + fu) / drymass);
      var en = (fu * 1000) * (ve * 1000) * (ve * 1000) / 2
      var pr = (fu * 1000 * ftypes[ftype.value].Mjkg * 1000000 *
          (getValue(eeff) / 100));
+     var ct = getValue(crisis) * 60 * 60;
+     var bt = 1000 * dv / acc;
+     var rg = (ct < bt) ?
+              (acc * (ct / 2) * (ct / 2)) :
+              (acc * (bt / 2) * (bt / 2) +
+               (ct - bt) * (acc * bt));
 
      setMetric(deltav, deltavtag, 'm/s', 1000 * dv);
-     setSeconds(burn, burntag, 1000 * dv / th);
-     setMetric(energy, energytag, 'Joules', en);
-     setMetric(produced, producedtag, 'Joules', pr);
+     setSeconds(burn, burntag, bt);
+     setMetric(kinetic, kinetictag, 'Joules', en);
+     setMetric(reaction, reactiontag, 'Joules', pr);
+     setMetric(range, rangetag, 'm', rg);
 
-     produced.className = (pr >= en) ? 'success' : 'fail';
+     kinetic.className = (pr >= en) ? 'success' : 'fail';
+     reaction.className = (pr >= en) ? 'success' : 'fail';
  };
 
  ripple.ready(function() {
@@ -190,23 +219,27 @@
          ftype.appendChild(result);
      });
 
-     drymass = document.getElementById("drymass");
+     payload = document.getElementById("payload");
+     engine = document.getElementById("engine");
      fuel = document.getElementById("fuel");
      //reff = document.getElementById("reff");
      eeff = document.getElementById("eeff");
      exhaust = document.getElementById("exhaust");
      acceleration = document.getElementById("acceleration");
+     crisis = document.getElementById("crisis");
      deltav = document.getElementById("deltav");
      deltavtag = document.getElementById("deltavtag");
-     energy = document.getElementById("energy");
-     energytag = document.getElementById("energytag");
-     produced = document.getElementById("produced");
-     producedtag = document.getElementById("producedtag");
+     kinetic = document.getElementById("kinetic");
+     kinetictag = document.getElementById("kinetictag");
+     reaction = document.getElementById("reaction");
+     reactiontag = document.getElementById("reactiontag");
      burn = document.getElementById("burn");
      burntag = document.getElementById("burntag");
+     range = document.getElementById("range");
+     rangetag = document.getElementById("rangetag");
      ftypeout = document.getElementById("ftypeout");
 
-     [drymass, ftype, fuel, eeff, exhaust, acceleration]
+     [payload, ftype, fuel, eeff, exhaust, acceleration, crisis]
          .forEach(function(thing) {
              thing.addEventListener("change", compute); });
      compute();
