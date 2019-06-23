@@ -54,6 +54,11 @@
     var _sqrt2 = Math.sqrt(2);
     var _sqrt3 = Math.sqrt(3);
 
+    var epsilon = 0.000001;
+    var zeroish = function(value) {
+        return (value < epsilon) && (value > -epsilon);
+    };
+
     var magnitude = function() {
         var index;
         var result = 0;
@@ -62,6 +67,28 @@
                 result += arguments[index] * arguments[index];
         return Math.sqrt(result);
     }
+
+    // Given four points returns the intersection of the lines
+    // formed by each pair.
+    var intersect = function(s, e, p, q) {
+        var result;
+        // When the denominator is zero the lines have the same slope
+        // which means that either there is no solution or that both
+        // lines are the same so all points on either are solutions.
+        var denominator = ((e.y - s.y) * (p.x - q.x) -
+                           (p.y - q.y) * (e.x - s.x));
+        if (!zeroish(denominator)) {
+            var x = (((s.x * (e.y - s.y) * (p.x - q.x)) -
+                      (q.x * (p.y - q.y) * (e.x - s.x)) -
+                      (s.y - q.y) * (e.x - s.x) * (p.x - q.x)) /
+                denominator);
+            var y = zeroish(e.x - s.x) ?
+                    ((e.y - s.y) * (x - s.x) / (e.x - s.x)) + s.y :
+                    ((p.y - q.y) * (x - q.x) / (p.x - q.x)) + q.y;
+            return {x: x, y: y};
+        }
+        return result;
+    };
 
     // BaseGrid serves a base class for other grids.  Although it
     // thinks like a SquareGrid for the most part, it returns an empty
