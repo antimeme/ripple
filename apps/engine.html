@@ -12,7 +12,7 @@
 </td><td>
     <input id="engine" type="text" size="5" value="10" /> tonnes
 </td></tr><tr><td>
-    Propulsion: <select id="ftype"></select>
+    Fuel <select id="ftype"></select>
 </td><td>
     <input id="fuel" type="text" size="5" value="20" /> tonnes
 </td></tr><tr><td>
@@ -26,10 +26,10 @@
 </td></tr><tr><td>
     Acceleration
 </td><td>
-    <input id="acceleration" type="text" size="5" value="10" />
+    <input id="acceleration" type="text" size="5" value="9.8" />
     m/s<sup>2</sup>
 </td></tr><tr><td>
-    Crisis Time
+    Life Support
 </td><td>
     <input id="crisis" type="text" size="5" value="240" />
     hours
@@ -110,9 +110,9 @@
          label: "Deuterium",
          Mjkg: 73900000
      },
-     hydrogen: {
+     h2o2: {
          label: "H2-O2",
-         Mjkg: 141.86
+         Mjkg: 13.4
      },
      //antimatter: {
      //    label: "Antimatter",
