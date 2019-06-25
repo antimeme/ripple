@@ -141,7 +141,7 @@
         // calculuate x and y coordinates of the center of the node.
         return this._applyOffset(this._markCenter(node));
     };
-    BaseGrid.prototype.coordinate = function(node) {
+    BaseGrid.prototype.getCenter = function(node) {
         return this.markCenter({row: node.row, col: node.col});
     };
 
@@ -162,7 +162,7 @@
         node.col = point.col;
         return node;
     };
-    BaseGrid.prototype.position = function(node) {
+    BaseGrid.prototype.getCell = function(node) {
         return this.markCell({x: node.x, y: node.y});
     };
 
@@ -182,7 +182,7 @@
 
     BaseGrid.prototype.eachNeighbor = function(
         node, options, fn, context) {
-        // Iterate over the neighbors of a specified node
+        // Iterate over a node's neighbor nodes
         if (!fn)
             return this.eachNeighbor(
                 node, options, function(neighbor) {
@@ -192,12 +192,12 @@
             node = this.markCenter({row: node.row, col: node.col});
         var index = 0;
         this._eachNeighbor(node, function(neighbor) {
-            if ((options && options.mark) ||
-                (options && options.coordinates) ||
-                (options && options.points))
-                this.markCenter(neighbor);
-            if (options && options.points)
-                neighbor.points = this._pairpoints(node, neighbor);
+            if (options) {
+                if (options.mark || options.points)
+                    this.markCenter(neighbor);
+                if (options.points)
+                    neighbor.points = this._pairpoints(node, neighbor);
+            }
             if (isNaN(neighbor.cost))
                 neighbor.cost = 1;
             fn.call(context, neighbor, index++);
@@ -230,8 +230,8 @@
 
     BaseGrid.prototype.pairpoints = function(nodeA, nodeB) {
         return this.adjacent(nodeA, nodeB) ?
-               this._pairpoints(this.coordinate(nodeA),
-                                this.coordinate(nodeB)) : [];
+               this._pairpoints(this.getCenter(nodeA),
+                                this.getCenter(nodeB)) : [];
     };
 
     BaseGrid.prototype.points = function(node) {
@@ -240,6 +240,8 @@
     };
 
     BaseGrid.prototype.draw = function(ctx, node) {
+        // Creates a path through the points of a grid cell.  Caller
+        // is responsible for setting up drawing properties.
         var last, points = this.points(node);
         if (points.length > 0) {
             last = points[points.length - 1];
@@ -406,7 +408,7 @@
             contains: function(node) {
                 return contain[canonicalizeNode(node)] || null; }};
 
-        start = this.coordinate({row: 0, col: 0});
+        start = this.markCenter({row: 0, col: 0});
         start.ring = (config && config.hasOwnProperty('rings')) ?
                      config.rings : 5;
         adding.push(start);
@@ -418,8 +420,7 @@
             current.adjacent = [];
             current.exits = 0;
 
-            this.eachNeighbor(current, {
-                coordinates: true}, function(node) {
+            this.eachNeighbor(current, {mark: true}, function(node) {
                     index = canonicalizeNode(node);
                     if (index in contain) {
                         current.adjacent.push(contain[index]);
@@ -968,7 +969,7 @@
                 // updated in case the grid offsets have moved
                 // since the last draw call.
                 ctx.beginPath();
-                instance.draw(ctx, instance.coordinate(selected));
+                instance.draw(ctx, instance.getCenter(selected));
                 ctx.fillStyle = colorSelected;
                 ctx.fill();
 
@@ -1030,7 +1031,8 @@
                     ctx.beginPath();
                     instance.eachLine(
                         targets[0], targets[1], function(node) {
-                            instance.draw(ctx, instance.coordinate(node));
+                            instance.draw(
+                                ctx, instance.getCenter(node));
                         });
                     ctx.fillStyle = colorLine;
                     ctx.fill();
@@ -1250,11 +1252,11 @@
                 if (press) { clearTimeout(press); press = 0; }
             } else {
                 tap = drag = targets;
-                selected = instance.position(tap);
+                selected = instance.markCell(tap);
                 if (tap.targets && tap.targets.length > 1)
                     selected.range = [
-                        instance.position(tap.targets[0]),
-                        instance.position(tap.targets[1])];
+                        instance.markCell(tap.targets[0]),
+                        instance.markCell(tap.targets[1])];
 
                 // Show a menu on either double tap or long press.
                 // There are some advantages to using a native double

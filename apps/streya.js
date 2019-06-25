@@ -449,7 +449,7 @@
             // Draw the ship cells
             ctx.beginPath();
             this.eachCell(function(cell, node) {
-                this.grid.draw(ctx, this.grid.coordinate(node));
+                this.grid.draw(ctx, this.grid.markCenter(node));
             }, this);
             ctx.fillStyle = 'rgb(160, 160, 176)';
             ctx.fill();
@@ -457,8 +457,9 @@
             // Draw ship apparatus
             this.eachCell(function(cell, node) {
                 if (cell && cell.apparatus)
-                    cell.apparatus.draw(ctx, this.grid.size(),
-                                        this.grid.coordinate(node));
+                    cell.apparatus.draw(
+                        ctx, this.grid.size(),
+                        this.grid.markCenter(node));
             }, this);
         },
 
@@ -491,7 +492,7 @@
 
             this.eachCell(function(cell, node) {
                 if (cell && cell.apparatus && cell.apparatus.console) {
-                    node = multivec(this.grid.coordinate(node));
+                    node = multivec(this.grid.getCenter(node));
                     if (node.minus(character.position).normSquared() >
                         (this.grid.size() * this.grid.size() / 25)) {
                         current = multivec.collideRadiusRadius(
@@ -512,7 +513,7 @@
                 this.__extents = { sx: undefined, sy: undefined,
                                    ex: undefined, ey: undefined };
                 this.eachCell(function(cell, node) {
-                    node = this.grid.coordinate(node);
+                    node = this.grid.markCenter(node);
                     this.grid.points(node).forEach(function(point) {
                         if (isNaN(this.__extents.sx) ||
                             point.x < this.__extents.sx)
@@ -733,12 +734,12 @@
             tour: {
                 active: function() { return true; },
                 start: function() {
-                    var startNode = ship.grid.position(player.position);
+                    var startNode = ship.grid.getCell(player.position);
                     var candidate = null;
                     if (!ship.getCell(startNode)) {
                         ship.eachCell(function(cell, node) {
                             node = multivec(
-                                ship.grid.coordinate(node));
+                                ship.grid.markCenter(node));
                             if (!candidate ||
                                 (player.position.minus(candidate)
                                        .normSquared() >
@@ -823,7 +824,7 @@
                     ship.eachApparatus(function(apparatus, node) {
                         if (apparatus.console &&
                             checkFacingClose(
-                                player, ship.grid.coordinate(node),
+                                player, ship.grid.markCenter(node),
                                 3.5, 0.1)) {
                             apparatus.active = true;
                             ship.activeApparatus = apparatus;
@@ -915,7 +916,7 @@
             var gconfig = JSON.parse(decodeURI(gtype.value));
             gconfig.size = parseInt(gsize.value);
             ship = menuShipUpdate(streya.Ship.create({ grid: gconfig }));
-            selected = ship.grid.coordinate(selected);
+            selected = ship.grid.getCenter(selected);
             fasciaRedraw();
         });
 
@@ -927,7 +928,7 @@
         gsize.addEventListener('change', function() {
             var gconfig = JSON.parse(decodeURI(gtype.value));
             ship.grid.size(parseInt(gsize.value));
-            selected = ship.grid.coordinate(selected);
+            selected = ship.grid.getCenter(selected);
             fasciaRedraw();
         });
         menu.appendChild(ripple.createElement('li', null, gtype, gsize));

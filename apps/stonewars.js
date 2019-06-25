@@ -25,8 +25,8 @@
                 for (col = this.gcells / -2;
                     col < this.gcells / 2; ++col) {
                     this.grid.draw(
-                        ctx, this.grid.coordinate
-                        ({row: row, col: col}));
+                        ctx, this.grid.markCenter(
+                            {row: row, col: col}));
                 }
             ctx.strokeStype = 'black';
             ctx.stroke();
@@ -40,7 +40,7 @@
         },
 
         findCell: function(x, y) {
-            return this.grid.position(
+            return this.grid.getCell(
                 {x: (x - this.center.x) / this.zoom - this.pos.x,
                  y: (y - this.center.y) / this.zoom - this.pos.y });
         },
