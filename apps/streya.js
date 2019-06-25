@@ -20,6 +20,35 @@
         this.pathf    = require("./ripple/pathf.js");
     }
 
+    var metricUnit = function(value, unit) {
+        if (value > 1000000000000000000000000) {
+            value /= 1000000000000000000000000;
+            unit = 'Y' + unit[0];
+        } else if (value > 1000000000000000000000) {
+            value /= 1000000000000000000000;
+            unit = 'Z' + unit[0];
+        } else if (value > 1000000000000000000) {
+            value /= 1000000000000000000;
+            unit = 'E' + unit[0];
+        } else if (value > 1000000000000000) {
+            value /= 1000000000000000;
+            unit = 'P' + unit[0];
+        } else if (value > 1000000000000) {
+            value /= 1000000000000;
+            unit = 'T' + unit[0];
+        } else if (value > 1000000000) {
+            value /= 1000000000;
+            unit = 'G' + unit[0];
+        } else if (value > 1000000) {
+            value /= 1000000;
+            unit = 'M' + unit[0];
+        } else if (value > 1000) {
+            value /= 1000;
+            unit = 'k' + unit[0];
+        }
+        return value.toLocaleString('en-US') + ' ' + unit;
+    };
+
     // === Apparatus
     // An apparatus is a component of a ship or station.  This includes
     // things like life support, crew quarters, shield generators and
@@ -542,9 +571,9 @@
                             settingsScreen.hide();
                             inventoryScreen.show();
                         } else if (apparatusScreen.isVisible()) {
-                             apparatusScreen.hide()
+                            apparatusScreen.hide()
                         } else if (inventoryScreen.isVisible()) {
-                             inventoryScreen.hide();
+                            inventoryScreen.hide();
                         } else if (ship.activeApparatus) {
                             apparatusScreen.title(
                                 ship.activeApparatus.type);
@@ -569,7 +598,8 @@
         var menuShipUpdate = function(ship) {
             var massMeter = document.getElementById('mass-meter');
             if (massMeter)
-                massMeter.innerHTML = ship.mass();
+                massMeter.innerHTML = metricUnit(
+                    1000 * ship.mass(), 'g');
             return ship;
         };
 
@@ -930,7 +960,8 @@
         menu.appendChild(ripple.createElement(
             'li', null, ripple.createElement(
                 'span', {id: 'mass-meter'},
-                ship ? ship.mass() : 'unknown'), 'kg'));
+                ship ? metricUnit(1000 * ship.mass(), 'g') :
+                'unknown')));
         menu.appendChild(ripple.createElement('li', {
             'data-action': 'undo'}, 'Undo'));
         menu.appendChild(ripple.createElement('li', {
