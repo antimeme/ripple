@@ -39,6 +39,8 @@
                 "icon": {"image": "icons", "row": 4, "col": 2}},
         "tonfa": {"weight": 2,
                   "icon": {"image": "icons", "row": 4, "col": 3}},
+        "magboots": {"weight": 3,
+                     "icon": {"image": "icons", "row": 4, "col": 4}},
         "flashlight": {
             "weight": 3, "light": {"width": 1, "length": 2},
             "icon": {"image": "icons", "row": 3, "col": 1}},
@@ -56,7 +58,9 @@
             "eyeColor": "rgb(32, 32, 224)",
             "speed": 0.01,
             "turnSpeed": 0.01,
-            "inventory": [{"type": "keycard"}, {"type": "gun"}]
+            "inventory": [{"type": "keycard"},
+                          {"type": "gun"},
+                          {"type": "magboots"}]
         }
     },
     "abilities": {
@@ -194,9 +198,9 @@
         "Vegetables": {"units": "kilogram"},
         "Textiles": {},
         "Plastic Goods": {},
+        "Electronic Goods": {},
         "Meat": {},
         "Alcohol": {},
-        "Electronic Goods": {},
         "Energy": {"units": "megajoule"},
 
         "Propellant": {"units": "kilogram"},
@@ -208,16 +212,17 @@
         "Simple Building Materials": {"units": "kilogram"},
 
         "Carbon Dioxide": {},
-        "Waste Water": {"units": "liter"},
+        "Grey Water": {"units": "liter"},
         "Organic Waste": {"units": "kilogram"},
         "Plastic Waste": {"units": "kilogram"},
         "Electronic Waste": {"units": "kilogram"},
         "Industrial Waste": {"units": "kilogram"},
         "Building Waste": {"units": "kilogram"},
+        "Hard Waste": {"units": "kilogram"},
         "Nuclear Waste": {"units": "kilogram"}
     },
 
-    "industrialAppliances": {
+    "machines": {
         "Reactor": {
             "time": 8,
             "inputs": {"Nuclear Fuel": 1},
@@ -274,11 +279,11 @@
             "comment": ["Allows controlled passage between cells"],
             "mass": 100, "power": 1, "boundary": "auto"},
         "Reactor": {
-            "comment": ["Generates power for a ship"],
-            "mass": 2000, "sigil": "R", "console": "reactor"},
+            "comment": ["Aneutronic fusion reactor with ice shielding"],
+            "mass": 20000, "sigil": "R", "console": "reactor"},
         "Mainframe": {
             "comment": ["Computer node for controlling ship systems"],
-            "mass": 100, "sigil": "M", "power": 100,
+            "mass": 500, "sigil": "M", "power": 100,
             "console": "mainframe"},
         "Console": {
             "comment": ["Terminal for interacting with ship computer"],
@@ -300,7 +305,7 @@
             "enclose": "auto", "console": "lifesup"},
         "Engine": {
             "comment": ["Generates thrust to move ship"],
-            "mass": 1500, "sigil": "E", "power": 200,
+            "mass": 5000, "sigil": "E", "power": 200,
             "console": "engines"},
         "Cargo": {
             "comment": ["Storage compartments and rigging"],
