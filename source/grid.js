@@ -59,22 +59,27 @@
         return (value < epsilon) && (value > -epsilon);
     };
 
-    var magnitude = function() {
-        var index;
+    // Return the sum of the square of each argument
+    var sumSquares = function() {
         var result = 0;
+        var index;
         for (index = 0; index < arguments.length; ++index)
             if (arguments[index])
                 result += arguments[index] * arguments[index];
-        return Math.sqrt(result);
-    }
+        return result;
+    };
 
-    // Given four points returns the intersection of the lines
-    // formed by each pair.
-    var intersect = function(s, e, p, q) {
+    // Return the square root of the sum of the squares of each argument
+    var sumSquaresRoot = function() {
+        return Math.sqrt(sumSquares.apply(null, arguments));
+    };
+
+    // Given a pair of points for each of two lines, returns the point
+    // at which the two lines intersect.  Euclidian space is assumed so
+    // If the lines have the same slope they either don't intersect or
+    // are the same line.
+    var intersect2D = function(s, e, p, q) {
         var result;
-        // When the denominator is zero the lines have the same slope
-        // which means that either there is no solution or that both
-        // lines are the same so all points on either are solutions.
         var denominator = ((e.y - s.y) * (p.x - q.x) -
                            (p.y - q.y) * (e.x - s.x));
         if (!zeroish(denominator)) {
@@ -82,12 +87,26 @@
                       (q.x * (p.y - q.y) * (e.x - s.x)) -
                       (s.y - q.y) * (e.x - s.x) * (p.x - q.x)) /
                 denominator);
-            var y = zeroish(e.x - s.x) ?
-                    ((e.y - s.y) * (x - s.x) / (e.x - s.x)) + s.y :
-                    ((p.y - q.y) * (x - q.x) / (p.x - q.x)) + q.y;
-            return {x: x, y: y};
+            return {x: x,
+                    y: zeroish(e.x - s.x) ?
+                       ((p.y - q.y) * (x - q.x) / (p.x - q.x)) + q.y :
+                       ((e.y - s.y) * (x - s.x) / (e.x - s.x)) + s.y};
         }
         return result;
+    };
+
+    // Given two points that make up a line segment return true iff
+    // a third point lies between them.
+    var between2D = function(s, e, p) {
+        var segment = {x: e.x - s.x, y: e.y - s.y};
+        var segSq = sumSquares(segment.x, segment.y);
+        var pvec = {x: p.x - s.x, y: p.y - s.y};
+        var factor = (segment.x * pvec.y -
+                      segment.y - pvec.x) / segSq;
+        var position = sumSquares(
+            pvec.x - segment.y * factor,
+            pvec.y - segment.x * factor);
+        return ((position >= 0) && (position <= segSq));
     };
 
     // BaseGrid serves a base class for other grids.  Although it
@@ -220,7 +239,8 @@
                         y: (nodeB.y - nodeA.y) / 2};
         var rotated = {x: (nodeA.y - nodeB.y) / 2,
                        y: (nodeB.x - nodeA.x) / 2};
-        var factor = this._size / (2 * magnitude(rotated.x, rotated.y));
+        var factor = this._size / (2 * sumSquaresRoot(
+            rotated.x, rotated.y));
         var scaled = {x: rotated.x * factor, y: rotated.y * factor};
         return [{x: nodeA.x + midpoint.x + scaled.x,
                  y: nodeA.y + midpoint.y + scaled.y},
@@ -355,6 +375,43 @@
             }
         }
         return this;
+    };
+
+    BaseGrid.prototype.eachSegment = function(start, end, fn, self) {
+        // Given a start and end with coordinates, call a function for
+        // each cell in the line segment line between them.
+        if (!fn)
+            return this.eachLine(start, end, function(node) {
+                this.push(node); }, []);
+
+        var debugescape = 0;
+        var current = this.getCell({x: start.x, y: start.y});
+        end = this.getCell({x: end.x, y: end.y});
+
+        while ((current.row != end.row) || (current.col != end.col)) {
+            fn.call(self, current);
+            var step = null;
+            this.eachNeighbor(current, {points: true}, function(
+                neighbor) {
+                if (!neighbor.points || neighbor.points.length < 2)
+                    return;
+                var crossing = intersect2D(start, end,
+                                           neighbor.points[0],
+                                           neighbor.points[1]);
+                var didcross = crossing && between2D(
+                    neighbor.points[0], neighbor.points[1], crossing);
+                if (didcross)
+                    step = current = neighbor;
+            });
+            if (!step)
+                break;
+
+            // Terminate loop after 10 steps for debugging
+            if (++debugescape > 10)
+                break;
+        }
+        fn.call(self, end);
+        return self || this;
     };
 
     BaseGrid.prototype.createMaze = function(config) {
@@ -529,67 +586,6 @@
                 {x: node.x + halfsize, y: node.y - halfsize},
                 {x: node.x + halfsize, y: node.y + halfsize},
                 {x: node.x - halfsize, y: node.y + halfsize}];
-    };
-
-    SquareGrid.prototype.eachPath = function(start, end, fn, self) {
-        // Given two points call a function for each cell that the
-        // line intersects. This uses Wu's algorithm for plotting.
-        if (!fn)
-            return this.eachLine(start, end, function(node) {
-                this.push(node); }, []);
-        var swap, primary, secondary;
-        // :FIXME: implement this
-        return self || this;
-    };
-
-    SquareGrid.prototype.eachLine = function(start, end, fn, self) {
-        // Given two points call a function for each cell in a line
-        // approximating the path that would have to be taken.
-        // This uses Bresenham's algorithm for plotting lines.
-        if (!fn)
-            return this.eachLine(start, end, function(node) {
-                this.push(node); }, []);
-        var deltaX = end.x - start.x, deltaY = end.y - start.y;
-        var absX = Math.abs(deltaX), absY = Math.abs(deltaY);
-        var ncells, index, deltaM, deltaE;
-        var error = 0;
-        var slope;
-        var node = {x: start.x, y: start.y};
-        var which;
-
-        if ((absX < 0.0001) && (absY < 0.0001)) { // degenerate case
-            which = 'col';
-            deltaM = deltaE = {x: 0, y: 0};
-            slope = 1;
-        } else if (absX >= absY) {
-            which = 'col';
-            deltaM = {x: ((deltaX > 0) ? 1 : -1) * this.size(), y: 0};
-            deltaE = {x: 0, y: ((deltaY > 0) ? 1 : -1) * this.size()};
-            slope = absY / absX; 
-        } else {
-            which = 'row';
-            deltaM = {x: 0, y: ((deltaY > 0) ? 1 : -1) * this.size()};
-            deltaE = {x: ((deltaX > 0) ? 1 : -1) * this.size(), y: 0};
-            slope = absX / absY;
-        }
-        ncells = 1 + Math.abs(this.position(end)[which] -
-                              this.position(start)[which]);
-        for (index = 0; index < ncells; ++index) {
-            node = this.position(node);
-            if (fn)
-                fn.call(self, this.coordinate(node));
-
-            if (index + 1 < ncells) {
-                node = {x: node.x + deltaM.x, y: node.y + deltaM.y};
-                error += slope * this.size();
-                if (error >= this.size() / 2) {
-                    node.x += deltaE.x;
-                    node.y += deltaE.y;
-                    error -= this.size();
-                }
-            }
-        }
-        return self || this;
     };
 
     // TriangleGrid represents a mapping between cartesian coordinates
@@ -894,21 +890,21 @@
         var colorNeighbor = 'rgba(128, 128, 0, 0.4)';
         var colorRadius   = 'rgba(128, 128, 128, 0.2)';
         var colorLine     = 'rgba(128, 128, 224, 0.5)';
+        var colorSegment  = 'rgba(128, 128, 224, 0.5)';
         var colorOccupied = 'rgba(128, 192, 128, 0.5)';
         var lineWidth = 0, lineFactor = 40;
         var numbers = false, combined = false;
         var instance;
-        var tap, selected, drag, zooming, gesture, press = 0;
+        var tap, selected, when, previous;
+        var drag, zooming, gesture, press = 0;
 
         if (!viewport)
             viewport = parent ? parent : window;
 
         var draw_id = 0;
         var draw = function() {
-            if (!self.getContext) {
-                alert('ERROR: canvas has no getContext');
-                return;
-            }
+            if (!self.getContext)
+                throw 'ERROR: canvas has no getContext';
             var ctx = self.getContext('2d');
             var width = self.clientWidth;
             var height = self.clientHeight;
@@ -1014,6 +1010,24 @@
                     ctx.strokeStyle = colors[index % colors.length];
                     ctx.stroke();
                 });
+
+                if (previous) {
+                    ctx.beginPath();
+                    instance.eachSegment(
+                        previous, selected, function(node) {
+                            instance.draw(
+                                ctx, instance.markCenter(node)); });
+                    ctx.fillStyle = colorLine;
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.moveTo(previous.x, previous.y);
+                    ctx.lineTo(selected.x, selected.y);
+                    ctx.lineWidth = 2 * lineWidth;
+                    ctx.lineCap = 'round';
+                    ctx.strokeStyle = colorSegment;
+                    ctx.stroke();
+                }
             }
 
             if (tap) {
@@ -1029,20 +1043,19 @@
 
                 if (targets.length > 1) {
                     ctx.beginPath();
-                    instance.eachLine(
+                    instance.eachSegment(
                         targets[0], targets[1], function(node) {
                             instance.draw(
-                                ctx, instance.getCenter(node));
-                        });
+                                ctx, instance.getCenter(node)); });
                     ctx.fillStyle = colorLine;
                     ctx.fill();
 
                     ctx.beginPath();
                     ctx.moveTo(targets[0].x, targets[0].y);
                     ctx.lineTo(targets[1].x, targets[1].y);
-                    ctx.lineWidth = lineWidth * 2;
+                    ctx.lineWidth = 2 * lineWidth;
                     ctx.lineCap = 'round';
-                    ctx.strokeStyle = colorTapInner;
+                    ctx.strokeStyle = colorSegment;
                     ctx.stroke();
                 }
 
@@ -1160,7 +1173,9 @@
                 instance = grid.create(options);
                 lineWidth = instance.size() / lineFactor;
 
-                tap = undefined; selected = undefined;
+                tap = undefined;
+                selected = undefined;
+                previous = undefined;
                 redraw();
             }
 
@@ -1197,14 +1212,7 @@
             drag = undefined;
         };
 
-        // Calculate square distance
-        var sqdist = function(nodeA, nodeB) {
-            return ((nodeB.x - nodeA.x) * (nodeB.x - nodeA.x) +
-                    (nodeB.y - nodeA.y) * (nodeB.y - nodeA.y));
-        };
-
         var zoom = function(left, top, size, x, y, factor) {
-
             if (factor && factor > 0) {
                 var screenSize = Math.min(
                     self.clientWidth, self.clientHeight);
@@ -1244,14 +1252,20 @@
                     var t0 = targets.targets[0];
                     var t1 = targets.targets[1];
                     zooming = {
-                        diameter: Math.sqrt(sqdist(t0, t1)),
+                        diameter: sumSquaresRoot(
+                            t1.x - t0.x, t1.y - t0.y),
                         x: (t0.x + t1.x) / 2, y: (t0.y + t1.y) / 2,
                         size: instance.size(),
                         offset: instance.offset()};
                 }
                 if (press) { clearTimeout(press); press = 0; }
             } else {
+                var now = Date.now();
                 tap = drag = targets;
+                if (when && now < when + 500)
+                    previous = selected;
+                else previous = undefined;
+                when = now;
                 selected = instance.markCell(tap);
                 if (tap.targets && tap.targets.length > 1)
                     selected.range = [
@@ -1265,7 +1279,8 @@
                 // accessibility) but here testing is what matters.
                 var now = new Date().getTime();
                 if (gesture && gesture.time > now &&
-                    sqdist(tap, gesture) < 225) {
+                    sumSquares(gesture.x - tap.x,
+                               gesture.y - tap.y) < 225) {
                     gesture = undefined;
                     menuate(tap);
                 } else {
@@ -1289,7 +1304,8 @@
                 var goff = instance.offset();
                 instance.offset(goff.left + tap.x - drag.x,
                                 goff.top + tap.y - drag.y);
-                if ((sqdist(drag, tap) > 125) && press)
+                if ((sumSquares(tap.x - drag.x,
+                                tap.y - drag.y) > 125) && press)
                     clearTimeout(press);
                 redraw();
                 drag = tap;
@@ -1301,7 +1317,8 @@
                 if (zooming.diameter && targets.targets.length == 2) {
                     var t0 = targets.targets[0];
                     var t1 = targets.targets[1];
-                    var diameter = Math.sqrt(sqdist(t0, t1));
+                    var diameter = sumSquaresRoot(
+                        t1.x - t0.x, t1.y - t0.y);
                     factor = diameter / zooming.diameter;
                 }
                 if (factor && factor > 0)
