@@ -15,6 +15,31 @@
 <script src="ripple/multivec.js"></script>
 <script src="ripple/pathf.js"></script>
 <script>//<![CDATA[
+ var epsilon = 0.000001;
+ var zeroish = function(value) {
+     return (value < epsilon) && (value > -epsilon);
+ };
+ // Given a pair of points for each of two lines, returns the point
+ // at which the two lines intersect.  Euclidian space is assumed so
+ // If the lines have the same slope they either don't intersect or
+ // are the same line.
+ var intersect2D = function(s, e, p, q) {
+     var result;
+     var denominator = ((e.y - s.y) * (p.x - q.x) -
+                        (p.y - q.y) * (e.x - s.x));
+     if (!zeroish(denominator)) {
+         var x = (((s.x * (e.y - s.y) * (p.x - q.x)) -
+                   (q.x * (p.y - q.y) * (e.x - s.x)) -
+                   (s.y - q.y) * (e.x - s.x) * (p.x - q.x)) /
+             denominator);
+         return {x: x,
+                 y: zeroish(e.x - s.x) ?
+                    ((p.y - q.y) * (x - q.x) / (p.x - q.x)) + q.y :
+                    ((e.y - s.y) * (x - s.x) / (e.x - s.x)) + s.y};
+     }
+     return result;
+ };
+
  fascia.ready(function() {
      taps = [];
      return {
@@ -31,6 +56,33 @@
              ctx.strokeStyle = 'rgb(192, 32, 32)';
              ctx.stroke();
 
+             if (taps.length >= 2) {
+                 ctx.beginPath();
+                 ctx.moveTo(taps[0].x, taps[0].y);
+                 ctx.lineTo(taps[1].x, taps[1].y);
+                 ctx.strokeStyle = 'rgb(32, 32, 192)';
+                 ctx.stroke();
+             }
+             if (taps.length >= 4) {
+                 ctx.beginPath();
+                 ctx.moveTo(taps[2].x, taps[2].y);
+                 ctx.lineTo(taps[3].x, taps[3].y);
+                 ctx.strokeStyle = 'rgb(192, 32, 192)';
+                 ctx.stroke();
+
+                 var crossing = intersect2D(
+                     taps[0], taps[1], taps[2], taps[3]);
+                 if (crossing) {
+                     ctx.beginPath();
+                     ctx.moveTo(crossing.x + 18, crossing.y);
+                     ctx.arc(crossing.x, crossing.y, 18, 0, Math.PI * 2);
+                     ctx.fillStyle = 'rgb(192, 32, 32)';
+                     ctx.fill();
+                     ctx.strokeStyle = 'rgb(32, 32, 192)';
+                     ctx.stroke();
+                 }
+             }
+
              ctx.beginPath();
              taps.forEach(function(tap) {
                  ctx.moveTo(tap.x + 9, tap.y);
@@ -43,7 +95,7 @@
          },
          tap: function(event, camera) {
              taps.push(camera.toWorldFromScreen(event.point));
-             if (taps.length > 3)
+             if (taps.length > 4)
                  taps.shift();
          },
          wheel: function(event, camera) {
