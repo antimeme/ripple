@@ -19,6 +19,16 @@
  var zeroish = function(value) {
      return (value < epsilon) && (value > -epsilon);
  };
+ // Return the sum of the square of each argument
+ var sumSquares = function() {
+     var result = 0;
+     var index;
+     for (index = 0; index < arguments.length; ++index)
+         if (arguments[index])
+             result += arguments[index] * arguments[index];
+     return result;
+ };
+
  // Given a pair of points for each of two lines, returns the point
  // at which the two lines intersect.  Euclidian space is assumed so
  // If the lines have the same slope they either don't intersect or
@@ -38,6 +48,16 @@
                     ((e.y - s.y) * (x - s.x) / (e.x - s.x)) + s.y};
      }
      return result;
+ };
+
+ // Given two points that make up a line segment return true iff
+ // a third point lies between them.
+ var between2D = function(s, e, p) {
+     var segSq = ( // Length of segment squared
+         (e.x - s.x) * (e.x - s.x) + (e.y - s.y) * (e.y - s.y));
+     var dotSegP = ( // Length of point (from start) squared
+         (e.x - s.x) * (p.x - s.x) + (e.y - s.y) * (p.y - s.y));
+     return ((dotSegP >= 0) && (dotSegP <= segSq));
  };
 
  fascia.ready(function() {
@@ -76,7 +96,10 @@
                      ctx.beginPath();
                      ctx.moveTo(crossing.x + 18, crossing.y);
                      ctx.arc(crossing.x, crossing.y, 18, 0, Math.PI * 2);
-                     ctx.fillStyle = 'rgb(192, 32, 32)';
+                     if (between2D(taps[0], taps[1], crossing) &&
+                         between2D(taps[2], taps[3], crossing))
+                         ctx.fillStyle = 'rgb(32, 32, 192)';
+                     else ctx.fillStyle = 'rgb(192, 32, 32)';
                      ctx.fill();
                      ctx.strokeStyle = 'rgb(32, 32, 192)';
                      ctx.stroke();
