@@ -98,15 +98,11 @@
     // Given two points that make up a line segment return true iff
     // a third point lies between them.
     var between2D = function(s, e, p) {
-        var segment = {x: e.x - s.x, y: e.y - s.y};
-        var segSq = sumSquares(segment.x, segment.y);
-        var pvec = {x: p.x - s.x, y: p.y - s.y};
-        var factor = (segment.x * pvec.y -
-                      segment.y - pvec.x) / segSq;
-        var position = sumSquares(
-            pvec.x - segment.y * factor,
-            pvec.y - segment.x * factor);
-        return ((position >= 0) && (position <= segSq));
+        var segSq = ((e.x - s.x) * (e.x - s.x) + (
+            e.y - s.y) * (e.y - s.y));
+        var dotSegP = ((e.x - s.x) * (p.x - s.x) + (
+            e.y - s.y) * (p.y - s.y));
+        return ((dotSegP >= 0) && (dotSegP <= segSq));
     };
 
     // BaseGrid serves a base class for other grids.  Although it
@@ -322,28 +318,34 @@
         } else throw "Options are invalid";
 
         if (start && end) {
-            // A good first approximation is to find the row and column
-            // of the cells containing start and end.  Cell geometry
-            // may require one cell of safety margin.
-            this.eachNeighbor({row: start.row, col: start.col}, {},
-                              function(neighbor) {
-                                  if (neighbor.row < start.row)
-                                      start.row = neighbor.row;
-                                  if (neighbor.col < start.col)
-                                      start.col = neighbor.col;
-                              }, this);
-            this.eachNeighbor({row: end.row, col: end.col}, {},
-                              function(neighbor) {
-                                  if (neighbor.row > end.row)
-                                      end.row = neighbor.row;
-                                  if (neighbor.col > end.col)
-                                   end.col = neighbor.col;
-                              }, this);
+            // Ensure that no node gets visited more than once
+            var self = this;
+            var visited = {};
+            var visit = function(node) {
+                var id = ripple.pair(node.row, node.col);
+                if (!visited[id]) {
+                    fn.call(context, self.markCenter(
+                        {row: node.row, col: node.col}), index++);
+                    visited[id] = true;
+                }
+            };
 
-            for (var row = start.row; row <= end.row; ++row)
-                for (var col = start.col; col <= end.col; ++col)
-                    fn.call(context, this.markCenter({
-                        row: row, col: col}), index++);
+            // Follow the rectangle marked by start and end
+            this.eachSegment({x: start.x, y: start.y},
+                             {x: start.x, y: end.y}, visit);
+            this.eachSegment({x: start.x, y: end.y},
+                             {x: end.x, y: end.y}, visit);
+            this.eachSegment({x: end.x, y: end.y},
+                             {x: end.x, y: start.y}, visit);
+            this.eachSegment({x: end.x, y: start.y},
+                             {x: start.x, y: start.y}, visit);
+
+            // Ensure that cells inside the rectangle are included
+            for (var row = Math.min(start.row, end.row);
+                row <= Math.max(start.row, end.row); ++row)
+                for (var col = Math.min(start.col, end.col);
+                    col <= Math.max(start.col, end.col); ++col)
+                    visit({row: row, col: col});
         } else if (start && radius) {
             var visited = {};
             var current, tag, include;
@@ -381,34 +383,36 @@
         // Given a start and end with coordinates, call a function for
         // each cell in the line segment line between them.
         if (!fn)
-            return this.eachLine(start, end, function(node) {
+            return this.eachSegment(start, end, function(node) {
                 this.push(node); }, []);
 
-        var debugescape = 0;
-        var current = this.getCell({x: start.x, y: start.y});
-        end = this.getCell({x: end.x, y: end.y});
+        var previous = null;
+        var current = this.markCell({x: start.x, y: start.y});
+        end = this.markCell({x: end.x, y: end.y});
 
         while ((current.row != end.row) || (current.col != end.col)) {
-            fn.call(self, current);
             var step = null;
             this.eachNeighbor(current, {points: true}, function(
                 neighbor) {
-                if (!neighbor.points || neighbor.points.length < 2)
+                if (!neighbor.points || (neighbor.points.length < 2) ||
+                    (previous &&
+                     (previous.row == neighbor.row) &&
+                     (previous.col == neighbor.col)))
                     return;
-                var crossing = intersect2D(start, end,
-                                           neighbor.points[0],
-                                           neighbor.points[1]);
-                var didcross = crossing && between2D(
-                    neighbor.points[0], neighbor.points[1], crossing);
-                if (didcross)
-                    step = current = neighbor;
+                var crossing = intersect2D(
+                    start, end, neighbor.points[0], neighbor.points[1]);
+                if (crossing && between2D(
+                    neighbor.points[0], neighbor.points[1], crossing) &&
+                    between2D(start, end, crossing)) {
+                    step = neighbor;
+                }
             });
-            if (!step)
-                break;
 
-            // Terminate loop after 10 steps for debugging
-            if (++debugescape > 10)
-                break;
+            fn.call(self, current);
+            if (step) {
+                previous = current;
+                current = step;
+            } else break;
         }
         fn.call(self, end);
         return self || this;
@@ -1262,7 +1266,7 @@
             } else {
                 var now = Date.now();
                 tap = drag = targets;
-                if (when && now < when + 500)
+                if (when && now < when + 1000)
                     previous = selected;
                 else previous = undefined;
                 when = now;
