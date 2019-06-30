@@ -36,7 +36,7 @@
 //
 //     * _update: calculate any sized based grid properties
 //     * _markCenter: fill in x and y position given row and col
-//     * _markCell: fill in row and col given x and y position
+//     * _markCell:   fill in row and col given x and y position
 //     * _eachNeighbor: call function for each adjacent cell
 //     * _pairpoints: fill in a pair of points defining the
 //                    boundary between two neighbors
@@ -64,7 +64,7 @@
         var result = 0;
         var index;
         for (index = 0; index < arguments.length; ++index)
-            if (arguments[index])
+            if (!isNaN(arguments[index]))
                 result += arguments[index] * arguments[index];
         return result;
     };
@@ -87,10 +87,10 @@
                       (q.x * (p.y - q.y) * (e.x - s.x)) -
                       (s.y - q.y) * (e.x - s.x) * (p.x - q.x)) /
                 denominator);
-            return {x: x,
-                    y: zeroish(e.x - s.x) ?
-                       ((p.y - q.y) * (x - q.x) / (p.x - q.x)) + q.y :
-                       ((e.y - s.y) * (x - s.x) / (e.x - s.x)) + s.y};
+            return { x: x,
+                     y: zeroish(e.x - s.x) ?
+                        ((p.y - q.y) * (x - q.x) / (p.x - q.x)) + q.y :
+                        ((e.y - s.y) * (x - s.x) / (e.x - s.x)) + s.y};
         }
         return result;
     };
@@ -98,11 +98,10 @@
     // Given two points that make up a line segment return true iff
     // a third point lies between them.
     var between2D = function(s, e, p) {
-        var segSq = ((e.x - s.x) * (e.x - s.x) + (
-            e.y - s.y) * (e.y - s.y));
         var dotSegP = ((e.x - s.x) * (p.x - s.x) + (
             e.y - s.y) * (p.y - s.y));
-        return ((dotSegP >= 0) && (dotSegP <= segSq));
+        return ((dotSegP >= 0) &&
+                (dotSegP <= sumSquares(e.x - s.x, e.y - s.y)));
     };
 
     // BaseGrid serves a base class for other grids.  Although it
@@ -289,11 +288,18 @@
         // intersect that rectangle.  A simpler way to specify a
         // rectangle is to use {width: 360, height: 240} which starts
         // the rectangle at coordinate (0, 0).
-        //
-        // This method is conservative in that it may visit grid
-        // locations that are unnecessary but will never omit
-        // cells that qualify.
         var start, end, radius, index = 0;
+        var self = this;
+        var visited = {}; // ensure one visit per node
+
+        var visit = function(node) {
+            var id = ripple.pair(node.row, node.col);
+            if (!visited[id]) {
+                fn.call(context, self.markCenter(
+                    {row: node.row, col: node.col}), index++);
+                visited[id] = true;
+            }
+        };
 
         if ((typeof(options.start) === 'object') &&
             !isNaN(options.width) && !isNaN(options.height)) {
@@ -318,18 +324,6 @@
         } else throw "Options are invalid";
 
         if (start && end) {
-            // Ensure that no node gets visited more than once
-            var self = this;
-            var visited = {};
-            var visit = function(node) {
-                var id = ripple.pair(node.row, node.col);
-                if (!visited[id]) {
-                    fn.call(context, self.markCenter(
-                        {row: node.row, col: node.col}), index++);
-                    visited[id] = true;
-                }
-            };
-
             // Follow the rectangle marked by start and end
             this.eachSegment({x: start.x, y: start.y},
                              {x: start.x, y: end.y}, visit);
@@ -347,33 +341,21 @@
                     col <= Math.max(start.col, end.col); ++col)
                     visit({row: row, col: col});
         } else if (start && radius) {
-            var visited = {};
-            var current, tag, include;
-            var queue = [this.markCenter({
+            var current, id, queue = [this.markCenter({
                 row: start.row, col: start.col})];
 
             while (queue.length > 0) {
                 current = queue.pop();
-                tag = ripple.pair(current.row, current.col);
+                id = ripple.pair(current.row, current.col);
+                console.log("DEBUG-map", id, Object.keys(visited));
 
-                if (visited[tag])
-                    continue;
-                visited[tag] = true;
-
-                include = false;
-                this.points(current).forEach(function(point) {
-                    if ((point.x - start.x) * (point.x - start.x) +
-                          (point.y - start.y) * (point.y - start.y) <=
-                              radius * radius)
-                        include = true;
-                });
-
-                if (include) {
-                    fn.call(context, current, index++);
-                    this.eachNeighbor(current, {
-                        mark: true}, function(neighbor) {
-                            queue.push(neighbor); });
-                }
+                if (!visited[id] &&
+                    (sumSquares(radius) >= sumSquares(
+                        current.x - start.x, current.y - start.y))) {
+                    visit(current);
+                    this.eachNeighbor(current, {mark: true}, function(
+                        neighbor) { queue.push(neighbor); });
+                } else visited[id] = true;
             }
         }
         return this;
@@ -382,6 +364,8 @@
     BaseGrid.prototype.eachSegment = function(start, end, fn, self) {
         // Given a start and end with coordinates, call a function for
         // each cell in the line segment line between them.
+        // WARNING: this has a bug that only seems to manifest on
+        // the right triangle grids.
         if (!fn)
             return this.eachSegment(start, end, function(node) {
                 this.push(node); }, []);
