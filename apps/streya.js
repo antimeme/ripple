@@ -620,7 +620,8 @@
                     ripple.show(menuframe);
                 },
                 keydown: function(event) {
-                    if (event.keyCode === 8) { // backspace
+                    if ((event.key.toLowerCase() === 'backspace') ||
+                        ((event.key === 'z') && event.ctrlKey)) {
                         ship.undo();
                     } else if (event.key === 't') {
                         system = systems.tour;
