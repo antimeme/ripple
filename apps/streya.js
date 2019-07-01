@@ -49,7 +49,62 @@
         return value.toLocaleString('en-US') + ' ' + unit;
     };
 
-    // === Apparatus
+    // A boundary separates two cells in a ship or station.
+    streya.Boundary = {
+        data: null,
+
+        create: function(config) {
+            var result = Object.create(this);
+
+            if (typeof(config) === 'string') {
+                result.type = config;
+                result.segments = this.data[result.type].segments;
+            } else throw Error("Unknown boundary config type");
+            return result;
+        },
+
+        equals: function(other) {
+            var result = false;
+            if (other && (other instanceof streya.Boundary)) {
+                result = true;
+                ['type'].forEach(
+                    function(key) {
+                        if (this[key] !== other[key])
+                            result = false; });
+            }
+            return result;
+        },
+
+        toJSON: function() { return this.type; },
+
+        eachSegment: function(points, fn, context) {
+            this.segments.forEach(function(current) {
+                fn.call(context, {
+                    width: current.width || 1, pass: current.pass,
+                    start: {
+                        x: points[0].x +
+                           current.start * (points[1].x - points[0].x), 
+                        y: points[0].y +
+                           current.start * (points[1].y - points[0].y)},
+                    end: {
+                        x: points[0].x +
+                           current.end * (points[1].x - points[0].x), 
+                        y: points[0].y +
+                           current.end * (points[1].y - points[0].y)}});
+            });
+        },
+
+        each: function(fn, context) {
+            Object.keys(this.data).forEach(function(name) {
+                var boundary = this.data[name];
+                if (!boundary.internal &&
+                    !boundary.disable)
+                    fn.call(context, name, boundary);
+            }, this);
+            return context || this;
+        },
+    };
+
     // An apparatus is a component of a ship or station.  This includes
     // things like life support, crew quarters, shield generators and
     // many other things.  When instantiated with the create method, this
@@ -57,15 +112,13 @@
     streya.Apparatus = {
         data: null,
 
-        create: function(config, data) {
-            if (!data)
-                data = this.data;
+        create: function(config) {
             var result = Object.create(this);
             var settings;
 
             if (typeof(config) === 'string') {
                 result.type = config;
-                settings = data[config];
+                settings = this.data[config];
             } else if (typeof(config) === 'object') {
                 result.type = config.type;
                 settings = config;
@@ -122,25 +175,15 @@
             }
         },
 
-        eachApparatus: function(fn) {
-            Object.keys(this.data).forEach(function(key) {
-                var apparatus = this.data[key];
+        each: function(fn, context) {
+            Object.keys(this.data).forEach(function(name) {
+                var apparatus = this.data[name];
                 if (!apparatus.internal &&
-                    !apparatus.disable &&
-                    !apparatus.boundary)
-                    fn(key, apparatus);
+                    !apparatus.disable)
+                    fn.call(context, name, apparatus);
             }, this);
+            return context || this;
         },
-
-        eachBoundary: function(fn) {
-            Object.keys(this.data).forEach(function(key) {
-                var apparatus = this.data[key];
-                if (!apparatus.internal &&
-                    !apparatus.disable &&
-                    apparatus.boundary)
-                    fn(key, apparatus);
-            }, this);
-        }
     };
 
     // === Ship
@@ -178,7 +221,9 @@
             result.__boundaries = {};
             if (config && config.boundaries)
                 Object.keys(config.boundaries).forEach(function(key) {
-                    result.__boundaries[key] = config.boundaries[key];
+                    result.__boundaries[key] =
+                        streya.Boundary.create(
+                            config.boundaries[key]);
                 });
             result.activeApparatus = null;
 
@@ -318,41 +363,9 @@
             }, this);
 
             Object.keys(this.__boundaries).forEach(function(id) {
-                var boundary = this.__unindexBoundary(id);
-                var value = this.__boundaries[id];
-                var points = this.grid.pairpoints(
-                    boundary.nodeA, boundary.nodeB);
-
-                var segment = function(
-                    points, width, sfrac, efrac, pass) {
-                    var s = points[0];
-                    var e = points[1];
-                    return {
-                        width: width, pass: pass,
-                        start: { x: s.x + sfrac * (e.x - s.x),
-                                 y: s.y + sfrac * (e.y - s.y) },
-                        end: { x: s.x + efrac * (e.x - s.x),
-                               y: s.y + efrac * (e.y - s.y) } };
-                };
-
-                if (points.length > 1) { // TODO drive with data
-                    if (value === 'wall')
-                        fn.call(context, segment(points, 1, 0, 1));
-                    else if (value === 'pass') {
-                        fn.call(context, segment(points, 1, 0, 0.25));
-                        fn.call(context, segment(points, 1, 0.75, 1));
-                    } else if (value === 'auto') {
-                        fn.call(context, segment(
-                            points, 0.5, 0.2, 0.8, true));
-                        fn.call(context, segment(points, 1, 0, 0.25));
-                        fn.call(context, segment(points, 1, 0.75, 1));
-                    } else if (value === 'wheel') {
-                        fn.call(context, segment(
-                            points, 1.5, 0.2, 0.8, true));
-                        fn.call(context, segment(points, 1, 0, 0.25));
-                        fn.call(context, segment(points, 1, 0.75, 1));
-                    }
-                }
+                var nodes = this.__unindexBoundary(id);
+                this.__boundaries[id].eachSegment(this.grid.pairpoints(
+                    nodes.nodeA, nodes.nodeB), fn, context);
             }, this);
 
             return this;
@@ -372,7 +385,8 @@
                 (this.__indexCell(nodeB) in this.__cells) &&
                 this.grid.adjacent(nodeA, nodeB)) {
                 if (value)
-                    this.__boundaries[id] = value;
+                    this.__boundaries[id] =
+                        streya.Boundary.create(value);
                 else delete this.__boundaries[id];
             } else undo = null;
 
@@ -604,7 +618,8 @@
             return ship;
         };
 
-        streya.Apparatus.data = preloads['streya.json'].apparatus;
+        streya.Apparatus.data = preloads['streya.json'].shipApparatus;
+        streya.Boundary.data = preloads['streya.json'].shipBoundaries;
         var ship = menuShipUpdate(streya.Ship.create(
             (ripple.param('ship') &&
              ripple.param('ship') in
@@ -647,38 +662,22 @@
                         camera.toWorldFromScreen(point)));
 
                     cell = ship.getCell(selected);
-                    if (mode.value === 'extend' && !cell) {
+                    if (mode.value === 'hull' &&
+                        modeParam.value === 'extend' && !cell) {
                         if (ship.grid.neighbors(selected)
                                 .some(function(neigh) {
                                     return ship.getCell(neigh); })) {
-                            var current, queue = [];
-                            selected.radius = parseInt(
-                                modeParam.value, 10);
-                            queue.push(selected);
-
-                            while (queue.length > 0) {
-                                current = queue.pop();
-                                if (!ship.getCell(current))
-                                    ship.setCell(current, {});
-                                if (isNaN(current.radius) ||
-                                    current.radius <= 1)
-                                    continue;
-                                ship.grid.neighbors(current)
-                                    .forEach(function(neigh) {
-                                        neigh.radius =
-                                            current.radius - 1;
-                                        queue.push(neigh);
-                                    });
-                            }
                             ship.setCell(selected, {});
                             menuShipUpdate(ship);
                         }
-                    } else if (mode.value === 'remove' && cell) {
+                    } else if (mode.value === 'hull' &&
+                               modeParam.value === 'remove' && cell) {
                         if (cell.apparatus)
                             ship.setCell(selected, {});
                         else ship.setCell(selected, undefined);
                         menuShipUpdate(ship);
-                    } else if (mode.value === 'toggle') {
+                    } else if (mode.value === 'hull' &&
+                               modeParam.value === 'toggle') {
                         if (!cell) {
                             if (ship.grid.neighbors(selected)
                                     .some(function(neigh) {
@@ -858,27 +857,23 @@
         var modeParam = document.createElement('select');
         var mode = document.createElement('select');
         mode.appendChild(ripple.createElement(
-            'option', {value: 'extend'}, 'Extend Hull'));
+            'option', {value: 'hull'}, 'Alter Hull'));
         mode.appendChild(ripple.createElement(
-            'option', {value: 'remove'}, 'Remove Hull'));
+            'option', {value: 'bound'}, 'Alter Boundary'));
         mode.appendChild(ripple.createElement(
-            'option', {value: 'toggle'}, 'Toggle Hull'));
-        mode.appendChild(ripple.createElement(
-            'option', {value: 'bound'}, 'Add Boundary'));
-        mode.appendChild(ripple.createElement(
-            'option', {value: 'app'}, 'Add Apparatus'));
+            'option', {value: 'app'}, 'Alter Apparatus'));
         mode.addEventListener('change', function(event) {
             modeParam.innerHTML = '';
             ripple.hide(modeParam);
-            if (mode.value === 'extend') {
-                [1, 2, 3].forEach(function(key) {
+            if (mode.value === 'hull') {
+                ['Extend', 'Remove', 'Toggle'].forEach(function(key) {
                     modeParam.appendChild(ripple.createElement(
-                        'option', {value: key}, 'Radius ' + key)); });
+                        'option', {value: key.toLowerCase()}, key)); });
                 ripple.show(modeParam);
             } if (mode.value === 'app') {
                 modeParam.appendChild(ripple.createElement(
                     'option', {value: ''}, 'Clear'));
-                streya.Apparatus.eachApparatus(
+                streya.Apparatus.each(
                     function(name, apparatus) {
                         modeParam.append(ripple.createElement(
                             'option', {value: name}, name + (
@@ -889,10 +884,10 @@
             } else if (mode.value === 'bound') {
                 modeParam.appendChild(ripple.createElement(
                     'option', {'value': ''}, 'Clear'));
-                streya.Apparatus.eachBoundary(function(name, boundary) {
-                    modeParam.appendChild(ripple.createElement(
-                        'option', {value: boundary.boundary}, name));
-                });
+                streya.Boundary.each(
+                    function(name, boundary) {
+                        modeParam.appendChild(ripple.createElement(
+                            'option', { value: name }, name)); });
                 ripple.show(modeParam);
             }
         });
