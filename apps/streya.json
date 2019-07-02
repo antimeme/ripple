@@ -241,46 +241,21 @@
         }
     },
 
-    "shipBoundaries": {
-        "Bulkhead": {
-            "comment": ["Separates two cells as a wall"],
-            "segments": [{"start": 0, "end": 1}],
-            "mass": 100},
-        "Passage": {
-            "comment": ["Separates two cells with an open passage"],
-            "segments": [{"start": 0, "end": 0.25},
-                         {"start": 0.75, "end": 1}],
-            "mass": 75},
-        "Manual Door": {
-            "comment": ["Allows controlled passage between cells"],
-            "segments": [{"start": 0, "end": 0.25},
-                         {"start": 0.75, "end": 1},
-                         {"start": 0.2, "end": 0.8,
-                          "width": 1.5, "pass": true}],
-            "mass": 125},
-        "Automatic Door": {
-            "comment": ["Allows controlled passage between cells"],
-            "segments": [{"start": 0, "end": 0.25},
-                         {"start": 0.75, "end": 1},
-                         {"start": 0.2, "end": 0.8,
-                          "width": 0.5, "pass": true}],
-            "mass": 110, "power": 1}
-    },
 
-    "shipApparatus": {
-        "Structure": {
-            "comment": [
-                "A ship is composed of one or more active cells. ",
-                "These are presumed to include support beams and ",
-                "conduits for power, water, oxygen and other ",
-                "resources.  Cells can be further populated with ",
-                "systems and boundaries can be added between two ",
-                "adjacent cells. Each system or boudnary has mass and ",
-                "may require power to operate.  A system may be ",
-                "external, which means it requires access to the ",
-                "exterior of the ship in order to make sense.  If an ",
-                "external system is surrounded by active cells then ",
-                "it must be removed."],
+    "shipComponents": {
+        "comment": [
+            "A ship is composed of one or more active cells. ",
+            "These are presumed to include support beams and ",
+            "conduits for power, water, oxygen and other ",
+            "resources.  Cells can be further populated with an ",
+            "apparatus.  Boundaries can be added between two ",
+            "adjacent cells. Each system or boudnary has mass and ",
+            "may require power to operate.  A system may be ",
+            "external, which means it requires access to the ",
+            "exterior of the ship in order to make sense.  If an ",
+            "external system is surrounded by active cells then ",
+            "it must be removed."],
+        "structure": {
             "fieldNotes": {
                 "mass": "kilograms",
                 "boundary": "if non-empty means ",
@@ -292,103 +267,138 @@
                 "external": [
                     "if true the apparatus must have at least one ",
                     "neighbor outside the ship"]},
-            "mass": 500, "internal": true},
+            "mass": 500
+        },
+        "boundaries": {
+            "Bulkhead": {
+                "comment": ["An impassable wall between two cells"],
+                "segments": [{"start": 0, "end": 1}],
+                "mass": 100},
+            "Passage": {
+                "comment": ["An open archway"],
+                "segments": [{"start": 0, "end": 0.25},
+                             {"start": 0.75, "end": 1}],
+                "mass": 75},
+            "Manual Door": {
+                "comment": ["A door that swings open when bumped"],
+                "segments": [{"start": 0, "end": 0.25},
+                             {"start": 0.75, "end": 1},
+                             {"start": 0.2, "end": 0.8,
+                              "width": 1.5, "pass": true}],
+                "mass": 125},
+            "Automatic Door": {
+                "comment": [
+                    "A door that opens automatically when powered"],
+                "segments": [{"start": 0, "end": 0.25},
+                             {"start": 0.75, "end": 1},
+                             {"start": 0.2, "end": 0.8,
+                              "width": 0.5, "pass": true}],
+                "mass": 110, "power": 1}
+        },
+        "apparatus": {
+            "Reactor": {
+                "comment": [
+                    "Generalized reaction chamber with shielding. ",
+                    "Capable of supporting chemical, fission and ",
+                    "fusion (neutronic and aneutronic) reactions ",
+                    "when fitted with appropriate components."],
+                "mass": 10000, "sigil": "R", "console": "reactor"},
+            "Engine": {
+                "comment": [
+                    "Infrastructure capable of supporting most ",
+                    "engine designs.  Most engines use fusion pulses ",
+                    "for propulsion."],
+                "mass": 5000, "sigil": "E", "power": 200,
+                "console": "engines"},
+            "Mainframe": {
+                "comment": ["Computer node for controlling ship systems"],
+                "mass": 500, "sigil": "M", "power": 100,
+                "console": "mainframe"},
+            "Console": {
+                "comment": ["Terminal for interacting with ship systems"],
+                "mass": 25, "sigil": "C", "power": 1,
+                "console": "mainframe"},
+            "Helm": {
+                "comment": ["Ship navigation and primary weapon control"],
+                "mass": 500, "sigil": "H", "power": 1, "console": "helm"},
+            "Sensors": {
+                "comment": ["Detect other ships and hazards"],
+                "mass": 500, "sigil": "I", "power": 50,
+                "console": "sensors"},
+            "Life Support": {
+                "comment": [
+                    "Support for oxygen generation, waste collection, ",
+                    "personal cleansing and water recycling"],
+                "mass": 1000, "sigil": "O", "power": 100,
+                "enclose": "auto", "console": "lifesup"},
 
-        "Reactor": {
-            "comment": ["Aneutronic fusion reactor with ice shielding"],
-            "mass": 20000, "sigil": "R", "console": "reactor"},
-        "Engine": {
-            "comment": ["Generates thrust to move ship"],
-            "mass": 5000, "sigil": "E", "power": 200,
-            "console": "engines"},
-        "Mainframe": {
-            "comment": ["Computer node for controlling ship systems"],
-            "mass": 500, "sigil": "M", "power": 100,
-            "console": "mainframe"},
-        "Console": {
-            "comment": ["Terminal for interacting with ship systems"],
-            "mass": 25, "sigil": "C", "power": 1,
-            "console": "mainframe"},
-        "Helm": {
-            "comment": ["Ship navigation and primary weapon control"],
-            "mass": 500, "sigil": "H", "power": 1, "console": "helm"},
-        "Sensors": {
-            "comment": ["Detect other ships and hazards"],
-            "mass": 500, "sigil": "I", "power": 50,
-            "console": "sensors"},
-        "Life Support": {
-            "comment": [
-                "Support for oxygen generation, waste collection, ",
-                "personal cleansing and water recycling"],
-            "mass": 1000, "sigil": "O", "power": 100,
-            "enclose": "auto", "console": "lifesup"},
+            "Cargo": {
+                "comment": ["Storage compartments and magnetic rigging"],
+                "mass": 50, "sigil": "G"},
+            "Pod Bay": {
+                "comment": [
+                    "Support for autonomous manned vehicles, including ",
+                    "escape pods and breaching pods"],
+                "mass": 100, "sigil": "P", "external": true,
+                "enclose": "wheel"},
+            "Airlock": {
+                "comment": ["Support for docking with other ships and ",
+                            "stations"],
+                "mass": 200, "sigil": "A", "external": true,
+                "enclose": "wheel"},
+            "Cabin": {
+                "comment": ["Living quarters for a person or couple"],
+                "mass": 100, "sigil": "B", "power": 1, "enclose": "auto"},
+            "Bunks": {
+                "comment": ["Living quarters for up to 5 people"],
+                "mass": 100, "sigil": "K", "power": 1},
+            "Weapon Pod": {
+                "comment": ["Hardpoint for weapon systems"],
+                "mass": 50, "sigil": "W", "power": 10, "console": "weapon"},
+            "Shields": {
+                "comment": ["Hardpoint for weapon systems"],
+                "mass": 200, "sigil": "S", "power": 25, "console": "shields"},
+            "Recreation": {
+                "comment": ["Equipment for exercise and entertainment"],
+                "mass": 200, "sigil": "Y", "power": 5,
+                "console": "recreation"},
+            "Medical": {
+                "comment": ["Station for treating injuries and illness"],
+                "mass": 200, "sigil": "Q", "power": 50,
+                "console": "medical"},
+            "Lift": {
+                "comment": ["Transports crew between decks"],
+                "mass": 100, "sigil": "F", "power": 50},
+            "Galley": {
+                "comment": ["Station for serving food and water"],
+                "mass": 50, "sigil": "L", "power": 10, "console": "galley"},
+            "Head": {
+                "comment": ["Station for addressing biological needs"],
+                "mass": 50, "sigil": "D", "power": 10, "console": "head"},
+            "Shower": {
+                "comment": ["Station for body cleaning"],
+                "mass": 80, "sigil": "N", "power": 10, "console": "shower"},
 
-        "Cargo": {
-            "comment": ["Storage compartments and magnetic rigging"],
-            "mass": 50, "sigil": "G"},
-        "Pod Bay": {
-            "comment": [
-                "Support for autonomous manned vehicles, including ",
-                "escape pods and breaching pods"],
-            "mass": 100, "sigil": "P", "external": true,
-            "enclose": "wheel"},
-        "Airlock": {
-            "comment": ["Support for docking with other ships and ",
-                        "stations"],
-            "mass": 200, "sigil": "A", "external": true,
-            "enclose": "wheel"},
-        "Cabin": {
-            "comment": ["Living quarters for a person or couple"],
-            "mass": 100, "sigil": "B", "power": 1, "enclose": "auto"},
-        "Bunks": {
-            "comment": ["Living quarters for up to 5 people"],
-            "mass": 100, "sigil": "K", "power": 1},
-        "Weapon Pod": {
-            "comment": ["Hardpoint for weapon systems"],
-            "mass": 50, "sigil": "W", "power": 10, "console": "weapon"},
-        "Shields": {
-            "comment": ["Hardpoint for weapon systems"],
-            "mass": 200, "sigil": "S", "power": 25, "console": "shields"},
-        "Recreation": {
-            "comment": ["Equipment for exercise and entertainment"],
-            "mass": 200, "sigil": "Y", "power": 5,
-            "console": "recreation"},
-        "Medical": {
-            "comment": ["Station for treating injuries and illness"],
-            "mass": 200, "sigil": "Q", "power": 50,
-            "console": "medical"},
-        "Lift": {
-            "comment": ["Transports crew between decks"],
-            "mass": 100, "sigil": "F", "power": 50},
-        "Galley": {
-            "comment": ["Station for serving food and water"],
-            "mass": 50, "sigil": "L", "power": 10, "console": "galley"},
-        "Head": {
-            "comment": ["Station for addressing biological needs"],
-            "mass": 50, "sigil": "D", "power": 10, "console": "head"},
-        "Shower": {
-            "comment": ["Station for body cleaning"],
-            "mass": 80, "sigil": "N", "power": 10, "console": "shower"},
-
-        "Workshop": {
-            "comment": ["Work space for up to two engineers"],
-            "mass": 500, "sigil": "X", "power": 5,
-            "console": "workshop"},
-        "Laboratory": {
-            "comment": ["Work space for up to two scientists"],
-            "mass": 200, "sigil": "U", "power": 5, "console": "lab"},
-        "Mining Rig": {
-            "comment": ["Gear for collecting samples and ores"],
-            "mass": 200, "sigil": "V", "external": true},
-        "Robotorium": {
-            "comment": ["Facilities for controlling drones"],
-            "sigil": "T", "external": true},
-        "Fabricator": {
-            "comment": ["Machinery for printing goods"],
-            "sigil": "8"},
-        "Garden": {
-            "comment": ["Facilities for growing plants"],
-            "sigil": "J"}
+            "Workshop": {
+                "comment": ["Work space for up to two engineers"],
+                "mass": 500, "sigil": "X", "power": 5,
+                "console": "workshop"},
+            "Laboratory": {
+                "comment": ["Work space for up to two scientists"],
+                "mass": 200, "sigil": "U", "power": 5, "console": "lab"},
+            "Mining Rig": {
+                "comment": ["Gear for collecting samples and ores"],
+                "mass": 200, "sigil": "V", "external": true},
+            "Robotorium": {
+                "comment": ["Facilities for controlling drones"],
+                "sigil": "T", "external": true},
+            "Fabricator": {
+                "comment": ["Machinery for printing goods"],
+                "sigil": "8"},
+            "Garden": {
+                "comment": ["Facilities for growing plants"],
+                "sigil": "J"}
+        }
     },
 
     "shipDesigns": {

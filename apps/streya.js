@@ -186,11 +186,15 @@
         },
     };
 
-    // === Ship
     // A ship consists of one or more connected cells, each of which
     // may have an apparatus present, and a set of boundaries which
     // connect pairs of cells.
+    // :TODO: support independent decks (with a silouette) that can
+    // be accessed using lifts.  The mode drop down can have all decks
+    // but the current one added for transition.
     streya.Ship = {
+        massStructure: 0,
+
         create: function(config) { // Returns a new ship
             var result = Object.create(this);
 
@@ -433,7 +437,7 @@
             if (isNaN(this.__mass)) {
                 this.__mass = 0;
                 this.eachCell(function(cell, node) {
-                    this.__mass += streya.Apparatus.data.Structure.mass;
+                    this.__mass += this.massStructure;
                     if (cell && cell.apparatus)
                         this.__mass += cell.apparatus.mass;
                 }, this);
@@ -574,6 +578,15 @@
         var inventoryScreen;
         var apparatusScreen;
         var settingsScreen;
+
+        streya.Apparatus.data =
+            preloads['streya.json'].shipComponents.apparatus;
+        streya.Boundary.data =
+            preloads['streya.json'].shipComponents.boundaries;
+        // :TODO: different mass for different grid types?
+        streya.Ship.massStructure =
+            preloads['streya.json'].shipComponents.structure.mass;
+
         var player = fascia.createPlayer(
             ripple.mergeConfig(
                 (preloads['streya.json'].characterDefinitions &&
@@ -618,8 +631,6 @@
             return ship;
         };
 
-        streya.Apparatus.data = preloads['streya.json'].shipApparatus;
-        streya.Boundary.data = preloads['streya.json'].shipBoundaries;
         var ship = menuShipUpdate(streya.Ship.create(
             (ripple.param('ship') &&
              ripple.param('ship') in
