@@ -639,20 +639,42 @@
                         &#x225d; P &#x22bc; P
                     </li><li>
                         Conjunction: P <span class="intro">&and;</span> Q
-                        &#x225d; &not;(P &#x22bc; Q) |
-                        (P &#x22bc; Q) &#x22bc; (P &#x22bc; Q)
+                        &#x225d; &not;(P &#x22bc; Q)
                     </li><li>
                         Disjunction: P <span class="intro">&or;</span> Q
-                        &#x225d; &not;P &#x22bc; &not;Q |
-                        (P &#x22bc; P) &#x22bc; (Q &#x22bc; Q)
+                        &#x225d; &not;P &#x22bc; &not;Q
                     </li><li>
                         Implication: P <span class="intro">&#x27f9;</span> Q
-                        &#x225d; P &#x22bc; &not;Q |
-                        P &#x22bc; (Q &#x22bc; Q)
+                        &#x225d; P &#x22bc; &not;Q
                     </li><li>
                         Biconditional: P <span class="intro">&#x27fa;</span>
                         Q &#x225d; (P &#x27f9; Q) &and; (Q &#x27f9; P)
-                        |<br /> ((P &#x22bc; (Q &#x22bc; Q)) &#x22bc;
+                    </li>
+                </ul>
+            </section>
+            <section>
+                <h3>Operators</h3>
+                <ul>
+                    <li>
+                        Stroke: P <span class="intro">&#x22bc;</span> Q
+                    </li><li>
+                        Negation: <span class="intro">&not;</span>P
+                        &#x225d; P &#x22bc; P
+                    </li><li>
+                        Conjunction:
+                        P <span class="intro">&and;</span> Q
+                        &#x225d; (P &#x22bc; Q) &#x22bc; (P &#x22bc; Q)
+                    </li><li>
+                        Disjunction: P <span class="intro">&or;</span> Q
+                        &#x225d; (P &#x22bc; P) &#x22bc; (Q &#x22bc; Q)
+                    </li><li>
+                        Implication:
+                        P <span class="intro">&#x27f9;</span> Q
+                        &#x225d; P &#x22bc; (Q &#x22bc; Q)
+                    </li><li>
+                        Biconditional: P
+                        <span class="intro">&#x27fa;</span>
+                        Q &#x225d; ((P &#x22bc; (Q &#x22bc; Q)) &#x22bc;
                         (Q &#x22bc; (P &#x22bc; P))) &#x22bc;
                         ((P &#x22bc; (Q &#x22bc; Q)) &#x22bc;
                         (Q &#x22bc; (P &#x22bc; P)))
@@ -816,9 +838,11 @@
             <section>
                 <h3>Replacement: Examples</h3>
                 <ul><li class="fragment">
-                    P &#x22bc; (P &#x22bc; P)
+                    T &#x22bc; (T &#x22bc; T)
                     <span class="fragment">
-                        &#x22a2; P &#x27f9; P :: Implication
+                        &#x22a2; T &#x27f9; T ::
+                        (P &#x27f9; Q) &#x225d;
+                        P &#x22bc; (Q &#x22bc; Q)
                     </span>
                 </li><li class="fragment">
                     P &#x27f9; (Q &#x27f9; P) &#x22a2;
@@ -944,10 +968,10 @@
                     <select class="theses" data-name="Scharle"></select>
                 </div>
                 <div>
-                <textarea class="display" readonly="true"
-                          rows="5" cols="50"></textarea>
-                <textarea class="pdisplay" readonly="true"
-                          rows="5" cols="30"></textarea>
+                    <textarea class="display" readonly="true"
+                              rows="5" cols="50"></textarea>
+                    <textarea class="pdisplay" readonly="true"
+                              rows="5" cols="30"></textarea>
                 </div>
                 <div>
                     <button class="simplify">Simplify</button>
@@ -981,6 +1005,42 @@
                         (P &#x27f9; R))</li>
                     <li>P &#x27f9; (&not;P &#x27f9; Q)</li>
                 </ul>
+            </section>
+            <section class="logic">
+                <h3>Łukasiewicz Theorems</h3>
+                <div>
+                    <select class="theses" data-name="Łukasiewicz">
+                    </select>
+                </div>
+                <div>
+                    <textarea class="display" readonly="true"
+                              rows="5" cols="50"></textarea>
+                    <textarea class="pdisplay" readonly="true"
+                              rows="5" cols="30"></textarea>
+                </div>
+                <div>
+                    <button class="simplify">Simplify</button>
+                    <button class="deconstant">Deconstant</button>
+                    <button class="devolve">Devolve</button>
+                </div>
+                <div>
+                    <select class="variables"></select>
+                    <select class="values">
+                        <option>true</option>
+                        <option>false</option>
+                        <option>p</option>
+                        <option>q</option>
+                        <option>r</option>
+                        <option>s</option>
+                        <option>t</option>
+                        <option>w</option>
+                    </select>
+                    <button class="replace">Replace</button>
+                </div>
+                <div>
+                    <input class="rawexpr" type="text" />
+                    <button class="parse">Parse</button>
+                </div>
             </section>
             <section>
                 <h3>De Morgan's Laws</h3>
