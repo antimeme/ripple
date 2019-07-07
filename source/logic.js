@@ -259,8 +259,9 @@
         return result;
     };
 
-    // Applies Nicod's modus ponens iff the expression is an
-    // implication or a nand that matches the premise.
+    // Applies Nicod's modus ponens iff the expression is a nand that
+    // matches the premise.  Applies modus ponens iff the expression is
+    // an implication that matches the premise.
     var detatch = function(expression, premise) {
         if (matchExprOp(expression, 'nand', 3) &&
             matchExprOp(expression[2], 'nand', 3) &&
@@ -354,9 +355,9 @@
         return logic.expression(parseLNotation(value));
     };
 
-    logic.expression = function(value) { // Constructor
+    logic.expression = function(value, proof) { // Constructor
         if (!(this instanceof logic.expression))
-            return new logic.expression(value);
+            return new logic.expression(value, proof);
 
         if (typeof(value) === 'string')
             this.__value = value;
@@ -367,6 +368,9 @@
         else if (value instanceof logic.expression)
             this.__value = value.__value;
         else throw Error('Unsupported expression: ' + value);
+
+        if (proof)
+            this.proof = proof;
     };
 
     logic.expression.prototype.equals = function() {
@@ -492,175 +496,185 @@
     var internalLibrary = {
         Meredith: { theorems: { Axiom: "CCCCCpqCNrNsrtCCtpCsp" } },
         Nicod: { theorems: { Axiom: "DDpDqrDDtDttDDsqDDpsDps" } },
-        'Łukasiewicz': {
+        Wajsberg: {
+            comment: ["VISE-berg"],
+            theorems: { Axiom: "DDpDqrDDDsrDDpsDpsDpDpq" } },
+        Łukasiewicz: {
             comment: ["woo-kay-SHAY-vitch"],
             theorems: {
-                Single: "DDpDqrDDsDssDDsqDDpsDps",
-                SingleAlternate: "DDpDqrDDpDrpDDsqDDpsDps",
+                Axiom: "DDpDqrDDsDssDDsqDDpsDps",
+                AxiomAlternate: "DDpDqrDDpDrpDDsqDDpsDps",
                 Axiom1: "CCpqCCqrCpr",
                 Axiom2: "CCNppp",
-                Axiom3: "CpCNpq"}},
-        'Scharle': {
+                Axiom3: "CpCNpq",
+                Theorem4: {
+                    rule: "CCCCqrCprsCCpqs",
+                    proof: [{
+                        source: "Axiom1",
+                        sourceSub: {p: "Cpq", q: "CCqrCpr", r: "s"},
+                        premise: "Axiom1" }]
+                },
+            }},
+        Scharle: {
             comment: [
                 "https://projecteuclid.org/download/pdf_1/" +
                 "euclid.ndjfl/1093958259"],
             theorems: {
                 Theorem2: {
-                    source: "Łukasiewicz:Single",
-                    premise: "Łukasiewicz:Single",
-                    substitute: {
+                    source: "Łukasiewicz:Axiom",
+                    premise: "Łukasiewicz:Axiom",
+                    subSource: {
                         p: "DpDqr", q: "DsDss", r: "DDsqDDpsDps", s: "t"
-                    }, rule: "DDtDsDssDDDpDqrtDDpDqrt"},
+                    },
+                    rule: "DDtDsDssDDDpDqrtDDpDqrt"
+                },
                 Theorem3: {
-                    source: "Łukasiewicz:Single", premise: "Theorem2",
-                    substitute: {
+                    source: "Łukasiewicz:Axiom", premise: "Theorem2",
+                    subSource: {
                         p: "DtDsDss", q: "DDpDqrt", r: "DDpDqrt", s: "w"
                     }, rule: "DDwDDpDqrtDDDtDsDsswDDtDsDssw"},
                 Theorem4: {
-                    source: "Theorem3", premise: "Łukasiewicz:Single",
-                    substitute: {
+                    source: "Theorem3", premise: "Łukasiewicz:Axiom",
+                    subSource: {
                         w: "DpDqr", p: "s", q: "s", t: "DDsqDDpsDps"
                     }, rule: "DDDDsqDDpsDpsDtDttDpDqr"},
                 Theorem5: {
                     source: "Theorem2", premise: "Theorem4",
-                    substitute: {
+                    subSource: {
                         t: "DDDstDDtsDtsDtDtt", s: "t"
                     }, rule: "DDpDqrDDDstDDtsDtsDtDtt"},
                 Theorem6: {
                     source: "Theorem5", premise: "Theorem5",
-                    substitute: {
+                    subSource: {
                         p: "DpDqr", q: "DDstDDtsDts", r: "DtDtt"
                     }, rule: "DtDtt"},
                 Theorem7: {
-                    source: "Łukasiewicz:Single", premise: "Theorem6",
-                    substitute: {
+                    source: "Łukasiewicz:Axiom", premise: "Theorem6",
+                    subSource: {
                         p: "t", q: "t", r: "t"
                     }, rule: "DDstDDtsDts"},
                 Theorem8: {
                     source: "Theorem7", premise: "Theorem6",
-                    substitute: { s: "t", t: "Dtt" }, rule: "DDttt"},
+                    subSource: { s: "t", t: "Dtt" }, rule: "DDttt"},
                 Theorem9: {
                     source: "Theorem7", premise: "Theorem7",
-                    substitute: { s: "Dst", t: "DDtsDts" },
+                    subSource: { s: "Dst", t: "DDtsDts" },
                     rule: "DDDtsDtsDst"},
                 Theorem10: {
-                    source: "Łukasiewicz:Single", premise: "Theorem9",
-                    substitute: {
+                    source: "Łukasiewicz:Axiom", premise: "Theorem9",
+                    subSource: {
                         p: "DDtsDts", q: "s", r: "t", s: "p"
                     }, rule: "DDpsDDDDtsDtspDDDtsDtsp"},
                 Theorem11: {
                     source: "Theorem10", premise: "Theorem8",
-                    substitute: {
+                    subSource: {
                         p: "Dpp", s: "p", t: "s"
                     }, rule: "DDDspDspDpp"},
                 Theorem12: {
                     source: "Theorem7", premise: "Theorem11",
-                    substitute: {
+                    subSource: {
                         s: "DDspDsp", t: "Dpp"
                     }, rule: "DDppDDspDsp"},
                 Theorem13: {
-                    source: "Łukasiewicz:Single", premise: "Theorem12",
-                    substitute: {
+                    source: "Łukasiewicz:Axiom", premise: "Theorem12",
+                    subSource: {
                         p: "Dpp", q: "Dsp", r: "Dsp", s: "r"
                     }, rule: "DDrDspDDDpprDDppr"},
                 Theorem14: {
-                    source: "Theorem13", premise: "Łukasiewicz:Single",
-                    substitute: {
+                    source: "Theorem13", premise: "Łukasiewicz:Axiom",
+                    subSource: {
                         r: "DpDqr", s: "DtDtt", p: "DDsqDDpsDps"
                     }, rule: "DDDDsqDDpsDpsDDsqDDpsDpsDpDqr"},
                 Theorem15: {
                     source: "Theorem7", premise: "Theorem14",
-                    substitute: {
+                    subSource: {
                         s: "DDsqDDpsDps", t: "DpDqr"
                     }, rule: "DDpDqrDDDsqDDpsDpsDDsqDDpsDps"},
                 Theorem16: {
                     source: "Theorem15", premise: "Theorem7",
-                    substitute: {
+                    subSource: {
                         p: "Dst", q: "Dts", r: "Dts", s: "p"
                     }, rule: "DDpDtsDDDstpDDstp"},
                 Theorem17: {
                     source: "Theorem7", premise: "Theorem16",
-                    substitute: {
+                    subSource: {
                         s: "DpDts", t: "DDDstpDDstp"
                     }, rule: "DDDDstpDDstpDpDts"},
                 Theorem18: {
                     source: "Theorem16", premise: "Theorem17",
-                    substitute: {
+                    subSource: {
                         p: "DDDstpDDstp", t: "p", s: "Dts"
                     }, rule: "DDDtspDDDstpDDstp"},
                 Theorem19: {
                     source: "Theorem7", premise: "Theorem18",
-                    substitute: {
+                    subSource: {
                         s: "DDtsp", t: "DDDstpDDstp"
                     }, rule: "DDDDstpDDstpDDtsp"},
                 Theorem20: {
                     source: "Theorem15", premise: "Theorem15",
-                    substitute: {
+                    subSource: {
                         p: "DpDqr", q: "DDsqDDpsDps",
                         r: "DDsqDDpsDps", s: "t"
                     }, rule: "DDtDDsqDDpsDpsDDDpDqrtDDpDqrt"},
                 Theorem21: {
                     source: "Theorem20", premise: "Theorem19",
-                    substitute: {
+                    subSource: {
                         t: "DDDqsDDpsDpsDDqsDDpsDps"
                     }, rule: "DDpDqrDDDqsDDpsDpsDDqsDDpsDps"},
                 Theorem22: {
-                    source: "Łukasiewicz:Single", premise: "Theorem9",
-                    substitute: {
+                    source: "Łukasiewicz:Axiom", premise: "Theorem9",
+                    subSource: {
                         p: "DDtsDts", q: "s", r: "t", s: "p"
                     }, rule: "DDpsDDDDtsDtspDDDtsDtsp"},
                 Theorem23: {
                     source: "Theorem22", premise: "Theorem6",
-                    substitute: { s: "Dpp" }, rule: "DDDtDppDtDppp"},
+                    subSource: { s: "Dpp" }, rule: "DDDtDppDtDppp"},
                 Theorem24: {
                     source: "Theorem7", premise: "Theorem23",
-                    substitute: { s: "DDtDppDtDpp", t: "p" },
+                    subSource: { s: "DDtDppDtDpp", t: "p" },
                     rule: "DpDDtDppDtDpp"},
                 Theorem25: {
-                    source: "Łukasiewicz:Single", premise: "Theorem18",
-                    substitute: {
+                    source: "Łukasiewicz:Axiom", premise: "Theorem18",
+                    subSource: {
                         p: "DDtsp", q: "DDstp", r: "DDstp", s: "q"
                     }, rule: "DDqDDstpDDDDtspqDDDtspq"},
                 Theorem26: {
                     source: "Theorem25", premise: "Theorem16",
-                    substitute: {
+                    subSource: {
                         q: "DpDts", s: "Dst", t: "p", p: "DDstp"
                     }, rule: "DDDpDstDDstpDpDts"},
                 Theorem27: {
                     source: "Theorem7", premise: "Theorem26",
-                    substitute: {
+                    subSource: {
                         s: "DDpDstDDstp", t: "DpDts"
                     }, rule: "DDpDtsDDpDstDDstp"},
                 Theorem28: {
                     source: "Theorem21", premise: "Theorem27",
-                    substitute: {
+                    subSource: {
                         p: "DpDts", q: "DpDst", r: "DDstp", s: "q"
                     }, rule: "DDDpDstqDDDpDtsqDDpDtsq"},
                 Theorem29: {
                     source: "Theorem28", premise: "Theorem18",
-                    substitute: {
+                    subSource: {
                         p: "Dts", q: "DDDstDpqDDstDpq", s: "p", t: "q"
                     }, rule: "DDDtsDqpDDDstDpqDDstDpq"},
                 Theorem30: {
-                    source: "Łukasiewicz:Single", premise: "Theorem29",
-                    substitute: {
+                    source: "Łukasiewicz:Axiom", premise: "Theorem29",
+                    subSource: {
                         p: "DDtsDqp", q: "DDstDpq", r: "DDstDpq", s: "r"
                     }, rule: "DDrDDstDpqDDDDtsDqprDDDtsDqpr"},
                 Theorem31: {
                     source: "Theorem30", premise: "Theorem24",
-                    substitute: {
+                    subSource: {
                         p: "t", q: "Dpp", r: "p", t: "Dpp"
                     }, rule: "DDDDppsDDppsp"},
                 Theorem32: {
                     source: "Theorem7", premise: "Theorem31",
-                    substitute: {
+                    subSource: {
                         s: "DDDppsDDpps", t: "p"
                     }, rule: "DpDDDppsDDpps"},
             },
         },
-        Wajsberg: {
-            comment: ["VISE-berg"],
-            theorems: { Axiom: "DDpDqrDDDsrDDpsDpsDpDpq" } },
         Kleene: {
             theorems: {
                 "Axiom Implication Introduction": "CpCqp",
@@ -677,6 +691,12 @@
         }
     };
 
+    var proofStep = function(value) {
+        if (!(this instanceof proofStep))
+            return new proofStep(value);
+        this.value = value;
+    };
+
     /**
      * Given a library entry and the name of a theorem this routine
      * extracts the theorem as an expression object.  Library entries
@@ -686,7 +706,7 @@
      * or an object.  An object value usually has a rule which itself
      * can be a string in Łukasiewicz notation or an internal expression
      * representation (always an array). */
-    var getLibraryExpression = function(key, library) {
+    var getLibraryExpression = function(library, key, proof) {
         var result, entry;
 
         if (Array.isArray(key)) {
@@ -707,36 +727,145 @@
                     result = parseLNotation(entry.rule);
                 else if (Array.isArray(entry.rule))
                     result = entry.rule;
-            } else if (entry.source && entry.premise) {
-                result = detatch(substitute(
-                    getLibraryExpression(
-                        entry.source.split(':'), library),
-                    entry.substitute ? entry.substitute : {},
-                    parseLNotation), getLibraryExpression(
-                        entry.premise.split(':'), library));
             } else throw Error("Invalid library entry object", entry);
+
+            if (entry.proof && proof && Array.isArray(proof))
+                entry.proof.forEach(function(entry) {
+                    proof.push(proofStep(entry)); });
         } else throw Error("Invalid library entry", entry);
         return result;
     };
 
+    proofStep.prototype.toString = function() {
+        var result = [];
+        result.push(this.value.source);
+        if (this.value.premise)
+            result.push(this.value.premise);
+        return result.join(", ");
+    };
+
     logic.findLibrary = function(name, formula) {
-        return logic.expression(getLibraryExpression(
-            formula, internalLibrary[name]));
+        var proof = [];
+        var result = logic.expression(getLibraryExpression(
+            internalLibrary[name], formula, proof), proof);
+        return result;
+    };
+
+    logic.eachThesis = function(name, fn, context) {
+        var index = 0;
+        Object.keys(internalLibrary[name].theorems).forEach(
+            function(formula) {
+                var proof = [];
+                var expression = logic.expression(
+                    getLibraryExpression(
+                        internalLibrary[name], formula, proof),
+                    proof);
+                fn.call(context, expression, {
+                    formula: formula, name: name
+                }, index++);
+            });
     };
 
     logic.eachLibrary = function(fn, context) {
-        var index = 0;
         Object.keys(internalLibrary).forEach(function(name) {
-            Object.keys(internalLibrary[name].theorems).forEach(
-                function(formula) {
-                    var expression = logic.expression(
-                        getLibraryExpression(
-                            formula, internalLibrary[name]));
-                    fn.call(context, expression, {
-                        formula: formula, name: name,
-                    }, index++);
-                });
+            logic.eachThesis(name, fn, context);
         });
+    };
+
+    var logicBox = function(element) {
+        var display = element.querySelector("textarea.display");
+        var pdisplay = element.querySelector("textarea.pdisplay");
+        var variables = element.querySelector("select.variables");
+        var values = element.querySelector("select.values");
+        var rawexpr = element.querySelector("input.rawexpr");
+        var current;
+
+        var apply = function(expression) {
+            current = expression = logic.expression(expression);
+            if (variables) {
+                var ii;
+                for (ii = variables.options.length - 1; ii >= 0; --ii)
+                    variables.remove(ii);
+                expression.getFree().forEach(function(variable) {
+                    variables.appendChild(ripple.createElement(
+                        'option', {value: variable,
+                                   innerHTML: variable})); });
+            }
+            if (display)
+                display.innerHTML = expression.toString();
+            if (rawexpr)
+                rawexpr.value = expression.toString({lnote: true});
+            if (expression.proof)
+                pdisplay.innerHTML = expression.proof.toString();
+        };
+
+        element.querySelectorAll(".theses").forEach(function(theses) {
+            var name = theses.getAttribute("data-name");
+            logic.eachThesis(name, function(expression, details) {
+                theses.appendChild(ripple.createElement(
+                    'option', {
+                        value: details.name + ':' + details.formula},
+                    details.name + ' ' + details.formula));
+            });
+            theses.value = undefined;
+            theses.addEventListener("change", function(event) {
+                var parts = event.target.value.split(':');
+                var proof = [];
+                if (parts.length >= 2)
+                    apply(logic.findLibrary(parts[0], parts[1]));
+            });
+        });
+
+        var simplify = element.querySelector("button.simplify");
+        if (simplify)
+            simplify.addEventListener("click", function(event) {
+                if (current)
+                    apply(current.simplify()); });
+
+        var deconstant = element.querySelector("button.deconstant");
+        if (deconstant)
+            deconstant.addEventListener("click", function(event) {
+                if (current)
+                    apply(current.deconstant()); });
+
+        var devolve = element.querySelector("button.devolve");
+        if (devolve)
+            devolve.addEventListener("click", function(event) {
+                if (current)
+                    apply(current.devolve()); });
+
+        var replace = element.querySelector("button.replace");
+        if (replace)
+            replace.addEventListener("click", function(event) {
+                var value = values.value;
+                if (value === 'true')
+                    value = true;
+                else if (value === 'false')
+                    value = false;
+
+                if (current) {
+                    apply(current.substitute(
+                        variables.value, value));
+                    element.querySelectorAll(".theses").forEach(
+                        function(theses) { theses.value = undefined; });
+                }
+            });
+
+        var parse = element.querySelector("button.parse");
+        if (parse && rawexpr)
+            parse.addEventListener("click", function(event) {
+                var expression = logic.parse(rawexpr.value.trim());
+                if (expression)
+                    apply(expression);
+
+                element.querySelectorAll(".theses").forEach(
+                    function(theses) { theses.value = undefined; });
+            });
+    };
+
+    logic.go = function(className) {
+        document.querySelectorAll("." + (className || "logic"))
+                .forEach(logicBox);
     };
 }(typeof exports === 'undefined' ? this.logic = {} : exports));
 
