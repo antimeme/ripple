@@ -417,6 +417,17 @@
     angleList.forEach(function(angle) {
         angleTable[angle.name] = angle; });
 
+    var intersectLineCircle = function(c, p1, p2) {
+        var pp1 = {x: p1.x - c.x, y: p1.y - c.y};
+        var pp2 = {x: p2.x - c.x, y: p2.y - c.y};
+        var det = pp1.x * pp2.y - pp2.x * pp1.y;
+        var delta = {x: pp2.x - pp1.x, y: pp2.y - pp1.y};
+        var dr2 = delta.x * delta.x + delta.y * delta.y;
+        var discrim = Math.sqrt(c.r * c.r * dr2 - det * det);
+        return {x: c.x + (det * delta.y + delta.x * discrim) / dr2,
+                y: c.y + (-det * delta.x + delta.y * discrim) / dr2};
+    };
+
     var draw = function(canvas, bounds) {
         var ctx;
 
@@ -453,6 +464,66 @@
             ctx.lineWidth = 2;
             ctx.strokeStyle = 'rgb(0, 0, 0)';
             ctx.stroke();
+        }
+
+        if (canvas.getAttribute('data-conformal')) {
+            ctx.beginPath();
+            ctx.moveTo(0, bounds.top + 2 * bounds.size / 3);
+            ctx.lineTo(canvas.clientWidth,
+                       bounds.top + 2 * bounds.size / 3);
+            ctx.moveTo(bounds.left + 2 * bounds.size / 3,
+                       bounds.top + bounds.size / 2);
+            ctx.arc(bounds.left + bounds.size / 2,
+                    bounds.top + bounds.size / 2, bounds.size / 6,
+                    0, Math.PI * 2);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'rgb(32, 32, 32)';
+            ctx.stroke();
+
+            if (clicked) {
+                ctx.beginPath();
+                ctx.moveTo(bounds.left + bounds.size / 2,
+                           bounds.top + bounds.size / 3);
+                ctx.lineTo(bounds.left + clicked.x,
+                           bounds.top + 2 * bounds.size / 3);
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = 'rgb(32, 32, 32)';
+                ctx.stroke();
+
+                ctx.beginPath(); // Point on flat surface
+                ctx.moveTo(bounds.left + clicked.x,
+                           bounds.top + 2 * bounds.size / 3);
+                ctx.arc(bounds.left + clicked.x,
+                        bounds.top + 2 * bounds.size / 3,
+                        bounds.size / 75, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgb(32, 32, 192)';
+                ctx.fill();
+
+                var circlePoint = intersectLineCircle(
+                    {r: bounds.size / 6,
+                     x: bounds.left + bounds.size / 2,
+                     y: bounds.top + bounds.size / 2},
+                    {x: bounds.left + bounds.size / 2,
+                     y: bounds.top + bounds.size / 3},
+                    {x: bounds.left + clicked.x,
+                     y: bounds.top + 2 * bounds.size / 3});
+                ctx.beginPath(); // Point on circle
+                ctx.moveTo(circlePoint.x, circlePoint.y);
+                ctx.arc(circlePoint.x, circlePoint.y,
+                        bounds.size / 75, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgb(192, 32, 192)';
+                ctx.fill();
+            }
+
+            ctx.beginPath(); // Point at infinity
+            ctx.moveTo(bounds.left + bounds.size / 2,
+                       bounds.top + bounds.size / 3);
+            ctx.arc(bounds.left + bounds.size / 2,
+                    bounds.top + bounds.size / 3, bounds.size / 75,
+                    0, Math.PI * 2);
+            ctx.fillStyle = 'rgb(192, 32, 32)';
+            ctx.fill();
+
         }
 
         var angle, cos, sin, index, prev = undefined;
@@ -515,6 +586,7 @@
 
             if (deco)
                 drawDeco(ctx, bounds, symbol, angle, sin, cos);
+            console.log("DEBUG-color", index, color);
             drawRay(ctx, bounds, index, color, angle, cos, sin);
         });
 
@@ -546,30 +618,10 @@
 
         Vector.each(canvas, function(vector, index, canvas) {
             vector.draw(ctx, bounds);
-
-            /* ctx.beginPath();
-             * ctx.moveTo(bounds.left, bounds.top);
-             * ctx.lineTo(bounds.right, bounds.top);
-             * ctx.lineTo(bounds.right, bounds.bottom);
-             * ctx.lineTo(bounds.left, bounds.bottom);
-             * ctx.lineTo(bounds.left, bounds.top);
-             * ctx.lineWidth = 3;
-             * ctx.strokeStyle = 'black';
-             * ctx.stroke();
-             */
-            if (thunk && false) {
-                var tx = thunk.x + bounds.left;
-                var ty = bounds.bottom - thunk.y;
-                ctx.beginPath();
-                ctx.moveTo(tx, ty);
-                ctx.arc(tx, ty, 3, 0, 2 * Math.PI);
-                ctx.fillStyle = 'black';
-                ctx.fill();
-            }
         });
     };
 
-    var thunk = undefined;
+    var clicked = undefined;
 
     var closestAngle = function(canvas, bounds, point) {
         var result = undefined;
@@ -626,7 +678,7 @@
                 var bounds = computeBounds(canvas);
                 var point = getInputPoints(
                     event, canvas, boundsfn(bounds, scalefn));
-                thunk = point;
+                clicked = point;
                 if (!(dragging = Vector.closest(
                     canvas, bounds, point, 0.25)))
                     dragging = closestAngle(canvas, bounds, point);
