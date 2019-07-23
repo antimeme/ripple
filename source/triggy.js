@@ -27,58 +27,10 @@
 // * data-connect1="2,3" - Draw lines from point to these points
 (function(triggy) {
     'use strict';
-
-    /**
-     * Create a normalized data structure to represent a mouse or
-     * multi-touch event with coordinates scaled to the element.  When
-     * there are touches the coordinates of the first one will be
-     * copied to the top level object x and y.  Applications can use
-     * that unless multitouch support is needed. */
-    var getInputPoints = function(event, element, scalefn) {
-        var target = element ? element : event.target;
-        var brect = target.getBoundingClientRect();
-        var transform = function(id, x, y) {
-            var result = {id: id, x: x - brect.left, y: y - brect.top };
-            return scalefn ? scalefn(result) : result;
-        };
-        var ii;
-        var result = (!isNaN(event.pageX) && !isNaN(event.pageY)) ?
-                     transform(0, event.pageX, event.pageY) : {};
-
-        if (event.targetTouches) {
-            result.targets = [];
-            for (ii = 0; ii < event.targetTouches.length; ++ii) {
-                var touch = event.targetTouches.item(ii);
-                if (!isNaN(touch.pageX) && !isNaN(touch.pageY))
-                    result.targets.push(
-                        transform(touch.identifier,
-                                  touch.pageX, touch.pageY));
-            }
-        }
-
-        if (event.changedTouches) {
-            result.changed = [];
-            for (ii = 0; ii < event.changedTouches.length; ++ii) {
-                var touch = event.changedTouches.item(ii);
-                if (!isNaN(touch.pageX) && !isNaN(touch.pageY))
-                    result.changed.push(
-                        transform(touch.identifier,
-                                  touch.pageX, touch.pageY));
-            }
-        }
-
-        if (result.targets && result.targets.length > 0) {
-            result.id = result.targets[0].id;
-            result.x = result.targets[0].x;
-            result.y = result.targets[0].y;
-        } else if (result.changed && result.changed.length > 0) {
-            result.id = result.changed[0].id;
-            result.x = result.changed[0].x;
-            result.y = result.changed[0].y;
-        }
-        result.target = target;
-        return result;
-    };
+    if (typeof require === 'function') {
+        this.ripple   = require("./ripple/ripple.js");
+        this.multivec = require("./ripple/multivec.js");
+    }
 
     var eachEntry = function(canvas, entry, fn, context) {
         var value;
@@ -428,6 +380,109 @@
                 y: c.y + (-det * delta.x + delta.y * discrim) / dr2};
     };
 
+    var drawConformal = function(bounds, ctx, config) {
+        if (!config)
+            return;
+
+        ctx.beginPath(); // Number Line
+        ctx.moveTo(0, bounds.top + 2 * bounds.size / 3);
+        ctx.lineTo(bounds.width, bounds.top + 2 * bounds.size / 3);
+
+        ctx.font = "20px Arial";
+        for (var ii = 0; ii < 10; ++ii) {
+            ctx.moveTo(bounds.left + bounds.size / 2 +
+                       ii * (bounds.width / 20),
+                       bounds.top + 2 * bounds.size / 3 +
+                       bounds.size / 50);
+            ctx.lineTo(bounds.left + bounds.size / 2 +
+                       ii * (bounds.width / 20),
+                       bounds.top + 2 * bounds.size / 3 -
+                       bounds.size / 50);
+            ctx.fillText(ii.toString(),
+                         bounds.left + bounds.size / 2 +
+                         ii * (bounds.width / 20) -
+                         ctx.measureText(ii.toString()).width/2,
+                         bounds.top + 11 * bounds.size / 15);
+            if (ii) {
+                ctx.moveTo(bounds.left + bounds.size / 2 -
+                           ii * (bounds.width / 20),
+                           bounds.top + 2 * bounds.size / 3 +
+                           bounds.size / 50);
+                ctx.lineTo(bounds.left + bounds.size / 2 -
+                           ii * (bounds.width / 20),
+                           bounds.top + 2 * bounds.size / 3 -
+                           bounds.size / 50);
+                ctx.fillText((-ii).toString(),
+                             bounds.left + bounds.size / 2 -
+                             ii * (bounds.width / 20) -
+                             ctx.measureText((-ii).toString()).width/2,
+                             bounds.top + 11 * bounds.size / 15);
+            }
+        }
+        ctx.font = "30px Arial";
+        ctx.fillText('\u221e', bounds.left + bounds.size / 2 -
+                     ctx.measureText('\u221e').width / 2,
+                     bounds.top + 19 * bounds.size / 60);
+
+        ctx.moveTo(bounds.left + 2 * bounds.size / 3,
+                   bounds.top + bounds.size / 2);
+        ctx.arc(bounds.left + bounds.size / 2,
+                bounds.top + bounds.size / 2, bounds.size / 6,
+                0, Math.PI * 2);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgb(32, 32, 32)';
+        ctx.stroke();
+
+        if (clicked) {
+            ctx.beginPath();
+            ctx.moveTo(bounds.left + bounds.size / 2,
+                       bounds.top + bounds.size / 3);
+            ctx.lineTo(bounds.left + clicked.x,
+                       bounds.top + 2 * bounds.size / 3);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'rgb(32, 32, 32)';
+            ctx.stroke();
+
+            ctx.beginPath(); // Point on flat surface
+            ctx.moveTo(bounds.left + clicked.x,
+                       bounds.top + 2 * bounds.size / 3);
+            ctx.arc(bounds.left + clicked.x,
+                    bounds.top + 2 * bounds.size / 3,
+                    bounds.size / 75, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgb(32, 32, 192)';
+            ctx.fill();
+
+            var circlePoint = intersectLineCircle(
+                {r: bounds.size / 6,
+                 x: bounds.left + bounds.size / 2,
+                 y: bounds.top + bounds.size / 2},
+                {x: bounds.left + bounds.size / 2,
+                 y: bounds.top + bounds.size / 3},
+                {x: bounds.left + clicked.x,
+                 y: bounds.top + 2 * bounds.size / 3});
+            ctx.beginPath(); // Point on circle
+            ctx.moveTo(circlePoint.x, circlePoint.y);
+            ctx.arc(circlePoint.x, circlePoint.y,
+                    bounds.size / 75, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgb(192, 32, 192)';
+            ctx.fill();
+        }
+
+        ctx.beginPath(); // Point at infinity
+        ctx.moveTo(bounds.left + bounds.size / 2,
+                   bounds.top + bounds.size / 3);
+        ctx.arc(bounds.left + bounds.size / 2,
+                bounds.top + bounds.size / 3, bounds.size / 75,
+                0, Math.PI * 2);
+        ctx.fillStyle = 'rgb(192, 32, 32)';
+        ctx.fill();
+    };
+
+    var drawUserCircle = function(bounds, ctx, config) {
+        if (!config)
+            return;
+    };
+
     var draw = function(canvas, bounds) {
         var ctx;
 
@@ -443,6 +498,11 @@
             return;
         }
         ctx.clearRect(0, 0, bounds.width, bounds.height);
+
+        drawUserCircle(bounds, ctx, canvas.getAttribute(
+            'data-user-circle'));
+        drawConformal(bounds, ctx, canvas.getAttribute(
+            'data-conformal'));
 
         if (canvas.getAttribute('data-axes')) {
             ctx.beginPath();
@@ -464,66 +524,6 @@
             ctx.lineWidth = 2;
             ctx.strokeStyle = 'rgb(0, 0, 0)';
             ctx.stroke();
-        }
-
-        if (canvas.getAttribute('data-conformal')) {
-            ctx.beginPath();
-            ctx.moveTo(0, bounds.top + 2 * bounds.size / 3);
-            ctx.lineTo(canvas.clientWidth,
-                       bounds.top + 2 * bounds.size / 3);
-            ctx.moveTo(bounds.left + 2 * bounds.size / 3,
-                       bounds.top + bounds.size / 2);
-            ctx.arc(bounds.left + bounds.size / 2,
-                    bounds.top + bounds.size / 2, bounds.size / 6,
-                    0, Math.PI * 2);
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = 'rgb(32, 32, 32)';
-            ctx.stroke();
-
-            if (clicked) {
-                ctx.beginPath();
-                ctx.moveTo(bounds.left + bounds.size / 2,
-                           bounds.top + bounds.size / 3);
-                ctx.lineTo(bounds.left + clicked.x,
-                           bounds.top + 2 * bounds.size / 3);
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = 'rgb(32, 32, 32)';
-                ctx.stroke();
-
-                ctx.beginPath(); // Point on flat surface
-                ctx.moveTo(bounds.left + clicked.x,
-                           bounds.top + 2 * bounds.size / 3);
-                ctx.arc(bounds.left + clicked.x,
-                        bounds.top + 2 * bounds.size / 3,
-                        bounds.size / 75, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgb(32, 32, 192)';
-                ctx.fill();
-
-                var circlePoint = intersectLineCircle(
-                    {r: bounds.size / 6,
-                     x: bounds.left + bounds.size / 2,
-                     y: bounds.top + bounds.size / 2},
-                    {x: bounds.left + bounds.size / 2,
-                     y: bounds.top + bounds.size / 3},
-                    {x: bounds.left + clicked.x,
-                     y: bounds.top + 2 * bounds.size / 3});
-                ctx.beginPath(); // Point on circle
-                ctx.moveTo(circlePoint.x, circlePoint.y);
-                ctx.arc(circlePoint.x, circlePoint.y,
-                        bounds.size / 75, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgb(192, 32, 192)';
-                ctx.fill();
-            }
-
-            ctx.beginPath(); // Point at infinity
-            ctx.moveTo(bounds.left + bounds.size / 2,
-                       bounds.top + bounds.size / 3);
-            ctx.arc(bounds.left + bounds.size / 2,
-                    bounds.top + bounds.size / 3, bounds.size / 75,
-                    0, Math.PI * 2);
-            ctx.fillStyle = 'rgb(192, 32, 32)';
-            ctx.fill();
-
         }
 
         var angle, cos, sin, index, prev = undefined;
@@ -676,7 +676,7 @@
             canvas.addEventListener('mousedown', function(event) {
                 var canvas = event.target;
                 var bounds = computeBounds(canvas);
-                var point = getInputPoints(
+                var point = ripple.getInputPoints(
                     event, canvas, boundsfn(bounds, scalefn));
                 clicked = point;
                 if (!(dragging = Vector.closest(
@@ -689,7 +689,7 @@
                 if (dragging) {
                     var canvas = event.target;
                     var bounds = computeBounds(canvas);
-                    var point = getInputPoints(
+                    var point = ripple.getInputPoints(
                         event, canvas, boundsfn(bounds, scalefn));
                     if (dragging instanceof Vector) {
                         dragging.move(canvas, bounds, point);
@@ -706,7 +706,7 @@
             canvas.addEventListener('touchstart', function(event) {
                 var canvas = event.target;
                 var bounds = computeBounds(canvas);
-                var point = getInputPoints(
+                var point = ripple.getInputPoints(
                     event, canvas, boundsfn(bounds, scalefn));
                 dragging = closestAngle(canvas, bounds, point);
                 draw(canvas, bounds);
@@ -716,7 +716,7 @@
                 var canvas = event.target;
                 var bounds = computeBounds(canvas);
                 if (dragging) {
-                    var point = getInputPoints(
+                    var point = ripple.getInputPoints(
                         event, canvas, boundsfn(bounds, scalefn));
                     setAngle(canvas, bounds, point, dragging);
                     draw(canvas, bounds);

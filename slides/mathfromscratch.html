@@ -305,9 +305,8 @@
                 <h3>Sheffer Stroke</h3>
                 <p>
                     A <span class="intro">stroke</span> (Sheffer 1913
-                    CE) of two propositions is a commutative
-                    contingency that's true unless both the statements
-                    it comprises are true: P
+                    CE) of two propositions is true unless both the
+                    statements it comprises are true: P
                     <span class="intro">&#x22bc;</span> Q
                 </p>
                 <table>
@@ -8402,6 +8401,9 @@
                     Scalar Product:
                     <strong>v</strong> &middot; <strong>u</strong>
                 </li><li>
+                    Contraction:
+                    <strong>v</strong> &#x230b; <strong>u</strong>
+                </li><li>
                     Conjugate:
                     (<strong>o<sub>1</sub></strong>
                     <strong>o<sub>2</sub></strong> ...
@@ -8411,9 +8413,6 @@
                     <strong>o<sub>n - 1</sub></strong> ...
                     <strong>o<sub>2</sub></strong>
                     <strong>o<sub>1</sub></strong>
-                </li><li>
-                    Contraction:
-                    <strong>v</strong> &#x230b; <strong>u</strong>
                 </li></ul>
             </section>
             <section>
@@ -8449,7 +8448,7 @@
                 </p>
             </section>
             <section>
-                <h3>Outer Product</h3>
+                <h3>Vector Outer Product</h3>
                 <table><tr><td>
                     <strong>v</strong>&#x2227;<strong>u</strong>
                 </td><td>
@@ -8509,7 +8508,7 @@
                 </tr></table>
             </section>
             <section>
-                <h3>Anticommutative on Vectors</h3>
+                <h3>Anticommutative Vectors</h3>
                 <table class="xlarge" style="float: left;"><tr><td>
                     <strong>v</strong>&#x2227;<strong>u</strong>
                 </td><td>
@@ -8760,7 +8759,7 @@
                 </p>
             </section>
             <section>
-                <h3>Scalar Product</h3>
+                <h3>Vector Scalar Product</h3>
                 <table><tr><td>
                     <strong>v</strong>&middot;<strong>u</strong>
                 </td><td>
@@ -8887,11 +8886,23 @@
                 </li></ul>
             </section>
             <section>
+                <h3>Quadrance</h3>
+                <p>
+                    &#x2200;M&#x2208;&#x1d544;
+                    Quadrance(M) &#x225d; M M<sup>&#x2020;</sup>
+                </p>
+                <p>
+                    Most of the time when you square things you're
+                    actually trying to take the quardance.  Scalars
+                    and vectors are unchanged by the conjugate so the
+                    quadrance is identical to the square.
+                </p>
+            </section>
+            <section>
                 <h3>Norm</h3>
                 <p>
-                    If the product of a multivector and its conjugate
-                    is a scalar then it has a norm which squares to
-                    this value.  Otherwise there is no norm.
+                    Any multivector with a non-negative scalar
+                    quadrance has a norm.
                 </p>
                 <ul><li class="fragment">
                     &#x2200;M&#x2208;&#x1d544;
@@ -8951,40 +8962,48 @@
             </section>
             <section>
                 <h3>Inverse</h3>
-                <p>Where there's a non-zero norm there's an inverse.</p>
+                <p>
+                    A multivector with non-zero scalar quadrance has
+                    an inverse.  We call such multivectors blades.
+                </p>
 
                 <ul><li class="fragment">
-                    &#x2200;M&#x2208;&#x1d544;
-                    ((M M<sup>&#x2020;</sup> =
+                    &#x1d539; = { M&#x2208;&#x1d544; :
+                    (M M<sup>&#x2020;</sup> =
                     M&middot;M<sup>&#x2020;</sup>) &and;
-                    (M M<sup>&#x2020;</sup> &ne; 0<sub>&#x1d544;</sub>))
+                    (M M<sup>&#x2020;</sup> &ne;
+                    0<sub>&#x1d544;</sub>) }
+                </li><li class="fragment">
+                    &#x2200;M&#x2208;&#x1d539;
+                    &#x27f9; M<sup>-1</sup> &#x225d;
+                    M<sup>&#x2020;</sup> / (M M<sup>&#x2020;</sup>)
+                </li><li class="fragment">
+                    M M<sup>-1</sup>
                     <span class="fragment">
-                        &#x27f9;<br />
-                        &#x2203M<sup>-1</sup>&#x2208;&#x1d544;
+                        = M (M<sup>&#x2020;</sup> /
+                        (M M<sup>&#x2020;</sup>))
                     </span><span class="fragment">
-                        M<sup>-1</sup> = M<sup>&#x2020;</sup>
-                        (M M<sup>&#x2020;</sup>)<sup>-1</sup>
-                    </span><span class="fragment">
-                        = M<sup>&#x2020;</sup> |M|<sup>-2</sup>
+                        = (M M<sup>&#x2020;</sup>) /
+                        (M M<sup>&#x2020;</sup>) = 1<sub>&#x1d544;</sub>
                     </span>
                 </li><li class="fragment">
-                    M M<sup>-1</sup> = M<sup>-1</sup>M =
-                    1<sub>&#x1d544;</sub>
-                </li><li class="fragment">
-                    (M M<sup>&#x2020;</sup>)
-                    (M M<sup>&#x2020;</sup>)<sup>-1</sup> =
-                    (M<sup>&#x2020;</sup>M)
-                    (M M<sup>&#x2020;</sup>)<sup>-1</sup> =
-                    1<sub>&#x1d544;</sub>
+                    M<sup>-1</sup>M
+                    <span class="fragment">
+                        = (M<sup>&#x2020;</sup> /
+                        (M M<sup>&#x2020;</sup>)) M
+                    </span><span class="fragment">
+                        = (M<sup>&#x2020;</sup> M) /
+                        (M M<sup>&#x2020;</sup>)
+                    </span><span class="fragment">
+                        =<br /> (M
+                        M<sup>&#x2020;</sup>)<sup>&#x2020;</sup> /
+                        (M M<sup>&#x2020;</sup>)
+                    </span><span class="fragment">
+                        = (M M<sup>&#x2020;</sup>) /
+                        (M M<sup>&#x2020;</sup>)
+                        = 1<sub>&#x1d544;</sub>
+                    </span>
                 </li></ul>
-                <p class="fragment">
-                    Any multivector with an inverse is a blade:
-                    &#x2200;M&#x2208;&#x1d544;
-                    ((M M<sup>&#x2020;</sup> =
-                    M&middot;M<sup>&#x2020;</sup>) &and;
-                    (M M<sup>&#x2020;</sup> &ne; 0<sub>&#x211d;</sub>))
-                    &#x27f9; M&#x2208;&#x1d539;
-                </p>
             </section>
             <section>
                 <h3>Contraction</h3>
@@ -9095,8 +9114,8 @@
                 </p>
             </section>
             <section>
-                <h3>Contraction and Angles</h3>
-                <table><tr><td><ul><li>
+                <h3>Angle Measure</h3>
+                <table class="large"><tr><td class="fragment"><ul><li>
                     <strong>&wcirc;</strong> =
                     &wcirc;<sub>1</sub><strong>o<sub>1</sub></strong> +
                     &wcirc;<sub>2</sub><strong>o<sub>2</sub></strong>
@@ -9104,6 +9123,11 @@
                     <strong>&ucirc;</strong> =
                     &ucirc;<sub>1</sub><strong>o<sub>1</sub></strong> +
                     &ucirc;<sub>2</sub><strong>o<sub>2</sub></strong>
+                </li><li class="fragment">
+                    <strong>&wcirc;</strong> &middot;
+                    <strong>&#x00fb;</strong> =
+                    &wcirc;<sub>1</sub>&ucirc;<sub>1</sub> +
+                    &wcirc;<sub>2</sub>&ucirc;<sub>2</sub>
                 </li></ul></td><td class="fragment"><ul><li>
                     <strong>&wcirc;</strong> =
                     cos&alpha; <strong>o<sub>1</sub></strong> +
@@ -9112,39 +9136,39 @@
                     <strong>&ucirc;</strong> =
                     cos&beta; <strong>o<sub>1</sub></strong> +
                     sin&beta; <strong>o<sub>2</sub></strong>
+                </li><li class="fragment">
+                    <strong>&wcirc;</strong> &middot;
+                    <strong>&#x00fb;</strong> =
+                    cos&alpha; cos&beta; + sin&alpha; sin&beta;
                 </li></ul></td></tr></table>
                 <ul><li class="fragment">
-                    <strong>&wcirc;</strong> &#x230b;
-                    <strong>&#x00fb;</strong> =
-                    &wcirc;<sub>1</sub>&ucirc;<sub>1</sub> +
-                    &wcirc;<sub>2</sub>&ucirc;<sub>2</sub>
-                    <span class="fragment">
-                        = cos&alpha; cos&beta; + sin&alpha; sin&beta;
-                    </span>
-                </li><li class="fragment">
-                    <strong>&wcirc;</strong> &#x230b;
+                    <strong>&wcirc;</strong> &middot;
                     <strong>&#x00fb;</strong> = cos(&alpha; - &beta;)
                 </li><li class="fragment">
-                    <strong>w</strong> &#x230b; <strong>u</strong>
+                    <strong>w</strong> &middot; <strong>u</strong>
                     <span class="fragment">
-                        = (|w|<strong>&wcirc;</strong>) &#x230b;
+                        = (|w|<strong>&wcirc;</strong>) &middot;
                         (|u|<strong>&ucirc;</strong>)
                     </span><span class="fragment">
-                        = |w||u| <strong>&wcirc;</strong> &#x230b;
+                        = |w||u| <strong>&wcirc;</strong> &middot;
                         <strong>&#x00fb;</strong>
                     </span>
                 </li><li class="fragment">
-                    <strong>w</strong> &#x230b; <strong>u</strong>
+                    <strong>w</strong> &middot; <strong>u</strong>
                     = |w||u| cos(&alpha; - &beta;)
                 </li><li class="fragment">
                     &alpha; - &beta; =
-                    cos<sup>-1</sup>(<strong>w</strong> &#x230b;
+                    cos<sup>-1</sup>(<strong>w</strong> &middot;
                     <strong>u</strong> (<strong>w</strong>
                     <strong>w</strong><sup>&#x2020;</sup>
                     <strong>u</strong>
                     <strong>u</strong><sup>&#x2020;</sup>)
                     <sup>-1/2</sup>)
                 </li></ul>
+                <p class="fragment">
+                    Any pair of vectors can be represented in a two
+                    dimensional basis, so this formula always applies.
+                </p>
             </section>
             <section>
                 <h3>Pseudo-Scalars</h3>
@@ -10272,10 +10296,10 @@
                     &#x211d;<sup>n + 1</sup>
                 </td><td>
                     <em>p</em> &middot;
-                    <strong>o<sub>4</sub></strong> &ne; 0
+                    <strong>o<sub>0</sub></strong> &ne; 0
                 </td><td>
                     <strong>v</strong> &middot;
-                    <strong>o<sub>4</sub></strong> = 0
+                    <strong>o<sub>0</sub></strong> = 0
                 </td><td>
                     Linear
                 </td></tr><tr><th>
@@ -10340,7 +10364,8 @@
                     To support the homogeneous model we introduce
                     <strong>o<sub>0</sub></strong> lexigraphically
                     before the <strong>x</strong> axis.  This extra
-                    dimension represents each point with a line.
+                    dimension gives a weight to each point
+                    representation.
                 </p>
             </section>
             <section>
@@ -10364,8 +10389,8 @@
                 </li><li class="fragment">
                     <strong>p</strong> = ((<em>p</em> (<em>p</em>
                     &middot; <strong>o<sub>0</sub></strong>)<sup>-1</sup>)
-                    &#x2227; <strong>o<sub>0</sub></strong>)
-                    <strong>o<sub>0</sub></strong><sup>-1</sup>
+                    &#x2227; <strong>o<sub>0</sub></strong>) /
+                    <strong>o<sub>0</sub></strong>
                 </li></ul>
             </section>
             <section>
@@ -10382,8 +10407,8 @@
                     <strong>o<sub>0</sub></strong>))<sup>&#x2020;</sup>
                 </p>
                 <p class="fragment">
-                    After normalizing the point weights the same
-                    calculation used in the standard model works.
+                    With normalized points the formula is the same
+                    as the standard model.
                 </p>
             </section>
             <section>
@@ -10441,10 +10466,6 @@
                     <em>o</em> &middot; <strong>v</strong> =
                     <em>&infin;</em> &middot;
                     <strong>v</strong> = 0
-                    <span class="fragment">
-                        = <em>o</em> &middot; <em>o</em>
-                        = <em>&infin;</em> &middot; <em>&infin;</em>
-                    </span>
                 </li><li class="fragment">
                     <em>o</em> &middot;
                     <em>&infin;</em> =
@@ -10544,13 +10565,13 @@
                     <strong>q</strong><sup>2</sup>/2 -
                     <strong>p</strong><sup>2</sup>/2
                     <span class="fragment">
-                        = -1/2(<strong>p</strong> -
+                        = -1/2 (<strong>p</strong> -
                         <strong>q</strong>) &middot;
                         (<strong>p</strong> -
                         <strong>q</strong>)<sup>&#x2020;</sup>
                     </span>
                 </li><li class="fragment">
-                    -2(<em>p</em> &middot; <em>q</em>) =
+                    -2 (<em>p</em> &middot; <em>q</em>) =
                     (<strong>p</strong> -
                     <strong>q</strong>) &middot;
                     (<strong>p</strong> -
@@ -10574,8 +10595,7 @@
                     <em>&infin;</em><strong>t</strong>/2
                 </li><li>
                     Dilation(a): V<sub>d</sub> = cosh(a/2) +
-                    (<em>o</em>&#x2227;<em>p</em><sub>&infin;</sub>)
-                    sinh(a/2)
+                    <em>o</em>&#x2227;<em>&infin;</em> sinh(a/2)
                 </li></ul>
                 <p>
                     Rotors can be composed using the geometric
@@ -10584,22 +10604,99 @@
                 </p>
             </section>
             <section>
-                <h3>Lines and Circles</h3>
+                <h3>Conformal Translation</h3>
                 <p>
-                    In the conformal model, circles are represted by
-                    the wedge product of three distinct points.  A
-                    line is a circle with one of its points at
-                    infinity.
+                    Translation(<strong>t</strong>): V<sub>t</sub> = 1 +
+                    <em>&infin;</em><strong>t</strong>/2
                 </p>
+                <ul><li>
+                    <em>p</em>' = V<sup>t</sup> <em>p</em> V<sup>t</sup>
+                </li><li>
+                    <em>p</em>' = (1 +
+                    <em>&infin;</em><strong>t</strong>/2)
+                    (<em>o</em> + <strong>p</strong> +
+                    <strong>p</strong><sup>2</sup><em>&infin;</em>/2)
+                    (1 - <em>&infin;</em><strong>t</strong>/2)
+                </li><li>
+                </li><li>
+                    <em>p</em>' = <em>o</em> + (<strong>p</strong> +
+                    <strong>t</strong>) + (<strong>p</strong> +
+                    <strong>t</strong>)<sup>2</sup><em>&infin;</em>/2
+                </li></ul>
             </section>
             <section>
-                <h3>Planes and Spheres</h3>
+                <h3>Conformal Circle</h3>
                 <p>
-                    In the conformal model, spheres are represted by
-                    the wedge product of four distinct points.  A
-                    plane is a sphere with one of its points at
-                    infinity.
-                </p>
+                    Any three distinct conformal points can be
+                    used to create a circle:
+                    C = <em>p</em><sub>1</sub> &#x2227;
+                    <em>p</em><sub>2</sub> &#x2227;
+                    <em>p</em><sub>3</sub>
+                </p><ul><li>
+                    Radius<sup>2</sup>:
+                    (C / (C &#x2227; <em>&infin;</em>))
+                    (C / (C &#x2227;
+                    <em>&infin;</em>))<sup>&#x2020;</sup>
+                </li><li>
+                    Center: C <em>&infin;</em> C<sup>-1</sup>
+                </li><li>
+                    Test: <em>p</em>&#x2208;C &#x27fa;
+                    C &#x2227; <em>p</em> = 0
+                </li></ul>
+            </section>
+            <section>
+                <h3>Conformal Line</h3>
+                <p>
+                    A circle that passes through infinity is a line:
+                    <br /> L = <em>p</em><sub>1</sub> &#x2227;
+                    <em>p</em><sub>2</sub> &#x2227; <em>&infin;</em>
+                </p><ul><li>
+                    Radius? L &#x2227; <em>&infin;</em> = 0
+                </li><li>
+                    Center: L <em>&infin;</em> L<sup>-1</sup> =
+                    <em>&infin;</em> 
+                </li><li>
+                    Test: <em>p</em>&#x2208;L &#x27fa;
+                    L &#x2227; <em>p</em> = 0
+                </li></ul>
+            </section>
+            <section>
+                <h3>Conformal Sphere</h3>
+                <p>
+                    Any four distinct conformal points can be
+                    used to create a sphere:
+                    S = <em>p</em><sub>1</sub> &#x2227;
+                    <em>p</em><sub>2</sub> &#x2227;
+                    <em>p</em><sub>3</sub> &#x2227;
+                    <em>p</em><sub>4</sub>
+                </p><ul><li>
+                    Center: S <em>&infin;</em> S<sup>-1</sup>
+                </li><li>
+                    Radius<sup>2</sup>:
+                    (S / (S &#x2227; <em>&infin;</em>))
+                    (S / (S &#x2227;
+                    <em>&infin;</em>))<sup>&#x2020;</sup>
+                </li><li>
+                    Test: <em>p</em>&#x2208;S &#x27fa;
+                    S &#x2227; <em>p</em> = 0
+                </li></ul>
+            </section>
+            <section>
+                <h3>Conformal Plane</h3>
+                <p>
+                    A sphere that passes through infinity is a plane:
+                    <br /> P = <em>p</em><sub>1</sub> &#x2227;
+                    <em>p</em><sub>2</sub> &#x2227; &#x2227;
+                    <em>p</em><sub>3</sub> &#x2227; <em>&infin;</em>
+                </p><ul><li>
+                    Radius? P &#x2227; <em>&infin;</em> = 0
+                </li><li>
+                    Center: P <em>&infin;</em> P<sup>-1</sup> =
+                    <em>&infin;</em> 
+                </li><li>
+                    Test: <em>p</em>&#x2208;P &#x27fa;
+                    P &#x2227; <em>p</em> = 0
+                </li></ul>
             </section>
         </section>
 
@@ -11301,7 +11398,7 @@
     <script src="ripple/polyfill.js"></script>
     <script src="ripple/ripple.js"></script>
     <script src="ripple/logic.js"></script>
-    <script src="lib/triggy.js"></script>
+    <script src="ripple/triggy.js"></script>
     <script>
      var link = document.createElement('link');
      link.rel = 'stylesheet';
