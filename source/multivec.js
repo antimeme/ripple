@@ -429,6 +429,7 @@
                 ' (normSquared: ' + scale + ')');
         return this.conjugate().multiply(1 / scale);
     };
+    multivec.prototype.inverse = multivec.prototype.inverseMult;
 
     // Returns the additive inverse of a multi-vector.
     //   m.plus(m.inverseAdd()).zeroish() // true
@@ -740,7 +741,7 @@
 
     // Normalize a conformal point.  This results in the same point
     // but in a form that's easier to recogize and convert to a
-    // non-conformal position -- just use the x, y and z fields.
+    // non-conformal position -- use the familiar x, y and z fields.
     multivec.prototype.normalizePoint = function() {
         return this.divide(multivec.infinityPoint.inner(this), -1);
     };
@@ -749,7 +750,7 @@
     // for use with standard model (UNTESTED)
     multivec.prototype.vectorizePoint = function() {
         return this.normalizePoint().reject(
-            multivec.originPoint.outer(multivec.infinityPoint));
+            multivec.originPoint.wedge(multivec.infinityPoint));
     };
 
     // Compute the distance between two conformal points
@@ -1019,11 +1020,11 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
             inner: true, outer: true,
             vectors: [
                 [multivec.originPoint, multivec.infinityPoint],
-                [multivec.createTranslation(multivec([1, 1, 1])).value],
-                [multivec.createTranslation(multivec([1, 1, 1])).apply(
-                    multivec([2, 2, 2]).createPoint())],
-                [multivec.createTranslation(multivec([1, 1, 1])).apply(
-                    multivec([2, 2, 2]).createPoint()).vectorizePoint()]
+                //[multivec.createTranslation(multivec([1, 1, 1])).value],
+                //[multivec.createTranslation(multivec([1, 1, 1])).apply(
+                //    multivec([2, 2, 2]).createPoint())],
+                //[multivec.createTranslation(multivec([1, 1, 1])).apply(
+                //    multivec([2, 2, 2]).createPoint()).vectorizePoint()]
             ]}};
 
     var conduct = function(name, test) {

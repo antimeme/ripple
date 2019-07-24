@@ -479,8 +479,54 @@
     };
 
     var drawUserCircle = function(bounds, ctx, config) {
-        if (!config)
-            return;
+        var p1, p2, p3, color = 'blue', components;
+        if (typeof(config) === 'string') {
+            components = config.split('|');
+            if (components.length < 6)
+                return;
+            p1 = multivec({x: parseFloat(components[0]),
+                           y: parseFloat(components[1])})
+                .createPoint();
+            p2 = multivec({x: parseFloat(components[2]),
+                           y: parseFloat(components[3])})
+                .createPoint();
+            p3 = multivec({x: parseFloat(components[4]),
+                           y: parseFloat(components[5])})
+                .createPoint();
+            if (components.length > 6)
+                color = components[6];
+        } else return;
+
+        ctx.beginPath();
+        for (var ii = 0; ii < 3; ++ii) {
+            var p = [p1, p2, p3][ii];
+            ctx.moveTo(bounds.left + bounds.size * p.x / 100,
+                       bounds.top + bounds.size * p.y / 100);
+            ctx.arc(bounds.left + bounds.size * p.x / 100,
+                    bounds.top + bounds.size * p.y / 100,
+                    bounds.size / 75, 0, 2 * Math.PI);
+        }
+        ctx.fillStyle = color;
+        ctx.fill();
+
+        var circle = p1.wedge(p2).wedge(p3);
+        var descrim = circle.wedge(multivec.infinityPoint).normSquared();
+        if (!multivec.zeroish(descrim)) {
+            var center = circle.times(multivec.infinityPoint)
+                               .times(circle.inverse())
+                               .normalizePoint();
+            var radius = Math.sqrt(circle.times(circle.conjugate())
+                                         .divide(descrim).scalar) / 100;
+            ctx.beginPath();
+            ctx.moveTo(bounds.left + bounds.size * center.x / 100 +
+                       bounds.size * radius,
+                       bounds.top + bounds.size * center.y / 100);
+            ctx.arc(bounds.left + bounds.size * center.x / 100,
+                    bounds.top + bounds.size * center.y / 100,
+                    bounds.size * radius, 0, 2 * Math.PI);
+            ctx.strokeStyle = color;
+            ctx.stroke();
+        } else { /* TODO: draw line */ }
     };
 
     var draw = function(canvas, bounds) {
@@ -586,7 +632,6 @@
 
             if (deco)
                 drawDeco(ctx, bounds, symbol, angle, sin, cos);
-            console.log("DEBUG-color", index, color);
             drawRay(ctx, bounds, index, color, angle, cos, sin);
         });
 
