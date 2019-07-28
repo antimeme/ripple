@@ -57,6 +57,248 @@
         return result;
     };
 
+    var features = {
+        axes: {
+            draw: function(canvas, ctx, bounds, clicked, config) {
+                ctx.beginPath();
+                ctx.moveTo(bounds.left, bounds.origin.y);
+                ctx.lineTo(bounds.right, bounds.origin.y);
+                ctx.moveTo(bounds.origin.x, bounds.top);
+                ctx.lineTo(bounds.origin.x, bounds.bottom);
+                ctx.lineWidth = 5;
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = 'rgb(0, 0, 0)';
+                ctx.stroke();
+            }
+        },
+        circle: {
+            draw: function(canvas, ctx, bounds, clicked, config) {
+                ctx.beginPath();
+                ctx.moveTo(bounds.origin.x + bounds.radius,
+                           bounds.origin.y);
+                ctx.arc(bounds.origin.x, bounds.origin.y, bounds.radius,
+                        0, (bounds.origin.style === 'center') ?
+                        (2 * Math.PI) : (-Math.PI / 2), true);
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = 'rgb(0, 0, 0)';
+                ctx.stroke();
+            }
+        },
+        conformal: {
+            draw: function(canvas, ctx, bounds, clicked, config) {
+                ctx.beginPath(); // Number Line
+                ctx.moveTo(0, bounds.top + 2 * bounds.size / 3);
+                ctx.lineTo(bounds.width,
+                           bounds.top + 2 * bounds.size / 3);
+
+                ctx.font = "20px Arial";
+                for (var ii = 0; ii < 10; ++ii) {
+                    ctx.moveTo(bounds.left + bounds.size / 2 +
+                               ii * (bounds.width / 20),
+                               bounds.top + 2 * bounds.size / 3 +
+                               bounds.size / 50);
+                    ctx.lineTo(bounds.left + bounds.size / 2 +
+                               ii * (bounds.width / 20),
+                               bounds.top + 2 * bounds.size / 3 -
+                               bounds.size / 50);
+                    ctx.fillText(ii.toString(),
+                                 bounds.left + bounds.size / 2 +
+                                 ii * (bounds.width / 20) -
+                                 ctx.measureText(ii.toString()).width/2,
+                                 bounds.top + 11 * bounds.size / 15);
+                    if (ii) {
+                        ctx.moveTo(bounds.left + bounds.size / 2 -
+                                   ii * (bounds.width / 20),
+                                   bounds.top + 2 * bounds.size / 3 +
+                                   bounds.size / 50);
+                        ctx.lineTo(bounds.left + bounds.size / 2 -
+                                   ii * (bounds.width / 20),
+                                   bounds.top + 2 * bounds.size / 3 -
+                                   bounds.size / 50);
+                        ctx.fillText(
+                            (-ii).toString(),
+                            bounds.left + bounds.size / 2 -
+                            ii * (bounds.width / 20) -
+                            ctx.measureText((-ii).toString()).width/2,
+                            bounds.top + 11 * bounds.size / 15);
+                    }
+                }
+                ctx.font = "30px Arial";
+                ctx.fillText('\u221e', bounds.left + bounds.size / 2 -
+                             ctx.measureText('\u221e').width / 2,
+                             bounds.top + 19 * bounds.size / 60);
+
+                ctx.moveTo(bounds.left + 2 * bounds.size / 3,
+                           bounds.top + bounds.size / 2);
+                ctx.arc(bounds.left + bounds.size / 2,
+                        bounds.top + bounds.size / 2, bounds.size / 6,
+                        0, Math.PI * 2);
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = 'rgb(32, 32, 32)';
+                ctx.stroke();
+
+                if (clicked) {
+                    ctx.beginPath();
+                    ctx.moveTo(bounds.left + bounds.size / 2,
+                               bounds.top + bounds.size / 3);
+                    ctx.lineTo(clicked.x,
+                               bounds.top + 2 * bounds.size / 3);
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = 'rgb(32, 32, 32)';
+                    ctx.stroke();
+
+                    ctx.beginPath(); // Point on flat surface
+                    ctx.moveTo(clicked.x,
+                               bounds.top + 2 * bounds.size / 3);
+                    ctx.arc(clicked.x,
+                            bounds.top + 2 * bounds.size / 3,
+                            bounds.size / 75, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgb(32, 32, 192)';
+                    ctx.fill();
+
+                    var circlePoint = intersectLineCircle(
+                        {r: bounds.size / 6,
+                         x: bounds.left + bounds.size / 2,
+                         y: bounds.top + bounds.size / 2},
+                        {x: bounds.left + bounds.size / 2,
+                         y: bounds.top + bounds.size / 3},
+                        {x: clicked.x,
+                         y: bounds.top + 2 * bounds.size / 3});
+                    ctx.beginPath(); // Point on circle
+                    ctx.moveTo(circlePoint.x, circlePoint.y);
+                    ctx.arc(circlePoint.x, circlePoint.y,
+                            bounds.size / 75, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgb(192, 32, 192)';
+                    ctx.fill();
+                }
+
+                ctx.beginPath(); // Point at infinity
+                ctx.moveTo(bounds.left + bounds.size / 2,
+                           bounds.top + bounds.size / 3);
+                ctx.arc(bounds.left + bounds.size / 2,
+                        bounds.top + bounds.size / 3, bounds.size / 75,
+                        0, Math.PI * 2);
+                ctx.fillStyle = 'rgb(192, 32, 32)';
+                ctx.fill();
+            }
+        },
+        userCircle: {
+            which: undefined,
+            getSettings: function(config) {
+                var points, color = "blue";
+                if (typeof(config) === 'string') {
+                    var components = config.split('|');
+                    if (components.length < 6) {
+                        console.log("FAILED-userCircle:",
+                                    "insufficient point data:", config);
+                        return false;
+                    }
+                    points = [];
+                    points.push(multivec({
+                        x: parseFloat(components[0]),
+                        y: parseFloat(components[1])})
+                        .createPoint());
+                    points.push(multivec({
+                        x: parseFloat(components[2]),
+                        y: parseFloat(components[3])})
+                        .createPoint());
+                    points.push(multivec({
+                        x: parseFloat(components[4]),
+                        y: parseFloat(components[5])})
+                        .createPoint());
+                    if (components.length > 6)
+                        color = components[6];
+                } else {
+                    console.log("FAILED-userCircle:",
+                                "unknown config type:", typeof(config));
+                    return false;
+                }
+                return {points: points, color: color};
+            },
+            draw: function(canvas, ctx, bounds, clicked, config) {
+                var settings = this.getSettings(config);
+                if (!settings)
+                    return;
+
+                ctx.beginPath();
+                settings.points.forEach(function(point) {
+                    ctx.moveTo(
+                        bounds.left + bounds.size * point.x / 100,
+                        bounds.top + bounds.size * point.y / 100);
+                    ctx.arc(
+                        bounds.left + bounds.size * point.x / 100,
+                        bounds.top + bounds.size * point.y / 100,
+                        bounds.size / 75, 0, 2 * Math.PI);
+                });
+                ctx.fillStyle = settings.color;
+                ctx.fill();
+
+                var circle = settings.points[0]
+                                     .wedge(settings.points[1])
+                                     .wedge(settings.points[2]);
+                var descrim = circle.wedge(multivec.infinityPoint)
+                                    .normSquared();
+                if (!multivec.zeroish(descrim)) {
+                    var center = circle.times(multivec.infinityPoint)
+                                       .times(circle.inverse())
+                                       .normalizePoint();
+                    var radius = Math.sqrt(
+                        circle.times(circle.conjugate())
+                              .divide(descrim).scalar) / 100;
+                    ctx.beginPath();
+                    ctx.moveTo(bounds.left + bounds.size *
+                        center.x / 100 + bounds.size * radius,
+                               bounds.top + bounds.size *
+                        center.y / 100);
+                    ctx.arc(bounds.left + bounds.size * center.x / 100,
+                            bounds.top + bounds.size * center.y / 100,
+                            bounds.size * radius, 0, 2 * Math.PI);
+                    ctx.strokeStyle = settings.color;
+                    ctx.stroke();
+                } else { /* TODO: draw line */ }
+            },
+            down: function(canvas, bounds, clicked, config) {
+                var settings = this.getSettings(config);
+                if (!settings)
+                    return;
+                var current;
+                var adjusted = multivec({
+                    x: 100 * (clicked.x - bounds.left) / bounds.size,
+                    y: 100 * (clicked.y - bounds.top) / bounds.size
+                }).createPoint();
+                this.which = undefined;
+                settings.points.forEach(function(point, index) {
+                    var dsquared = adjusted.dot(point).times(-2).scalar;
+                    if (isNaN(this.which) || dsquared < current) {
+                        this.which = index;
+                        current = dsquared;
+                    }
+                }, this);
+            },
+            drag: function(canvas, bounds, clicked, config) {
+                var settings = this.getSettings(config);
+                if (!settings || isNaN(this.which))
+                    return;
+                var adjusted = multivec({
+                    x: 100 * (clicked.x - bounds.left) / bounds.size,
+                    y: 100 * (clicked.y - bounds.top) / bounds.size
+                }).createPoint();
+                settings.points[this.which] =
+                    multivec(adjusted).createPoint();
+                canvas.setAttribute(
+                    'data-userCircle',
+                    settings.points[0].x.toFixed(3) + '|' +
+                    settings.points[0].y.toFixed(3) + '|' +
+                    settings.points[1].x.toFixed(3) + '|' +
+                    settings.points[1].y.toFixed(3) + '|' +
+                    settings.points[2].x.toFixed(3) + '|' +
+                    settings.points[2].y.toFixed(3) + '|' +
+                    settings.color
+                );
+            }
+        }
+    };
+
     /**
      * Computes some useful locations within a canvas in a size
      * independent manner. */
@@ -170,8 +412,8 @@
         var adjusted, factor;
         if (this.turn === 'stretch') {
             adjusted = {
-                x: point.x / bounds.size,
-                y: (bounds.bottom - point.y) / bounds.size };
+                x: (point.x - bounds.left) / bounds.size,
+                y: (point.y - bounds.top) / bounds.size };
             adjusted.x -= this.tail.x;
             adjusted.y -= this.tail.y;
             factor = Math.sqrt((adjusted.x * adjusted.x +
@@ -185,24 +427,24 @@
             this.head.y = this.tail.y + this.y;
         } else if (this.turn === 'rotate') {
             adjusted = {
-                x: point.x / bounds.size,
-                y: (bounds.bottom - point.y) / bounds.size };
+                x: (point.x - bounds.left) / bounds.size,
+                y: (point.y - bounds.top) / bounds.size };
             adjusted.x -= this.tail.x;
             adjusted.y -= this.tail.y;
             factor = Math.sqrt((this.x * this.x + this.y * this.y) /
                 (adjusted.x * adjusted.x + adjusted.y * adjusted.y));
-            this.head.x = this.tail.x + adusted.x * factor;
-            this.head.y = this.tail.y + adusted.y * factor;
+            this.head.x = this.tail.x + adjusted.x * factor;
+            this.head.y = this.tail.y + adjusted.y * factor;
         } else if (this.turn) { // default or free
-            this.head.x = point.x / bounds.size;
-            this.head.y = (bounds.bottom - point.y) / bounds.size;
+            this.head.x = (point.x - bounds.left) / bounds.size;
+            this.head.y = (point.y - bounds.top) / bounds.size;
             if (this.turn === 'default') {
                 this.tail.x = this.head.x - this.x;
                 this.tail.y = this.head.y - this.y;
             }
         } else { // tail moves like default
-            this.tail.x = point.x / bounds.size;
-            this.tail.y = (bounds.bottom - point.y) / bounds.size;
+            this.tail.x = (point.x - bounds.left) / bounds.size;
+            this.tail.y = (point.y - bounds.top) / bounds.size;
             this.head.x = this.tail.x + this.x;
             this.head.y = this.tail.y + this.y;
         }
@@ -232,19 +474,19 @@
             };
 
             current = metric(point, {
-                x: vector.head.x * bounds.size,
-                y: bounds.bottom - vector.head.y * bounds.size });
+                x: bounds.left + vector.head.x * bounds.size,
+                y: bounds.top + vector.head.y * bounds.size });
             if ((!threshold || (current <= threshold * threshold)) &&
                 (isNaN(best) || (best > current))) {
                 best = current;
-                vector.turn = canvas.getAttribute('data-vector-turn') ||
+                vector.turn = canvas.getAttribute('data-vector-move') ||
                               'default';
                 result = vector;
             }
 
             current = metric(point, {
-                x: vector.tail.x * bounds.size,
-                y: bounds.bottom - vector.tail.y * bounds.size });
+                x: bounds.left + vector.tail.x * bounds.size,
+                y: bounds.top + vector.tail.y * bounds.size });
             if ((!threshold || (current <= threshold * threshold)) &&
                 (isNaN(best) || (best > current))) {
                 vector.turn = false;
@@ -380,197 +622,25 @@
                 y: c.y + (-det * delta.x + delta.y * discrim) / dr2};
     };
 
-    var drawConformal = function(bounds, ctx, config) {
-        if (!config)
-            return;
-
-        ctx.beginPath(); // Number Line
-        ctx.moveTo(0, bounds.top + 2 * bounds.size / 3);
-        ctx.lineTo(bounds.width, bounds.top + 2 * bounds.size / 3);
-
-        ctx.font = "20px Arial";
-        for (var ii = 0; ii < 10; ++ii) {
-            ctx.moveTo(bounds.left + bounds.size / 2 +
-                       ii * (bounds.width / 20),
-                       bounds.top + 2 * bounds.size / 3 +
-                       bounds.size / 50);
-            ctx.lineTo(bounds.left + bounds.size / 2 +
-                       ii * (bounds.width / 20),
-                       bounds.top + 2 * bounds.size / 3 -
-                       bounds.size / 50);
-            ctx.fillText(ii.toString(),
-                         bounds.left + bounds.size / 2 +
-                         ii * (bounds.width / 20) -
-                         ctx.measureText(ii.toString()).width/2,
-                         bounds.top + 11 * bounds.size / 15);
-            if (ii) {
-                ctx.moveTo(bounds.left + bounds.size / 2 -
-                           ii * (bounds.width / 20),
-                           bounds.top + 2 * bounds.size / 3 +
-                           bounds.size / 50);
-                ctx.lineTo(bounds.left + bounds.size / 2 -
-                           ii * (bounds.width / 20),
-                           bounds.top + 2 * bounds.size / 3 -
-                           bounds.size / 50);
-                ctx.fillText((-ii).toString(),
-                             bounds.left + bounds.size / 2 -
-                             ii * (bounds.width / 20) -
-                             ctx.measureText((-ii).toString()).width/2,
-                             bounds.top + 11 * bounds.size / 15);
-            }
-        }
-        ctx.font = "30px Arial";
-        ctx.fillText('\u221e', bounds.left + bounds.size / 2 -
-                     ctx.measureText('\u221e').width / 2,
-                     bounds.top + 19 * bounds.size / 60);
-
-        ctx.moveTo(bounds.left + 2 * bounds.size / 3,
-                   bounds.top + bounds.size / 2);
-        ctx.arc(bounds.left + bounds.size / 2,
-                bounds.top + bounds.size / 2, bounds.size / 6,
-                0, Math.PI * 2);
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = 'rgb(32, 32, 32)';
-        ctx.stroke();
-
-        if (clicked) {
-            ctx.beginPath();
-            ctx.moveTo(bounds.left + bounds.size / 2,
-                       bounds.top + bounds.size / 3);
-            ctx.lineTo(bounds.left + clicked.x,
-                       bounds.top + 2 * bounds.size / 3);
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = 'rgb(32, 32, 32)';
-            ctx.stroke();
-
-            ctx.beginPath(); // Point on flat surface
-            ctx.moveTo(bounds.left + clicked.x,
-                       bounds.top + 2 * bounds.size / 3);
-            ctx.arc(bounds.left + clicked.x,
-                    bounds.top + 2 * bounds.size / 3,
-                    bounds.size / 75, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgb(32, 32, 192)';
-            ctx.fill();
-
-            var circlePoint = intersectLineCircle(
-                {r: bounds.size / 6,
-                 x: bounds.left + bounds.size / 2,
-                 y: bounds.top + bounds.size / 2},
-                {x: bounds.left + bounds.size / 2,
-                 y: bounds.top + bounds.size / 3},
-                {x: bounds.left + clicked.x,
-                 y: bounds.top + 2 * bounds.size / 3});
-            ctx.beginPath(); // Point on circle
-            ctx.moveTo(circlePoint.x, circlePoint.y);
-            ctx.arc(circlePoint.x, circlePoint.y,
-                    bounds.size / 75, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgb(192, 32, 192)';
-            ctx.fill();
-        }
-
-        ctx.beginPath(); // Point at infinity
-        ctx.moveTo(bounds.left + bounds.size / 2,
-                   bounds.top + bounds.size / 3);
-        ctx.arc(bounds.left + bounds.size / 2,
-                bounds.top + bounds.size / 3, bounds.size / 75,
-                0, Math.PI * 2);
-        ctx.fillStyle = 'rgb(192, 32, 32)';
-        ctx.fill();
-    };
-
-    var drawUserCircle = function(bounds, ctx, config) {
-        var p1, p2, p3, color = 'blue', components;
-        if (typeof(config) === 'string') {
-            components = config.split('|');
-            if (components.length < 6)
-                return;
-            p1 = multivec({x: parseFloat(components[0]),
-                           y: parseFloat(components[1])})
-                .createPoint();
-            p2 = multivec({x: parseFloat(components[2]),
-                           y: parseFloat(components[3])})
-                .createPoint();
-            p3 = multivec({x: parseFloat(components[4]),
-                           y: parseFloat(components[5])})
-                .createPoint();
-            if (components.length > 6)
-                color = components[6];
-        } else return;
-
-        ctx.beginPath();
-        for (var ii = 0; ii < 3; ++ii) {
-            var p = [p1, p2, p3][ii];
-            ctx.moveTo(bounds.left + bounds.size * p.x / 100,
-                       bounds.top + bounds.size * p.y / 100);
-            ctx.arc(bounds.left + bounds.size * p.x / 100,
-                    bounds.top + bounds.size * p.y / 100,
-                    bounds.size / 75, 0, 2 * Math.PI);
-        }
-        ctx.fillStyle = color;
-        ctx.fill();
-
-        var circle = p1.wedge(p2).wedge(p3);
-        var descrim = circle.wedge(multivec.infinityPoint).normSquared();
-        if (!multivec.zeroish(descrim)) {
-            var center = circle.times(multivec.infinityPoint)
-                               .times(circle.inverse())
-                               .normalizePoint();
-            var radius = Math.sqrt(circle.times(circle.conjugate())
-                                         .divide(descrim).scalar) / 100;
-            ctx.beginPath();
-            ctx.moveTo(bounds.left + bounds.size * center.x / 100 +
-                       bounds.size * radius,
-                       bounds.top + bounds.size * center.y / 100);
-            ctx.arc(bounds.left + bounds.size * center.x / 100,
-                    bounds.top + bounds.size * center.y / 100,
-                    bounds.size * radius, 0, 2 * Math.PI);
-            ctx.strokeStyle = color;
-            ctx.stroke();
-        } else { /* TODO: draw line */ }
-    };
-
     var draw = function(canvas, bounds) {
         var ctx;
-
-        if (!bounds)
-            bounds = computeBounds(canvas);
         canvas.width  = bounds.width;
         canvas.height = bounds.height;
         if (!canvas.getContext) {
-            console.log('failed: no getContext', canvas);
+            console.log('FAILED: no getContext', canvas);
             return;
         } else if (!(ctx = canvas.getContext('2d'))) {
-            console.log('failed: no context', canvas);
+            console.log('FAILED: no context', canvas);
             return;
         }
         ctx.clearRect(0, 0, bounds.width, bounds.height);
 
-        drawUserCircle(bounds, ctx, canvas.getAttribute(
-            'data-user-circle'));
-        drawConformal(bounds, ctx, canvas.getAttribute(
-            'data-conformal'));
-
-        if (canvas.getAttribute('data-axes')) {
-            ctx.beginPath();
-            ctx.moveTo(bounds.left, bounds.origin.y);
-            ctx.lineTo(bounds.right, bounds.origin.y);
-            ctx.moveTo(bounds.origin.x, bounds.top);
-            ctx.lineTo(bounds.origin.x, bounds.bottom);
-            ctx.lineWidth = 5;
-            ctx.strokeStyle = 'rgb(0, 0, 0)';
-            ctx.stroke();
-        }
-
-        if (canvas.getAttribute('data-circle')) {
-            ctx.beginPath();
-            ctx.moveTo(bounds.origin.x + bounds.radius, bounds.origin.y);
-            ctx.arc(bounds.origin.x, bounds.origin.y, bounds.radius,
-                    0, (bounds.origin.style === 'center') ?
-                    (2 * Math.PI) : (-Math.PI / 2), true);
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = 'rgb(0, 0, 0)';
-            ctx.stroke();
-        }
+        Object.keys(features).forEach(function(name) {
+            var feature = features[name];
+            var config = canvas.getAttribute('data-' + name);
+            if (feature.draw && config)
+                feature.draw(canvas, ctx, bounds, clicked, config);
+        });
 
         var angle, cos, sin, index, prev = undefined;
         var arcs = canvas.getAttribute('data-arcs');
@@ -701,78 +771,67 @@
             canvas.setAttribute('data-angle' + anum, angle);
     };
 
-    var boundsfn = function(bounds, scalefn) {
-        return function(value) {
-            if (isNaN(bounds.origin.x) || isNaN(bounds.origin.y))
-                alert('ERROR bounds.origin:' +
-                      bounds.origin.x + ', ' + bounds.origin.y);
-            else value = {
-                x: scalefn(value.x) - bounds.origin.x,
-                y: bounds.origin.y - scalefn(value.y) };
-            return value;
-        };
-    };
-
     triggy.setup = function(selector, scalefn) {
         var elements = document.querySelectorAll(selector);
         Array.prototype.forEach.call(elements, function(canvas, ii) {
-            var dragging = null;
+            var dragging = false;
+            var dragVector = null;
 
-            canvas.addEventListener('mousedown', function(event) {
+            var down = function(event) {
                 var canvas = event.target;
                 var bounds = computeBounds(canvas);
                 var point = ripple.getInputPoints(
-                    event, canvas, boundsfn(bounds, scalefn));
+                    event, canvas, scalefn);
                 clicked = point;
-                if (!(dragging = Vector.closest(
-                    canvas, bounds, point, 0.25)))
-                    dragging = closestAngle(canvas, bounds, point);
+                dragging = true;
+                dragVector = Vector.closest(
+                    canvas, bounds, point, 0.25);
+
+                Object.keys(features).forEach(function(name) {
+                    var feature = features[name];
+                    var config = canvas.getAttribute('data-' + name);
+                    if (feature.down && config)
+                        feature.down(canvas, bounds, point, config);
+                });
                 draw(canvas, bounds);
                 return false;
-            });
-            canvas.addEventListener('mousemove', function(event) {
-                if (dragging) {
-                    var canvas = event.target;
-                    var bounds = computeBounds(canvas);
-                    var point = ripple.getInputPoints(
-                        event, canvas, boundsfn(bounds, scalefn));
-                    if (dragging instanceof Vector) {
-                        dragging.move(canvas, bounds, point);
-                    } else setAngle(canvas, bounds, point, dragging);
-                    draw(canvas, bounds);
-                }
-                return false;
-            });
-            canvas.addEventListener('mouseup', function(event)
-                { dragging = null; return false; });
-            canvas.addEventListener('mouseleave', function(event)
-                { dragging = null; return false; });
+            };
 
-            canvas.addEventListener('touchstart', function(event) {
+            var drag = function(event) {
+                if (!dragging)
+                    return false;
+
                 var canvas = event.target;
                 var bounds = computeBounds(canvas);
                 var point = ripple.getInputPoints(
-                    event, canvas, boundsfn(bounds, scalefn));
-                dragging = closestAngle(canvas, bounds, point);
+                    event, canvas, scalefn);
+                if (dragVector)
+                    dragVector.move(canvas, bounds, point);
+                setAngle(canvas, bounds, point, dragging);
+
+                Object.keys(features).forEach(function(name) {
+                    var feature = features[name];
+                    var config = canvas.getAttribute(
+                        'data-' + name);
+                    if (feature.drag && config)
+                        feature.drag(canvas, bounds, point, config);
+                });
                 draw(canvas, bounds);
                 return false;
-            });
-            canvas.addEventListener('touchmove', function(event) {
-                var canvas = event.target;
-                var bounds = computeBounds(canvas);
-                if (dragging) {
-                    var point = ripple.getInputPoints(
-                        event, canvas, boundsfn(bounds, scalefn));
-                    setAngle(canvas, bounds, point, dragging);
-                    draw(canvas, bounds);
-                }
-                return false;
-            });
-            canvas.addEventListener('touchend', function(event)
-                { dragging = null; return false; });
+            };
 
+            canvas.addEventListener('mousedown', down);
+            canvas.addEventListener('mousemove', drag);
+            canvas.addEventListener('mouseup', function(event)
+                { dragVector = null; dragging = false; return false; });
+            canvas.addEventListener('mouseleave', function(event)
+                { dragVector = null; dragging = false; return false; });
+            canvas.addEventListener('touchstart', down);
+            canvas.addEventListener('touchmove', drag);
+            canvas.addEventListener('touchend', function(event)
+                { dragVector = null; dragging = false; return false; });
             canvas.addEventListener('resize', function(event)
-                { draw(event.target); });
+                { draw(event.target, computeBounds(event.target)); });
         });
     }
 
@@ -781,7 +840,8 @@
             element = document;
         Array.prototype.forEach.call(
             element.querySelectorAll(selector),
-            function(canvas, ii) { draw(canvas); });
+            function(canvas, ii) {
+                draw(canvas, computeBounds(canvas)); });
     };
 
 })(typeof exports === 'undefined' ? this.triggy = {} : exports);
