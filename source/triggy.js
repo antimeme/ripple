@@ -71,6 +71,7 @@
                 ctx.stroke();
             }
         },
+
         circle: {
             draw: function(canvas, ctx, bounds, clicked, config) {
                 ctx.beginPath();
@@ -84,6 +85,54 @@
                 ctx.stroke();
             }
         },
+
+        enableAngles: {
+            which: null,
+            setAngle: function(canvas, bounds, clicked, anum) {
+                var relative = multivec({
+                    x: clicked.x - bounds.origin.x,
+                    y: bounds.origin.y - clicked.y
+                });
+                var angle = Math.acos(relative.x / relative.norm());
+                if (relative.y < 0)
+                    angle = -angle;
+
+                if ((bounds.origin.style === 'center') ||
+                    ((angle >= 0) && (angle <= Math.PI / 2)))
+                    canvas.setAttribute('data-angle' + anum, angle);
+                return anum;
+            },
+            down: function(canvas, bounds, clicked, config) {
+                var anum = undefined;
+                var best = undefined;
+                var enable = getDataList(canvas, 'enableAngles');
+
+                Object.keys(enable).forEach(function(index) {
+                    var angle = canvas.getAttribute('data-angle' + index);
+                    var delta = multivec({
+                        x: Math.cos(angle),
+                        y: -Math.sin(angle)
+                    }).times(bounds.radius)
+                      .plus(bounds.origin)
+                      .minus(clicked).normSquared();
+                    console.log("DEBUG-delta", delta.toString());
+                    if (isNaN(best) || (delta < best)) {
+                        anum = index;
+                        best = delta;
+                    }
+                });
+
+                console.log("DEBUG-middle", anum);
+                if (!isNaN(anum))
+                    this.which = this.setAngle(
+                        canvas, bounds, clicked, anum);
+            },
+            drag: function(canvas, bounds, clicked, config) {
+                if (!isNaN(this.which))
+                    this.setAngle(canvas, bounds, clicked, this.which);
+            }
+        },
+
         conformal: {
             draw: function(canvas, ctx, bounds, clicked, config) {
                 ctx.beginPath(); // Number Line
@@ -182,6 +231,7 @@
                 ctx.fill();
             }
         },
+
         userCircle: {
             which: undefined,
             getSettings: function(config) {
@@ -253,6 +303,7 @@
                     ctx.arc(bounds.left + bounds.size * center.x / 100,
                             bounds.top + bounds.size * center.y / 100,
                             bounds.size * radius, 0, 2 * Math.PI);
+                    ctx.lineWidth = bounds.size / 150;
                     ctx.strokeStyle = settings.color;
                     ctx.stroke();
                 } else { /* TODO: draw line */ }
@@ -732,44 +783,10 @@
         });
 
         Vector.each(canvas, function(vector, index, canvas) {
-            vector.draw(ctx, bounds);
-        });
+            vector.draw(ctx, bounds); });
     };
 
     var clicked = undefined;
-
-    var closestAngle = function(canvas, bounds, point) {
-        var result = undefined;
-        var best = undefined;
-        var enable = getDataList(canvas, 'enableAngles');
-
-        Object.keys(enable).forEach(function(key) {
-            var angle = canvas.getAttribute('data-angle' + key);
-            var delta = {
-                x: bounds.radius * Math.cos(angle) - point.x,
-                y: bounds.radius * Math.sin(angle) - point.y};
-            var dsquared = delta.x * delta.x + delta.y * delta.y;
-
-            if (isNaN(best) || (dsquared < best)) {
-                result = key;
-                best = dsquared;
-            }
-        });
-        if (!isNaN(result))
-            setAngle(canvas, bounds, point, result);
-        return result;
-    };
-
-    var setAngle = function(canvas, bounds, point, anum) {
-        var lsquared = point.x * point.x + point.y * point.y;
-        var angle = Math.acos(point.x / Math.sqrt(lsquared));
-        if (point.y < 0)
-            angle = -angle;
-
-        if ((bounds.origin.style === 'center') ||
-            ((angle >= 0) && (angle <= Math.PI / 2)))
-            canvas.setAttribute('data-angle' + anum, angle);
-    };
 
     triggy.setup = function(selector, scalefn) {
         var elements = document.querySelectorAll(selector);
@@ -807,7 +824,6 @@
                     event, canvas, scalefn);
                 if (dragVector)
                     dragVector.move(canvas, bounds, point);
-                setAngle(canvas, bounds, point, dragging);
 
                 Object.keys(features).forEach(function(name) {
                     var feature = features[name];
@@ -820,6 +836,7 @@
                 return false;
             };
 
+            // Attach event handlers to the canvas
             canvas.addEventListener('mousedown', down);
             canvas.addEventListener('mousemove', drag);
             canvas.addEventListener('mouseup', function(event)

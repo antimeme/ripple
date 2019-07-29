@@ -8503,16 +8503,206 @@
             <section>
                 <h2>Geometric Operators</h2>
                 <ul><li>
-                    Outer (Wedge) Product:
-                    <strong>v</strong> ^ <strong>u</strong>
-                </li><li>
                     Scalar Product:
                     <strong>v</strong> &middot; <strong>u</strong>
+                    &#x225d; &lt; <strong>v</strong> <strong>u</strong>
+                    &gt;<sub>0</sub>
+                </li><li>
+                    Conjugate:
+                    (a <strong>o<sub>1</sub></strong>
+                    <strong>o<sub>2</sub></strong> ...
+                    <strong>o<sub>n - 1</sub></strong>
+                    <strong>o<sub>n</sub></strong>)<sup>&#x2020;</sup>
+                    &#x225d;
+                    a <strong>o<sub>n</sub></strong>
+                    <strong>o<sub>n - 1</sub></strong> ...
+                    <strong>o<sub>2</sub></strong>
+                    <strong>o<sub>1</sub></strong>
+                    <ul><li>
+                        Quadrance:
+                        &#x22a0;(M) &#x225d; M M<sup>&#x2020;</sup>
+                    </li><li>
+                        Norm: |M| &#x225d; <sup>+</sup>&#x221a;(M
+                        M<sup>&#x2020;</sup>)
+                    </li><li>
+                        Inverse: M<sup>-1</sup> &#x225d;
+                        M<sup>&#x2020;</sup> / (M M<sup>&#x2020;</sup>)
+                    </li></ul>
+                </li><li>
+                    Outer Product (Wedge):
+                    <strong>v</strong> ^ <strong>u</strong> &#x225d;
+                    (<strong>v</strong> <strong>u</strong> -
+                    <strong>u</strong> <strong>v</strong>) / 2
                 </li><li>
                     Contraction:
                     <strong>v</strong> &#x230b; <strong>u</strong>
-                </li><li>
-                    Conjugate:
+                    &#x225d; (<strong>v</strong> <strong>u</strong> +
+                    <strong>u</strong> <strong>v</strong>) / 2
+                </li></ul>
+            </section>
+            <section>
+                <h3>Scalar Product</h3>
+                <p>
+                    <strong>vu</strong> =
+                    v<sub>1</sub>u<sub>1</sub> +
+                    v<sub>2</sub>u<sub>2</sub> +
+                    (v<sub>1</sub>u<sub>2</sub> -
+                    v<sub>2</sub>u<sub>1</sub>)
+                    <strong>o<sub>1</sub>o<sub>2</sub></strong> +
+                    ...
+                </p>
+                <p>
+                    <strong>v</strong> &middot; <strong>u</strong> =
+                    v<sub>1</sub>u<sub>1</sub> +
+                    v<sub>2</sub>u<sub>2</sub> +
+                    <del>
+                        (v<sub>1</sub>u<sub>2</sub> -
+                        v<sub>2</sub>u<sub>1</sub>)
+                        <strong>o<sub>1</sub>o<sub>2</sub></strong>
+                    </del>+ ...
+                </p>
+                <p>
+                    The scalar product is the geometric product with
+                    all non-scalar terms discarded.  When applied to
+                    vectors it's isomorphic to the traditional dot
+                    product.  It's commutative.
+                </p>
+            </section>
+            <section>
+                <h3>Vector Scalar Product</h3>
+                <table><tr><td>
+                    <strong>v</strong>&middot;<strong>u</strong>
+                </td><td>
+                    u<sub>1</sub><strong>o<sub>1</sub></strong>
+                </td><td>
+                    u<sub>2</sub><strong>o<sub>2</sub></strong>
+                </td><td>
+                    u<sub>3</sub><strong>o<sub>3</sub></strong>
+                </td><td>...</td></tr><tr><td>
+                    v<sub>1</sub><strong>o<sub>1</sub></strong>
+                </td><td>
+                    v<sub>1</sub>u<sub>1</sub>
+                    <strong>o<sub>1</sub>o<sub>1</sub></strong>
+                </td><td>
+                    <del>
+                        v<sub>1</sub>u<sub>2</sub>
+                        <strong>o<sub>1</sub>o<sub>2</sub></strong>
+                    </del>
+                </td><td>
+                    <del>
+                        v<sub>1</sub>u<sub>3</sub>
+                        <strong>o<sub>1</sub>o<sub>3</sub></strong>
+                    </del>
+                </td><td>
+                    ...
+                </td></tr><tr><td>
+                    v<sub>2</sub><strong>o<sub>2</sub></strong>
+                </td><td>
+                    <del>
+                        v<sub>2</sub>u<sub>1</sub>
+                        <strong>o<sub>2</sub>o<sub>1</sub></strong>
+                    </del>
+                </td><td>
+                    v<sub>2</sub>u<sub>2</sub>
+                    <strong>o<sub>2</sub>o<sub>2</sub></strong>
+                </td><td>
+                    <del>
+                        v<sub>2</sub>u<sub>3</sub>
+                        <strong>o<sub>2</sub>o<sub>3</sub></strong>
+                    </del>
+                </td><td>
+                    ...
+                </td></tr><tr><td>
+                    v<sub>3</sub><strong>o<sub>3</sub></strong>
+                </td><td>
+                    <del>
+                        v<sub>3</sub>u<sub>1</sub>
+                        <strong>o<sub>3</sub>o<sub>1</sub></strong>
+                    </del>
+                </td><td>
+                    <del>
+                        v<sub>3</sub>u<sub>2</sub>
+                        <strong>o<sub>3</sub>o<sub>2</sub></strong>
+                    </del>
+                </td><td>
+                    v<sub>3</sub>u<sub>3</sub>
+                    <strong>o<sub>3</sub>o<sub>3</sub></strong>
+                </td><td>
+                    ...
+                </td></tr><tr><td>
+                    ...</td><td>...</td><td>...</td><td>...</td><td>...
+                    </td>
+                </tr></table>
+            </section>
+            <section>
+                <h3>Conjugate</h3>
+                <p>
+                    &#x2200;M&#x2208;&#x1d544;
+                    &#x2203;M<sup>&#x2020;</sup>&#x2208;&#x1d544;
+                    
+                </p><ul><li class="fragment">
+                    Term: &#x2200;a&#x2208;&#x211d;
+                    (a <strong>o<sub>1</sub></strong>
+                    <strong>o<sub>2</sub></strong> ...
+                    <strong>o<sub>n - 1</sub></strong>
+                    <strong>o<sub>n</sub></strong>)<sup>&#x2020;</sup>
+                    &#x225d; a <strong>o<sub>n</sub></strong>
+                    <strong>o<sub>n - 1</sub></strong> ...
+                    <strong>o<sub>2</sub></strong>
+                    <strong>o<sub>1</sub></strong>
+                </li><li class="fragment">
+                    Sum: &#x2200;M,N&#x2208;&#x1d544;
+                    (M + N)<sup>&#x2020;</sup> &#x225d;
+                    M<sup>&#x2020;</sup> + N<sup>&#x2020;</sup>
+                </li></ul><p class="fragment">
+                    A conjugate reverses basis component order.<br />
+                    Obviously (M<sup>&#x2020;</sup>)<sup>&#x2020;</sup>
+                    = M
+                </p>
+            </section>
+            <section>
+                <h3>Conjugate Examples</h3>
+                <ul><li class="fragment">
+                    &#x2200;a &#x2208; &lt;&#x1d544;&gt;<sub>0</sub>
+                    a<sup>&#x2020;</sup> = a
+                </li><li class="fragment">
+                    &#x2200;<strong>v</strong> &#x2208;
+                    &lt;&#x1d544;&gt;<sub>1</sub>
+                    (v<sub>1</sub><strong>o<sub>1</sub></strong> +
+                    v<sub>2</sub><strong>o<sub>2</sub></strong> +
+                    ...)<sup>&#x2020;</sup> =
+                    v<sub>1</sub><strong>o<sub>1</sub></strong> +
+                    v<sub>2</sub><strong>o<sub>2</sub></strong> +
+                    ...
+                </li><li class="fragment">
+                    &#x2200;<strong>B</strong> &#x2208;
+                    &lt;&#x1d544;&gt;<sub>2</sub>
+                    (b<sub>1</sub><strong>o<sub>1</sub>
+                    o<sub>2</sub></strong> +
+                    b<sub>2</sub><strong>o<sub>2</sub>
+                    o<sub>3</sub></strong> +
+                    b<sub>3</sub><strong>o<sub>1</sub>
+                    o<sub>3</sub></strong> +
+                    ...)<sup>&#x2020;</sup>
+                    <span class="fragment">
+                        =<br /> b<sub>1</sub><strong>o<sub>2</sub>
+                        o<sub>1</sub></strong> +
+                        b<sub>2</sub><strong>o<sub>3</sub>
+                        o<sub>2</sub></strong> +
+                        b<sub>3</sub><strong>o<sub>3</sub>
+                        o<sub>1</sub></strong> + ...
+                    </span><span class="fragment">
+                        =<br /> -b<sub>1</sub><strong>o<sub>1</sub>
+                        o<sub>2</sub></strong> -
+                        b<sub>2</sub><strong>o<sub>2</sub>
+                        o<sub>3</sub></strong> -
+                        b<sub>3</sub><strong>o<sub>1</sub>
+                        o<sub>3</sub></strong> - ...
+                    </span><span class="fragment">
+                        &#x27f9; <strong>B</strong><sup>&#x2020;</sup> =
+                        -<strong>B</strong>
+                    </span>
+                </li><li class="fragment">
                     (<strong>o<sub>1</sub></strong>
                     <strong>o<sub>2</sub></strong> ...
                     <strong>o<sub>n - 1</sub></strong>
@@ -8521,9 +8711,127 @@
                     <strong>o<sub>n - 1</sub></strong> ...
                     <strong>o<sub>2</sub></strong>
                     <strong>o<sub>1</sub></strong>
-                </li><li>
-                    Quadrance:
+                </li></ul>
+            </section>
+            <section>
+                <h3>Quadrance</h3>
+                <p>
+                    Most of the time when you square things you're
+                    actually trying to take the quardance (Wildberger
+                    2005).
+                </p>
+                <p>
+                    &#x2200;M&#x2208;&#x1d544;
                     &#x22a0;(M) &#x225d; M M<sup>&#x2020;</sup>
+                </p>
+                <ul><li>
+                    &#x22a0;(M<sup>&#x2020;</sup>) =
+                    M<sup>&#x2020;</sup>
+                    (M<sup>&#x2020;</sup>)<sup>&#x2020;</sup> =
+                    &#x22a0;(M)
+                </li></ul>
+            </section>
+            <section>
+                <h3>Norm</h3>
+                <p>
+                    A multivector with a scalar quadrance has a norm.
+                </p><p>
+                    &#x2200;M&#x2208;&#x1d544;
+                    (M M<sup>&#x2020;</sup> =
+                    M&middot;M<sup>&#x2020;</sup>)
+                    &#x27f9; |M|<sup>2</sup> &#x225d;
+                    &#x22a0;(M) = M M<sup>&#x2020;</sup>
+                </p><ul><li class="fragment">
+                    |M| = <sup>+</sup>&#x221a;(M M<sup>&#x2020;</sup>)
+                </li><li class="fragment">
+                    |v|<sup>2</sup> = <strong>v</strong>
+                    <strong>v</strong><sup>&#x2020;</sup>
+                    <span class="fragment">=
+                        (v<sub>1</sub><strong>o<sub>1</sub></strong> +
+                        v<sub>2</sub><strong>o<sub>2</sub></strong> + ...)
+                        (v<sub>1</sub><strong>o<sub>1</sub></strong> +
+                        v<sub>2</sub><strong>o<sub>2</sub></strong> +
+                        ...)<sup>&#x2020;</sup>
+                    </span><span class="fragment">=<br />
+                        v<sub>1</sub>v<sub>1</sub> +
+                        v<sub>2</sub>v<sub>2</sub> +
+                        <del>
+                            (v<sub>1</sub>v<sub>2</sub> -
+                            v<sub>2</sub>v<sub>1</sub>)
+                            <strong>o<sub>1</sub>o<sub>2</sub></strong>
+                        </del> + ...
+                    </span><span class="fragment">=
+                        v<sub>1</sub>v<sub>1</sub> +
+                        v<sub>2</sub>v<sub>2</sub> + ...
+                    </span>
+                </li></ul>
+            </section>
+            <section>
+                <h3>No Norm</h3>
+                <p>
+                    What kind of multivector has no norm?
+                </p>
+                <ul><li>
+                    (1 + <strong>o<sub>1</sub></strong>) (1 +
+                    <strong>o<sub>1</sub></strong>)<sup>&#x2020;</sup>
+                    = 2 + 2<strong>o<sub>1</sub></strong>
+                </li><li>
+                    (<strong>o<sub>1</sub> o<sub>2</sub></strong> +
+                    <strong>o<sub>3</sub> o<sub>4</sub></strong>)
+                    (<strong>o<sub>1</sub> o<sub>2</sub></strong> +
+                    <strong>o<sub>3</sub>
+                        o<sub>4</sub></strong>)<sup>&#x2020;</sup>
+                    = 2 - 2<strong>
+                        o<sub>1</sub> o<sub>2</sub> o<sub>3</sub>
+                        o<sub>4</sub>
+                    </strong>
+                </li></ul>
+                <p>
+                    Scalars, vectors, pseudo-vectors and
+                    pseudo-scalars always have norms.
+                </p>
+            </section>
+            <section>
+                <h3>Inverse</h3>
+                <p>
+                    A multivector with non-zero scalar quadrance has
+                    an inverse.  We call such multivectors blades.
+                </p><ul><li class="fragment">
+                    &#x1d539; = { M&#x2208;&#x1d544; :
+                    (M M<sup>&#x2020;</sup> =
+                    M&middot;M<sup>&#x2020;</sup>) &and;
+                    (M M<sup>&#x2020;</sup> &ne;
+                    0<sub>&#x1d544;</sub>) }
+                </li><li class="fragment">
+                    &#x2200;M&#x2208;&#x1d539;
+                    &#x27f9; M<sup>-1</sup> &#x225d;
+                    M<sup>&#x2020;</sup> / (M M<sup>&#x2020;</sup>)
+                </li><li class="fragment">
+                    M M<sup>-1</sup>
+                    <span class="fragment">
+                        = M (M<sup>&#x2020;</sup> /
+                        (M M<sup>&#x2020;</sup>))
+                    </span><span class="fragment">
+                        = (M M<sup>&#x2020;</sup>) /
+                        (M M<sup>&#x2020;</sup>) = 1<sub>&#x1d544;</sub>
+                    </span>
+                </li><li class="fragment">
+                    M<sup>-1</sup>M
+                    <span class="fragment">
+                        = (M<sup>&#x2020;</sup> /
+                        (M M<sup>&#x2020;</sup>)) M
+                    </span><span class="fragment">
+                        = (M<sup>&#x2020;</sup> M) /
+                        (M M<sup>&#x2020;</sup>)
+                    </span><span class="fragment">
+                        =<br /> (M
+                        M<sup>&#x2020;</sup>)<sup>&#x2020;</sup> /
+                        (M M<sup>&#x2020;</sup>)
+                    </span><span class="fragment">
+                        = (M M<sup>&#x2020;</sup>) /
+                        (M M<sup>&#x2020;</sup>)
+                        = 1<sub>&#x1d544;</sub>
+                    </span>
                 </li></ul>
             </section>
             <section>
@@ -8842,283 +9150,6 @@
                 </p>
             </section>
             <section>
-                <h3>Scalar Product</h3>
-                <p>
-                    <strong>vu</strong> =
-                    v<sub>1</sub>u<sub>1</sub> +
-                    v<sub>2</sub>u<sub>2</sub> +
-                    (v<sub>1</sub>u<sub>2</sub> -
-                    v<sub>2</sub>u<sub>1</sub>)
-                    <strong>o<sub>1</sub>o<sub>2</sub></strong> +
-                    ...
-                </p>
-                <p>
-                    <strong>v</strong> &middot; <strong>u</strong> =
-                    v<sub>1</sub>u<sub>1</sub> +
-                    v<sub>2</sub>u<sub>2</sub> +
-                    <del>
-                        (v<sub>1</sub>u<sub>2</sub> -
-                        v<sub>2</sub>u<sub>1</sub>)
-                        <strong>o<sub>1</sub>o<sub>2</sub></strong>
-                    </del>+ ...
-                </p>
-                <p>
-                    The scalar product is the geometric product with
-                    all non-scalar terms discarded.  When applied to
-                    vectors it's isomorphic to the traditional dot
-                    product.  It's commutative.
-                </p>
-            </section>
-            <section>
-                <h3>Vector Scalar Product</h3>
-                <table><tr><td>
-                    <strong>v</strong>&middot;<strong>u</strong>
-                </td><td>
-                    u<sub>1</sub><strong>o<sub>1</sub></strong>
-                </td><td>
-                    u<sub>2</sub><strong>o<sub>2</sub></strong>
-                </td><td>
-                    u<sub>3</sub><strong>o<sub>3</sub></strong>
-                </td><td>...</td></tr><tr><td>
-                    v<sub>1</sub><strong>o<sub>1</sub></strong>
-                </td><td>
-                    v<sub>1</sub>u<sub>1</sub>
-                    <strong>o<sub>1</sub>o<sub>1</sub></strong>
-                </td><td>
-                    <del>
-                        v<sub>1</sub>u<sub>2</sub>
-                        <strong>o<sub>1</sub>o<sub>2</sub></strong>
-                    </del>
-                </td><td>
-                    <del>
-                        v<sub>1</sub>u<sub>3</sub>
-                        <strong>o<sub>1</sub>o<sub>3</sub></strong>
-                    </del>
-                </td><td>
-                    ...
-                </td></tr><tr><td>
-                    v<sub>2</sub><strong>o<sub>2</sub></strong>
-                </td><td>
-                    <del>
-                        v<sub>2</sub>u<sub>1</sub>
-                        <strong>o<sub>2</sub>o<sub>1</sub></strong>
-                    </del>
-                </td><td>
-                    v<sub>2</sub>u<sub>2</sub>
-                    <strong>o<sub>2</sub>o<sub>2</sub></strong>
-                </td><td>
-                    <del>
-                        v<sub>2</sub>u<sub>3</sub>
-                        <strong>o<sub>2</sub>o<sub>3</sub></strong>
-                    </del>
-                </td><td>
-                    ...
-                </td></tr><tr><td>
-                    v<sub>3</sub><strong>o<sub>3</sub></strong>
-                </td><td>
-                    <del>
-                        v<sub>3</sub>u<sub>1</sub>
-                        <strong>o<sub>3</sub>o<sub>1</sub></strong>
-                    </del>
-                </td><td>
-                    <del>
-                        v<sub>3</sub>u<sub>2</sub>
-                        <strong>o<sub>3</sub>o<sub>2</sub></strong>
-                    </del>
-                </td><td>
-                    v<sub>3</sub>u<sub>3</sub>
-                    <strong>o<sub>3</sub>o<sub>3</sub></strong>
-                </td><td>
-                    ...
-                </td></tr><tr><td>
-                    ...</td><td>...</td><td>...</td><td>...</td><td>...
-                    </td>
-                </tr></table>
-            </section>
-            <section>
-                <h3>Conjugate</h3>
-                <p>
-                    &#x2200;M&#x2208;&#x1d544;
-                    &#x2203;M<sup>&#x2020;</sup>&#x2208;&#x1d544;
-                    (M<sup>&#x2020;</sup>)<sup>&#x2020;</sup> = M
-                </p>
-                <p>
-                    A conjugate reverses basis component order.
-                </p>
-                <ul><li class="fragment">
-                    &#x2200;a &#x2208; &lt;&#x1d544;&gt;<sub>0</sub>
-                    a<sup>&#x2020;</sup> = a
-                </li><li class="fragment">
-                    &#x2200;<strong>v</strong> &#x2208;
-                    &lt;&#x1d544;&gt;<sub>1</sub>
-                    (v<sub>1</sub><strong>o<sub>1</sub></strong> +
-                    v<sub>2</sub><strong>o<sub>2</sub></strong> +
-                    ...)<sup>&#x2020;</sup> =
-                    v<sub>1</sub><strong>o<sub>1</sub></strong> +
-                    v<sub>2</sub><strong>o<sub>2</sub></strong> +
-                    ...
-                </li><li class="fragment">
-                    &#x2200;<strong>B</strong> &#x2208;
-                    &lt;&#x1d544;&gt;<sub>2</sub>
-                    (b<sub>1</sub><strong>o<sub>1</sub>
-                    o<sub>2</sub></strong> +
-                    b<sub>2</sub><strong>o<sub>2</sub>
-                    o<sub>3</sub></strong> +
-                    b<sub>3</sub><strong>o<sub>1</sub>
-                    o<sub>3</sub></strong> +
-                    ...)<sup>&#x2020;</sup>
-                    <span class="fragment">
-                        =<br /> b<sub>1</sub><strong>o<sub>2</sub>
-                        o<sub>1</sub></strong> +
-                        b<sub>2</sub><strong>o<sub>3</sub>
-                        o<sub>2</sub></strong> +
-                        b<sub>3</sub><strong>o<sub>3</sub>
-                        o<sub>1</sub></strong> + ...
-                    </span><span class="fragment">
-                        =<br /> -b<sub>1</sub><strong>o<sub>1</sub>
-                        o<sub>2</sub></strong> -
-                        b<sub>2</sub><strong>o<sub>2</sub>
-                        o<sub>3</sub></strong> -
-                        b<sub>3</sub><strong>o<sub>1</sub>
-                        o<sub>3</sub></strong> - ...
-                    </span><span class="fragment">
-                        &#x27f9; <strong>B</strong><sup>&#x2020;</sup> =
-                        -<strong>B</strong>
-                    </span>
-                </li><li class="fragment">
-                    (<strong>o<sub>1</sub></strong>
-                    <strong>o<sub>2</sub></strong> ...
-                    <strong>o<sub>n - 1</sub></strong>
-                    <strong>o<sub>n</sub></strong>)<sup>&#x2020;</sup> =
-                    <strong>o<sub>n</sub></strong>
-                    <strong>o<sub>n - 1</sub></strong> ...
-                    <strong>o<sub>2</sub></strong>
-                    <strong>o<sub>1</sub></strong>
-                </li></ul>
-            </section>
-            <section>
-                <h3>Quadrance</h3>
-                <p>
-                    Most of the time when you square things you're
-                    actually trying to take the quardance.
-                </p>
-                <p>
-                    &#x2200;M&#x2208;&#x1d544;
-                    &#x22a0;(M) &#x225d; M M<sup>&#x2020;</sup>
-                </p>
-                <ul><li>
-                    &#x22a0;(M<sup>&#x2020;</sup>) =
-                    M<sup>&#x2020;</sup>
-                    (M<sup>&#x2020;</sup>)<sup>&#x2020;</sup> =
-                    &#x22a0;(M)
-                </li></ul>
-            </section>
-            <section>
-                <h3>Norm</h3>
-                <p>
-                    A multivector with a scalar quadrance has a norm.
-                </p><p>
-                    &#x2200;M&#x2208;&#x1d544;
-                    (M M<sup>&#x2020;</sup> =
-                    M&middot;M<sup>&#x2020;</sup>)
-                    &#x27f9; |M|<sup>2</sup> &#x225d;
-                    &#x22a0;(M) = M M<sup>&#x2020;</sup>
-                </p><ul><li class="fragment">
-                    |M| = <sup>+</sup>&#x221a;(M M<sup>&#x2020;</sup>)
-                </li><li class="fragment">
-                    |v|<sup>2</sup> = <strong>v</strong>
-                    <strong>v</strong><sup>&#x2020;</sup>
-                    <span class="fragment">=
-                        (v<sub>1</sub><strong>o<sub>1</sub></strong> +
-                        v<sub>2</sub><strong>o<sub>2</sub></strong> + ...)
-                        (v<sub>1</sub><strong>o<sub>1</sub></strong> +
-                        v<sub>2</sub><strong>o<sub>2</sub></strong> +
-                        ...)<sup>&#x2020;</sup>
-                    </span><span class="fragment">=<br />
-                        v<sub>1</sub>v<sub>1</sub> +
-                        v<sub>2</sub>v<sub>2</sub> +
-                        <del>
-                            (v<sub>1</sub>v<sub>2</sub> -
-                            v<sub>2</sub>v<sub>1</sub>)
-                            <strong>o<sub>1</sub>o<sub>2</sub></strong>
-                        </del> + ...
-                    </span><span class="fragment">=
-                        v<sub>1</sub>v<sub>1</sub> +
-                        v<sub>2</sub>v<sub>2</sub> + ...
-                    </span>
-                </li></ul>
-            </section>
-            <section>
-                <h3>No Norm</h3>
-                <p>
-                    What kind of multivector has no norm?
-                </p>
-                <ul><li>
-                    (1 + <strong>o<sub>1</sub></strong>) (1 +
-                    <strong>o<sub>1</sub></strong>)<sup>&#x2020;</sup>
-                    = 2 + 2<strong>o<sub>1</sub></strong>
-                </li><li>
-                    (<strong>o<sub>1</sub> o<sub>2</sub></strong> +
-                    <strong>o<sub>3</sub> o<sub>4</sub></strong>)
-                    (<strong>o<sub>1</sub> o<sub>2</sub></strong> +
-                    <strong>o<sub>3</sub>
-                        o<sub>4</sub></strong>)<sup>&#x2020;</sup>
-                    = 2 - 2<strong>
-                        o<sub>1</sub> o<sub>2</sub> o<sub>3</sub>
-                        o<sub>4</sub>
-                    </strong>
-                </li></ul>
-                <p>
-                    Scalars, vectors, pseudo-vectors and
-                    pseudo-scalars always have norms.
-                </p>
-            </section>
-            <section>
-                <h3>Inverse</h3>
-                <p>
-                    A multivector with non-zero scalar quadrance has
-                    an inverse.  We call such multivectors blades.
-                </p>
-
-                <ul><li class="fragment">
-                    &#x1d539; = { M&#x2208;&#x1d544; :
-                    (M M<sup>&#x2020;</sup> =
-                    M&middot;M<sup>&#x2020;</sup>) &and;
-                    (M M<sup>&#x2020;</sup> &ne;
-                    0<sub>&#x1d544;</sub>) }
-                </li><li class="fragment">
-                    &#x2200;M&#x2208;&#x1d539;
-                    &#x27f9; M<sup>-1</sup> &#x225d;
-                    M<sup>&#x2020;</sup> / (M M<sup>&#x2020;</sup>)
-                </li><li class="fragment">
-                    M M<sup>-1</sup>
-                    <span class="fragment">
-                        = M (M<sup>&#x2020;</sup> /
-                        (M M<sup>&#x2020;</sup>))
-                    </span><span class="fragment">
-                        = (M M<sup>&#x2020;</sup>) /
-                        (M M<sup>&#x2020;</sup>) = 1<sub>&#x1d544;</sub>
-                    </span>
-                </li><li class="fragment">
-                    M<sup>-1</sup>M
-                    <span class="fragment">
-                        = (M<sup>&#x2020;</sup> /
-                        (M M<sup>&#x2020;</sup>)) M
-                    </span><span class="fragment">
-                        = (M<sup>&#x2020;</sup> M) /
-                        (M M<sup>&#x2020;</sup>)
-                    </span><span class="fragment">
-                        =<br /> (M
-                        M<sup>&#x2020;</sup>)<sup>&#x2020;</sup> /
-                        (M M<sup>&#x2020;</sup>)
-                    </span><span class="fragment">
-                        = (M M<sup>&#x2020;</sup>) /
-                        (M M<sup>&#x2020;</sup>)
-                        = 1<sub>&#x1d544;</sub>
-                    </span>
-                </li></ul>
-            </section>
-            <section>
                 <h3>Contraction</h3>
                 <p>
                     <strong>vu</strong> = v<sub>1</sub>u<sub>1</sub> +
@@ -9284,6 +9315,37 @@
                 </p>
             </section>
             <section>
+                <h3>Vector Product Identity</h3>
+                <p>
+                    <strong>vu</strong> =
+                    <strong>v</strong>&middot;<strong>u</strong> +
+                    <strong>v</strong>^<strong>u</strong> =<br />
+                    (v<sub>1</sub>u<sub>1</sub> +
+                    v<sub>2</sub>u<sub>2</sub> + ...) +
+                    ((v<sub>1</sub>u<sub>2</sub> -
+                    v<sub>2</sub>u<sub>1</sub>)
+                    <strong>o<sub>1</sub>o<sub>2</sub></strong> + ...)
+                </p><p>
+                    Because the vector contraction and wedge products
+                    discard complementary terms their sum is equal to
+                    the geometric product.  (This is not true for
+                    general multivectors.)
+                </p>
+            </section>
+        </section>
+
+        <section>
+            <section>
+                <h2>Geometric Miscellaneous</h2>
+                <ul><li>
+                    Pseudo-Scalars
+                </li><li>
+                    Dual
+                </li><li>
+                    Cross Product
+                </li></ul>
+            </section>
+            <section>
                 <h3>Pseudo-Scalars</h3>
                 <ul><li>
                     I<sub>1</sub> =
@@ -9401,24 +9463,6 @@
                     clipped the cross product out of quaternion
                     operations, resulting in a confusing mess.
                 </aside>
-            </section>
-            <section>
-                <h3>Vector Product Identity</h3>
-                <p>
-                    <strong>vu</strong> =
-                    <strong>v</strong>&middot;<strong>u</strong> +
-                    <strong>v</strong>^<strong>u</strong> =<br />
-                    (v<sub>1</sub>u<sub>1</sub> +
-                    v<sub>2</sub>u<sub>2</sub> + ...) +
-                    ((v<sub>1</sub>u<sub>2</sub> -
-                    v<sub>2</sub>u<sub>1</sub>)
-                    <strong>o<sub>1</sub>o<sub>2</sub></strong> + ...)
-                </p><p>
-                    Because the vector contraction and wedge products
-                    discard complementary terms their sum is equal to
-                    the geometric product.  (This is not true for
-                    general multivectors.)
-                </p>
             </section>
         </section>
 
