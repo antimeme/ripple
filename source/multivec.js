@@ -388,22 +388,23 @@
     // sufficient and saves a square root operation, for example to
     // determine whether a vector is greater than a certain length.
     // Memoized because multi-vectors are intended to be immutable.
-    multivec.prototype.normSquared = function() {
-        if (isNaN(this.__normSquared)) {
+    multivec.prototype.quadrance = function() {
+        if (isNaN(this.__quadrance)) {
             var conjprod = this.conjugate().multiply(this);
             if (!conjprod.isScalar())
                 throw new RangeError(
                     'No norm possible for: ' + this.toString());
-            this.__normSquared = conjprod.scalar;
+            this.__quadrance = conjprod.scalar;
         }
-        return this.__normSquared;
+        return this.__quadrance;
     };
+    multivec.prototype.normSquared = multivec.prototype.quadrance;
 
     // Return the Euclidian or 2-norm of a multi-vector.
     // Memoized because multi-vectors are intended to be immutable.
     multivec.prototype.norm = function() {
         if (isNaN(this.__norm))
-            this.__norm = Math.sqrt(this.normSquared());
+            this.__norm = Math.sqrt(this.quadrance());
         return this.__norm;
     };
 
@@ -422,11 +423,11 @@
     // except for zero which has no inverse and throws an error.
     //   m.times(m.inverseMult()).minus(1).zeroish() // true
     multivec.prototype.inverseMult = function() {
-        var scale = this.normSquared();
+        var scale = this.quadrance();
         if (zeroish(scale))
             throw new RangeError(
                 'No multiplicative inverse of ' + this.toString() +
-                ' (normSquared: ' + scale + ')');
+                ' (quadrance: ' + scale + ')');
         return this.conjugate().multiply(1 / scale);
     };
     multivec.prototype.inverse = multivec.prototype.inverseMult;
@@ -736,7 +737,7 @@
     multivec.prototype.createPoint = function() {
         return this.plus(multivec.originPoint,
                          multivec.infinityPoint.times(
-                             this.normSquared(), 0.5));
+                             this.quadrance(), 0.5));
     };
 
     // Normalize a conformal point.  This results in the same point
@@ -886,8 +887,8 @@
 
         // Don't report collision when close and moving away
         if (zeroish(result) &&
-            (s1.subtract(s2).normSquared() <
-                e1.subtract(e2).normSquared()))
+            (s1.subtract(s2).quadrance() <
+                e1.subtract(e2).quadrance()))
             result = undefined;
 
         return result;
@@ -934,7 +935,7 @@
         gap = r + width / 2;
         gap *= gap;
 
-        if (ds.normSquared() < gap) {
+        if (ds.quadrance() < gap) {
             if (ps < 0)
                 return multivec.collideRadiusRadius(
                     s, e, r, segs, segs, width / 2);
@@ -973,7 +974,7 @@
             // the segment but is moving away
             var ds = shortestSegment(s, segment);
             var de = shortestSegment(e, segment);
-            if ((de.normSquared() > ds.normSquared()) &&
+            if ((de.quadrance() > ds.quadrance()) &&
                 ds.dot(de).scalar > 0)
                 result = undefined;
         }
