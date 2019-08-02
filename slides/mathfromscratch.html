@@ -8715,19 +8715,31 @@
             <section>
                 <h3>Quadrance</h3>
                 <p>
-                    Most of the time when you square things you're
-                    actually trying to take the quardance (Wildberger
-                    2005).
+                    Multiply a multivector by its congjugate to
+                    get the quadrance (Wildberger 2005).
                 </p>
                 <p>
                     &#x2200;M&#x2208;&#x1d544;
                     &#x22a0;(M) &#x225d; M M<sup>&#x2020;</sup>
                 </p>
                 <ul><li>
+                    &#x2200;a&#x2208;&#x211d; &#x22a0;(a) =
+                    a a<sup>&#x2020;</sup> = a<sup>2</sup>
+                </li><li>
+                    &#x2200;<strong>v</strong>&#x2208;&#x1d54d;
+                    &#x22a0;(<strong>v</strong>) = <strong>v</strong>
+                    <strong>v</strong><sup>&#x2020;</sup> =
+                    <strong>v</strong><sup>2</sup>
+                </li><li>
                     &#x22a0;(M<sup>&#x2020;</sup>) =
                     M<sup>&#x2020;</sup>
                     (M<sup>&#x2020;</sup>)<sup>&#x2020;</sup> =
-                    &#x22a0;(M)
+                    M<sup>&#x2020;</sup> M =
+                    (M M<sup>&#x2020;</sup>)<sup>&#x2020;</sup>
+                    &#x27f9;<br />
+                    ((M M<sup>&#x2020;</sup>)&#x2208;&#x211d;
+                    &#x27f9;
+                    &#x22a0;(M<sup>&#x2020;</sup>) = &#x22a0;(M))
                 </li></ul>
             </section>
             <section>
@@ -8736,10 +8748,13 @@
                     A multivector with a scalar quadrance has a norm.
                 </p><p>
                     &#x2200;M&#x2208;&#x1d544;
-                    (M M<sup>&#x2020;</sup> =
-                    M&middot;M<sup>&#x2020;</sup>)
-                    &#x27f9; |M|<sup>2</sup> &#x225d;
-                    &#x22a0;(M) = M M<sup>&#x2020;</sup>
+                    (&#x22a0;(M) = M&middot;M<sup>&#x2020;</sup>)
+                    <span class="fragment">
+                        &#x27f9; &#x22a0;(|M|) &#x225d;
+                        &#x22a0;(M)
+                    </span><span class="fragment">
+                        = M M<sup>&#x2020;</sup>
+                    </span>
                 </p><ul><li class="fragment">
                     |M| = <sup>+</sup>&#x221a;(M M<sup>&#x2020;</sup>)
                 </li><li class="fragment">
@@ -8771,16 +8786,20 @@
                     What kind of multivector has no norm?
                 </p>
                 <ul><li>
+                    &#x22a0;(1 + <strong>o<sub>1</sub></strong>) =
                     (1 + <strong>o<sub>1</sub></strong>) (1 +
                     <strong>o<sub>1</sub></strong>)<sup>&#x2020;</sup>
                     = 2 + 2<strong>o<sub>1</sub></strong>
                 </li><li>
+                    &#x22a0;(<strong>o<sub>1</sub>
+                    o<sub>2</sub></strong> + <strong>o<sub>3</sub>
+                    o<sub>4</sub></strong>) =
                     (<strong>o<sub>1</sub> o<sub>2</sub></strong> +
                     <strong>o<sub>3</sub> o<sub>4</sub></strong>)
                     (<strong>o<sub>1</sub> o<sub>2</sub></strong> +
                     <strong>o<sub>3</sub>
-                        o<sub>4</sub></strong>)<sup>&#x2020;</sup>
-                    = 2 - 2<strong>
+                        o<sub>4</sub></strong>)<sup>&#x2020;</sup> =
+                    <br /> 2 - 2<strong>
                         o<sub>1</sub> o<sub>2</sub> o<sub>3</sub>
                         o<sub>4</sub>
                     </strong>
@@ -8796,40 +8815,38 @@
                     A multivector with non-zero scalar quadrance has
                     an inverse.  We call such multivectors blades.
                 </p><ul><li class="fragment">
-                    &#x1d539; = { M&#x2208;&#x1d544; :
-                    (M M<sup>&#x2020;</sup> =
-                    M&middot;M<sup>&#x2020;</sup>) &and;
-                    (M M<sup>&#x2020;</sup> &ne;
-                    0<sub>&#x1d544;</sub>) }
+                    &#x1d539; = { B&#x2208;&#x1d544; :
+                    (&#x22a0;(B) = B&middot;B<sup>&#x2020;</sup>) &and;
+                    (&#x22a0;(B) &ne; 0) }
                 </li><li class="fragment">
-                    &#x2200;M&#x2208;&#x1d539;
-                    &#x27f9; M<sup>-1</sup> &#x225d;
-                    M<sup>&#x2020;</sup> / (M M<sup>&#x2020;</sup>)
+                    &#x2200;B&#x2208;&#x1d539;
+                    &#x27f9; B<sup>-1</sup> &#x225d;
+                    B<sup>&#x2020;</sup> / &#x22a0;(B) =
+                    B<sup>&#x2020;</sup> / (B B<sup>&#x2020;</sup>)
                 </li><li class="fragment">
-                    M M<sup>-1</sup>
+                    B B<sup>-1</sup>
                     <span class="fragment">
-                        = M (M<sup>&#x2020;</sup> /
-                        (M M<sup>&#x2020;</sup>))
+                        = B (B<sup>&#x2020;</sup> /
+                        (B B<sup>&#x2020;</sup>))
                     </span><span class="fragment">
-                        = (M M<sup>&#x2020;</sup>) /
-                        (M M<sup>&#x2020;</sup>) = 1<sub>&#x1d544;</sub>
+                        = (B B<sup>&#x2020;</sup>) /
+                        (B B<sup>&#x2020;</sup>) = 1
                     </span>
                 </li><li class="fragment">
-                    M<sup>-1</sup>M
+                    B<sup>-1</sup>B
                     <span class="fragment">
-                        = (M<sup>&#x2020;</sup> /
-                        (M M<sup>&#x2020;</sup>)) M
+                        = (B<sup>&#x2020;</sup> /
+                        (B B<sup>&#x2020;</sup>)) B
                     </span><span class="fragment">
-                        = (M<sup>&#x2020;</sup> M) /
-                        (M M<sup>&#x2020;</sup>)
+                        = (B<sup>&#x2020;</sup> B) /
+                        (B B<sup>&#x2020;</sup>)
                     </span><span class="fragment">
-                        =<br /> (M
-                        M<sup>&#x2020;</sup>)<sup>&#x2020;</sup> /
-                        (M M<sup>&#x2020;</sup>)
+                        =<br /> (B
+                        B<sup>&#x2020;</sup>)<sup>&#x2020;</sup> /
+                        (B B<sup>&#x2020;</sup>)
                     </span><span class="fragment">
-                        = (M M<sup>&#x2020;</sup>) /
-                        (M M<sup>&#x2020;</sup>)
-                        = 1<sub>&#x1d544;</sub>
+                        = (B B<sup>&#x2020;</sup>) /
+                        (B B<sup>&#x2020;</sup>) = 1
                     </span>
                 </li></ul>
             </section>
@@ -9121,9 +9138,9 @@
                         ^ <strong>u</strong>) ^ ...
                     </span><span class="fragment">
                         = <br />-
-                        <strong>v</strong> ^
-                        <strong>v</strong>
-                        ^ <strong>u</strong> ^ ...
+                        <span class="false"><strong>v</strong> ^
+                            <strong>v</strong></span> ^
+                        <strong>u</strong> ^ ...
                     </span><span class="fragment">
                         = 0 ^ <strong>u</strong> ^ ... = 0
                     </span>
@@ -9137,6 +9154,14 @@
                         ^ a<strong>v</strong>) +
                         (<strong>v</strong> ^ <strong>u</strong>
                         ^ b<strong>u</strong>)) ^ ...
+                    </span><span class="fragment">
+                        =<br />
+                        (-a (<span class="false"><strong>v</strong> ^
+                        <strong>v</strong></span> ^
+                        <strong>u</strong>) +
+                        b (<strong>v</strong> ^
+                        <span class="false"><strong>u</strong>
+                            ^ <strong>u</strong></span>)) ^ ...
                     </span><span class="fragment">
                         =<br />
                         (0 + 0) ^ ... = 0
@@ -9260,12 +9285,12 @@
                 <h3>Angle Measure</h3>
                 <table class="large"><tr><td class="fragment"><ul><li>
                     <strong>&wcirc;</strong> =
-                    &wcirc;<sub>1</sub><strong>o<sub>1</sub></strong> +
-                    &wcirc;<sub>2</sub><strong>o<sub>2</sub></strong>
+                    &wcirc;<sub>1</sub><strong>x</strong> +
+                    &wcirc;<sub>2</sub><strong>y</strong>
                 </li><li>
                     <strong>&ucirc;</strong> =
-                    &ucirc;<sub>1</sub><strong>o<sub>1</sub></strong> +
-                    &ucirc;<sub>2</sub><strong>o<sub>2</sub></strong>
+                    &ucirc;<sub>1</sub><strong>x</strong> +
+                    &ucirc;<sub>2</sub><strong>y</strong>
                 </li><li class="fragment">
                     <strong>&wcirc;</strong> &middot;
                     <strong>&#x00fb;</strong> =
@@ -9273,12 +9298,12 @@
                     &wcirc;<sub>2</sub>&ucirc;<sub>2</sub>
                 </li></ul></td><td class="fragment"><ul><li>
                     <strong>&wcirc;</strong> =
-                    cos&alpha; <strong>o<sub>1</sub></strong> +
-                    sin&alpha; <strong>o<sub>2</sub></strong>
+                    cos&alpha; <strong>x</strong> +
+                    sin&alpha; <strong>y</strong>
                 </li><li>
                     <strong>&ucirc;</strong> =
-                    cos&beta; <strong>o<sub>1</sub></strong> +
-                    sin&beta; <strong>o<sub>2</sub></strong>
+                    cos&beta; <strong>x</strong> +
+                    sin&beta; <strong>y</strong>
                 </li><li class="fragment">
                     <strong>&wcirc;</strong> &middot;
                     <strong>&#x00fb;</strong> =
@@ -9316,7 +9341,7 @@
             <section>
                 <h3>Vector Product Identity</h3>
                 <p>
-                    <strong>vu</strong> =
+                    <strong>v u</strong> =
                     <strong>v</strong>&middot;<strong>u</strong> +
                     <strong>v</strong>^<strong>u</strong> =<br />
                     (v<sub>1</sub>u<sub>1</sub> +
@@ -9329,6 +9354,60 @@
                     discard complementary terms their sum is equal to
                     the geometric product.  (This is not true for
                     general multivectors.)
+                </p>
+            </section>
+            <section>
+                <h3>Vector Inner Product</h3>
+                <p>
+                    (<strong>v u</strong> + <strong>u v</strong>) / 2
+                    <span class="fragment">
+                        =
+                        (<strong>v</strong>&middot;<strong>u</strong> +
+                        <strong>v</strong>^<strong>u</strong> +
+                        <strong>u</strong>&middot;<strong>v</strong> +
+                        <strong>u</strong>^<strong>v</strong>) / 2
+                    </span><span class="fragment">
+                        =<br />
+                        (<strong>v</strong>&middot;<strong>u</strong> +
+                        <del><strong>v</strong>^<strong>u</strong></del> +
+                        <strong>v</strong>&middot;<strong>u</strong> -
+                        <del><strong>v</strong>^<strong>u</strong></del>) / 2
+                    </span><span class="fragment">
+                        =<br />
+                        2 <strong>v</strong>&middot;<strong>u</strong> / 2
+                    </span><span class="fragment">
+                        = <strong>v</strong>&middot;<strong>u</strong>
+                    </span>
+                </p><p class="fragment">
+                    We can define the inner product in terms of the
+                    geometric product.
+                </p>
+            </section>
+            <section>
+                <h3>Vector Outer Product</h3>
+                <p>
+                    (<strong>v u</strong> - <strong>u v</strong>) / 2
+                    <span class="fragment">
+                        =
+                        (<strong>v</strong>&middot;<strong>u</strong> +
+                        <strong>v</strong>^<strong>u</strong> -
+                        <strong>u</strong>&middot;<strong>v</strong> -
+                        <strong>u</strong>^<strong>v</strong>) / 2
+                    </span><span class="fragment">
+                        =<br />
+                        (<del><strong>v</strong>&middot;<strong>u</strong></del> +
+                        <strong>v</strong>^<strong>u</strong> -
+                        <del><strong>v</strong>&middot;<strong>u</strong></del> +
+                        <strong>v</strong>^<strong>u</strong>) / 2
+                    </span><span class="fragment">
+                        =<br />
+                        2 <strong>v</strong>^<strong>u</strong> / 2
+                    </span><span class="fragment">
+                        = <strong>v</strong>^<strong>u</strong>
+                    </span>
+                </p><p class="fragment">
+                    We can define the outer product in terms of the
+                    geometric product.
                 </p>
             </section>
         </section>
