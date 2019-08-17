@@ -574,7 +574,7 @@
         var imageSystem = fascia.imageSystem(
             preloads['streya.json'].imageSystem);
         var itemSystem = fascia.itemSystem(
-            preloads['streya.json'].itemSystem);
+            preloads['streya.json'].items);
         var inventoryScreen;
         var apparatusScreen;
         var settingsScreen;
@@ -613,10 +613,8 @@
                         } }}));
         var menu = document.createElement('ul');
         var menuframe = ripple.createElement(
-            'fieldset', {'class': 'streya-menu', style: {
-                position: 'absolute', top: 10, left: 25,
-                'z-order': 2
-            }}, ripple.createElement(
+            'fieldset', {'class': 'streya-menu', style: {}},
+            ripple.createElement(
                 'legend', null, 'Streya Menu'), menu);
         menuframe.addEventListener('click', function(event) {
             if (event.target.tagName.toLowerCase() === 'legend')

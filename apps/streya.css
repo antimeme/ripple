@@ -2,9 +2,8 @@ html, body
 { position: absolute; padding: 0; margin: 0; overflow: hidden; }
 
 .streya-menu {
-    position: absolute; top: 10px; left: 25px; z-index: 2;
-    background: #333; color: white;
-    border: 2px solid white;
+    position: absolute; top: 10px; left: 10px;
+    background: #333; color: white; border: 2px solid white;
 }
 .streya-menu legend {
     background: #333;

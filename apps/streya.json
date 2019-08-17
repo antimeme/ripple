@@ -1,7 +1,5 @@
 {
-    "schema": {
-        "version": "0.0.1"
-    },
+    "schema": { "version": "0.0.1" },
     "imageSystem": {
         "comments": [
             "This section gives names to a set of images for use as",
@@ -26,28 +24,55 @@
             "give": {"image": "icons", "row": 1, "col": 4}
         }
     },
-    "itemSystem": {
-        "keycard": {
-            "weight": 0.02,
+    "items": {
+        "Keycard": {
+            "mass": 0.02,
             "icon": {"image": "icons", "row": 4, "col": 0}},
-        "tablet": {"weight": 4,
-                   "icon": {"image": "icons", "row": 3, "col": 0}},
-        "knife": {
-            "weight": 3,
+        "Tablet": {
+            "weight": 0.4,
+            "icon": {"image": "icons", "row": 3, "col": 0}},
+        "Knife": {
+            "mass": 0.75,
+            "reach": 0.1,
             "icon": {"image": "icons", "row": 4, "col": 1}},
-        "gun": {"weight": 5,
-                "icon": {"image": "icons", "row": 4, "col": 2}},
-        "tonfa": {"weight": 2,
-                  "icon": {"image": "icons", "row": 4, "col": 3}},
-        "magboots": {"weight": 3,
-                     "icon": {"image": "icons", "row": 4, "col": 4}},
-        "flashlight": {
+        "Cleaver": {
+            "mass": 1.1,
+            "reach": 0.4 },
+        "Sword": {
+            "mass": 1.5,
+            "reach": 0.9 },
+        "Revolver": {
+            "mass": 1.2,
+            "range": 25,
+            "ammo": "9mm clip",
+            "icon": {"image": "icons", "row": 4, "col": 2}},
+        "Semi-auto": {
+            "mass": 1,
+            "range": 25,
+            "ammo": "9mm magazine",
+            "icon": {"image": "icons", "row": 4, "col": 2}},
+        "Plasma Pistol": {
+            "mass": 1,
+            "range": 25,
+            "ammo": "Plasma magazine",
+            "icon": {"image": "icons", "row": 4, "col": 2}},
+        "Laser Pistol": {
+            "mass": 1,
+            "range": 25,
+            "icon": {"image": "icons", "row": 4, "col": 2}},
+        "Tonfa": {
+            "weight": 2,
+            "icon": {"image": "icons", "row": 4, "col": 3}},
+        "Magboots": {
+            "weight": 3,
+            "icon": {"image": "icons", "row": 4, "col": 4}},
+        "Flashlight": {
             "weight": 3, "light": {"width": 1, "length": 2},
             "icon": {"image": "icons", "row": 3, "col": 1}},
-        "apple": {
+        "Apple": {
             "weight": 0.5,
             "icon": {"image": "icons", "row": 2, "col": 3}},
-        "cookie": {
+        "Cookie": {
             "weight": 0.2,
             "icon": {"image": "icons", "row": 2, "col": 4}}
     },
@@ -58,9 +83,9 @@
             "eyeColor": "rgb(32, 32, 224)",
             "speed": 0.01,
             "turnSpeed": 0.01,
-            "inventory": [{"type": "keycard"},
-                          {"type": "gun"},
-                          {"type": "magboots"}]
+            "inventory": [{"type": "Keycard"},
+                          {"type": "Revolver"},
+                          {"type": "Magboots"}]
         }
     },
     "abilities": {
@@ -193,8 +218,25 @@
         }
     },
     "resources": {
-        "Oxygen": {},
-        "Water": {"units": "liter"},
+        "Helium-3": {
+            "comment": [
+                "Strategic fuel required by most ships"] },
+        "Water": {
+            "units": "kilogram",
+            "comment": [
+                "Essential ingredient of life, including making ",
+                "oxygen, drinking, making fuel cells, creating ",
+                "neutron shielding and extracting deuterium"] },
+        "Phosphorus": {
+            "comment": ["Needed anywhere plants are grown"]},
+        "Nitrogen": {
+            "comment": [
+                "Needed to make air breatable at standard pressure.",
+                "Found primarily on Earth and Titan (around Saturn)"]},
+        "Oxygen Candle": {
+            "comment": [
+                "Each kilogram can be used to produce 6.5 person ",
+                "hours of breathing"] },
         "Vegetables": {"units": "kilogram"},
         "Textiles": {},
         "Plastic Goods": {},
@@ -240,7 +282,6 @@
             }
         }
     },
-
 
     "shipComponents": {
         "comment": [
