@@ -87,6 +87,16 @@
             <section>
                 <h2>Acknowledgements</h2>
                 <ul><li>
+                    <a href="https://en.wikipedia.org/wiki/Arthur_Cayley"
+                    >Arthur Cayley</a>: 1821 - 1895 CE
+                </li><li>
+                    <a href="https://en.wikipedia.org/wiki/%C3%89variste_Galois"
+                    >Évariste Galois</a>: 1811 - 1832 CE
+                </li></ul>
+            </section>
+            <section>
+                <h2>Acknowledgements</h2>
+                <ul><li>
                     <a href="https://en.wikipedia.org/wiki/Hermann_Grassmann"
                     >Hermann Grassman</a>: 1809 - 1877 CE
                 </li><li>
@@ -1191,6 +1201,9 @@
                     based on the value of its variables.  This is also
                     called first order logic.
                 </p>
+            </section>
+            <section>
+                <h3>What is a Predicate?</h3>
                 <ul>
                     <li>
                         Example: A _____ is a fruit
@@ -1202,7 +1215,10 @@
                         (<span class="false">false</span>)
                     </li>
                 </ul>
-                <p>Is an apple true or false?</p>
+                <p>
+                    An apple isn't true or false.  It's an object rather
+                    than a statement.  This distinction is important.
+                </p>
                 <aside class="notes">
                     A predicate is a statement with one or more
                     holes in it.  Depending on what we put in the
@@ -2265,30 +2281,36 @@
             <section>
                 <h3>Relations are Subsets</h3>
                 <p>R &#x2286; Domain(R) &#x2297; Range(R)</p>
+                <p class="fragment">
+                    This means we can use the axiom schema of
+                    specification to define relations over large
+                    or event infinite sets.
+                </p>
             </section>
             <section>
                 <h2>Equivalence</h2>
                 <p>
                     An equivalence relation has three properties:
                 </p>
-                <ul>
-                    <li>
-                        Reflexive: &#x2200;a
-                        (a <span class="intro">&#x2251;</span> a)
-                    </li><li>
-                        Symmetric: &#x2200;a,b (a
-                        <span class="intro">&#x2251;</span> b) &#x27fa;
-                        (b <span class="intro">&#x2251;</span> a)
-                    </li><li>
-                        Transitive: &#x2200;a,b,c (a
-                        <span class="intro">&#x2251;</span> b &and;
-                        b <span class="intro">&#x2251;</span> c) &#x27f9;
-                        (a <span class="intro">&#x2251;</span> c)
-                    </li>
-                </ul>
-                <p>
-                    Equivalence relations partition sets into equivalence
-                    classes.
+                <ul><li class="fragment">
+                    Reflexive: &#x2200;a &#x2208;
+                    &cup;&cup;<span class="intro">&#x2251;</span>
+                    (a <span class="intro">&#x2251;</span> a)
+                </li><li class="fragment">
+                    Symmetric: &#x2200;a,b &#x2208;
+                    &cup;&cup;<span class="intro">&#x2251;</span> (a
+                    <span class="intro">&#x2251;</span> b) &#x27fa;
+                    (b <span class="intro">&#x2251;</span> a)
+                </li><li class="fragment">
+                    Transitive: &#x2200;a,b,c &#x2208;
+                    &cup;&cup;<span class="intro">&#x2251;</span><br />
+                    (a <span class="intro">&#x2251;</span> b &and;
+                    b <span class="intro">&#x2251;</span> c) &#x27f9;
+                    (a <span class="intro">&#x2251;</span> c)
+                </li></ul>
+                <p class="fragment">
+                    This partitions a set into classes that don't
+                    overlap.
                 </p>
                 <aside class="notes">
                     An equivalence relation has three special
@@ -2301,26 +2323,28 @@
             <section>
                 <h2>Partial Order</h2>
                 <p>
-                    A partial order is a relation build on an
-                    equivalence relation with the following
-                    properties:
+                    A partial order has the following properties:
                 </p>
-                <ul>
-                    <li>
-                        Reflexive: &#x2200;a (a
-                        <span class="intro">&#x22d6;</span> a)
-                    </li><li>
-                        Antisymmetric: &#x2200;a,b (a
-                        <span class="intro">&#x22d6;</span> b) &and; (b
-                        <span class="intro">&#x22d6;</span> a) &#x27f9;
-                        (a &#x2251; b)
-                    </li><li>
-                        Transitive: &#x2200;a,b,c
-                        (a <span class="intro">&#x22d6;</span> b) &and;
-                        (b <span class="intro">&#x22d6;</span> c) &#x27f9;
-                        (a <span class="intro">&#x22d6;</span> c)
-                    </li>
-                </ul>
+                <ul><li class="fragment">
+                    Reflexive: &#x2200;a &#x2208;
+                    &cup;&cup;<span class="intro">&#x22d6;</span> (a
+                    <span class="intro">&#x22d6;</span> a)
+                </li><li class="fragment">
+                    Antisymmetric: &#x2200;a,b &#x2208;
+                    &cup;&cup;<span class="intro">&#x22d6;</span><br />
+                    (a <span class="intro">&#x22d6;</span> b) &and; (b
+                    <span class="intro">&#x22d6;</span> a) &#x27f9;
+                    (a &#x2251; b)
+                </li><li class="fragment">
+                    Transitive: &#x2200;a,b,c &#x2208;
+                    &cup;&cup;<span class="intro">&#x22d6;</span><br />
+                    (a <span class="intro">&#x22d6;</span> b) &and;
+                    (b <span class="intro">&#x22d6;</span> c) &#x27f9;
+                    (a <span class="intro">&#x22d6;</span> c)
+                </li></ul>
+                <p class="fragment">
+                    Antisymmetry requires an equivalence relation.
+                </p>
                 <aside class="notes">
                     A partial order is a relation on a set that
                     that makes some but not necessarily all pairs
@@ -2334,16 +2358,17 @@
                 <p>
                     A total order is a partial order with connex:
                 </p>
-                <ul>
-                    <li>
-                        Reflexive, Antisymmetric and Transitive
-                    </li>
-                    <li>
-                        Connex: &#x2200;a,b
-                        (a <span class="intro">&#x22d6;</span> b) &or;
-                        (b <span class="intro">&#x22d6;</span> a)
-                    </li>
-                </ul>
+                <ul><li class="fragment">
+                    Reflexive, Antisymmetric and Transitive
+                </li><li class="fragment">
+                    Connex: &#x2200;a,b &#x2208;
+                    &cup;&cup;<span class="intro">&#x22d6;</span>
+                    (a <span class="intro">&#x22d6;</span> b) &or;
+                    (b <span class="intro">&#x22d6;</span> a)
+                </li></ul>
+                <p class="fragment">
+                    This organizes a set into concentric rings.
+                </p>
                 <aside class="notes">
                     A total order is a partial order with the connex
                     property, which means that every pair of elements
@@ -2354,39 +2379,38 @@
                 <h3>Equality: Reflexive</h3>
                 <p>&#x2200;a a = a</p>
                 <p class="fragment">
-                    Every set is equal to itself.
-                    <span class="fragment">Obviously?</span>
+                    Any set contains all the members in itself
+                    <span class="fragment"> and vice versa.</span>
                 </p>
             </section>
             <section>
                 <h3>Equality: Symmetric</h3>
                 <p>&#x2200;a,b (a = b) &#x27fa; (b = a)</p>
-                <ul>
-                    <li class="fragment">
-                        (a = b) &#x27f9; (P(a) &#x27fa; P(b)) :: Leibniz's Law
-                    </li><li class="fragment">
-                        (a = b) &#x27f9; (P(b) &#x27fa; P(a))
-                        :: Symmetric Biconditional
-                    </li><li class="fragment">
-                        (a = b) &#x27f9; (b = a) :: Leibniz's Law
-                    </li>
-                </ul>
+                <ul><li class="fragment">
+                    (a = b) &#x27f9; (P(a) &#x27fa; P(b))
+                    :: Leibniz's Law
+                </li><li class="fragment">
+                    (a = b) &#x27f9; (P(b) &#x27fa; P(a))
+                    :: Symmetric Biconditional
+                </li><li class="fragment">
+                    (a = b) &#x27f9; (b = a) :: Leibniz's Law
+                </li></ul>
             </section>
             <section>
                 <h3>Equality: Transitive</h3>
-                <p>&#x2200;a,b,c (a = b) &and; (b = c) &#x27f9; (a = c)</p>
-                <ul>
-                    <li class="fragment">
-                        (a = b) &and; (b = c) &#x27f9; (P(a) &#x27fa; P(b))
-                        &and; (P(b) &#x27fa; P(c)) :: Leibniz's Law
-                    </li><li class="fragment">
-                        (a = b) &and; (b = c) &#x27f9; (P(a) &#x27fa; P(c))
-                        :: Transitive Biconditional
-                    </li><li class="fragment">
-                        (a = b) &and; (b = c) &#x27f9; (a = c)
-                        :: Leibniz's Law
-                    </li>
-                </ul>
+                <p>
+                    &#x2200;a,b,c (a = b) &and; (b = c) &#x27f9; (a = c)
+                </p>
+                <ul><li class="fragment">
+                    (a = b) &and; (b = c) &#x27f9; (P(a) &#x27fa; P(b))
+                    &and; (P(b) &#x27fa; P(c)) :: Leibniz's Law
+                </li><li class="fragment">
+                    (a = b) &and; (b = c) &#x27f9; (P(a) &#x27fa; P(c))
+                    :: Transitive Biconditional
+                </li><li class="fragment">
+                    (a = b) &and; (b = c) &#x27f9; (a = c)
+                    :: Leibniz's Law
+                </li></ul>
             </section>
             <section>
                 <h3>Equality: Equivalence</h3>
@@ -2395,66 +2419,65 @@
                     c&#x27e9;&#x2208;a&#x2297;a : b = c }</span>
                 </p>
                 <p>
-                    Set equality can be used to construct an equivalence
-                    relation over any set: this is always reflexive,
-                    symmetric and transitive.
+                    Set equality can be used to construct an
+                    equivalence relation over any set: this is always
+                    reflexive, symmetric and transitive.
                 </p>
                 <aside class="notes">
-                    This is not the only way create an equivalence relation
-                    but we can always do it.
+                    This is not the only way create an equivalence
+                    relation but we can always do it.
                 </aside>
             </section>
             <section>
                 <h3>Subset: Reflexive</h3>
                 <p>&#x2200;a a &#x2286; a</p>
                 <p>
-                    Every set is a subset of itself so the subset operator
-                    is reflexive.
+                    Every set is a subset of itself so the subset
+                    operator is reflexive.
                 </p>
             </section>
             <section>
                 <h3>Subset: Antisymmetric</h3>
-                <p>&#x2200;a,b (a &#x2286; b) &and; (b &#x2286; a) &#x27f9;
-                    (a = b)</p>
                 <p>
-                    Two sets that are each subsets of the other must contain
-                    the same elements
+                    &#x2200;a,b (a &#x2286; b) &and; (b &#x2286; a)
+                    &#x27f9; (a = b)
+                </p><p>
+                    Two sets that are each subsets of the other must
+                    contain the same elements
                 </p>
             </section>
             <section>
                 <h3>Subset: Transitive</h3>
-                <p>&#x2200;a,b,c (a &#x2286; b) &and; (b &#x2286; c) &#x27f9;
-                    (a &#x2286; c)</p>
-                <ul>
-                    <li class="fragment">
-                        (a &#x2286; b) &and; (b &#x2286; c) &#x27f9;
-                        &#x2200;d (d&#x2208;a &#x27f9; d&#x2208;b)<br />
-                        :: Definition Subset
-                    </li><li class="fragment">
-                        (a &#x2286; b) &and; (b &#x2286; c) &#x27f9;
-                        &#x2200;d (d&#x2208;b &#x27f9;
-                        d&#x2208;c) <br />:: Definition Subset
-                    </li><li class="fragment">
-                        (a &#x2286; b) &and; (b &#x2286; c) &#x27f9;
-                        (a &#x2286; c) :: Definition Subset
-                    </li>
-                </ul>
+                <p>
+                    &#x2200;a,b,c (a &#x2286; b) &and; (b &#x2286; c)
+                    &#x27f9; (a &#x2286; c)
+                </p><ul><li class="fragment">
+                    (a &#x2286; b) &and; (b &#x2286; c) &#x27f9;
+                    &#x2200;d (d&#x2208;a &#x27f9; d&#x2208;b)<br />
+                    :: Definition Subset
+                </li><li class="fragment">
+                    (a &#x2286; b) &and; (b &#x2286; c) &#x27f9;
+                    &#x2200;d (d&#x2208;b &#x27f9;
+                    d&#x2208;c) <br />:: Definition Subset
+                </li><li class="fragment">
+                    (a &#x2286; b) &and; (b &#x2286; c) &#x27f9;
+                    (a &#x2286; c) :: Definition Subset
+                </li></ul>
             </section>
             <section>
                 <h3>Subsets: Partial Order</h3>
                 <p>
                     &#x2200;a &#x2203;<span class="intro">{ &#x27e8;b,
                     c&#x27e9;&#x2208;a&#x2297;a : b &#x2286; c }</span>
-                </p>
-                <p>
+                </p><p>
                     Subset relationships can be used to construct a
-                    partial order over any set.  This is always reflexive,
-                    antisymmetric and transitive.
-                </p>
-                <p class="fragment">
+                    partial order over any set.  This is always
+                    reflexive, antisymmetric and transitive.
+                </p><p class="fragment">
                     Not always connex: {{&spades;,
                     <span class="redsuit">&hearts;</span>}, {&spades;},
-                    {&spades;, <span class="redsuit">&diams;</span>}}</p>
+                    {&spades;, <span class="redsuit">&diams;</span>}}
+                </p>
                 <aside class="notes">
                     This is not the only way create an order relation but
                     we can always do it.  Subsets are not always connex
@@ -2467,11 +2490,12 @@
             <section>
                 <h2>Functions</h2>
                 <p>
-                    A function is a special kind of relation which maps
-                    every member of its domain to the exactly one member
-                    of its range.  There is no ambiguity about what the
-                    second element of the ordered pair could be.  Because
-                    of this we can use functions to transform sets.
+                    A function is a special kind of relation which
+                    maps every member of its domain to the exactly one
+                    member of its range.  There is no ambiguity about
+                    what the second element of the ordered pair could
+                    be.  Because of this we can use functions to
+                    transform sets.
                 </p>
                 <aside class="notes">
                     A function is a relation with the special property
@@ -2483,8 +2507,8 @@
             <section>
                 <h2>Functions</h2>
                 <p>
-                    (<span class="intro">f : D &#x27f6; R</span>) &#x225d;
-                    &#x2200;a&#x2208;D (&#x2203;b&#x2208;R
+                    (<span class="intro">f : D &#x27f6; R</span>)
+                    &#x225d; &#x2200;a&#x2208;D (&#x2203;b&#x2208;R
                     &#x27e8;a, b&#x27e9;&#x2208;f) &and;<br />
                     (&#x2200;b,c&#x2208;R
                     (&#x27e8;a, b&#x27e9;&#x2208;f &and;
@@ -2792,6 +2816,38 @@
                         (b &#x2218; a)
                     </li>
                 </ul>
+            </section>
+            <section>
+                <h3>
+                    Cayley Table (Abelian)
+                </h3>
+                <p>
+                    G = {&spades;,
+                    <span class="redsuit">&hearts;</span>, &clubs;,
+                    <span class="redsuit">&diams;</span>}
+                </p>
+                <table class="cayley">
+                    <tr><th>&#x2218;</th><th>&spades;</th><th>&hearts;</th>
+                        <th>&clubs;</th><th>&diams;</th></tr>
+                    <tr><th>&spades;</th><td>&spades;</td>
+                        <td><span class="redsuit">&hearts;</span></td>
+                        <td>&clubs;</td>
+                        <td><span class="redsuit">&diams;</span></td></tr>
+                    <tr><th>&hearts;</th>
+                        <td><span class="redsuit">&hearts;</span></td>
+                        <td>&clubs;</td>
+                        <td><span class="redsuit">&diams;</span></td>
+                        <td>&spades;</td></tr>
+                    <tr><th>&clubs;</th><td>&clubs;</td>
+                        <td><span class="redsuit">&diams;</span></td>
+                        <td>&spades;</td>
+                        <td><span class="redsuit">&hearts;</span></td></tr>
+                    <tr><th>&diams;</th>
+                        <td><span class="redsuit">&diams;</span></td>
+                        <td>&spades;</td>
+                        <td><span class="redsuit">&hearts;</span></td>
+                        <td>&clubs;</td></tr>
+                </table>
             </section>
             <section>
                 <h3>
@@ -10473,7 +10529,7 @@
                     e<sup><strong>o<sub>1</sub>o<sub>2</sub></strong>
                     &theta;</sup> = cos(&theta;) +
                     <strong>o<sub>1</sub>o<sub>2</sub></strong><!--
-                    -->sin(&theta;)
+                                                               -->sin(&theta;)
                 </li><li class="fragment">
                     &#x2200;<strong>B</strong>
                     &#x2208;&lt;&#x1d539;&gt;<sub>2</sub>
@@ -10488,9 +10544,9 @@
                     &#x27f9;
                     <strong>v</strong><sub>rot
                         <strong>I</strong>&theta;</sub> =
-                    e<sup><strong>I</strong>&theta;/2</sup>
-                    <strong>v</strong>
-                    e<sup>-<strong>I</strong>&theta;/2</sup>
+                        e<sup><strong>I</strong>&theta;/2</sup>
+                        <strong>v</strong>
+                        e<sup>-<strong>I</strong>&theta;/2</sup>
                 </li></ul>
                 <p class="fragment">
                     Use this to produce intermediate rotations.
@@ -11656,25 +11712,25 @@
                         Bl = B B B
                     </li><li>
                         Th = C I
-                </li><li>
-                    V = B C Th = B C (C I)
-                </li>
-            </ul>
-        </section>
-        <section>
-            <h3>Y Combinator</h3>
-            <ul>
-                <li>
-                    Y = &#x03bb;f.(&#x03bb;a.f (a a))
-                    (&#x03bb;a.f (a a))
-                </li><li>
-                    Y g = g (Y g) = g (g (Y g)) = ...
-                </li><li>
-                    Y = S (K (S I I)) (S (S (K S) K) (K (S I I)))
-                </li>
-            </ul>
-        </section>
-    </section></div></div>
+                    </li><li>
+                        V = B C Th = B C (C I)
+                    </li>
+                </ul>
+            </section>
+            <section>
+                <h3>Y Combinator</h3>
+                <ul>
+                    <li>
+                        Y = &#x03bb;f.(&#x03bb;a.f (a a))
+                        (&#x03bb;a.f (a a))
+                    </li><li>
+                        Y g = g (Y g) = g (g (Y g)) = ...
+                    </li><li>
+                        Y = S (K (S I I)) (S (S (K S) K) (K (S I I)))
+                    </li>
+                </ul>
+            </section>
+        </section></div></div>
     <script src="lib/reveal/head.min.js"></script>
     <script src="lib/reveal/reveal.js"></script>
     <script src="ripple/polyfill.js"></script>
