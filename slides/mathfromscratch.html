@@ -8692,6 +8692,10 @@
                 &#x2200;M&#x2208;&#x1d544;
                 &#x2203;M<sup>&#x2020;</sup>&#x2208;&#x1d544;
             </p><ul><li class="fragment">
+                Sum: &#x2200;M,N&#x2208;&#x1d544;
+                (M + N)<sup>&#x2020;</sup> &#x225d;
+                M<sup>&#x2020;</sup> + N<sup>&#x2020;</sup>
+            </li><li class="fragment">
                 Term: &#x2200;a&#x2208;&#x211d;
                 (a <strong>o<sub>1</sub></strong>
                 <strong>o<sub>2</sub></strong> ...
@@ -8701,10 +8705,6 @@
                 <strong>o<sub>n - 1</sub></strong> ...
                 <strong>o<sub>2</sub></strong>
                 <strong>o<sub>1</sub></strong>
-            </li><li class="fragment">
-                Sum: &#x2200;M,N&#x2208;&#x1d544;
-                (M + N)<sup>&#x2020;</sup> &#x225d;
-                M<sup>&#x2020;</sup> + N<sup>&#x2020;</sup>
             </li></ul><p class="fragment">
                 A conjugate reverses basis component order.<br />
                 Obviously (M<sup>&#x2020;</sup>)<sup>&#x2020;</sup>
@@ -8762,6 +8762,12 @@
                 <strong>o<sub>n - 1</sub></strong> ...
                 <strong>o<sub>2</sub></strong>
                 <strong>o<sub>1</sub></strong>
+                <span class="fragment">
+                    = &plusmn; <strong>o<sub>1</sub></strong>
+                    <strong>o<sub>2</sub></strong> ...
+                    <strong>o<sub>n - 1</sub></strong>
+                    <strong>o<sub>n</sub></strong>
+                </span>
             </li></ul>
         </section>
         <section>
@@ -8774,24 +8780,28 @@
                 &#x2200;M&#x2208;&#x1d544;
                 &#x22a0;(M) &#x225d; M M<sup>&#x2020;</sup>
             </p>
-            <ul><li>
+            <ul><li class="fragment">
                 &#x2200;a&#x2208;&#x211d; &#x22a0;(a) =
-                a a<sup>&#x2020;</sup> = a<sup>2</sup>
-            </li><li>
+                a a<sup>&#x2020;</sup>
+                <span class="fragment"> = a a = a<sup>2</sup></span>
+            </li><li class="fragment">
                 &#x2200;<strong>v</strong>&#x2208;&#x1d54d;
                 &#x22a0;(<strong>v</strong>) = <strong>v</strong>
                 <strong>v</strong><sup>&#x2020;</sup> =
+                <strong>v</strong> <strong>v</strong> =
                 <strong>v</strong><sup>2</sup>
-            </li><li>
-                &#x22a0;(M<sup>&#x2020;</sup>) =
-                M<sup>&#x2020;</sup>
-                (M<sup>&#x2020;</sup>)<sup>&#x2020;</sup> =
-                M<sup>&#x2020;</sup> M =
-                (M M<sup>&#x2020;</sup>)<sup>&#x2020;</sup>
-                &#x27f9;<br />
-                ((M M<sup>&#x2020;</sup>)&#x2208;&#x211d;
-                &#x27f9;
-                &#x22a0;(M<sup>&#x2020;</sup>) = &#x22a0;(M))
+            </li><li class="fragment">
+                &#x22a0;(M<sup>&#x2020;</sup>)
+                <span class="fragment">
+                    = M<sup>&#x2020;</sup>
+                    (M<sup>&#x2020;</sup>)<sup>&#x2020;</sup> =
+                    M<sup>&#x2020;</sup> M =
+                    (M M<sup>&#x2020;</sup>)<sup>&#x2020;</sup>
+                </span><span class="fragment">
+                    &#x27f9;<br />
+                    ((M M<sup>&#x2020;</sup>)&#x2208;&#x211d; &#x27f9;
+                    &#x22a0;(M<sup>&#x2020;</sup>) = &#x22a0;(M))
+                </span>
             </li></ul>
         </section>
         <section>
@@ -8837,12 +8847,12 @@
             <p>
                 What kind of multivector has no norm?
             </p>
-            <ul><li>
+            <ul><li class="fragment">
                 &#x22a0;(1 + <strong>o<sub>1</sub></strong>) =
                 (1 + <strong>o<sub>1</sub></strong>) (1 +
                 <strong>o<sub>1</sub></strong>)<sup>&#x2020;</sup>
                 = 2 + 2<strong>o<sub>1</sub></strong>
-            </li><li>
+            </li><li class="fragment">
                 &#x22a0;(<strong>o<sub>1</sub>
                 o<sub>2</sub></strong> + <strong>o<sub>3</sub>
                 o<sub>4</sub></strong>) =
@@ -8851,12 +8861,11 @@
                 (<strong>o<sub>1</sub> o<sub>2</sub></strong> +
                 <strong>o<sub>3</sub>
                     o<sub>4</sub></strong>)<sup>&#x2020;</sup> =
-                <br /> 2 - 2<strong>
+                <br /> -2 (1 + <strong>
                     o<sub>1</sub> o<sub>2</sub> o<sub>3</sub>
-                    o<sub>4</sub>
-                </strong>
+                    o<sub>4</sub></strong>)
             </li></ul>
-            <p>
+            <p class="fragment">
                 Scalars, vectors, pseudo-vectors and
                 pseudo-scalars always have norms.
             </p>
