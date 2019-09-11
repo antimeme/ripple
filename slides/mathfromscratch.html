@@ -25,6 +25,11 @@
      table.matrix td { border: none; }
      table.matrix td:first-child { border-left: 2px solid black; }
      table.matrix td:last-child  { border-right: 2px solid black; }
+     table.wedge3d {
+         white-space: nowrap;
+         font-size: 70%;
+         margin-left: -8em;
+     }
     </style>
 </head><body>
     <div class="reveal"><div class="slides"><section id="mathfromscratch">
@@ -9578,19 +9583,19 @@
                 Any time you encounter a cross product someone is
                 trying to hide a bivector!
             </p>
-            <ul><li>
+            <ul><li class="fragment">
                 Normal vectors: dual bivectors
-            </li><li>
+            </li><li class="fragment">
                 Axial vector: dual bivectors again
-            </li><li>
+            </li><li class="fragment">
                 Angular momentum (<strong>r</strong> &times;
                 <strong>p</strong>): actually a bivector
-            </li><li>
+            </li><li class="fragment">
                 Curl (&#x2207; &times <strong>F</strong>):
                 guess what?  Bivector!
-            </li><li>
+            </li><li class="fragment">
                 <a href="https://www.av8n.com/physics/maxwell-ga.htm">
-                    Maxwell's Equation</a>:
+                    Maxwell's Equation</a> (Singular!):
                 &#x2207; <strong>F</strong> =
                 (c &epsilon;<sub>0</sub>)<sup>-1</sup> J
             </li></ul>
@@ -9602,316 +9607,6 @@
                 clipped the cross product out of quaternion
                 operations, resulting in a confusing mess.
             </aside>
-        </section>
-    </section>
-
-    <section>
-        <section>
-            <h2>Cramer's Rule</h2>
-            <p>
-                A direct way to uncover the components of a vector
-                for a basis using wedge products and inverses.
-            </p>
-            <p>
-                <strong>v</strong> =
-                v<sub>1</sub><strong>b<sub>1</sub></strong> +
-                v<sub>2</sub><strong>b<sub>2</sub></strong> + ...
-            </p>
-            <ul><li>
-                v<sub>1</sub> = (<strong>v</strong> ^
-                <strong>b<sub>2</sub></strong> ^ ...)
-                (<strong>b<sub>1</sub></strong> ^
-                <strong>b<sub>2</sub></strong> ^
-                ...)<sup>-1</sup>
-            </li><li>
-                v<sub>2</sub> = (<strong>b<sub>1</sub></strong> ^
-                <strong>v</strong> ^ ...)
-                (<strong>b<sub>1</sub></strong> ^
-                <strong>b<sub>2</sub></strong> ^
-                ...)<sup>-1</sup>
-            </li><li>
-                ...
-            </li></ul>
-        </section>
-        <section>
-            <h3>Wedge 2D</h3>
-            <ul><li class="fragment">
-                <strong>u</strong>^<strong>v</strong> =
-                (u<sub>1</sub><strong>o<sub>1</sub></strong> +
-                u<sub>2</sub><strong>o<sub>2</sub></strong>)
-                ^
-                (v<sub>1</sub><strong>o<sub>1</sub></strong> +
-                v<sub>2</sub><strong>o<sub>2</sub></strong>)
-            </li><li class="fragment">
-                <strong>u</strong>^<strong>v</strong> =
-                <del>
-                    u<sub>1</sub>v<sub>1</sub>
-                    <strong>o<sub>1</sub>o<sub>1</sub></strong>
-                </del> +
-                u<sub>1</sub>v<sub>2</sub>
-                <strong>o<sub>1</sub>o<sub>2</sub></strong> +
-                u<sub>2</sub>v<sub>1</sub>
-                <strong>o<sub>2</sub>o<sub>1</sub></strong> +
-                <del>
-                    u<sub>2</sub>v<sub>2</sub>
-                    <strong>o<sub>2</sub>o<sub>2</sub></strong>
-                </del>
-            </li><li class="fragment">
-                <strong>u</strong>^<strong>v</strong> =
-                u<sub>1</sub>v<sub>2</sub>
-                <strong>o<sub>1</sub>o<sub>2</sub></strong> -
-                u<sub>2</sub>v<sub>1</sub>
-                <strong>o<sub>1</sub>o<sub>2</sub></strong>
-            </li><li class="fragment">
-                <strong>u</strong>^<strong>v</strong> =
-                (u<sub>1</sub>v<sub>2</sub> -
-                u<sub>2</sub>v<sub>1</sub>)
-                <strong>o<sub>1</sub>o<sub>2</sub></strong>
-            </li></ul>
-        </section>
-        <section>
-            <h3>Wedge 3D</h3>
-            <ul><li class="fragment">
-                <strong>u</strong> ^ <strong>v</strong>
-                ^ <strong>w</strong> =
-                (u<sub>1</sub><strong>o<sub>1</sub></strong> +
-                u<sub>2</sub><strong>o<sub>2</sub></strong> +
-                u<sub>3</sub><strong>o<sub>3</sub></strong>)
-                ^<br />
-                (v<sub>1</sub><strong>o<sub>1</sub></strong> +
-                v<sub>2</sub><strong>o<sub>2</sub></strong> +
-                v<sub>3</sub><strong>o<sub>3</sub></strong>)
-                ^
-                (w<sub>1</sub><strong>o<sub>1</sub></strong> +
-                w<sub>2</sub><strong>o<sub>2</sub></strong> +
-                w<sub>3</sub><strong>o<sub>3</sub></strong>)
-            </li><li class="fragment">
-                <strong>u</strong> ^ <strong>v</strong>
-                ^ <strong>w</strong> =
-                ((u<sub>1</sub>v<sub>2</sub> -
-                u<sub>2</sub>v<sub>1</sub>)
-                <strong>o<sub>1</sub>o<sub>2</sub></strong> +
-                (u<sub>2</sub>v<sub>3</sub> -
-                u<sub>3</sub>v<sub>2</sub>)
-                <strong>o<sub>2</sub>o<sub>3</sub></strong> +
-                (u<sub>1</sub>v<sub>3</sub> -
-                u<sub>3</sub>v<sub>1</sub>)
-                <strong>o<sub>1</sub>o<sub>3</sub></strong>)
-                ^
-                (w<sub>1</sub><strong>o<sub>1</sub></strong> +
-                w<sub>2</sub><strong>o<sub>2</sub></strong> +
-                w<sub>3</sub><strong>o<sub>3</sub></strong>)
-            </li><li class="fragment">
-                <strong>u</strong> ^ <strong>v</strong>
-                ^ <strong>w</strong> =
-                (u<sub>1</sub>v<sub>2</sub> -
-                u<sub>2</sub>v<sub>1</sub>) w<sub>3</sub>
-                <strong>
-                    o<sub>1</sub>o<sub>2</sub>o<sub>3</sub>
-                </strong>
-                +<br />
-                (u<sub>2</sub>v<sub>3</sub> -
-                u<sub>3</sub>v<sub>2</sub>) w<sub>1</sub>
-                <strong>
-                    o<sub>2</sub>o<sub>3</sub>o<sub>1</sub>
-                </strong>
-                +
-                (u<sub>1</sub>v<sub>3</sub> -
-                u<sub>3</sub>v<sub>1</sub>) w<sub>2</sub>
-                <strong>
-                    o<sub>1</sub>o<sub>3</sub>o<sub>2</sub>
-                </strong>
-            </li><li class="fragment">
-                <strong>u</strong> ^ <strong>v</strong>
-                ^ <strong>w</strong> =
-                ((u<sub>2</sub>v<sub>3</sub> -
-                u<sub>3</sub>v<sub>2</sub>) w<sub>1</sub> -<br />
-                (u<sub>1</sub>v<sub>3</sub> -
-                u<sub>3</sub>v<sub>1</sub>) w<sub>2</sub> +
-                (u<sub>1</sub>v<sub>2</sub> -
-                u<sub>2</sub>v<sub>1</sub>) w<sub>3</sub>)
-                <strong>
-                    o<sub>1</sub>o<sub>2</sub>o<sub>3</sub>
-                </strong>
-            </li></ul>
-        </section>
-        <section>
-            <h3>Determinants</h3>
-            <ul><li>
-                (<strong>v<sub>1</sub></strong> ^
-                <strong>v<sub>2</sub></strong>) &#x230b;
-                (<strong>o<sub>1</sub>
-                    o<sub>2</sub></strong>)<sup>&#x2020;</sup>
-            </li><li>
-                (<strong>v<sub>1</sub></strong> ^
-                <strong>v<sub>2</sub></strong> ^
-                <strong>v<sub>3</sub></strong>) &#x230b;
-                (<strong>o<sub>1</sub> o<sub>2</sub>
-                    o<sub>3</sub></strong>)<sup>&#x2020;</sup>
-            </li><li>
-                (<strong>v<sub>1</sub></strong> ^
-                <strong>v<sub>2</sub></strong> ^
-                <strong>v<sub>3</sub></strong> ^
-                <strong>v<sub>4</sub></strong>) &#x230b;
-                (<strong>o<sub>1</sub> o<sub>2</sub>
-                    o<sub>3</sub>
-                    o<sub>4</sub></strong>)<sup>&#x2020;</sup>
-            </li><li>
-                ...
-            </li></ul>
-            <p>
-                A determinant is the dual of a pseudo-scalar
-                created by wedging n n-dimensional vectors.
-            </p>
-        </section>
-        <section>
-            <h3>Wedge Solution 2D</h3>
-            <p>
-                v<sub>1</sub><strong>b<sub>1</sub></strong> +
-                v<sub>2</sub><strong>b<sub>2</sub></strong> =
-                <strong>v</strong>
-            </p>
-            <p>
-                Suppose <strong>b<sub>1</sub></strong>,
-                <strong>b<sub>2</sub></strong> and
-                <strong>v</strong> are known and exist in two
-                dimensions.  Solve for v<sub>1</sub> and
-                v<sub>2</sub>...
-            </p>
-            <table class="large"><tr><td><ul><li class="fragment">
-                (v<sub>1</sub><strong>b<sub>1</sub></strong> +
-                v<sub>2</sub><strong>b<sub>2</sub></strong>)
-                ^ <strong>b<sub>2</sub></strong> =
-                <strong>v</strong> ^
-                <strong>b<sub>2</sub></strong>
-            </li><li class="fragment">
-                v<sub>1</sub> <strong>b<sub>1</sub></strong>
-                ^ <strong>b<sub>2</sub></strong> +
-                v<sub>2</sub> <strong>b<sub>2</sub></strong>
-                ^ <strong>b<sub>2</sub></strong> =<br />
-                <strong>v</strong> ^
-                <strong>b<sub>2</sub></strong>
-            </li><li class="fragment">
-                v<sub>1</sub> <strong>b<sub>1</sub></strong>
-                ^ <strong>b<sub>2</sub></strong> + 0 =
-                <strong>v</strong> ^
-                <strong>b<sub>2</sub></strong>
-            </li><li class="fragment">
-                v<sub>1</sub> = (<strong>v</strong> ^
-                <strong>b<sub>2</sub></strong>)
-                (<strong>b<sub>1</sub></strong> ^
-                <strong>b<sub>2</sub></strong>)<sup>-1</sup>
-            </li></ul></td><td><ul><li class="fragment">
-                <strong>b<sub>1</sub></strong> ^
-                (v<sub>1</sub><strong>b<sub>1</sub></strong> +
-                v<sub>2</sub><strong>b<sub>2</sub></strong>) =
-                <strong>b<sub>1</sub></strong> ^
-                <strong>v</strong>
-            </li><li class="fragment">
-                v<sub>1</sub>
-                <strong>b<sub>1</sub></strong> ^
-                <strong>b<sub>1</sub></strong> +
-                v<sub>2</sub>
-                <strong>b<sub>1</sub></strong> ^
-                <strong>b<sub>2</sub></strong> =<br />
-                <strong>b<sub>1</sub></strong> ^
-                <strong>v</strong>
-            </li><li class="fragment">
-                0 + v<sub>2</sub>
-                <strong>b<sub>1</sub></strong> ^
-                <strong>b<sub>2</sub></strong> =
-                <strong>b<sub>1</sub></strong> ^
-                <strong>v</strong>
-            </li><li class="fragment">
-                v<sub>2</sub> =
-                (<strong>b<sub>1</sub></strong> ^
-                <strong>v</strong>)
-                (<strong>b<sub>1</sub></strong> ^
-                <strong>b<sub>2</sub></strong>)<sup>-1</sup>
-            </li></ul></td></tr></table>
-        </section>
-        <section>
-            <h3>System of Equations</h3>
-            <ul><li>
-                3v<sub>1</sub> + 2v<sub>2</sub> = 5
-            </li><li>
-                v<sub>1</sub>/2 - 2v<sub>2</sub> = 1
-            </li></ul>
-            <table class="large"><tr><td><ul><li class="fragment">
-                <strong>v</strong> =
-                5<strong>o<sub>1</sub></strong> +
-                <strong>o<sub>2</sub></strong>
-            </li><li class="fragment">
-                <strong>b<sub>1</sub></strong> =
-                3<strong>o<sub>1</sub></strong> +
-                <strong>o<sub>2</sub></strong>/2
-            </li><li class="fragment">
-                <strong>b<sub>2</sub></strong> =
-                2<strong>o<sub>1</sub></strong> -
-                2<strong>o<sub>2</sub></strong>
-            </li><li class="fragment">
-                <strong>b<sub>1</sub></strong> ^
-                <strong>b<sub>2</sub></strong> =
-                -7<strong>o<sub>1</sub>o<sub>2</sub></strong>
-            </li><li class="fragment">
-                (<strong>b<sub>1</sub></strong> ^
-                <strong>b<sub>2</sub></strong>)<sup>-1</sup> =
-                1/7<strong>o<sub>1</sub>o<sub>2</sub></strong>
-            </li></ul></td><td><ul><li class="fragment">
-                v<sub>1</sub> = (<strong>v</strong> ^
-                <strong>b<sub>2</sub></strong>)
-                (<strong>b<sub>1</sub></strong> ^
-                <strong>b<sub>2</sub></strong>)<sup>-1</sup>
-            </li><li class="fragment">
-                v<sub>1</sub> = -(-10 - 2)(1/7) = 12/7
-            </li><li class="fragment">
-                v<sub>2</sub> = (<strong>b<sub>1</sub></strong>
-                ^ <strong>v</strong>)
-                (<strong>b<sub>1</sub></strong> ^
-                <strong>b<sub>2</sub></strong>)<sup>-1</sup>
-            </li><li class="fragment">
-                v<sub>2</sub> = -(3 - 5/2)(1/7) = -1/14
-            </li></ul></td></tr></table>
-        </section>
-        <section>
-            <h3>Wedge Solution</h3>
-            <p>
-                This approach works for any number of dimensions
-                as long as the determinant is not zero.
-            </p>
-            <p>
-                v<sub>1</sub><strong>b<sub>1</sub></strong> +
-                v<sub>2</sub><strong>b<sub>2</sub></strong> + ... =
-                <strong>v</strong>
-            </p>
-            <ul><li class="fragment">
-                (v<sub>1</sub><strong>b<sub>1</sub></strong> +
-                v<sub>2</sub><strong>b<sub>2</sub></strong> + ...)
-                ^ (<strong>b<sub>2</sub></strong> ^ ...)
-                = <strong>v</strong> ^
-                (<strong>b<sub>2</sub></strong> ^ ...)
-            </li><li class="fragment">
-                v<sub>1</sub><strong>b<sub>1</sub></strong> ^
-                (<strong>b<sub>2</sub></strong> ^ ...)
-                = <strong>v</strong> ^
-                <strong>b<sub>2</sub></strong> ^ ...
-            </li><li class="fragment">
-                v<sub>1</sub> =
-                (<strong>v</strong> ^
-                <strong>b<sub>2</sub></strong> ^ ...)
-                (<strong>b<sub>1</sub></strong> ^
-                <strong>b<sub>2</sub></strong> ^
-                ...)<sup>-1</sup>
-            </li><li class="fragment">
-                v<sub>2</sub> =
-                (<strong>b<sub>1</sub></strong> ^
-                <strong>v</strong> ^ ...)
-                (<strong>b<sub>1</sub></strong> ^
-                <strong>b<sub>2</sub></strong> ^
-                ...)<sup>-1</sup>
-            </li><li class="fragment">
-                ...
-            </li></ul>
         </section>
     </section>
 
@@ -9986,11 +9681,11 @@
         </section>
         <section>
             <h3>Quaternions</h3>
-            <p>Let's tame those too!</p>
-            <p class="fragment">
-                Every product of a pair of three dimensional vectors
-                is isomorphic to a quaternion.  Quaternion
-                multiplication is the geometric product.
+            <p>
+                Let's tame these too!  Every product of a pair of
+                three dimensional vectors is isomorphic to a
+                quaternion.  Quaternion multiplication is the
+                geometric product.
             </p>
             <ul><li class="fragment">
                 <strong>vu</strong> =
@@ -10006,15 +9701,14 @@
                 (v<sub>1</sub>u<sub>3</sub> -
                 v<sub>3</sub>u<sub>1</sub>)<strong>o<sub>1</sub>
                     o<sub>3</sub></strong>
-            </li><li class="fragment">
-                <strong>vu</strong> = a + b<strong>i</strong> +
-                c<strong>j</strong> + d<strong>k</strong>
                 <span class="fragment">
-                    &#x27f9;
-                    (<strong>vu</strong>)<sup>&#x2020;</sup> =
-                    a - b<strong>i</strong> - c<strong>j</strong> -
+                    = a + b<strong>i</strong> + c<strong>j</strong> +
                     d<strong>k</strong>
                 </span>
+            </li><li class="fragment">
+                (<strong>vu</strong>)<sup>&#x2020;</sup> =
+                a - b<strong>i</strong> - c<strong>j</strong> -
+                d<strong>k</strong>
             </li><li class="fragment">
                 <strong>ij</strong>
                 <span class="fragment">
@@ -10307,7 +10001,7 @@
         <section>
             <h3>Projection</h3>
             <ul><li class="fragment">
-                <strong>v</strong><sub>&#x2225;u</sub> =
+                <strong>v</strong><sub>&#x2225;&ucirc;</sub> =
                 |v||&ucirc;| cos&theta; <strong>&ucirc;</strong>
                 <span class="fragment">
                     = (<strong>v</strong> &middot;
@@ -10483,6 +10177,9 @@
         <section>
             <h3>Rotation</h3>
             <p>
+                Reflecting twice preserved the vector length but
+                changed its orientation.  What else does that?
+            </p><p class="fragment">
                 Reflecting across two vectors is a rotation!
             </p>
             <ul><li class="fragment">
@@ -10559,6 +10256,447 @@
             </p>
         </section>
     </section>
+
+    <section>
+        <section>
+            <h2>Cramer's Rule</h2>
+            <p>
+                A direct way to uncover the components of a vector
+                for a basis using wedge products and inverses.
+            </p>
+            <p>
+                <strong>v</strong> =
+                v<sub>1</sub><strong>b<sub>1</sub></strong> +
+                v<sub>2</sub><strong>b<sub>2</sub></strong> + ...
+            </p>
+            <ul><li>
+                v<sub>1</sub> = (<strong>v</strong> ^
+                <strong>b<sub>2</sub></strong> ^ ...)
+                (<strong>b<sub>1</sub></strong> ^
+                <strong>b<sub>2</sub></strong> ^
+                ...)<sup>-1</sup>
+            </li><li>
+                v<sub>2</sub> = (<strong>b<sub>1</sub></strong> ^
+                <strong>v</strong> ^ ...)
+                (<strong>b<sub>1</sub></strong> ^
+                <strong>b<sub>2</sub></strong> ^
+                ...)<sup>-1</sup>
+            </li><li>
+                ...
+            </li></ul>
+        </section>
+        <section>
+            <h3>Wedge 2D</h3>
+            <p>
+                <strong>u</strong>^<strong>v</strong> =
+                (u<sub>1</sub><strong>o<sub>1</sub></strong> +
+                u<sub>2</sub><strong>o<sub>2</sub></strong>) ^
+                (v<sub>1</sub><strong>o<sub>1</sub></strong> +
+                v<sub>2</sub><strong>o<sub>2</sub></strong>)
+            </p>
+            <ul><li class="fragment">
+                <strong>u</strong>^<strong>v</strong> =
+                <del>
+                    u<sub>1</sub>v<sub>1</sub>
+                    <strong>o<sub>1</sub>o<sub>1</sub></strong>
+                </del> +
+                u<sub>1</sub>v<sub>2</sub>
+                <strong>o<sub>1</sub>o<sub>2</sub></strong> +
+                u<sub>2</sub>v<sub>1</sub>
+                <strong>o<sub>2</sub>o<sub>1</sub></strong> +
+                <del>
+                    u<sub>2</sub>v<sub>2</sub>
+                    <strong>o<sub>2</sub>o<sub>2</sub></strong>
+                </del>
+            </li><li class="fragment">
+                <strong>u</strong>^<strong>v</strong> =
+                u<sub>1</sub>v<sub>2</sub>
+                <strong>o<sub>1</sub>o<sub>2</sub></strong> -
+                u<sub>2</sub>v<sub>1</sub>
+                <strong>o<sub>1</sub>o<sub>2</sub></strong>
+            </li><li class="fragment">
+                <strong>u</strong>^<strong>v</strong> =
+                (u<sub>1</sub>v<sub>2</sub> -
+                u<sub>2</sub>v<sub>1</sub>)
+                <strong>o<sub>1</sub>o<sub>2</sub></strong>
+            </li></ul>
+            <p class="fragment">
+                Doesn't that formula seem familiar?
+            </p>
+        </section>
+        <section>
+            <h3>Wedge 3D</h3>
+            <p>
+                <strong>u</strong> ^ <strong>v</strong> ^
+                <strong>w</strong> =
+                (u<sub>1</sub><strong>o<sub>1</sub></strong> +
+                u<sub>2</sub><strong>o<sub>2</sub></strong> +
+                u<sub>3</sub><strong>o<sub>3</sub></strong>) ^<br />
+                (v<sub>1</sub><strong>o<sub>1</sub></strong> +
+                v<sub>2</sub><strong>o<sub>2</sub></strong> +
+                v<sub>3</sub><strong>o<sub>3</sub></strong>) ^
+                (w<sub>1</sub><strong>o<sub>1</sub></strong> +
+                w<sub>2</sub><strong>o<sub>2</sub></strong> +
+                w<sub>3</sub><strong>o<sub>3</sub></strong>)
+            </p>
+            <ul><li class="fragment">
+                <strong>u</strong> ^ <strong>v</strong>
+                ^ <strong>w</strong> =
+                ((u<sub>1</sub>v<sub>2</sub> -
+                u<sub>2</sub>v<sub>1</sub>)
+                <strong>o<sub>1</sub>o<sub>2</sub></strong> +
+                (u<sub>2</sub>v<sub>3</sub> -
+                u<sub>3</sub>v<sub>2</sub>)
+                <strong>o<sub>2</sub>o<sub>3</sub></strong> +
+                (u<sub>1</sub>v<sub>3</sub> -
+                u<sub>3</sub>v<sub>1</sub>)
+                <strong>o<sub>1</sub>o<sub>3</sub></strong>)
+                ^
+                (w<sub>1</sub><strong>o<sub>1</sub></strong> +
+                w<sub>2</sub><strong>o<sub>2</sub></strong> +
+                w<sub>3</sub><strong>o<sub>3</sub></strong>)
+            </li><li class="fragment">
+                <strong>u</strong> ^ <strong>v</strong>
+                ^ <strong>w</strong> =
+                (u<sub>1</sub>v<sub>2</sub> -
+                u<sub>2</sub>v<sub>1</sub>) w<sub>3</sub>
+                <strong>
+                    o<sub>1</sub>o<sub>2</sub>o<sub>3</sub>
+                </strong>
+                +<br />
+                (u<sub>2</sub>v<sub>3</sub> -
+                u<sub>3</sub>v<sub>2</sub>) w<sub>1</sub>
+                <strong>
+                    o<sub>2</sub>o<sub>3</sub>o<sub>1</sub>
+                </strong>
+                +
+                (u<sub>1</sub>v<sub>3</sub> -
+                u<sub>3</sub>v<sub>1</sub>) w<sub>2</sub>
+                <strong>
+                    o<sub>1</sub>o<sub>3</sub>o<sub>2</sub>
+                </strong>
+            </li><li class="fragment">
+                <strong>u</strong> ^ <strong>v</strong>
+                ^ <strong>w</strong> =
+                ((u<sub>2</sub>v<sub>3</sub> -
+                u<sub>3</sub>v<sub>2</sub>) w<sub>1</sub> -<br />
+                (u<sub>1</sub>v<sub>3</sub> -
+                u<sub>3</sub>v<sub>1</sub>) w<sub>2</sub> +
+                (u<sub>1</sub>v<sub>2</sub> -
+                u<sub>2</sub>v<sub>1</sub>) w<sub>3</sub>)
+                <strong>
+                    o<sub>1</sub>o<sub>2</sub>o<sub>3</sub>
+                </strong>
+            </li></ul>
+        </section>
+        <section>
+            <h3>Determinants</h3>
+            <ul><li>
+                (<strong>v<sub>1</sub></strong> ^
+                <strong>v<sub>2</sub></strong>) &#x230b;
+                (<strong>o<sub>1</sub>
+                    o<sub>2</sub></strong>)<sup>&#x2020;</sup>
+            </li><li>
+                (<strong>v<sub>1</sub></strong> ^
+                <strong>v<sub>2</sub></strong> ^
+                <strong>v<sub>3</sub></strong>) &#x230b;
+                (<strong>o<sub>1</sub> o<sub>2</sub>
+                    o<sub>3</sub></strong>)<sup>&#x2020;</sup>
+            </li><li>
+                (<strong>v<sub>1</sub></strong> ^
+                <strong>v<sub>2</sub></strong> ^
+                <strong>v<sub>3</sub></strong> ^
+                <strong>v<sub>4</sub></strong>) &#x230b;
+                (<strong>o<sub>1</sub> o<sub>2</sub>
+                    o<sub>3</sub>
+                    o<sub>4</sub></strong>)<sup>&#x2020;</sup>
+            </li><li>
+                ...
+            </li></ul>
+            <p>
+                A determinant is the dual of a pseudo-scalar
+                created by wedging n n-dimensional vectors.
+            </p>
+        </section>
+        <section>
+            <h3>Wedge Solution 2D</h3>
+            <p>
+                v<sub>1</sub><strong>b<sub>1</sub></strong> +
+                v<sub>2</sub><strong>b<sub>2</sub></strong> =
+                <strong>v</strong>
+            </p>
+            <p>
+                Given <strong>b<sub>1</sub></strong>,
+                <strong>b<sub>2</sub></strong> and
+                <strong>v</strong> solve for v<sub>1</sub> and
+                v<sub>2</sub>
+            </p>
+            <table><tr><td><ul><li class="fragment">
+                (v<sub>1</sub><strong>b<sub>1</sub></strong> +
+                v<sub>2</sub><strong>b<sub>2</sub></strong>)
+                ^ <strong>b<sub>2</sub></strong> =<br />
+                <strong>v</strong> ^ <strong>b<sub>2</sub></strong>
+            </li><li class="fragment">
+                v<sub>1</sub> <strong>b<sub>1</sub></strong>
+                ^ <strong>b<sub>2</sub></strong> +
+                v<sub>2</sub> <span class="false">
+                <strong>b<sub>2</sub></strong>
+                ^ <strong>b<sub>2</sub></strong></span> =<br />
+                <strong>v</strong> ^
+                <strong>b<sub>2</sub></strong>
+            </li><li class="fragment">
+                v<sub>1</sub> <strong>b<sub>1</sub></strong>
+                ^ <strong>b<sub>2</sub></strong> + 0 =
+                <strong>v</strong> ^
+                <strong>b<sub>2</sub></strong>
+            </li><li class="fragment">
+                v<sub>1</sub> = (<strong>v</strong> ^
+                <strong>b<sub>2</sub></strong>)
+                (<strong>b<sub>1</sub></strong> ^
+                <strong>b<sub>2</sub></strong>)<sup>-1</sup>
+            </li></ul></td><td><ul><li class="fragment">
+                <strong>b<sub>1</sub></strong> ^
+                (v<sub>1</sub><strong>b<sub>1</sub></strong> +
+                v<sub>2</sub><strong>b<sub>2</sub></strong>) =<br />
+                <strong>b<sub>1</sub></strong> ^
+                <strong>v</strong>
+            </li><li class="fragment">
+                v<sub>1</sub>
+                <span class="false">
+                    <strong>b<sub>1</sub></strong> ^
+                    <strong>b<sub>1</sub></strong>
+                </span> + v<sub>2</sub>
+                <strong>b<sub>1</sub></strong> ^
+                <strong>b<sub>2</sub></strong> =<br />
+                <strong>b<sub>1</sub></strong> ^
+                <strong>v</strong>
+            </li><li class="fragment">
+                0 + v<sub>2</sub>
+                <strong>b<sub>1</sub></strong> ^
+                <strong>b<sub>2</sub></strong> =
+                <strong>b<sub>1</sub></strong> ^
+                <strong>v</strong>
+            </li><li class="fragment">
+                v<sub>2</sub> =
+                (<strong>b<sub>1</sub></strong> ^
+                <strong>v</strong>)
+                (<strong>b<sub>1</sub></strong> ^
+                <strong>b<sub>2</sub></strong>)<sup>-1</sup>
+            </li></ul></td></tr></table>
+        </section>
+        <section>
+            <h3>System of Equations</h3>
+            <ul><li>
+                3v<sub>1</sub> + 2v<sub>2</sub> = 5
+            </li><li>
+                v<sub>1</sub>/2 - 2v<sub>2</sub> = 1
+            </li></ul>
+            <table><tr><td><ul><li class="fragment">
+                <strong>v</strong> =
+                5<strong>o<sub>1</sub></strong> +
+                <strong>o<sub>2</sub></strong>
+            </li><li class="fragment">
+                <strong>b<sub>1</sub></strong> =
+                3<strong>o<sub>1</sub></strong> +
+                <strong>o<sub>2</sub></strong>/2
+            </li><li class="fragment">
+                <strong>b<sub>2</sub></strong> =
+                2<strong>o<sub>1</sub></strong> -
+                2<strong>o<sub>2</sub></strong>
+            </li><li class="fragment">
+                <strong>b<sub>1</sub></strong> ^
+                <strong>b<sub>2</sub></strong> =
+                -7<strong>o<sub>1</sub>o<sub>2</sub></strong>
+            </li><li class="fragment">
+                (<strong>b<sub>1</sub></strong> ^
+                <strong>b<sub>2</sub></strong>)<sup>-1</sup> =
+                1/7<strong>o<sub>1</sub>o<sub>2</sub></strong>
+            </li></ul></td><td><ul><li class="fragment">
+                v<sub>1</sub> = (<strong>v</strong> ^
+                <strong>b<sub>2</sub></strong>)
+                (<strong>b<sub>1</sub></strong> ^
+                <strong>b<sub>2</sub></strong>)<sup>-1</sup>
+            </li><li class="fragment">
+                v<sub>1</sub> = -(-10 - 2)(1/7) = 12/7
+            </li><li class="fragment">
+                v<sub>2</sub> = (<strong>b<sub>1</sub></strong>
+                ^ <strong>v</strong>)
+                (<strong>b<sub>1</sub></strong> ^
+                <strong>b<sub>2</sub></strong>)<sup>-1</sup>
+            </li><li class="fragment">
+                v<sub>2</sub> = -(3 - 5/2)(1/7) = -1/14
+            </li></ul></td></tr></table>
+        </section>
+        <section>
+            <h3>Wedge Solution 3D</h3>
+            <p>
+                v<sub>1</sub><strong>b<sub>1</sub></strong> +
+                v<sub>2</sub><strong>b<sub>2</sub></strong> +
+                v<sub>3</sub><strong>b<sub>3</sub></strong> =
+                <strong>v</strong>
+            </p>
+            <p>
+                Given <strong>b<sub>1</sub></strong>,
+                <strong>b<sub>2</sub></strong>,
+                <strong>b<sub>3</sub></strong> and
+                <strong>v</strong> solve for v<sub>1</sub>,
+                v<sub>2</sub> and v<sub>3</sub>
+            </p>
+            <table class="wedge3d"><tr><td><ul><li class="fragment">
+                (v<sub>1</sub><strong>b<sub>1</sub></strong> +
+                v<sub>2</sub><strong>b<sub>2</sub></strong> +
+                v<sub>3</sub><strong>b<sub>3</sub></strong>) ^
+                (<strong>b<sub>2</sub></strong> ^
+                <strong>b<sub>3</sub></strong>) =<br />
+                <strong>v</strong> ^
+                (<strong>b<sub>2</sub></strong> ^
+                <strong>b<sub>3</sub></strong>)
+            </li><li class="fragment">
+                v<sub>1</sub> <strong>b<sub>1</sub></strong>
+                ^ <strong>b<sub>2</sub></strong> ^
+                <strong>b<sub>3</sub></strong> + v<sub>2</sub>
+                <span class="false">
+                    <strong>b<sub>2</sub></strong>
+                    ^ <strong>b<sub>2</sub></strong>
+                </span> ^ <strong>b<sub>3</sub></strong> +<br />
+                v<sub>3</sub> <span class="false">
+                    <strong>b<sub>3</sub></strong>
+                </span> ^ <strong>b<sub>2</sub></strong> ^
+                <span class="false">
+                    <strong>b<sub>3</sub></strong>
+                </span> = <strong>v</strong> ^
+                <strong>b<sub>2</sub></strong> ^
+                <strong>b<sub>3</sub></strong>
+            </li><li class="fragment">
+                v<sub>1</sub> <strong>b<sub>1</sub></strong>
+                ^ <strong>b<sub>2</sub></strong>
+                ^ <strong>b<sub>3</sub></strong> + 0 - 0 =
+                <strong>v</strong> ^
+                <strong>b<sub>2</sub></strong> ^
+                <strong>b<sub>3</sub></strong>
+            </li><li class="fragment">
+                v<sub>1</sub> = (<strong>v</strong> ^
+                <strong>b<sub>2</sub></strong> ^
+                <strong>b<sub>3</sub></strong>)
+                (<strong>b<sub>1</sub></strong> ^
+                <strong>b<sub>2</sub></strong> ^
+                <strong>b<sub>3</sub></strong>)<sup>-1</sup>
+            </li></ul></td><td><ul><li class="fragment">
+                <strong>b<sub>1</sub></strong> ^
+                (v<sub>1</sub><strong>b<sub>1</sub></strong> +
+                v<sub>2</sub><strong>b<sub>2</sub></strong> +
+                v<sub>3</sub><strong>b<sub>3</sub></strong>)
+                ^ <strong>b<sub>3</sub></strong> =<br />
+                <strong>b<sub>1</sub></strong> ^ <strong>v</strong> ^
+                <strong>b<sub>3</sub></strong>
+            </li><li class="fragment">
+                v<sub>1</sub> <span class="false">
+                <strong>b<sub>1</sub></strong>
+                ^ <strong>b<sub>1</sub></strong>
+                </span> ^ <strong>b<sub>3</sub></strong> + v<sub>2</sub>
+                <strong>b<sub>1</sub></strong> ^
+                <strong>b<sub>2</sub></strong> ^
+                <strong>b<sub>3</sub></strong> +<br />
+                v<sub>3</sub> <strong>b<sub>1</sub></strong> ^
+                <span class="false">
+                    <strong>b<sub>3</sub></strong> ^
+                    <strong>b<sub>3</sub></strong>
+                </span> = <strong>b<sub>1</sub></strong> ^
+                <strong>v</strong> ^ <strong>b<sub>3</sub></strong>
+            </li><li class="fragment">
+                0 + v<sub>2</sub> <strong>b<sub>1</sub></strong>
+                ^ <strong>b<sub>2</sub></strong>
+                ^ <strong>b<sub>3</sub></strong> + 0 =
+                <strong>b<sub>1</sub></strong> ^ <strong>v</strong> ^
+                <strong>b<sub>3</sub></strong>
+            </li><li class="fragment">
+                v<sub>2</sub> = (<strong>b<sub>1</sub></strong> ^
+                <strong>v</strong> ^
+                <strong>b<sub>3</sub></strong>)
+                (<strong>b<sub>1</sub></strong> ^
+                <strong>b<sub>2</sub></strong> ^
+                <strong>b<sub>3</sub></strong>)<sup>-1</sup>
+            </li></ul></td><td><ul><li class="fragment">
+                (<strong>b<sub>1</sub></strong> ^
+                <strong>b<sub>2</sub></strong>) ^
+                (v<sub>1</sub><strong>b<sub>1</sub></strong> +
+                v<sub>2</sub><strong>b<sub>2</sub></strong> +
+                v<sub>3</sub><strong>b<sub>3</sub></strong>) =<br />
+                (<strong>b<sub>1</sub></strong>
+                ^ <strong>b<sub>2</sub></strong>) ^ <strong>v</strong>
+            </li><li class="fragment">
+                v<sub>1</sub> <span class="false">
+                <strong>b<sub>1</sub></strong></span>
+                ^ <strong>b<sub>2</sub></strong>
+                ^ <span class="false">
+                    <strong>b<sub>1</sub></strong>
+                </span> + v<sub>2</sub>
+                <strong>b<sub>1</sub></strong> ^
+                <span class="false">
+                    <strong>b<sub>2</sub></strong> ^
+                    <strong>b<sub>2</sub></strong>
+                </span> +<br />
+                v<sub>3</sub> <strong>b<sub>1</sub></strong> ^
+                <strong>b<sub>2</sub></strong> ^
+                <strong>b<sub>3</sub></strong> =
+                <strong>b<sub>1</sub></strong> ^
+                <strong>b<sub>2</sub></strong> ^ <strong>v</strong>
+            </li><li class="fragment">
+                -0 + 0 + v<sub>3</sub> <strong>b<sub>1</sub></strong>
+                ^ <strong>b<sub>2</sub></strong>
+                ^ <strong>b<sub>3</sub></strong> =
+                <strong>b<sub>1</sub></strong> ^
+                <strong>b<sub>2</sub></strong> ^ <strong>v</strong>
+            </li><li class="fragment">
+                v<sub>3</sub> = (<strong>b<sub>1</sub></strong> ^
+                <strong>b<sub>2</sub></strong> ^ <strong>v</strong>)
+                (<strong>b<sub>1</sub></strong> ^
+                <strong>b<sub>2</sub></strong> ^
+                <strong>b<sub>3</sub></strong>)<sup>-1</sup>
+            </li></ul></td></tr></table>
+        </section>
+        <section>
+            <h3>Wedge Solution</h3>
+            <p>
+                This approach works for any number of dimensions
+                as long as the determinant is not zero.
+            </p>
+            <p>
+                v<sub>1</sub><strong>b<sub>1</sub></strong> +
+                v<sub>2</sub><strong>b<sub>2</sub></strong> + ... =
+                <strong>v</strong>
+            </p>
+            <ul><li class="fragment">
+                (v<sub>1</sub><strong>b<sub>1</sub></strong> +
+                v<sub>2</sub><strong>b<sub>2</sub></strong> + ...)
+                ^ (<strong>b<sub>2</sub></strong> ^ ...)
+                = <strong>v</strong> ^
+                (<strong>b<sub>2</sub></strong> ^ ...)
+            </li><li class="fragment">
+                v<sub>1</sub><strong>b<sub>1</sub></strong> ^
+                (<strong>b<sub>2</sub></strong> ^ ...)
+                = <strong>v</strong> ^
+                <strong>b<sub>2</sub></strong> ^ ...
+            </li><li class="fragment">
+                v<sub>1</sub> =
+                (<strong>v</strong> ^
+                <strong>b<sub>2</sub></strong> ^ ...)
+                (<strong>b<sub>1</sub></strong> ^
+                <strong>b<sub>2</sub></strong> ^
+                ...)<sup>-1</sup>
+            </li><li class="fragment">
+                v<sub>2</sub> =
+                (<strong>b<sub>1</sub></strong> ^
+                <strong>v</strong> ^ ...)
+                (<strong>b<sub>1</sub></strong> ^
+                <strong>b<sub>2</sub></strong> ^
+                ...)<sup>-1</sup>
+            </li><li class="fragment">
+                ...
+            </li></ul>
+        </section>
+    </section>
+
     <section id="conformal">
         <section>
             <h2>Conformal Model</h2>
@@ -10605,8 +10743,8 @@
             </td><td>
                 <em>p</em> &middot; <em>p</em> = 0
             </td><td>
-                <strong>v</strong> &middot; <strong>v</strong>
-                &ne; 0
+                <strong>v</strong> &middot;
+                <strong>v</strong> &ne; 0
             </td><td>
                 Preserving
             </td></tr></table>
@@ -10624,8 +10762,8 @@
                 &#x2203;<strong>p</strong>
                 <em>p</em> = <strong>p</strong>
             </li><li class="fragment">
-                &#x2200;<em>p</em>&#x2208;&#x2119;,
-                <strong>p</strong>, <strong>q</strong>
+                &#x2200;<em>p</em>&#x2208;&#x2119;
+                &#x2200;<strong>p</strong>, <strong>q</strong>
                 (<em>p</em> = <strong>p</strong>) &and;
                 (<em>p</em> = <strong>q</strong>) &#x27f9;
                 <strong>p</strong> = <strong>q</strong>
@@ -10689,6 +10827,7 @@
                 &middot; <strong>o<sub>0</sub></strong>)<sup>-1</sup>)
                 ^ <strong>o<sub>0</sub></strong>) /
                 <strong>o<sub>0</sub></strong>
+                <em class="fragment">Rejection!</em>
             </li></ul>
         </section>
         <section>
@@ -10789,14 +10928,15 @@
                     &middot; <em>o</em>
                 </span>
             </li><li class="fragment">
-                <em>o</em> ^
-                <em>&infin;</em>
+                <em>o</em> ^ <em>&infin;</em>
                 <span class="fragment">
-                    = (<strong>o<sub>0</sub>o<sub>-1</sub></strong> -
-                    <strong>o<sub>-1</sub>o<sub>0</sub></strong>) / 2 =
-                    (<strong>o<sub>0</sub>o<sub>-1</sub></strong> +
-                    <strong>o<sub>0</sub>o<sub>-1</sub></strong>) / 2 =
-                    <strong>o<sub>0</sub>o<sub>-1</sub></strong>
+                    = (<strong>o<sub>-1</sub>o<sub>0</sub></strong> -
+                    <strong>o<sub>0</sub>o<sub>-1</sub></strong>) / 2
+                </span><span class="fragment">
+                    = (<strong>o<sub>-1</sub>o<sub>0</sub></strong> +
+                    <strong>o<sub>-1</sub>o<sub>0</sub></strong>) / 2
+                </span><span class="fragment">
+                    = <strong>o<sub>-1</sub>o<sub>0</sub></strong>
                 </span>
             </li></ul>
         </section>
@@ -10824,11 +10964,9 @@
                 NORMAL(a<em>p</em>) = NORMAL(<em>p</em>)
             </li><li class="fragment">
                 <strong>p</strong> = ((<em>p</em> (-<em>&infin;</em>
-                &middot; <em>p</em>)<sup>-1</sup>)
-                ^ <em>o</em> ^
-                <em>&infin;</em>)
-                (<em>o</em> ^
-                <em>&infin;</em>)<sup>-1</sup>
+                &middot; <em>p</em>)<sup>-1</sup>) ^ <em>o</em> ^
+                <em>&infin;</em>) (<em>o</em> ^
+                <em>&infin;</em>)<sup>-1</sup> <em>Rejection</em>
             </li></ul>
         </section>
         <section>
@@ -10881,18 +11019,20 @@
                 <strong>p</strong> &middot; <strong>q</strong> -
                 <strong>q</strong><sup>2</sup>/2 -
                 <strong>p</strong><sup>2</sup>/2
-                <span class="fragment">
-                    = -1/2 (<strong>p</strong> -
-                    <strong>q</strong>) &middot;
-                    (<strong>p</strong> -
-                    <strong>q</strong>)<sup>&#x2020;</sup>
-                </span>
+            </li><li class="fragment">
+                <em>p</em> &middot; <em>q</em> =
+                -1/2 (<strong>p</strong> &middot; <strong>p</strong> -
+                2 <strong>p</strong> &middot; <strong>q</strong> +
+                <strong>q</strong> &middot; <strong>q</strong>)
+            </li><li class="fragment">
+                <em>p</em> &middot; <em>q</em> =
+                -1/2 (<strong>p</strong> -
+                <strong>q</strong>) &middot; (<strong>p</strong> -
+                <strong>q</strong>)<sup>&#x2020;</sup> =
+                -1/2 &#x22a0;(<strong>p</strong> - <strong>q</strong>)
             </li><li class="fragment">
                 -2 (<em>p</em> &middot; <em>q</em>) =
-                (<strong>p</strong> -
-                <strong>q</strong>) &middot;
-                (<strong>p</strong> -
-                <strong>q</strong>)<sup>&#x2020;</sup>
+                &#x22a0;(<strong>p</strong> - <strong>q</strong>)
             </li></ul>
         </section>
         <section>
@@ -10936,6 +11076,7 @@
                 <strong>p</strong><sup>2</sup><em>&infin;</em>/2)
                 (1 - <em>&infin;</em><strong>t</strong>/2)
             </li><li>
+                TODO
             </li><li>
                 <em>p</em><sub><strong>t</strong></sub> =
                 <em>o</em> + (<strong>p</strong> +
@@ -10944,9 +11085,13 @@
             </li></ul>
         </section>
     </section>
-    <section id="conformal-rounds">
+    <section id="conformal-shapes">
         <section>
-            <h2>Conformal Rounds</h2>
+            <h2>Conformal Shapes</h2>
+        </section>
+        <section>
+            <h3>Conformal Rounds</h3>
+            <p>Any three points define a circumcircle.</p>
             <canvas class="triggy"
                     data-userCircle="25|25|75|65|25|60">
             </canvas>
@@ -10995,51 +11140,72 @@
                     <sup>&#x2020;</sup>
                 </span>
             </li></ul>
+            <p class="fragment">
+                Seems familiar, doesn't it?
+            </p>
+        </section>
+        <section>
+            <h3>Conformal Flats</h3>
+            <p>
+                Radius<sup>2</sup>:
+                &#x22a0;(S (S ^ <em>&infin;</em>)<sup>-1</sup>)
+                <span class="fragment">
+                    But what if (S ^ &infin; = 0)?
+                </span>
+            </p>
+            <canvas class="triggy"
+                    data-userCircle="25|25|75|65|48|45">
+            </canvas>
         </section>
         <section>
             <h3>Conformal Line</h3>
+            <p>A circle that passes through infinity is a line:</p>
             <p>
-                A circle that passes through infinity is a line:
-                <br /> L = <em>p</em><sub>1</sub> ^
-                <em>p</em><sub>2</sub> ^ <em>&infin;</em> =
-                <em>p</em><sub>1</sub> ^
-                <strong>v</strong> ^ <em>&infin;</em>
-            </p><ul><li>
+                L = <em>p</em><sub>1</sub> ^
+                <em>p</em><sub>2</sub> ^ <em>&infin;</em>
+            </p><ul><li class="fragment">
                 &#x2200;<em>p</em>&#x2208;&#x2119;
                 <em>p</em>&#x2208;L &#x27fa;
                 L ^ <em>p</em> = 0
-            </li><li>
-                Center? L <em>&infin;</em> L<sup>-1</sup> =
-                <em>&infin;</em> 
-            </li><li>
-                Radius<sup>2</sup>?
-                &#x22a0;(L (L ^ <em>&infin;</em>)<sup>-1</sup>)
-                <span class="fragment">
-                    But... L ^ <em>&infin;</em> = 0
-                </span>
+            </li><li class="fragment">
+                L ^ <em>&infin;</em> = 0
+            </li><li class="fragment">
+                L = <em>p</em><sub>1</sub> ^
+                <strong>v</strong> ^ <em>&infin;</em>
             </li></ul>
+            <p class="fragment">
+                <em>p</em><sub>1</sub> ^
+                <em>p</em><sub>2</sub> ^
+                <em>p</em><sub>3</sub> ^ <em>&infin;</em> = 0
+                &#x27fa; COLINEAR(<em>p</em><sub>1</sub>,
+                <em>p</em><sub>2</sub>, <em>p</em><sub>3</sub>)
+            </p>
         </section>
         <section>
             <h3>Conformal Plane</h3>
+            <p>A sphere that passes through infinity is a plane:</p>
             <p>
-                A sphere that passes through infinity is a plane:
-                <br /> P = <em>p</em><sub>1</sub> ^
+                P = <em>p</em><sub>1</sub> ^
                 <em>p</em><sub>2</sub> ^
                 <em>p</em><sub>3</sub> ^ <em>&infin;</em>
-            </p><ul><li>
+            </p><ul><li class="fragment">
                 &#x2200;<em>p</em>&#x2208;&#x2119;
                 <em>p</em>&#x2208;P &#x27fa;
                 P ^ <em>p</em> = 0
-            </li><li>
-                Center? P <em>&infin;</em> P<sup>-1</sup> =
-                <em>&infin;</em> 
-            </li><li>
-                Radius<sup>2</sup>?
-                &#x22a0;(P (P ^ <em>&infin;</em>)<sup>-1</sup>)
-                <span class="fragment">
-                    But... P ^ <em>&infin;</em> = 0
-                </span>
+            </li><li class="fragment">
+                P ^ <em>&infin;</em> = 0
+            </li><li class="fragment">
+                P = <em>p</em><sub>1</sub> ^ <strong>B</strong> ^
+                <em>&infin;</em>
             </li></ul>
+            <p class="fragment">
+                <em>p</em><sub>1</sub> ^ <em>p</em><sub>2</sub> ^
+                <em>p</em><sub>3</sub> ^ <em>p</em><sub>4</sub> ^
+                <em>&infin;</em> = 0
+                &#x27fa; COPLANAR(<em>p</em><sub>1</sub>,
+                <em>p</em><sub>2</sub>, <em>p</em><sub>3</sub>,
+                <em>p</em><sub>4</sub>)
+            </p>
         </section>
     </section>
 
