@@ -527,22 +527,50 @@
 
     // An item system connects items from a characters inventory to
     // definition objects that give the items default properties.
+    //
+    // Common item properties:
+    // - count: number of instances
+    // - mass:   kg
+    // - volume: liters
+    // - bulk:   meters
+    // - slot: ['head', 'neck', 'torso', 'back',
+    //          'waist', 'legs', 'feet']
+    // - charge:    Joules
+    // - maxcharge: Joules
+    // - nutrition: (for things that are edible)
+    // - armor: (for things that absorb damage)
+    // - attack: (for things that can attack)
     fascia.itemSystem = function(itemdefs) {
         if (!(this instanceof fascia.itemSystem))
             return new fascia.itemSystem(itemdefs);
-        this.itemdefs = itemdefs || {};
+
+        this.baseitem = {
+            type: 'baseitem', count: 1, mass: 1, icon: 'default',
+            toString: function() { return this.type; },
+            toJSON:   function() {
+                return this;
+            }
+        };
+
+        this.definitions = {};
+        this.addDefinitions(itemdefs);
+    };
+
+    fascia.itemSystem.prototype.addDefinitions = function(itemdefs) {
+        Object.keys(itemdefs).forEach(function(key) {
+            var result = Object.create(this.baseitem);
+            result.type = key;
+            Object.keys(itemdefs[key]).forEach(function(field) {
+                result[field] = itemdefs[field]; }, this);
+            this.definitions[key] = result;
+        }, this);
     };
 
     fascia.itemSystem.prototype.create = function(item) {
-        var result = {
-            type: item.type,
-            weight: item.weight || 0,
-            toString: function() { return item.type; } };
-
-        if (item.type in this.itemdefs)
-            result.definition = this.itemdefs[item.type];
-        result.icon = result.definition ?
-                      result.definition.icon : 'default';
+        var result = Object.create(
+            (item.type in this.definitions) ?
+            this.definitions[item.type] : this.baseitem);
+        result.definition = this.definitions[item.type];
         return result;
     };
 
@@ -813,8 +841,10 @@
                     {icon: 'rhand', className: 'inventory-rhand',
                      imageSystem: this.imageSystem,
                      drop: function(value) {
+                         // FIXME: limit this to the current context
                          document.querySelectorAll('.inventory-rhand')
                                  .forEach(function(element) {
+                                     console.log("DROP", value);
                                      this.imageSystem.applyItem({
                                          className: 'inventory-rhand',
                                          icon: value.icon,
@@ -897,7 +927,8 @@
         var element = document.createElement('div');
 
         element = this.imageSystem.applyItem(
-            {icon: item.icon, title: item.toString(), drag: item,
+            {icon: item.icon, title: item.toString(),
+             drag: item,
              data: {index: index}}, element);
         element.addEventListener('click', function(event) {
             ripple.toggleClass(event.target, 'selected'); });
@@ -934,8 +965,7 @@
 
     // Fascia App is a framework for canvas applications that
     // automatically handles resizing, canonicalizing touch and mouse
-    // events and more.  Here's an example of how an application might
-    // be defined:
+    // events.  Here's an example application:
     //
     // fascia.app(function() {
     //     taps = [];
@@ -1094,7 +1124,33 @@
             wheel: function(name, event) {
                 if (app.wheel && !app.wheel(event, camera))
                     redraw();
-            }
+            },
+
+            touchstart: function(name, event) {
+                if (app.down && !app.down(event, camera))
+                    redraw();
+            },
+            touchmove: function(name, event) {
+                if (app.move && !app.move(event, camera))
+                    redraw();
+            },
+            touchend: function(name, event) {
+                if (app.up && !app.up(event, camera))
+                    redraw();
+            },
+
+            mousedown: function(name, event) {
+                if (app.down && !app.down(event, camera))
+                    redraw();
+            },
+            mousemove: function(name, event) {
+                if (app.move && !app.move(event, camera))
+                    redraw();
+            },
+            mouseup: function(name, event) {
+                if (app.up && !app.up(event, camera))
+                    redraw();
+            },
         }, canvas);
 
         // Allow the application to process keyboard input.
