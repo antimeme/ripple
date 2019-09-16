@@ -118,15 +118,15 @@
             else if (attr === 'innerHTML')
                 result.innerHTML = attrs[attr];
             else if ((attr === 'data') &&
-                     (typeof(attrs[attr]) === 'object')) {
+                     (typeof(attrs[attr]) === 'object'))
                 Object.keys(attrs[attr]).forEach(function(entry) {
                     result.setAttribute(
                         'data-' + entry, attrs[attr][entry]); });
-            } else if ((attr === 'style') &&
-                       (typeof(attrs[attr]) === 'object')) {
+            else if ((attr === 'style') &&
+                       (typeof(attrs[attr]) === 'object'))
                 Object.keys(attrs[attr]).forEach(function(entry) {
                     result.style[entry] = attrs[attr][entry]; });
-            } else result.setAttribute(attr, attrs[attr]); });
+            else result.setAttribute(attr, attrs[attr]); });
 
         for (ii = 2; ii < arguments.length; ++ii)
             result.appendChild((typeof(arguments[ii]) === 'string' ||
@@ -761,6 +761,13 @@
         return false;
     };
 
+    var sanitizeEvent = function(event) {
+        event = event || window.event;
+        if (event && event.preventDefault)
+            event.preventDefault();
+        return event;
+    };
+
     ripple.gestur.prototype.setElement = function(target) {
         var self = this;
         if ((typeof(jQuery) !== "undefined") &&
@@ -769,52 +776,67 @@
         this.target = target;
 
         target.addEventListener('touchstart', function(event) {
+            event = sanitizeEvent(event);
             var points = ripple.getInputPoints(
                 event, target, this.scalefn);
-            self.fireEvent('touchstart', points);
+
+            self.fireEvent('touchstart', event, points);
             self.onStart(target, points, true);
             return false; });
         target.addEventListener('touchmove', function(event) {
+            event = sanitizeEvent(event);
             var points = ripple.getInputPoints(
                 event, target, this.scalefn);
-            self.fireEvent('touchmove', points);
-            if (event.preventDefault)
-                event.preventDefault();
+
+            self.fireEvent('touchmove', event, points);
             self.onMove(event, points, true);
             return false; });
         target.addEventListener('touchend', function(event) {
+            event = sanitizeEvent(event);
             var points = ripple.getInputPoints(
                 event, target, this.scalefn);
-            self.fireEvent('touchend', points);
+
+            self.fireEvent('touchend', event, points);
             self.onEnd(target, points, true);
             return false; });
         target.addEventListener('touchcancel', function(event) {
+            event = sanitizeEvent(event);
             var points = ripple.getInputPoints(
                 event, target, this.scalefn);
-            self.fireEvent('touchcancel', points);
+
+            self.fireEvent('touchcancel', event, points);
             self.reset();
             return false; });
         target.addEventListener('mousedown', function(event) {
+            event = sanitizeEvent(event);
             var points = ripple.getInputPoints(
                 event, target, this.scalefn);
-            self.fireEvent('mousedown', points);
+
+            self.fireEvent('mousedown', event, points);
             self.onStart(target, points, false);
             return false; });
         target.addEventListener('mousemove', function(event) {
+            event = sanitizeEvent(event);
             var points = ripple.getInputPoints(
                 event, target, this.scalefn);
+
+            self.fireEvent('mousemove', event, points);
             self.onMove(target, points, false);
             return false; });
         target.addEventListener('mouseup', function(event) {
+            event = sanitizeEvent(event);
             var points = ripple.getInputPoints(
                 event, target, this.scalefn);
-            self.fireEvent('mouseup', points);
+
+            self.fireEvent('mouseup', event, points);
             self.onEnd(target, points, false);
             return false; });
         target.addEventListener('mouseleave', function(event) {
+            event = sanitizeEvent(event);
             var points = ripple.getInputPoints(
                 event, target, this.scalefn);
-            self.fireEvent('mouseleave', points);
+
+            self.fireEvent('mouseleave', event, points);
             self.reset();
             return false; });
         ripple.addWheelListener(target, function(event) {

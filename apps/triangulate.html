@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<title>Triangulate</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<style>
+ html, body
+ { position: absolute; padding: 0; margin: 0; overflow: hidden;  }
+ fieldset.menu {
+     border: 2px solid black;  background: lightgray;
+ }
+ fieldset.menu legend {
+     border: 2px solid black;  background: lightgray;
+ }
+</style>
+<script src="ripple/polyfill.js"></script>
+<script src="ripple/ripple.js"></script>
+<script src="ripple/fascia.js"></script>
+<script src="ripple/random.js"></script>
+<script src="ripple/multivec.js"></script>
+<script>//<![CDATA[
+
+ var generatePoints = function() {
+     var result = [];
+     var ii;
+     var r = random.random();
+
+     for (ii = 0; ii < 4; ++ii)
+         result.push(multivec({x: r.random(), y: r.random() })
+             .createPoint());
+     return result;
+ };
+
+ var isFiniteTriangle = function(triangle) {
+     return (triangle[0] >= 0) && (triangle[1] >= 0) &&
+            (triangle[2] >= 0);
+ };
+
+ var getCircumcircle = function(triangle, points) {
+     var result, ii, point;
+     for (ii = 0; ii < triangle.length; ++ii) {
+         point = (triangle[ii] >= 0) ? points[triangle[ii]] :
+                 multivec.infinityPoint;
+         result = result ? result.wedge(point) : point;
+     }
+     return result;
+ };
+
+ var inCircle = function(circle, point) {
+     var result = false;
+     var discriminant = circle.wedge(multivec.infinityPoint);
+     if (multivec.zeroish(discriminant)) {
+         // This "circle" includes the point at infinity so it's
+         // actually a line.
+         // TODO
+     } else {
+         var center = multivec.infinityPoint.applyVersor(circle);
+         var radiusQuadrance = circle.divide(discriminant).quadrance();
+         var quadrance = multivec.conformalQuadrance(center, point);
+         result = (quadrance < radiusQuadrance);
+     }
+     return result;
+ };
+
+ var getDelaunayTriangles = function(points) {
+     // We use the Bowyer-Watson algorithm, except instead of a super
+     // triangle we create three triangles through the point at infinity
+     // for the starting triangulation.
+     // https://en.wikipedia.org/wiki/Bowyer%E2%80%93Watson_algorithm
+     if (!points || points.length < 3)
+         throw new Error("Not enough points");
+     
+     // Begin with a single triangle made from the first three points
+     // as well as one triangle from each edge completed by the point
+     // at infinity, which is represented by index -1 here.
+     var result = [[0, 1, 2], [-1, 1, 0], [-1, 2, 1], [-1, 0, 2]];
+     var ii, jj, point, triangle, next, edges;
+     for (ii = 3; ii < points.length; ++ii) {
+         point = points[ii];
+
+         // Find all triangle with circumcircles that include the
+         // new point.  Those are discarded but their edges are
+         // stored for later use, except any that are duplicated.
+         // This will leave us with a polygon gap.
+         next = [];
+         edges = {};
+         for (jj = 0; jj < result.length; ++jj) {
+             triangle = result[jj];
+             if (inCircle(getCircumcircle(triangle, points), point)) {
+                 [[triangle[0], triangle[1]],
+                  [triangle[1], triangle[2]],
+                  [triangle[2], triangle[0]]].forEach(function(edge) {
+                      var index = ripple.pair(edge[0], edge[1]);
+                      if (index in edges)
+                          delete edges[index];
+                      else edges[index] = true;
+                  });
+             } else next.push(triangle);
+         }
+
+         // Each edge is combined with the new point to make a
+         // new triangle which we add to the result.
+         result = next;
+         if (Object.keys(edges).length > 0) {
+             Object.keys(edges).forEach(function(index) {
+                 var edge = ripple.unpair(index);
+                 result.push([edge.x, edge.y, ii]);
+             });
+         }
+     }
+
+     // Discard triangles with vertices at infinity
+     return result.filter(function(triangle) {
+         return (triangle[0] >= 0) && (triangle[1] >= 0) &&
+                (triangle[2] >= 0); });
+ };
+
+ fascia.ready(function() {
+     'use strict';
+     var applegend = 'Triangulate';
+     var points = generatePoints();
+     var triangles = getDelaunayTriangles(points);
+     var redraw = function() {};
+
+     return {
+         init: function(camera, canvas, container, fasciaRedraw) {
+             canvas.style.background = 'rgb(224, 224, 224)';
+             redraw = fasciaRedraw;
+         },
+         draw: function(ctx, camera, now, last) {
+             var size = Math.min(camera.width, camera.height);
+             ctx.beginPath();
+             ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+             ctx.textAlign = 'center';
+             ctx.textBaseline = 'top';
+             ctx.font = 'bold ' + Math.round(
+                 Math.min(camera.height, camera.width) / 20) +
+                        'px sans';
+             ctx.fillText(applegend, 0, -camera.height/2);
+
+             ctx.lineCap = 'round';
+             ctx.lineWidth = 2;
+
+             ctx.beginPath();
+             triangles.forEach(function(triangle) {
+                 var circle = getCircumcircle(triangle, points);
+                 var center = multivec.infinityPoint
+                                      .applyVersor(circle)
+                                      .normalizePoint();
+                 var radius = Math.sqrt(circle.divide(
+                     circle.wedge(multivec.infinityPoint)).quadrance());
+                 ctx.moveTo((center.x - 0.5) * camera.width +
+                            radius * camera.width,
+                            (center.y - 0.5) * camera.height);
+                 ctx.ellipse((center.x - 0.5) * camera.width,
+                             (center.y - 0.5) * camera.height,
+                             radius * camera.width,
+                             radius * camera.height, 0, 0, Math.PI * 2);
+             });
+             ctx.strokeStyle = 'skyblue';
+             ctx.stroke();
+
+             ctx.beginPath();
+             triangles.forEach(function(triangle) {
+                 var actual = [points[triangle[0]],
+                               points[triangle[1]],
+                               points[triangle[2]]];
+                 ctx.moveTo((actual[0].x - 0.5) * camera.width,
+                            (actual[0].y - 0.5) * camera.height);
+                 ctx.lineTo((actual[1].x - 0.5) * camera.width,
+                            (actual[1].y - 0.5) * camera.height);
+                 ctx.lineTo((actual[2].x - 0.5) * camera.width,
+                            (actual[2].y - 0.5) * camera.height);
+                 ctx.lineTo((actual[0].x - 0.5) * camera.width,
+                            (actual[0].y - 0.5) * camera.height);
+             });
+             ctx.strokeStyle = 'black';
+             ctx.stroke();
+
+             ctx.beginPath();
+             points.forEach(function(point) {
+                 var p = { x: (point.x - 0.5) * camera.width,
+                           y: (point.y - 0.5) * camera.height };
+                 ctx.moveTo(p.x + size / 60, p.y);
+                 ctx.arc(p.x, p.y, size / 60, 0, Math.PI * 2);
+             });
+             ctx.fillStyle = 'rgb(32, 192, 32)';
+             ctx.fill();
+             ctx.strokeStyle = 'rgb(32, 32, 192)';
+             ctx.stroke();
+         },
+         tap: function(event, camera) {
+         },
+         wheel: function(event, camera)
+         { camera.zoom(1 + 0.1 * event.y, 1, 10); },
+     }
+ }); //]]></script>
