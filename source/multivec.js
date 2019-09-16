@@ -754,9 +754,15 @@
             multivec.originPoint.wedge(multivec.infinityPoint));
     };
 
+    // Compute the quadrance between two conformal points
+    multivec.conformalQuadrance = function(point1, point2) {
+        return point1.normalizePoint().dot(
+            point2.normalizePoint()).times(-2).scalar;
+    };
+
     // Compute the distance between two conformal points
     multivec.conformalDistance = function(point1, point2) {
-        return Math.sqrt(point1.dot(point2).times(-2).scalar);
+        return Math.sqrt(multivec.conformalQuadrance(point1, point2));
     };
 
     // Create a rotation that can be applied as a versor
