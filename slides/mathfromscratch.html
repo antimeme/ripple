@@ -8108,7 +8108,8 @@
             <h3>Blechters</h3>
             <ul><li>
                 Tuple Sytle: <strong>v</strong> =
-                (v<sub>1</sub>, v<sub>2</sub>, v<sub>3</sub>)
+                &#x27e8;v<sub>1</sub>, v<sub>2</sub>,
+                v<sub>3</sub>&#x27e9;
             </li><li>
                 Column Style: <strong>v</strong> =
                 <table class="matrix"><tr><td>
@@ -8266,20 +8267,21 @@
             <p>
                 Geometric algebra is a mathematical of lost city.
             </p><ul><li class="fragment">
-                Grassman (1809-1877 CE): extended quantities
+                Euclid (~300 BCE): connected geometry &amp; algebra
             </li><li class="fragment">
-                Hamilton (1805-1877 CE): quaternions
+                Hamilton (1843 CE): discovered quaternions
             </li><li class="fragment">
-                Clifford (1845-1879 CE): vector product
+                Grassman (1844 CE): systematic transformations
             </li><li class="fragment">
-                Gibbs (1839-1877 CE): 3D engineering
+                Clifford (1878 CE): created geometric product
             </li><li class="fragment">
-                Hestenes (1933 CE - present): algebra of spatial
-                relationships
+                Gibbs &amp; Heavyside (18?? CE): vector analysis
+            </li><li class="fragment">
+                Hestenes (1966): space-time algebra
             </li></ul>
             <aside class="notes">
                 Herman Grassman was too far ahead of his time.
-                William Rowan Hamilton vandalized a bride but
+                William Rowan Hamilton vandalized a bridge but
                 didn't see the larger picture.  William Kingdon
                 Clifford build a foundation.  Gibbs focused on
                 engineering but we pay a heavy price for this.
@@ -8291,7 +8293,7 @@
             <p>
                 We will use an <span class="intro">orthonormal</span>
                 basis.  That means all vectors are the same length
-                and form right angles.
+                and perpendicular to one another.
             </p>
             <ul><li>
                 <strong>o<sub>1</sub></strong> = <strong>x</strong>
@@ -8303,21 +8305,6 @@
                 <strong>o<sub>4</sub></strong>
             </li><li>
                 ...
-            </li></ul>
-        </section>
-        <section>
-            <h3>Arithemetic Vectors</h3>
-            <p>
-                Rather than using columns of numbers or ordered
-                tuples, we'll represent them using arithmetic.
-            </p>
-            <ul><li>
-                2<strong>x</strong> - 3<strong>y</strong> +
-                <strong>z</strong>
-            </li><li>
-                2<strong>o<sub>1</sub></strong> -
-                3<strong>o<sub>2</sub></strong> +
-                <strong>o<sub>3</sub></strong>
             </li></ul>
         </section>
         <section>
@@ -8380,7 +8367,7 @@
             <p>
                 (a + b) &times; (c + d)
                 <span class="fragment"> =<br />
-                    ac + ad + bc + bd</span>
+                    ac + bc + ad + bd</span>
             </p>
             <table class="fragment"><tr>
                 <td>&times;</td><th>c</th><th>d</th>
@@ -8455,7 +8442,7 @@
                 u<sub>2</sub><strong>o<sub>2</sub></strong> + ...
             </li><li class="fragment">
                 <strong>v</strong> &times; <strong>u</strong> =
-                <strong>vu</strong>
+                <strong>v u</strong>
                 <span class="fragment">
                     = v<sub>1</sub><strong>o<sub>1</sub></strong>
                     u<sub>1</sub><strong>o<sub>1</sub></strong> +
@@ -8501,7 +8488,7 @@
         <section>
             <h3>Simplify</h3>
             <p>
-                <strong>vu</strong>
+                <strong>v u</strong>
                 = v<sub>1</sub><strong>o<sub>1</sub></strong>
                 u<sub>1</sub><strong>o<sub>1</sub></strong> +
                 v<sub>1</sub><strong>o<sub>1</sub></strong>
@@ -8513,7 +8500,7 @@
             </p>
             <ul><li class="fragment">
                 Commute Scalars:<br />
-                <strong>vu</strong> = v<sub>1</sub>u<sub>1</sub>
+                <strong>v u</strong> = v<sub>1</sub>u<sub>1</sub>
                 <strong>o<sub>1</sub>o<sub>1</sub></strong> +
                 v<sub>1</sub>u<sub>2</sub>
                 <strong>o<sub>1</sub>o<sub>2</sub></strong> +
@@ -8530,7 +8517,7 @@
                 ... = 1
                 <span class="fragment">
                     &#x27f9;<br />
-                    <strong>vu</strong> =
+                    <strong>v u</strong> =
                     v<sub>1</sub>u<sub>1</sub> +
                     v<sub>2</sub>u<sub>2</sub> +
                     v<sub>1</sub>u<sub>2</sub>
@@ -8545,7 +8532,7 @@
                 -<strong>o<sub>1</sub>o<sub>2</sub></strong>
                 <span class="fragment">
                     &#x27f9;<br />
-                    <strong>vu</strong> =
+                    <strong>v u</strong> =
                     v<sub>1</sub>u<sub>1</sub> +
                     v<sub>2</sub>u<sub>2</sub> +
                     (v<sub>1</sub>u<sub>2</sub> -
@@ -8591,7 +8578,7 @@
                 (<strong>v</strong> <strong>u</strong> -
                 <strong>u</strong> <strong>v</strong>) / 2
             </li><li>
-                Contraction:
+                Inner Product (Contraction):
                 <strong>v</strong> &#x230b; <strong>u</strong>
                 &#x225d; (<strong>v</strong> <strong>u</strong> +
                 <strong>u</strong> <strong>v</strong>) / 2
@@ -8599,8 +8586,23 @@
         </section>
         <section>
             <h3>Scalar Product</h3>
+            <ul><li>
+                &#x2200;a,b&#x2208;&#x211d;,C,D&#x2208;&#x1d544;
+                (a C) &middot; (b D) &#x225d; a b (C &middot; D)
+            </li><li>
+                &#x2200;i&#x2208;&#x2124;
+                <strong>o<sub>i</sub></strong> &middot;
+                <strong>o<sub>i</sub></strong> &#x225d; 1
+            </li><li>
+                &#x2200;i,j&#x2208;&#x2124; (i &ne; j) &#x27f9;
+                <strong>o<sub>i</sub></strong> &middot;
+                <strong>o<sub>j</sub></strong> &#x225d; 0
+            </li></ul>
+        </section>
+        <section>
+            <h3>Scalar Product</h3>
             <p>
-                <strong>vu</strong> =
+                <strong>v u</strong> =
                 v<sub>1</sub>u<sub>1</sub> +
                 v<sub>2</sub>u<sub>2</sub> +
                 (v<sub>1</sub>u<sub>2</sub> -
@@ -8615,14 +8617,13 @@
                 <del>
                     (v<sub>1</sub>u<sub>2</sub> -
                     v<sub>2</sub>u<sub>1</sub>)
-                    <strong>o<sub>1</sub>o<sub>2</sub></strong>
+                    <strong>o<sub>1</sub></strong> &middot;
+                    <strong>o<sub>2</sub></strong>
                 </del>+ ...
             </p>
             <p>
                 The scalar product is the geometric product with
-                all non-scalar terms discarded.  When applied to
-                vectors it's isomorphic to the traditional dot
-                product.  It's commutative.
+                non-scalar terms discarded.  It's always commutative.
             </p>
         </section>
         <section>
@@ -8639,16 +8640,19 @@
                 v<sub>1</sub><strong>o<sub>1</sub></strong>
             </td><td>
                 v<sub>1</sub>u<sub>1</sub>
-                <strong>o<sub>1</sub>o<sub>1</sub></strong>
+                <strong>o<sub>1</sub></strong> &middot;
+                <strong>o<sub>1</sub></strong>
             </td><td>
                 <del>
                     v<sub>1</sub>u<sub>2</sub>
-                    <strong>o<sub>1</sub>o<sub>2</sub></strong>
+                    <strong>o<sub>1</sub></strong> &middot;
+                    <strong>o<sub>2</sub></strong>
                 </del>
             </td><td>
                 <del>
                     v<sub>1</sub>u<sub>3</sub>
-                    <strong>o<sub>1</sub>o<sub>3</sub></strong>
+                    <strong>o<sub>1</sub></strong> &middot;
+                    <strong>o<sub>3</sub></strong>
                 </del>
             </td><td>
                 ...
@@ -8657,15 +8661,18 @@
             </td><td>
                 <del>
                     v<sub>2</sub>u<sub>1</sub>
-                    <strong>o<sub>2</sub>o<sub>1</sub></strong>
+                    <strong>o<sub>2</sub></strong> &middot;
+                    <strong>o<sub>1</sub></strong>
                 </del>
             </td><td>
                 v<sub>2</sub>u<sub>2</sub>
-                <strong>o<sub>2</sub>o<sub>2</sub></strong>
+                <strong>o<sub>2</sub></strong> &middot;
+                <strong>o<sub>2</sub></strong>
             </td><td>
                 <del>
                     v<sub>2</sub>u<sub>3</sub>
-                    <strong>o<sub>2</sub>o<sub>3</sub></strong>
+                    <strong>o<sub>2</sub></strong> &middot;
+                    <strong>o<sub>3</sub></strong>
                 </del>
             </td><td>
                 ...
@@ -8674,16 +8681,19 @@
             </td><td>
                 <del>
                     v<sub>3</sub>u<sub>1</sub>
-                    <strong>o<sub>3</sub>o<sub>1</sub></strong>
+                    <strong>o<sub>3</sub></strong> &middot;
+                    <strong>o<sub>1</sub></strong>
                 </del>
             </td><td>
                 <del>
                     v<sub>3</sub>u<sub>2</sub>
-                    <strong>o<sub>3</sub>o<sub>2</sub></strong>
+                    <strong>o<sub>3</sub></strong> &middot;
+                    <strong>o<sub>2</sub></strong>
                 </del>
             </td><td>
                 v<sub>3</sub>u<sub>3</sub>
-                <strong>o<sub>3</sub>o<sub>3</sub></strong>
+                <strong>o<sub>3</sub></strong> &middot;
+                <strong>o<sub>3</sub></strong>
             </td><td>
                 ...
             </td></tr><tr><td>
@@ -8697,10 +8707,6 @@
                 &#x2200;M&#x2208;&#x1d544;
                 &#x2203;M<sup>&#x2020;</sup>&#x2208;&#x1d544;
             </p><ul><li class="fragment">
-                Sum: &#x2200;M,N&#x2208;&#x1d544;
-                (M + N)<sup>&#x2020;</sup> &#x225d;
-                M<sup>&#x2020;</sup> + N<sup>&#x2020;</sup>
-            </li><li class="fragment">
                 Term: &#x2200;a&#x2208;&#x211d;
                 (a <strong>o<sub>1</sub></strong>
                 <strong>o<sub>2</sub></strong> ...
@@ -8710,6 +8716,14 @@
                 <strong>o<sub>n - 1</sub></strong> ...
                 <strong>o<sub>2</sub></strong>
                 <strong>o<sub>1</sub></strong>
+            </li><li class="fragment">
+                Sum: &#x2200;M,N&#x2208;&#x1d544;
+                (M + N)<sup>&#x2020;</sup> &#x225d;
+                M<sup>&#x2020;</sup> + N<sup>&#x2020;</sup>
+            </li><li class="fragment">
+                Product: &#x2200;M,N&#x2208;&#x1d544;
+                (M N)<sup>&#x2020;</sup> &#x225d;
+                (N<sup>&#x2020;</sup> M<sup>&#x2020;</sup>)
             </li></ul><p class="fragment">
                 A conjugate reverses basis component order.<br />
                 Obviously (M<sup>&#x2020;</sup>)<sup>&#x2020;</sup>
@@ -8778,7 +8792,7 @@
         <section>
             <h3>Quadrance</h3>
             <p>
-                Multiply a multivector by its congjugate to
+                Multiply a multivector by its conjugate to
                 get the quadrance (Wildberger 2005).
             </p>
             <p>
@@ -8793,15 +8807,16 @@
                 &#x2200;<strong>v</strong>&#x2208;&#x1d54d;
                 &#x22a0;(<strong>v</strong>) = <strong>v</strong>
                 <strong>v</strong><sup>&#x2020;</sup> =
-                <strong>v</strong> <strong>v</strong> =
-                <strong>v</strong><sup>2</sup>
+                <strong>v</strong> <strong>v</strong> = v<sup>2</sup>
             </li><li class="fragment">
                 &#x22a0;(M<sup>&#x2020;</sup>)
                 <span class="fragment">
                     = M<sup>&#x2020;</sup>
-                    (M<sup>&#x2020;</sup>)<sup>&#x2020;</sup> =
-                    M<sup>&#x2020;</sup> M =
-                    (M M<sup>&#x2020;</sup>)<sup>&#x2020;</sup>
+                    (M<sup>&#x2020;</sup>)<sup>&#x2020;</sup>
+                </span><span class="fragment">
+                    = M<sup>&#x2020;</sup>M
+                </span><span class="fragment">
+                    = (M M<sup>&#x2020;</sup>)<sup>&#x2020;</sup>
                 </span><span class="fragment">
                     &#x27f9;<br />
                     ((M M<sup>&#x2020;</sup>)&#x2208;&#x211d; &#x27f9;
@@ -8865,10 +8880,17 @@
                 <strong>o<sub>3</sub> o<sub>4</sub></strong>)
                 (<strong>o<sub>1</sub> o<sub>2</sub></strong> +
                 <strong>o<sub>3</sub>
-                    o<sub>4</sub></strong>)<sup>&#x2020;</sup> =
-                <br /> -2 (1 + <strong>
-                    o<sub>1</sub> o<sub>2</sub> o<sub>3</sub>
-                    o<sub>4</sub></strong>)
+                    o<sub>4</sub></strong>)<sup>&#x2020;</sup>
+                <span class="fragment">
+                    =<br />
+                    (<strong>o<sub>1</sub> o<sub>2</sub></strong> +
+                    <strong>o<sub>3</sub> o<sub>4</sub></strong>)
+                    (<strong>o<sub>2</sub> o<sub>1</sub></strong> +
+                    <strong>o<sub>4</sub>
+                        o<sub>3</sub></strong>)
+                </span><span class="fragment">
+                    = 2 - 2 <strong>o<sub>1</sub> o<sub>2</sub>
+                    o<sub>3</sub> o<sub>4</sub></strong>
             </li></ul>
             <p class="fragment">
                 Scalars, vectors, pseudo-vectors and
@@ -8918,8 +8940,24 @@
         </section>
         <section>
             <h3>Outer Product</h3>
+            <ul><li>
+                &#x2200;a,b&#x2208;&#x211d;,C,D&#x2208;&#x1d544;
+                (a C) ^ (b D) &#x225d; a b (C ^ D)
+            </li><li>
+                &#x2200;i&#x2208;&#x2124;
+                <strong>o<sub>i</sub></strong> ^
+                <strong>o<sub>i</sub></strong> &#x225d; 0
+            </li><li>
+                &#x2200;i,j&#x2208;&#x2124; (i &ne; j) &#x27f9;
+                <strong>o<sub>i</sub></strong> ^
+                <strong>o<sub>j</sub></strong> &#x225d;
+                <strong>o<sub>i</sub> o<sub>j</sub></strong>
+            </li></ul>
+        </section>
+        <section>
+            <h3>Outer Product</h3>
             <p>
-                <strong>vu</strong> =
+                <strong>v u</strong> =
                 v<sub>1</sub>u<sub>1</sub> +
                 v<sub>2</sub>u<sub>2</sub> +
                 (v<sub>1</sub>u<sub>2</sub> -
@@ -8931,15 +8969,18 @@
                 <strong>v</strong> ^ <strong>u</strong> =
                 <del>
                     v<sub>1</sub>u<sub>1</sub>
-                    <strong>o<sub>1</sub>o<sub>1</sub></strong>
+                    <strong>o<sub>1</sub></strong> ^
+                    <strong>o<sub>1</sub></strong>
                 </del> +
                 <del>
                     v<sub>2</sub>u<sub>2</sub>
-                    <strong>o<sub>2</sub>o<sub>2</sub></strong>
-                </del> +
+                    <strong>o<sub>2</sub></strong> ^
+                    <strong>o<sub>2</sub></strong>
+                </del> +<br />
                 (v<sub>1</sub>u<sub>2</sub> -
                 v<sub>2</sub>u<sub>1</sub>)
-                <strong>o<sub>1</sub>o<sub>2</sub></strong> +
+                <strong>o<sub>1</sub></strong> ^
+                <strong>o<sub>2</sub></strong> +
                 ...
             </p>
             <p>
@@ -8963,43 +9004,52 @@
             </td><td>
                 <del>
                     v<sub>1</sub>u<sub>1</sub>
-                    <strong>o<sub>1</sub>o<sub>1</sub></strong>
+                    <strong>o<sub>1</sub></strong> ^
+                    <strong>o<sub>1</sub></strong>
                 </del>
             </td><td>
                 v<sub>1</sub>u<sub>2</sub>
-                <strong>o<sub>1</sub>o<sub>2</sub></strong>
+                <strong>o<sub>1</sub></strong> ^
+                <strong>o<sub>2</sub></strong>
             </td><td>
                 v<sub>1</sub>u<sub>3</sub>
-                <strong>o<sub>1</sub>o<sub>3</sub></strong>
+                <strong>o<sub>1</sub></strong> ^
+                <strong>o<sub>3</sub></strong>
             </td><td>
                 ...
             </td></tr><tr><td>
                 v<sub>2</sub><strong>o<sub>2</sub></strong>
             </td><td>
                 v<sub>2</sub>u<sub>1</sub>
-                <strong>o<sub>2</sub>o<sub>1</sub></strong>
+                <strong>o<sub>2</sub></strong> ^
+                <strong>o<sub>1</sub></strong>
             </td><td>
                 <del>
                     v<sub>2</sub>u<sub>2</sub>
-                    <strong>o<sub>2</sub>o<sub>2</sub></strong>
+                    <strong>o<sub>2</sub></strong> ^
+                    <strong>o<sub>2</sub></strong>
                 </del>
             </td><td>
                 v<sub>2</sub>u<sub>3</sub>
-                <strong>o<sub>2</sub>o<sub>3</sub></strong>
+                <strong>o<sub>2</sub></strong> ^
+                <strong>o<sub>3</sub></strong>
             </td><td>
                 ...
             </td></tr><tr><td>
                 v<sub>3</sub><strong>o<sub>3</sub></strong>
             </td><td>
                 v<sub>3</sub>u<sub>1</sub>
-                <strong>o<sub>3</sub>o<sub>1</sub></strong>
+                <strong>o<sub>3</sub></strong> ^
+                <strong>o<sub>1</sub></strong>
             </td><td>
                 v<sub>3</sub>u<sub>2</sub>
-                <strong>o<sub>3</sub>o<sub>2</sub></strong>
+                <strong>o<sub>3</sub></strong> ^
+                <strong>o<sub>2</sub></strong>
             </td><td>
                 <del>
                     v<sub>3</sub>u<sub>3</sub>
-                    <strong>o<sub>3</sub>o<sub>3</sub></strong>
+                    <strong>o<sub>3</sub></strong> ^
+                    <strong>o<sub>3</sub></strong>
                 </del>
             </td><td>
                 ...
@@ -9241,22 +9291,53 @@
         </section>
         <section>
             <h3>Contraction</h3>
+            <ul><li>
+                &#x2200;A,B,C&#x2208;&#x1d544;
+                (A + B)&#x230b;C &#x225d; A&#x230b;C + B&#x230b;C
+            </li><li>
+                &#x2200;A&#x2208;&lt;&#x1d544;&gt;<sub>i</sub>,
+                B&#x2208;&lt;&#x1d544;&gt;<sub>j</sub>
+                A&#x230b;B&#x2208;&lt;&#x1d544;&gt;<sub>j - i</sub>
+            </li></ul>
+            <p>Some examples:</p>
+            <ul><li>
+                <strong>o<sub>1</sub></strong> &#x230b;
+                <strong>o<sub>1</sub>o<sub>2</sub>o<sub>3</sub></strong>
+                = <strong>o<sub>2</sub>o<sub>3</sub></strong>
+            </li><li>
+                <strong>o<sub>1</sub></strong> &#x230b;
+                <strong>o<sub>2</sub>o<sub>3</sub></strong>
+                = 0 = <strong>o<sub>1</sub>o<sub>2</sub></strong>
+                &#x230b; <strong>o<sub>2</sub>o<sub>3</sub></strong>
+            </li><li>
+                <strong>o<sub>2</sub>o<sub>3</sub></strong> &#x230b;
+                <strong>o<sub>1</sub>o<sub>2</sub>o<sub>3</sub></strong>
+                = -<strong>o<sub>1</sub></strong>
+            </li></ul>
+        </section>
+        <section>
+            <h3>Contraction</h3>
             <p>
-                <strong>vu</strong> = v<sub>1</sub>u<sub>1</sub> +
+                <strong>v u</strong> = v<sub>1</sub>u<sub>1</sub> +
                 v<sub>2</sub>u<sub>2</sub> +
                 (v<sub>1</sub>u<sub>2</sub> -
                 v<sub>2</sub>u<sub>1</sub>)
                 <strong>o<sub>1</sub>o<sub>2</sub></strong> +
                 ...
             </p><p>
-                <strong>v</strong>&#x230b;<strong>u</strong> =
+                <strong>v</strong> &#x230b; <strong>u</strong> =
                 v<sub>1</sub>u<sub>1</sub> +
                 v<sub>2</sub>u<sub>2</sub> +
                 <del>
-                    (v<sub>1</sub>u<sub>2</sub> -
-                    v<sub>2</sub>u<sub>1</sub>)
-                    <strong>o<sub>1</sub>o<sub>2</sub></strong>
-                </del>+ ...
+                    v<sub>1</sub>u<sub>2</sub>
+                    <strong>o<sub>1</sub></strong> &#x230b;
+                    <strong>o<sub>2</sub></strong>
+                </del> +
+                <del>
+                    v<sub>2</sub>u<sub>1</sub>
+                    <strong>o<sub>2</sub></strong> &#x230b;
+                    <strong>o<sub>1</sub></strong>
+                </del> + ...
             </p>
             <p>
                 The contraction is the geometric product with
@@ -9266,7 +9347,7 @@
             </p>
         </section>
         <section>
-            <h3>Contraction</h3>
+            <h3>Vector Contraction</h3>
             <table><tr><td>
                 <strong>v</strong>&#x230b;<strong>u</strong>
             </td><td>
@@ -9279,16 +9360,19 @@
                 v<sub>1</sub><strong>o<sub>1</sub></strong>
             </td><td>
                 v<sub>1</sub>u<sub>1</sub>
-                <strong>o<sub>1</sub>o<sub>1</sub></strong>
+                <strong>o<sub>1</sub></strong> &#x230b;
+                <strong>o<sub>1</sub></strong>
             </td><td>
                 <del>
                     v<sub>1</sub>u<sub>2</sub>
-                    <strong>o<sub>1</sub>o<sub>2</sub></strong>
+                    <strong>o<sub>1</sub></strong> &#x230b;
+                    <strong>o<sub>2</sub></strong>
                 </del>
             </td><td>
                 <del>
                     v<sub>1</sub>u<sub>3</sub>
-                    <strong>o<sub>1</sub>o<sub>3</sub></strong>
+                    <strong>o<sub>1</sub></strong> &#x230b;
+                    <strong>o<sub>3</sub></strong>
                 </del>
             </td><td>
                 ...
@@ -9297,15 +9381,18 @@
             </td><td>
                 <del>
                     v<sub>2</sub>u<sub>1</sub>
-                    <strong>o<sub>2</sub>o<sub>1</sub></strong>
+                    <strong>o<sub>2</sub></strong> &#x230b;
+                    <strong>o<sub>1</sub></strong>
                 </del>
             </td><td>
                 v<sub>2</sub>u<sub>2</sub>
-                <strong>o<sub>2</sub>o<sub>2</sub></strong>
+                <strong>o<sub>2</sub></strong> &#x230b;
+                <strong>o<sub>2</sub></strong>
             </td><td>
                 <del>
                     v<sub>2</sub>u<sub>3</sub>
-                    <strong>o<sub>2</sub>o<sub>3</sub></strong>
+                    <strong>o<sub>2</sub></strong> &#x230b;
+                    <strong>o<sub>3</sub></strong>
                 </del>
             </td><td>
                 ...
@@ -9314,16 +9401,19 @@
             </td><td>
                 <del>
                     v<sub>3</sub>u<sub>1</sub>
-                    <strong>o<sub>3</sub>o<sub>1</sub></strong>
+                    <strong>o<sub>3</sub></strong> &#x230b;
+                    <strong>o<sub>1</sub></strong>
                 </del>
             </td><td>
                 <del>
                     v<sub>3</sub>u<sub>2</sub>
-                    <strong>o<sub>3</sub>o<sub>2</sub></strong>
+                    <strong>o<sub>3</sub></strong> &#x230b;
+                    <strong>o<sub>2</sub></strong>
                 </del>
             </td><td>
                 v<sub>3</sub>u<sub>3</sub>
-                <strong>o<sub>3</sub>o<sub>3</sub></strong>
+                <strong>o<sub>3</sub></strong> &#x230b;
+                <strong>o<sub>3</sub></strong>
             </td><td>
                 ...
             </td></tr><tr><td>
@@ -9482,11 +9572,27 @@
         <section>
             <h2>Geometric Miscellaneous</h2>
             <ul><li>
+                Parallel and Perpendicular
+            </li><li>
                 Pseudo-Scalars
             </li><li>
                 Dual
             </li><li>
                 Cross Product
+            </li></ul>
+        </section>
+        <section>
+            <h3>Parallel and Perpendicular</h3>
+            <p>
+                We're ready to formally define some familiar terms:
+            </p><ul><li class="fragment">
+                <span class="intro">Parallel</span>:
+                &#x2200;A,B&#x2208;&#x1d544; A&#x2225;B &#x27fa;
+                A B = A &#x230b; B
+            </li><li class="fragment">
+                <span class="intro">Perpendicular</span>:
+                &#x2200;A,B&#x2208;&#x1d544; A&#x27c2;B &#x27fa;
+                A B = A ^ B
             </li></ul>
         </section>
         <section>
@@ -9513,12 +9619,71 @@
             </p>
         </section>
         <section>
+            <h3>Pseudo-Scalar Inverse</h3>
+            <p>What does the inverse of a pseudo-scalar look like?</p>
+            <ul><li class="fragment">
+                <strong>o<sub>1</sub></strong><sup>-1</sup> =
+                <strong>o<sub>1</sub></strong><sup>&#x2020;</sup> /
+                (<strong>o<sub>1</sub></strong>
+                <strong>o<sub>1</sub></strong><sup>&#x2020;</sup>)
+                <span class="fragment">
+                    = <strong>o<sub>1</sub></strong> /
+                    (<strong>o<sub>1</sub></strong>
+                    <strong>o<sub>1</sub></strong>)
+                </span><span class="fragment">
+                    = <strong>o<sub>1</sub></strong> / 1 =
+                    <strong>o<sub>1</sub></strong>
+                </span>
+            </li><li class="fragment">
+                (<strong>o<sub>1</sub></strong>
+                <strong>o<sub>2</sub></strong>)<sup>-1</sup> =
+                (<strong>o<sub>1</sub></strong>
+                <strong>o<sub>2</sub></strong>)<sup>&#x2020;</sup> /
+                (<strong>o<sub>1</sub></strong>
+                <strong>o<sub>2</sub></strong>
+                (<strong>o<sub>1</sub></strong>
+                <strong>o<sub>2</sub></strong>)<sup>&#x2020;</sup>)
+                <span class="fragment">
+                    =<br /> (<strong>o<sub>2</sub></strong>
+                    <strong>o<sub>1</sub></strong>) /
+                    (<strong>o<sub>1</sub></strong>
+                    <strong>o<sub>2</sub></strong>
+                    <strong>o<sub>2</sub></strong>
+                    <strong>o<sub>1</sub></strong>)
+                </span><span class="fragment">
+                    = (<strong>o<sub>2</sub></strong>
+                    <strong>o<sub>1</sub></strong>) /
+                    (<strong>o<sub>1</sub></strong>
+                    <strong>o<sub>1</sub></strong>)
+                </span><span class="fragment">
+                    = <strong>o<sub>2</sub></strong>
+                    <strong>o<sub>1</sub></strong>
+                </span>
+            </li><li class="fragment">
+                (<strong>o<sub>1</sub></strong> ...
+                <strong>o<sub>n</sub></strong>)<sup>-1</sup> =
+                (<strong>o<sub>n</sub></strong> ...
+                <strong>o<sub>1</sub></strong>)
+                <span class="fragment">
+                    = (<strong>o<sub>1</sub></strong> ...
+                    <strong>o<sub>n</sub></strong>)<sup>&#x2020;</sup>
+                </span>
+            </li><li class="fragment">
+                <strong>I<sub>n</sub></strong><sup>-1</sup> =
+                <strong>I<sub>n</sub></strong><sup>&#x2020;</sup>
+            </li></ul>
+            <p class="fragment">
+                Positive signature pseudo-scalars have inverses
+                equal to their conjugates.
+            </p>
+        </section>
+        <section>
             <h3>Dual</h3>
             <p>
                 &#x2200;M&#x2208;&#x1d544;
                 &#x2203;M<sup>*</sup>&#x2208;&#x1d544;
                 M<sup>*</sup> =
-                M&#x230b;I<sub>n</sub><sup>&#x2020;</sup>
+                M&#x230b;I<sub>n</sub><sup>-1</sup>
             </p>
             <p>
                 A dual subtracts parts of a space from a
@@ -9527,7 +9692,7 @@
             <ul><li>
                 (v<sub>1</sub><strong>o<sub>1</sub></strong> +
                 v<sub>2</sub><strong>o<sub>2</sub></strong>)
-                &#x230b;I<sub>2</sub><sup>&#x2020;</sup> =
+                &#x230b;I<sub>2</sub><sup>-1</sup> =
                 (v<sub>1</sub><strong>o<sub>1</sub></strong> +
                 v<sub>2</sub><strong>o<sub>2</sub></strong>)
                 &#x230b;<strong>o<sub>2</sub>
@@ -9538,7 +9703,7 @@
                 (v<sub>1</sub><strong>o<sub>1</sub></strong> +
                 v<sub>2</sub><strong>o<sub>2</sub></strong> +
                 v<sub>3</sub><strong>o<sub>3</sub></strong>)
-                &#x230b;I<sub>3</sub><sup>&#x2020;</sup> =
+                &#x230b;I<sub>3</sub><sup>-1</sup> =
                 v<sub>2</sub><strong>o<sub>1</sub>
                 o<sub>3</sub></strong> -
                 v<sub>1</sub><strong>o<sub>2</sub>
@@ -9556,7 +9721,7 @@
                     (<strong>v</strong> ^
                     <strong>u</strong>)&#x230b;
                     (<strong>o<sub>1</sub> o<sub>2</sub>
-                        o<sub>3</sub></strong>)<sup>&#x2020;</sup>
+                        o<sub>3</sub></strong>)<sup>-1</sup>
                 </span><span class="fragment">
                     = (<strong>v</strong> ^
                     <strong>u</strong>)&#x230b;
@@ -9567,6 +9732,8 @@
             <p class="fragment">
                 The cross product is the three dimensional dual of
                 the wedge product.
+            </p><p class="fragment">
+                And yes, it's Evil, Bad and Wrong.
             </p>
             <aside class="notes">
                 After Hamilton discovered quaternions, Gibbs and
@@ -10395,13 +10562,13 @@
                 (<strong>v<sub>1</sub></strong> ^
                 <strong>v<sub>2</sub></strong>) &#x230b;
                 (<strong>o<sub>1</sub>
-                    o<sub>2</sub></strong>)<sup>&#x2020;</sup>
+                    o<sub>2</sub></strong>)<sup>-1</sup>
             </li><li>
                 (<strong>v<sub>1</sub></strong> ^
                 <strong>v<sub>2</sub></strong> ^
                 <strong>v<sub>3</sub></strong>) &#x230b;
                 (<strong>o<sub>1</sub> o<sub>2</sub>
-                    o<sub>3</sub></strong>)<sup>&#x2020;</sup>
+                    o<sub>3</sub></strong>)<sup>-1</sup>
             </li><li>
                 (<strong>v<sub>1</sub></strong> ^
                 <strong>v<sub>2</sub></strong> ^
@@ -10409,7 +10576,7 @@
                 <strong>v<sub>4</sub></strong>) &#x230b;
                 (<strong>o<sub>1</sub> o<sub>2</sub>
                     o<sub>3</sub>
-                    o<sub>4</sub></strong>)<sup>&#x2020;</sup>
+                    o<sub>4</sub></strong>)<sup>-1</sup>
             </li><li>
                 ...
             </li></ul>
