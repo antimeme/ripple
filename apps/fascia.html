@@ -7,26 +7,22 @@
 <style>
  html, body
  { position: absolute; padding: 0; margin: 0; overflow: hidden;  }
+ fieldset.menu {
+     border: 2px solid black;  background: lightgray;
+ }
+ fieldset.menu legend {
+     border: 2px solid black;  background: lightgray;
+ }
+ fieldset.menu ul { list-style: none; padding-left: 0; margin: 0; }
+ fieldset.menu ul li:hover { background: steelblue; }
 </style>
 <script src="ripple/polyfill.js"></script>
 <script src="ripple/ripple.js"></script>
 <script src="ripple/fascia.js"></script>
-<script src="ripple/grid.js"></script>
-<script src="ripple/multivec.js"></script>
-<script src="ripple/pathf.js"></script>
 <script>//<![CDATA[
  var epsilon = 0.000001;
  var zeroish = function(value) {
      return (value < epsilon) && (value > -epsilon);
- };
- // Return the sum of the square of each argument
- var sumSquares = function() {
-     var result = 0;
-     var index;
-     for (index = 0; index < arguments.length; ++index)
-         if (arguments[index])
-             result += arguments[index] * arguments[index];
-     return result;
  };
 
  // Given a pair of points for each of two lines, returns the point
@@ -54,19 +50,107 @@
  // a third point lies between them.
  var between2D = function(s, e, p) {
      var segSq = ( // Length of segment squared
-         (e.x - s.x) * (e.x - s.x) + (e.y - s.y) * (e.y - s.y));
+                   (e.x - s.x) * (e.x - s.x) + (e.y - s.y) * (e.y - s.y));
      var dotSegP = ( // Length of point (from start) squared
-         (e.x - s.x) * (p.x - s.x) + (e.y - s.y) * (p.y - s.y));
+                     (e.x - s.x) * (p.x - s.x) + (e.y - s.y) * (p.y - s.y));
      return ((dotSegP >= 0) && (dotSegP <= segSq));
  };
 
  fascia.ready(function() {
-     taps = [];
+     'use strict';
+     var applegend = 'Fascia';
+     var taps = [];
+     var redraw = function() {};
+     var menu = document.createElement('ul');
+     var legend = ripple.createElement('legend', {
+         style: {'user-select': 'none'}}, 'Fascia');
+     var drag = null;
+     var menuframe = ripple.createElement(
+         'fieldset', {
+             className: 'menu',
+             style: {position: 'absolute', top: '25px', left: '25px'}},
+         legend, menu);
+     menu.appendChild(ripple.createElement(
+         'li', {'data-action': 'mode'}, 'One'));
+     menu.appendChild(ripple.createElement(
+         'li', {'data-action': 'mode'}, 'Two'));
+     menu.appendChild(ripple.createElement(
+         'li', {'data-action': 'mode'}, 'Three'));
+     menu.appendChild(ripple.createElement(
+         'li', {'data-action': 'mode'}, 'Four'));
+     menu.appendChild(ripple.createElement(
+         'li', {'data-action': 'mode'}, 'Five'));
+     menu.appendChild(ripple.createElement(
+         'li', {'data-action': 'mode'}, 'Six'));
+     menu.appendChild(ripple.createElement(
+         'li', {'data-action': 'mode'}, 'Seven'));
+     menu.appendChild(ripple.createElement(
+         'li', {'data-action': 'mode'}, 'Eight'));
+     menu.appendChild(ripple.createElement(
+         'li', {'data-action': 'mode'}, 'Nine'));
+     menu.appendChild(ripple.createElement(
+         'li', {'data-action': 'mode'}, 'Ten'));
+     menuframe.addEventListener('click', function(event) {
+         var tag = event.target.tagName.toLowerCase();
+         if (tag === 'legend')
+             ripple.toggleVisible(menu);
+         else if (tag === 'li') {
+             applegend = event.target.textContent;
+             legend.innerHTML = event.target.textContent;
+             redraw();
+         }
+     });
+     menuframe.addEventListener('mousedown', function(event) {
+         event = event || window.event;
+         event.preventDefault();
+         var tag = event.target.tagName.toLowerCase();
+         if (tag === 'legend') {
+             drag = ripple.getInputPoints(event, menuframe);
+         }
+     });
+     menuframe.addEventListener('mousemove', function(event) {
+         event = event || window.event;
+         event.preventDefault();
+         if (drag) {
+             var tap = ripple.getInputPoints(event, menuframe);
+             menuframe.style.top =
+                 (menuframe.offsetTop + (tap.y - drag.y)) + "px";
+             menuframe.style.left =
+                 (menuframe.offsetLeft + (tap.x - drag.x)) + "px";
+             drag = tap;
+         }
+     });
+     menuframe.addEventListener('mouseup', function(event) {
+         event = event || window.event;
+         event.preventDefault();
+         drag = null;
+     });
+
      return {
-         init: function(camera, canvas, container, redraw) {
+         init: function(camera, canvas, container, fasciaRedraw) {
              canvas.style.background = 'rgb(192, 192, 192)';
+             container.appendChild(menuframe);
+             redraw = fasciaRedraw;
+         },
+         down: function(event, camera) {
+             console.log("DEBUG-down", event.target.tagName);
+         },
+         move: function(event, camera) {
+             console.log("DEBUG-move", event.target.tagName);
+         },
+         up: function(event, camera) {
+             console.log("DEBUG-up", event.target.tagName);
          },
          draw: function(ctx, camera, now, last) {
+             ctx.beginPath();
+             ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+             ctx.textAlign = 'center';
+             ctx.textBaseline = 'top';
+             ctx.font = 'bold ' + Math.round(
+                 Math.min(camera.height, camera.width) / 20) +
+                        'px sans';
+             ctx.fillText(applegend, 0, -camera.height/2);
+
              ctx.lineCap = 'round';
              ctx.lineWidth = 2;
 
@@ -121,8 +205,7 @@
              if (taps.length > 4)
                  taps.shift();
          },
-         wheel: function(event, camera) {
-             camera.zoom(1 + 0.1 * event.y, 1, 10);
-         },
+         wheel: function(event, camera)
+         { camera.zoom(1 + 0.1 * event.y, 1, 10); },
      }
  }); //]]></script>
