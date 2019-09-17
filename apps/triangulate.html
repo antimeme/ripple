@@ -42,8 +42,9 @@
 
  var getCircumcircle = function(triangle) {
      var result, ii;
-     for (ii = 0; ii < triangle.length; ++ii)
-         result = result ? result.wedge(triangle[ii]) : triangle[ii];
+     for (ii = 0; ii < triangle.indices.length; ++ii)
+         result = result ? result.wedge(triangle.vertices[ii]) :
+                  triangle.vertices[ii];
      return result;
  };
 
@@ -59,13 +60,25 @@
          points = points.map(function(point) {
              return multivec(point).createPoint(); });
 
+     var createTriangle = function(indices) {
+         return {
+             indices: indices,
+             vertices: indices.map(function(index) {
+                 return (index >= 0) ? points[index] :
+                        multivec.infinityPoint; }),
+             edges: [[indices[0], indices[1]],
+                     [indices[1], indices[2]],
+                     [indices[2], indices[0]]]
+         }; };
+
      var circle = points[0].wedge(points[1]).wedge(points[2]);
      var carrier = circle.wedge(multivec.infinityPoint);
 
      // Begin with a single triangle made from the first three points
      // as well as one triangle from each edge completed by the point
      // at infinity, which is represented by index -1 here.
-     var result = [[0, 1, 2], [-1, 1, 0], [-1, 2, 1], [-1, 0, 2]];
+     var result = [[0, 1, 2], [-1, 1, 0], [-1, 2, 1], [-1, 0, 2]]
+         .map(createTriangle);
      var ii, jj, point, triangle, next, edges, score;
      for (ii = 3; ii < points.length; ++ii) {
          point = points[ii];
@@ -77,22 +90,20 @@
          next = [];
          edges = {};
          for (jj = 0; jj < result.length; ++jj) {
-             triangle = dereferenceTriangle(result[jj], points);
+             triangle = result[jj];
              circle = getCircumcircle(triangle);
              score = circle.wedge(point).divide(carrier).scalar;
 
              if (score < 0) {
-                 [[result[jj][0], result[jj][1]],
-                  [result[jj][1], result[jj][2]],
-                  [result[jj][2], result[jj][0]]].forEach(function(edge) {
-                      var index = ripple.pair(edge[0], edge[1]);
-                      var indrv = ripple.pair(edge[1], edge[0]);
-                      if (index in edges)
-                          delete edges[index];
-                      else if (indrv in edges)
-                          delete edges[indrv];
-                      else edges[index] = true;
-                  });
+                 triangle.edges.forEach(function(edge) {
+                     var index = ripple.pair(edge[0], edge[1]);
+                     var indrv = ripple.pair(edge[1], edge[0]);
+                     if (index in edges)
+                         delete edges[index];
+                     else if (indrv in edges)
+                         delete edges[indrv];
+                     else edges[index] = true;
+                 });
              } else next.push(result[jj]);
          }
 
@@ -100,7 +111,7 @@
          if (Object.keys(edges).length > 0) {
              Object.keys(edges).forEach(function(pair, index) {
                  var edge = ripple.unpair(pair);
-                 next.push([edge.x, edge.y, ii]);
+                 next.push(createTriangle([edge.x, edge.y, ii]));
              });
          }
          result = next;
@@ -108,8 +119,9 @@
 
      // Discard triangles with vertices at infinity
      return result.filter(function(triangle) {
-         return (triangle[0] >= 0) && (triangle[1] >= 0) &&
-                (triangle[2] >= 0); });
+         return (triangle.indices[0] >= 0) &&
+                (triangle.indices[1] >= 0) &&
+                (triangle.indices[2] >= 0); });
  };
 
  fascia.ready(function() {
@@ -133,8 +145,7 @@
              ctx.beginPath();
              triangles.forEach(function(triangle) {
                  try {
-                     var circle = getCircumcircle(
-                     dereferenceTriangle(triangle, points));
+                     var circle = getCircumcircle(triangle);
                      var center = multivec.infinityPoint
                                           .applyVersor(circle)
                                           .normalizePoint();
@@ -156,9 +167,7 @@
 
              ctx.beginPath();
              triangles.forEach(function(triangle) {
-                 var actual = [points[triangle[0]],
-                               points[triangle[1]],
-                               points[triangle[2]]];
+                 var actual = triangle.vertices;
                  ctx.moveTo((actual[0].x - 0.5) * camera.width,
                             (actual[0].y - 0.5) * camera.height);
                  ctx.lineTo((actual[1].x - 0.5) * camera.width,
