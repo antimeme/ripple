@@ -22,37 +22,32 @@
 <script>//<![CDATA[
  "use strict";
 
+ var drawVoroni   = ripple.param('voroni');
+ var drawDelaunay = ripple.param('delaunay');
+ var drawCircles  = ripple.param('circles');
+
  var generatePoints = function() {
      var result = [];
      var ii;
      var r = random.random();
 
      for (ii = 0; ii < 32; ++ii)
-         result.push(multivec({
-             x: r.random() * 0.9 + 0.05,
-             y: r.random() * 0.9 + 0.05 }).createPoint());
+         result.push({ x: r.random() * 0.9 + 0.05,
+                       y: r.random() * 0.9 + 0.05 });
      return result;
  };
 
- var dereferenceTriangle = function(triangle, points) {
-     return triangle.map(function(index) {
-         return (index >= 0) ? points[index] : multivec.infinityPoint;
-     });
- };
-
- var getCircumcircle = function(triangle) {
-     var result, ii;
-     for (ii = 0; ii < triangle.indices.length; ++ii)
-         result = result ? result.wedge(triangle.vertices[ii]) :
-                  triangle.vertices[ii];
-     return result;
- };
-
- var getDelaunayTriangles = function(points) {
-     // We use the Bowyer-Watson algorithm, except instead of a super
-     // triangle we create three triangles through the point at infinity
-     // for the starting triangulation.
+ var getDelaunayTriangles = function(config, points) {
+     // This is an implementation of the Bowyer-Watson algorithm:
      // https://en.wikipedia.org/wiki/Bowyer%E2%80%93Watson_algorithm
+     // Unlike most implementations this one does not rely on a
+     // super-triangle or bounding region.  Instead we start with
+     // one triangle made from the first three points and three
+     // triangles with vertices at infinity.  Compactification!
+     if (Array.isArray(config)) {
+         points = config;
+         config = undefined;
+     }
      if (!points || points.length < 3)
          throw new Error("Not enough points");
      if (!(points[0] instanceof multivec) ||
@@ -61,25 +56,34 @@
              return multivec(point).createPoint(); });
 
      var createTriangle = function(indices) {
-         return {
-             indices: indices,
-             vertices: indices.map(function(index) {
-                 return (index >= 0) ? points[index] :
-                        multivec.infinityPoint; }),
-             edges: [[indices[0], indices[1]],
-                     [indices[1], indices[2]],
-                     [indices[2], indices[0]]]
-         }; };
-
-     var circle = points[0].wedge(points[1]).wedge(points[2]);
-     var carrier = circle.wedge(multivec.infinityPoint);
+         var result = Object.create(getDelaunayTriangles);
+         result.indices = indices;
+         result.vertices = indices.map(function(index) {
+             return (index >= 0) ? points[index] :
+                    multivec.infinityPoint; });
+         result.edges = [[indices[0], indices[1]],
+                         [indices[1], indices[2]],
+                         [indices[2], indices[0]]];
+         result.circle = result.vertices.reduce(
+             function(circle, vertex) {
+                 return circle ? circle.wedge(vertex) : vertex; });
+         result.isFinite = function() {
+             return (this.indices[0] >= 0) &&
+                    (this.indices[1] >= 0) &&
+                    (this.indices[2] >= 0); };
+         return result;
+     };
 
      // Begin with a single triangle made from the first three points
      // as well as one triangle from each edge completed by the point
      // at infinity, which is represented by index -1 here.
      var result = [[0, 1, 2], [-1, 1, 0], [-1, 2, 1], [-1, 0, 2]]
          .map(createTriangle);
-     var ii, jj, point, triangle, next, edges, score;
+
+     // All points exist within a carrier plane, represented here.
+     var carrier = result[0].circle.wedge(multivec.infinityPoint);
+
+     var ii, jj, point, triangle, next, edges;
      for (ii = 3; ii < points.length; ++ii) {
          point = points[ii];
 
@@ -91,10 +95,13 @@
          edges = {};
          for (jj = 0; jj < result.length; ++jj) {
              triangle = result[jj];
-             circle = getCircumcircle(triangle);
-             score = circle.wedge(point).divide(carrier).scalar;
 
-             if (score < 0) {
+             // Positive scalars indicate the point is inside the
+             // circumcircle (or equivalent for a line).  That
+             // invalidates the triangle but we keep its edges
+             // from which to construct new triangles.
+             if (triangle.circle.wedge(point)
+                         .divide(carrier).scalar < 0) {
                  triangle.edges.forEach(function(edge) {
                      var index = ripple.pair(edge[0], edge[1]);
                      var indrv = ripple.pair(edge[1], edge[0]);
@@ -107,21 +114,52 @@
              } else next.push(result[jj]);
          }
 
-         // Each edge is combined with the new point to make a triangle
-         if (Object.keys(edges).length > 0) {
-             Object.keys(edges).forEach(function(pair, index) {
-                 var edge = ripple.unpair(pair);
-                 next.push(createTriangle([edge.x, edge.y, ii]));
-             });
-         }
+         // Combine each edge with the new point to make a new triangle
+         Object.keys(edges).forEach(function(pair, index) {
+             var edge = ripple.unpair(pair);
+             next.push(createTriangle([edge.x, edge.y, ii]));
+         });
          result = next;
      }
 
      // Discard triangles with vertices at infinity
-     return result.filter(function(triangle) {
-         return (triangle.indices[0] >= 0) &&
-                (triangle.indices[1] >= 0) &&
-                (triangle.indices[2] >= 0); });
+     if (!config || config.dropOutside)
+         result = result.filter(function(triangle) {
+             return triangle.isFinite(); });
+     return result;
+ };
+
+ var getVoroniEdges = function(elements) {
+     if (!elements || elements.length < 1)
+         throw new Error("Not enough points");
+     var result = [];
+     var triangles = getDelaunayTriangles.isPrototypeOf(elements[0]) ?
+                     elements : getDelaunayTriangles(elements);
+     var edges = {};
+     triangles.forEach(function(triangle) {
+         triangle.center = multivec.infinityPoint
+                                   .applyVersor(triangle.circle)
+                                   .normalizePoint();
+         triangle.edges.forEach(function(edge) {
+             var other;
+             var index = ripple.pair(edge[0], edge[1]);
+             var indrv = ripple.pair(edge[1], edge[0]);
+             if (index in edges) {
+                 other = edges[index];
+                 console.log("DEBUG-a", index, other);
+                 delete edges[index];
+             } else if (indrv in edges) {
+                 other = edges[indrv];
+                 console.log("DEBUG-b", index, other);
+                 delete edges[indrv];
+             } else edges[index] = triangle;
+
+             if (other)
+                 result.push([triangle.center, other.center]);
+         });
+     });
+     console.log(result.length, result);
+     return result;
  };
 
  fascia.ready(function() {
@@ -129,6 +167,7 @@
      var applegend = 'Triangulate';
      var points = generatePoints();
      var triangles = getDelaunayTriangles(points);
+     var voroni = getVoroniEdges(triangles);
      var redraw = function() {};
 
      return {
@@ -142,43 +181,64 @@
              ctx.lineCap = 'round';
              ctx.lineWidth = 2;
 
-             ctx.beginPath();
-             triangles.forEach(function(triangle) {
-                 try {
-                     var circle = getCircumcircle(triangle);
-                     var center = multivec.infinityPoint
-                                          .applyVersor(circle)
-                                          .normalizePoint();
-                     var radius = Math.sqrt(circle.divide(
-                         circle.wedge(
-                             multivec.infinityPoint)).quadrance());
-                     ctx.moveTo((center.x - 0.5) * camera.width +
-                                radius * camera.width,
-                                (center.y - 0.5) * camera.height);
-                     ctx.ellipse((center.x - 0.5) * camera.width,
-                                 (center.y - 0.5) * camera.height,
-                                 radius * camera.width,
-                                 radius * camera.height,
-                                 0, 0, Math.PI * 2);
-                 } catch(error) { console.error(error); }
-             });
-             ctx.strokeStyle = 'skyblue';
-             ctx.stroke();
+             if (drawCircles) {
+                 ctx.beginPath();
+                 triangles.forEach(function(triangle) {
+                     try {
+                         var center = multivec.infinityPoint
+                                              .applyVersor(triangle.circle)
+                                              .normalizePoint();
+                         var radius = Math.sqrt(triangle.circle.divide(
+                             triangle.circle.wedge(
+                                 multivec.infinityPoint)).quadrance());
+                         ctx.moveTo((center.x - 0.5) * camera.width +
+                                    radius * camera.width,
+                                    (center.y - 0.5) * camera.height);
+                         ctx.ellipse((center.x - 0.5) * camera.width,
+                                     (center.y - 0.5) * camera.height,
+                                     radius * camera.width,
+                                     radius * camera.height,
+                                     0, 0, Math.PI * 2);
+                     } catch(error) { console.error(error); }
+                 });
+                 ctx.strokeStyle = 'skyblue';
+                 ctx.stroke();
+             }
 
-             ctx.beginPath();
-             triangles.forEach(function(triangle) {
-                 var actual = triangle.vertices;
-                 ctx.moveTo((actual[0].x - 0.5) * camera.width,
-                            (actual[0].y - 0.5) * camera.height);
-                 ctx.lineTo((actual[1].x - 0.5) * camera.width,
-                            (actual[1].y - 0.5) * camera.height);
-                 ctx.lineTo((actual[2].x - 0.5) * camera.width,
-                            (actual[2].y - 0.5) * camera.height);
-                 ctx.lineTo((actual[0].x - 0.5) * camera.width,
-                            (actual[0].y - 0.5) * camera.height);
-             });
-             ctx.strokeStyle = 'darkslategray';
-             ctx.stroke();
+             if (drawDelaunay) {
+                 ctx.beginPath();
+                 triangles.forEach(function(triangle) {
+                     ctx.moveTo(
+                         (triangle.vertices[0].x - 0.5) * camera.width,
+                         (triangle.vertices[0].y - 0.5) * camera.height);
+                     ctx.lineTo(
+                         (triangle.vertices[1].x - 0.5) * camera.width,
+                         (triangle.vertices[1].y - 0.5) * camera.height);
+                     ctx.lineTo(
+                         (triangle.vertices[2].x - 0.5) * camera.width,
+                         (triangle.vertices[2].y - 0.5) * camera.height);
+                     ctx.lineTo(
+                         (triangle.vertices[0].x - 0.5) * camera.width,
+                         (triangle.vertices[0].y - 0.5) * camera.height);
+                 });
+                 ctx.strokeStyle = 'darkred';
+                 ctx.stroke();                 
+             }
+
+             if (drawVoroni) {
+                 ctx.beginPath();
+                 voroni.forEach(function(edge) {
+                     console.log("DEBUG", edge);
+                     ctx.moveTo(
+                         (edge[0].x - 0.5) * camera.width,
+                         (edge[0].y - 0.5) * camera.height);
+                     ctx.lineTo(
+                         (edge[1].x - 0.5) * camera.width,
+                         (edge[1].y - 0.5) * camera.height);
+                 });
+                 ctx.strokeStyle = 'darkblue';
+                 ctx.stroke();
+             }
 
              ctx.beginPath();
              points.forEach(function(point, index) {
