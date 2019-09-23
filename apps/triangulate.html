@@ -27,6 +27,7 @@
  var drawVoroni   = ripple.param('voroni');
  var drawDelaunay = ripple.param('delaunay');
  var drawCircles  = ripple.param('circles');
+ var hidePoints   = ripple.param('hidepoints');
 
  var generatePoints = function(npoints, seed) {
      var result = [];
@@ -301,15 +302,18 @@
                  ctx.stroke();
              }
 
-             ctx.beginPath();
-             adjusted.forEach(function(point, index) {
-                 ctx.moveTo(point.x + size / 60, point.y);
-                 ctx.arc(point.x, point.y, size / 60, 0, Math.PI * 2);
-             });
-             ctx.fillStyle = 'rgb(32, 192, 32)';
-             ctx.fill();
-             ctx.strokeStyle = 'rgb(32, 32, 192)';
-             ctx.stroke();
+             if (!hidePoints) {
+                 ctx.beginPath();
+                 adjusted.forEach(function(point, index) {
+                     ctx.moveTo(point.x + size / 60, point.y);
+                     ctx.arc(point.x, point.y,
+                             size / 60, 0, Math.PI * 2);
+                 });
+                 ctx.fillStyle = 'rgb(32, 192, 32)';
+                 ctx.fill();
+                 ctx.strokeStyle = 'rgb(32, 32, 192)';
+                 ctx.stroke();
+             }
 
              ctx.beginPath();
              ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
