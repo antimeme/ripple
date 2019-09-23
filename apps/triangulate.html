@@ -23,18 +23,29 @@
  "use strict";
 
  var npoints = Math.max(parseInt(ripple.param('npoints'), 10) || 0, 3);
+ var seed = parseInt(ripple.param('seed'), 10) || undefined;
  var drawVoroni   = ripple.param('voroni');
  var drawDelaunay = ripple.param('delaunay');
  var drawCircles  = ripple.param('circles');
 
- var generatePoints = function() {
+ var generatePoints = function(npoints, seed) {
      var result = [];
-     var ii;
-     var r = random.random();
+     if (seed == -1) {
+         var count;
+         result.push({ x: 0.5, y: 0.5 });
+         for (count = npoints - 1; count > 0; --count) {
+             var angle = 2 * Math.PI * count / (npoints - 1);
+             result.push({ x: 0.1 + (1 + Math.cos(angle)) * 0.4,
+                           y: 0.1 + (1 + Math.sin(angle)) * 0.4 });
+         };
+     } else {
+         var r = random.random(seed);
+         var ii;
 
-     for (ii = 0; ii < npoints; ++ii)
-         result.push({ x: r.random() * 0.9 + 0.05,
-                       y: r.random() * 0.9 + 0.05 });
+         for (ii = 0; ii < npoints; ++ii)
+             result.push({ x: r.random() * 0.9 + 0.05,
+                           y: r.random() * 0.9 + 0.05 });
+     }
      return result;
  };
 
@@ -68,10 +79,10 @@
          result.circle = result.vertices.reduce(
              function(circle, vertex) {
                  return circle ? circle.wedge(vertex) : vertex; });
-         result.isFinite = function() {
-             return (this.indices[0] >= 0) &&
-                    (this.indices[1] >= 0) &&
-                    (this.indices[2] >= 0); };
+         if ((result.indices[0] >= 0) &&
+             (result.indices[1] >= 0) &&
+             (result.indices[2] >= 0))
+             result.center = getRoundCenter(result.circle);
          return result;
      };
 
@@ -104,13 +115,13 @@
              if (triangle.circle.wedge(point)
                          .divide(carrier).scalar < 0) {
                  triangle.edges.forEach(function(edge) {
-                     var index = ripple.pair(edge[0], edge[1]);
-                     var indrv = ripple.pair(edge[1], edge[0]);
-                     if (index in edges)
-                         delete edges[index];
-                     else if (indrv in edges)
-                         delete edges[indrv];
-                     else edges[index] = true;
+                     var forward = ripple.pair(edge[0], edge[1]);
+                     var reverse = ripple.pair(edge[1], edge[0]);
+                     if (forward in edges)
+                         delete edges[forward];
+                     else if (reverse in edges)
+                         delete edges[reverse];
+                     else edges[forward] = true;
                  });
              } else next.push(result[jj]);
          }
@@ -123,53 +134,111 @@
          result = next;
      }
 
-     // Discard triangles with vertices at infinity
-     if (!config || config.dropOutside)
-         result = result.filter(function(triangle) {
-             return triangle.isFinite(); });
      return result;
  };
 
- var getVoroniEdges = function(elements) {
+ var getRoundCenter = function(round) {
+     var carrier = round.wedge(multivec.infinityPoint);
+
+     var discriminant = round.divide(carrier, -1);
+     return multivec.infinityPoint
+                    .times(1/2, discriminant, discriminant)
+                    .plus(discriminant).normalizePoint();
+ };
+
+ var getVoroniPolygons = function(elements) {
      if (!elements || elements.length < 1)
          throw new Error("Not enough points");
-     var result = [];
      var triangles = getDelaunayTriangles.isPrototypeOf(elements[0]) ?
                      elements : getDelaunayTriangles(elements);
-     var edges = {};
-     triangles.forEach(function(triangle) {
-         triangle.center = multivec.infinityPoint
-                                   .applyVersor(triangle.circle)
-                                   .normalizePoint();
-         triangle.edges.forEach(function(edge) {
-             var other;
-             var index = ripple.pair(edge[0], edge[1]);
-             var indrv = ripple.pair(edge[1], edge[0]);
-             if (index in edges) {
-                 other = edges[index];
-                 console.log("DEBUG-a", index, other);
-                 delete edges[index];
-             } else if (indrv in edges) {
-                 other = edges[indrv];
-                 console.log("DEBUG-b", index, other);
-                 delete edges[indrv];
-             } else edges[index] = triangle;
+     var result = []; // Voroni polygons
+     var edges = {}; // Edges not yet paired for triangle neighbors
+     var vertexTriangles = {}; // All triangles that include a vertex
 
-             if (other)
-                 result.push([triangle.center, other.center]);
+     // Build a list of triangles that share a given vertex
+     triangles.forEach(function(triangle) {
+         [0, 1, 2].forEach(function(index) {
+             var current = triangle.indices[index];
+             if (!vertexTriangles[current])
+                 vertexTriangles[current] = [];
+             vertexTriangles[current].push(triangle);
+         });
+
+         var connectTriangles = function(a, aidx, b, bidx) {
+             if (!a.neighbors)
+                 a.neighbors = [undefined, undefined, undefined];
+             a.neighbors[aidx] = b;
+
+             if (!b.neighbors)
+                 b.neighbors = [undefined, undefined, undefined];
+             b.neighbors[bidx] = a;
+         };
+
+         triangle.edges.forEach(function(edge, index) {
+             var forward = ripple.pair(edge[0], edge[1]);
+             var reverse = ripple.pair(edge[1], edge[0]);
+             if (forward in edges) {
+                 connectTriangles(triangle, index,
+                                  edges[forward].triangle,
+                                  edges[forward].index);
+                 delete edges[forward];
+             } else if (reverse in edges) {
+                 connectTriangles(triangle, index,
+                                  edges[reverse].triangle,
+                                  edges[reverse].index);
+                 delete edges[reverse];
+             } else edges[forward] = {
+                 index: index,
+                 triangle: triangle
+             };
          });
      });
-     console.log(result.length, result);
+
+     // Each vertex in the Delaunay corresponds to a Voroni polygon.
+     Object.keys(vertexTriangles).forEach(function(index, which) {
+         // Start with any triangle associated with this vertex.
+         // Visit each bordering triangle that shares an edge with the
+         // same vertex included until we come back around.
+         var triangle = vertexTriangles[index][0];
+         var polygon = { finite: true, vertices: [] };
+         var visited = {};
+         vertexTriangles[index].forEach(function(triangle) {
+             if (!triangle.center)
+                 polygon.finite = false;
+         });
+         if (!polygon.finite)
+             return;
+
+         index = parseInt(index, 10);
+
+         while (triangle) {
+             polygon.vertices.push(
+                 triangle.center || multivec.infinityPoint);
+             polygon.finite = polygon.finite && triangle.center;
+
+             var ii, edge;
+             for (ii = 0; ii < triangle.edges.length; ++ii) {
+                 edge = triangle.edges[ii];
+                 if ((edge[0] === index) && !visited[edge[1]]) {
+                     visited[edge[1]] = true; break;
+                 } else if ((edge[1] === index) && !visited[edge[0]]) {
+                     visited[edge[0]] = true; break;
+                 }
+             }
+
+             triangle = (ii < triangle.edges.length) ?
+                        triangle.neighbors[ii] : undefined;
+         };
+         result.push(polygon);
+     });
      return result;
  };
 
  fascia.ready(function() {
      'use strict';
      var applegend = 'Triangulate';
-     var points = generatePoints();
-     var triangles = getDelaunayTriangles(points);
-     var voroni = getVoroniEdges(triangles);
      var redraw = function() {};
+     var points = generatePoints(npoints, seed);
 
      return {
          init: function(camera, canvas, container, fasciaRedraw) {
@@ -178,75 +247,64 @@
          },
          draw: function(ctx, camera, now, last) {
              var size = Math.min(camera.width, camera.height);
+             var adjusted = points.map(function(point) {
+                 return { x: (point.x - 0.5) * camera.width,
+                          y: (point.y - 0.5) * camera.height }; });
+             var triangles = getDelaunayTriangles(adjusted);
+             var voroni = getVoroniPolygons(triangles);
 
              ctx.lineCap = 'round';
-             ctx.lineWidth = 2;
+             ctx.lineWidth = size / 250;
 
              if (drawCircles) {
                  ctx.beginPath();
                  triangles.forEach(function(triangle) {
-                     try {
-                         var center = multivec.infinityPoint
-                                              .applyVersor(triangle.circle)
-                                              .normalizePoint();
+                     if (triangle.center) {
                          var radius = Math.sqrt(triangle.circle.divide(
                              triangle.circle.wedge(
                                  multivec.infinityPoint)).quadrance());
-                         ctx.moveTo((center.x - 0.5) * camera.width +
-                                    radius * camera.width,
-                                    (center.y - 0.5) * camera.height);
-                         ctx.ellipse((center.x - 0.5) * camera.width,
-                                     (center.y - 0.5) * camera.height,
-                                     radius * camera.width,
-                                     radius * camera.height,
-                                     0, 0, Math.PI * 2);
-                     } catch(error) { console.error(error); }
+                         ctx.moveTo(triangle.center.x + radius,
+                                    triangle.center.y);
+                         ctx.arc(triangle.center.x, triangle.center.y,
+                                 radius, 0, Math.PI * 2);
+                     }
                  });
                  ctx.strokeStyle = 'skyblue';
                  ctx.stroke();
              }
 
+             var drawPolygon = function(ctx, vertices) {
+                 if (vertices.length > 0) {
+                     var last = vertices[vertices.length - 1];
+                     ctx.moveTo(last.x, last.y);
+                 }
+                 vertices.forEach(function(vertex) {
+                     ctx.lineTo(vertex.x, vertex.y); });
+             };
+
              if (drawDelaunay) {
                  ctx.beginPath();
                  triangles.forEach(function(triangle) {
-                     ctx.moveTo(
-                         (triangle.vertices[0].x - 0.5) * camera.width,
-                         (triangle.vertices[0].y - 0.5) * camera.height);
-                     ctx.lineTo(
-                         (triangle.vertices[1].x - 0.5) * camera.width,
-                         (triangle.vertices[1].y - 0.5) * camera.height);
-                     ctx.lineTo(
-                         (triangle.vertices[2].x - 0.5) * camera.width,
-                         (triangle.vertices[2].y - 0.5) * camera.height);
-                     ctx.lineTo(
-                         (triangle.vertices[0].x - 0.5) * camera.width,
-                         (triangle.vertices[0].y - 0.5) * camera.height);
-                 });
+                     if (triangle.center)
+                         drawPolygon(ctx, triangle.vertices); });
                  ctx.strokeStyle = 'darkred';
                  ctx.stroke();                 
              }
 
              if (drawVoroni) {
                  ctx.beginPath();
-                 voroni.forEach(function(edge) {
-                     console.log("DEBUG", edge);
-                     ctx.moveTo(
-                         (edge[0].x - 0.5) * camera.width,
-                         (edge[0].y - 0.5) * camera.height);
-                     ctx.lineTo(
-                         (edge[1].x - 0.5) * camera.width,
-                         (edge[1].y - 0.5) * camera.height);
-                 });
-                 ctx.strokeStyle = 'darkblue';
+                 voroni.forEach(function(polygon) {
+                     if (polygon.finite &&
+                         polygon.vertices.length >= 3)
+                         drawPolygon(ctx, polygon.vertices); });
+                 ctx.strokeStyle = 'indigo';
                  ctx.stroke();
              }
 
              ctx.beginPath();
-             points.forEach(function(point, index) {
-                 var p = { x: (point.x - 0.5) * camera.width,
-                           y: (point.y - 0.5) * camera.height };
-                 ctx.moveTo(p.x + size / 60, p.y);
-                 ctx.arc(p.x, p.y, size / 60, 0, Math.PI * 2);
+             adjusted.forEach(function(point, index) {
+                 ctx.moveTo(point.x + size / 60, point.y);
+                 ctx.arc(point.x, point.y, size / 60, 0, Math.PI * 2);
              });
              ctx.fillStyle = 'rgb(32, 192, 32)';
              ctx.fill();

@@ -393,7 +393,8 @@
             var conjprod = this.conjugate().multiply(this);
             if (!conjprod.isScalar())
                 throw new RangeError(
-                    'No norm possible for: ' + this.toString());
+                    'Non-scalar quadrance (' + conjprod.toString() +
+                    ') for: ' + this.toString());
             this.__quadrance = conjprod.scalar;
         }
         return this.__quadrance;
@@ -411,24 +412,28 @@
     // Return a normalized form of this multi-vector.  This is
     // possible only if the norm is scalar and not zero.
     multivec.prototype.normalize = function() {
-        var scale = this.norm();
-        if (zeroish(scale))
-            throw new RangeError(
-                'Cannot normalize null multi-vector: ' +
-                this.toString());
-        return this.multiply(1 / scale);
+        var result = this.multiply(1 / this.norm());
+        Object.keys(result.components).forEach(function(basis) {
+            if (!isFinite(result.components[basis]))
+                throw new RangeError(
+                    "Cannot normalize (norm: " + this.norm() +
+                    "): " + this.toString());
+        }, this);
+        return result;
     };
 
     // Returns the multiplicative inverse of a multi-vector,
     // except for zero which has no inverse and throws an error.
     //   m.times(m.inverseMult()).minus(1).zeroish() // true
     multivec.prototype.inverseMult = function() {
-        var scale = this.quadrance();
-        if (zeroish(scale))
-            throw new RangeError(
-                'No multiplicative inverse of ' + this.toString() +
-                ' (quadrance: ' + scale + ')');
-        return this.conjugate().multiply(1 / scale);
+        var result = this.conjugate().multiply(1 / this.quadrance());
+        Object.keys(result.components).forEach(function(basis) {
+            if (!isFinite(result.components[basis]))
+                throw new RangeError(
+                    "Multiplicative inverse is infinite (quadrance: " +
+                    this.quadrance() + "): " + this.toString());
+        }, this);
+        return result;
     };
     multivec.prototype.inverse = multivec.prototype.inverseMult;
 
@@ -738,6 +743,10 @@
         return this.plus(multivec.originPoint,
                          multivec.infinityPoint.times(
                              this.quadrance(), 0.5));
+    };
+
+    multivec.prototype.conformalWeight = function() {
+        return multivec.infinityPoint.times(-1).contract(this).scalar;
     };
 
     // Normalize a conformal point.  This results in the same point
