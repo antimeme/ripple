@@ -30,23 +30,29 @@
  var hidePoints   = ripple.param('hidepoints');
  var mosaic       = ripple.param('mosaic');
 
- var generator = random.random(seed);
 
  var generatePoints = function(npoints, seed) {
+     var generator = random.random(seed);
+     var getColor = function() {
+         return 'rgba(' + Math.round(128 + 64 * generator.random()) +
+                ', ' + Math.round(128 + 64 * generator.random()) +
+                ', ' + Math.round(128 + 64 * generator.random()) +
+                ', 1.0)'; };
      var result = [];
      if (seed == -1) {
          var count;
-         result.push({ x: 0.5, y: 0.5 });
+         result.push({ x: 0.5, y: 0.5, color: getColor() });
          for (count = npoints - 1; count > 0; --count) {
              var angle = 2 * Math.PI * count / (npoints - 1);
              result.push({ x: 0.1 + (1 + Math.cos(angle)) * 0.4,
-                           y: 0.1 + (1 + Math.sin(angle)) * 0.4 });
-         };
+                           y: 0.1 + (1 + Math.sin(angle)) * 0.4,
+                           color: getColor() }); };
      } else {
          var ii;
          for (ii = 0; ii < npoints; ++ii)
              result.push({ x: generator.random() * 0.9 + 0.05,
-                           y: generator.random() * 0.9 + 0.05 });
+                           y: generator.random() * 0.9 + 0.05,
+                           color: getColor() });
      }
      return result;
  };
@@ -62,12 +68,15 @@
          points = config;
          config = undefined;
      }
-     if (!points || points.length < 3)
+     if (!points || !Array.isArray(points) || points.length < 3)
          throw new Error("Not enough points");
-     if (!(points[0] instanceof multivec) ||
-         !multivec.zeroish(points[0].quadrance()))
+     if (points.some(function(point) {
+         return !(point instanceof multivec) ||
+                !multivec.zeroish(point.quadrance()); }))
          points = points.map(function(point) {
-             return multivec(point).createPoint(); });
+             var result = multivec(point).createPoint();
+             result.color = point.color;
+             return result; });
 
      var createTriangle = function(indices) {
          var result = Object.create(getDelaunayTriangles);
@@ -84,7 +93,7 @@
          if ((result.indices[0] >= 0) &&
              (result.indices[1] >= 0) &&
              (result.indices[2] >= 0))
-             result.center = getRoundCenter(result.circle);
+             result.center = multivec.getRoundCenter(result.circle);
          return result;
      };
 
@@ -139,15 +148,6 @@
      return result;
  };
 
- var getRoundCenter = function(round) {
-     var carrier = round.wedge(multivec.infinityPoint);
-
-     var discriminant = round.divide(carrier, -1);
-     return multivec.infinityPoint
-                    .times(1/2, discriminant, discriminant)
-                    .plus(discriminant).normalizePoint();
- };
-
  var getVoroniPolygons = function(elements) {
      if (!elements || elements.length < 1)
          throw new Error("Not enough points");
@@ -197,7 +197,7 @@
      });
 
      // Each vertex in the Delaunay corresponds to a Voroni polygon.
-     Object.keys(vertexTriangles).forEach(function(index, which) {
+     Object.keys(vertexTriangles).forEach(function(index) {
          // Start with any triangle associated with this vertex.
          // Visit each bordering triangle that shares an edge with the
          // same vertex included until we come back around.
@@ -206,6 +206,10 @@
          var visited = {};
 
          index = parseInt(index, 10);
+         triangle.indices.forEach(function(ii, count) {
+             if (index === ii)
+                 polygon.color = triangle.vertices[count].color;
+         });
 
          while (triangle) {
              polygon.vertices.push(
@@ -245,7 +249,8 @@
              var size = Math.min(camera.width, camera.height);
              var adjusted = points.map(function(point) {
                  return { x: (point.x - 0.5) * camera.width,
-                          y: (point.y - 0.5) * camera.height }; });
+                          y: (point.y - 0.5) * camera.height,
+                          color: point.color }; });
              var triangles = getDelaunayTriangles(adjusted);
              var voroni = getVoroniPolygons(triangles);
 
@@ -278,31 +283,15 @@
                      ctx.lineTo(vertex.x, vertex.y); });
              };
 
-             if (drawDelaunay) {
-                 ctx.beginPath();
-                 triangles.forEach(function(triangle) {
-                     if (triangle.center)
-                         drawPolygon(ctx, triangle.vertices); });
-                 ctx.strokeStyle = 'darkred';
-                 ctx.stroke();                 
-             }
-
              if (mosaic) {
                  voroni.forEach(function(polygon) {
-                     ctx.beginPath();
-                     if (polygon.finite &&
-                         polygon.vertices.length >= 3)
+                     if (polygon.finite && polygon.color &&
+                         polygon.vertices.length >= 3) {
+                         ctx.beginPath();
                          drawPolygon(ctx, polygon.vertices);
-                     else console.log("DEBUG-infinite", polygon);
-
-                     var getChannel = function() {
-                         return 128 + 64 * generator.random();
-                     };
-                     ctx.fillStyle = 'rgba(' +
-                                     getChannel() + ', ' +
-                                     getChannel() + ', ' +
-                                     getChannel() + ', 1.0)';
-                     ctx.fill();
+                         ctx.fillStyle = polygon.color;
+                         ctx.fill();
+                     }
                  });
              }
 
@@ -315,6 +304,15 @@
                      else console.log("DEBUG-infinite", polygon);
                  });
                  ctx.strokeStyle = 'indigo';
+                 ctx.stroke();
+             }
+
+             if (drawDelaunay) {
+                 ctx.beginPath();
+                 triangles.forEach(function(triangle) {
+                     if (triangle.center)
+                         drawPolygon(ctx, triangle.vertices); });
+                 ctx.strokeStyle = 'darkred';
                  ctx.stroke();
              }
 

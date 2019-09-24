@@ -774,16 +774,25 @@
         return Math.sqrt(multivec.conformalQuadrance(point1, point2));
     };
 
+    multivec.getRoundCenter = function(round) {
+        // This seems to be the most numerically stable way to compute
+        // centers of rounds.
+        var carrier = round.wedge(multivec.infinityPoint);
+        var discriminant = round.divide(carrier, -1);
+        return multivec.infinityPoint
+                       .times(1/2, discriminant, discriminant)
+                       .plus(discriminant).normalizePoint();
+    };
+
     // Create a rotation that can be applied as a versor
     multivec.createRotation = function(bivector, angle) {
-        bivector = bivector.divide(bivector.norm());
         return bivector.times(
             Math.sin(-angle/2)).plus(Math.cos(-angle/2));
     };
 
-    multivec.createTranslation = function(vector) {
-        //return versor(multivec(1).minus(
-        //    vector.times(multivec.infinityPoint, 0.5)));
+    multivec.conformalTranslation = function(vector) {
+        return multivec(1).minus(
+            vector.times(multivec.infinityPoint, 0.5));
     };
 
     multivec.createReflection = function(vector) {
@@ -813,7 +822,6 @@
             (this.norm() - headsize) / this.norm()).minus(
                 cross.multiply(headsize / 2));
 
-        console.log("DEBUG", this.toString());
         ctx.save();
         ctx.strokeStyle = (config && config.color) || 'black';
         ctx.fillStyle = (config && config.fill) || 'white';
