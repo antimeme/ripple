@@ -28,6 +28,9 @@
  var drawDelaunay = ripple.param('delaunay');
  var drawCircles  = ripple.param('circles');
  var hidePoints   = ripple.param('hidepoints');
+ var mosaic       = ripple.param('mosaic');
+
+ var generator = random.random(seed);
 
  var generatePoints = function(npoints, seed) {
      var result = [];
@@ -40,12 +43,10 @@
                            y: 0.1 + (1 + Math.sin(angle)) * 0.4 });
          };
      } else {
-         var r = random.random(seed);
          var ii;
-
          for (ii = 0; ii < npoints; ++ii)
-             result.push({ x: r.random() * 0.9 + 0.05,
-                           y: r.random() * 0.9 + 0.05 });
+             result.push({ x: generator.random() * 0.9 + 0.05,
+                           y: generator.random() * 0.9 + 0.05 });
      }
      return result;
  };
@@ -203,12 +204,6 @@
          var triangle = vertexTriangles[index][0];
          var polygon = { finite: true, vertices: [] };
          var visited = {};
-         vertexTriangles[index].forEach(function(triangle) {
-             if (!triangle.center)
-                 polygon.finite = false;
-         });
-         if (!polygon.finite)
-             return;
 
          index = parseInt(index, 10);
 
@@ -292,12 +287,33 @@
                  ctx.stroke();                 
              }
 
+             if (mosaic) {
+                 voroni.forEach(function(polygon) {
+                     ctx.beginPath();
+                     if (polygon.finite &&
+                         polygon.vertices.length >= 3)
+                         drawPolygon(ctx, polygon.vertices);
+                     else console.log("DEBUG-infinite", polygon);
+
+                     var getChannel = function() {
+                         return 128 + 64 * generator.random();
+                     };
+                     ctx.fillStyle = 'rgba(' +
+                                     getChannel() + ', ' +
+                                     getChannel() + ', ' +
+                                     getChannel() + ', 1.0)';
+                     ctx.fill();
+                 });
+             }
+
              if (drawVoroni) {
                  ctx.beginPath();
                  voroni.forEach(function(polygon) {
                      if (polygon.finite &&
                          polygon.vertices.length >= 3)
-                         drawPolygon(ctx, polygon.vertices); });
+                         drawPolygon(ctx, polygon.vertices);
+                     else console.log("DEBUG-infinite", polygon);
+                 });
                  ctx.strokeStyle = 'indigo';
                  ctx.stroke();
              }
