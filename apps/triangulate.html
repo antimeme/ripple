@@ -39,6 +39,7 @@
                 ', ' + Math.round(128 + 64 * generator.random()) +
                 ', 1.0)'; };
      var result = [];
+
      if (seed == -1) {
          var count;
          result.push({ x: 0.5, y: 0.5, color: getColor() });
@@ -74,9 +75,7 @@
          return !(point instanceof multivec) ||
                 !multivec.zeroish(point.quadrance()); }))
          points = points.map(function(point) {
-             var result = multivec(point).createPoint();
-             result.color = point.color;
-             return result; });
+             return multivec(point).createPoint(); });
 
      var createTriangle = function(indices) {
          var result = Object.create(getDelaunayTriangles);
@@ -202,14 +201,15 @@
          // Visit each bordering triangle that shares an edge with the
          // same vertex included until we come back around.
          var triangle = vertexTriangles[index][0];
-         var polygon = { finite: true, vertices: [] };
+         var polygon = { index: undefined, finite: true, vertices: [] };
          var visited = {};
 
          index = parseInt(index, 10);
+
+         // Find the index into the vertex array this polygon represents
          triangle.indices.forEach(function(ii, count) {
              if (index === ii)
-                 polygon.color = triangle.vertices[count].color;
-         });
+                 polygon.index = triangle.indices[count]; });
 
          while (triangle) {
              polygon.vertices.push(
@@ -249,8 +249,7 @@
              var size = Math.min(camera.width, camera.height);
              var adjusted = points.map(function(point) {
                  return { x: (point.x - 0.5) * camera.width,
-                          y: (point.y - 0.5) * camera.height,
-                          color: point.color }; });
+                          y: (point.y - 0.5) * camera.height }; });
              var triangles = getDelaunayTriangles(adjusted);
              var voroni = getVoroniPolygons(triangles);
 
@@ -285,11 +284,11 @@
 
              if (mosaic) {
                  voroni.forEach(function(polygon) {
-                     if (polygon.finite && polygon.color &&
+                     if (polygon.finite && !isNaN(polygon.index) &&
                          polygon.vertices.length >= 3) {
                          ctx.beginPath();
                          drawPolygon(ctx, polygon.vertices);
-                         ctx.fillStyle = polygon.color;
+                         ctx.fillStyle = points[polygon.index].color;
                          ctx.fill();
                      }
                  });
