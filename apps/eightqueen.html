@@ -48,7 +48,7 @@
                      (queen.col < 0) || (queen.col >= 8))
                      continue;
                  if (!this.isCaptured(queen.row, queen.col))
-                     this.queens.push(this.grid.coordinate(queen));
+                     this.queens.push(this.grid.markCenter(queen));
                  if (ii >= 8)
                      break;
              }
@@ -130,7 +130,7 @@
              ctx.beginPath();
              this.eachSquare(function(row, col) {
                  if ((row + col) % 2)
-                     this.grid.draw(ctx, this.grid.coordinate(
+                     this.grid.draw(ctx, this.grid.markCenter(
                          {row: row, col: col}));
              });
              ctx.fillStyle = colorBlack;
@@ -140,7 +140,7 @@
              ctx.beginPath();
              this.eachSquare(function(row, col) {
                  if (!((row + col) % 2))
-                     this.grid.draw(ctx, this.grid.coordinate(
+                     this.grid.draw(ctx, this.grid.markCenter(
                          {row: row, col: col}));
              });
              ctx.fillStyle = colorWhite;
@@ -150,7 +150,7 @@
              ctx.beginPath();
              this.eachSquare(function(row, col) {
                  if (this.isCaptured(row, col))
-                     this.grid.draw(ctx, this.grid.coordinate(
+                     this.grid.draw(ctx, this.grid.markCenter(
                          {row: row, col: col}));
              });
              ctx.fillStyle = colorCapture;
@@ -160,7 +160,7 @@
              ctx.beginPath();
              for (row = 0; row < 8; ++row)
                  for (col = 0; col < 8; ++col) {
-                     this.grid.draw(ctx, this.grid.coordinate(
+                     this.grid.draw(ctx, this.grid.markCenter(
                          {row: row, col: col}));
                  }
              ctx.strokeStyle = (this.queens.length >= 8) ?
