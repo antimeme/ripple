@@ -28,6 +28,7 @@
  var drawDelaunay = ripple.param('delaunay');
  var drawCircles  = ripple.param('circles');
  var hidePoints   = ripple.param('hidepoints');
+ var cornerPoints = ripple.param('cornerpoints');
  var mosaic       = ripple.param('mosaic');
 
 
@@ -250,8 +251,15 @@
              var adjusted = points.map(function(point) {
                  return { x: (point.x - 0.5) * camera.width,
                           y: (point.y - 0.5) * camera.height }; });
+             if (cornerPoints) {
+                 adjusted.push({x: -camera.width, y: -camera.height});
+                 adjusted.push({x: camera.width, y: -camera.height});
+                 adjusted.push({x: camera.width, y: camera.height});
+                 adjusted.push({x: -camera.width, y: camera.height});
+             }
              var triangles = getDelaunayTriangles(adjusted);
              var voroni = getVoroniPolygons(triangles);
+
 
              ctx.lineCap = 'round';
              ctx.lineWidth = size / 250;
