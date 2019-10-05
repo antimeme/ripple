@@ -8265,7 +8265,7 @@
         <section>
             <h3>History</h3>
             <p>
-                Geometric algebra is a mathematical of lost city.
+                Geometric algebra is a mathematical lost city.
             </p><ul><li class="fragment">
                 Euclid (~300 BCE): connected geometry &amp; algebra
             </li><li class="fragment">
@@ -8460,10 +8460,7 @@
             </p>
         </section>
         <section>
-            <h3>Arithmetic Extended</h3>
-            <p>
-                Learn these four simple rules:
-            </p>
+            <h3>Axioms of Basis Arithmetic</h3>
             <ul><li class="fragment">
                 Hungry Zero:
                 &#x2200;M&#x2208;&#x1d544; 0<sub>&#x211d;</sub>
@@ -11230,26 +11227,127 @@
         <section>
             <h3>Conformal Translation</h3>
             <p>
-                Translation(<strong>t</strong>): V<sub>t</sub> = 1 +
+                V<sub><strong>t</strong></sub> &#x225d; 1 +
                 <em>&infin;</em><strong>t</strong>/2
-            </p>
-            <ul><li>
+            </p><ul><li class="fragment">
                 <em>p</em><sub><strong>t</strong></sub> =
                 V<sub>t</sub> <em>p</em> V<sub>t</sub><sup>-1</sup>
-            </li><li>
-                <em>p</em><sub><strong>t</strong></sub> = (1 +
-                <em>&infin;</em><strong>t</strong>/2)
-                (<em>o</em> + <strong>p</strong> +
-                <strong>p</strong><sup>2</sup><em>&infin;</em>/2)
-                (1 - <em>&infin;</em><strong>t</strong>/2)
-            </li><li>
-                TODO
-            </li><li>
-                <em>p</em><sub><strong>t</strong></sub> =
-                <em>o</em> + (<strong>p</strong> +
-                <strong>t</strong>) + (<strong>p</strong> +
-                <strong>t</strong>)<sup>2</sup><em>&infin;</em>/2
+                <span class="fragment">
+                    = (1 + <em>&infin;</em><strong>t</strong>/2)
+                    (<em>o</em> + <strong>p</strong> +
+                    <strong>p</strong><sup>2</sup>/2<em>&infin;</em>)
+                    (1 - <em>&infin;</em><strong>t</strong>/2)
+                </span>
+            </li><li class="fragment">
+                <em>p</em><sub><strong>t</strong></sub>
+                = (<em>o</em> + <strong>p</strong> +
+                <strong>p</strong><sup>2</sup>/2<em>&infin;</em> +
+                <em>&infin;</em><strong>t</strong><em>o</em>/2 +
+                <em>&infin;</em><strong>t</strong><strong>p</strong>/2 +
+                <br /><del>
+                    <strong>p</strong><sup>2</sup>/4
+                    <em>&infin;</em><strong>t</strong>
+                    <em>&infin;</em></del>)
+                    (1 - <em>&infin;</em><strong>t</strong>/2)
+            </li><li class="fragment">
+                <em>p</em><sub><strong>t</strong></sub>
+                = <em>o</em> + <strong>p</strong> +
+                <strong>p</strong><sup>2</sup>/2<em>&infin;</em> +
+                <em>&infin;</em><strong>t</strong><em>o</em>/2 +
+                <em>&infin;</em><strong>t</strong><strong>p</strong>/2 -
+                <em>o</em><em>&infin;</em><strong>t</strong>/2 -
+                <strong>p</strong><em>&infin;</em><strong>t</strong>/2 -
+                <del>
+                    <strong>p</strong><sup>2</sup><em>&infin;</em>
+                    <em>&infin;</em><strong>t</strong>/4</del> -
+                (<em>&infin;</em> <strong>t</strong> <em>o</em>
+                    <em>&infin;</em> <strong>t</strong>)/4 -
+                    <del>
+                        <em>&infin;</em><strong>t</strong>
+                        <strong>p</strong><em>&infin;</em>
+                        <strong>t</strong>/4</del>
+            </li><li class="fragment">
+                <em>p</em><sub><strong>t</strong></sub>
+                = <em>o</em> + <strong>p</strong> +
+                <strong>p</strong><sup>2</sup>/2<em>&infin;</em> +
+                (1 - <del><em>&infin;</em>^<em>o</em></del>)
+                <strong>t</strong>/2 +
+                (1 - <del><em>o</em>^<em>&infin;</em></del>)
+                <strong>t</strong>/2 +
+                <em>&infin;</em>(<strong>t p</strong> +
+                <strong>p t</strong>)/2 +
+                <em>&infin;</em> <strong>t</strong>
+                (1 - <em>o</em>^<em>&infin;</em>)
+                <strong>t</strong>/4
             </li></ul>
+        </section>
+        <section>
+            <h3>Translation (Continued)</h3>
+            <ul><li>
+                <em>p</em><sub><strong>t</strong></sub>
+                = <em>o</em> + <strong>p</strong> +
+                <strong>p</strong><sup>2</sup>/2<em>&infin;</em> +
+                <strong>t</strong>/2 + <strong>t</strong>/2 +
+                <em>&infin;</em>(<strong>t p</strong> +
+                <strong>p t</strong>)/2 +<br />
+                <em>&infin;</em> <strong>t</strong>
+                (1 - <em>o</em>^<em>&infin;</em>)
+                <strong>t</strong>/4
+            </li><li class="fragment">
+                <em>p</em><sub><strong>t</strong></sub>
+                = <em>o</em> + <strong>p</strong> +
+                <strong>p</strong><sup>2</sup>/2<em>&infin;</em> +
+                <strong>t</strong> +
+                (<strong>t</strong>&middot;<strong>p</strong>)
+                <em>&infin;</em> +<br />
+                <strong>t</strong><sup>2</sup><em>&infin;</em>/4 +
+                <strong>t</strong>((<em>&infin;</em>^<em>o</em> -
+                1)^<em>&infin;</em>)<strong>t</strong>/4
+            </li><li class="fragment">
+                <em>p</em><sub><strong>t</strong></sub>
+                = <em>o</em> + (<strong>p</strong> +
+                <strong>t</strong>) +
+                (<strong>p</strong><sup>2</sup> +
+                2<strong>p</strong>&middot;<strong>t</strong> +
+                <strong>t</strong><sup>2</sup>)/2
+                <em>&infin;</em>
+            </li><li class="fragment">
+                <em>p</em><sub><strong>t</strong></sub>
+                = <em>o</em> + (<strong>p</strong> +
+                <strong>t</strong>) +
+                (<strong>p</strong> + <strong>t</strong>)<sup>2</sup>/2
+                <em>&infin;</em>
+            </li></ul>
+        </section>
+        <section>
+            <h3>Translation of Infinity</h3>
+            <ul><li class="fragment">
+                V<sub>t</sub> <em>&infin;</em> V<sub>t</sub><sup>-1</sup>
+                <span class="fragment">
+                    = (1 + <em>&infin;</em><strong>t</strong>/2)
+                    <em>&infin;</em> (1 -
+                    <em>&infin;</em><strong>t</strong>/2)
+                </span>
+            </li><li class="fragment">
+                V<sub>t</sub> <em>&infin;</em> V<sub>t</sub><sup>-1</sup>
+                = (<em>&infin;</em> +
+                <del>
+                    <em>&infin;</em> <strong>t</strong>
+                    <em>&infin;</em>/2</del>) (1 -
+                <em>&infin;</em><strong>t</strong>/2)
+            </li><li class="fragment">
+                V<sub>t</sub> <em>&infin;</em>
+                V<sub>t</sub><sup>-1</sup> = <em>&infin;</em> - <del>
+                <em>&infin;</em><em>&infin;</em><strong>t</strong>/2
+                </del>
+            </li><li class="fragment">
+                V<sub>t</sub> <em>&infin;</em>
+                V<sub>t</sub><sup>-1</sup> = <em>&infin;</em>
+            </li></ul>
+            <p class="fragment">
+                Translation preserves the point at infinity, which
+                makes it a Euclidean transformation.
+            </p>
         </section>
     </section>
     <section id="conformal-shapes">
