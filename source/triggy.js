@@ -270,6 +270,41 @@
                 if (!settings)
                     return;
 
+                var circle = settings.points[0]
+                                     .wedge(settings.points[1])
+                                     .wedge(settings.points[2]);
+                var descrim = circle.wedge(multivec.infinityPoint)
+                                    .normSquared();
+                ctx.beginPath();
+                if (multivec.zeroish(descrim)) {
+                    var last = settings.points[
+                        settings.points.length - 1];
+                    ctx.moveTo(
+                        bounds.left + bounds.size * last.x / 100,
+                        bounds.top + bounds.size * last.y / 100);
+                    settings.points.forEach(function(point) {
+                        ctx.lineTo(
+                            bounds.left + bounds.size * point.x / 100,
+                            bounds.top + bounds.size * point.y / 100);
+                    });
+                    ctx.strokeStyle = 'purple';
+                } else {
+                    var center = multivec.getRoundCenter(circle);
+                    var radius = Math.sqrt(
+                        circle.times(circle.conjugate())
+                              .divide(descrim).scalar) / 100;
+                    ctx.moveTo(bounds.left + bounds.size *
+                        center.x / 100 + bounds.size * radius,
+                               bounds.top + bounds.size *
+                        center.y / 100);
+                    ctx.arc(bounds.left + bounds.size * center.x / 100,
+                            bounds.top + bounds.size * center.y / 100,
+                            bounds.size * radius, 0, 2 * Math.PI);
+                    ctx.strokeStyle = settings.color;
+                }
+                ctx.lineWidth = bounds.size / 150;
+                ctx.stroke();
+
                 ctx.beginPath();
                 settings.points.forEach(function(point) {
                     ctx.moveTo(
@@ -282,31 +317,6 @@
                 });
                 ctx.fillStyle = settings.color;
                 ctx.fill();
-
-                var circle = settings.points[0]
-                                     .wedge(settings.points[1])
-                                     .wedge(settings.points[2]);
-                var descrim = circle.wedge(multivec.infinityPoint)
-                                    .normSquared();
-                if (!multivec.zeroish(descrim)) {
-                    var center = circle.times(multivec.infinityPoint)
-                                       .times(circle.inverse())
-                                       .normalizePoint();
-                    var radius = Math.sqrt(
-                        circle.times(circle.conjugate())
-                              .divide(descrim).scalar) / 100;
-                    ctx.beginPath();
-                    ctx.moveTo(bounds.left + bounds.size *
-                        center.x / 100 + bounds.size * radius,
-                               bounds.top + bounds.size *
-                        center.y / 100);
-                    ctx.arc(bounds.left + bounds.size * center.x / 100,
-                            bounds.top + bounds.size * center.y / 100,
-                            bounds.size * radius, 0, 2 * Math.PI);
-                    ctx.lineWidth = bounds.size / 150;
-                    ctx.strokeStyle = settings.color;
-                    ctx.stroke();
-                } else { /* TODO: draw line */ }
             },
             down: function(canvas, bounds, clicked, config) {
                 var settings = this.getSettings(config);

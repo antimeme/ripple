@@ -10,6 +10,7 @@
      .intro { color: blue; }
      .true { color: green; }
      .false { color: red; }
+     em { color: #448899; }
      ul.symbolic { list-style-type: none; }
      .left { float: left; }
      .right { float: right; }
@@ -10426,7 +10427,7 @@
             <h2>Cramer's Rule</h2>
             <p>
                 A direct way to uncover the components of a vector
-                for a basis using wedge products and inverses.
+                for a given basis.
             </p>
             <p>
                 <strong>v</strong> =
@@ -10867,7 +10868,7 @@
             <canvas class="triggy" data-conformal="on">
             </canvas>
         </section>
-        <section>
+        <section style="white-space: nowrap;">
             <h3>Models</h3>
             <table class="large"><tr><th>
             </th><th>
@@ -10905,17 +10906,32 @@
             </th><td>
                 &#x211d;<sup>n + 1, 1</sup>
             </td><td>
-                <em>p</em> &middot; <em>p</em> = 0
+                <em>p</em> &middot; <em>p</em> = 0 &and;<br />
+                -<em>&infin;</em> &middot; <em>p</em> &ne; 0
             </td><td>
                 <strong>v</strong> &middot;
-                <strong>v</strong> &ne; 0
+                <strong>v</strong> &ne; 0 &and;<br />
+                -<em>&infin;</em> &middot; <strong>v</strong> = 0
             </td><td>
-                Preserving
+                Structure <br /> Preserving
             </td></tr></table>
+        </section>
+        <section>
+            <h3>Euclidean Vectors</h3>
+            <p>
+                &#x1d53c; &#x225d; { <strong>v</strong> :
+                <strong>v</strong> &#x2208;
+                &lt;&#x1d544;&gt;<sub>1</sub>  &and; ??? }
+            </p><p>
+                All vectors we've considered so far can be represented
+                using orthonormal basis terms with indices greater than
+                zero.  Before we expand on this, let's name them.
+            </p>
         </section>
         <section>
             <h3>Standard Points</h3>
             <p>
+                &#x2200;<strong>p</strong>&#x2208;&#x1d53c;
                 <em>p</em> &#x225d; <strong>p</strong>
             </p>
             <ul><li class="fragment">
@@ -10923,11 +10939,12 @@
                 0<sub>&#x211d;</sub>
             </li><li class="fragment">
                 &#x2200;<em>p</em>&#x2208;&#x2119;
-                &#x2203;<strong>p</strong>
+                &#x2203;<strong>p</strong>&#x2208;&#x1d53c;
                 <em>p</em> = <strong>p</strong>
             </li><li class="fragment">
                 &#x2200;<em>p</em>&#x2208;&#x2119;
                 &#x2200;<strong>p</strong>, <strong>q</strong>
+                &#x2208;&#x1d53c;
                 (<em>p</em> = <strong>p</strong>) &and;
                 (<em>p</em> = <strong>q</strong>) &#x27f9;
                 <strong>p</strong> = <strong>q</strong>
@@ -10962,22 +10979,32 @@
             </p>
             <p>
                 To support the homogeneous model we introduce
-                <strong>o<sub>0</sub></strong> lexigraphically
-                before the <strong>x</strong> axis.  This extra
-                dimension gives a weight to each point
+                a non-Euclidean <strong>o<sub>0</sub></strong>
+                lexigraphically before the <strong>x</strong> axis.
+                This extra dimension gives a weight to each point
                 representation.
             </p>
         </section>
         <section>
             <h3>Homogeneous Points</h3>
             <p>
+                &#x2200;a&#x2208;&#x211d;,
+                <strong>p</strong>&#x2208;&#x1d53c;
                 <em>p</em> &#x225d;
-                <strong>p</strong> +
-                <strong>o<sub>0</sub></strong>
+                a (<strong>o<sub>0</sub></strong> +
+                <strong>p</strong>)
             </p>
             <ul><li class="fragment">
                 WEIGHT(<em>p</em>) &#x225d; <em>p</em> &middot;
                 <strong>o<sub>0</sub></strong>
+                <span class="fragment">
+                    = a <strong>o<sub>0</sub></strong> &middot;
+                    <strong>o<sub>0</sub></strong> +
+                    <del>
+                        a <strong>p</strong> &middot;
+                        <strong>o<sub>0</sub></strong></del>
+                    = a
+                </span>
             </li><li class="fragment">
                 NORMAL(<em>p</em>) &#x225d;
                 <em>p</em> / WEIGHT(<em>p</em>) =
@@ -10987,10 +11014,10 @@
                 &#x2200;a&#x2208;&#x211d; (a &ne; 0) &#x27f9;
                 NORMAL(a<em>p</em>) = NORMAL(<em>p</em>)
             </li><li class="fragment">
-                <strong>p</strong> = ((<em>p</em> (<em>p</em>
-                &middot; <strong>o<sub>0</sub></strong>)<sup>-1</sup>)
-                ^ <strong>o<sub>0</sub></strong>) /
-                <strong>o<sub>0</sub></strong>
+                <strong>p</strong> = ((<em>p</em> / (<em>p</em>
+                &middot; <strong>o<sub>0</sub></strong>))
+                ^ <strong>o<sub>0</sub></strong>)
+                <strong>o<sub>0</sub></strong><sup>-1</sup>
                 <em class="fragment">Rejection!</em>
             </li></ul>
         </section>
@@ -11002,14 +11029,16 @@
                 <strong>o<sub>0</sub></strong>) - (<em>q</em> /
                 <em>q</em> &middot;
                 <strong>o<sub>0</sub></strong>))
-                <br /> ((<em>p</em> / <em>p</em> &middot;
-                <strong>o<sub>0</sub></strong>) - (<em>q</em> /
-                <em>q</em> &middot;
-                <strong>o<sub>0</sub></strong>))
-                ((<em>p</em> / <em>p</em> &middot;
-                <strong>o<sub>0</sub></strong>) - (<em>q</em> /
-                <em>q</em> &middot;
-                <strong>o<sub>0</sub></strong>))<sup>&#x2020;</sup>
+                <span class="fragment">
+                    =<br /> ((<em>p</em> / <em>p</em> &middot;
+                    <strong>o<sub>0</sub></strong>) - (<em>q</em> /
+                    <em>q</em> &middot;
+                    <strong>o<sub>0</sub></strong>))
+                    ((<em>p</em> / <em>p</em> &middot;
+                    <strong>o<sub>0</sub></strong>) - (<em>q</em> /
+                    <em>q</em> &middot;
+                    <strong>o<sub>0</sub></strong>))<sup>&#x2020;</sup>
+                </span>
             </p>
             <p class="fragment">
                 With normalized points the formula is the same
@@ -11044,63 +11073,208 @@
             <p>
                 Meet the <span class="intro">null vectors</span>:
             </p>
-            <ul><li>
+            <table><tr><td>
                 <em>o</em> &#x225d;
                 (<strong>o<sub>-1</sub></strong> +
                 <strong>o<sub>0</sub></strong>) / 2
-            </li><li>
+            </td><td>
                 <em>&infin;</em> &#x225d;
                 <strong>o<sub>-1</sub></strong> -
                 <strong>o<sub>0</sub></strong>
-            </li></ul>
+            </td></tr></table>
             <ul><li class="fragment">
-                <em>o</em><sup>2</sup> =
-                (<strong>o<sub>-1</sub></strong><sup>2</sup> +
-                <strong>o<sub>-1</sub>o<sub>0</sub></strong> +
-                <strong>o<sub>0</sub>o<sub>-1</sub></strong> +
-                <strong>o<sub>0</sub></strong><sup>2</sup>) / 4
+                <em>o</em><sup>2</sup>
                 <span class="fragment">
-                    = (-1 + 0 + 1) / 4 = 0
+                    = (<strong>o<sub>-1</sub></strong><sup>2</sup> +
+                    <del><strong>o<sub>-1</sub>
+                        o<sub>0</sub></strong></del> +
+                    <del><strong>o<sub>0</sub>
+                        o<sub>-1</sub></strong></del> +
+                    <strong>o<sub>0</sub></strong><sup>2</sup>) / 4
+                </span><span class="fragment">
+                    = (-1 + 1) / 4 = 0
                 </span>
             </li><li class="fragment">
-                <em>&infin;</em><sup>2</sup> =
-                <strong>o<sub>-1</sub></strong><sup>2</sup> -
-                <strong>o<sub>-1</sub>o<sub>0</sub></strong> -
-                <strong>o<sub>0</sub>o<sub>-1</sub></strong> +
-                <strong>o<sub>0</sub></strong><sup>2</sup>
+                <em>&infin;</em><sup>2</sup>
                 <span class="fragment">
-                    = -1 + 0 + 1 = 0
+                    = <strong>o<sub>-1</sub></strong><sup>2</sup> -
+                    <del><strong>o<sub>-1</sub>
+                        o<sub>0</sub></strong></del> -
+                    <del><strong>o<sub>0</sub>
+                        o<sub>-1</sub></strong></del> +
+                    <strong>o<sub>0</sub></strong><sup>2</sup>
+                </span><span class="fragment">
+                    = -1 + 1 = 0
                 </span>
-            </li><li class="fragment">
+            </li></ul>
+        </section>
+        <section>
+            <h3>Origin and Infinity</h3>
+            <p>Both are orthogonal to the base space:</p>
+            <ul><li class="fragment">
+                &#x2200;<strong>v</strong>&#x2208;&#x1d53c;
                 <em>o</em> &middot; <strong>v</strong> =
                 (<strong>o<sub>-1</sub></strong> +
                 <strong>o<sub>0</sub></strong>)/2 &middot;
                 (v<sub>1</sub><strong>o<sub>1</sub></strong> +
                 v<sub>2</sub><strong>o<sub>2</sub></strong> ...)
-                <span class="fragment"> = 0
-                </span><span class="fragment">
-                    = <em>&infin;</em> &middot;
-                    <strong>v</strong>
+                <span class="fragment">
+                    = 0 =<br />
+                    <del>v<sub>1</sub>/2 <strong>o<sub>-1</sub>
+                        o<sub>1</sub></strong></del> +
+                    <del>v<sub>1</sub>/2 <strong>o<sub>0</sub>
+                        o<sub>1</sub></strong></del> +
+                    <del>v<sub>2</sub>/2 <strong>o<sub>-1</sub>
+                        o<sub>2</sub></strong></del> +
+                    <del>v<sub>2</sub>/2 <strong>o<sub>0</sub>
+                        o<sub>2</sub></strong></del> + ...
                 </span>
             </li><li class="fragment">
+                &#x2200;<strong>v</strong>&#x2208;&#x1d53c;
+                <em>&infin;</em> &middot; <strong>v</strong> =
+                (<strong>o<sub>-1</sub></strong> -
+                <strong>o<sub>0</sub></strong>) &middot;
+                (v<sub>1</sub><strong>o<sub>1</sub></strong> +
+                v<sub>2</sub><strong>o<sub>2</sub></strong> ...)
+                <span class="fragment">
+                    = 0 =<br />
+                    <del>v<sub>1</sub> <strong>o<sub>-1</sub>
+                    o<sub>1</sub></strong></del> -
+                    <del>v<sub>1</sub> <strong>o<sub>0</sub>
+                        o<sub>1</sub></strong></del> +
+                    <del>v<sub>2</sub> <strong>o<sub>-1</sub>
+                        o<sub>2</sub></strong></del> -
+                    <del>v<sub>2</sub> <strong>o<sub>0</sub>
+                        o<sub>2</sub></strong></del> + ...
+                </span>
+            </li><li class="fragment">
+                <em>o</em> ^ <strong>v</strong> =
+                -(<strong>v</strong> ^ <em>o</em>)
+                <span class="fragment">
+                    &#x27f9; <em>o</em> <strong>v</strong> =
+                    <em>o</em> ^ <strong>v</strong> +
+                    <del><em>o</em> &middot; <strong>v</strong></del> =
+                    - <strong>v</strong> <em>o</em>
+                </span>
+            </li><li class="fragment">
+                <em>&infin;</em> ^ <strong>v</strong> =
+                -(<strong>v</strong> ^ <em>&infin;</em>)
+                <span class="fragment">
+                    &#x27f9; <em>&infin;</em> <strong>v</strong> =
+                    <em>&infin;</em> ^ <strong>v</strong> +
+                    <del><em>&infin;</em> &middot;
+                        <strong>v</strong></del> =
+                    - <strong>v</strong> <em>&infin;</em>
+                </span>
+            </li></ul>
+        </section>
+        <section>
+            <h3>Origin and Infinity</h3>
+            <p>Putting them together...</p>
+            <ul><li class="fragment">
                 <em>o</em> &middot; <em>&infin;</em>
                 <span class="fragment">
-                    = -1/2 - 1/2
-                </span><span class="fragment"> = -1
+                    = (<strong>o<sub>-1</sub>o<sub>-1</sub></strong>
+                    - <strong>o<sub>0</sub>o<sub>0</sub></strong>)/2
                 </span><span class="fragment">
-                    = -1/2 - 1/2  = <em>&infin;</em>
-                    &middot; <em>o</em>
+                    = (-1 - 1) / 2
+                </span><span class="fragment">
+                    = -1
+                </span><span class="fragment">
+                    = <em>&infin;</em> &middot; <em>o</em>
                 </span>
             </li><li class="fragment">
                 <em>o</em> ^ <em>&infin;</em>
                 <span class="fragment">
-                    = (<strong>o<sub>-1</sub>o<sub>0</sub></strong> -
+                    = (-<strong>o<sub>-1</sub>o<sub>0</sub></strong> +
                     <strong>o<sub>0</sub>o<sub>-1</sub></strong>) / 2
                 </span><span class="fragment">
-                    = (<strong>o<sub>-1</sub>o<sub>0</sub></strong> +
-                    <strong>o<sub>-1</sub>o<sub>0</sub></strong>) / 2
+                    = (<strong>o<sub>0</sub>o<sub>-1</sub></strong> +
+                    <strong>o<sub>0</sub>o<sub>-1</sub></strong>) / 2
                 </span><span class="fragment">
-                    = <strong>o<sub>-1</sub>o<sub>0</sub></strong>
+                    = <strong>o<sub>0</sub>o<sub>-1</sub></strong>
+                </span>
+            </li><li class="fragment">
+                <em>o</em> <em>&infin;</em>
+                <span class="fragment">
+                    = <em>o</em> ^ <em>&infin;</em> +
+                    <em>o</em> &middot; <em>&infin;</em>
+                </span><span class="fragment">
+                    = <strong>o<sub>0</sub>o<sub>-1</sub></strong> - 1
+                </span>
+            </li><li class="fragment">
+                <em>&infin;</em> <em>o</em> <em>&infin;</em>
+                <span class="fragment">
+                    = (<strong>o<sub>-1</sub></strong> -
+                    <strong>o<sub>0</sub></strong>)
+                    (<strong>o<sub>0</sub>o<sub>-1</sub></strong> - 1)
+                </span><span class="fragment">
+                    =<br /> <strong>
+                    o<sub>-1</sub>o<sub>0</sub>o<sub>-1</sub></strong> -
+                    <strong>o<sub>-1</sub></strong> -
+                    <strong>
+                        o<sub>0</sub>o<sub>0</sub>o<sub>-1</sub>
+                    </strong> +
+                    <strong>o<sub>0</sub></strong>
+                </span><span class="fragment">
+                    = <strong>o<sub>0</sub></strong> -
+                    <strong>o<sub>-1</sub></strong> -
+                    <strong>o<sub>-1</sub></strong> +
+                    <strong>o<sub>0</sub></strong>
+                </span><span class="fragment">
+                    =<br /> 2<strong>o<sub>0</sub></strong> -
+                    2<strong>o<sub>-1</sub></strong>
+                </span><span class="fragment">
+                    = 2(<strong>o<sub>0</sub></strong> -
+                    <strong>o<sub>-1</sub></strong>)
+                </span><span class="fragment">
+                    = -2<em>&infin;</em>
+                </span>
+            </li></ul>
+        </section>
+        <section>
+            <h3>Other Null Vectors</h3>
+            <p>
+                <em>p</em> = <em>o</em> + <strong>p</strong> +
+                a<em>&infin;</em>
+            </p><ul><li class="fragment">
+                <em>p</em><sup>2</sup> =
+                (<em>o</em> + <strong>p</strong> + a<em>&infin;</em>)
+                (<em>o</em> + <strong>p</strong> + a<em>&infin;</em>)
+                <span class="fragment">
+                    = <del><em>o</em><sup>2</sup></del> +
+                    <em>o</em> <strong>p</strong> + a <em>o &infin;</em> +
+                    <strong>p</strong> <em>o</em> +
+                    <strong>p</strong><sup>2</sup> +
+                    a <strong>p</strong> <em>&infin;</em> +
+                    a <em>&infin; o</em> +
+                    a <em>&infin;</em> <strong>p</strong> +
+                    <del>a<sup>2</sup> <em>&infin;</em><sup>2</sup></del>
+                </span>
+            </li><li class="fragment">
+                <em>p</em><sup>2</sup> =
+                <strong>p</strong><sup>2</sup> +
+                <del>
+                    <em>o</em> <strong>p</strong> +
+                    <strong>p</strong> <em>o</em></del> +
+                <del>
+                    a <strong>p</strong> <em>&infin;</em> +
+                    a <em>&infin;</em> <strong>p</strong></del> +
+                a (<em>o &infin;</em> + <em>&infin; o</em>)
+            </li><li class="fragment">
+                <em>p</em><sup>2</sup> =
+                <strong>p</strong><sup>2</sup> + 2a
+                (<em>o</em> &middot; <em>&infin;</em>)
+                <span class="fragment">
+                    = <strong>p</strong><sup>2</sup> + 2a (-1)
+                </span><span class="fragment">
+                    = <strong>p</strong><sup>2</sup> - 2a
+                </span>
+            </li><li class="fragment">
+                <em>p</em><sup>2</sup> = 0
+                &#x27fa; <strong>p</strong><sup>2</sup> - 2a = 0
+                <span class="fragment">
+                    &#x27fa; a = <strong>p</strong><sup>2</sup>/2
                 </span>
             </li></ul>
         </section>
@@ -11108,13 +11282,25 @@
             <h3>Conformal Points</h3>
             <p>
                 <em>p</em> &#x225d;
-                <em>o</em> + <strong>p</strong> +
+                a (<em>o</em> + <strong>p</strong> +
                 <strong>p</strong><sup>2</sup>/2
-                <em>&infin;</em>
+                <em>&infin;</em>)
             </p>
             <ul><li class="fragment">
                 WEIGHT(<em>p</em>) &#x225d;
                 -<em>&infin;</em> &middot; <em>p</em>
+                <span class="fragment">
+                    =<br /> -a <em>&infin;</em> &middot; <em>o</em> +
+                    <del>
+                        -a <em>&infin;</em> &middot;
+                        <strong>p</strong></del> +
+                    <del>
+                        -a <em>&infin;</em> &middot;
+                        <strong>p</strong><sup>2</sup>/2
+                        <em>&infin;</em></del>
+                </span><span class="fragment">
+                    = -a (-1) = a
+                </span>
             </li><li class="fragment">
                 WEIGHT(<em>o</em>) =
                 -<em>&infin;</em> &middot; <em>o</em>
@@ -11127,10 +11313,10 @@
                 &#x2200;a&#x2208;&#x211d; (a &ne; 0) &#x27f9;
                 NORMAL(a<em>p</em>) = NORMAL(<em>p</em>)
             </li><li class="fragment">
-                <strong>p</strong> = ((<em>p</em> (-<em>&infin;</em>
-                &middot; <em>p</em>)<sup>-1</sup>) ^ <em>o</em> ^
+                <strong>p</strong> = ((<em>p</em> / (-<em>&infin;</em>
+                &middot; <em>p</em>)) ^ <em>o</em> ^
                 <em>&infin;</em>) (<em>o</em> ^
-                <em>&infin;</em>)<sup>-1</sup> <em>Rejection</em>
+                <em>&infin;</em>)<sup>-1</sup>
             </li></ul>
         </section>
         <section>
@@ -11260,25 +11446,23 @@
                 <del>
                     <strong>p</strong><sup>2</sup><em>&infin;</em>
                     <em>&infin;</em><strong>t</strong>/4</del> -
-                (<em>&infin;</em> <strong>t</strong> <em>o</em>
-                    <em>&infin;</em> <strong>t</strong>)/4 -
-                    <del>
-                        <em>&infin;</em><strong>t</strong>
-                        <strong>p</strong><em>&infin;</em>
-                        <strong>t</strong>/4</del>
+                <em>&infin;</em><strong>t</strong><em>o&infin;</em><strong>t</strong>/4 -
+                <del>
+                    <em>&infin;</em><strong>t</strong>
+                    <strong>p</strong><em>&infin;</em>
+                    <strong>t</strong>/4</del>
             </li><li class="fragment">
                 <em>p</em><sub><strong>t</strong></sub>
                 = <em>o</em> + <strong>p</strong> +
                 <strong>p</strong><sup>2</sup>/2<em>&infin;</em> +
-                (1 - <del><em>&infin;</em>^<em>o</em></del>)
-                <strong>t</strong>/2 +
-                (1 - <del><em>o</em>^<em>&infin;</em></del>)
-                <strong>t</strong>/2 +
-                <em>&infin;</em>(<strong>t p</strong> +
-                <strong>p t</strong>)/2 +
-                <em>&infin;</em> <strong>t</strong>
-                (1 - <em>o</em>^<em>&infin;</em>)
-                <strong>t</strong>/4
+                <em>&infin;</em><strong>t</strong><em>o</em>/2 -
+                <em>o</em><em>&infin;</em><strong>t</strong>/2 +
+                <br />
+                <em>&infin;</em><strong>t</strong><strong>p</strong>/2 -
+                <strong>p</strong><em>&infin;</em><strong>t</strong>/2 -
+                <em>&infin;</em><strong>t</strong><em>o&infin;</em><strong>t</strong>/4
+            </li><li class="fragment">
+                ...
             </li></ul>
         </section>
         <section>
@@ -11287,22 +11471,35 @@
                 <em>p</em><sub><strong>t</strong></sub>
                 = <em>o</em> + <strong>p</strong> +
                 <strong>p</strong><sup>2</sup>/2<em>&infin;</em> +
-                <strong>t</strong>/2 + <strong>t</strong>/2 +
-                <em>&infin;</em>(<strong>t p</strong> +
-                <strong>p t</strong>)/2 +<br />
-                <em>&infin;</em> <strong>t</strong>
-                (1 - <em>o</em>^<em>&infin;</em>)
-                <strong>t</strong>/4
+                (<em>&infin;</em><strong>t</strong><em>o</em>/2 -
+                <em>o</em><em>&infin;</em><strong>t</strong>/2) +
+                (<em>&infin;</em><strong>t</strong><strong>p</strong>/2 -
+                <strong>p</strong><em>&infin;</em><strong>t</strong>/2) -
+                <em>&infin;</em><strong>t</strong><em>o&infin;</em><strong>t</strong>/4
+            </li><li class="fragment">
+                <em>p</em><sub><strong>t</strong></sub>
+                = <em>o</em> + <strong>p</strong> +
+                <strong>p</strong><sup>2</sup>/2<em>&infin;</em> -
+                (<em>&infin;</em><em>o</em> +
+                <em>o</em><em>&infin;</em>) <strong>t</strong>/2 +
+                <em>&infin;</em>(<strong>t</strong><strong>p</strong> +
+                <strong>p</strong><strong>t</strong>)/2 +
+                <strong>t</strong><em>&infin;</em><em>o&infin;</em><strong>t</strong>/4
+            </li><li class="fragment">
+                <em>p</em><sub><strong>t</strong></sub>
+                = <em>o</em> + <strong>p</strong> +
+                <strong>p</strong><sup>2</sup>/2<em>&infin;</em> -
+                (<em>&infin;</em> &middot; <em>o</em>) <strong>t</strong> +
+                <em>&infin;</em>(<strong>t</strong> &middot; <strong>p</strong>) +
+                <strong>t</strong>(-2<em>&infin;</em>)<strong>t</strong>/4
             </li><li class="fragment">
                 <em>p</em><sub><strong>t</strong></sub>
                 = <em>o</em> + <strong>p</strong> +
                 <strong>p</strong><sup>2</sup>/2<em>&infin;</em> +
                 <strong>t</strong> +
-                (<strong>t</strong>&middot;<strong>p</strong>)
-                <em>&infin;</em> +<br />
-                <strong>t</strong><sup>2</sup><em>&infin;</em>/4 +
-                <strong>t</strong>((<em>&infin;</em>^<em>o</em> -
-                1)^<em>&infin;</em>)<strong>t</strong>/4
+                (<strong>t</strong> &middot; <strong>p</strong>)
+                <em>&infin;</em> +
+                <strong>t</strong><sup>2</sup> <em>&infin;</em>/2
             </li><li class="fragment">
                 <em>p</em><sub><strong>t</strong></sub>
                 = <em>o</em> + (<strong>p</strong> +
@@ -11321,14 +11518,15 @@
         </section>
         <section>
             <h3>Translation of Infinity</h3>
-            <ul><li class="fragment">
-                V<sub>t</sub> <em>&infin;</em> V<sub>t</sub><sup>-1</sup>
+            <p>
+                V<sub>t</sub> <em>&infin;</em>
+                V<sub>t</sub><sup>-1</sup>
                 <span class="fragment">
                     = (1 + <em>&infin;</em><strong>t</strong>/2)
                     <em>&infin;</em> (1 -
                     <em>&infin;</em><strong>t</strong>/2)
                 </span>
-            </li><li class="fragment">
+            </p><ul><li class="fragment">
                 V<sub>t</sub> <em>&infin;</em> V<sub>t</sub><sup>-1</sup>
                 = (<em>&infin;</em> +
                 <del>
@@ -11349,6 +11547,53 @@
                 makes it a Euclidean transformation.
             </p>
         </section>
+        <section>
+            <h3>Rotation of Infinity</h3>
+            <p>
+                V<sub>r</sub> <em>&infin;</em>
+                V<sub>r</sub><sup>-1</sup>
+                <span class="fragment">
+                    = (cos(&theta;/2) +
+                    <strong>I</strong>sin(&theta;/2))
+                    <em>&infin;</em> (cos(&theta;/2) -
+                    <strong>I</strong>sin(&theta;/2))
+                </span>
+            </p><ul><li class="fragment">
+                V<sub>r</sub> <em>&infin;</em>
+                V<sub>r</sub><sup>-1</sup> =
+                (cos(&theta;/2)<em>&infin;</em> +
+                <strong>I</strong>sin(&theta;/2)<em>&infin;</em>)
+                <br />(cos(&theta;/2) -
+                <strong>I</strong>sin(&theta;/2))
+                <span class="fragment">
+                    = cos<sup>2</sup>(&theta;/2)<em>&infin;</em> -
+                    <del>sin(&theta;/2) cos(&theta;/2) <em>&infin;</em>
+                        <strong>I</strong> +
+                        sin(&theta;/2) cos(&theta;/2) <strong>I</strong>
+                        <em>&infin;</em></del> - sin<sup>2</sup>(&theta;/2)
+                        <strong>I</strong> <em>&infin;</em> <strong>I</strong>
+                </span>
+            </li><li class="fragment">
+                V<sub>r</sub> <em>&infin;</em>
+                V<sub>r</sub><sup>-1</sup> =
+                cos<sup>2</sup>(&theta;/2)<em>&infin;</em> -
+                sin<sup>2</sup>(&theta;/2)
+                <strong>I</strong><sup>2</sup> <em>&infin;</em>
+                <span class="fragment">
+                    =<br /> (cos<sup>2</sup>(&theta;/2) +
+                    sin<sup>2</sup>(&theta;/2)) <em>&infin;</em>
+                </span><span class="fragment">
+                    = (1) <em>&infin;</em>
+                </span>
+            </li><li class="fragment">
+                V<sub>r</sub> <em>&infin;</em>
+                V<sub>r</sub><sup>-1</sup> = <em>&infin;</em>
+            </li></ul>
+            <p class="fragment">
+                Rotation preserves the point at infinity, which makes
+                it a Euclidean transformation.
+            </p>
+        </section>
     </section>
     <section id="conformal-shapes">
         <section>
@@ -11356,71 +11601,94 @@
         </section>
         <section>
             <h3>Conformal Rounds</h3>
-            <p>Any three points define a circumcircle.</p>
+            <p>Any three distinct points define a circumcircle.</p>
             <canvas class="triggy"
                     data-userCircle="25|25|75|65|25|60">
             </canvas>
         </section>
         <section>
+            <h3>Conformal Rounds</h3>
+            <p>
+                A conformal round represents a set of points a fixed
+                distance from some center.
+            </p><ul><li class="fragment">
+                Test: &#x2200;<em>p</em>&#x2208;&#x2119;
+                <em>p</em>&#x2208;R &#x27fa; R ^ <em>p</em> = 0
+            </li><li class="fragment">
+                Discriminant: &#x2206;R &#x225d;
+                R (R ^ <em>&infin;</em>)<sup>-1</sup>
+            </li><li class="fragment">
+                Radius<sup>2</sup>: &#x22a0;(&#x2206;R)
+                <span class="fragment">
+                    = (R (R ^ <em>&infin;</em>)<sup>-1</sup>) (R (R ^
+                    <em>&infin;</em>)<sup>-1</sup>)<sup>&#x2020;</sup>
+                </span>
+            </li><li class="fragment">
+                Center: <em>&infin;</em> (&#x2206;R)<sup>2</sup> -
+                &#x2206;R
+            </li></ul>
+        </section>
+
+        <section>
             <h3>Conformal Circle</h3>
             <p>
                 A direct circle is a wedge of three distinct points:
-                <br />C = <em>p</em><sub>1</sub> ^
-                <em>p</em><sub>2</sub> ^
-                <em>p</em><sub>3</sub>
-            </p><ul><li class="fragment">
-                &#x2200;<em>p</em>&#x2208;&#x2119;
-                <em>p</em>&#x2208;C &#x27fa; C ^ <em>p</em> = 0
-            </li><li class="fragment">
-                Center: C <em>&infin;</em> C<sup>-1</sup>
-            </li><li class="fragment">
-                Radius<sup>2</sup>:
-                &#x22a0;(C (C ^ <em>&infin;</em>)<sup>-1</sup>)
-                <span class="fragment">
-                    = (C (C ^ <em>&infin;</em>)<sup>-1</sup>)
-                    (C (C ^ <em>&infin;</em>)<sup>-1</sup>)
-                    <sup>&#x2020;</sup>
-                </span>
-            </li></ul>
+            </p><p>
+                C = <em>p</em><sub>1</sub> ^
+                <em>p</em><sub>2</sub> ^ <em>p</em><sub>3</sub>
+            </p>
         </section>
         <section>
             <h3>Conformal Sphere</h3>
             <p>
                 A direct sphere is a wedge of four distinct points:
-                <br />S = <em>p</em><sub>1</sub> ^
-                <em>p</em><sub>2</sub> ^
-                <em>p</em><sub>3</sub> ^
-                <em>p</em><sub>4</sub>
-            </p><ul><li class="fragment">
-                &#x2200;<em>p</em>&#x2208;&#x2119;
-                <em>p</em>&#x2208;S &#x27fa; S ^ <em>p</em> = 0
-            </li><li class="fragment">
-                Center: S <em>&infin;</em> S<sup>-1</sup>
-            </li><li class="fragment">
-                Radius<sup>2</sup>:
-                &#x22a0;(S (S ^ <em>&infin;</em>)<sup>-1</sup>)
-                <span class="fragment">
-                    = (S (S ^ <em>&infin;</em>)<sup>-1</sup>)
-                    (S (S ^ <em>&infin;</em>)<sup>-1</sup>)
-                    <sup>&#x2020;</sup>
-                </span>
-            </li></ul>
-            <p class="fragment">
-                Seems familiar, doesn't it?
+            </p><p>
+                S = <em>p</em><sub>1</sub> ^ <em>p</em><sub>2</sub> ^
+                <em>p</em><sub>3</sub> ^ <em>p</em><sub>4</sub>
             </p>
+        </section>
+        <section>
+            <h3>Conformal Point Pair</h3>
+            <p>
+                Rounds are spheres in three dimensions, circles in two
+                and point pairs in one.
+                <br />P = <em>p</em><sub>1</sub> ^
+                <em>p</em><sub>2</sub>
+            </p><ul><li>
+                <em>p</em><sub>1</sub> = (P + &#x221a;&#x22a0;(P))
+                (-<em>&infin;</em>&#x230b;P)<sup>-1</sup>
+            </li><li>
+                <em>p</em><sub>2</sub> = (P - &#x221a;&#x22a0;(P))
+                (-<em>&infin;</em>&#x230b;P)<sup>-1</sup>
+            </li></ul>
         </section>
         <section>
             <h3>Conformal Flats</h3>
             <p>
                 Radius<sup>2</sup>:
-                &#x22a0;(S (S ^ <em>&infin;</em>)<sup>-1</sup>)
+                &#x22a0;(R (R ^ <em>&infin;</em>)<sup>-1</sup>)
                 <span class="fragment">
-                    But what if (S ^ &infin; = 0)?
+                    ...but what if (R ^ <em>&infin;</em> = 0)?
                 </span>
             </p>
             <canvas class="triggy"
-                    data-userCircle="25|25|75|65|48|45">
+                    data-userCircle="25|25|75|75|50|50">
             </canvas>
+        </section>
+        <section>
+            <h3>Conformal Flats</h3>
+            <p>
+                As with rounds, we can test whether a point is part of
+                a flat by checking whether it wedges to zero:
+            </p><p>
+                Test: &#x2200;<em>p</em>&#x2208;&#x2119;
+                <em>p</em>&#x2208;F &#x27fa; F ^ <em>p</em> = 0
+            </p><p>
+                F ^ <em>&infin;</em> = 0
+            </p><p>
+                The point at infinity is always part of a flat.  This
+                is what distinguishes them from rounds.
+            </p>
         </section>
         <section>
             <h3>Conformal Line</h3>
@@ -11428,50 +11696,100 @@
             <p>
                 L = <em>p</em><sub>1</sub> ^
                 <em>p</em><sub>2</sub> ^ <em>&infin;</em>
-            </p><ul><li class="fragment">
-                &#x2200;<em>p</em>&#x2208;&#x2119;
-                <em>p</em>&#x2208;L &#x27fa;
-                L ^ <em>p</em> = 0
-            </li><li class="fragment">
-                L ^ <em>&infin;</em> = 0
-            </li><li class="fragment">
-                L = <em>p</em><sub>1</sub> ^
+            </p><p class="fragment">
+                Alternative: L = <em>p</em><sub>1</sub> ^
                 <strong>v</strong> ^ <em>&infin;</em>
-            </li></ul>
-            <p class="fragment">
-                <em>p</em><sub>1</sub> ^
-                <em>p</em><sub>2</sub> ^
-                <em>p</em><sub>3</sub> ^ <em>&infin;</em> = 0
-                &#x27fa; COLINEAR(<em>p</em><sub>1</sub>,
+            </p><p class="fragment">
+                COLINEAR(<em>p</em><sub>1</sub>,
                 <em>p</em><sub>2</sub>, <em>p</em><sub>3</sub>)
+                &#x225d; <em>p</em><sub>1</sub> ^
+                <em>p</em><sub>2</sub> ^ <em>p</em><sub>3</sub> ^
+                <em>&infin;</em> = 0
             </p>
         </section>
         <section>
             <h3>Conformal Plane</h3>
             <p>A sphere that passes through infinity is a plane:</p>
-            <p>
+            </p><p>
                 P = <em>p</em><sub>1</sub> ^
                 <em>p</em><sub>2</sub> ^
                 <em>p</em><sub>3</sub> ^ <em>&infin;</em>
-            </p><ul><li class="fragment">
-                &#x2200;<em>p</em>&#x2208;&#x2119;
-                <em>p</em>&#x2208;P &#x27fa;
-                P ^ <em>p</em> = 0
-            </li><li class="fragment">
-                P ^ <em>&infin;</em> = 0
-            </li><li class="fragment">
-                P = <em>p</em><sub>1</sub> ^ <strong>B</strong> ^
-                <em>&infin;</em>
+            </p><p class="fragment">
+                Alternative: P = <em>p</em><sub>1</sub> ^
+                <strong>B</strong> ^ <em>&infin;</em>
             </li></ul>
             <p class="fragment">
+                COPLANAR(<em>p</em><sub>1</sub>,
+                <em>p</em><sub>2</sub>, <em>p</em><sub>3</sub>,
+                <em>p</em><sub>4</sub>) &#x225d;
                 <em>p</em><sub>1</sub> ^ <em>p</em><sub>2</sub> ^
                 <em>p</em><sub>3</sub> ^ <em>p</em><sub>4</sub> ^
                 <em>&infin;</em> = 0
-                &#x27fa; COPLANAR(<em>p</em><sub>1</sub>,
-                <em>p</em><sub>2</sub>, <em>p</em><sub>3</sub>,
-                <em>p</em><sub>4</sub>)
             </p>
         </section>
+        <section>
+            <h3>Flat Points</h3>
+            <p>
+                A single point wedged with infinity is the flat
+                equivalent of a point pair.
+                <br />F = <em>p</em><sub>1</sub> ^ <em>&infin;</em>
+            </p><p>
+                <strong>p</strong><sub>1</sub> =
+                - ((<em>o</em>^<em>&infin;</em>)
+                &#x230b; (<em>o</em> ^ F))
+                ((<em>o</em>^<em>&infin;</em>) &#x230b; F)<sup>-1</sup>
+            </p><p>
+                <em>p</em><sub>1</sub> = <em>o</em> +
+                <strong>p</strong><sub>1</sub> +
+                <strong>p</strong><sub>1</sub><sup>2</sup>/2
+                <em>&infin;</em>
+            </p>
+        </section>
+    </section>
+
+    <section>
+        <h2>Confromal Duals</h2>
+        <table style="white-space: nowrap;"><tr><td>
+        </td><th>
+            Formula
+        </th><th>
+            Quad
+        </th><th>
+            Weight
+        </th></tr><tr><td>
+            Point
+        </td><td>
+            a (<em>o</em> + <strong>p</strong> +
+            <strong>p</strong><sup>2</sup>/2 <em>&infin;</em>)
+        </td><td>
+            &#x22a0;(<em>p</em>) = 0
+        </td><td>
+            -<em>&infin;</em> &middot; <em>p</em> &ne; 0
+        </td></tr><tr><td>
+            Dual Round
+        </td><td>
+            a (<em>p</em> - r<sup>2</sup>/2 <em>&infin;</em>)
+        </td><td>
+            &#x22a0;(<em>r</em>) &gt; 0
+        </td><td>
+            -<em>&infin;</em> &middot; <em>r</em> &ne; 0
+        </td></tr><tr><td>
+            Dual Imaginary
+        </td><td>
+            a (<em>p</em> + r<sup>2</sup>/2 <em>&infin;</em>)
+        </td><td>
+            &#x22a0;(<em>i</em>) &lt; 0
+        </td><td>
+            -<em>&infin;</em> &middot; <em>i</em> &ne; 0
+        </td></tr><tr><td>
+            Dual Flat
+        </td><td>
+            <strong>n</strong> + d <em>&infin;</em>
+        </td><td>
+            &#x22a0;(<em>n</em>) &ne; 0
+        </td><td>
+            -<em>&infin;</em> &middot; <em>n</em> = 0
+        </td></tr></table>
     </section>
 
     <section>

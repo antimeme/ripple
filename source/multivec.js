@@ -778,15 +778,15 @@
     multivec.recoverPointPair = function(pair) {
         var result = [];
         var part = multivec.infinityPoint.times(-1).contract(pair);
-        if (!multivec.zeroish(part.quadrance())) {
-            result.push(pair.minus(pair.norm()).divide(part));
-            result.push(pair.plus(pair.norm()).divide(part));
-        } else {
+        if (multivec.zeroish(part.quadrance())) {  // Flat Point
             part = multivec.originPoint.wedge(multivec.infinityPoint);
             part = part.contract(multivec.originPoint.wedge(pair))
                        .divide(part.contract(pair), -1);
             result.push(part.createPoint());
             result.push(multivec.infinityPoint);
+        } else {
+            result.push(pair.minus(pair.norm()).divide(part));
+            result.push(pair.plus(pair.norm()).divide(part));
         }
         return result;
     };
@@ -811,7 +811,7 @@
 
     multivec.conformalTranslation = function(vector) {
         return multivec(1).minus(
-            vector.times(multivec.infinityPoint, 0.5));
+            vector.times(multivec.infinityPoint, 1/2));
     };
 
     multivec.createReflection = function(vector) {
