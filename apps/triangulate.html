@@ -31,7 +31,6 @@
  var cornerPoints = ripple.param('cornerpoints');
  var mosaic       = ripple.param('mosaic');
 
-
  var generatePoints = function(npoints, seed) {
      var generator = random.random(seed);
      var getColor = function() {
@@ -237,7 +236,7 @@
 
  fascia.ready(function() {
      'use strict';
-     var applegend = 'Triangulate';
+     var applegend = '';
      var redraw = function() {};
      var points = generatePoints(npoints, seed);
 
