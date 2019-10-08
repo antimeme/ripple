@@ -557,6 +557,8 @@
         return multivec.prototype.multiply.apply(
             multivec(1), arguments);
     };
+    multivec.times = multivec.product;
+    multivec.multiply = multivec.product;
 
     multivec.prototype.divide = function(other) {
         var result;
@@ -1110,33 +1112,4 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
             else console.log('===', arg, 'MISSING'); });
     else Object.keys(tests).forEach(function(key) {
         conduct(key, tests[key]); });
-
-    console.log('====================');
-    var p1 = multivec({x: 0, y: 1}).createPoint();
-    var p2 = multivec({x: 1, y: 1}).createPoint();
-    var p3 = multivec({x: 1, y: 0}).createPoint();
-    var L1 = multivec.wedge(p1, p2, multivec.infinityPoint);
-    var L2 = multivec.wedge(p1, p3, multivec.infinityPoint);
-    console.log("L1 =", L1.toString());
-    console.log("L2 =", L2.toString());
-    var thing = multivec.wedge(
-        multivec.originPoint, p3, p1, multivec.infinityPoint);
-    console.log("thing =", thing.toString());
-    console.log("inverse =", thing.inverse().toString());
-
-    var l1 = L1.contract(thing.inverse());
-    var l2 = L2.contract(thing.inverse());
-    console.log("l1 =", l1.toString());
-    console.log("l2 =", l2.toString());
-    console.log('====================');
-
-    console.log('p1^inf =', p1.wedge(multivec.infinityPoint).toString());
-    console.log('====================');
-    console.log("l1^l2 =", multivec.wedge(l1, l2).toString());
-    console.log("l1^l2/thing =", multivec.wedge(l1, l2).contract(thing).toString());
-
-    console.log('====================');
-    var flatp1 = p1.wedge(multivec.infinityPoint);
-    console.log("flatp1 = ", flatp1.toString());
-    console.log("test = ", flatp1.toString());
 }
