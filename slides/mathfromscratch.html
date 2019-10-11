@@ -8585,30 +8585,36 @@
                     M<sup>&#x2020;</sup> / (M M<sup>&#x2020;</sup>)
                 </li></ul>
             </li><li>
-                Outer Product (Wedge):
-                <strong>v</strong> ^ <strong>u</strong> &#x225d;
-                (<strong>v</strong> <strong>u</strong> -
-                <strong>u</strong> <strong>v</strong>) / 2
-            </li><li>
-                Inner Product (Contraction):
-                <strong>v</strong> &#x230b; <strong>u</strong>
-                &#x225d; (<strong>v</strong> <strong>u</strong> +
-                <strong>u</strong> <strong>v</strong>) / 2
+                Grade Involution: &#x2200;A&#x2208;&#x1d544;
+                A<sup>^</sup>&#x2208;&#x1d544;
             </li></ul>
         </section>
         <section>
             <h3>Scalar Product</h3>
+            <p>
+                &#x2200;A,B&#x2208;&#x1d544;
+                A &middot; B &#x225d; &lt;A B&gt;<sub>0</sub>
+            </p>
             <ul><li>
-                &#x2200;a,b&#x2208;&#x211d;,C,D&#x2208;&#x1d544;
-                (a C) &middot; (b D) &#x225d; a b (C &middot; D)
-            </li><li>
                 &#x2200;i&#x2208;&#x2115;
                 <strong>o<sub>i</sub></strong> &middot;
-                <strong>o<sub>i</sub></strong> &#x225d; 1
+                <strong>o<sub>i</sub></strong> =
+                &lt;<strong>o<sub>i</sub>
+                    o<sub>i</sub></strong>&gt;<sub>0</sub> =
+                &lt;1&gt;<sub>0</sub> = 1
             </li><li>
                 &#x2200;i,j&#x2208;&#x2115; (i &ne; j) &#x27f9;
                 <strong>o<sub>i</sub></strong> &middot;
-                <strong>o<sub>j</sub></strong> &#x225d; 0
+                <strong>o<sub>j</sub></strong> =
+                &lt;<strong>o<sub>i</sub>
+                    o<sub>j</sub></strong>&gt;<sub>0</sub> = 0
+            </li><li>
+                &#x2200;a,b&#x2208;&#x211d;,C,D&#x2208;&#x1d544;
+                (a C) &middot; (b D) = &lt;(a C) (b D)&gt;<sub>0</sub> =
+                <br />
+                &lt;(a b C D)&gt;<sub>0</sub> =
+                a b &lt;(C D)&gt;<sub>0</sub> =
+                a b (C &middot; D)
             </li></ul>
         </section>
         <section>
@@ -8829,11 +8835,10 @@
                     = M<sup>&#x2020;</sup>M
                 </span><span class="fragment">
                     = (M M<sup>&#x2020;</sup>)<sup>&#x2020;</sup>
-                </span><span class="fragment">
-                    &#x27f9;<br />
-                    ((M M<sup>&#x2020;</sup>)&#x2208;&#x211d; &#x27f9;
-                    &#x22a0;(M<sup>&#x2020;</sup>) = &#x22a0;(M))
                 </span>
+            </li><li class="fragment">
+                (M M<sup>&#x2020;</sup>)&#x2208;&#x211d; &#x27f9;
+                &#x22a0;(M<sup>&#x2020;</sup>) = &#x22a0;(M)
             </li></ul>
         </section>
         <section>
@@ -8903,6 +8908,7 @@
                 </span><span class="fragment">
                     = 2 - 2 <strong>o<sub>1</sub> o<sub>2</sub>
                     o<sub>3</sub> o<sub>4</sub></strong>
+                </span>
             </li></ul>
             <p class="fragment">
                 Scalars, vectors, pseudo-vectors and
@@ -8915,55 +8921,153 @@
                 A multivector with non-zero scalar quadrance has
                 an inverse.  We call such multivectors blades.
             </p><ul><li class="fragment">
-                &#x1d539; = { B&#x2208;&#x1d544; :
-                (&#x22a0;(B) = B&middot;B<sup>&#x2020;</sup>) &and;
-                (&#x22a0;(B) &ne; 0) }
+                &#x1d539; = { <strong>B</strong>&#x2208;&#x1d544; :
+                (&#x22a0;(<strong>B</strong>) =
+                <strong>B</strong> &middot;
+                <strong>B</strong><sup>&#x2020;</sup>) &and;
+                (&#x22a0;(<strong>B</strong>) &ne; 0) }
             </li><li class="fragment">
-                &#x2200;B&#x2208;&#x1d539;
-                &#x27f9; B<sup>-1</sup> &#x225d;
-                B<sup>&#x2020;</sup> / &#x22a0;(B) =
-                B<sup>&#x2020;</sup> / (B B<sup>&#x2020;</sup>)
+                &#x2200;<strong>B</strong>&#x2208;&#x1d539;
+                <strong>B</strong><sup>-1</sup> &#x225d;
+                <strong>B</strong><sup>&#x2020;</sup> /
+                &#x22a0;(<strong>B</strong>) =
+                <strong>B</strong><sup>&#x2020;</sup> /
+                (<strong>B</strong>
+                <strong>B</strong><sup>&#x2020;</sup>)
             </li><li class="fragment">
-                B B<sup>-1</sup>
+                <strong>B B</strong><sup>-1</sup>
                 <span class="fragment">
-                    = B (B<sup>&#x2020;</sup> /
-                    (B B<sup>&#x2020;</sup>))
+                    = <strong>B</strong>
+                    (<strong>B</strong><sup>&#x2020;</sup> /
+                    (<strong>B B</strong><sup>&#x2020;</sup>))
                 </span><span class="fragment">
-                    = (B B<sup>&#x2020;</sup>) /
-                    (B B<sup>&#x2020;</sup>) = 1
+                    = (<strong>B B</strong><sup>&#x2020;</sup>) /
+                    (<strong>B B</strong><sup>&#x2020;</sup>) = 1
                 </span>
             </li><li class="fragment">
-                B<sup>-1</sup>B
+                <strong>B</strong><sup>-1</sup><strong>B</strong>
                 <span class="fragment">
-                    = (B<sup>&#x2020;</sup> /
-                    (B B<sup>&#x2020;</sup>)) B
+                    = (<strong>B</strong><sup>&#x2020;</sup> /
+                    (<strong>B B</strong><sup>&#x2020;</sup>))
+                    <strong>B</strong>
                 </span><span class="fragment">
-                    = (B<sup>&#x2020;</sup> B) /
-                    (B B<sup>&#x2020;</sup>)
+                    = (<strong>B</strong><sup>&#x2020;</sup>
+                    <strong>B</strong>) /
+                    (<strong>B B</strong><sup>&#x2020;</sup>)
                 </span><span class="fragment">
-                    =<br /> (B
-                    B<sup>&#x2020;</sup>)<sup>&#x2020;</sup> /
-                    (B B<sup>&#x2020;</sup>)
+                    =<br /> (<strong>B
+                    B</strong><sup>&#x2020;</sup>)<sup>&#x2020;</sup> /
+                    (<strong>B B</strong><sup>&#x2020;</sup>)
                 </span><span class="fragment">
-                    = (B B<sup>&#x2020;</sup>) /
-                    (B B<sup>&#x2020;</sup>) = 1
+                    = (<strong>B B</strong><sup>&#x2020;</sup>) /
+                    (<strong>B B</strong><sup>&#x2020;</sup>) = 1
                 </span>
             </li></ul>
         </section>
         <section>
-            <h3>Outer Product</h3>
+            <h3>Multivectors as Blade Sums</h3>
+            <p>TODO: prove that all mutlivectors can be decomposed
+                into sums of blades</p>
+        </section>
+        <section>
+            <h3>Grade Involution</h3>
             <ul><li>
+                &#x2200;A,B&#x2208;&#x1d544; (A + B)<sup>^</sup>
+                &#x225d; A<sup>^</sup> + B<sup>^</sup>
+            </li><li>
+                &#x2200;i&#x2208;&#x2115;
+                &#x2200;A&#x2208;&lt;&#x1d539;&gt;<sub>i</sub>
+                A<sup>^</sup> &#x225d; (-1)<sup>i</sup>A
+            </li></ul>
+            <p>
+                (<strong>o<sub>1</sub></strong>
+                <strong>o<sub>2</sub></strong> ...
+                <strong>o<sub>n - 1</sub></strong>
+                <strong>o<sub>n</sub></strong>)<sup>^</sup> =
+                (-1)<sup>n</sup>
+                <strong>o<sub>1</sub></strong>
+                <strong>o<sub>2</sub></strong> ...
+                <strong>o<sub>n - 1</sub></strong>
+                <strong>o<sub>n</sub></strong>
+            </p>
+            <p>
+                <strong>o<sub>n+1</sub></strong>
+                (<strong>o<sub>1</sub></strong>
+                <strong>o<sub>2</sub></strong> ...
+                <strong>o<sub>n - 1</sub></strong>
+                <strong>o<sub>n</sub></strong>)<sup>^</sup> =
+                <strong>o<sub>1</sub></strong>
+                <strong>o<sub>2</sub></strong> ...
+                <strong>o<sub>n - 1</sub></strong>
+                <strong>o<sub>n</sub></strong>
+                <strong>o<sub>n + 1</sub></strong>
+            </p>
+        </section>
+    </section>
+
+    <section id="outer-product">
+        <section>
+            <h2>Outer Product</h2>
+            <p>
+                &#x2200; i&#x2208;&#x2115;,
+                <strong>a</strong>&#x2208;&lt;&#x1d539;&gt;<sub>1</sub>,
+                <strong>B</strong>&#x2208;&#x1d539;
+                <br /> <strong>a</strong> ^ <strong>B</strong> &#x225d;
+                (<strong>a B</strong> +
+                <strong>B</strong><sup>^</sup> <strong>a</strong>) / 2
+                <br /> <strong>B</strong> ^
+                <strong>a</strong> &#x225d; (<strong>B a</strong> +
+                <strong>a B</strong><sup>^</sup>) / 2
+            </p>
+            <p>
+                The outer product (or wedge product) is defined in
+                terms of the geometric product and the grade
+                involution operator.
+            </p>
+        </section>
+        <section>
+            <h3>Outer Product</h3>
+            <ul><li class="fragment">
+                &#x2200;i&#x2208;&#x2115;
+                <strong>o<sub>i</sub></strong> ^
+                <strong>o<sub>i</sub></strong>
+                <span class="fragment">
+                    = (<strong>o<sub>i</sub> o<sub>i</sub></strong> +
+                    <strong>o<sub>i</sub></strong><sup>^</sup>
+                    <strong>o<sub>i</sub></strong>) / 2
+                </span><span class="fragment">
+                    = (<strong>o<sub>i</sub> o<sub>i</sub></strong> -
+                    <strong>o<sub>i</sub></strong>
+                    <strong>o<sub>i</sub></strong>) / 2
+                </span><span class="fragment">
+                    = 0
+                </span>
+            </li><li class="fragment">
+                &#x2200;i,j&#x2208;&#x2115; (i &ne; j) &#x27f9;
+                <strong>o<sub>i</sub></strong> ^
+                <strong>o<sub>j</sub></strong>
+                <span class="fragment">
+                    = (<strong>o<sub>i</sub> o<sub>j</sub></strong> +
+                    <strong>o<sub>j</sub></strong><sup>^</sup>
+                    <strong>o<sub>i</sub></strong>) / 2
+                </span><span class="fragment">
+                    =<br /> (<strong>o<sub>i</sub>
+                    o<sub>j</sub></strong> -
+                    <strong>o<sub>j</sub></strong>
+                    <strong>o<sub>i</sub></strong>) / 2
+                </span><span class="fragment">
+                    = (<strong>o<sub>i</sub> o<sub>j</sub></strong> +
+                    <strong>o<sub>i</sub> o<sub>j</sub></strong>) / 2
+                </span><span class="fragment">
+                    = 2 <strong>o<sub>i</sub> o<sub>j</sub></strong> / 2
+                    = <strong>o<sub>i</sub> o<sub>j</sub></strong>
+                </span>
+            </li><li>
                 &#x2200;a,b&#x2208;&#x211d;,C,D&#x2208;&#x1d544;
-                (a C) ^ (b D) &#x225d; a b (C ^ D)
+                (a C) ^ (b D) = a b (C ^ D)
             </li><li>
-                &#x2200;i&#x2208;&#x2124;
-                <strong>o<sub>i</sub></strong> ^
-                <strong>o<sub>i</sub></strong> &#x225d; 0
-            </li><li>
-                &#x2200;i,j&#x2208;&#x2124; (i &ne; j) &#x27f9;
-                <strong>o<sub>i</sub></strong> ^
-                <strong>o<sub>j</sub></strong> &#x225d;
-                <strong>o<sub>i</sub> o<sub>j</sub></strong>
+                &#x2200;A,B,C&#x2208;&#x1d544;
+                (A + B) ^ C = (A ^ C) + (B ^ C)
             </li></ul>
         </section>
         <section>
@@ -9301,9 +9405,35 @@
                 we can wedge them together and not get zero!
             </p>
         </section>
+    </section>
+
+    <section id="contraction">
         <section>
-            <h3>Contraction</h3>
+            <h2>Contraction</h2>
+            <p>
+                &#x2200; i&#x2208;&#x2115;,
+                <strong>a</strong>&#x2208;&lt;&#x1d539;&gt;<sub>1</sub>,
+                <strong>B</strong>&#x2208;&#x1d539;
+                <br /> <strong>a</strong> &#x230b;
+                <strong>B</strong> &#x225d; (<strong>a B</strong> -
+                <strong>B</strong><sup>^</sup> <strong>a</strong>) / 2
+                <br /> <strong>B</strong> &#x230a;
+                <strong>a</strong> &#x225d; (<strong>B a</strong> -
+                <strong>a B</strong><sup>^</sup>) / 2
+            </p>
+            <p>
+                The contraction is defined in terms of the geometric
+                product and the grade involution operator.  The use of
+                subtraction means it is not always associative.
+            </p>
+        </section>
+        <section>
+            <h2>Contraction</h2>
+            <p>TODO: turn these into theorems</p>
             <ul><li>
+                &#x2200;a,b&#x2208;&#x211d;,C,D&#x2208;&#x1d544;
+                (a C)&#x230b;(b D) &#x225d; a b (C&#x230b;D)
+            </li><li>
                 &#x2200;A,B,C&#x2208;&#x1d544;
                 (A + B)&#x230b;C &#x225d; A&#x230b;C + B&#x230b;C
             </li><li>
@@ -9311,7 +9441,9 @@
                 B&#x2208;&lt;&#x1d544;&gt;<sub>j</sub>
                 A&#x230b;B&#x2208;&lt;&#x1d544;&gt;<sub>j - i</sub>
             </li></ul>
-            <p>Some examples:</p>
+        </section>
+        <section>
+            <h3>Contraction Examples</h3>
             <ul><li>
                 <strong>o<sub>1</sub></strong> &#x230b;
                 <strong>o<sub>1</sub>o<sub>2</sub>o<sub>3</sub></strong>
