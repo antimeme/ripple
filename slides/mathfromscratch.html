@@ -8465,23 +8465,36 @@
             <h3>Axioms of Basis Arithmetic</h3>
             <ul><li class="fragment">
                 Hungry Zero:
-                &#x2200;M&#x2208;&#x1d544; 0<sub>&#x211d;</sub>
-                &times; M = 0<sub>&#x211d;</sub>
+                &#x2200;i&#x2208;&#x2115;
+                0<sub>&#x211d;</sub><strong>o<sub>i</sub></strong>
+                = 0<sub>&#x211d;</sub>
             </li><li class="fragment">
                 Scalars Commute: &#x2200;a&#x2208;&#x211d;
-                &#x2200;i&#x2208;&#x2124;
+                &#x2200;i&#x2208;&#x2115;
                 a<strong>o<sub>i</sub></strong> =
                 <strong>o<sub>i</sub></strong>a
             </li><li class="fragment">
-                Basis Signatures: &#x2200;i&#x2208;&#x2124;
-                (i &gt; 0) &#x27f9;
-                <strong>o<sub>i</sub>o<sub>i</sub></strong> =
-                1<sub>&#x211d;</sub>
+                Scalars Distribute: &#x2200;a,b&#x2208;&#x211d;
+                &#x2200;i&#x2208;&#x2115;
+                a<strong>o<sub>i</sub></strong> +
+                b<strong>o<sub>i</sub></strong> =
+                ab<strong>o<sub>i</sub></strong>
+            </li><li class="fragment">
+                Addition Commutes: <br />
+                &#x2200;a,b&#x2208;&#x211d; &#x2200;i,j&#x2208;&#x2115;
+                a<strong>o<sub>i</sub></strong> +
+                b<strong>o<sub>j</sub></strong> =
+                b<strong>o<sub>j</sub></strong> +
+                a<strong>o<sub>i</sub></strong>
             </li><li class="fragment">
                 Bases Anticommute:
-                &#x2200;i,j&#x2208;&#x2124; (i &ne; j) &#x27f9;
+                &#x2200;i,j&#x2208;&#x2115; (i &ne; j) &#x27f9;
                 <strong>o<sub>i</sub>o<sub>j</sub></strong> =
                 -<strong>o<sub>j</sub>o<sub>i</sub></strong>
+            </li><li class="fragment">
+                Basis Signatures: &#x2200;i&#x2208;&#x2115;
+                <strong>o<sub>i</sub>o<sub>i</sub></strong> =
+                1<sub>&#x211d;</sub>
             </li></ul>
         </section>
         <section>
@@ -8589,11 +8602,11 @@
                 &#x2200;a,b&#x2208;&#x211d;,C,D&#x2208;&#x1d544;
                 (a C) &middot; (b D) &#x225d; a b (C &middot; D)
             </li><li>
-                &#x2200;i&#x2208;&#x2124;
+                &#x2200;i&#x2208;&#x2115;
                 <strong>o<sub>i</sub></strong> &middot;
                 <strong>o<sub>i</sub></strong> &#x225d; 1
             </li><li>
-                &#x2200;i,j&#x2208;&#x2124; (i &ne; j) &#x27f9;
+                &#x2200;i,j&#x2208;&#x2115; (i &ne; j) &#x27f9;
                 <strong>o<sub>i</sub></strong> &middot;
                 <strong>o<sub>j</sub></strong> &#x225d; 0
             </li></ul>
@@ -10974,8 +10987,7 @@
             <h3>Signature Change</h3>
             <p>Basis signatures, updated:</p>
             <p>
-                &#x2200;i&#x2208;&#x2124;
-                (i <span class="intro">&ge;</span> 0) &#x27f9;
+                &#x2200;i&#x2208;&#x2115;
                 <strong>o<sub>i</sub>o<sub>i</sub></strong> = 1
             </p>
             <p>
@@ -11050,12 +11062,10 @@
             <h3>Negative Signature</h3>
             <p>Basis signatures, updated:</p>
             <ul><li>
-                &#x2200;i&#x2208;&#x2124;
-                (i &ge; 0) &#x27f9;
+                &#x2200;i&#x2208;&#x2115;
                 <strong>o<sub>i</sub>o<sub>i</sub></strong> = 1
             </li><li>
-                &#x2200;i&#x2208;&#x2124;
-                (i <span class="intro">&ge;</span> 0) &#x27f9;
+                &#x2200;i&#x2208;&#x2115;
                 <strong>i<sub>i</sub>i<sub>i</sub></strong> = -1
             </li></ul>
             <p>
@@ -11686,7 +11696,7 @@
                     ...but what if (R ^ <em>&infin;</em> = 0)?
                 </span>
             </p>
-            <canvas class="triggy"
+            <canvas class="triggy fragment"
                     data-userCircle="25|25|75|75|50|50">
             </canvas>
         </section>
@@ -11747,23 +11757,23 @@
             <p>
                 A single point wedged with infinity is the flat
                 equivalent of a point pair.
-                <br />F = <em>p</em><sub>1</sub> ^ <em>&infin;</em>
+                <br />F = <em>p</em> ^ <em>&infin;</em>
             </p><p>
-                <strong>p</strong><sub>1</sub> =
+                <strong>p</strong> =
                 - ((<em>o</em>^<em>&infin;</em>)
                 &#x230b; (<em>o</em> ^ F))
                 ((<em>o</em>^<em>&infin;</em>) &#x230b; F)<sup>-1</sup>
             </p><p>
-                <em>p</em><sub>1</sub> = <em>o</em> +
-                <strong>p</strong><sub>1</sub> +
-                <strong>p</strong><sub>1</sub><sup>2</sup>/2
+                <em>p</em> = <em>o</em> +
+                <strong>p</strong> +
+                <strong>p</strong><sup>2</sup>/2
                 <em>&infin;</em>
             </p>
         </section>
     </section>
 
     <section>
-        <h2>Confromal Duals</h2>
+        <h2>Conformal Duals</h2>
         <table style="white-space: nowrap;"><tr><td>
         </td><th>
             Formula
@@ -11807,9 +11817,9 @@
         </td></tr><tr><td>
             Direction
         </td><td>
-            <strong>v</strong>
+            <strong>v</strong>^<em>&infin;</em>
         </td><td>
-            &#x22a0;(<strong>v</strong>) &ne; 0
+            &#x22a0;(<strong>v</strong>) = 0
         </td><td>
             -<em>&infin;</em> &middot; <strong>v</strong> = 0
         </td></tr></table>
