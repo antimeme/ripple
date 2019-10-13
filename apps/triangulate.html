@@ -92,7 +92,7 @@
          if ((result.indices[0] >= 0) &&
              (result.indices[1] >= 0) &&
              (result.indices[2] >= 0))
-             result.center = multivec.getRoundCenter(result.circle);
+             result.center = result.circle.conformalCenter();
          return result;
      };
 

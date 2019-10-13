@@ -289,7 +289,7 @@
                     });
                     ctx.strokeStyle = 'purple';
                 } else {
-                    var center = multivec.getRoundCenter(circle);
+                    var center = circle.conformalCenter();
                     var radius = Math.sqrt(
                         circle.times(circle.conjugate())
                               .divide(descrim).scalar) / 100;

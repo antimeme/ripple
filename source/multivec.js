@@ -758,6 +758,30 @@
         return this.divide(multivec.infinityPoint.inner(this), -1);
     };
 
+    // When called on a direct conformal round, this routine returns
+    // the point at the center.
+    multivec.prototype.conformalCenter = function() {
+        if (isNaN(this.__roundDiscriminant)) {
+            this.__roundDiscriminant = this.divide(this.wedge(
+                multivec.infinityPoint), -1);
+        }
+        return multivec.infinityPoint
+                       .times(1/2, this.__roundDiscriminant,
+                              this.__roundDiscriminant)
+                       .plus(this.__roundDiscriminant).normalizePoint();
+    };
+
+    // When called on a direct conformal round, this routine returns
+    // the irrational radius.
+    multivec.prototype.conformalRadius = function() {
+        if (isNaN(this.__roundDiscriminant)) {
+            this.__roundDiscriminant = this.divide(this.wedge(
+                multivec.infinityPoint), -1);
+        }
+        return Math.sqrt(multivec.times(
+            this.__roundDiscriminant, this.__roundDiscriminant).scalar);
+    };
+
     // Convert a conformal point to a vector representation suitable
     // for use with standard model (UNTESTED)
     multivec.prototype.vectorizePoint = function() {
@@ -785,24 +809,14 @@
             part = part.contract(multivec.originPoint.wedge(pair))
                        .divide(part.contract(pair), -1);
             result.push(part.createPoint());
-            result.push(multivec.infinityPoint);
         } else {
-            result.push(pair.minus(pair.norm()).divide(part));
-            result.push(pair.plus(pair.norm()).divide(part));
+            var p2div = multivec(Math.sqrt(
+                Math.abs(pair.times(pair).scalar)));
+            result.push(pair.minus(p2div).divide(part)
+                            .normalizePoint());
+            result.push(pair.plus(p2div).divide(part).normalizePoint());
         }
         return result;
-    };
-
-    // Given a conformal round (point-pair, circle, sphere and so on)
-    // find the center.
-    multivec.getRoundCenter = function(round) {
-        // This seems to be the most numerically stable way to compute
-        // centers of rounds.
-        var carrier = round.wedge(multivec.infinityPoint);
-        var discriminant = round.divide(carrier, -1);
-        return multivec.infinityPoint
-                       .times(1/2, discriminant, discriminant)
-                       .plus(discriminant).normalizePoint();
     };
 
     // Create a rotation that can be applied as a versor
@@ -1112,4 +1126,37 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
             else console.log('===', arg, 'MISSING'); });
     else Object.keys(tests).forEach(function(key) {
         conduct(key, tests[key]); });
+
+    console.log("===== Setup");
+    var logMultivec = function(name, p) {
+        console.log(name + "(" + p.quadrance() + ") = " + p.toString());
+    };
+    var p1 = multivec({x: 2, y: 2}).createPoint();
+    var p2 = multivec({x: 4, y: 2}).createPoint();
+    var pair = multivec.wedge(p1, p2);
+    var carrier = multivec.wedge(multivec.originPoint,
+                                 {x: 1}, {y: 1},
+                                 multivec.infinityPoint)
+    var dual = pair.contract(carrier.inverse());
+    logMultivec("p1", p1);
+    logMultivec("p2", p2);
+    logMultivec("pair", pair);
+    console.log("  center: (" + pair.conformalCenter().toString() +
+                ") radius: " + pair.conformalRadius());
+    logMultivec("dual", dual);
+    multivec.recoverPointPair(pair).forEach(function(point, index) {
+        logMultivec("pair[" + index + "]", point.normalizePoint());
+    });
+    multivec.recoverPointPair(dual).forEach(function(point, index) {
+        logMultivec("dual[" + index + "]", point.normalizePoint());
+    });
+
+    console.log("===== Scratch Pad");
+    var pdiv = pair.divide(multivec.infinityPoint.contract(pair));
+    var p2div = multivec(Math.sqrt(pair.times(pair).scalar)).divide(
+        multivec.infinityPoint.contract(pair));
+    logMultivec("pdiv", pdiv);
+    logMultivec("p2div", p2div);
+    logMultivec("pdiv-p2div", pdiv.minus(p2div).normalizePoint());
+    logMultivec("pdiv+p2div", pdiv.plus(p2div).normalizePoint());
 }
