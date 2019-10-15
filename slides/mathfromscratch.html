@@ -8365,6 +8365,42 @@
             </li></ul>
         </section>
         <section>
+            <h3>Geometric Product</h3>
+            <ul><li class="fragment">
+                Hungry Zero:
+                &#x2200;i&#x2208;&#x2115;
+                0<sub>&#x211d;</sub><strong>o<sub>i</sub></strong>
+                &#x225d; 0<sub>&#x211d;</sub>
+            </li><li class="fragment">
+                Scalars Commute: &#x2200;a&#x2208;&#x211d;
+                &#x2200;i&#x2208;&#x2115;
+                a<strong>o<sub>i</sub></strong> &#x225d;
+                <strong>o<sub>i</sub></strong>a
+            </li><li class="fragment">
+                Scalars Distribute: &#x2200;a,b&#x2208;&#x211d;
+                &#x2200;i&#x2208;&#x2115; <br />
+                a<strong>o<sub>i</sub></strong> +
+                b<strong>o<sub>i</sub></strong> &#x225d;
+                (a + b) <strong>o<sub>i</sub></strong>
+            </li><li class="fragment">
+                Addition Commutes: &#x2200;a,b&#x2208;&#x211d;
+                &#x2200;i,j&#x2208;&#x2115; <br />
+                a<strong>o<sub>i</sub></strong> +
+                b<strong>o<sub>j</sub></strong> &#x225d;
+                b<strong>o<sub>j</sub></strong> +
+                a<strong>o<sub>i</sub></strong>
+            </li><li class="fragment">
+                Bases Anticommute:
+                &#x2200;i,j&#x2208;&#x2115; (i &ne; j) &#x27f9;
+                <strong>o<sub>i</sub>o<sub>j</sub></strong> &#x225d;
+                -<strong>o<sub>j</sub>o<sub>i</sub></strong>
+            </li><li class="fragment">
+                Basis Signatures: &#x2200;i&#x2208;&#x2115;
+                <strong>o<sub>i</sub>o<sub>i</sub></strong> &#x225d;
+                1<sub>&#x211d;</sub>
+            </li></ul>
+        </section>
+        <section>
             <h3>First Outer Inner Last</h3>
             <p>
                 (a + b) &times; (c + d)
@@ -8460,42 +8496,6 @@
             <p class="fragment">
                 We can think of basis vectors like variables.
             </p>
-        </section>
-        <section>
-            <h3>Axioms of Basis Arithmetic</h3>
-            <ul><li class="fragment">
-                Hungry Zero:
-                &#x2200;i&#x2208;&#x2115;
-                0<sub>&#x211d;</sub><strong>o<sub>i</sub></strong>
-                = 0<sub>&#x211d;</sub>
-            </li><li class="fragment">
-                Scalars Commute: &#x2200;a&#x2208;&#x211d;
-                &#x2200;i&#x2208;&#x2115;
-                a<strong>o<sub>i</sub></strong> =
-                <strong>o<sub>i</sub></strong>a
-            </li><li class="fragment">
-                Scalars Distribute: &#x2200;a,b&#x2208;&#x211d;
-                &#x2200;i&#x2208;&#x2115;
-                a<strong>o<sub>i</sub></strong> +
-                b<strong>o<sub>i</sub></strong> =
-                ab<strong>o<sub>i</sub></strong>
-            </li><li class="fragment">
-                Addition Commutes: <br />
-                &#x2200;a,b&#x2208;&#x211d; &#x2200;i,j&#x2208;&#x2115;
-                a<strong>o<sub>i</sub></strong> +
-                b<strong>o<sub>j</sub></strong> =
-                b<strong>o<sub>j</sub></strong> +
-                a<strong>o<sub>i</sub></strong>
-            </li><li class="fragment">
-                Bases Anticommute:
-                &#x2200;i,j&#x2208;&#x2115; (i &ne; j) &#x27f9;
-                <strong>o<sub>i</sub>o<sub>j</sub></strong> =
-                -<strong>o<sub>j</sub>o<sub>i</sub></strong>
-            </li><li class="fragment">
-                Basis Signatures: &#x2200;i&#x2208;&#x2115;
-                <strong>o<sub>i</sub>o<sub>i</sub></strong> =
-                1<sub>&#x211d;</sub>
-            </li></ul>
         </section>
         <section>
             <h3>Simplify</h3>
@@ -8825,7 +8825,11 @@
                 &#x2200;<strong>v</strong>&#x2208;&#x1d54d;
                 &#x22a0;(<strong>v</strong>) = <strong>v</strong>
                 <strong>v</strong><sup>&#x2020;</sup> =
-                <strong>v</strong> <strong>v</strong> = v<sup>2</sup>
+                <strong>v</strong> <strong>v</strong>
+                <span class="fragment">
+                    = <strong>v</strong> &middot; <strong>v</strong>
+                    = v<sup>2</sup>
+                </span>
             </li><li class="fragment">
                 &#x22a0;(M<sup>&#x2020;</sup>)
                 <span class="fragment">
@@ -8835,6 +8839,8 @@
                     = M<sup>&#x2020;</sup>M
                 </span><span class="fragment">
                     = (M M<sup>&#x2020;</sup>)<sup>&#x2020;</sup>
+                </span><span class="fragment">
+                    = &#x22a0;(M)<sup>&#x2020;</sup>
                 </span>
             </li><li class="fragment">
                 (M M<sup>&#x2020;</sup>)&#x2208;&#x211d; &#x27f9;
@@ -8855,6 +8861,8 @@
                     = M M<sup>&#x2020;</sup>
                 </span>
             </p><ul><li class="fragment">
+                |M|<sup>2</sup> = M M<sup>&#x2020;</sup>
+            </li><li class="fragment">
                 |M| = <sup>+</sup>&#x221a;(M M<sup>&#x2020;</sup>)
             </li><li class="fragment">
                 |v|<sup>2</sup> = <strong>v</strong>
@@ -8919,15 +8927,18 @@
             <h3>Inverse</h3>
             <p>
                 A multivector with non-zero scalar quadrance has
-                an inverse.  We call such multivectors blades.
+                an inverse.  We call such multivectors
+                <span class="intro">blades</span>.
             </p><ul><li class="fragment">
-                &#x1d539; = { <strong>B</strong>&#x2208;&#x1d544; :
+                <span class="intro">&#x1d539;</span> =
+                { <strong>B</strong>&#x2208;&#x1d544; :
                 (&#x22a0;(<strong>B</strong>) =
                 <strong>B</strong> &middot;
                 <strong>B</strong><sup>&#x2020;</sup>) &and;
                 (&#x22a0;(<strong>B</strong>) &ne; 0) }
             </li><li class="fragment">
-                &#x2200;<strong>B</strong>&#x2208;&#x1d539;
+                &#x2200; <strong>B</strong> &#x2208;
+                <span class="intro">&#x1d539;</span>
                 <strong>B</strong><sup>-1</sup> &#x225d;
                 <strong>B</strong><sup>&#x2020;</sup> /
                 &#x22a0;(<strong>B</strong>) =
