@@ -626,11 +626,11 @@
         ctx.fillText(symbol, bounds.origin.x + (cos * bounds.radius / 4),
                      bounds.origin.y - (sin * bounds.radius / 8));
         ctx.font = Math.floor(bounds.size / 20) + 'px Verdana';
-        ctx.fillText('sin' + symbol,
+        ctx.fillText((sin >= 0 ? 'sin' : '-sin') + symbol,
                      bounds.origin.x + (cos * bounds.radius) +
                      bounds.size * (cos >= 0 ? 0.01 : -0.11),
                      bounds.origin.y - (sin * bounds.radius) / 2);
-        ctx.fillText('cos' + symbol,
+        ctx.fillText((cos >= 0 ? 'cos' : '-cos') + symbol,
                      bounds.origin.x + (cos * bounds.radius) / 2,
                      bounds.origin.y + bounds.size  *
             (sin >= 0 ? 0.05 : -0.03));
