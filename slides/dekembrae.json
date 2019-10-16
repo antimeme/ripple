@@ -1,0 +1,111 @@
+{
+    "abilities": {
+        "Brawn": {"description": "physical toughness and strength"},
+        "Agility": {"description": "coordination and flexibility"},
+        "Perception": {"description": "managing complex sensory input"},
+        "Intellect": {"description": "abstract problem solving"},
+        "Will": {"description": "perserverance and determination"}
+    },
+    "skills": {
+        "Run": {
+            "cost": 25, "base": ["Brawn"],
+            "description": "Cover distance on legs"
+        },
+        "Swim": {
+            "cost": 25, "base": ["Brawn"],
+            "description": "Move through fluids"
+        },
+        "Climb": {
+            "cost": 25, "base": ["Brawn"],
+            "description": "Scale rough surfaces"
+        },
+        "Jump": {
+            "cost": 25, "base": ["Brawn"],
+            "description": "Launch over obstacles or gaps"
+        },
+        "Acrobatics": {"cost": 25, "base": ["Agility"] },
+
+        "Strike": {
+            "cost": 25, "base": ["Brawn"],
+            "description": "Injure others using blows",
+            "subskills": {
+                "Tools": {
+                    "cost": 25, "base": ["Strike"],
+                    "description": "Knives, Axes, Clubs"
+                },
+                "Blades": {
+                    "cost": 25, "base": ["Strike"], "description":
+                    "Dagger, Shortsword, Sword, Smallsword, Longsword"
+                },
+                "Poles": {
+                    "cost": 25, "base": ["Strike"],
+                    "description": "Staff, Spear, Halbard, Pike"
+                }
+            }
+        },
+        "Dodge": {
+            "cost": 25, "base": ["Agility"],
+            "description": "Avoid incomming attacks"
+        },
+        "Throw": {"cost": 25, "base": ["Agility", "Brawn"] },
+        "Armor": {"cost": 25, "base": ["Brawn"] },
+
+        "Insight": {"cost": 25, "base": ["Perception"] },
+        "Skirmish": {"cost": 25, "base": ["Perception"] },
+        "Streetwise": {"cost": 25, "base": ["Perception"] },
+        "Ettiquete": {"cost": 25, "base": ["Perception"] },
+        "Negotiate": {"cost": 25, "base": ["Perception"] },
+        "Appraise": {"cost": 25, "base": ["Perception"] },
+        "Forgery": {"cost": 25, "base": ["Perception"] },
+        "Literacy": {"cost": 25, "base": ["Intellect"] },
+        "Engineering": {"cost": 25, "base": ["Intellect"] },
+        "Formation": {"cost": 25, "base": ["Will"] },
+        "Heal": {"cost": 25, "base": ["Will"] },
+        "Stealth": {"cost": 25, "base": ["Agility"] },
+        "Prestidigitation": {"cost": 25, "base": ["Perception"] },
+        "Aim": {"cost": 25, "base": ["Perception"] },
+        "Target": {"cost": 25, "base": ["Perception"] },
+        "Pilot": {"cost": 25, "base": ["Perception"] },
+        "Grapple": {"cost": 25, "base": ["Brawn"] }
+    },
+
+    "items": {
+        "Knife": {
+            "mass": 0.33,
+            "strike": {
+                "damage": 2,
+                "reach": 0.05,
+                "time": 1
+            },
+            "cut": true,
+            "point": true
+        },
+        "Axe": {"mass": 3, "strike": {}, "cut": true},
+        "Club": {"mass": 2, "strike": {}},
+        "Dagger": {},
+        "Sword": {},
+        "Shortsword": {},
+        "Smallsword": {},
+        "Broadsword": {},
+        "Longsword": {},
+        "Greatsword": {},
+        "Staff": {},
+        "Spear": {},
+        "Halbard": {},
+        "Pike": {},
+
+        "Sling": {},
+        "Bow": {},
+        "Longbow": {},
+        "Crossbow": {},
+
+        "Gambison": {},
+        "Hauberk": {},
+        "Maille": {},
+        "Maille and Plate": {},
+        "Helmet": {},
+        "Buckler": {},
+        "Shield": {},
+        "": {}
+    }
+}

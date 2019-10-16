@@ -2,8 +2,7 @@
 <meta charset="utf-8" />
 <link rel="stylesheet" href="lib/sakura.css">
 <style>
- td { text-align: center; }
- td:first-child { text-align: left; }
+ .subskill { padding-left: 2em; }
 </style>
 <title>Dekembr&aelig;</title>
 <h1>Dekembr&aelig;</h1>
@@ -16,8 +15,9 @@
 <h3>Goals</h3>
 <p>
     Role playing games have been around a long time but most have
-    serious problems that undermine story telling.  Dekembr&aelig;
-    seeks to address these and present a more robust system.
+    serious problems that work against story telling and exciting
+    combat.  Dekembr&aelig; seeks to address these and present a more
+    robust system.
 </p>
 
 <h4>Rolling Dice for Abilities</h4>
@@ -119,8 +119,7 @@
     Characters start with a score of 3 in all abilities.  Each can be
     increased by one point at a cost equal to the current value plus
     one.  A score of 4 for an ability is average.  Heroic characters
-    get 50 points to spend.  Other kinds of characters may get fewer
-    points to spend.
+    get 50 points to spend.  Other kinds of characters may get fewer.
 </p>
 
 <table>
@@ -178,57 +177,53 @@
     <code>(&radic;(8sb/c + 1) - 1) / 2</code> (round down)
 </p>
 
-<table>
-    <tr>
-        <th>Ranks</th>
-        <th>Cost(2/25)</th>
-        <th>Cost(5/25)</th>
-        <th>Cost(7/25)</th>
-    </tr>
-    <tr><td>1</td><td>13</td><td>5</td><td>4</td></tr>
-    <tr><td>2</td><td>38</td><td>15</td><td>11</td></tr>
-    <tr><td>3</td><td>75</td><td>30</td><td>22</td></tr>
-    <tr><td>4</td><td>125</td><td>50</td><td>36</td></tr>
-    <tr><td>5</td><td>188</td><td>75</td><td>54</td></tr>
-</table>
+<p>
+    The table below gives some examples with the value of the relevant
+    base ability followed the skill cost after a slash.  So
+    <strong>B5/C25</strong> means that the base ability has 5
+    ranks and the skill cost is 25.
+</p>
 
 <table>
+    <caption>Skill Points needed to achieve Ranks</caption>
+    <tr>
+        <th>Ranks</th>
+        <th>B3/C25</th>
+        <th>B4/C25</th>
+        <th>B5/C25</th>
+        <th>B6/C25</th>
+        <th>B7/C25</th>
+    </tr><tr>
+        <td>1</td><td>9</td><td>7</td><td>5</td><td>5</td><td>4</td>
+    </tr><tr>
+        <td>2</td><td>25</td><td>19</td><td>15</td>
+        <td>13</td><td>11</td>
+    </tr><tr>
+        <td>3</td><td>50</td><td>38</td><td>30</td>
+        <td>25</td><td>22</td>
+    </tr><tr>
+        <td>4</td><td>84</td><td>63</td><td>50</td>
+        <td>42</td><td>36</td>
+    </tr><tr>
+        <td>5</td><td>125</td><td>94</td><td>75</td>
+        <td>63</td><td>54</td>
+    </tr>
+</table>
+
+<p>
+    The following table contains skills that are likely to be relevant
+    in most game settings.  The base column contains either an ability
+    or another skill which is used to convert skill points into ranks.
+    When more than one entry is present in the base column, the
+    highest value is used.
+</p>
+
+<table id="skillTable">
     <caption>Skills Applicable to Most Settings</caption>
     <tr>
         <th>Skill</th><th>Base</th><th>Cost</th>
         <th>Description</th>
     </tr>
-    <tr><td>Insight</td><td>Perception</td><td>25</td></tr>
-    <tr><td>Skirmish</td><td>Perception</td><td>25</td></tr>
-    <tr><td>Streetwise</td><td>Perception</td><td>25</td></tr>
-    <tr><td>Ettiquete</td><td>Perception</td><td>25</td></tr>
-    <tr><td>Negotiate</td><td>Perception</td><td>25</td></tr>
-    <tr><td>Appraise</td><td>Perception</td><td>25</td></tr>
-    <tr><td>Forgery</td><td>Perception</td><td>25</td></tr>
-    <tr><td>Literacy</td><td>Intellect</td><td>25</td></tr>
-    <tr><td>Engineering</td><td>Intellect</td><td>25</td></tr>
-    <tr><td>Blacksmith</td><td>Intellect</td><td>25</td></tr>
-    <tr><td>Optimize</td><td>Intellect</td><td>25</td></tr>
-    <tr><td>Presence</td><td>Will</td><td>25</td></tr>
-    <tr><td>Morale</td><td>Will</td><td>25</td></tr>
-    <tr><td>Formation</td><td>Will</td><td>25</td></tr>
-    <tr><td>Heal</td><td>Will</td><td>25</td></tr>
-    <tr><td>Dodge</td><td>Agility</td><td>25</td></tr>
-    <tr><td>Stealth</td><td>Agility</td><td>25</td></tr>
-    <tr><td>Acrobatics</td><td>Agility</td><td>25</td></tr>
-    <tr><td>Prestidigitation</td><td>Agility</td><td>25</td></tr>
-    <tr><td>Aim</td><td>Agility</td><td>25</td></tr>
-    <tr><td>Throw</td><td>Agility</td><td>25</td></tr>
-    <tr><td>Target</td><td>Agility</td><td>25</td></tr>
-    <tr><td>Pilot</td><td>Agility</td><td>25</td></tr>
-    <tr><td>Strike</td><td>Brawn</td><td>25</td></tr>
-    <tr><td>Throw</td><td>Brawn</td><td>25</td></tr>
-    <tr><td>Grapple</td><td>Brawn</td><td>25</td></tr>
-    <tr><td>Armor</td><td>Brawn</td><td>25</td></tr>
-    <tr><td>Run</td><td>Brawn</td><td>25</td></tr>
-    <tr><td>Swim</td><td>Brawn</td><td>25</td></tr>
-    <tr><td>Jump</td><td>Brawn</td><td>25</td></tr>
-    <tr><td>Climb</td><td>Brawn</td><td>25</td></tr>
 </table>
 
 <h3>Skill Rolls</h3>
@@ -240,7 +235,7 @@
     activate special abilities.  At most nine dice may be rolled for
     any skill roll.  Any dice beyond nine are dropped and three points
     for each are added to the result.  Players can choose to replace
-    any dice abouve five with the value four instead.
+    any dice above five with the value four instead.
 </p>
 
 <p>
@@ -557,3 +552,32 @@
     There are 5 x 5 x 5 x 5 x 5 = 3,125 personality possibilities,
     though some are more common than others.
 </p>
+
+<script src="ripple/polyfill.js"></script>
+<script src="ripple/ripple.js"></script>
+<script>//<![CDATA[
+ ripple.preload(['dekembrae.json'], function(results) {
+     var dekembrae = results['dekembrae.json'];
+     var skillTable = document.getElementById("skillTable");
+     Object.keys(dekembrae.skills).forEach(function(skillName) {
+         var skill = dekembrae.skills[skillName];
+         skillTable.appendChild(ripple.createElement(
+             "tr", null, ripple.createElement("td", null, skillName),
+             ripple.createElement("td", null, skill.base.join(", ")),
+             ripple.createElement("td", null, skill.cost),
+             ripple.createElement("td", null, skill.description)));
+
+         if (skill.subskills)
+             Object.keys(skill.subskills).forEach(function(skillName) {
+                 var subskill = skill.subskills[skillName];
+                 skillTable.appendChild(ripple.createElement(
+                     "tr", null, ripple.createElement(
+                         "td", {"className": "subskill"}, skillName),
+                     ripple.createElement(
+                         "td", null, subskill.base.join(", ")),
+                     ripple.createElement("td", null, skill.cost),
+                     ripple.createElement(
+                         "td", null, subskill.description)));
+             });
+     });
+ }); //]]></script>
