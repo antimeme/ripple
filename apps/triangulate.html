@@ -267,9 +267,7 @@
                  ctx.beginPath();
                  triangles.forEach(function(triangle) {
                      if (triangle.center) {
-                         var radius = Math.sqrt(triangle.circle.divide(
-                             triangle.circle.wedge(
-                                 multivec.infinityPoint)).quadrance());
+                         var radius = triangle.circle.conformalRadius();
                          ctx.moveTo(triangle.center.x + radius,
                                     triangle.center.y);
                          ctx.arc(triangle.center.x, triangle.center.y,
