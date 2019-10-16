@@ -365,7 +365,8 @@
         // Given a start and end with coordinates, call a function for
         // each cell in the line segment line between them.
         // WARNING: this has a bug that only seems to manifest on
-        // the right triangle grids.
+        // the right triangle grids.  Sometimes it works but other
+        // times it stops part way through.
         if (!fn)
             return this.eachSegment(start, end, function(node) {
                 this.push(node); }, []);
