@@ -390,22 +390,24 @@
     // Memoized because multi-vectors are intended to be immutable.
     multivec.prototype.quadrance = function() {
         if (isNaN(this.__quadrance)) {
-            var conjprod = this.conjugate().multiply(this);
-            if (!conjprod.isScalar())
+            var quadrance = this.multiply(this.conjugate());
+            if (!quadrance.isScalar())
                 throw new RangeError(
-                    'Non-scalar quadrance (' + conjprod.toString() +
+                    'Non-scalar quadrance (' + quadrance.toString() +
                     ') for: ' + this.toString());
-            this.__quadrance = conjprod.scalar;
+            this.__quadrance = quadrance;
         }
         return this.__quadrance;
     };
-    multivec.prototype.normSquared = multivec.prototype.quadrance;
+
+    multivec.prototype.normSquared = function() {
+        return this.quadrance().scalar; };
 
     // Return the Euclidian or 2-norm of a multi-vector.
     // Memoized because multi-vectors are intended to be immutable.
     multivec.prototype.norm = function() {
         if (isNaN(this.__norm))
-            this.__norm = Math.sqrt(this.quadrance());
+            this.__norm = Math.sqrt(this.quadrance().scalar);
         return this.__norm;
     };
 
@@ -426,7 +428,8 @@
     // except for zero which has no inverse and throws an error.
     //   m.times(m.inverseMult()).minus(1).zeroish() // true
     multivec.prototype.inverseMult = function() {
-        var result = this.conjugate().multiply(1 / this.quadrance());
+        var result = this.conjugate().multiply(
+            1 / this.quadrance().scalar);
         Object.keys(result.components).forEach(function(basis) {
             if (!isFinite(result.components[basis]))
                 throw new RangeError(
@@ -772,15 +775,20 @@
     };
 
     // When called on a direct conformal round, this routine returns
-    // the irrational radius.
-    multivec.prototype.conformalRadius = function() {
+    // the quadrance of the radius.
+    multivec.prototype.conformalQuadrance = function() {
         if (isNaN(this.__roundDiscriminant)) {
             this.__roundDiscriminant = this.divide(this.wedge(
                 multivec.infinityPoint), -1);
         }
-        return Math.sqrt(multivec.times(
-            this.__roundDiscriminant, this.__roundDiscriminant).scalar);
+        return multivec.times(this.__roundDiscriminant,
+                              this.__roundDiscriminant);
     };
+
+    // When called on a direct conformal round, this routine returns
+    // the irrational radius.
+    multivec.prototype.conformalRadius = function() {
+        return Math.sqrt(this.conformalQuadrance().scalar); };
 
     // Convert a conformal point to a vector representation suitable
     // for use with standard model (UNTESTED)
@@ -800,21 +808,41 @@
         return Math.sqrt(multivec.conformalQuadrance(point1, point2));
     };
 
-    // Retrieve the points that make up a point pair
+    // Retrieve two, one or zero points that make up the point pair.
+    // Any missing points below two are actually the point at infinity.
     multivec.recoverPointPair = function(pair) {
         var result = [];
-        var part = multivec.infinityPoint.times(-1).contract(pair);
-        if (multivec.zeroish(part.quadrance())) {  // Flat Point
-            part = multivec.originPoint.wedge(multivec.infinityPoint);
-            part = part.contract(multivec.originPoint.wedge(pair))
-                       .divide(part.contract(pair), -1);
-            result.push(part.createPoint());
+
+        // Our first step is to find out whether we can extract two
+        // distinct points, which requires that we won't be dividing
+        // by a null vector when we contract the infinity point into
+        // the point pair.
+        var denominator = multivec.infinityPoint
+                                  .times(-1).contract(pair);
+        if (multivec.zeroish(denominator.quadrance())) {
+            // We have a flat point.  If we can contract the Minkowski
+            // plan into the pair without getting zero we can recover
+            // a single point.  Otherwise this is a pair of inifinity
+            // points -- this is what happens when we try to intersect
+            // parallel lines, for example.
+            var minkowski = multivec.wedge(
+                multivec.originPoint, multivec.infinityPoint);
+            denominator = minkowski.contract(pair);
+            if (!multivec.zeroish(denominator))
+                result.push(
+                    minkowski.contract(multivec.originPoint.wedge(pair))
+                             .divide(denominator, -1).createPoint());
         } else {
-            var p2div = multivec(Math.sqrt(
+            // Square the pair and take the square root to get a
+            // scalar that indicates how far along the line we have
+            // to slide to get to each point.  Division will sort
+            // out the actual point locations.
+            var slide = multivec(Math.sqrt(
                 Math.abs(pair.times(pair).scalar)));
-            result.push(pair.minus(p2div).divide(part)
+            result.push(pair.minus(slide).divide(denominator)
                             .normalizePoint());
-            result.push(pair.plus(p2div).divide(part).normalizePoint());
+            result.push(pair.plus(slide).divide(denominator)
+                            .normalizePoint());
         }
         return result;
     };
@@ -1079,6 +1107,7 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
             inner: true, outer: true,
             vectors: [
                 [multivec.originPoint, multivec.infinityPoint],
+                [multivec.infinityPoint, multivec.originPoint],
                 //[multivec.createTranslation(multivec([1, 1, 1])).value],
                 //[multivec.createTranslation(multivec([1, 1, 1])).apply(
                 //    multivec([2, 2, 2]).createPoint())],
@@ -1126,37 +1155,4 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
             else console.log('===', arg, 'MISSING'); });
     else Object.keys(tests).forEach(function(key) {
         conduct(key, tests[key]); });
-
-    console.log("===== Setup");
-    var logMultivec = function(name, p) {
-        console.log(name + "(" + p.quadrance() + ") = " + p.toString());
-    };
-    var p1 = multivec({x: 2, y: 2}).createPoint();
-    var p2 = multivec({x: 4, y: 2}).createPoint();
-    var pair = multivec.wedge(p1, p2);
-    var carrier = multivec.wedge(multivec.originPoint,
-                                 {x: 1}, {y: 1},
-                                 multivec.infinityPoint)
-    var dual = pair.contract(carrier.inverse());
-    logMultivec("p1", p1);
-    logMultivec("p2", p2);
-    logMultivec("pair", pair);
-    console.log("  center: (" + pair.conformalCenter().toString() +
-                ") radius: " + pair.conformalRadius());
-    logMultivec("dual", dual);
-    multivec.recoverPointPair(pair).forEach(function(point, index) {
-        logMultivec("pair[" + index + "]", point.normalizePoint());
-    });
-    multivec.recoverPointPair(dual).forEach(function(point, index) {
-        logMultivec("dual[" + index + "]", point.normalizePoint());
-    });
-
-    console.log("===== Scratch Pad");
-    var pdiv = pair.divide(multivec.infinityPoint.contract(pair));
-    var p2div = multivec(Math.sqrt(pair.times(pair).scalar)).divide(
-        multivec.infinityPoint.contract(pair));
-    logMultivec("pdiv", pdiv);
-    logMultivec("p2div", p2div);
-    logMultivec("pdiv-p2div", pdiv.minus(p2div).normalizePoint());
-    logMultivec("pdiv+p2div", pdiv.plus(p2div).normalizePoint());
 }
