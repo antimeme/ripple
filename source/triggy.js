@@ -24,7 +24,7 @@
 // The following settings are available:
 // * data-enableAngles="1,2,3" - Angles the user is allowed to move
 // * data-radii="2,3"    - Draw lines from origin to these points
-// * data-connect1="2,3" - Draw lines from point to these points
+// * data-chords1="2,3"  - Draw lines from point to these points
 (function(triggy) {
     'use strict';
     if (typeof require === 'function') {
@@ -51,7 +51,12 @@
         var value = canvas.getAttribute('data-' + attribute);
         if (value) {
             value.split(',').forEach(function(entry) {
-                result[parseInt(entry, 10)] = true;
+                var current = parseInt(entry, 10);
+                if (isNaN(current)) {
+                    current = entry.split(":");
+                    if (current.length >= 2)
+                        result[parseInt(current[1], 10)] = current[0];
+                } else result[current] = true;
             });
         }
         return result;
@@ -121,7 +126,6 @@
                     }
                 });
 
-                console.log("DEBUG-middle", anum);
                 if (!isNaN(anum))
                     this.which = this.setAngle(
                         canvas, bounds, clicked, anum);
@@ -129,30 +133,6 @@
             drag: function(canvas, bounds, clicked, config) {
                 if (!isNaN(this.which))
                     this.setAngle(canvas, bounds, clicked, this.which);
-            }
-        },
-
-        cliqueAngles: {
-            draw: function(canvas, ctx, bounds, clicked, config) {
-                var clique = getDataList(canvas, 'cliqueAngles');
-                var visited = [];
-
-                ctx.beginPath();
-                Object.keys(clique).forEach(function(index) {
-                    var angle = canvas.getAttribute('data-angle' + index);
-                    var current = multivec({
-                        x: Math.cos(angle),
-                        y: -Math.sin(angle)
-                    }).times(bounds.radius)
-                      .plus(bounds.origin);
-                    visited.forEach(function(entry) {
-                        ctx.moveTo(entry.x, entry.y);
-                        ctx.lineTo(current.x, current.y);
-                    });
-                    visited.push(current);
-                });
-                ctx.strokeStyle = "blue";
-                ctx.stroke();
             }
         },
 
@@ -734,21 +714,28 @@
             cos = Math.cos(angle);
             sin = Math.sin(angle);
 
-            var connects = getDataList(canvas, 'connect' + index);
-            if (Object.keys(connects).length > 0) {
+            var chords = getDataList(canvas, 'chords' + index);
+            if (Object.keys(chords).length > 0) {
                 ctx.beginPath();
-                Object.keys(connects).forEach(function(connect) {
+                ctx.strokeStyle = chords.color || 'rgb(32, 32, 32)';
+                ctx.lineWidth = 4;
+                Object.keys(chords).forEach(function(connect) {
+                    if (typeof(chords[connect]) === 'string') {
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.strokeStyle = chords[connect];
+                    }
                     var other = parseFloat(canvas.getAttribute(
                         'data-angle' + connect));
-                    ctx.moveTo(bounds.origin.x + bounds.radius * cos,
-                               bounds.origin.y - bounds.radius * sin);
-                    ctx.lineTo(bounds.origin.x + bounds.radius *
+                    ctx.moveTo(
+                        bounds.origin.x + bounds.radius * cos,
+                        bounds.origin.y - bounds.radius * sin);
+                    ctx.lineTo(
+                        bounds.origin.x + bounds.radius *
                         Math.cos(other),
-                               bounds.origin.y - bounds.radius *
-                        Math.sin(other));
+                        bounds.origin.y - bounds.radius *
+                            Math.sin(other));
                 });
-                ctx.strokeStyle = 'rgb(32, 32, 32)';
-                ctx.lineWidth = 4;
                 ctx.stroke();
             }
 
