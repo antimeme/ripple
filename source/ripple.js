@@ -107,7 +107,7 @@
 
     ripple.createElement = function(name, attrs) {
         var result = document.createElement(name);
-        var ii;
+        var ii, current;
 
         if (attrs) Object.keys(attrs).forEach(function(attr) {
             if (typeof attrs[attr] === 'undefined')
@@ -128,11 +128,18 @@
                     result.style[entry] = attrs[attr][entry]; });
             else result.setAttribute(attr, attrs[attr]); });
 
-        for (ii = 2; ii < arguments.length; ++ii)
-            result.appendChild((typeof(arguments[ii]) === 'string' ||
-                                typeof(arguments[ii]) === 'number') ?
-                               document.createTextNode(arguments[ii]) :
-                               arguments[ii]);
+        for (ii = 2; ii < arguments.length; ++ii) {
+            if (typeof(arguments[ii]) === 'undefined')
+                continue;
+            else if (typeof(arguments[ii]) === 'string' ||
+                     typeof(arguments[ii]) === 'number')
+                current = document.createTextNode(arguments[ii]);
+            else if (Array.isArray(arguments[ii]))
+                current = document.createTextNode(
+                    arguments[ii].join(" "));
+            else current = arguments[ii];
+            result.appendChild(current);
+        }
         return result;
     };
 
