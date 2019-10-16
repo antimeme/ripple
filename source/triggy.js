@@ -114,8 +114,7 @@
                         y: -Math.sin(angle)
                     }).times(bounds.radius)
                       .plus(bounds.origin)
-                      .minus(clicked).normSquared();
-                    console.log("DEBUG-delta", delta.toString());
+                      .minus(clicked).quadrance().scalar;
                     if (isNaN(best) || (delta < best)) {
                         anum = index;
                         best = delta;
@@ -130,6 +129,30 @@
             drag: function(canvas, bounds, clicked, config) {
                 if (!isNaN(this.which))
                     this.setAngle(canvas, bounds, clicked, this.which);
+            }
+        },
+
+        cliqueAngles: {
+            draw: function(canvas, ctx, bounds, clicked, config) {
+                var clique = getDataList(canvas, 'cliqueAngles');
+                var visited = [];
+
+                ctx.beginPath();
+                Object.keys(clique).forEach(function(index) {
+                    var angle = canvas.getAttribute('data-angle' + index);
+                    var current = multivec({
+                        x: Math.cos(angle),
+                        y: -Math.sin(angle)
+                    }).times(bounds.radius)
+                      .plus(bounds.origin);
+                    visited.forEach(function(entry) {
+                        ctx.moveTo(entry.x, entry.y);
+                        ctx.lineTo(current.x, current.y);
+                    });
+                    visited.push(current);
+                });
+                ctx.strokeStyle = "blue";
+                ctx.stroke();
             }
         },
 
