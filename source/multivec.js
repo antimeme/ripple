@@ -838,11 +838,12 @@
             // to slide to get to each point.  Division will sort
             // out the actual point locations.
             var slide = multivec(Math.sqrt(
-                Math.abs(pair.times(pair).scalar)));
-            result.push(pair.minus(slide).divide(denominator)
-                            .normalizePoint());
-            result.push(pair.plus(slide).divide(denominator)
-                            .normalizePoint());
+                Math.abs(pair.normSquared())));
+            if (multivec.zeroish(slide))
+                result.push(pair.divide(denominator).normalizePoint());
+            else result.push(
+                pair.minus(slide).divide(denominator).normalizePoint(),
+                pair.plus(slide).divide(denominator).normalizePoint());
         }
         return result;
     };
