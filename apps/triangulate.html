@@ -24,12 +24,12 @@
 
  var npoints = Math.max(parseInt(ripple.param('npoints'), 10) || 0, 3);
  var seed = parseInt(ripple.param('seed'), 10) || undefined;
- var drawVoroni   = ripple.param('voroni');
- var drawDelaunay = ripple.param('delaunay');
- var drawCircles  = ripple.param('circles');
- var hidePoints   = ripple.param('hidepoints');
- var cornerPoints = ripple.param('cornerpoints');
- var mosaic       = ripple.param('mosaic');
+ var drawVoroni   = ripple.paramBoolean('voroni');
+ var drawDelaunay = ripple.paramBoolean('delaunay');
+ var drawCircles  = ripple.paramBoolean('circles');
+ var hidePoints   = ripple.paramBoolean('hidepoints');
+ var cornerPoints = ripple.paramBoolean('cornerpoints');
+ var mosaic       = ripple.paramBoolean('mosaic');
 
  var generatePoints = function(npoints, seed) {
      var generator = random.random(seed);
