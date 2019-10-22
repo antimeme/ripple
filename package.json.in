@@ -2,7 +2,7 @@
     "name": "@PACKAGE@",
     "version": "@VERSION@",
     "description": "Ripple is an eclectic set of tools and libraries",
-    "main": "apps/whiplash.js",
+    "main": "apps/streya.js",
     "scripts": {
         "start": "electron ."
     },

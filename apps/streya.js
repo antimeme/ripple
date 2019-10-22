@@ -1155,3 +1155,36 @@
         (this.streya = {}) :
         ((typeof module !== undefined) ?
          (module.exports = exports) : exports));
+
+if ((typeof require !== 'undefined') && (require.main === module)) {
+    const electron = require('electron');
+
+    if (electron && electron.app) {
+        // Stand alone desktop application mode for whiplash
+        //   $ npm run-script whiplash
+        const path = require('path');
+        const url = require('url');
+        var mainWindow;
+
+        electron
+            .app
+            .on('ready', function() {
+                mainWindow = new electron.BrowserWindow(
+                    {width: 800, height: 600,
+                     webPreferences: { nodeIntegration: false }});
+                mainWindow.loadURL(url.format({
+                    pathname: path.join(__dirname, 'streya.html'),
+                    protocol: 'file:',
+                    slashes: true }));
+                //mainWindow.webContents.openDevTools();
+                mainWindow.setMenu(null);
+                mainWindow.on('closed', function () {
+                    mainWindow = null; }); })
+            .on('window-all-closed', function () {
+                if (process.platform !== 'darwin')
+                    electron.app.quit(); })
+            .on('activate', function () {
+                if (mainWindow === null)
+                    createWindow(); });
+    } else console.log('DEBUG command line mode');
+}
