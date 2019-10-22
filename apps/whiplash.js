@@ -7,10 +7,10 @@
 
 (function(whiplash) {
     'use strict';
-    if (typeof require !== 'undefined') {
+    if (typeof require === 'function') {
         this.multivec = require('./ripple/multivec.js');
-        this.ripple = require('./ripple/ripple.js');
-        this.fascia = require('./ripple/fascia.js');
+        this.ripple   = require('./ripple/ripple.js');
+        this.fascia   = require('./ripple/fascia.js');
     }
 
     var browserSettings = {

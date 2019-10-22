@@ -4,7 +4,9 @@
     "description": "Ripple is an eclectic set of tools and libraries",
     "main": "apps/streya.js",
     "scripts": {
-        "start": "electron ."
+        "start": "electron .",
+        "streya": "electron apps/streya.js",
+        "whiplash": "electron apps/whiplash.js"
     },
     "repository": "https://github.com/electron/electron-quick-start",
     "keywords": ["Ripple", "electron" ],
