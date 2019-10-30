@@ -11,6 +11,7 @@
      .true { color: green; }
      .false { color: red; }
      .qed { background-color: #99ee99;}
+     del { color: darkred; }
      em { color: #448899; }
      ul.symbolic { list-style-type: none; }
      .left { float: left; }
@@ -6341,27 +6342,25 @@
                 </span>
                 &lt;<sub>&#x211a;</sub> b
             </p>
-            <ul>
-                <li class="fragment">
-                    (a &lt;<sub>&#x211a;</sub>
-                    b) &#x27f9; a + a &lt;<sub>&#x211a;</sub> a + b
-                </li><li class="fragment">
-                    (a + a) &times; 1/2<sub>&#x211a;</sub>
-                    &lt;<sub>&#x211a;</sub> (a + b) &times;
-                    1/2<sub>&#x211a;</sub>
-                </li><li class="fragment">
-                    a &times; 2<sub>&#x211a;</sub> &times;
-                    1/2<sub>&#x211a;</sub> &lt;<sub>&#x211a;</sub>
-                    (a + b) &times; 1/2<sub>&#x211a;</sub>
-                </li><li class="fragment">
-                    a &times; 1<sub>&#x211a;</sub>
-                    &lt;<sub>&#x211a;</sub> (a + b) &times;
-                    1/2<sub>&#x211a;</sub>
-                </li><li class="fragment intro">
-                    a &lt;<sub>&#x211a;</sub> (a + b) &times;
-                    1/2<sub>&#x211a;</sub>
-                </li>
-            </ul>
+            <ul><li class="fragment">
+                (a &lt;<sub>&#x211a;</sub>
+                b) &#x27f9; a + a &lt;<sub>&#x211a;</sub> a + b
+            </li><li class="fragment">
+                (a + a) &times; 1/2<sub>&#x211a;</sub>
+                &lt;<sub>&#x211a;</sub> (a + b) &times;
+                1/2<sub>&#x211a;</sub>
+            </li><li class="fragment">
+                a &times; 2<sub>&#x211a;</sub> &times;
+                1/2<sub>&#x211a;</sub> &lt;<sub>&#x211a;</sub>
+                (a + b) &times; 1/2<sub>&#x211a;</sub>
+            </li><li class="fragment">
+                a &times; 1<sub>&#x211a;</sub>
+                &lt;<sub>&#x211a;</sub> (a + b) &times;
+                1/2<sub>&#x211a;</sub>
+            </li><li class="fragment qed">
+                a &lt;<sub>&#x211a;</sub> (a + b) &times;
+                1/2<sub>&#x211a;</sub>
+            </li></ul>
         </section>
         <section>
             <h3>Between &#x211a;</h3>
@@ -6373,28 +6372,26 @@
                     &lt;<sub>&#x211a;</sub> b
                 </span>
             </p>
-            <ul>
-                <li class="fragment">
-                    (a &lt;<sub>&#x211a;</sub>
-                    b) &#x27f9; a + b &lt;<sub>&#x211a;</sub> b + b
-                </li><li class="fragment">
-                    (a + b) &times; 1/2<sub>&#x211a;</sub>
-                    &lt;<sub>&#x211a;</sub> (b + b) &times;
-                    1/2<sub>&#x211a;</sub>
-                </li><li class="fragment">
-                    (a + b) &times; 1/2<sub>&#x211a;</sub>
-                    &lt;<sub>&#x211a;</sub> b &times;
-                    2<sub>&#x211a;</sub> &times;
-                    1/2<sub>&#x211a;</sub>
-                </li><li class="fragment">
-                    (a + b) &times; 1/2<sub>&#x211a;</sub>
-                    &lt;<sub>&#x211a;</sub> b &times;
-                    1<sub>&#x211a;</sub>
-                </li><li class="fragment intro">
-                    (a + b) &times; 1/2<sub>&#x211a;</sub>
-                    &lt;<sub>&#x211a;</sub> b
-                </li>
-            </ul>
+            <ul><li class="fragment">
+                (a &lt;<sub>&#x211a;</sub>
+                b) &#x27f9; a + b &lt;<sub>&#x211a;</sub> b + b
+            </li><li class="fragment">
+                (a + b) &times; 1/2<sub>&#x211a;</sub>
+                &lt;<sub>&#x211a;</sub> (b + b) &times;
+                1/2<sub>&#x211a;</sub>
+            </li><li class="fragment">
+                (a + b) &times; 1/2<sub>&#x211a;</sub>
+                &lt;<sub>&#x211a;</sub> b &times;
+                2<sub>&#x211a;</sub> &times;
+                1/2<sub>&#x211a;</sub>
+            </li><li class="fragment">
+                (a + b) &times; 1/2<sub>&#x211a;</sub>
+                &lt;<sub>&#x211a;</sub> b &times;
+                1<sub>&#x211a;</sub>
+            </li><li class="fragment qed">
+                (a + b) &times; 1/2<sub>&#x211a;</sub>
+                &lt;<sub>&#x211a;</sub> b
+            </li></ul>
         </section>
         <section>
             <h3>Real Numbers &#x211d; Non-Examples</h3>
@@ -6445,7 +6442,7 @@
                         <li class="fragment">
                             a &lt; 0<sub>&#x211a;</sub> &and; b &lt; a
                             &#x27f9; b &lt; 0<sub>&#x211a;</sub>
-                            :: Transitive &le;<sub>&#x211a;</sub>
+                            :: Transitive &ge;<sub>&#x211a;</sub>
                         </li><li class="fragment">
                             b &lt; 0<sub>&#x211a;</sub>
                             &#x27f9; b&#x2208;0<sub>&#x211d;</sub>
@@ -6492,7 +6489,7 @@
                         <li class="fragment">
                             (c &lt; a) &and; (d &lt; c)
                             &#x27f9; (d &lt; a)<sub>&#x211a;</sub>
-                            :: Transitive &le;<sub>&#x211a;</sub>
+                            :: Transitive &ge;<sub>&#x211a;</sub>
                         </li><li class="fragment">
                             (d &lt; c) &#x27f9; (d &lt; a) &#x27f9;
                             d&#x2208;{ b&#x2208;&#x211a; : b &lt; a }
@@ -8253,6 +8250,17 @@
             </canvas>
         </section>
         <section>
+            <h3>Inscribed Angles</h3>
+            <canvas class="triggy"
+                    data-origin="center" data-circle="on"
+                    data-angle1="1.57079"
+                    data-angle2="3.66519"
+                    data-angle3="5.75958"
+                    data-chords2="blue:1,blue:3"
+                    data-enableAngles="1,2,3">
+            </canvas>
+        </section>
+        <section>
             <h3>Cyclic Quadrilateral</h3>
             <canvas class="triggy"
                     data-origin="center" data-circle="on"
@@ -8330,6 +8338,7 @@
                 &lt;&#x1d544;&gt;<sub>0</sub>&#x2286;&#x1d544;
                 Scalars: a
             </li><li>
+                &#x1d54d; =
                 &lt;&#x1d544;&gt;<sub>1</sub>&#x2286;&#x1d544;
                 Vectors: a<sub>1</sub><strong>o<sub>1</sub></strong>
                 + ...
@@ -8764,6 +8773,22 @@
         </section>
         <section>
             <h3>Conjugate Examples</h3>
+            <p>
+                a (<strong>o<sub>1</sub></strong>
+                <strong>o<sub>2</sub></strong> ...
+                <strong>o<sub>n - 1</sub></strong>
+                <strong>o<sub>n</sub></strong>)<sup>&#x2020;</sup>
+                &#x225d; a <strong>o<sub>n</sub></strong>
+                <strong>o<sub>n - 1</sub></strong> ...
+                <strong>o<sub>2</sub></strong>
+                <strong>o<sub>1</sub></strong>
+                <span class="fragment">
+                    =<br /> &plusmn;a <strong>o<sub>1</sub></strong>
+                    <strong>o<sub>2</sub></strong> ...
+                    <strong>o<sub>n - 1</sub></strong>
+                    <strong>o<sub>n</sub></strong>
+                </span>
+            </p>
             <ul><li class="fragment">
                 &#x2200;a &#x2208; &lt;&#x1d544;&gt;<sub>0</sub>
                 a<sup>&#x2020;</sup> = a
@@ -8805,19 +8830,11 @@
                     -<strong>B</strong>
                 </span>
             </li><li class="fragment">
-                (<strong>o<sub>1</sub></strong>
-                <strong>o<sub>2</sub></strong> ...
-                <strong>o<sub>n - 1</sub></strong>
-                <strong>o<sub>n</sub></strong>)<sup>&#x2020;</sup> =
-                <strong>o<sub>n</sub></strong>
-                <strong>o<sub>n - 1</sub></strong> ...
-                <strong>o<sub>2</sub></strong>
-                <strong>o<sub>1</sub></strong>
+                &#x2200;M&#x2208;&#x1d544;
+                (&lt;M&gt;<sub>i</sub>)<sup>&#x2020;</sup> =
+                (-1)<sup>i(i - 1)/2</sup> &lt;M&gt;<sub>i</sub>
                 <span class="fragment">
-                    = &plusmn; <strong>o<sub>1</sub></strong>
-                    <strong>o<sub>2</sub></strong> ...
-                    <strong>o<sub>n - 1</sub></strong>
-                    <strong>o<sub>n</sub></strong>
+                    &#x27f9; + + - - + + ...
                 </span>
             </li></ul>
         </section>
@@ -8845,20 +8862,14 @@
                     = v<sup>2</sup>
                 </span>
             </li><li class="fragment">
-                &#x22a0;(M<sup>&#x2020;</sup>)
+                &#x2200;<strong>B</strong>&#x2208;
+                &lt;&#x1d544;&gt;<sub>2</sub>
+                &#x22a0;(<strong>B</strong>) = <strong>B</strong>
+                <strong>B</strong><sup>&#x2020;</sup>
                 <span class="fragment">
-                    = M<sup>&#x2020;</sup>
-                    (M<sup>&#x2020;</sup>)<sup>&#x2020;</sup>
-                </span><span class="fragment">
-                    = M<sup>&#x2020;</sup>M
-                </span><span class="fragment">
-                    = (M M<sup>&#x2020;</sup>)<sup>&#x2020;</sup>
-                </span><span class="fragment">
-                    = &#x22a0;(M)<sup>&#x2020;</sup>
+                    = <strong>B</strong> -<strong>B</strong>
+                    = -<strong>B</strong><sup>2</sup>
                 </span>
-            </li><li class="fragment">
-                (M M<sup>&#x2020;</sup>)&#x2208;&#x211d; &#x27f9;
-                &#x22a0;(M<sup>&#x2020;</sup>) = &#x22a0;(M)
             </li></ul>
         </section>
         <section>
@@ -9035,7 +9046,7 @@
             <h2>Outer Product</h2>
             <p>
                 &#x2200; i&#x2208;&#x2115;,
-                <strong>a</strong>&#x2208;&lt;&#x1d539;&gt;<sub>1</sub>,
+                <strong>a</strong>&#x2208;&#x1d54d;,
                 <strong>B</strong>&#x2208;&#x1d539;
                 <br /> <strong>a</strong> ^ <strong>B</strong> &#x225d;
                 (<strong>a B</strong> +
@@ -9052,6 +9063,7 @@
         </section>
         <section>
             <h3>Outer Product</h3>
+            <p>Let's observe some consequences of the definition:</p>
             <ul><li class="fragment">
                 &#x2200;i&#x2208;&#x2115;
                 <strong>o<sub>i</sub></strong> ^
@@ -9061,9 +9073,10 @@
                     <strong>o<sub>i</sub></strong><sup>^</sup>
                     <strong>o<sub>i</sub></strong>) / 2
                 </span><span class="fragment">
-                    = (<strong>o<sub>i</sub> o<sub>i</sub></strong> -
+                    = (<del><strong>o<sub>i</sub>
+                    o<sub>i</sub></strong> -
                     <strong>o<sub>i</sub></strong>
-                    <strong>o<sub>i</sub></strong>) / 2
+                    <strong>o<sub>i</sub></strong></del>) / 2
                 </span><span class="fragment">
                     = 0
                 </span>
@@ -9087,16 +9100,16 @@
                     = 2 <strong>o<sub>i</sub> o<sub>j</sub></strong> / 2
                     = <strong>o<sub>i</sub> o<sub>j</sub></strong>
                 </span>
-            </li><li>
+            </li><li class="fragment">
                 &#x2200;a,b&#x2208;&#x211d;,C,D&#x2208;&#x1d544;
                 (a C) ^ (b D) = a b (C ^ D)
-            </li><li>
+            </li><li class="fragment">
                 &#x2200;A,B,C&#x2208;&#x1d544;
                 (A + B) ^ C = (A ^ C) + (B ^ C)
             </li></ul>
         </section>
         <section>
-            <h3>Outer Product</h3>
+            <h3>Vector Outer Product</h3>
             <p>
                 <strong>v u</strong> =
                 v<sub>1</sub>u<sub>1</sub> +
@@ -9347,21 +9360,11 @@
             <ul><li class="fragment">
                 Zero Selfies:
                 <strong>v</strong> ^ <strong>v</strong> =
-                (v<sub>1</sub>v<sub>2</sub> -
-                v<sub>2</sub>v<sub>1</sub>)
+                (<del>v<sub>1</sub>v<sub>2</sub> -
+                    v<sub>2</sub>v<sub>1</sub></del>)
                 <strong>o<sub>1</sub>o<sub>2</sub></strong> +
                 ...
-                <ul><li class="fragment">
-                    <strong>v</strong> ^ <strong>v</strong> =
-                    (v<sub>1</sub>v<sub>2</sub> -
-                    v<sub>1</sub>v<sub>2</sub>)
-                    <strong>o<sub>1</sub>o<sub>2</sub></strong> +
-                    ...
-                </li><li class="fragment">
-                    <strong>v</strong> ^ <strong>v</strong> =
-                    0<strong>o<sub>1</sub>o<sub>2</sub></strong> +
-                    ... = 0
-                </li></ul>
+                <span class="fragment">= 0</span>
             </li><li class="fragment">
                 Stretch Out:
                 a<strong>v</strong> ^ b<strong>v</strong> =
@@ -9369,19 +9372,16 @@
                 av<sub>2</sub>bv<sub>1</sub>)
                 <strong>o<sub>1</sub>o<sub>2</sub></strong> +
                 ...
-                <ul><li class="fragment">
-                    a<strong>v</strong> ^
+                <span class="fragment">
+                    = a<strong>v</strong> ^
                     b<strong>v</strong> =
-                    (abv<sub>1</sub>v<sub>2</sub> -
-                    abv<sub>1</sub>v<sub>2</sub>)
+                    ab(<del>v<sub>1</sub>v<sub>2</sub> -
+                    v<sub>1</sub>v<sub>2</sub></del>)
                     <strong>o<sub>1</sub>o<sub>2</sub></strong> +
                     ...
-                </li><li class="fragment">
-                    a<strong>v</strong> ^
-                    b<strong>v</strong> =
-                    0<strong>o<sub>1</sub>o<sub>2</sub></strong> +
+                </span><span class="fragment">
                     ... = 0
-                </li></ul>
+                </span>
             </li></ul>
         </section>
         <section>
@@ -9395,8 +9395,8 @@
                     ^ <strong>u</strong>) ^ ...
                 </span><span class="fragment">
                     = <br />-
-                    <span class="false"><strong>v</strong> ^
-                        <strong>v</strong></span> ^
+                    <del><strong>v</strong> ^
+                        <strong>v</strong></del> ^
                     <strong>u</strong> ^ ...
                 </span><span class="fragment">
                     = 0 ^ <strong>u</strong> ^ ... = 0
@@ -9413,12 +9413,12 @@
                     ^ b<strong>u</strong>)) ^ ...
                 </span><span class="fragment">
                     =<br />
-                    (-a (<span class="false"><strong>v</strong> ^
-                    <strong>v</strong></span> ^
+                    (-a (<del><strong>v</strong> ^
+                    <strong>v</strong></del> ^
                     <strong>u</strong>) +
                     b (<strong>v</strong> ^
-                    <span class="false"><strong>u</strong>
-                        ^ <strong>u</strong></span>)) ^ ...
+                    <del><strong>u</strong>
+                        ^ <strong>u</strong></del>)) ^ ...
                 </span><span class="fragment">
                     =<br />
                     (0 + 0) ^ ... = 0
@@ -9679,60 +9679,6 @@
                 discard complementary terms their sum is equal to
                 the geometric product.  (This is not true for
                 general multivectors.)
-            </p>
-        </section>
-        <section>
-            <h3>Vector Inner Product</h3>
-            <p>
-                (<strong>v u</strong> + <strong>u v</strong>) / 2
-                <span class="fragment">
-                    =
-                    (<strong>v</strong>&middot;<strong>u</strong> +
-                    <strong>v</strong>^<strong>u</strong> +
-                    <strong>u</strong>&middot;<strong>v</strong> +
-                    <strong>u</strong>^<strong>v</strong>) / 2
-                </span><span class="fragment">
-                    =<br />
-                    (<strong>v</strong>&middot;<strong>u</strong> +
-                    <del><strong>v</strong>^<strong>u</strong></del> +
-                    <strong>v</strong>&middot;<strong>u</strong> -
-                    <del><strong>v</strong>^<strong>u</strong></del>) / 2
-                </span><span class="fragment">
-                    =<br />
-                    2 <strong>v</strong>&middot;<strong>u</strong> / 2
-                </span><span class="fragment">
-                    = <strong>v</strong>&middot;<strong>u</strong>
-                </span>
-            </p><p class="fragment">
-                We can define the inner product in terms of the
-                geometric product.
-            </p>
-        </section>
-        <section>
-            <h3>Vector Outer Product</h3>
-            <p>
-                (<strong>v u</strong> - <strong>u v</strong>) / 2
-                <span class="fragment">
-                    =
-                    (<strong>v</strong>&middot;<strong>u</strong> +
-                    <strong>v</strong>^<strong>u</strong> -
-                    <strong>u</strong>&middot;<strong>v</strong> -
-                    <strong>u</strong>^<strong>v</strong>) / 2
-                </span><span class="fragment">
-                    =<br />
-                    (<del><strong>v</strong>&middot;<strong>u</strong></del> +
-                    <strong>v</strong>^<strong>u</strong> -
-                    <del><strong>v</strong>&middot;<strong>u</strong></del> +
-                    <strong>v</strong>^<strong>u</strong>) / 2
-                </span><span class="fragment">
-                    =<br />
-                    2 <strong>v</strong>^<strong>u</strong> / 2
-                </span><span class="fragment">
-                    = <strong>v</strong>^<strong>u</strong>
-                </span>
-            </p><p class="fragment">
-                We can define the outer product in terms of the
-                geometric product.
             </p>
         </section>
     </section>
@@ -11065,18 +11011,6 @@
             </td></tr></table>
         </section>
         <section>
-            <h3>Euclidean Vectors</h3>
-            <p>
-                &#x1d53c; &#x225d; { <strong>v</strong> :
-                <strong>v</strong> &#x2208;
-                &lt;&#x1d544;&gt;<sub>1</sub>  &and; ??? }
-            </p><p>
-                All vectors we've considered so far can be represented
-                using orthonormal basis terms with indices greater than
-                zero.  Before we expand on this, let's name them.
-            </p>
-        </section>
-        <section>
             <h3>Standard Points</h3>
             <p>
                 &#x2200;<strong>p</strong>&#x2208;&#x1d53c;
@@ -11211,6 +11145,28 @@
                 negative signature
                 (<strong>i<sub>0</sub></strong><sup>2</sup> =
                 -1).
+            </p>
+        </section>
+        <section>
+            <h3>Euclidean Vectors</h3>
+            <p>
+                &#x1d53c; &#x225d; { <strong>v</strong> :
+                <strong>v</strong> &#x2208;
+                &lt;&#x1d544;&gt;<sub>1</sub>  &and; ??? }
+            </p><p>
+                All vectors we've considered so far can be represented
+                using orthonormal basis terms with indices greater than
+                zero.  Before we expand on this, let's name them.
+            </p>
+        </section>
+        <section>
+            <h3>Minkowski Plane</h3>
+            <p><strong>o<sub>0</sub>i<sub>0</sub></strong></p>
+            <p>
+                A Minkowski space mixes basis vectors of positive and
+                negative signature.  We will refer to the two basis
+                vectors we've added to the Euclidean space as the
+                Minkowski plane for this reason.
             </p>
         </section>
         <section>
@@ -11547,14 +11503,16 @@
                 <em>o</em>^<em>&infin;</em> sinh(a/2)
             </li></ul>
             <p>
-                Euclidean versors preserve the point at infinity.
+                Euclidean versors preserve the point at infinity:<br />
+                V <em>&infin;</em> V<sup>-1</sup> = <em>&infin;</em>
             </p>
         </section>
         <section>
             <h3>Translation</h3>
             <p>
                 V<sub><strong>t</strong></sub> &#x225d; 1 +
-                <em>&infin;</em><strong>t</strong>/2
+                <em>&infin;</em><strong>t</strong>/2 = 1 -
+                <strong>t</strong><em>&infin;</em>/2
             </p><ul><li class="fragment">
                 <em>p</em><sub><strong>t</strong></sub> =
                 V<sub>t</sub> <em>p</em> V<sub>t</sub><sup>-1</sup>
@@ -11730,7 +11688,7 @@
                 V<sub>r</sub><sup>-1</sup> = <em>&infin;</em>
             </li></ul>
             <p class="fragment">
-                Rotation preserves the point at infinity.
+                Euclidean rotation preserves the point at infinity.
             </p>
         </section>
         <section>
