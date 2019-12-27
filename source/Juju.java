@@ -1,5 +1,5 @@
 // Juju.java
-// Copyright (C) 2014 by Jeff Gold
+// Copyright (C) 2014-2019 by Jeff Gold
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -167,6 +167,8 @@ public class Juju {
      * Process JSON data from a reader  This method will
      * read all bytes in the reader.
      *
+     * @throws IOException when something goes wrong with the Reader
+     * @throws ParseException when input data is invalid
      * @param input Reader to convert to a data structure
      * @return An object representing the JSON stucture */
     public static Object parseJSON(Reader input)
@@ -254,7 +256,7 @@ public class Juju {
                     value.append(Character.toChars(uhex));
                     state = ParseState.STRING;
                 }
-                break;                    
+                break;
             case VALUE:
                 if (Character.isWhitespace(current) ||
                     (current == ']') || (current == '}') ||
@@ -383,6 +385,8 @@ public class Juju {
     /**
      * Process JSON data from a string.
      *
+     * @throws IOException when something goes wrong with the Reader
+     * @throws ParseException when input data is invalid
      * @param data String to convert to a data structure
      * @return An object representing the JSON stucture */
     public static Object parseJSON(String data)
@@ -393,6 +397,8 @@ public class Juju {
      * Process JSON data from an input stream.  This method will
      * read all bytes in the stream until the end.
      *
+     * @throws IOException when something goes wrong with the Reader
+     * @throws ParseException when input data is invalid
      * @param data InputStream to convert to a data structure
      * @return An object representing the JSON stucture */
     public static Object parseJSON(InputStream data)
@@ -410,6 +416,7 @@ public class Juju {
     /**
      * Converts a simple data structure to JSON.
      *
+     * @throws IOException when Writer doesn't work
      * @param o Object to convert, which must be composed of {@link
      *        java.util.Map}, {@link java.util.List}, {@link
      *        java.lang.String}, {@link java.lang.Boolean} or some
@@ -490,6 +497,7 @@ public class Juju {
     /**
      * Converts a simple data structure to JSON.
      *
+     * @throws IOException when Writer doesn't work
      * @param o Object to convert, which must be composed of {@link
      *        java.util.Map}, {@link java.util.List}, {@link
      *        java.lang.String}, {@link java.lang.Boolean} or some
@@ -504,6 +512,7 @@ public class Juju {
     /**
      * Converts a simple data structure to JSON.
      *
+     * @throws IOException when Writer doesn't work
      * @param o Object to convert, which must be composed of {@link
      *        java.util.Map}, {@link java.util.List}, {@link
      *        java.lang.String}, {@link java.lang.Boolean} or some
@@ -562,7 +571,11 @@ public class Juju {
      *  <pre>
      *  Object o = Juju.parseJSON("{\"a\": {\"b\": {\"c\": 7}}}");
      *  System.out.println(Juju.lookupJSON(o, "a.b.c")); // 7
-     *  </pre> */
+     *  </pre>
+     *
+     * @param o JSON object to examine
+     * @param key period separated fields to dereference
+     * @return value of the field described by key */
     public static Object lookupJSON(Object o, String key)
     {
         Deque<Object> stack = new LinkedList<Object>();
@@ -752,7 +765,9 @@ public class Juju {
         out.flush();
     }
 
-    /** Description for automated usage message. */
+    /**
+     * Description for automated usage message.
+     * @return description of the {@link #main} method of this class */
     public static java.lang.String usageLine()
     { return "Parses JSON and performs lookups."; }
 
@@ -798,7 +813,9 @@ public class Juju {
     }
 
     /**
-     * A simple command line test program.
+     * A simple command line test program.  Provide a JSON object
+     * on the standard input stream.  Each command line option is
+     * interpreted as series of keys to lookup.
      *
      * <pre>
        $ java -jar `ls ripple-*.jar | tail -1` Juju \
@@ -809,7 +826,9 @@ public class Juju {
          "D": [1,3,4  , {"a": "qqq"  ,"b": [4,4,4, {}, 5] } ,5]}
        EOF
        </pre>
-     */
+     *
+     * @throws Exception Anything can happen.
+     * @param args JSON strings to parse */
     public static void main(String[] args) throws Exception {
         Object o = Juju.parseJSON(System.in);
         show(o);
