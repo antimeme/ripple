@@ -1447,7 +1447,7 @@
             </aside>
         </section>
         <section>
-            <h2>Axiom of Extensionality</h2>
+            <h3>Axiom of Extensionality</h3>
             <p>
                 &#x2200;a,b (a <span class="intro">=</span> b)
                 &#x27fa; (&#x2200;c c&#x2208;a &#x27fa; c&#x2208;b)
@@ -1468,7 +1468,7 @@
             </aside>
         </section>
         <section>
-            <h2>Axiom (Schema) of Specification</h2>
+            <h3>Axiom (Schema) of Specification</h3>
             <p>
                 &#x2200;a,P &#x2203;b &#x2200;c
                 c&#x2208;b &#x27fa; (c&#x2208;a &and; P(c))
@@ -1508,7 +1508,7 @@
             </p>
         </section>
         <section>
-            <h2>Axiom of Pairing</h2>
+            <h3>Axiom of Pairing</h3>
             <p>
                 &#x2200;a,b &#x2203;{a, b} &#x2200;c
                 (c&#x2208;{a, b} &#x27fa; (c=a &or; c=b))
@@ -1534,7 +1534,7 @@
             </aside>
         </section>
         <section>
-            <h2>Axiom of Union</h2>
+            <h3>Axiom of Union</h3>
             <p>
                 &#x2200;a &#x2203;<span class="intro">&cup;</span>a
                 &#x2200;b&#x2208;<span class="intro">&cup;</span>a
@@ -1702,7 +1702,7 @@
             </ul>
         </section>
         <section>
-            <h2>Axiom of Power Set</h2>
+            <h3>Axiom of Power Set</h3>
             <p>
                 &#x2200;a &#x2203;<span class="intro">&#x2118;</span>a
                 &#x2200;b (b&#x2208;<span class="intro">&#x2118;</span>a
@@ -1746,7 +1746,7 @@
             </aside>
         </section>
         <section>
-            <h2>Axiom (Schema) of Replacement</h2>
+            <h3>Axiom (Schema) of Replacement</h3>
             <p>
                 &#x2200;a,f &#x2203;b &#x2200;c
                 c&#x2208;b &#x27fa; &#x2203;d&#x2208;a f(c) = d
@@ -1770,7 +1770,7 @@
             </aside>
         </section>
         <section>
-            <h2>Axiom of Regularity</h2>
+            <h3>Axiom of Regularity</h3>
             <p>
                 &#x2200;a &#x2203;b&#x2208;a &#x27f9;
                 &#x2203;c&#x2208;a
@@ -1790,7 +1790,7 @@
             </aside>
         </section>
         <section>
-            <h2>Axiom of Infinity</h2>
+            <h3>Axiom of Infinity</h3>
             <p>
                 &#x2203;a (({}&#x2208;a) &and;
                 (&#x2200;b&#x2208;a &cup;{b, {b, b}} &#x2208; a))
@@ -1809,7 +1809,7 @@
             </aside>
         </section>
         <section>
-            <h2>Axiom of Choice</h2>
+            <h3>Axiom of Choice</h3>
             <p>
                 &#x2200;a {}&#x2209;a &#x27f9; &#x2203;f:
                 a &#x27f6; &cup;a &#x2200;b&#x2208;a
@@ -2281,7 +2281,7 @@
             </p>
         </section>
         <section>
-            <h2>Equivalence</h2>
+            <h3>Equivalence</h3>
             <p>
                 An equivalence relation has three properties:
             </p>
@@ -2314,7 +2314,7 @@
             </aside>
         </section>
         <section>
-            <h2>Partial Order</h2>
+            <h3>Partial Order</h3>
             <p>
                 A partial order has the following properties:
             </p>
@@ -2347,7 +2347,7 @@
             </aside>
         </section>
         <section>
-            <h2>Total Order</h2>
+            <h3>Total Order</h3>
             <p>
                 A total order is a partial order with connex:
             </p>
@@ -2495,7 +2495,7 @@
             </aside>
         </section>
         <section>
-            <h2>Functions</h2>
+            <h3>Functions</h3>
             <p>
                 (<span class="intro">f : D &#x27f6; R</span>)
                 &#x225d; &#x2200;a&#x2208;D (&#x2203;b&#x2208;R
@@ -8260,6 +8260,11 @@
     <section id="geometric-algebra">
         <section>
             <h2>Geometric Algebra</h2>
+            <blockquote>
+                <q>Educating yourself in public is painful,
+                    but the lessons stick.</q>
+                 — Peter Schjeldahl
+            </blockquote>
             <p>
                 Geometric Algebra extends vector spaces by
                 introducing an invertable geometric product.  Many
@@ -11103,19 +11108,20 @@
                 </span>
             </p>
             <p class="fragment">
-                With normalized points the formula is the same
-                as the standard model.
+                Normalizing first ensures that the
+                <strong>o<sub>0</sub></strong> component does not
+                contribute to the distance metric.
             </p>
         </section>
         <section>
             <h3>Negative Signature</h3>
             <p>Basis signatures, updated:</p>
             <ul><li>
-                &#x2200;i&#x2208;&#x2115;
-                <strong>o<sub>i</sub>o<sub>i</sub></strong> = 1
+                &#x2200;a&#x2208;&#x2115;
+                <strong>o<sub>a</sub>o<sub>a</sub></strong> = 1
             </li><li>
-                &#x2200;i&#x2208;&#x2115;
-                <strong>i<sub>i</sub>i<sub>i</sub></strong> = -1
+                &#x2200;a&#x2208;&#x2115;
+                <strong>i<sub>a</sub>i<sub>a</sub></strong> = -1
             </li></ul>
             <p>
                 To support the conformal model we introduce
@@ -11133,11 +11139,16 @@
             <p>
                 &#x1d53c; &#x225d; { <strong>v</strong> :
                 <strong>v</strong> &#x2208;
-                &lt;&#x1d544;&gt;<sub>1</sub>  &and; ??? }
+                &lt;&#x1d544;&gt;<sub>1</sub>  &and;
+                (<strong>v</strong> &middot;
+                <strong>o<sub>0</sub></strong> = 0) &and;
+                &#x2200;a&#x2208;&#x2115; (<strong>v</strong> &middot;
+                <strong>i<sub>a</sub></strong> = 0)}
             </p><p>
                 All vectors we've considered so far can be represented
-                using orthonormal basis terms with indices greater than
-                zero.  Before we expand on this, let's name them.
+                using positive signature orthonormal basis terms with
+                indices greater than zero.  Before we expand on this,
+                let's name them.
             </p>
         </section>
         <section>
@@ -11189,6 +11200,10 @@
                     = -1 + 1 = 0
                 </span>
             </li></ul>
+            <p class="fragment">
+                Both have zero quadrance and exist entirely within the
+                Minkowski plane.
+            </p>
         </section>
         <section>
             <h3>Origin and Infinity</h3>
@@ -11752,7 +11767,7 @@
                 of points.
                 <br />P = <em>p</em><sub>1</sub> ^
                 <em>p</em><sub>2</sub>
-            </p><ul><li>
+            </p><ul class="fragment"><li>
                 <em>p</em><sub>1</sub> = (P + &#x221a;&#x22a0;(P))
                 (-<em>&infin;</em>&#x230b;P)<sup>-1</sup>
             </li><li>
@@ -11815,7 +11830,7 @@
             </p><p class="fragment">
                 Alternative: P = <em>p</em><sub>1</sub> ^
                 <strong>B</strong> ^ <em>&infin;</em>
-            </li></ul>
+            </p>
             <p class="fragment">
                 COPLANAR(<em>p</em><sub>1</sub>,
                 <em>p</em><sub>2</sub>, <em>p</em><sub>3</sub>,
@@ -11843,59 +11858,136 @@
                 <em>&infin;</em>
             </p>
         </section>
-    </section>
-
-    <section>
-        <h2>Conformal Duals</h2>
-        <table style="white-space: nowrap;"><tr><td>
-        </td><th>
-            Formula
-        </th><th>
-            Quad
-        </th><th>
-            Weight
-        </th></tr><tr><td>
-            Point
-        </td><td>
-            a (<em>o</em> + <strong>p</strong> +
-            <strong>p</strong><sup>2</sup>/2 <em>&infin;</em>)
-        </td><td>
-            &#x22a0;(<em>p</em>) = 0
-        </td><td>
-            -<em>&infin;</em> &middot; <em>p</em> &ne; 0
-        </td></tr><tr><td>
-            Dual Round
-        </td><td>
-            a (<em>p</em> - r<sup>2</sup>/2 <em>&infin;</em>)
-        </td><td>
-            &#x22a0;(<em>r</em>) &gt; 0
-        </td><td>
-            -<em>&infin;</em> &middot; <em>r</em> &ne; 0
-        </td></tr><tr><td>
-            Dual Imaginary
-        </td><td>
-            a (<em>p</em> + r<sup>2</sup>/2 <em>&infin;</em>)
-        </td><td>
-            &#x22a0;(<em>i</em>) &lt; 0
-        </td><td>
-            -<em>&infin;</em> &middot; <em>i</em> &ne; 0
-        </td></tr><tr><td>
-            Dual Flat
-        </td><td>
-            <strong>n</strong> + d <em>&infin;</em>
-        </td><td>
-            &#x22a0;(<em>n</em>) &ne; 0
-        </td><td>
-            -<em>&infin;</em> &middot; <em>n</em> = 0
-        </td></tr><tr><td>
-            Direction
-        </td><td>
-            <strong>v</strong>^<em>&infin;</em>
-        </td><td>
-            &#x22a0;(<strong>v</strong>) = 0
-        </td><td>
-            -<em>&infin;</em> &middot; <strong>v</strong> = 0
-        </td></tr></table>
+        <section>
+            <h3>Carrier Flats</h3>
+            <p>
+                Consider a conformal round R.  What is
+                R ^ <em>&infin;</em>?
+            </p><p class="fragment">
+                It's a conformal flat of one dimension more!
+            </p><ul class="fragment"><li>
+                Pair = <em>p</em><sub>1</sub> ^
+                <em>p</em><sub>2</sub> &#x27f9;
+                Line = Pair ^ <em>&infin;</em>
+            </li><li>
+                Circle = <em>p</em><sub>1</sub> ^
+                <em>p</em><sub>2</sub> ^
+                <em>p</em><sub>3</sub> &#x27f9;
+                Plane = Circle ^ <em>&infin;</em>
+            </li><li>
+                Sphere = <em>p</em><sub>1</sub> ^
+                <em>p</em><sub>2</sub> ^
+                <em>p</em><sub>3</sub> ^
+                <em>p</em><sub>4</sub> &#x27f9;
+                Volume = Sphere ^ <em>&infin;</em>
+            </li></ul><p class="fragment">
+                Radius<sup>2</sup>(R) =
+                &#x22a0;(R (R ^ <em>&infin;</em>)<sup>-1</sup>)
+            </p>
+        </section>
+        <section>
+            <h3>Dual Rounds</h3>
+            <p>
+                Using the conformal pseudo-scalar we can construct
+                a dual round.
+            </p><p>
+                D = R &#x230b; (R ^ <em>&infin;</em>)<sup>-1</sup>
+            </p><p>
+                Dual rounds are vectors so unlike rounds they have
+                no carrier flat or readily identifiable dimension.
+                Many rounds may have the same dual round.
+            </p>
+            <aside class="notes">
+                Question: can we use the carrier flat instead of
+                the conformal pseudo-scalar here?
+            </aside>
+        </section>
+        <section>
+            <h3>Dual Flats</h3>
+            <p>
+                Dual flats have a direction and position but no
+                dimension.  They serve the same purpose as normal
+                vectors in traditional linear algebra.
+            </p><p>
+                D = F &#x230b; (<em>o</em> ^ <strong>I</strong> ^
+                <em>&infin;</em>)<sup>-1</sup>
+            </p><p>
+                F = D &#x230b; (<em>o</em> ^ <strong>I</strong> ^
+                <em>&infin;</em>)
+            </p>
+        </section>
+        <section>
+            <h3>Conformal Vectors</h3>
+            <table style="white-space: nowrap;"><tr><td>
+            </td><th>
+                Formula
+            </th><th>
+                Quad
+            </th><th>
+                Weight
+            </th></tr><tr><td>
+                Point
+            </td><td>
+                w (<em>o</em> + <strong>p</strong> +
+                <strong>p</strong><sup>2</sup>/2 <em>&infin;</em>)
+            </td><td>
+                &#x22a0;(<em>p</em>) = 0
+            </td><td>
+                -<em>&infin;</em> &middot; <em>p</em> &ne; 0
+            </td></tr><tr><td>
+                Dual Round
+            </td><td>
+                w (<em>p</em> - r<sup>2</sup>/2 <em>&infin;</em>)
+            </td><td>
+                &#x22a0;(<em>r</em>) &gt; 0
+            </td><td>
+                -<em>&infin;</em> &middot; <em>r</em> &ne; 0
+            </td></tr><tr><td>
+                Dual Imaginary
+            </td><td>
+                w (<em>p</em> + r<sup>2</sup>/2 <em>&infin;</em>)
+            </td><td>
+                &#x22a0;(<em>i</em>) &lt; 0
+            </td><td>
+                -<em>&infin;</em> &middot; <em>i</em> &ne; 0
+            </td></tr><tr><td>
+                Dual Flat
+            </td><td>
+                <strong>n</strong> + d <em>&infin;</em>
+            </td><td>
+                &#x22a0;(<em>n</em>) > 0
+            </td><td>
+                -<em>&infin;</em> &middot; <em>n</em> = 0
+            </td></tr></table>
+        </section>
+        <section>
+            <h2>Conformal Duals</h2>
+            <table style="white-space: nowrap;"><tr><td>
+            </td><th>
+                Formula
+            </th><th>
+                Quad
+            </th><th>
+                Weight
+            </th></tr><tr><td>
+                Point
+            </td><td>
+                a (<em>o</em> + <strong>p</strong> +
+                <strong>p</strong><sup>2</sup>/2 <em>&infin;</em>)
+            </td><td>
+                &#x22a0;(<em>p</em>) = 0
+            </td><td>
+                -<em>&infin;</em> &middot; <em>p</em> &ne; 0
+            </td></tr><tr><td>
+                Direction
+            </td><td>
+                <strong>v</strong>^<em>&infin;</em>
+            </td><td>
+                &#x22a0;(<strong>v</strong>) = 0
+            </td><td>
+                -<em>&infin;</em> &middot; <strong>v</strong> = 0
+            </td></tr></table>
+        </section>
     </section>
 
     <section>
