@@ -1,0 +1,506 @@
+{
+    "version": 0.1,
+    "comments": [
+        "This document attempts to outline a fiction setting set in ",
+        "the solar system around 2250 CE.  Processes and systems are ",
+        "intended to be plausible with technology that might be ",
+        "developed by around 2200 CE."]
+    "timeline": [
+        {
+            "description": "Saturn colonized.",
+            "comments": [
+                "Colony ships from Terra established bases on Titan, ",
+                "Iapetus and Rhea under the auspices of the Saturn ",
+                "Planetary Authority."],
+            "begin": 2098,
+            "tags": ["SPA"]
+        }, {
+            "description": "Galileo City founded on Titan.",
+            "comments": [
+                "Galileo City is the first major settlment in the ",
+                "Saturn system.  At the time of its founding it was ",
+                "an idealistic frontier town but much has changed."],
+            "begin": 2099,
+            "tags": ["SPA", "Galileo City"]
+        }, {
+            "description": "Rhea colonized.",
+            "comments": [
+                "Colonists from Galileo City settled on Rhea."],
+            "begin": 2101,
+            "tags": ["SPA", "Rhea", "URR"]
+        }, {
+            "description": "Iapetus colonized.",
+            "comments": [
+                "Colonists from Galileo City settled on Iapetus"],
+            "begin": 2105,
+            "tags": ["SPA", "Iapetus", "GAI"]
+        }, {
+            "description": "First Ring War",
+            "comments": [
+                "Alarmed at the growing strength of the Rhea navy, ",
+                "the GIN destoryed an RCN station.  Many engagements ",
+                "followed with many ships destroyed.  The SPA ",
+                "response was slow and disorganized, but eventually ",
+                "ended the war.  The SPA negotiated an agreement ",
+                "that became known as the Edict of Orlov which ",
+                "attempted to prevent future conflict.  This included ",
+                "strict limits on the number of ships the navies of ",
+                "each moon government could maintain.  These limits ",
+                "were quickly violated by both sides."],
+            "begin": 2115, "end": 2116,
+            "tags": ["SPA", "URR", "RCN", "GAI", "GIN"]
+        }, {
+            "description": "Aegaeon War",
+            "comments": [
+                "Pirate bases on Tethys organized and demanded ",
+                "recognition from the SPA.  The SPA scheduled talks ",
+                "but these were preempted when the GIN attacked the ",
+                "pirate fleet.  A prolonged battle ensued.  The ",
+                "SPA appealed to the RCN for military assistance to ",
+                "challenge the GIN, but URR categorically refused, ",
+                "citing an obscure clause in the otherwise ignored ",
+                "Edict of Orlov.  Eventually the GIN defeated the ",
+                "pirate fleet and bombarded Tehtys, destroying all ",
+                "known settlements there."],
+            "begin": 2122, "end": 2122,
+            "tags": ["SPA", "URR", "RCN", "GAI", "GIN", "Tethys"]
+        }, {
+            "description": "Second Ring War",
+            "comments": [
+                "Tensions between the URR and GAI steadily ",
+                "escalated with each attempting to prove supremacy.  ",
+                "This eventually erupted into war.  The SPA was ",
+                "ingored by both sides."],
+            "begin": 2151, "end": 2154,
+            "tags": ["SPA", "URR", "RCN", "GAI", "GIN", "Galileo City"]
+        }, {
+            "description": "Galileo City bombed by GIN",
+            "comments": [
+                "Concerned that the SPA might be providing support to ",
+                "the RCN, GIN sent three cruisers to Titan to demand ",
+                "an official statement of SPA neutrality in the ",
+                "ongoing ring war.  Negotiations went nowhere for ",
+                "many days, but eventually an SPA corvette got too ",
+                "close to the GIN cruisers and hostilities began.  ",
+                "Over two thousand civilians in Galileo City were ",
+                "killed and sentiment throughout the planetary ",
+                "system began to turn against GAI and GIN.  Peace "
+                "talks were conducted in Galileo City soon ",
+                "afterward, resulting in the Treaty of Galileo City.  ",
+                "GAI and URR agreed that no military vessels could ",
+                "approach Titan without explicit authorization from ",
+                "the SPA.  This has considerably strengthened the SPA ",
+                "because it has exclusive power to collect duties on ",
+                "most trade between Titan and other colonies."],
+            "begin": 2153, "end": 2153,
+            "tags": ["GIN", "Galileo City"]
+        }, {
+            "description": "RCN opens fire on an SPA corvette.",
+            "begin": 2155, "end": 2155,
+            "tags": ["SPA", "SPAN", "RCN"]
+        }, {
+            "description": "RCN opens fire on an SPA corvette.",
+            "comments": [
+                "After this incident, SPAN rules of engagement forbid ",
+                "their ships from approaching RCN vessels.  This fact ",
+                "is well known to ice smugglers who use RCN vessels ",
+                "as cover when fleeing SPAN patrols.  Rumors say the ",
+                "RCN collects bribes from these smugglers."],
+            "begin": 2160, "end": 2160,
+            "tags": ["SPA", "SPAN", "RCN"]
+        }, {
+            "description": "RCN attacks Phoebe station.",
+            "comments": [
+                "While Bachter has no known navy of its own the only ",
+                "time they were attacked was by the RCN.  ",
+                "Not much is known about what happened.  The RCN ",
+                "considers all aspects of the encounter to be ",
+                "classified.  Telescopes on other colonies have ",
+                "confirmed three things: antimatter torpedos were ",
+                "deployed, no surviving ships from Rhea departed the ",
+                "battlespace and Bachter installations on Phoebe ",
+                "sustained no observable damage.  No Saturn navy has ",
+                "attempted to approach the station since."],
+            "begin": 2170, "end": 2170,
+            "tags": ["RCN", "Bachter", "Phoebe"]
+        }, {
+            "description": "SPA begins terraforming Titan",
+            "begin": 2202
+            "tags": ["SPA", "Galileo City"]
+        }
+    ],
+    "codex": {
+        "Sol": { "category": "Star" },
+        "Mercury": { "category": "Planet" },
+        "Venus": { "category": "Planet", "orbits": "Sol" },
+        "Terra": { "category": "Planet", "orbits": "Sol" },
+        "Luna": { "category": "Moon", "orbits": "Terra" },
+        "Mars": { "category": "Planet", "orbits": "Sol" },
+        "Phobos": { "category": "Moon", "orbits": "Mars" },
+        "Deimos": { "category": "Moon", "orbits": "mars" },
+        "Ceres": { "category": "Dwarf Planet", "orbits": "Sol" },
+        "Jupiter": { "category": "Planet", "orbits": "Sol" },
+        "Saturn": { "category": "Planet", "orbits": "Sol" },
+        "Titan": { "category": "Moon", "orbits": "Saturn" },
+        "Rhea": { "category": "Moon", "orbits": "Saturn" },
+        "Iapetus": { "category": "Moon", "orbits": "Saturn" },
+        "Dione": { "category": "Moon", "orbits": "Saturn" },
+        "Tethys": { "category": "Moon", "orbits": "Saturn" },
+        "Enceladus": { "category": "Moon", "orbits": "Saturn" },
+        "Mimas": { "category": "Moon", "orbits": "Saturn" },
+        "Hyperion": { "category": "Planet", "orbits": "Saturn" },
+        "Phoebe": { "category": "Planet", "orbits": "Saturn" },
+        "Neptune": { "category": "Planet", "orbits": "Sol" },
+        "Pluto": { "category": "Dwarf Planet", "orbits": "Sol" },
+        "Charon": { "category": "Dwarf Planet", "orbits": "Sol" },
+
+        "SPA": {
+            "name": "Saturn Plantery Authority",
+            "category": "organization",
+            "founded": 2098
+        },
+        "SPAN": {
+            "name": "Saturn Plantery Authority Navy",
+            "category": "navy",
+            "founded": 2100,
+            "battleships": 0,
+            "cruisers": 3,
+            "destroyers": 12,
+            "corvettes": 212
+        },
+        "Galileo City": {
+            "name": "Galileo City",
+            "category": "settlement", "government": "TMC",
+            "founded": 2099, "location": "Titan",
+            "population": 420000,
+            "infrastructure": ["elevator"]
+        },
+        "TMC": {
+            "name": "Titan Moon Council",
+            "category": "government",
+            "founded": 2114,
+            "comments": [
+                "Represents all the cities on Titan.  Largely ",
+                "subservient to the SPA.  While a democracy in ",
+                "principal, the TMC is heavily gerrymandered and ",
+                "primarily serves the interests of the wealthy."]
+        },
+        "GCPD": {
+            "name": "Galileo City Police Department",
+            "category": ["organization", "law-enforcement"],
+            "founded": 2106
+        },
+        "Barradon": {
+            "name": "Barradon City",
+            "comments": [
+                "While all cities on Titan have agricultural domes ",
+                "Barradon City has fifteen of thse and is a major ",
+                "exporter of food to other cities and indirectly to ",
+                "the entire Saturn system.", "",
+                "A space elevator has been under construction but ",
+                "has been plagued by a suspicious number of ",
+                "industrial accidents.  Most observers suspect ",
+                "forces from Galileo City are behind these, but no ",
+                "clear proof has emerged."],
+            "category": "settlement",
+            "founded": 2114, "location": "Titan",
+            "population": 250000
+        },
+        "Therrindor": { 
+            "name": "Therrindor City",
+            "comments": [
+                "A small colony with a robust consumer goods ",
+                "industry.  A friendly rivalry between this city ",
+                "and Iapetus exists but most residents have warmer ",
+                "feelings for citizens of Iapetus than those of "
+                "Galileo City since they view the latter as taking "
+                "unfair advantage of their position on trade."],
+            "category": "settlement",
+            "founded": 2128, "location": "Titan",
+            "population": 100000
+        },
+        "URR": {
+            "name": "United Representatives of Rhea",
+            "category": "government",
+            "founded": 2101
+        },
+        "Vilyushek": {
+            "name": "Vilyushek City",
+            "category": "settlement", "government": "URR",
+            "founded": 2101, "location": "Rhea",
+            "population": 210000
+        },
+        "Anivagora": {
+            "name": "Anivagora City",
+            "category": "settlement", "government": "URR",
+            "founded": 2101, "location": "Rhea",
+            "population": 190000
+        },
+        "Orlov": {
+            "name": "Orlov City",
+            "category": "settlement", "government": "URR",
+            "founded": 2103, "location": "Rhea",
+            "population": 150000
+        },
+        "Togliat": {
+            "name": "Togliat City",
+            "category": "settlement", "government": "URR",
+            "founded": 2104, "location": "Rhea",
+            "population": 120000
+        },
+        "Rosharka": {
+            "name": "Rosharka City",
+            "category": "settlement", "government": "URR",
+            "founded": 2110, "location": "Rhea",
+            "population": 120000
+        },
+        "RCN": {
+            "name": "Rhea Colonial Navy",
+            "category": "navy", "government": "URR",
+            "founded": 2112,
+            "battleships": 5,
+            "cruisers": 10,
+            "destroyers": 30,
+            "corvettes": 20
+        },
+        "GAI": {
+            "name": "General Assembly of Iapetus",
+            "category": "government",
+            "founded": 2105
+        },
+        "Atlas": {
+            "name": "Atlas City",
+            "category": "settlement", "government": "GAI",
+            "founded": 2105, "location": "Iapetus",
+            "population": 330000
+        },
+        "Buphagus": {
+            "name": "Buphagus City",
+            "category": "settlement", "government": "GAI",
+            "founded": 2108, "location": "Iapetus",
+            "population": 310000
+        },
+        "Anchiale": {
+            "name": "Anchiale City",
+            "category": "settlement", "government": "GAI",
+            "founded": 2110, "location": "Iapetus",
+            "population": 310000
+        },
+        "Clymene": {
+            "name": "Clymene City",
+            "category": "settlement", "government": "GAI",
+            "founded": 2110, "location": "Iapetus",
+            "population": 310000
+        },
+        "GIN": {
+            "name": "Greater Iapetus Navy",
+            "category": "navy", "government": "GAI",
+            "founded": 2108,
+            "battleships": 3,
+            "cruisers": 5,
+            "destroyers": 10,
+            "corvettes": 120
+        },
+
+        "ECP": {
+            "name": "Enceladus Colonial Parliament",
+            "category": "government",
+            "founded": 2130,
+            "comments": [
+                "A great deal of scientific research takes place ",
+                "on Enceladus.  The ECP has an open borders policy ",
+                "which means anyone who can make it to a settlement ",
+                "is permitted to stay, possibly on Basic Assistance.  ",
+                "Culture on Enceladus is open minded and energetic.  ",
+                "Enceladus attracts people from all over the solar ",
+                "system.  Spinning cities on Enceladus are famous for ",
+                "their rooftop gardens.  Wealthier residents have ",
+                "rooftop aquariums as well.  Enceladus is ",
+                "particularly known for fine dining.  The ECP is a ",
+                "strong supporter of the SPA and often speaks out ",
+                "against the behavior of the governments of Rhea ",
+                "and Iapetus.  ECP is particularly vocal on the ",
+                "subject of Tethys.  While they condemn the piracy ",
+                "linked to that moon, they consider the living ",
+                "conditions there a gross violation of human rights.  ",
+                "Despite this the ECP does not generally accept ",
+                "refugees from Tethys, arguing that the burden ",
+                "should be shared among all the moons."]
+        },
+        "ECN": {
+            "name": "Enceladus Colonial Navy",
+            "comments": [
+                "ECN is part of the Inner Moons Pact, a mutual ",
+                "defense agreement."],
+            "founded": 2133,
+            "category": "navy", "government": "ECP",
+            "cruisers": 4,
+            "destroyers": 8,
+            "corvettes": 8
+        },
+        "DCP": {
+            "name": "Dionne Colonial Parlaiment",
+            "founded": 2131, "category": "government",
+            "comments": [
+                "While the surface has lots of water and Dionne does ",
+                "export deuterium, it’s economy is organized around ",
+                "massive mirror-assisted agricultural domes.  DCP is ",
+                "an ally of the SPA, but not an especially vocal one.",
+                "",
+                "Dionne society is culturally conservative, valuing ",
+                "hard work and resistance to change.  Dionne has no ",
+                "sympathy for the Molonons particular -- a rare point ",
+                "of disagreement between the governments of Dionne ",
+                "and Enceladus."]
+        },
+        "DCN": {
+            "name": "Dionne Colonial Navy",
+            "founded": 2133, "category": "navy", "government": "DCP",
+            "battleships": 1,
+            "cruisers": 3,
+            "comments": [
+                "DCN is part of the Inner Moons Pact, a mutual ",
+                "defense agreement."],
+        },
+        "Molonons": {
+            "name": "Molonons",
+            "founded": 2122,
+            "comments": [
+                "Molonons are survivors of the Tethys settlements ",
+                "destroyed in the Aegaeon War.  Officially the ",
+                "moon of Tethys is abandoned since then but the ",
+                "surface is home to a few dozen anarchist enclaves.  ",
+                "These are underground settlements hide from ",
+                "orbital sensors.  Molonons are few number ",
+                "(estimates say between 50,000 and 100,000) but ",
+                "they’re tough as nails.  The culture values ",
+                "individual strength but is organized into small, ",
+                "close knit communities.  These are mobile and ",
+                "indeed move frequently to avoid retaliation ",
+                "from the RCN and GIN.", "",
+                "Because there is no space elevator, goods and ",
+                "materials must be transported to and from the ",
+                "surface the old fashioned way: with launch ",
+                "vehicles.  Escape velocity is under 400 meters per ",
+                "second so while more expensive this isn’t entirely ",
+                "prohibitive.  Tethys launches approximately one ",
+                "pirate frigate every few days, created in mobile ",
+                "construction vehicles often using stolen materials ",
+                "dropped by other pirate vessels.  These are poor ",
+                "quality vessels for the most part but they’re more ",
+                "than a match for lightly armed merchant ships.  ",
+                "RCN and GIN sometimes bombard targets on the surface ",
+                "in an effort to destroy pirate enclaves.  This ",
+                "violates several SPA resolutions but neither ",
+                "government has ever been officially censured."]
+        }
+        "Mimas Station": {
+            "category": "settlement", "location": "Mimas",
+            "population": 9000, "government": "SPA",
+            "comments": [
+                "Mimas is home to a science station but has no ",
+                "permanent colony.  This is jointly operated by ",
+                "scientists from Iapetus, Rhea, Enceladus and ",
+                "Dionne.  Funding from Iapetus is chronically ",
+                "late and sometimes not delivered at all, which ",
+                "causes serious problems for the station."]
+        },
+
+        "Bachter": {
+            "category": "organization",
+            "founded": 2095,
+            "location": "Phoebe",
+            "comments": [
+                "Bachter is an agency representing the United ",
+                "Nations of Terra.  It’s impossible to overstate ",
+                "how unpopular Bachter is among residents of Saturn.  ",
+                "Nevertheless they are preposterously well funded.   ",
+                "Bachter makes no secret of the fact that they put ",
+                "the interests of Terra above all else, but many ",
+                "governments, organizations and individuals would ",
+                "prefer to be on their good side.  Most observers ",
+                "believe that Bachter intervenes to destabilize the ",
+                "region and acts especially to undermine the SPA.", "",
+                "In 2133 CE the SPA formally revoked the charter of ",
+                "the UN Settlement on Phoebe, citing hundreds of ",
+                "pages of documented evidence of espionage and ",
+                "terrorism linked to Bachter.  Bachter simply ",
+                "ignored this.  While Bachter continues to operate ",
+                "on Phoebe station in defiance of SPA resolutions, ",
+                "Bachter is also known to operate out of the UN ",
+                "Embassy on Galileo City."]
+        },
+        "Emerald Order": {
+            "category": "organization",
+            "founded": 2177,
+            "location": "Hyperion",
+            "comments": [
+                "The Emerald Order pays dues to the SPA as a ",
+                "non-voting member state.  As an organization, it ",
+                "values research and technology, ",
+                "which it sells to the highest bidder.  Whenever ",
+                "possible the Emerald Order keeps the knowledge ",
+                "necessary to construct their devices a secret.  ",
+                "Many of their devices are feature tamper detection ",
+                "and destroy internal components if opened.  ",
+                "Accidental detection events have been reported ",
+                "so most organizations are reluctant to use ",
+                "Emerald Order technology unless it provides ",
+                "dramatic performance advantages over alternatives.  ",
+                "Emergency backup systems are advisable."]
+        },
+        "Emerald Navy": {
+            "category": "navy",
+            "founded": 2178,
+            "destroyers": 6,
+            "comments": [
+                "Ships carry antimatter torpedo technology which has ",
+                "proven to be an effective deterrent."]
+        },
+
+        "Draeg": {
+            "category": "corporation",
+            "founded": 2180,
+            "comments": [
+                "Norman Draegan was a police commissioner on Mars for ",
+                "many years, until he was indicted on fourteen ",
+                "corruption charges and fled using a confiscated ",
+                "pirate ship equipped with a cloaking device.  Using ",
+                "underworld connections and calling in favors he was ",
+                "able to start a weapon manufacturing business while ",
+                "on the run.  Draeg weapons are cheap (using readily ",
+                "available materials), safe to fire on ships, ",
+                "exclusively short range and often easy to conceal.  ",
+                "They are popular among pirates and anyone on the ",
+                "wrong side of the law."]
+        },
+
+        "SolCoin": {
+            comments: [
+                "A solar system wide network handles SolCoin spending ",
+                "at a rate of up to 8,000 transactions per second ",
+                "(compared to about 1,700 t/s for real world credit ",
+                "card networks and 4.6-7 t/s for Bitcoin).  However, ",
+                "latency up to twelve hours is common due to the ",
+                "distances between coin mining organizations.  ",
+                "There’s no negotiating with the speed of light.  ",
+                "Most settlements have their own independent ",
+                "cryptocurrency based on the same protocol but ",
+                "exclusively mined within a few light seconds.  ",
+                "Currency exchange with SolCoin allows people to ",
+                "conduct transactions with low latency at the cost ",
+                "of using smaller and therefore less trustworthy ",
+                "coin mining networks.  Most settlements have one ",
+                "or more banks which maintain their own currencies ",
+                "backed by SolCoin deposits.  Banks are especially ",
+                "important on smaller settlements without robust ",
+                "local cryptocurrencies but they’re often used for ",
+                "convenience even on larger settlements.  Banks ",
+                "can be corrupted or fail which causes economic ",
+                "hardship, but the availability of SolCoin as a ",
+                "refuge keeps most banks honest most of the time.  ",
+                "Most people and organizations keep currency ",
+                "reserves in SolCoin and use either banks or ",
+                "local cryptocurrency for operational transactions."]
+        }
+}
