@@ -7788,6 +7788,145 @@
             </canvas>
         </section>
         <section>
+            <h3>Metric Space</h3>
+            <p>
+                A metric space consists of a set of points and a
+                distance function: &#x27e8;&#x2119;, d: &#x2119;
+                &#x2297; &#x2119; &#x27f6; &#x211d;&#x27e9;
+            </p>
+            <ul><li class="fragment">
+                Non-negative: &#x2200;A,B&#x2208;&#x2119;
+                d(A, B) &ge; 0<sub>&#x211d;</sub>
+            </li><li class="fragment">
+                Distinct: &#x2200;A,B&#x2208;&#x2119;
+                d(A, B) = 0<sub>&#x211d;</sub> &#x27fa;
+                A = B
+            </li><li class="fragment">
+                Symmetric: &#x2200;A,B&#x2208;&#x2119; d(A, B) = d(B, A)
+            </li><li class="fragment">
+                Geodesic: &#x2200;A,B,C&#x2208;&#x2119;
+                d(A, C) &le; d(A, B) + d(B, C)
+            </li></ul>
+        </section>
+        <section>
+            <h3>Metric Space Examples</h3>
+            <ul><li class="fragment">
+                &#x27e8;&#x211d;, d<sub>0</sub>&#x27e9;:
+                &#x2200;a,b&#x2208;&#x2119;
+                ((a = b) &#x27f9; d<sub>0</sub>(a, b) &#x225d;
+                0<sub>&#x211d;</sub>) &and;<br />
+                ((a &ne; b) &#x27f9; d<sub>0</sub>(a, b) &#x225d;
+                1<sub>&#x211d;</sub>)
+            </li><li class="fragment">
+                &#x27e8;&#x211d;, d<sub>1</sub>&#x27e9;:
+                &#x2200;A,B&#x2208;&#x2119; d<sub>1</sub>(a, b) &#x225d;
+                |a - b|
+            </li><li class="fragment">
+                &#x27e8;&#x211d;&#x2297;&#x211d;, d<sub>1</sub>&#x27e9;:
+                &#x2200;A,B&#x2208;&#x2119; d<sub>1</sub>(A, B) &#x225d;
+                |A<sub>0</sub> - B<sub>0</sub>| +
+                |A<sub>1</sub> - B<sub>1</sub>|
+            </li><li class="fragment">
+                &#x27e8;&#x211d;&#x2297;&#x211d;, d<sub>2</sub>&#x27e9;:
+                &#x2200;A,B&#x2208;&#x2119; d<sub>2</sub>(A, B) &#x225d;
+                <br /> &#x221a;((A<sub>0</sub> -
+                B<sub>0</sub>)<sup>2</sup> + (A<sub>1</sub> -
+                B<sub>1</sub>)<sup>2</sup>)
+            </li><li class="fragment">
+                &#x27e8;&#x211d;&#x2297;&#x211d;,
+                d<sub>&infin;</sub>&#x27e9;:
+                &#x2200;A,B&#x2208;&#x2119; d<sub>&infin;</sub>(A, B)
+                &#x225d; <br /> MAX(|A<sub>0</sub> - B<sub>0</sub>|,
+                |A<sub>1</sub> - B<sub>1</sub>|)
+            </li></ul>
+        </section>
+        <section>
+            <h3>Between &#x2119;</h3>
+            <p>
+                &#x2200;A,B,C&#x2208;&#x2119;
+                <span class="intro">A &#x29f3; (B, C)</span> &#x225d;
+                <br /> d(A, C) = d(A, B) + d(B, C)
+            </p><p>
+                Point B is between points A and B when the sum of the
+                distances from B to the other points is exactly the
+                distance between the other two points.
+            </p>
+        </section>
+        <section>
+            <h3>Lines</h3>
+            <p>
+                &#x2200;&#x1d4c1; IS-LINE(&#x1d4c1;) &#x225d;
+            </p><ul><li class="fragment">
+                &#x1d4c1;&#x2286;&#x2119; &and;
+                &#x2203;A,B&#x2208;&#x1d4c1; d(A, B) &gt; 0
+            </li><li class="fragment">
+                &#x2200;A,B,C&#x2208;&#x1d4c1; A &#x29f3; (B, C) &or;
+                B &#x29f3; (A, C) &or; C &#x29f3; (A, B)
+            </li><li class="fragment">
+                &#x2200;A&#x2208;&#x1d4c1;,b&#x2208;&#x211d;
+                (b &ge; 0) &#x27f9; &#x2203;C,D&#x2208;&#x1d4c1;<br />
+                (d(A, C) = b) &and; (d(A, D) = b) &and;
+                (d(C, D) = 2b)
+            </li></ul>
+            <p class="fragment">
+                A line is a set of points that corresponds to real
+                numbers.
+            </p>
+            <aside class="notes">
+                A line is a set of points for which distances between
+                member points can always be added.
+            </aside>
+        </section>
+        <section>
+            <h3>Angles</h3>
+            <p>
+                &#x2220;AOB &#x225d;
+                &#x2203;A,O,B&#x2208;&#x2119;
+                (d(O,A) > 0 &and; d(O, B) > 0)
+            </p><p>
+                Any point with two other points distinct from it
+                make an angle.
+            </p>
+        </section>
+        <section>
+            <h3>Axioms of Geometry</h3>
+            <ul><li>
+                Axiom I: At least two points exist in metric space
+            </li><li>
+                Axiom II: Exactly one line includes any two points
+            </li><li>
+                Axiom III: Angles map to a range of real numbers
+            </li><li>
+                Axiom IV: Triangles with a common angle and two side
+                lengths are the same
+            </li><li>
+                Axiom V (Euclidean): Similar triangles have
+                proportional lengths and the same angles
+            </li></ul>
+        </section>
+        <section>
+            <h3>Axioms of Geometry</h3>
+            <ul><li>
+                Axiom I: &#x2203;A,B&#x2208;&#x2119;
+                d(A, B) &gt; 0
+            </li><li>
+                Axiom II: &#x2200;A,B&#x2208;&#x2119;
+                (d(A, B) &gt; 0) &#x27f9; <br />
+                &#x2203;&#x1d4c1;&#x2286;&#x2119;
+                A&#x2208;&#x1d4c1; &and; B&#x2208;&#x1d4c1; &and;
+                IS-LINE(&#x1d4c1;) &and; <br /> &#x2200;&#x1d4c2;
+                (A&#x2208;&#x1d4c2; &and; B&#x2208;&#x1d4c2; &and;
+                IS-LINE(&#x1d4c2;)) &#x27f9; (&#x1d4c1; = &#x1d4c2;)
+            </li><li>
+                Axiom III: &#x2200;A,O,B&#x2208;&#x2119;
+                (A &ne; O &and; B &ne; O)
+            </li><li>
+                Axiom IV:
+            </li><li>
+                Axiom V:
+            </li></ul>
+        </section>
+        <section>
             <h3>Vectors</h3>
             <p>
                 A vector is the difference between two points.  We
