@@ -1343,7 +1343,7 @@
             <h2>Nothing But Set</h2>
             <p>
                 We will use set theory to construct relations,
-                functions, numbers, arithmetic, algebra and geometry.
+                functions, numbers, arithmetic and algebra.
                 <span class="intro">Set theory</span> is a formal
                 system in which the only objects are sets and the only
                 thing sets can do is contain other
@@ -1664,8 +1664,7 @@
                 &#x225d; (&cup;{a, b} = b)
             </p><p>
                 One set is a subset of another if the union operator
-                leaves the other set unchanged.  Every set has itself
-                and the empty set as subsets.
+                leaves the other set unchanged.
             </p><p>
                 &#x2200;a,b (a <span class="intro">&#x2286;</span> b)
                 &#x27f9; &#x2200;c (c&#x2208;a &#x27f9; c&#x2208;b)
@@ -2155,9 +2154,9 @@
             <p>
                 &#x2200;a,b,c (b&#x2208;a &and; c&#x2208;a)
                 <span class="fragment">
-                    &#x27f9;<br /> (({b} &#x2286; a) &and;
+                    &#x27f9; ({b} &#x2286; a) &and;
                     ({b, c} &#x2286; a)</span>
-                <span class="fragment">&#x27f9;<br />
+                <span class="fragment">&#x27f9;
                     {{b}, {b, c}}&#x2286;&#x2118;a</span>
                 <span class="fragment">&#x27f9;
                     &#x27e8;b, c&#x27e9;&#x2286;&#x2118;a</span>
@@ -2275,9 +2274,8 @@
             <h3>Relations are Subsets</h3>
             <p>R &#x2286; Domain(R) &#x2297; Range(R)</p>
             <p class="fragment">
-                This means we can use the axiom schema of
-                specification to define relations over large
-                or event infinite sets.
+                We can use the axiom schema of specification to define
+                relations over large or even infinite sets.
             </p>
         </section>
         <section>
@@ -2335,9 +2333,6 @@
                 (b <span class="intro">&#x22d6;</span> c) &#x27f9;
                 (a <span class="intro">&#x22d6;</span> c)
             </li></ul>
-            <p class="fragment">
-                Antisymmetry requires an equivalence relation.
-            </p>
             <aside class="notes">
                 A partial order is a relation on a set that
                 that makes some but not necessarily all pairs
@@ -2998,12 +2993,12 @@
         <section>
             <h2>Natural Numbers &#x2115;</h2>
             <p>
-                <span class="intro">succ(a)</span> &#x225d;
+                <span class="intro">SUCCESSOR(a)</span> &#x225d;
                 &cup;{a, {a, a}} = a &cup; {a}
             </p>
             <p class="intro">
                 &#x2115; &#x225d; { a : (a = {}) &or;
-                &#x2203;b&#x2208;&#x2115; a = succ(b) }
+                &#x2203;b&#x2208;&#x2115; a = SUCCESSOR(b) }
             </p>
             <p>
                 Natural numbers are an effective way to represent
@@ -3019,17 +3014,17 @@
                     &#x225d; {}
                 </li><li class="fragment">
                     <span class="intro">1<sub>&#x2115;</sub></span>
-                    &#x225d; succ(0) = {0} = {{}}
+                    &#x225d; SUCCESSOR(0) = {0} = {{}}
                 </li><li class="fragment">
                     <span class="intro">2<sub>&#x2115;</sub></span>
-                    &#x225d; succ(1) = {0, 1} = {{}, {{}}}
+                    &#x225d; SUCCESSOR(1) = {0, 1} = {{}, {{}}}
                 </li><li class="fragment">
                     <span class="intro">3<sub>&#x2115;</sub></span>
-                    &#x225d; succ(2) = {0, 1, 2} =
+                    &#x225d; SUCCESSOR(2) = {0, 1, 2} =
                     {{}, {{}}, {{}, {{}}}}
                 </li><li class="fragment">
                     <span class="intro">4<sub>&#x2115;</sub></span>
-                    &#x225d; succ(3) = {0, 1, 2, 3} =<br />
+                    &#x225d; SUCCESSOR(3) = {0, 1, 2, 3} =<br />
                     {{}, {{}}, {{}, {{}}}, {{{}, {{}}, {{}, {{}}}}}}
                 </li>
             </ul>
@@ -3046,19 +3041,19 @@
             <ul>
                 <li class="fragment">
                     <span class="intro">5<sub>&#x2115;</sub></span>
-                    &#x225d; succ(4) = {0, 1, 2, 3, 4}
+                    &#x225d; SUCCESSOR(4) = {0, 1, 2, 3, 4}
                 </li><li class="fragment">
                     <span class="intro">6<sub>&#x2115;</sub></span>
-                    &#x225d; succ(5) = {0, 1, 2, 3, 4, 5}
+                    &#x225d; SUCCESSOR(5) = {0, 1, 2, 3, 4, 5}
                 </li><li class="fragment">
                     <span class="intro">7<sub>&#x2115;</sub></span>
-                    &#x225d; succ(6) = {0, 1, 2, 3, 4, 5, 6}
+                    &#x225d; SUCCESSOR(6) = {0, 1, 2, 3, 4, 5, 6}
                 </li><li class="fragment">
                     <span class="intro">8<sub>&#x2115;</sub></span>
-                    &#x225d; succ(7) = {0, 1, 2, 3, 4, 5, 6, 7}
+                    &#x225d; SUCCESSOR(7) = {0, 1, 2, 3, 4, 5, 6, 7}
                 </li><li class="fragment">
                     <span class="intro">9<sub>&#x2115;</sub></span>
-                    &#x225d; succ(8) = {0, 1, 2, 3, 4, 5, 6, 7, 8}
+                    &#x225d; SUCCESSOR(8) = {0, 1, 2, 3, 4, 5, 6, 7, 8}
                 </li>
             </ul>
 
@@ -3075,19 +3070,19 @@
             <ul>
                 <li class="fragment">
                     <span class="intro">1</span>0<sub>&#x2115;</sub>
-                    &#x225d; succ(9) = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+                    &#x225d; SUCCESSOR(9) = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
                 </li><li class="fragment">
                     <span class="intro">1</span>1<sub>&#x2115;</sub>
-                    &#x225d; succ(10) =
+                    &#x225d; SUCCESSOR(10) = <br />
                     {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
                 </li><li class="fragment">
                     ...
                 </li><li class="fragment">
                     <span class="intro">1</span>9<sub>&#x2115;</sub>
-                    &#x225d; succ(18)
+                    &#x225d; SUCCESSOR(18)
                 </li><li class="fragment">
                     <span class="intro">2</span>0<sub>&#x2115;</sub>
-                    &#x225d; succ(19)
+                    &#x225d; SUCCESSOR(19)
                 </li><li class="fragment">
                     ...
                 </li>
@@ -3168,52 +3163,87 @@
             </p>
         </section>
         <section>
-            <h3>Order &#x2115;: Connex</h3>
+            <h3>Successor Subsets</h3>
             <p>
-                &#x2200;a,b&#x2208;&#x2115;
-                (a &#x2286; b) &or; (b &#x2286; a)
+                &#x2200;a&#x2208;&#x2115; a &#x2286; SUCCESSOR(a)
+            </p><ul><li class="fragment">
+                a &#X2286; a &cup; {a} :: Definition SUCCESSOR
+            </li><li class="fragment">
+                a &cup; (a &cup; {a}) = a &cup; {a} :: Definition &#x2286;
+            </li><p class="fragment">
+                All natural numbers are a subset of their successors
+                because any set is a subset of the union of itself with
+                any other set.
             </p>
-            <ul>
-                <li class="fragment">
-                    &#x2200;a,b&#x2208;&#x2115;
-                    (a = 0<sub>&#x2115;</sub> = {}) &#x27f9;
-                    (a &#x2286; b) :: Subset Identity
-                </li><li class="fragment">
-                    (a &#x2286; b) &or; (b &#x2286; a) :: Assumption
-                </li><li class="fragment">
-                    (b &#x2286; a) <span class="fragment">&#x27f9;
-                    (b &#x2286; succ(a)) :: Transitive Subset</span>
-                </li><li class="fragment">
-                    (a &#x2286; b) <span class="fragment">&and; (a = b)
-                    &#x27f9; (b &#x2286; succ(a)) :: Successor</span>
-                </li><li class="fragment">
-                    (a &#x2286; b) &and; (a &ne; b) &#x27f9;
-                    (succ(a) &#x2286; b) :: Definition &#x2115;
-                </li><li class="fragment">
-                    (a &#x2286; b) &or; (b &#x2286; a) &#x27f9;<br />
-                    (succ(a) &#x2286; b) &or; (b &#x2286; succ(a))
-                    :: Induction
-                </li>
             </ul>
             <aside class="notes">
             </aside>
         </section>
         <section>
+            <h3>Order &#x2115;: Connex</h3>
+            <p>
+                &#x2200;a,b&#x2208;&#x2115;
+                (a &#x2286; b) &or; (b &#x2286; a)
+            </p><ul><li class="fragment">
+                &#x2200;a ({} &#x2286; a) :: Subset Identity
+            </li><li class="fragment">
+                &#x2200;a&#x2208;&#x2115;
+                (0<sub>&#x2115;</sub> &#x2286; a)
+                :: Definition 0<sub>&#x2115;</sub>
+            </li><li class="fragment">
+                &#x2200;b&#x2208;&#x2115;
+                (0<sub>&#x2115;</sub> &#x2286; b) &or;
+                (b &#x2286; 0<sub>&#x2115;</sub>) :: Base
+            </li><li class="fragment">
+                &#x2203;a&#x2208;&#x2115; &#x2200;b&#x2208;&#x2115;
+                (a &#x2286; b) &or; (b &#x2286; a) :: Assumption
+            </li></ul>
+            <aside class="notes">
+                Remember that the empty set is a subset of any set.
+                Natural number zero is the empty set by definition
+                so it has the connex property when paired with any
+                other natural number.  This is our base case for an
+                inductive proof.
+            </aside>
+        </section>
+        <section>
+            <h3>Order &#x2115;: Connex</h3>
+            <p>
+                &#x2200;a,b&#x2208;&#x2115;
+                (a &#x2286; b) &or; (b &#x2286; a)
+            </p><ul><li class="fragment">
+                (b &#x2286; a) &#x27f9; (b &#x2286; SUCCESSOR(a))
+                :: Transitive &#x2286;
+            </li><li class="fragment">
+                (a &#x2286; b) &#x27f9; (a = b) &or; (a &#x2282; b)
+            </li><li class="fragment">
+                (a = b) &#x27f9; (b &#x2286; SUCCESSOR(a)) ::<br />
+                Successor Subsets
+            </li><li class="fragment">
+                (a &#x2282; b) &#x27f9; (SUCCESSOR(a) &#x2286; b)
+                :: Definition &#x2115;
+            </li><li class="fragment">
+                (a &#x2286; b) &or; (b &#x2286; a) &#x27f9;
+                (SUCCESSOR(a) &#x2286; b) &or;<br />
+                (b &#x2286; SUCCESSOR(a)) :: Induction
+            </li></ul>
+            <aside class="notes">
+            </aside>
+        </section>
+        <section>
             <h2>Natural Numbers &#x2115;</h2>
-            <ul>
-                <li>
-                    succ(a) &#x225d; &cup;{a, {a, a}} = a &cup; {a}
-                </li><li>
-                    &#x2115; &#x225d; { a : (a = {}) &or;
-                    &#x2203;b&#x2208;&#x2115; a = succ(b) }
-                </li><li>
-                    Equality: &#x2200;a,b&#x2208;&#x2115;
-                    (a =<sub>&#x2115;</sub> b) &#x225d; (a = b)
-                </li><li>
-                    Total Order: &#x2200;a,b&#x2208;&#x2115;
-                    (a &le;<sub>&#x2115;</sub> b) &#x225d; (a &#x2286; b)
-                </li>
-            </ul>
+            <ul><li>
+                SUCCESSOR(a) &#x225d; &cup;{a, {a, a}} = a &cup; {a}
+            </li><li>
+                &#x2115; &#x225d; { a : (a = {}) &or;
+                &#x2203;b&#x2208;&#x2115; a = SUCCESSOR(b) }
+            </li><li>
+                Equality: &#x2200;a,b&#x2208;&#x2115;
+                (a =<sub>&#x2115;</sub> b) &#x225d; (a = b)
+            </li><li>
+                Total Order: &#x2200;a,b&#x2208;&#x2115;
+                (a &le;<sub>&#x2115;</sub> b) &#x225d; (a &#x2286; b)
+            </li></ul>
         </section>
     </section>
 
@@ -3233,8 +3263,8 @@
                     &#x225d; a</span>
             </li><li>
                 Step: &#x2200;a,b&#x2208;&#x2115;
-                <span class="intro">a + succ(b) &#x225d;
-                    succ(a + b)</span>
+                <span class="intro">a + SUCCESSOR(b) &#x225d;
+                    <br />SUCCESSOR(a + b)</span>
             </li></ul>
         </section>
         <section>
@@ -3242,27 +3272,27 @@
             <ul>
                 <li class="fragment">
                     3<sub>&#x2115;</sub> + 2<sub>&#x2115;</sub> =
-                    3<sub>&#x2115;</sub> + succ(1<sub>&#x2115;</sub>)
+                    3<sub>&#x2115;</sub> + SUCCESSOR(1<sub>&#x2115;</sub>)
                     :: Definition of 2<sub>&#x2115;</sub>
                 </li><li class="fragment">
                     3<sub>&#x2115;</sub> + 2<sub>&#x2115;</sub> =
                     3<sub>&#x2115;</sub> +
-                    succ(succ(0<sub>&#x2115;</sub>)) :: Definition of
+                    SUCCESSOR(SUCCESSOR(0<sub>&#x2115;</sub>)) :: Definition of
                     1<sub>&#x2115;</sub>
                 </li><li class="fragment">
                     3<sub>&#x2115;</sub> + 2<sub>&#x2115;</sub> =
-                    succ(3<sub>&#x2115;</sub> +
-                    succ(0<sub>&#x2115;</sub>)) :: Step +
+                    SUCCESSOR(3<sub>&#x2115;</sub> +
+                    SUCCESSOR(0<sub>&#x2115;</sub>)) :: Step +
                 </li><li class="fragment">
                     3<sub>&#x2115;</sub> + 2<sub>&#x2115;</sub> =
-                    succ(succ(3<sub>&#x2115;</sub> +
+                    SUCCESSOR(SUCCESSOR(3<sub>&#x2115;</sub> +
                     0<sub>&#x2115;</sub>)) :: Step +
                 </li><li class="fragment">
                     3<sub>&#x2115;</sub> + 2<sub>&#x2115;</sub> =
-                    succ(succ(3<sub>&#x2115;</sub>)) :: Base +
+                    SUCCESSOR(SUCCESSOR(3<sub>&#x2115;</sub>)) :: Base +
                 </li><li class="fragment">
                     3<sub>&#x2115;</sub> + 2<sub>&#x2115;</sub> =
-                    succ(4<sub>&#x2115;</sub>) :: Definition of
+                    SUCCESSOR(4<sub>&#x2115;</sub>) :: Definition of
                     4<sub>&#x2115;</sub>
                 </li><li class="fragment">
                     3<sub>&#x2115;</sub> + 2<sub>&#x2115;</sub> =
@@ -3292,7 +3322,7 @@
                 </li>
                 <li>
                     Step: &#x2200;a,b&#x2208;&#x2115;
-                    a + succ(b) &#x225d; succ(a + b)
+                    a + SUCCESSOR(b) &#x225d; <br /> SUCCESSOR(a + b)
                 </li>
             </ul>
             <p>
@@ -3316,11 +3346,11 @@
                     &#x2203;a&#x2208;&#x2115;
                     0<sub>&#x2115;</sub> + a = a :: Assumption
                 </li><li class="fragment">
-                    0<sub>&#x2115;</sub> + succ(a) =
-                    succ(0<sub>&#x2115;</sub> + a) :: Step +
+                    0<sub>&#x2115;</sub> + SUCCESSOR(a) =
+                    SUCCESSOR(0<sub>&#x2115;</sub> + a) :: Step +
                 </li><li class="fragment">
-                    0<sub>&#x2115;</sub> + succ(a) =
-                    succ(a) :: Induction
+                    0<sub>&#x2115;</sub> + SUCCESSOR(a) =
+                    SUCCESSOR(a) :: Induction
                 </li>
             </ul>
         </section>
@@ -3339,14 +3369,14 @@
                     &#x2200;a,b&#x2208;&#x2115; :
                     (a + b) + c = a + (b + c)
                 </li><li class="fragment">
-                    (a + b) + succ(c) = succ((a + b) + c) :: Step +
+                    (a + b) + SUCCESSOR(c) = SUCCESSOR((a + b) + c) :: Step +
                 </li><li class="fragment">
-                    (a + b) + succ(c) = succ(a + (b + c))
+                    (a + b) + SUCCESSOR(c) = SUCCESSOR(a + (b + c))
                     :: Induction
                 </li><li class="fragment">
-                    (a + b) + succ(c) = a + succ(b + c) :: Step +
+                    (a + b) + SUCCESSOR(c) = a + SUCCESSOR(b + c) :: Step +
                 </li><li class="fragment">
-                    (a + b) + succ(c) = a + (b + succ(c)) :: Step +
+                    (a + b) + SUCCESSOR(c) = a + (b + SUCCESSOR(c)) :: Step +
                 </li>
             </ul>
         </section>
@@ -3363,7 +3393,7 @@
             <ul>
                 <li class="fragment">
                     Successor + 1: &#x2200;a&#x2208;&#x2115;
-                    succ(a) = a + 1<sub>&#x2115;</sub>
+                    SUCCESSOR(a) = a + 1<sub>&#x2115;</sub>
                 </li><li class="fragment">
                     Commutative 1: &#x2200;a&#x2208;&#x2115;
                     a + 1<sub>&#x2115;</sub> =
@@ -3374,16 +3404,16 @@
         <section>
             <h3>Addition &#x2115;: Successor + 1</h3>
             <p>
-                &#x2200;a&#x2208;&#x2115; succ(a) =
+                &#x2200;a&#x2208;&#x2115; SUCCESSOR(a) =
                 a + 1<sub>&#x2115;</sub>
             </p>
             <ul>
                 <li class="fragment">
-                    succ(a) = succ(a + 0<sub>&#x2115;</sub>) :: Base +
+                    SUCCESSOR(a) = SUCCESSOR(a + 0<sub>&#x2115;</sub>) :: Base +
                 </li><li class="fragment">
-                    succ(a) = a + succ(0<sub>&#x2115;</sub>) :: Step +
+                    SUCCESSOR(a) = a + SUCCESSOR(0<sub>&#x2115;</sub>) :: Step +
                 </li><li class="fragment">
-                    succ(a) = a + 1<sub>&#x2115;</sub>
+                    SUCCESSOR(a) = a + 1<sub>&#x2115;</sub>
                     :: Definition of 1<sub>&#x2115;</sub>
                 </li>
             </ul>
@@ -3402,25 +3432,25 @@
                     a + 1<sub>&#x2115;</sub> =
                     1<sub>&#x2115;</sub> + a :: Assumption
                 </li><li class="fragment">
-                    succ(a) + 1<sub>&#x2115;</sub> = succ(a) +
-                    succ(0<sub>&#x2115;</sub>)
+                    SUCCESSOR(a) + 1<sub>&#x2115;</sub> = SUCCESSOR(a) +
+                    SUCCESSOR(0<sub>&#x2115;</sub>)
                     :: Definition of 1<sub>&#x2115;</sub>
                 </li><li class="fragment">
-                    succ(a) + 1<sub>&#x2115;</sub> =
-                    succ(succ(a) + 0<sub>&#x2115;</sub>) :: Step +
+                    SUCCESSOR(a) + 1<sub>&#x2115;</sub> =
+                    SUCCESSOR(SUCCESSOR(a) + 0<sub>&#x2115;</sub>) :: Step +
                 </li><li class="fragment">
-                    succ(a) + 1<sub>&#x2115;</sub> =
-                    succ((a + 1<sub>&#x2115;</sub>) +
+                    SUCCESSOR(a) + 1<sub>&#x2115;</sub> =
+                    SUCCESSOR((a + 1<sub>&#x2115;</sub>) +
                     0<sub>&#x2115;</sub>) :: Successor + 1
                 </li><li class="fragment">
-                    succ(a) + 1<sub>&#x2115;</sub> =
-                    succ(a + 1<sub>&#x2115;</sub>) :: Base +
+                    SUCCESSOR(a) + 1<sub>&#x2115;</sub> =
+                    SUCCESSOR(a + 1<sub>&#x2115;</sub>) :: Base +
                 </li><li class="fragment">
-                    succ(a) + 1<sub>&#x2115;</sub> =
-                    succ(1<sub>&#x2115;</sub> + a) :: Induction
+                    SUCCESSOR(a) + 1<sub>&#x2115;</sub> =
+                    SUCCESSOR(1<sub>&#x2115;</sub> + a) :: Induction
                 </li><li class="fragment">
-                    succ(a) + 1<sub>&#x2115;</sub> =
-                    1<sub>&#x2115;</sub> + succ(a) :: Step +
+                    SUCCESSOR(a) + 1<sub>&#x2115;</sub> =
+                    1<sub>&#x2115;</sub> + SUCCESSOR(a) :: Step +
                 </li>
             </ul>
         </section>
@@ -3435,25 +3465,25 @@
                     &#x2200;a&#x2208;&#x2115; :
                     a + b = b + a :: Assumption
                 </li><li class="fragment">
-                    a + succ(b) = a + (b + 1<sub>&#x2115;</sub>)
+                    a + SUCCESSOR(b) = a + (b + 1<sub>&#x2115;</sub>)
                     :: Successor + 1
                 </li><li class="fragment">
-                    a + succ(b) = (a + b) + 1<sub>&#x2115;</sub>
+                    a + SUCCESSOR(b) = (a + b) + 1<sub>&#x2115;</sub>
                     :: Associativity
                 </li><li class="fragment">
-                    a + succ(b) = (b + a) + 1<sub>&#x2115;</sub>
+                    a + SUCCESSOR(b) = (b + a) + 1<sub>&#x2115;</sub>
                     :: Induction
                 </li><li class="fragment">
-                    a + succ(b) = b + (a + 1<sub>&#x2115;</sub>)
+                    a + SUCCESSOR(b) = b + (a + 1<sub>&#x2115;</sub>)
                     :: Associativity
                 </li><li class="fragment">
-                    a + succ(b) = b + (1<sub>&#x2115;</sub> + a)
+                    a + SUCCESSOR(b) = b + (1<sub>&#x2115;</sub> + a)
                     :: Communtative 1
                 </li><li class="fragment">
-                    a + succ(b) = (b + 1<sub>&#x2115;</sub>) + a
+                    a + SUCCESSOR(b) = (b + 1<sub>&#x2115;</sub>) + a
                     :: Associativity
                 </li><li class="fragment">
-                    a + succ(b) = succ(b) + a :: Successor + 1
+                    a + SUCCESSOR(b) = SUCCESSOR(b) + a :: Successor + 1
                 </li>
             </ul>
         </section>
@@ -3465,7 +3495,7 @@
                         <li>Base: &#x2200;a&#x2208;&#x2115;
                             a + 0<sub>&#x2115;</sub> &#x225d; a</li>
                         <li>Step: &#x2200;a,b&#x2208;&#x2115;
-                            a + succ(b) &#x225d; succ(a + b)</li>
+                            a + SUCCESSOR(b) &#x225d; SUCCESSOR(a + b)</li>
                     </ul>
                 </li>
                 <li>
@@ -3505,7 +3535,7 @@
                     &#x225d; 0<sub>&#x2115;</sub></span>
             </li><li>
                 Step: &#x2200;a,b&#x2208;&#x2115;
-                <span class="intro">a &times; succ(b) &#x225d;
+                <span class="intro">a &times; SUCCESSOR(b) &#x225d;
                     a + (a &times; b)</span>
             </li></ul>
         </section>
@@ -3515,17 +3545,17 @@
                 <li class="fragment">
                     3<sub>&#x2115;</sub> &times; 2<sub>&#x2115;</sub> =
                     3<sub>&#x2115;</sub> &times;
-                    succ(1<sub>&#x2115;</sub>) :: Definition of
+                    SUCCESSOR(1<sub>&#x2115;</sub>) :: Definition of
                     2<sub>&#x2115;</sub>
                 </li><li class="fragment">
                     3<sub>&#x2115;</sub> &times; 2<sub>&#x2115;</sub> =
                     3<sub>&#x2115;</sub> &times;
-                    succ(succ(0<sub>&#x2115;</sub>)) :: Definition of
+                    SUCCESSOR(SUCCESSOR(0<sub>&#x2115;</sub>)) :: Definition of
                     1<sub>&#x2115;</sub>
                 </li><li class="fragment">
                     3<sub>&#x2115;</sub> &times; 2<sub>&#x2115;</sub> =
                     3<sub>&#x2115;</sub> + (3<sub>&#x2115;</sub> &times;
-                    succ(0<sub>&#x2115;</sub>)) :: Step &times;
+                    SUCCESSOR(0<sub>&#x2115;</sub>)) :: Step &times;
                 </li><li class="fragment">
                     3<sub>&#x2115;</sub> &times; 2<sub>&#x2115;</sub> =
                     3<sub>&#x2115;</sub> + (3<sub>&#x2115;</sub> +
@@ -3563,7 +3593,7 @@
                 </li>
                 <li>
                     Step: &#x2200;a,b&#x2208;&#x2115;
-                    a &times; succ(b) &#x225d;
+                    a &times; SUCCESSOR(b) &#x225d;
                     a + (a &times; b)
                 </li>
             </ul>
@@ -3586,7 +3616,7 @@
             <ul>
                 <li class="fragment">
                     a &times; 1<sub>&#x2115;</sub> =
-                    a &times; succ(0<sub>&#x2115;</sub>)
+                    a &times; SUCCESSOR(0<sub>&#x2115;</sub>)
                     :: Definition of 1<sub>&#x2115;</sub>
                 </li><li class="fragment">
                     a &times; 1<sub>&#x2115;</sub> = a +
@@ -3616,14 +3646,14 @@
                     &#x2203;a&#x2208;&#x2115;
                     1<sub>&#x2115;</sub> &times; a = a :: Assumption
                 </li><li class="fragment">
-                    1<sub>&#x2115;</sub> &times; succ(a) =
+                    1<sub>&#x2115;</sub> &times; SUCCESSOR(a) =
                     1<sub>&#x2115;</sub> + (1<sub>&#x2115;</sub>
                     &times; a) :: Step &times;
                 </li><li class="fragment">
-                    1<sub>&#x2115;</sub> &times; succ(a) =
+                    1<sub>&#x2115;</sub> &times; SUCCESSOR(a) =
                     1<sub>&#x2115;</sub> + a :: Induction
                 </li><li class="fragment">
-                    1<sub>&#x2115;</sub> &times; succ(a) = succ(a)
+                    1<sub>&#x2115;</sub> &times; SUCCESSOR(a) = SUCCESSOR(a)
                     :: Addition &#x2115;
                 </li>
             </ul>
@@ -3692,21 +3722,21 @@
                     ((a + b) &times; c = (a &times; c) + (b &times; c))
                     :: Assumption
                 </li><li class="fragment">
-                    ((a + b) &times; succ(c)
+                    ((a + b) &times; SUCCESSOR(c)
                     <span class="fragment">
                         = (a + b) + ((a + b) &times; c) :: Step &times;
                     </span>
                 </li><li class="fragment">
-                    ((a + b) &times; succ(c) =
+                    ((a + b) &times; SUCCESSOR(c) =
                     (a + b) + ((a &times; c) + (b &times; c))
                     :: Induction
                 </li><li class="fragment">
-                    ((a + b) &times; succ(c) =
+                    ((a + b) &times; SUCCESSOR(c) =
                     (a + (a &times; c)) + (b + (b &times; c))
                     :: Communtative and Associative &#x2115;+
                 </li><li class="fragment">
-                    ((a + b) &times; succ(c) =
-                    (a &times; succ(c)) + (b &times; succ(c))
+                    ((a + b) &times; SUCCESSOR(c) =
+                    (a &times; SUCCESSOR(c)) + (b &times; SUCCESSOR(c))
                     :: Step &times;
                 </li>
             </ul>
@@ -3751,22 +3781,22 @@
                     c &times; (a + b) = (c &times; a) +
                     (c &times; b) :: Assumption
                 </li><li class="fragment">
-                    c &times; (a + succ(b)) =
-                    c &times; succ(a + b) :: Addition &#x2115;
+                    c &times; (a + SUCCESSOR(b)) =
+                    c &times; SUCCESSOR(a + b) :: Addition &#x2115;
                 </li><li class="fragment">
-                    c &times; (a + succ(b)) =
+                    c &times; (a + SUCCESSOR(b)) =
                     c + (c &times; (a + b)) :: Step &times;
                 </li><li class="fragment">
-                    c &times; (a + succ(b)) =
+                    c &times; (a + SUCCESSOR(b)) =
                     c + ((c &times; a) + (c &times; b)) ::
                     Induction
                 </li><li class="fragment">
-                    c &times; (a + succ(b)) =
+                    c &times; (a + SUCCESSOR(b)) =
                     (c &times; a) + (c + (c &times; b)) ::
                     Addition &#x2115;
                 </li><li class="fragment">
-                    c &times; (a + succ(b)) =
-                    (c &times; a) + (c &times; succ(b)) ::
+                    c &times; (a + SUCCESSOR(b)) =
+                    (c &times; a) + (c &times; SUCCESSOR(b)) ::
                     Step &times;
                 </li>
             </ul>
@@ -3810,20 +3840,20 @@
                     (a &times; b) &times; c =
                     a &times; (b &times; c) :: Assumption
                 </li><li class="fragment">
-                    (a &times; b) &times; succ(c) =
+                    (a &times; b) &times; SUCCESSOR(c) =
                     (a &times; b) + ((a &times; b) &times; c)
                     :: Step &times;
                 </li><li class="fragment">
-                    (a &times; b) &times; succ(c) =
+                    (a &times; b) &times; SUCCESSOR(c) =
                     (a &times; b) + (a &times; (b &times; c))
                     :: Induction
                 </li><li class="fragment">
-                    (a &times; b) &times; succ(c) =
+                    (a &times; b) &times; SUCCESSOR(c) =
                     a &times; (b + (b &times; c))
                     :: Distributive &times;
                 </li><li class="fragment">
-                    (a &times; b) &times; succ(c) =
-                    a &times; (b &times; succ(c))
+                    (a &times; b) &times; SUCCESSOR(c) =
+                    a &times; (b &times; SUCCESSOR(c))
                     :: Step &times;
                 </li>
             </ul>
@@ -3848,20 +3878,20 @@
                     0<sub>&#x2115;</sub> &times; a = a &times;
                     0<sub>&#x2115;</sub> :: Assumption
                 </li><li class="fragment">
-                    0<sub>&#x2115;</sub> &times; succ(a) =
+                    0<sub>&#x2115;</sub> &times; SUCCESSOR(a) =
                     0<sub>&#x2115;</sub> + (0<sub>&#x2115;</sub>
                     &times; a) :: Step &times;
                 </li><li class="fragment">
-                    0<sub>&#x2115;</sub> &times; succ(a) =
+                    0<sub>&#x2115;</sub> &times; SUCCESSOR(a) =
                     0<sub>&#x2115;</sub> + (a &times;
                     0<sub>&#x2115;</sub>) :: Induction
                 </li><li class="fragment">
-                    0<sub>&#x2115;</sub> &times; succ(a) =
+                    0<sub>&#x2115;</sub> &times; SUCCESSOR(a) =
                     0<sub>&#x2115;</sub> + 0<sub>&#x2115;</sub> =
                     0<sub>&#x2115;</sub> :: Base &times;
                 </li><li class="fragment">
-                    0<sub>&#x2115;</sub> &times; succ(a) =
-                    succ(a) &times; 0<sub>&#x2115;</sub> :: Base &times;
+                    0<sub>&#x2115;</sub> &times; SUCCESSOR(a) =
+                    SUCCESSOR(a) &times; 0<sub>&#x2115;</sub> :: Base &times;
                 </li>
             </ul>
         </section>
@@ -3876,22 +3906,22 @@
                     &#x2200;a&#x2208;&#x2115; :
                     a &times; b = b &times; a :: Assumption
                 </li><li class="fragment">
-                    a &times; succ(b) = a + (a &times; b) ::
+                    a &times; SUCCESSOR(b) = a + (a &times; b) ::
                     Step &times;
                 </li><li class="fragment">
-                    a &times; succ(b) = a + (b &times; a) ::
+                    a &times; SUCCESSOR(b) = a + (b &times; a) ::
                     Induction
                 </li><li class="fragment">
-                    a &times; succ(b) = (b &times; a) + a ::
+                    a &times; SUCCESSOR(b) = (b &times; a) + a ::
                     Addition &#x2115;
                 </li><li class="fragment">
-                    a &times; succ(b) = (b &times; a) +
+                    a &times; SUCCESSOR(b) = (b &times; a) +
                     (1<sub>&#x2115;</sub> &times; a) :: Identity
                 </li><li class="fragment">
-                    a &times; succ(b) = (b + 1<sub>&#x2115;</sub>)
+                    a &times; SUCCESSOR(b) = (b + 1<sub>&#x2115;</sub>)
                     &times; a :: Distributive
                 </li><li class="fragment">
-                    a &times; succ(b) = succ(b) &times; a ::
+                    a &times; SUCCESSOR(b) = SUCCESSOR(b) &times; a ::
                     Successor + 1
                 </li>
             </ul>
@@ -3907,7 +3937,7 @@
                             0<sub>&#x2115;</sub>
                         </li><li>
                             Step: &#x2200;a,b&#x2208;&#x2115;
-                            a &times; succ(b) &#x225d;
+                            a &times; SUCCESSOR(b) &#x225d;
                             a + (a &times; b)</li>
                     </ul>
                 </li>
@@ -4014,12 +4044,12 @@
                 &#x2200;a,b&#x2208;&#x2115;
                 <span class="intro">
                     &#x27e8;a, b&#x27e9; =<sub>&#x2124;</sub>
-                    &#x27e8;succ(a), succ(b)&#x27e9;
+                    &#x27e8;SUCCESSOR(a), SUCCESSOR(b)&#x27e9;
                 </span>
             </p>
             <ul>
                 <li class="fragment">
-                    a + succ(b) = succ(a) + b :: Integer Equality
+                    a + SUCCESSOR(b) = SUCCESSOR(a) + b :: Integer Equality
                 </li><li class="fragment">
                     a + (b + 1<sub>&#x2115;</sub>) = (a +
                     1<sub>&#x2115;</sub>) + b :: Successor + 1
@@ -6301,7 +6331,7 @@
             </ul>
         </section>
         <section>
-            <h3>Between &#x211a;</h3>
+            <h3>Middle &#x211a;</h3>
             <p>
                 &#x2200;a,b&#x2208;&#x211a; (a &lt;<sub>&#x211a;</sub>
                 b) &#x27f9; a &lt;<sub>&#x211a;</sub> ((a + b) &times;
@@ -6314,7 +6344,7 @@
             </p>
         </section>
         <section>
-            <h3>Between &#x211a;</h3>
+            <h3>Middle &#x211a;</h3>
             <p>
                 &#x2200;a,b&#x2208;&#x211a; (a &lt;<sub>&#x211a;</sub>
                 b) &#x27f9;
@@ -6345,7 +6375,7 @@
             </li></ul>
         </section>
         <section>
-            <h3>Between &#x211a;</h3>
+            <h3>Middle &#x211a;</h3>
             <p>
                 &#x2200;a,b&#x2208;&#x211a; (a &lt;<sub>&#x211a;</sub>
                 b) &#x27f9; a &lt;<sub>&#x211a;</sub>
@@ -6440,7 +6470,7 @@
                             a &lt; 0<sub>&#x211a;</sub> &#x27f9;
                             a &lt; ((a + 0<sub>&#x211a;</sub>) &times;
                             1/2<sub>&#x211a;</sub>)
-                            :: Between &#x211a;
+                            :: Middle &#x211a;
                         </li><li class="fragment">
                             ((a + 0<sub>&#x211a;</sub>) &times;
                             1/2<sub>&#x211a;</sub>) &lt;
@@ -6484,7 +6514,7 @@
                         <li class="fragment">
                             (c &lt; a) &#x27f9; c &lt; (c + a) &times;
                             1/2<sub>&#x211a;</sub> &lt; a
-                            :: Between &#x211a;
+                            :: Middle &#x211a;
                         </li><li class="fragment">
                             ((c + a) &times; 1/2<sub>&#x211a;</sub>)
                             &#x2208; { b&#x2208;&#x211a; : b &lt; a }
@@ -7716,14 +7746,37 @@
                     data-radii="2,3" data-angle1="-2.25"
                     data-angle2="0.25" data-angle3="1.75">
             </canvas>
+            <!-- http://sgpwe.izt.uam.mx/files/users/uami/ahg/1932_Birkhoff.pdf -->
+            <!-- https://arxiv.org/pdf/1302.1630.pdf -->
+        </section>
+        <section>
+            <h3>History of Geometry</h3>
+            <ul><li class="fragment">
+                Euclid (~300 BCE): first known axioms
+                (<a href="https://en.wikipedia.org/wiki/Euclid%27s_Elements"
+                 >Elements</a>)
+            </li><li class="fragment">
+                Lobachevsky (1829 CE): hyperbolic geometry
+            </li><li class="fragment">
+                Birkhoff (1932 CE): axioms from real numbers
+            </li><li class="fragment">
+                Petrunin (2019 CE):
+                <a href="https://arxiv.org/pdf/1302.1630.pdf">Euclidian
+                    plane and its relatives</a>
+            </li></ul>
+            <p class="fragment">
+                We will use Petrunin's Axioms.
+            </p>
         </section>
         <section>
             <h3>Points</h3>
             <p>
                 Euclid defines a point as <q>that which has no part.</q>
                 A point is a position in space but has no spacial
-                extents in any direction.  We call the set of all
-                possible points <span class="intro">&#x2119;</span>
+                extents in any direction.
+            </p><p>
+                We call the set of all possible points
+                <span class="intro">&#x2119;</span>
             </p>
         </section>
         <section>
