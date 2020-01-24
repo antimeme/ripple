@@ -1,11 +1,14 @@
 #!/usr/bin/env node
-// grimoire.cgi                                       -*- mode: web; -*-
+// grimoire.cgi -*- mode: web; -*-
 // Character management system for role playing games.
-
-var fs = require('fs');
-var path = require('path');
-var url = require('url');
-var ripple = require('./ripple/ripple');
+//
+// Note that if SELinux is in use it will usually be necessary to
+// invoke "setsebool httpd_enable_cgi=on httpd_execmem=on" in order
+// to allow suexec to run this (or any Node.js CGI script).
+var fs       = require('fs');
+var path     = require('path');
+var url      = require('url');
+var ripple   = require('./ripple/ripple');
 var grimoire = require('./grimoire');
 
 var tomes = []; // names of tomes to load
