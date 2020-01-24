@@ -839,7 +839,7 @@
             // out the actual point locations.
             var slide = multivec(Math.sqrt(
                 Math.abs(pair.normSquared())));
-            if (multivec.zeroish(slide))
+            if (multivec.zeroish(slide)) // This is a tangent pair!
                 result.push(pair.divide(denominator).normalizePoint());
             else result.push(
                 pair.minus(slide).divide(denominator).normalizePoint(),
@@ -1156,4 +1156,35 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
             else console.log('===', arg, 'MISSING'); });
     else Object.keys(tests).forEach(function(key) {
         conduct(key, tests[key]); });
+
+    console.log("===== Scratch Pad");
+    var logMultivec = function(name, p) {
+        console.log(name + "(" + p.quadrance() + ") = " + p.toString());
+    };
+    var trans = multivec({x: 0, y: 1});
+    var xy = multivec.wedge(
+        multivec.originPoint, {x: 1}, {y: 1}, multivec.infinityPoint);
+    var C1 = multivec.wedge(
+        multivec({x: 0, y: 1}).createPoint(),
+        multivec({x: 0, y: -1}).createPoint(),
+        multivec({x: -1, y: 0}).createPoint());
+    var c1 = C1.contract(xy.inverse());
+    var C2 = multivec.wedge(
+        multivec({x: trans.x, y: trans.y + 1}).createPoint(),
+        multivec({x: trans.x, y: trans.y - 1}).createPoint(),
+        multivec({x: trans.x - 1, y: trans.y}).createPoint());
+    var c2 = C2.contract(xy.inverse());
+
+    logMultivec("C1", C1);
+    logMultivec("C2", C2);
+    logMultivec("c1", c1);
+    logMultivec("c2", c2);
+
+    var intersect = multivec.wedge(c1, c2).contract(xy);
+    logMultivec("intersect", intersect);
+    multivec.recoverPointPair(intersect).forEach(function(point, index) {
+        logMultivec("intersect[" + index + "]", point);
+        logMultivec("  quadR", point.conformalQuadrance());
+    });
+
 }
