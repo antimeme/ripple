@@ -474,6 +474,26 @@
                 "They are popular among pirates and anyone on the ",
                 "wrong side of the law."]
         },
+        "Echellex": {
+            "category": "corporation",
+            "founded": 2100,
+            "comments": [
+                "Product name ideas: Galaxy, Excelsior"]
+        },
+        "Bellopi": {
+            "category": "corporation",
+            "founded": 2100,
+            "comments": [
+                "Product name ideas: Magnum, Triumph, Supernova, ",
+                "Starcrusher"]
+        },
+        "MelliCoi": {
+            "category": "corporation",
+            "founded": 2100,
+            "comments": [
+                "Product name ideas: Reliant, Explorer, Axiom, ",
+                "McCoy, Veritas"]
+        },
 
         "SolCoin": {
             comments: [
