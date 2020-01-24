@@ -11,8 +11,9 @@
     "repository": "https://github.com/electron/electron-quick-start",
     "keywords": ["Ripple", "electron" ],
     "author": "Jeff Gold <jgold@esclat.net>",
-    "license": "GPL-3.0-or-later",
+    "license": "GPL-3.0+",
     "devDependencies": {
+        "sqlite3": "^ 4.0.0",
         "electron": "~1.7.8"
     }
 }
