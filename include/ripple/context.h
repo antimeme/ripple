@@ -116,11 +116,11 @@ ripple_context_realloc(struct ripple_context *rctx,
                        void *block, size_t size);
 
 /** Return allocated memory of at least specified size or NULL. */
-inline void *
+void *
 ripple_context_malloc(struct ripple_context *rctx, size_t size);
 
 /** Reclaim specified memory block. */
-inline void
+void
 ripple_context_free(struct ripple_context *rctx, void *block);
 
 /** Return non-zero iff sending a log message at the specified 
