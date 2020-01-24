@@ -46,7 +46,7 @@
             "range": 25,
             "ammo": "9mm clip",
             "icon": {"image": "icons", "row": 4, "col": 2}},
-        "Semi-auto": {
+        "Semiauto Pistol": {
             "mass": 1,
             "range": 25,
             "ammo": "9mm magazine",
@@ -74,7 +74,62 @@
             "icon": {"image": "icons", "row": 2, "col": 3}},
         "Cookie": {
             "weight": 0.2,
-            "icon": {"image": "icons", "row": 2, "col": 4}}
+            "icon": {"image": "icons", "row": 2, "col": 4}},
+
+        "Draeg Equalizer DE44": {
+            "comment": [
+                "Sturdy and reliable plasma shotgun with a seratted "
+                "bayonette.  A favorite of pirates across the solar "
+                "system"],
+            "bulk": 3,
+            "cells": 2,
+            "weight": 2,
+            "attacks": {
+                "shot": {
+                    "type": "plasma",
+                    "damage": 3,
+                    "range": 3,
+                    "charge": 6,
+                    "difficulty": 9
+                },
+                "cut": {
+                    "type": "cut",
+                    "damage": 2,
+                    "reach": 0.5,
+                    "difficulty": 11
+                },
+                "thrust": {
+                    "type": "thrust",
+                    "damage": 2,
+                    "reach": 0.6,
+                    "difficulty": 11
+                }
+            }
+        },
+        "Draeg Claw DC12": {
+            "comment": [
+                "Compact plasma pistol with a razor sharp hand guard.  "
+                "A weapon of last resort."],
+            "bulk": 1,
+            "cells": 1,
+            "weight": 0.8,
+            "attacks": {
+                "shot": {
+                    "type": "plasma",
+                    "damage": 2,
+                    "range": 4,
+                    "charge": 5,
+                    "difficulty": 10
+                },
+                "cut": {
+                    "type": "cut",
+                    "damage": 2,
+                    "reach": 0.2,
+                    "difficulty": 12
+                }
+            }
+        }
+
     },
     "characterDefinitions": {
         "player": {
