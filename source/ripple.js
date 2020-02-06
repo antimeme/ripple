@@ -214,7 +214,13 @@
      * multi-touch event with coordinates scaled to the element.  When
      * there are touches the coordinates of the first one will be
      * copied to the top level object x and y.  Applications can use
-     * that unless multitouch support is needed. */
+     * that unless multitouch support is needed.
+     *
+     * @event DOM event from which to extract points
+     * @element (optional) DOM element where event occured
+     * @scalefn (optional) function called to adjust coordinates
+     * @return object containing x (number), y (number),
+     *         targets (array) and changed (array) */
     ripple.getInputPoints = function(event, element, scalefn) {
         var target = element ? element : event.target;
         var brect = target.getBoundingClientRect();
