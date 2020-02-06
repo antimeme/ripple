@@ -1,4 +1,5 @@
 (function(exports) {
+    "use strict";
     var sqrt2 = Math.sqrt(2);
     var sqrt3 = Math.sqrt(3);
     var sqrt5 = Math.sqrt(5);
@@ -59,7 +60,7 @@
             rotation: {x: 0, y: 0}}
     };
 
-    var createSubject = function(shape, steps, previous, invert) {
+    var createSubject = function(shape, steps, cull, previous, invert) {
         // Create a regular polyhedron inscribed within a unit sphere
         var meshColor = invert ? 0x80ff80 : 0x8080ff;
         var vertices = shape.vertices.slice();
@@ -70,7 +71,7 @@
             var vertex = [v1[0] + v2[0], v1[1] + v2[1], v1[2] + v2[2]];
             var norm = Math.sqrt(
                 vertex[0] * vertex[0] + vertex[1] * vertex[1] +
-                    vertex[2] * vertex[2]);
+                vertex[2] * vertex[2]);
             vertex[0] /= norm;
             vertex[1] /= norm;
             vertex[2] /= norm;
@@ -79,6 +80,7 @@
 
         for (step = 0; step < steps; ++step) {
             var newfaces = [];
+
             faces.forEach(function(face) {
                 vertices.push(subvert(
                     vertices[face[0]], vertices[face[1]]));
@@ -129,17 +131,19 @@
     }
 
     // Creates a game rendered using three.js
-    onball.go = function(parent, viewport) {
+    onball.go = function() {
+        var parent = document.body;
         var shapeName = ripple.param('shape') in shapes ?
-            ripple.param('shape') : 'cube';
+                        ripple.param('shape') : 'cube';
         var steps = Math.min(8, parseInt(ripple.param('steps'), 10));
+        var cull = Math.min(-1, parseInt(ripple.param('cull'), 10));
         var minzoom = 1.1;
         var camera = new THREE.PerspectiveCamera(
-            75, viewport.width() / viewport.height(), 0.1, 1000);
+            75, window.innerWidth / window.innerHeight, 0.1, 1000);
         var renderer = new THREE.WebGLRenderer({antialias: true});
         renderer.setClearColor(0x202020);
-        renderer.setSize(viewport.width(), viewport.height());
-        parent.append(renderer.domElement);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        parent.appendChild(renderer.domElement);
 
         var light = new THREE.DirectionalLight( 0xffffff );
         light.position.set(1, 1, 1);
@@ -148,63 +152,64 @@
             ripple.param('zoom'), 10) || 2);
 
         var isDragging = false;
-        var previousMousePosition = {
-            x: 0,
-            y: 0
-        };
+        var previousMousePosition = { x: 0, y: 0 };
 
         var scene, subject = undefined;
         var createScene = function(invert) {
             var result = new THREE.Scene();
             subject = createSubject(
-                shapes[shapeName], steps, subject, invert);
+                shapes[shapeName], steps, cull, subject, invert);
             result.add(subject);
             result.add(light);
             return result;
         }
         scene = createScene();
 
-        var self = $(renderer.domElement);
-        self.on('mousedown touchstart', function(event) {
+        var interactStart = function(event) {
             isDragging = true;
             scene = createScene(true);
             return false;
-        });
+        };
+        renderer.domElement.addEventListener(
+            'mousedown', interactStart);
+        renderer.domElement.addEventListener(
+            'touchstart', interactStart);
 
-        self.on('mouseup mouseleave touchend', function(event) {
+        var interactEnd = function(event) {
             isDragging = false;
             scene = createScene(false);
             return false;
-        });
+        };
+        renderer.domElement.addEventListener('mouseup', interactEnd);
+        renderer.domElement.addEventListener('mouseleave', interactEnd);
+        renderer.domElement.addEventListener('touchend', interactEnd);
 
-        self.on('mousemove touchmove', function(event) {
-            var tap = ripple.getInputPoints(event);
-            var deltaMove = {
-                x: tap.x - previousMousePosition.x,
-                y: tap.y - previousMousePosition.y
-            };
-
-            if(isDragging) {
-                var deltaRotationQuaternion = new THREE.Quaternion()
-                    .setFromEuler(new THREE.Euler(
-                        toRadians(deltaMove.y * 1),
-                        toRadians(deltaMove.x * 1),
-                        0,
-                        'XYZ'
-                    ));
-                    
+        var interactMove = function(event) {
+            if (isDragging) {
+                var tap = ripple.getInputPoints(event);
+                var deltaMove = {
+                    x: tap.x - previousMousePosition.x,
+                    y: tap.y - previousMousePosition.y
+                };
+                var deltaRotationQuaternion =
+                    new THREE.Quaternion()
+                             .setFromEuler(new THREE.Euler(
+                                 toRadians(deltaMove.y * 1),
+                                 toRadians(deltaMove.x * 1),
+                                 0, 'XYZ'));
                 subject.quaternion.multiplyQuaternions(
                     deltaRotationQuaternion, subject.quaternion);
+                previousMousePosition = {
+                    x: tap.x,
+                    y: tap.y
+                };
             }
-
-            previousMousePosition = {
-                x: tap.x,
-                y: tap.y
-            };
             return false;
-        });
+        };
+        renderer.domElement.addEventListener('mousemove', interactMove);
+        renderer.domElement.addEventListener('touchmove', interactMove);
 
-        self.on('mousewheel', function(event) {
+        ripple.addWheelListener(renderer.domElement, function(event) {
             camera.position.z += 0.2 * event.deltaY;
             if (camera.position.z < minzoom)
                 camera.position.z = minzoom;
@@ -236,43 +241,63 @@
 	    return angle * (Math.PI / 180);
         }
 
-        var menu = $('<fieldset class="menu"></ul>');
-        menu.append('<legend>On the Ball</legend>');
-        var menuList = $('<ul></ul>').appendTo(menu);
-        var selectShape = $('<select class="shape"></select>');
+        var menu = ripple.createElement(
+            'fieldset', { className: 'menu' });
+        menu.appendChild(ripple.createElement(
+            'legend', null, 'On the Ball'));
+        var menuList = ripple.createElement('ul');
+        menu.appendChild(menuList);
+        var selectShape = ripple.createElement(
+            'select', { className: 'shape' });
         Object.keys(shapes).forEach(function(shapeKey) {
-            var prefix = '<option';
-            if (shapeKey === shapeName)
-                prefix += ' selected="selected"';
-            selectShape.append(prefix + ' value="' + shapeKey + '">' +
-                               shapeKey + '</option>');
+            selectShape.appendChild(ripple.createElement('option', {
+                value: shapeKey,
+                selected: (shapeKey === shapeName) ?
+                          'selected' : undefined
+            }, shapeKey));
         });
-        var selectSteps = $('<select class="steps"></select>');
-        var index;
-        for (index = 0; index <= 8; ++index) {
-            var prefix = '<option';
-            if (steps === index)
-                prefix += ' selected="selected"';
-            selectSteps.append(prefix + ' value="' + index + '">' +
-                               index + '</option>');
-        }
-        menuList.append($('<li></li>').append(
-            $('<label>Shape </label>').append(selectShape)));
-        menuList.append($('<li></li>').append(
-            $('<label>Steps </label>').append(selectSteps)));
-
-        menu.on('change', '.shape', function(event) {
+        menuList.append(ripple.createElement(
+            'li', undefined, ripple.createElement('label', null, 'Shape '),
+            selectShape));
+        selectShape.addEventListener('change', function(event) {
             shapeName = this.value;
             scene = createScene();
         });
 
-        menu.on('change', '.steps', function(event) {
+        // Allow a user to select the number of subdivision steps
+        var selectSteps = ripple.createElement(
+            'select', { className: steps });
+        var index;
+        for (index = 0; index <= 8; ++index) {
+            selectSteps.appendChild(ripple.createElement('option', {
+                value: index,
+                selected: (steps === index) ? 'selected' : undefined
+            }, index));
+        }
+        menuList.appendChild(ripple.createElement(
+            'li', null, ripple.createElement(
+                'label', null, 'Steps '), selectSteps));
+        selectSteps.addEventListener('change', function(event) {
             var chosenSteps = parseInt(this.value, 10);
             if (chosenSteps >= 0 && chosenSteps <= 8)
                 steps = chosenSteps;
             scene = createScene();
         });
-        menu.appendTo(parent).css('top', 10).css('left', 25).show();
+
+        var selectCull = ripple.createElement('input', {
+            name: "cull", className: "cull", type: "range",
+            value: 0, min: 0, max: 100, step: 1
+        });
+        //menuList.appendChild(ripple.createElement(
+        //    'li', null, ripple.createElement('label', null, 'Cull '),
+        //    selectCull));
+        selectCull.addEventListener('change', function(event) {
+            var chosenCull = parseFloat(this.value, 10);
+            cull = chosenCull;
+            scene = createScene();
+        });
+
+        parent.appendChild(menu);
     };
 
 })(typeof exports === 'undefined'? this['onball'] = {}: exports);

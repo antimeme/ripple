@@ -8,7 +8,7 @@
     html, body
     { padding: 0; margin: 0; overflow: hidden; position: relative; }
     .menu {
-      position: absolute; padding: 0.5em;
+      position: absolute; top: 10px; left: 25px; padding: 0.5em;
       background: #338; color: white;
       border: 2px solid white; border-radius: 5px;
     }
@@ -22,12 +22,9 @@
     .menu li:hover { background: #55e; }
 </style>
 
-<script src="lib/jquery.min.js"></script>
-<script src="lib/jquery.mousewheel.js"></script>
 <script src="lib/three.min.js"></script>
 <script src="ripple/polyfill.js"></script>
 <script src="ripple/ripple.js"></script>
 <script src="onball.js"></script>
 <script>//<![CDATA[
-jQuery(function($) { onball.go($('body'), $(window)); });
-//]]></script>
+ ripple.ready(onball.go); //]]></script>
