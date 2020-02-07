@@ -96,8 +96,10 @@
             this.x + vertex.x, this.y + vertex.y, this.z + vertex.z);
     };
 
-    Vertex.prototype.quadrance = function()
-    { return this.x * this.x + this.y * this.y + this.z * this.z; };
+    Vertex.prototype.dot = function(other)
+    { return this.x * other.x + this.y * other.y + this.z * other.z; };
+
+    Vertex.prototype.quadrance = function() { return this.dot(this); };
 
     Vertex.prototype.norm = function()
     { return Math.sqrt(this.quadrance()); };
@@ -143,6 +145,18 @@
         return this.markVertex(v1.plus(v2), cacheIndex, vertexCache);
     };
 
+    Face.prototype.maybePush = function(reference, threshold, dest) {
+        if ((this.v1.dot(reference) >= threshold) ||
+            (this.v2.dot(reference) >= threshold) ||
+            (this.v3.dot(reference) >= threshold)) {
+            dest.push(this);
+            this.v1.necessary = true;
+            this.v2.necessary = true;
+            this.v3.necessary = true;
+        }
+        return this;
+    };
+
     var Planet = function(config, extra) {
         // A planet represents a sphere approximation that can be
         // subdivided with optional culling.
@@ -174,7 +188,7 @@
                 }, this))); }, this);
     };
 
-    Planet.prototype.subdivide = function() {
+    Planet.prototype.subdivide = function(cull) {
         // To ensure that vertices are not unnecessarily duplicated
         // within a single Planet instance, we maintain two caches.
         // one is called vertexFlags and is indexed according to the
@@ -184,6 +198,10 @@
         var result = new Planet({vertices: [], faces: []});
         var vertexCache = {};
         var vertexFlags = {};
+        var reference = new Vertex(0, 1, 0); // This is North
+
+        cull = (cull - 50) / 50;
+
         this.faces.forEach(function(face) {
             face.markVertex(face.v1, face.v1.index, vertexFlags);
             face.markVertex(face.v2, face.v2.index, vertexFlags);
@@ -196,16 +214,18 @@
             var v5 = face.splitEdge(face.v2, face.v3, vertexCache);
             var v6 = face.splitEdge(face.v3, face.v1, vertexCache);
 
-            result.faces.push(new Face(v1, v4, v6));
-            result.faces.push(new Face(v4, v2, v5));
-            result.faces.push(new Face(v5, v3, v6));
-            result.faces.push(new Face(v6, v4, v5));
+            new Face(v1, v4, v6).maybePush(reference, cull, result.faces);
+            new Face(v4, v2, v5).maybePush(reference, cull, result.faces);
+            new Face(v5, v3, v6).maybePush(reference, cull, result.faces);
+            new Face(v6, v4, v5).maybePush(reference, cull, result.faces);
         });
 
         Object.keys(vertexFlags).forEach(function(key) {
-            result.vertices.push(vertexFlags[key]); });
+            if (vertexFlags[key].necessary)
+                result.vertices.push(vertexFlags[key]); });
         Object.keys(vertexCache).forEach(function(key) {
-            result.vertices.push(vertexCache[key]); });
+            if (vertexCache[key].necessary)
+                result.vertices.push(vertexCache[key]); });
         result.vertices.forEach(function(vertex, index) {
             vertex.index = index; });
         return result;
@@ -220,7 +240,7 @@
         var planet = new Planet(shape);
 
         for (step = 0; step < steps; ++step)
-            planet = planet.subdivide();
+            planet = planet.subdivide(cull);
         planet.vertices.forEach(function(vertex) {
             geometry.vertices.push(
                 new THREE.Vector3().fromArray(vertex.toArray())); });
@@ -252,8 +272,10 @@
         var parent = document.body;
         var shapeName = ripple.param('shape') in shapes ?
                         ripple.param('shape') : 'cube';
-        var steps = Math.min(8, parseInt(ripple.param('steps'), 10));
-        var cull = Math.min(-1, parseInt(ripple.param('cull'), 10));
+        var steps = ripple.paramInt(
+            'steps', {default: 0, min: 0, max: 8});
+        var cull = ripple.paramInt(
+            'cull', {default: 0, min: 0, max: 100});
         var minzoom = 1.1;
         var camera = new THREE.PerspectiveCamera(
             75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -404,9 +426,9 @@
             name: "cull", className: "cull", type: "range",
             value: 0, min: 0, max: 100, step: 1
         });
-        //menuList.appendChild(ripple.createElement(
-        //    'li', null, ripple.createElement('label', null, 'Cull '),
-        //    selectCull));
+        menuList.appendChild(ripple.createElement(
+            'li', null, ripple.createElement('label', null, 'Cull '),
+            selectCull));
         selectCull.addEventListener('change', function(event) {
             var chosenCull = parseFloat(this.value, 10);
             cull = chosenCull;
