@@ -60,57 +60,174 @@
             rotation: {x: 0, y: 0}}
     };
 
+    var Vertex = function(x, y, z) {
+        if (!(this instanceof Vertex))
+            return new Vertex(x, y, z);
+
+        if (x instanceof Vertex) {
+            this.x = x.x;
+            this.y = x.y;
+            this.z = x.z;
+        } else if (Array.isArray(x)) {
+            this.x = x[0];
+            this.y = x[1];
+            this.z = x[2];
+        } else if (!isNaN(x) && !isNaN(y) && !isNaN(z)) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        } else throw new Error(
+            "Invalid vertex: " + x + ", " + y + ", " + z);
+    };
+
+    Vertex.prototype.toString = function()
+    { return '(' + this.x + ', ' + this.y + ', ' +  this.z + ')'; };
+
+    Vertex.prototype.toArray = function()
+    { return [this.x, this.y, this.z]; }
+
+    Vertex.prototype.scale = function(factor) {
+        return new Vertex(
+            this.x * factor, this.y * factor, this.z * factor);
+    };
+
+    Vertex.prototype.plus = function(vertex) {
+        return new Vertex(
+            this.x + vertex.x, this.y + vertex.y, this.z + vertex.z);
+    };
+
+    Vertex.prototype.quadrance = function()
+    { return this.x * this.x + this.y * this.y + this.z * this.z; };
+
+    Vertex.prototype.norm = function()
+    { return Math.sqrt(this.quadrance()); };
+
+    Vertex.prototype.normalize = function() {
+        var factor = 1 / this.norm();
+        if (isNaN(factor))
+            throw new Error("Vertex cannot be normalized");
+        return this.scale(factor);
+    };
+
+    var Face = function(v1, v2, v3) {
+        if (!(this instanceof Face))
+            return new Face(v1, v2, v3);
+
+        if (Array.isArray(v1)) {
+            this.v1 = v1[0];
+            this.v2 = v1[1];
+            this.v3 = v1[2];
+        } else {
+            this.v1 = v1;
+            this.v2 = v2;
+            this.v3 = v3;
+        }
+    };
+
+    Face.prototype.toString = function()
+    { return '(' + this.v1.index + ', ' + this.v2.index + ', ' +
+             this.v3.index + ')'; };
+
+    Face.prototype.markVertex = function(v1, index, vertexCache) {
+        if (!vertexCache[index]) {
+            var vertex = v1.normalize();
+            vertex.necessary = false;
+            vertexCache[index] = vertex;
+        }
+        return vertexCache[index];
+    };
+
+    Face.prototype.splitEdge = function(v1, v2, vertexCache) {
+        vertexCache = vertexCache || {};
+        var cacheIndex = ripple.pair(v1.index, v2.index);
+        return this.markVertex(v1.plus(v2), cacheIndex, vertexCache);
+    };
+
+    var Planet = function(config, extra) {
+        // A planet represents a sphere approximation that can be
+        // subdivided with optional culling.
+        if (!(this instanceof Planet))
+            return new Planet(config, extra);
+
+        var vertices, faces;
+        if (Array.isArray(config) && Array.isArray(extra)) {
+            vertices = config;
+            faces = extra;
+        } else if (typeof(config) === 'object' &&
+                   Array.isArray(config.vertices) &&
+                   Array.isArray(config.faces)) {
+            vertices = config.vertices;
+            faces = config.faces;
+        } else throw new Error('Invalid configuration');
+
+        this.faces = [];
+        this.vertices = [];
+        vertices.forEach(function(vertexData, index) {
+            var vertex = new Vertex(vertexData);
+            vertex.index = index;
+            this.vertices.push(vertex);
+        }, this);
+        faces.forEach(function(faceArray) {
+            this.faces.push(new Face(faceArray.map(
+                function(vertexIndex) {
+                    return this.vertices[vertexIndex];
+                }, this))); }, this);
+    };
+
+    Planet.prototype.subdivide = function() {
+        // To ensure that vertices are not unnecessarily duplicated
+        // within a single Planet instance, we maintain two caches.
+        // one is called vertexFlags and is indexed according to the
+        // previous incarnation.  The other is called vertexCache
+        // and is indexed according to the pair of vertices it is
+        // created by splitting.
+        var result = new Planet({vertices: [], faces: []});
+        var vertexCache = {};
+        var vertexFlags = {};
+        this.faces.forEach(function(face) {
+            face.markVertex(face.v1, face.v1.index, vertexFlags);
+            face.markVertex(face.v2, face.v2.index, vertexFlags);
+            face.markVertex(face.v3, face.v3.index, vertexFlags);
+
+            var v1 = vertexFlags[face.v1.index];
+            var v2 = vertexFlags[face.v2.index];
+            var v3 = vertexFlags[face.v3.index];
+            var v4 = face.splitEdge(face.v1, face.v2, vertexCache);
+            var v5 = face.splitEdge(face.v2, face.v3, vertexCache);
+            var v6 = face.splitEdge(face.v3, face.v1, vertexCache);
+
+            result.faces.push(new Face(v1, v4, v6));
+            result.faces.push(new Face(v4, v2, v5));
+            result.faces.push(new Face(v5, v3, v6));
+            result.faces.push(new Face(v6, v4, v5));
+        });
+
+        Object.keys(vertexFlags).forEach(function(key) {
+            result.vertices.push(vertexFlags[key]); });
+        Object.keys(vertexCache).forEach(function(key) {
+            result.vertices.push(vertexCache[key]); });
+        result.vertices.forEach(function(vertex, index) {
+            vertex.index = index; });
+        return result;
+    };
+
     var createSubject = function(shape, steps, cull, previous, invert) {
         // Create a regular polyhedron inscribed within a unit sphere
         var meshColor = invert ? 0x80ff80 : 0x8080ff;
-        var vertices = shape.vertices.slice();
-        var faces = shape.faces.slice();
         var materials = [];
         var step;
-        var subvert = function(v1, v2) {
-            var vertex = [v1[0] + v2[0], v1[1] + v2[1], v1[2] + v2[2]];
-            var norm = Math.sqrt(
-                vertex[0] * vertex[0] + vertex[1] * vertex[1] +
-                vertex[2] * vertex[2]);
-            vertex[0] /= norm;
-            vertex[1] /= norm;
-            vertex[2] /= norm;
-            return vertex;
-        }
-
-        for (step = 0; step < steps; ++step) {
-            var newfaces = [];
-
-            faces.forEach(function(face) {
-                vertices.push(subvert(
-                    vertices[face[0]], vertices[face[1]]));
-                vertices.push(subvert(
-                    vertices[face[1]], vertices[face[2]]));
-                vertices.push(subvert(
-                    vertices[face[0]], vertices[face[2]]));
-
-                newfaces.push([face[0], vertices.length - 3,
-                               vertices.length - 1, face[3]]);
-                newfaces.push([face[1], vertices.length - 2,
-                               vertices.length - 3, face[3]]);
-                newfaces.push([face[2], vertices.length - 1,
-                               vertices.length - 2, face[3]]);
-                newfaces.push([vertices.length - 1,
-                               vertices.length - 3,
-                               vertices.length - 2, face[3]]);
-            });
-            faces = newfaces;
-        }
-
         var geometry = new THREE.Geometry();
-        vertices.forEach(function(vertex) {
+        var planet = new Planet(shape);
+
+        for (step = 0; step < steps; ++step)
+            planet = planet.subdivide();
+        planet.vertices.forEach(function(vertex) {
             geometry.vertices.push(
-                new THREE.Vector3().fromArray(vertex));
-        });
-        faces.forEach(function(face, index) {
+                new THREE.Vector3().fromArray(vertex.toArray())); });
+        planet.faces.forEach(function(face) {
             geometry.faces.push(
-                new THREE.Face3(face[0], face[1], face[2]));
-        });
+                new THREE.Face3(face.v1.index, face.v2.index,
+                                face.v3.index)); });
         var result = THREE.SceneUtils.createMultiMaterialObject(
             geometry, [
                 new THREE.MeshBasicMaterial({ color: meshColor }),
@@ -228,7 +345,6 @@
                 lastFrameTime = currTime;
             }, 0);
         }
-
 
         function render() {
             renderer.render(scene, camera);
