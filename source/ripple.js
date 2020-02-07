@@ -54,6 +54,21 @@
         return result ? true : false;
     };
 
+    ripple.paramInt = function(name, config) {
+        var result = ripple.param(name);
+        if (isNaN(result)) {
+            if (config && !isNaN(config.default))
+                result = config.default;
+        } else {
+            result = parseInt(result, 10);
+            if (config && config.min)
+                result = Math.min(result, config.min);
+            if (config && config.max)
+                result = Math.max(result, config.max);
+        }
+        return result;
+    };
+
     /**
      * Call given function when document is ready */
     ripple.ready = function(fn) {
@@ -123,7 +138,7 @@
                     result.setAttribute(
                         'data-' + entry, attrs[attr][entry]); });
             else if ((attr === 'style') &&
-                       (typeof(attrs[attr]) === 'object'))
+                     (typeof(attrs[attr]) === 'object'))
                 Object.keys(attrs[attr]).forEach(function(entry) {
                     result.style[entry] = attrs[attr][entry]; });
             else result.setAttribute(attr, attrs[attr]); });
