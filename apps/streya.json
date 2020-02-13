@@ -78,8 +78,8 @@
 
         "Draeg Equalizer DE44": {
             "comment": [
-                "Sturdy and reliable plasma shotgun with a seratted "
-                "bayonette.  A favorite of pirates across the solar "
+                "Sturdy and reliable plasma shotgun with a seratted ",
+                "bayonette.  A favorite of pirates across the solar ",
                 "system"],
             "bulk": 3,
             "cells": 2,
@@ -108,8 +108,8 @@
         },
         "Draeg Claw DC12": {
             "comment": [
-                "Compact plasma pistol with a razor sharp hand guard.  "
-                "A weapon of last resort."],
+                "Compact plasma pistol with a razor sharp hand ",
+                "guard.  A weapon of last resort."],
             "bulk": 1,
             "cells": 1,
             "weight": 0.8,
@@ -487,17 +487,38 @@
                 "mass": 200, "sigil": "V", "external": true},
             "Robotorium": {
                 "comment": ["Facilities for controlling drones"],
-                "sigil": "T", "external": true},
+                "mass": 120, "sigil": "T", "external": true},
             "Fabricator": {
                 "comment": ["Machinery for printing goods"],
-                "sigil": "8"},
+                "mass": 550, "sigil": "8"},
             "Garden": {
                 "comment": ["Facilities for growing plants"],
-                "sigil": "J"}
+                "mass": 100, "sigil": "J"}
         }
     },
 
     "shipDesigns": {
+        "Ghariel": {
+            "name": "Ghariel",
+            "comments": [
+                "The Ghariel was designed in 2198 by Hollis LeFerve ",
+                "of Galileo City.  Compact and efficient, the ship ",
+                "is the primary patrol ship of the Saturn Planetary ",
+                "Authority.  As a scout ship meant for lengthy ",
+                "missions, the Ghariel is intended for six crew ",
+                "members, all of whom are traied for ship operation ",
+                "and civilian law enforcement.  At any moment, two ",
+                "crew members maintain ship functions, two are off ",
+                "except when inspections are necessary and two are ",
+                "asleep.  In an emergency the ship can support an ",
+                "additional twelve passengers by hot bunking.  A ",
+                "compact medical bay make it possible for the ship ",
+                "to act as a small field hospital.  A four ",
+                "garden bio-reactor extends tour duration.  One ",
+                "escape pod is available."
+            ],
+            "grid": {"type":"hex","size":10,"orient":"point"},
+            "cells":{"0":{},"1":{},"2":{"apparatus":"Pod Bay"},"3":{"apparatus":"Engine"},"5":{},"6":{"apparatus":"Helm"},"7":{},"9":{"apparatus":"Shields"},"10":{"apparatus":"Weapon Pod"},"11":{"apparatus":"Mainframe"},"12":{"apparatus":"Bunks"},"14":{},"16":{},"17":{"apparatus":"Robotorium"},"18":{},"19":{"apparatus":"Cargo"},"20":{},"21":{"apparatus":"Engine"},"22":{},"23":{"apparatus":"Sensors"},"24":{},"30":{"apparatus":"Cabin"},"31":{"apparatus":"Head"},"32":{},"34":{"apparatus":"Cargo"},"36":{},"37":{"apparatus":"Engine"},"38":{"apparatus":"Workshop"},"40":{"apparatus":"Engine"},"41":{"apparatus":"Cargo"},"42":{"apparatus":"Medical"},"44":{},"45":{"apparatus":"Weapon Pod"},"46":{"apparatus":"Pod Bay"},"56":{"apparatus":"Head"},"57":{"apparatus":"Head"},"58":{"apparatus":"Bunks"},"60":{"apparatus":"Cargo"},"62":{"apparatus":"Cargo"},"64":{"apparatus":"Life Support"},"65":{"apparatus":"Weapon Pod"},"66":{"apparatus":"Airlock"},"68":{"apparatus":"Reactor"},"70":{"apparatus":"Weapon Pod"},"72":{"apparatus":"Garden"},"73":{"apparatus":"Garden"},"74":{},"76":{"apparatus":"Galley"},"78":{"apparatus":"Head"},"92":{"apparatus":"Engine"},"110":{"apparatus":"Garden"},"111":{"apparatus":"Garden"},"112":{"apparatus":"Recreation"},"114":{},"116":{"apparatus":"Recreation"},"156":{"apparatus":"Garden"},"158":{"apparatus":"Engine"},"160":{"apparatus":"Recreation"}},"boundaries":{"16":"Bulkhead","40":"Bulkhead","100":"Automatic Door","104":"Manual Door","580":"Bulkhead","788":"Bulkhead","808":"Bulkhead","1166":"Automatic Door","1184":"Automatic Door","1188":"Automatic Door","1472":"Automatic Door","1478":"Bulkhead","1976":"Automatic Door","3624":"Bulkhead","3868":"Automatic Door","3904":"Bulkhead","4120":"Automatic Door","4134":"Bulkhead","4156":"Automatic Door","4688":"Bulkhead","5508":"Automatic Door","5510":"Bulkhead","5548":"Bulkhead","5812":"Automatic Door","5824":"Automatic Door","5848":"Automatic Door","6448":"Automatic Door","6476":"Bulkhead","7096":"Bulkhead","7098":"Bulkhead","7100":"Automatic Door","7788":"Automatic Door","7828":"Automatic Door","8508":"Manual Door","8512":"Bulkhead","8544":"Bulkhead","8552":"Bulkhead","12604":"Bulkhead","13056":"Automatic Door","13058":"Bulkhead","13108":"Bulkhead","13516":"Bulkhead","13520":"Automatic Door","13524":"Bulkhead","13568":"Automatic Door","14516":"Bulkhead","16456":"Automatic Door","17496":"Manual Door","17500":"Bulkhead","17552":"Bulkhead","18572":"Bulkhead","18628":"Bulkhead","20820":"Bulkhead","20824":"Automatic Door","22048":"Bulkhead","23196":"Bulkhead","24488":"Bulkhead","33968":"Bulkhead","33972":"Bulkhead","33976":"Automatic Door","48548":"Bulkhead","50396":"Bulkhead","52140":"Automatic Door","53980":"Bulkhead","97568":"Bulkhead","100080":"Bulkhead","100168":"Automatic Door","102716":"Bulkhead"}},
         "Nexus": {
             "name": "Nexus",
             "grid": {"type": "hex", "size": 10, "orient": "point"},
