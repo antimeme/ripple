@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>Schedule</title>
+
+<button id="next">Next</button>
+<div id="schedule"></div>
+
+<script src="ripple/polyfill.js"></script>
+<script src="ripple/ripple.js"></script>
+<script>//<![CDATA[
+ ripple.ready(function() {
+     var data = [];
+     var next = document.getElementById("next");
+     var schedule = document.getElementById("schedule");
+     var postSchedule = function(matches) {
+         data.push(matches);
+         schedule.appendChild(ripple.createElement(
+             "p", null, "Week " + data.length + ": " +
+                        JSON.stringify(matches)));
+     };
+
+     postSchedule([[1, 2, 3, 4, 5, 6],
+                   [7, 8, 9, 10, 11, 12],
+                   [13, 14, 15, 16, 17, 18],
+                   [19, 20, 21, 22, 23, 24],
+                   [25, 26, 27, 28, 29, 30],
+                   [31, 32, 33, 34, 35, 36],
+                   [37, 38, 39, 40, 41, 42]]);
+
+     next.addEventListener("click", function(event) {
+         var previous = data[data.length - 1];
+         var matches = [];
+         previous.forEach(function(match) { matches.push([]); });
+         previous.forEach(function(match, index) {
+             match.forEach(function(player, pindex) {
+                 matches[(index + 1 + pindex) % matches.length].push(player);
+             });
+         });
+         postSchedule(matches);
+     });
+ }); //]]></script>
