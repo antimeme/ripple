@@ -200,6 +200,8 @@
 
             result.name = (config && config.name) ?
                           config.name : 'Ship';
+            if (config && config.comments)
+                result.comments = config.comments;
             result.grid = grid.create(
                 (config && config.grid) ? config.grid :
                 { type: 'hex', size: 10 });
@@ -453,6 +455,7 @@
         toJSON: function() {
             var result = {
                 name: this.name, grid: this.grid,
+                comments: this.comments,
                 cells: {}, boundaries: {},
             };
             Object.keys(this.__cells).forEach(function(id) {
@@ -957,6 +960,10 @@
                     ship = menuShipUpdate(streya.Ship.create(
                         preloads['streya.json']
                             .shipDesigns[designs.value]));
+                    if (ship.comments) {
+                        console.log("DEBUG", ship.comments.join(''));
+                        menu.setAttribute('title', ship.comments.join(''));
+                    } else console.log("DEBUG", "no-comment");
                     shipName.value = ship.name;
                 }
                 fasciaRedraw();
