@@ -1,5 +1,5 @@
 // Solymos
-// Copyright (C) 2013-2016 by Jeff Gold.
+// Copyright (C) 2013-2020 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -16,8 +16,9 @@
 // <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-// A framework for building web applications.
-
+// A framework for constructing web pages from objects.  This allows
+// automatic quoting because the the structure of the page is
+// understood.
 (function(solymos) {
     'use strict';
 
@@ -45,14 +46,16 @@
             result.name = name;
             result.attrs = attrs ? attrs : {};
             result.contents = [];
+            result.html = true;
             return result;
         },
         setAttr: function(attr, value) {
             this.attrs[attr] = value;
             return this;
         },
-        push: function(value) {
-            this.contents.push(value);
+        push: function() {
+            for (var ii = 0; ii < arguments.length; ++ii)
+                this.contents.push(arguments[ii]);
             return this;
         },
         add: function(value) {
@@ -62,38 +65,60 @@
         toString: function() {
             return this.emit().replace(/\s+/g, ' ');
         },
+
+        __mustClose: function() {
+            // HTML requres closing tags for some elements.  Others
+            // can have XML style "/>" endings.
+            return this.html && [
+                'script', 'div', 'span', 'textarea',
+            ].some(function(a) {
+                return a.toLowerCase() === this.name;
+            }, this);
+        },
+
         emit: function(indent) {
             var result = [];
-            var self = this;
             var first = true;
             var attrval = '';
             var pos;
 
             if (!indent)
                 indent = '';
-            pos = indent.length + self.name.length + 1;
+            pos = indent.length + this.name.length + 1;
 
-            Object.keys(self.attrs).sort().forEach(function(attr) {
-                var value = solymos.quoteAttr(self.attrs[attr]);
+            Object.keys(this.attrs).sort().forEach(function(attr) {
+                var value = solymos.quoteAttr(this.attrs[attr]);
                 if (!first && pos + value.length + 1 > 72) {
                     attrval += '\n' + indent + ' ' +
-                               self.name.replace(/./g, ' ');
-                    pos = indent.length + self.name.length + 1;
+                               this.name.replace(/./g, ' ');
+                    pos = indent.length + this.name.length + 1;
                 }
                 first = false;
                 attrval += ' ' + attr + '="' + value + '"';
                 pos += attr.length + value.length + 4;
-            });
-            if (self.contents.length > 0) {
-                result.push(indent + '<' + self.name +
-                            attrval + '>');
-                self.contents.forEach(function(thing) {
-                    if (solymos.element.isPrototypeOf(thing))
-                        result.push(thing.emit(indent + '  '));
-                    else result.push(indent + thing); // FIXME wrap
-                });
-                result.push(indent + '</' + self.name + '>');
-            } else result.push(indent + '<' + self.name +
+            }, this);
+            if ((this.contents.length > 0) || this.__mustClose()) {
+                var contents = [];
+                var length = indent.length + 5 +
+                             2 * this.name.length + attrval.length;
+                this.contents.forEach(function(thing, index) {
+                    contents.push(thing.toString());
+                    length += contents[contents.length - 1].length;
+                }, this);
+
+                if (length > 72) {
+                    result.push(indent + '<' + this.name +
+                                attrval + '>');
+                    this.contents.forEach(function(thing) {
+                        if (solymos.element.isPrototypeOf(thing))
+                            result.push(thing.emit(indent + '  '));
+                        else result.push(indent + thing); // FIXME wrap
+                    });
+                    result.push(indent + '</' + this.name + '>');
+                } else result.push(
+                    indent + '<' + this.name + attrval + '>' +
+                    contents.join('') + '</' + this.name + '>');
+            } else result.push(indent + '<' + this.name +
                                attrval + ' />');
             return result.join('\n' + indent);
         }
