@@ -29,11 +29,15 @@
                 <blockquote>
                     <q>Algebra: from Arabic <q>al-jabr</q>, literally
                         meaning <q>reunion of broken parts</q></q>
-                    — Oxford English Dictionary
+                    <br />— Oxford English Dictionary
                 </blockquote>
+                <aside class="notes">
+                    Let's begin with some algebra, shall we?
+                    Don't panic.  There won't be an exam.
+                </aside>
             </section>
             <section>
-                <h3>Groups &#x27ec;G, &#x2218;&#x27ed;</h3>
+                <h3>Group &#x27ec;G, &#x2218;&#x27ed;</h3>
                 <p>
                     A group is a set G and a binary operation G
                     &#x2218; G &#x27f6; G with four properties:
@@ -52,11 +56,25 @@
                 </ul>
             </section>
             <section>
+                <h3>Abstraction</h3>
                 <p>
                     By definition identity and inverses work when
                     applied from the right.  Group axioms are enough
                     to prove that these also work from the left.
                 </p>
+                <ul>
+                    <li>
+                        Identity: &#x2203;e&#x2208;G
+                        &#x2200;a&#x2208;G a &#x2218; e = a
+                    </li><li>
+                        Inverses: &#x2200;a&#x2208;G
+                        &#x2203;a<sup>-1</sup>&#x2208;G
+                        a &#x2218; a<sup>-1</sup> = e
+                    </li>
+                </ul>
+            </section>
+            <section>
+                <h3>Proof: Commutative Inverses</h3>
                 <ul>
                     <li>e = a<sup>-1</sup> &#x2218;
                         (a<sup>-1</sup>)<sup>-1</sup> :: Inverses
@@ -84,11 +102,7 @@
                 </ul>
             </section>
             <section>
-                <p>
-                    So inverses work regardless of which side they're
-                    applied.  This means the identity also works from
-                    both sides:
-                </p>
+                <h3>Proof: Commutative Identity</h3>
                 <ul>
                     <li>e &#x2218; a = (a &#x2218; a<sup>-1</sup>)
                         &#x2218; a :: Inverses</li>
@@ -99,6 +113,7 @@
                 </ul>
             </section>
             <section>
+                <h3>Equation Solving</h3>
                 <p>
                     A group is the simplest mathematical structure
                     that allows algebra.  Suppose we have know a, b
@@ -133,11 +148,11 @@
                 </ul>
                 <p>
                     Integers with addition form an abelian group:
-                    &#x27ec;&#x2124;, +&#x27ed;
+                    <br />&#x27ec;&#x2124;, +&#x27ed;
                 </p>
             </section>
             <section>
-                <h3>Rings &#x27ec;R, &#x2218;, &#x229a;&#x27ed;</h3>
+                <h3>Ring &#x27ec;R, &#x2218;, &#x229a;&#x27ed;</h3>
                 <p>
                     A ring is a set and two binary operations
                     R &#x2218; R &#x27f6; R and R &#x229a; R
@@ -159,9 +174,16 @@
                         (b &#x229a; a) &#x2218; (c &#x229a; a))
                     </li>
                 </ul>
+                <aside class="notes">
+                    We like math don't we?  As Beyonce tells us, if
+                    we like it we should have put a ring on it.
+                </aside>
             </section>
             <section>
-                <h3>Commutative Rings</h3>
+                <h3>
+                    Commutative Ring &#x27ec;R, &#x2218,
+                    &#x229a;&#x27ed;
+                </h3>
                 <p>
                     A commutative ring is a with commutative
                     operations.
@@ -176,12 +198,13 @@
                 </ul>
                 <p>
                     Integers with addition and multiplication form a
-                    commutative ring (&#x2124;, +, &#x00d7;)
+                    commutative ring &#x27ec;&#x2124;, +,
+                    &#x00d7;&#x27ed;
                 </p>
             </section>
             <section>
                 <h3>
-                    Unitary Rings &#x27ec;U, &#x2218;, &#x229a;&#x27ed;
+                    Unitary Ring &#x27ec;R, &#x2218;, &#x229a;&#x27ed;
                 </h3>
                 <p>
                     A unitary ring is a ring with an identity element
@@ -189,11 +212,11 @@
                 </p>
                 <ul>
                     <li>
-                        &#x27ec;U, &#x2218, &#x229a;&#x27ed; is a ring
+                        &#x27ec;R, &#x2218, &#x229a;&#x27ed; is a ring
                     </li>
                     <li>
-                        Identity: &#x2203;e<sub>&#x229a;</sub>&#x2208;U
-                        &#x2200;a&#x2208;U a &#x229a;
+                        Identity: &#x2203;e<sub>&#x229a;</sub>&#x2208;R
+                        &#x2200;a&#x2208;R a &#x229a;
                         e<sub>&#x229a;</sub> = a
                     </li>
                 </ul>
@@ -203,7 +226,7 @@
                 </p>
             </section>
             <section>
-                <h3>Fields &#x27ec;F, &#x2218;, &#x229a;&#x27ed;</h3>
+                <h3>Field &#x27ec;F, &#x2218;, &#x229a;&#x27ed;</h3>
                 <p>
                     A field is a commutative, unitary ring with
                     inverses:
@@ -227,32 +250,101 @@
                     &#x00d7;&#x27ed;
                 </p>
             </section>
+            <section>
+                <h3>
+                    Finite Field &#x27ec;F, &#x2218;, &#x229a;&#x27ed;
+                </h3>
+                <p>
+                    A finite field is a field with a finite number of
+                    members.  An example a field is integers modulo a
+                    prime integer with addition and multiplication:
+                    &#x27ec;&#x2124;/p&#x2124;, +, &#x00d7;&#x27ed;
+                </p>
+            </section>
         </section>
 
         <section>
             <section>
-                <h2>Weierstrass Curves</h2>
+                <h2>Elliptic Curve</h2>
+                <img src="img/ecurves.png" />
+                <p><small>
+                    Source: https://en.wikipedia.org/wiki/Elliptic_curve
+                </small></p>
             </section>
             <section>
                 <h2>Formula</h2>
+                <h3>Weierstrass Form</h3>
+                <p>
+                    y<sup>2</sup> = x<sup>3</sup> + ax + b
+                </p>
+            </section>
+            <section>
+                <h3>Point Addition</h3>
+                <p>P + Q = R</p>
+                <p>
+                    &#x1d706; = (y<sub>q</sub> - y<sub>p</sub>) /
+                    (x<sub>q</sub> - x<sub>p</sub>)
+                </p>
+                <p>
+                    x<sub>r</sub> = &#x1d706;<sup>2</sup> -
+                    x<sub>p</sub> - x<sub>q</sub>
+                </p>
+                <p>
+                    y<sub>r</sub> = &#x1d706;(<sup>2</sup> -
+                    x<sub>p</sub> - x<sub>r</sub>) - y<sub>p</sub>
+                </p>
+                <p>
+                    This always results in another point on the curve.
+                </p>
+            </section>
+            <section>
+                <h3>Point Doubling</h3>
+                <p>P + P = R</p>
+                <p>
+                    &#x1d706; = (3x<sub>p</sub>x<sub>p</sub> + a) /
+                    2y<sub>p</sub>
+                </p>
+                <p>
+                    x<sub>r</sub> = &#x1d706;<sup>2</sup> -
+                    2x<sub>p</sub>
+                </p>
+                <p>
+                    y<sub>r</sub> = &#x1d706;(<sup>2</sup> -
+                    x<sub>p</sub> - x<sub>r</sub>) - y<sub>p</sub>
+                </p>
+                <p>
+                    Point addition divides by zero when adding a point
+                    to itself, so we use the tangent line.
+                </p>
             </section>
             <section>
                 <h2>The Point at Infinity</h2>
-            </section>
-            <section>
-                <h2>Point Multiplication</h2>
-            </section>
-            <section>
-                <h2>Point Exponentiation</h2>
+                <p>
+                    A conceptual point at infinity serves as the
+                    identity element.
+                </p>
             </section>
             <section>
                 <h2>Point Compression</h2>
+                <p>
+                    Given the x coordinate and the sign of the y
+                    coordinate, the y coordinate can be computed
+                    using the curve formula.
+                </p>
+                <p>
+                    y<sup>2</sup> = x<sup>3</sup> + ax + b
+                </p>
             </section>
             <section>
                 <h2>Finite Field Square Root</h2>
+                <p>
+                    Algorithms like Tonelli-Shanks can compute
+                    square roots in modular arithetic.
+                </p>
             </section>
             <section>
                 <h2>Cofactors</h2>
+                <p>?</p>
             </section>
         </section>
         <section>
@@ -260,18 +352,92 @@
                 <h2>Diffie-Hellman on Elliptic Curves</h2>
             </section>
             <section>
+                <img src="img/diffie-hellman-paint.png" />
+            </section>
+            <section>
                 <h2>Integer Diffie-Hellman</h2>
+                <p>
+                    Agree on parameters g and p where p is prime
+                    and g is a primitive root mod p.
+                </p>
+            </section>
+            <section>
+                <h2>Integer Diffie-Hellman</h2>
+                <p>
+                    Alice chooses a and computes g<sup>a</sup> mod p
+                </p>
+                <p>
+                    Bob chooses b and computes g<sup>b</sup> mod p
+                </p>
+                <p>
+                    Alice gives Bob g<sup>a</sup> mod p which he raises
+                    to the power b to get g<sup>ab</sup> mod p
+                </p>
+                <p>
+                    Bob gives Alice g<sup>b</sup> mod p which she
+                    raises to the power a to get g<sup>ba</sup> mod p
+                    <br />(which is equal to g<sup>ab</sup> mod p)
+                </p>
+            </section>
+            <section>
+                <p>
+                    Alice and Bob agree to use a modulus p = 23 and
+                    base g = 5 (which is a primitive root modulo 23).
+                </p>
+                <p>
+                    Alice chooses a = 4, then sends Bob 54 mod 23 = 4
+                </p>
+                <p>
+                    Bob chooses b = 3, then sends Alice 53 mod 23
+                    = 10
+                </p>
+                <p>
+                    Alice computes s = 104 mod 23 = 18
+                </p>
+                <p>
+                    Bob computes s = 43 mod 23 = 18
+                </p>
             </section>
             <section>
                 <h2>Elliptic Curve Diffie Hellman</h2>
+                <p>
+                    Agree on parameters G, p and an elliptic curve,
+                    where G is a point and p is prime (there are also
+                    binary curves which are different).
+                </p>
+            </section>
+            <section>
+                <h2>Elliptic Curve Diffie Hellman</h2>
+                <p>
+                    Alice chooses a and adds G to itself a times
+                    to compute G<sup>a</sup> mod p
+                </p>
+                <p>
+                    Bob chooses b and adds G to itself b times to
+                    get G<sup>b</sup> mod p
+                </p>
+            </section>
+            <section>
+                <h2>Elliptic Curve Diffie Hellman</h2>
+                <p>
+                    Alice gives Bob G<sup>a</sup> mod p to which
+                    he adds G b times to get G<sup>ab</sup> mod p
+                </p>
+                <p>
+                    Bob gives Alice G<sup>b</sup> mod p to which she
+                    adds G a times to get G<sup>ba</sup> mod p
+                    <br />(which is equal to G<sup>ab</sup> mod p)
+                </p>
             </section>
             <section>
                 <h2>Menezes-Qu-Vanstone (MQV)</h2>
+                <p>?</p>
             </section>
         </section>
         <section>
             <section>
                 <h2>DSA on Elliptic Curves</h2>
+                <p>?</p>
             </section>
         </section>
         <section>
@@ -287,19 +453,60 @@
             </section>
             <section>
                 <h2>NIST Curves</h2>
+                <ul>
+                    <li>Published by NIST (widely deployed)</li>
+                    <li>Parameters chosen by US NSA</li>
+                </ul>
             </section>
             <section>
                 <h2>Brainpool Curves</h2>
-            </section>
-            <section>
-                <h2>Twisted Brainpool Curves</h2>
+                <ul>
+                    <li>
+                        <a href="https://tools.ietf.org/html/rfc5639">
+                            RFC 5639</a>
+                    </li>
+                    <li>Verifiably Pseudo-random</li>
+                    <li>
+                        Requires a quadradic twist for acceleration
+                    </li>
+                </ul>
             </section>
             <section>
                 <h2>Curve25519</h2>
+                <p>
+                    y<sup>2</sup> = x<sup>3</sup> +
+                    486662x<sup>2</sup> + x
+                </p>
+                <ul>
+                    <li>Created by Daniel J. Bernstein in 2005</li>
+                    <li>Montgomery curve</li>
+                </ul>
+            </section>
+            <section>
+                <h2>Secp256k1</h2>
+                <p>
+                    y<sup>2</sup> = x<sup>3</sup> + 7
+                </p>
+                <ul>
+                    <li>Used by Bitcoin</li>
+                    <li>256 bit security</li>
+                </ul>
             </section>
             <section>
                 <h2>Edwards Curves</h2>
+                <p>
+                    x<sup>2</sup> + y<sup>2</sup> =
+                    c<sup>2</sup>(1 +
+                    dx<sup>2</sup>y<sup>2</sup>)
+                </p>
+                <p>
+                    <li>Different addition law</li>
+                    <li>Doubling is the same as addition</li>
+                </p>
             </section>
+        </section>
+        <section>
+            <h1>Questions?</h1>
         </section>
     </div>
 </div>
