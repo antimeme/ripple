@@ -43,7 +43,8 @@
      camera.position.z = 100;
 
      var amplitude = { type: 'f', value: 0 };
-     var sphereGeometry = new THREE.SphereGeometry(50, 16, 16);
+     var sphereGeometry = new THREE.SphereGeometry(50, 32, 32);
+     //var sphereGeometry = new THREE.BoxGeometry(50, 50, 50, 1, 1, 1);
      var bufferGeometry = new THREE.BufferGeometry().fromGeometry(
          sphereGeometry);
      var displacement = new Float32Array(
@@ -58,7 +59,7 @@
              "fragmentShader").textContent
      });
 
-     var renderer = new THREE.WebGLRenderer();
+     var renderer = new THREE.WebGLRenderer({antialias: true});
      renderer.setSize(window.innerWidth, window.innerHeight);
      document.body.appendChild(renderer.domElement);
 
