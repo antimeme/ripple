@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
 <style>
  body { margin: 0; }
  canvas { display: block; }
@@ -21,18 +24,15 @@
  }
 </script>
 <script id="fragmentShader" type="x-shader/x-fragment">
-    varying vec3 vNormal;
+ varying vec3 vNormal;
 
-    void main() {
-
-    // calc the dot product and clamp
-    // 0 -> 1 rather than -1 -> 1
-    vec3 light = vec3(0.5,0.2,1.0);
-    
+ void main() {
+     // dot product and clamp (0 -> 1 rather than -1 -> 1)
+     vec3 light = vec3(0.5,0.2,1.0);
      light = normalize(light);
-    float dProd = max(0.0, dot(vNormal, light));
-    gl_FragColor = vec4(0, dProd, 0, 1.0);
-    }
+     float dProd = max(0.0, dot(vNormal, light));
+     gl_FragColor = vec4(0, dProd, 0, 1.0);
+ }
 </script>
 <script src="lib/three.min.js"></script>
 <script>
