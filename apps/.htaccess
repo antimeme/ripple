@@ -1,5 +1,9 @@
-Options +MultiViews +ExecCGI
+Options +ExecCGI
 AddHandler cgi-script .cgi
+
+Options +MultiViews
+AddType text/html .cgi
+AddType application/json .cgi
 
 AuthType Digest
 AuthName "RippleApps"
