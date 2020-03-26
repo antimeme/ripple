@@ -1,6 +1,9 @@
 {
     "name": "@PACKAGE@",
     "version": "@VERSION@",
+    "author": "Jeff Gold <jgold@esclat.net>",
+    "license": "GPL-3.0+",
+    "repository": "https://github.com/antimeme/ripple.git",
     "description": "Ripple is an eclectic set of tools and libraries",
     "main": "apps/streya.js",
     "scripts": {
@@ -8,12 +11,9 @@
         "streya": "electron apps/streya.js",
         "whiplash": "electron apps/whiplash.js"
     },
-    "repository": "https://github.com/electron/electron-quick-start",
-    "keywords": ["Ripple", "electron" ],
-    "author": "Jeff Gold <jgold@esclat.net>",
-    "license": "GPL-3.0+",
-    "devDependencies": {
+    "keywords": ["Ripple" ],
+    "dependencies": {
         "sqlite3": "^ 4.0.0",
-        "electron": "~1.7.8"
+        "electron": "^ 8.0.0"
     }
 }
