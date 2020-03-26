@@ -125,10 +125,33 @@ TESTS += scripts/check-java.sh
 MOSTLYCLEANFILES += @PACKAGE@-@VERSION@.jar @PACKAGE@.jar
 CLEANFILES += scripts/check-java.sh
 
-clean-local:
+clean-local-java:
 	-rm -rf javadoc
 
-mostlyclean-local:
+mostlyclean-local-java:
 	-rm -rf $(JARROOT)
 
+else
+clean-local-java:
+
+mostlyclean-local-java:
+
 endif
+
+clean-local: clean-local-java
+
+mostlyclean-local-java: clean-local-java
+
+## Docker ==============================================================
+
+docker-build:
+	sudo docker build -t ripple .
+
+docker: docker-build
+	sudo docker run ripple
+
+docker-interact: docker-build
+	sudo docker run --tty --interact ripple
+
+.PHONY: clean-local-java mostlyclean-local-java \
+	docker-build docker docker-interact
