@@ -1,5 +1,5 @@
 // Options.java
-// Copyright (C) 2008-2013 by Jeff Gold.
+// Copyright (C) 2008-2020 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -59,33 +59,60 @@ public class Options {
 
     /** One or more configurable parameters. */
     public static interface Option {
-        /** Returns a list of names claimed by this option.  When
-         *  the all argument is false only those names for which a
-         *  help message is available are supplied. */
+        /**
+         * Returns a list of names claimed by this option.  When the
+         * all argument is false only those names for which a help
+         * message is available are supplied.
+         *
+         * @param all When true include options with no help text
+         * @return names of available options */
         public Iterable<java.lang.String> names(boolean all);
 
-        /** Returns a brief description of the purpose of option
-         *  purpose. */
+        /**
+         * Returns a brief description of the purpose of option purpose.
+         *
+         * @param opt Name of option to query.
+         * @return Description of specified option. */
         public java.lang.String help(java.lang.String opt);
 
-        /** Returns the full name of an option which is uniquely
-         *  matched as a prefix by the argument. */
+        /**
+         * Returns the full name of an option which is uniquely
+         * matched as a prefix by the argument.
+         *
+         * @param opt Name of option to query
+         * @return Full name of specified option. */
         public java.lang.String prefix(java.lang.String opt);
 
-        /** Returns true iff the specified option name is claimed by
-         *  this option instance. */
+        /**
+         * Returns true iff the specified option name is claimed by
+         * this option instance.
+         *
+         * @param opt Name of option to query
+         * @return True iff the specified name is claimed. */
         public boolean find(java.lang.String opt);
 
-        /** Returns the cannonical name for an option character or
-         *  null if that character is not claimed by this instance. */
+        /**
+         * Returns the cannonical name for an option character or
+         * null if that character is not claimed by this instance.
+         *
+         * @param shr Short option name.
+         * @return Canonical name for specified option. */
         public java.lang.String find(char shr);
         
-        /** Associate the argument with the named option. */
+        /**
+         * Associate the argument with the named option.
+         *
+         * @param opt Name of option to convert.
+         * @param arg Argument to supply to option. */
         public void convert(java.lang.String opt,
                             java.lang.String arg);
 
-        /** Called when an option is found.  Returns true iff the
-         *  option can be used without an argument. */
+        /**
+         * Called when an option is found.  Returns true iff the
+         * option can be used without an argument.
+         *
+         * @param opt Name of option to query
+         * @return True iff the option does not require an argument. */
         public boolean apply(java.lang.String opt);
     }
 
@@ -309,29 +336,30 @@ public class Options {
         protected char             shr;
         protected java.lang.String hlp;
         
-        /** Creates an option. */
+        /**
+         * Creates an option.
+         *
+         * @param opt Canonical name for option
+         * @param shr Short name for option
+         * @param help Description of option for users */
         public Base(java.lang.String opt, char shr,
                     java.lang.String help)
         { this.opt = opt;  this.shr = shr; this.hlp = help; }
 
-        /** Implements Option. */
         public java.lang.String prefix(java.lang.String opt) {
             return ((this.opt != null) && (this.opt.startsWith(opt))) ?
                 this.opt : null;
         }
 
-        /** Implements Option. */
         public boolean find(java.lang.String opt) {
             return (this.opt != null) && (this.opt.equals(opt));
         }
 
-        /** Implements Option. */
         public java.lang.String find(char shr) {
             return ((this.shr != '\0') && (this.shr == shr)) ?
                 opt : null;
         }
 
-        /** Implements Option. */
         public Iterable<java.lang.String> names(boolean all) {
             ArrayList<java.lang.String> result =
                 new ArrayList<java.lang.String>();
@@ -339,22 +367,20 @@ public class Options {
             return result;
         }
 
-        /** Implements Option. */
         public java.lang.String help(java.lang.String opt)
         { return hlp; }
 
-        /** Implements Option. */
         public void convert(java.lang.String opt,
                             java.lang.String arg)
         { throw new Problem("Unnecessary argument", opt, arg); }
 
-        /** Implements Option. */
         public boolean apply(java.lang.String opt)
         { return false; }
     }
 
-    /** A simple switch setting.  A public <code>value</code>
-     *  field permits access to the parsed result. */
+    /**
+     * A simple switch setting.  A public <code>value</code> field
+     * permits access to the parsed result. */
     public static class Switch extends Base {
         public boolean value = false;
         protected char negshr = '\0';
@@ -407,8 +433,9 @@ public class Options {
         { return Boolean.toString(value); }
     }
 
-    /** A simple counter setting.  A public <code>value</code>
-     *  field permits access to the parsed result. */
+    /**
+     * A simple counter setting.  A public <code>value</code> field
+     * permits access to the parsed result. */
     public static class Counter extends Base {
         public int value;
         public Counter(java.lang.String opt, char shr, int defl,
@@ -429,8 +456,9 @@ public class Options {
         { return java.lang.Integer.toString(value); }
     }
 
-    /** A simple string setting.  A public <code>value</code>
-     *  field permits access to the parsed result. */
+    /**
+     * A simple string setting.  A public <code>value</code> field
+     * permits access to the parsed result. */
     public static class String extends Base {
         public java.lang.String value = null;
         public String(java.lang.String opt, char shr,
@@ -449,8 +477,9 @@ public class Options {
         public java.lang.String toString() { return value; }
     }
 
-    /** A simple integer setting.  A public <code>value</code>
-     *  field permits access to the parsed result. */
+    /**
+     * A simple integer setting.  A public <code>value</code> field
+     * permits access to the parsed result. */
     public static class Integer extends Base {
         public int value;
         public Integer(java.lang.String opt, char shr, int defl,
@@ -481,8 +510,9 @@ public class Options {
         }
     }
 
-    /** A long integer setting.  A public <code>value</code>
-     *  field permits access to the parsed result. */
+    /**
+     * A long integer setting.  A public <code>value</code> field
+     * permits access to the parsed result. */
     public static class Long extends Base {
         public long value;
         public Long(java.lang.String opt, char shr, long defl,
@@ -512,8 +542,9 @@ public class Options {
         }
     }
 
-    /** A simple floating point setting.  A public <code>value</code>
-     *  field permits access to the parsed result. */
+    /**
+     * A simple floating point setting.  A public <code>value</code>
+     * field permits access to the parsed result. */
     public static class Float extends Base {
         public float value;
         public Float(java.lang.String opt, char shr, float defl,
@@ -543,9 +574,9 @@ public class Options {
         }
     }
 
-    /** A double precision floating point setting.  A public
-     *  <code>value</code> field permits access to the parsed
-     *  result. */
+    /**
+     * A double precision floating point setting.  A public
+     * <code>value</code> field permits access to the parsed result. */
     public static class Double extends Base {
         public double value;
         public Double(java.lang.String opt, char shr, double defl,
@@ -575,8 +606,9 @@ public class Options {
         }
     }
 
-    /** An internet address setting.  A public <code>value</code>
-     *  field permits access to the parsed result. */
+    /**
+     * An internet address setting.  A public <code>value</code> field
+     * permits access to the parsed result. */
     public static class InetAddress extends Base {
         public java.net.InetAddress value;
         public InetAddress(java.lang.String opt, char shr,
@@ -607,8 +639,9 @@ public class Options {
         }
     }    
 
-    /** A print stream setting.  A public <code>value</code> field
-     *  permits access to the parsed result. */
+    /**
+     * A print stream setting.  A public <code>value</code> field
+     * permits access to the parsed result. */
     public static class PrintStream extends Base {
         public java.io.PrintStream value;
         public PrintStream(java.lang.String opt, char shr,
@@ -642,9 +675,10 @@ public class Options {
         }
     }    
 
-    /** Configuration file setting.  The entire file is read and
-     *  parsed at configuration time, so the run-time order in which
-     *  options are presented matters. */
+    /**
+     * Configuration file setting.  The entire file is read and parsed
+     * at configuration time, so the run-time order in which options
+     * are presented matters. */
     public static class Config extends Base {
         private Options opts;
 
@@ -786,11 +820,15 @@ public class Options {
         }
     }
     
-    /** Description for automated usage message. */
+    /**
+     * Description for automated usage message.
+     * @return Usage message. */
     public static java.lang.String usageLine()
     { return "Accepts command line options."; }
 
-    /** A simple option demonstration. */
+    /**
+     * A simple option demonstration.
+     * @param args Command line arguments. */
     public static void main(java.lang.String[] args) {
         Options opts   = new Options();
         Switch  active = opts.add

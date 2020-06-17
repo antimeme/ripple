@@ -21,9 +21,10 @@
 package net.esclat.ripple;
 import java.io.Serializable;
 
-/** General purpose linear algebra library.  A matrix is immutable
- *  from outside this class (all mutating operations are protected),
- *  so all public operations produce new matricies. */
+/**
+ * General purpose linear algebra library.  A matrix is immutable
+ * from outside this class (all mutating operations are protected),
+ * so all public operations produce new matricies. */
 public class Matrix implements Serializable {
     static final long serialVersionUID = 0;
     static final float EPSILON = 0.000001f;
@@ -83,17 +84,26 @@ public class Matrix implements Serializable {
             this.elements[i] = m.elements[i];
     }
 
-    /** Creates a blank matrix with the dimensions specified.
-     *  Requires that both row and col are greater than zero. */
+    /**
+     * Creates a blank matrix with the dimensions specified.
+     * Requires that both row and col are greater than zero.
+     *
+     * @param rows Number of rows to create
+     * @param cols Number of columns to create */
     protected Matrix(int rows, int cols) {
         this.rows = rows;  this.cols = cols;
         elements = new float[rows * cols];
     }
     
-    /** Creates a matrix with values given by each position according
-     *  to the formula <code>[r,c] = elements[(r * cols) + c]</code>.
-     *  Requires that <code>row &gt; 0, col &gt; 0</code> and
-     *  <code>elements.length = rows * cols</code>. */
+    /**
+     * Creates a matrix with values given by each position according
+     * to the formula <code>[r,c] = elements[(r * cols) + c]</code>.
+     * Requires that <code>row &gt; 0, col &gt; 0</code> and
+     * <code>elements.length = rows * cols</code>.
+     *
+     * @param rows Number of rows in created matrix
+     * @param cols Number of columns in created matrix
+     * @param elements Value for each position */
     public Matrix(int rows, int cols, float elements[]) {
         if (rows <= 0 || cols <= 0)
             throw new BoundsException();
@@ -123,10 +133,13 @@ public class Matrix implements Serializable {
         elements[(row * cols) + col] = value;
     }
     
-    /** Returns true if and only if this matrix is square (has the
-        same number of rows and columns) and has value one on each
-        diagonal and zero elsewhere within an internally defined
-        floating point tolerance. */
+    /**
+     * Returns true if and only if this matrix is square (has the same
+     * number of rows and columns) and has value one on each diagonal
+     * and zero elsewhere within an internally defined floating point
+     * tolerance.
+     *
+     * @return true if and only if this is a square identity matrix */
     public boolean isIdentity() {
         if (rows != cols)
             return false;
@@ -138,10 +151,13 @@ public class Matrix implements Serializable {
         return true;
     }
 
-    /** Returns true if and only if this matrix is square (has the
-     *  same number of rows and columns) and has the same value at
-     *  every location as its transpose within an internally defined
-     *  floating point tolerance. */
+    /**
+     * Returns true if and only if this matrix is square (has the
+     * same number of rows and columns) and has the same value at
+     * every location as its transpose within an internally defined
+     * floating point tolerance.
+     *
+     * @return true if and only if this is a square symmetric matrix */
     public boolean isSymmetric() {
         if (rows != cols)
             return false;
@@ -154,7 +170,9 @@ public class Matrix implements Serializable {
         return true;
     }
 
-    /** Returns the transpose of this matrix. */
+    /**
+     * Returns the transpose of this matrix.
+     * @return the transpose of this matrix. */
     public Matrix transpose() {
         Matrix result = new Matrix(cols, rows);
         for (int row = 0; row < rows; row++)
@@ -163,7 +181,10 @@ public class Matrix implements Serializable {
         return result;
     }
 
-    /** Returns the product of this matrix and a scalar. */
+    /**
+     * Returns the product of this matrix and a scalar.
+     * @param x Scalar by which to multiply matrix components
+     * @return matrix multipled by x */
     public Matrix multiply(float x) {
         Matrix result = new Matrix(rows, cols);
         for (int row = 0; row < rows; row++)
@@ -172,12 +193,16 @@ public class Matrix implements Serializable {
         return result;
     }
 
-    /** Returns the of this matrix and <code>m</code>.  Note that
-     *  <code>A.multiply(B).equals(B.multiply(A))</code> is not always
-     *  true -- in other words matrix multiplication is not
-     *  commutative.  Requires that the number of rows in matrix
-     *  <code>m</code> is equal to the number of columns in this
-     *  matrix. */
+    /**
+     * Returns the of this matrix and <code>m</code>.  Note that
+     * <code>A.multiply(B).equals(B.multiply(A))</code> is not always
+     * true -- in other words matrix multiplication is not
+     * commutative.  Requires that the number of rows in matrix
+     * <code>m</code> is equal to the number of columns in this
+     * matrix.
+     *
+     * @param m Matrix to multiply by
+     * @return This matrix multiped by m. */
     public Matrix multiply(Matrix m) {
         if ((m == null) || (cols != m.rows))
             throw new WrongSizeException();
@@ -195,12 +220,18 @@ public class Matrix implements Serializable {
         return result;
     }
 
-    /** Returns a matrix that is the sum of this matrix and
-     *  <code>m</code>.  All of the elements of this matrix are scaled
-     *  by <code>scale</code> and added to the corresponding entry of
-     *  matrix <code>m</code> after the latter is scaled by
-     *  <code>scale_m</code>.  Requires that this matrix have the same
-     *  dimensions (rows and columns) as <code>m</code>. */
+    /**
+     * Returns a matrix that is the sum of this matrix and
+     * <code>m</code>.  All of the elements of this matrix are scaled
+     * by <code>scale</code> and added to the corresponding entry of
+     * matrix <code>m</code> after the latter is scaled by
+     * <code>scale_m</code>.  Requires that this matrix have the same
+     * dimensions (rows and columns) as <code>m</code>.
+     *
+     * @param m Matrix to add to this one.
+     * @param scale Scales this matrix before addition
+     * @param scale_m Scales other matrix before addition
+     * @return Result of matrix operations. */
     public Matrix add(Matrix m, float scale, float scale_m) {
         if ((rows != m.rows) || (cols != m.cols)) 
             throw new WrongSizeException();
@@ -214,15 +245,22 @@ public class Matrix implements Serializable {
         return result;
     }
     
-    /** Returns a matrix that is the sum of this matrix and
-     *  <code>m</code>.  All entries of <code>m</code> are added to
-     *  the corresponding entry of this matrix.  Requires that this
-     *  matrix have the same dimensions (rows and columns) as
-     *  <code>m</code>. */
+    /**
+     * Returns a matrix that is the sum of this matrix and
+     * <code>m</code>.  All entries of <code>m</code> are added to the
+     * corresponding entry of this matrix.  Requires that this matrix
+     * have the same dimensions (rows and columns) as
+     * <code>m</code>.
+     *
+     * @param m Matrix to add
+     * @return Result of matrix operations */
     public Matrix add(Matrix m) { return add(m, 1.0f, 1.0f); }
     
-    /** Performs Gaussian elimination to produce an upper triangular
-     *  echelon matrix. */
+    /**
+     * Performs Gaussian elimination to produce an upper triangular
+     * echelon matrix.
+     *
+     * @return Result of matrix operations */
     protected Matrix echelonU() {
         Matrix u = new Matrix(this);
         int row = 0, col = 0;
@@ -260,8 +298,11 @@ public class Matrix implements Serializable {
         return u;
     }
     
-    /** Performs Gaussian-Jordan elimination to produce a reduced
-     *  echelon matrix. */
+    /**
+     * Performs Gaussian-Jordan elimination to produce a reduced
+     * echelon matrix.
+     *
+     * @return Result of matrix operations. */
     protected Matrix echelonR() {
         Matrix r = echelonU();
         int row = 0; int col = 0;
@@ -284,8 +325,12 @@ public class Matrix implements Serializable {
         return r;
     }
 
-    /** Compute the determinant of a square matrix.  Requires that
-     *  this matrix have the same number of rows as columns. */
+    /**
+     * Compute the determinant of a square matrix.  Requires that
+     * this matrix have the same number of rows as columns.
+     *
+     * @return Determinant of this matrix.
+     * @throws WrongSizeException If this matrix isn't square */
     public float determinant() {
         if (rows != cols) throw new WrongSizeException();        
         Matrix u = echelonU();
@@ -295,12 +340,15 @@ public class Matrix implements Serializable {
         return result;
     }
     
-    /** Computes the inverse of this matrix if it exists or null if it
-     *  doesn't.  An inverse exists for any square matrix with
-     *  linearly independent columns.
-     *  <code>this.multiply(this.inverse()).isIdentity()</code> will
-     *  return true if an inverse exists.  Requires that this matrix
-     *  have the same number of rows as columns. */
+    /**
+     * Computes the inverse of this matrix if it exists or null if it
+     * doesn't.  An inverse exists for any square matrix with linearly
+     * independent columns.
+     * <code>this.multiply(this.inverse()).isIdentity()</code> will
+     * return true if an inverse exists.  Requires that this matrix
+     * have the same number of rows as columns.
+     *
+     * @return Result of matrix inversion or null if not possible. */
     public Matrix inverse() {
         if (rows != cols)
             throw new WrongSizeException();
@@ -310,11 +358,15 @@ public class Matrix implements Serializable {
             IB.partition(0, cols, rows, cols) : null;
     }
     
-    /** Returns a matrix that can multiply column vectors to find
-     *  their projections onto the column space of the original
-     *  matrix.  This is also useful for least squared approximations.
-     *  Requires that the columns of this matrix be linearly
-     *  independent (the matrix must have full column rank). */
+    /**
+     * Returns a matrix that can multiply column vectors to find their
+     * projections onto the column space of the original matrix.  This
+     * is also useful for least squared approximations.  Requires that
+     * the columns of this matrix be linearly independent (the matrix
+     * must have full column rank).
+     *
+     * @return Result of matrix operations.
+     * @throws NotFullRankException if this matrix is not invertable */
     public Matrix projection() {
         Matrix t = transpose();
         Matrix s = t.multiply(this).inverse(); // (A^T A)^-1
@@ -323,17 +375,19 @@ public class Matrix implements Serializable {
         return multiply(s).multiply(t); // A (A^T A)^-1 A^T
     }
 
-    /** Performs modified Gram-Schmidt algorithm to find an
-     *  orthonormal (orthogonal to one another with unit length) if
-     *  the columns of this matrix are linearly independent.
-     *  Otherwise returns null.  Note that if this matrix has an
-     *  inverse then the matrix returned will also have an inverse and
-     *  it will be equal to its transpose.  Note also that this
-     *  routine called on a matrix with one column will return a
-     *  column vector of unit length in the same direction as the
-     *  original.  Requires that the columns of this matrix be
-     *  linearly independent (the matrix must have full column
-     *  rank). */
+    /**
+     *  Performs modified Gram-Schmidt algorithm to find an
+     * orthonormal (orthogonal to one another with unit length) if the
+     * columns of this matrix are linearly independent.  Otherwise
+     * returns null.  Note that if this matrix has an inverse then the
+     * matrix returned will also have an inverse and it will be equal
+     * to its transpose.  Note also that this routine called on a
+     * matrix with one column will return a column vector of unit
+     * length in the same direction as the original.  Requires that
+     * the columns of this matrix be linearly independent (the matrix
+     * must have full column rank).
+     *
+     * @return Result of matrix operations. */
     public Matrix normalize() {
         Matrix q = new Matrix(this);        
         for (int col = 0; col < cols; col++) {
@@ -361,18 +415,21 @@ public class Matrix implements Serializable {
         return q;
     }
 
-    /** Return a matrix with columns that are a basis for the column
-     *  space of this matrix.  The columns of a basis are linearly
-     *  independent and any vector in the space they describe can be
-     *  formed by a linear combination of these basis vectors.  Note
-     *  that if all elements of this matrix are zero then the basis
-     *  contains no vectors and this function returns null.  By the
-     *  fundamental theorum of linear algebra a basis for the column
-     *  space must have the same number of vectors as a basis for the
-     *  row space.  Also the sum of the number of basis vectors in the
-     *  column space and the number of basis vectors in the left null
-     *  space must be equal to the number of rows in the original
-     *  matrix. */
+    /**
+     * Return a matrix with columns that are a basis for the column
+     * space of this matrix.  The columns of a basis are linearly
+     * independent and any vector in the space they describe can be
+     * formed by a linear combination of these basis vectors.  Note
+     * that if all elements of this matrix are zero then the basis
+     * contains no vectors and this function returns null.  By the
+     * fundamental theorum of linear algebra a basis for the column
+     * space must have the same number of vectors as a basis for the
+     * row space.  Also the sum of the number of basis vectors in the
+     * column space and the number of basis vectors in the left null
+     * space must be equal to the number of rows in the original
+     * matrix.
+     *
+     * @return Result of matrix operations. */
     public Matrix spaceColumn() {
         Matrix basis = new Matrix(rows, cols);
         Matrix u = echelonU();
@@ -388,29 +445,35 @@ public class Matrix implements Serializable {
         return basis.partition(0, 0, rows, row);
     }
 
-    /** Return a matrix with columns that are a basis for the row
-     *  space of this matrix.  The columns of a basis are linearly
-     *  independent and any vector in the space they describe can be
-     *  formed by a linear combination of these basis vectors.  Note
-     *  that if all elements of this matrix are zero then the basis
-     *  contains no vectors and this function returns null.  By the
-     *  fundamental theorum of linear algebra a basis for the column
-     *  space must have the same number of vectors as a basis for the
-     *  row space.  Also the sum of the number of basis vectors in the
-     *  row space and the number of basis vectors in the null space
-     *  must be equal to the number of columns in the original
-     *  matrix. */
+    /**
+     * Return a matrix with columns that are a basis for the row space
+     * of this matrix.  The columns of a basis are linearly
+     * independent and any vector in the space they describe can be
+     * formed by a linear combination of these basis vectors.  Note
+     * that if all elements of this matrix are zero then the basis
+     * contains no vectors and this function returns null.  By the
+     * fundamental theorum of linear algebra a basis for the column
+     * space must have the same number of vectors as a basis for the
+     * row space.  Also the sum of the number of basis vectors in the
+     * row space and the number of basis vectors in the null space
+     * must be equal to the number of columns in the original
+     * matrix.
+     *
+     * @return Result of matrix operations. */
     public Matrix spaceRow() { return transpose().spaceColumn(); }
     
-    /** Return a matrix with columns that are a basis for the null
-     *  space of this matrix.  The columns of a basis are linearly
-     *  independent and any vector in the space they describe can be
-     *  formed by a linear combination of these basis vectors.  By the
-     *  fundamental theorum of linear algebra the sum of the number of
-     *  basis vectors in the row space and the number of basis vectors
-     *  in the null space must be equal to the number of columns in
-     *  the original matrix.  Also every vector in the null space is
-     *  orthogonal to every vector in the row space. */
+    /**
+     * Return a matrix with columns that are a basis for the null
+     * space of this matrix.  The columns of a basis are linearly
+     * independent and any vector in the space they describe can be
+     * formed by a linear combination of these basis vectors.  By the
+     * fundamental theorum of linear algebra the sum of the number of
+     * basis vectors in the row space and the number of basis vectors
+     * in the null space must be equal to the number of columns in the
+     * original matrix.  Also every vector in the null space is
+     * orthogonal to every vector in the row space.
+     *
+     * @return Result of matrix operations. */
     public Matrix spaceNull() {
         Matrix buffer = new Matrix(cols, rows);
         Matrix r = echelonR();
@@ -458,22 +521,27 @@ public class Matrix implements Serializable {
         } else return null;
     }
 
-    /** Return a matrix with columns that are a basis for the left
-     *  null space of this matrix.  The columns of a basis are
-     *  linearly independent and any vector in the space they describe
-     *  can be formed by a linear combination of these basis vectors.
-     *  By the fundamental theorum of linear algebra the sum of the
-     *  number of basis vectors in the column space and the number of
-     *  basis vectors in the left null space must be equal to the
-     *  number of rows in the original matrix.  Also every vector in
-     *  the left null space is orthogonal to every vector in the
-     *  column space. */
+    /**
+     * Return a matrix with columns that are a basis for the left null
+     * space of this matrix.  The columns of a basis are linearly
+     * independent and any vector in the space they describe can be
+     * formed by a linear combination of these basis vectors.  By the
+     * fundamental theorum of linear algebra the sum of the number of
+     * basis vectors in the column space and the number of basis
+     * vectors in the left null space must be equal to the number of
+     * rows in the original matrix.  Also every vector in the left
+     * null space is orthogonal to every vector in the column space.
+     *
+     * @return Result of matrix operations. */
     public Matrix spaceLeftNull() { return transpose().spaceNull(); }
 
-    /** Return a matrix that has all the columns of this matrix and m,
-     *  in that order.  Requires: the number of rows in matrix
-     *  <code>m</code> is equal to the number of rows in this
-     *  matrix. */
+    /**
+     * Return a matrix that has all the columns of this matrix and m,
+     * in that order.  Requires: the number of rows in matrix
+     * <code>m</code> is equal to the number of rows in this matrix.
+     *
+     * @param m Matrix from which to take augmented columns
+     * @return Augmented matrix. */
     public Matrix augmentCols(Matrix m) {
         if (m == null) return this;
         if (rows != m.rows)
@@ -486,10 +554,13 @@ public class Matrix implements Serializable {
         return result;
     }
 
-    /** Return a matrix that has all the rows of this matrix and m, in
-     *  that order.  Requires: the number of columns in matrix
-     *  <code>m</code> is equal to the number of columns in this
-     *  matrix. */
+    /**
+     * Return a matrix that has all the rows of this matrix and m, in
+     * that order.  Requires: the number of columns in matrix
+     * <code>m</code> is equal to the number of columns in this matrix.
+     *
+     * @param m Matrix from which to take augmented rows
+     * @return Augmented matrix. */
     public Matrix augmentRows(Matrix m) {
         if (m == null) return this;
         if (cols != m.cols)
@@ -503,15 +574,22 @@ public class Matrix implements Serializable {
         return result;
     }
 
-    /** Return a subset matrix with nRow rows and <code>nCol</code>
-     *  columns that contains the elements of this matrix beginning at
-     *  <code>sRow</code> and <code>sCol</code>.  Requires that
-     *  <code>sRow</code>, <code>sCol</code> must be valid indicies.
-     *  <code>sRow</code> + <code>nRow</code> must be less than or
-     *  equal to the number of rows in this matrix.  <code>sCol</code>
-     *  + <code>nCol</code> must be less than or equal to the number
-     *  of rows in this matrix.  <code>nRow</code> and
-     *  <code>nCol</code> must be non-negative. */
+    /**
+     * Return a subset matrix with nRow rows and <code>nCol</code>
+     * columns that contains the elements of this matrix beginning at
+     * <code>sRow</code> and <code>sCol</code>.  Requires that
+     * <code>sRow</code>, <code>sCol</code> must be valid indicies.
+     * <code>sRow</code> + <code>nRow</code> must be less than or
+     * equal to the number of rows in this matrix.  <code>sCol</code>
+     * + <code>nCol</code> must be less than or equal to the number of
+     * rows in this matrix.  <code>nRow</code> and <code>nCol</code>
+     * must be non-negative.
+     *
+     * @param sRow staring row for partition
+     * @param sCol starting column for partition
+     * @param nRow ending row for partition
+     * @param nCol ending column for partition
+     * @return Partitioned matrix. */
     public Matrix partition(int sRow, int sCol, int nRow, int nCol) {
         if (!(sRow >= 0 && sCol >= 0) ||
             !(nRow >= 0 && nCol >= 0) ||
@@ -526,9 +604,13 @@ public class Matrix implements Serializable {
         return sub;
     }
 
-    /** Returns true if <code>obj</code> is a matrix of the same
-     *  dimensions as this one with all element values equal within an
-     *  internally defined floating point tolerance. */
+    /**
+     * Returns true if <code>obj</code> is a matrix of the same
+     * dimensions as this one with all element values equal within an
+     * internally defined floating point tolerance.
+     *
+     * @param obj Object to compare
+     * @return true if and only if the object is the same matrix */
     public boolean equals(Object obj) {
         if ((obj == null) || !(obj instanceof Matrix))
             return false;
@@ -543,9 +625,13 @@ public class Matrix implements Serializable {
         return true;
     }
 
-    /** Return a square matrix with one on each diagonal and zero
-     *  everywhere else.  Requires that <code>size</code> is greater
-     *  than zero. */
+    /**
+     * Return a square matrix with one on each diagonal and zero
+     * everywhere else.  Requires that <code>size</code> is greater
+     * than zero.
+     *
+     * @param size Number of rows and columns in created matrix
+     * @return An identity matrix */
     public static Matrix createIdentity(int size) {
         if (size <= 0)
             throw new WrongSizeException();
@@ -557,11 +643,15 @@ public class Matrix implements Serializable {
         return identity;
     }
     
-    /** Creates a single matrix that contains all the columns of all
-     *  matricies in the <code>combine</code> array in the order that
-     *  they appear.  This is useful for creating a matrix from column
-     *  vectors.  Requires that all matricies in <code>combine</code>
-     *  array have the same number of rows. */
+    /**
+     * Creates a single matrix that contains all the columns of all
+     * matricies in the <code>combine</code> array in the order that
+     * they appear.  This is useful for creating a matrix from column
+     * vectors.  Requires that all matricies in <code>combine</code>
+     * array have the same number of rows.
+     *
+     * @param combine Array of matrices to combine.
+     * @return Combined matrix. */
     public static Matrix combineCols(Matrix combine[]) {
         if (combine == null) return null;
         int rows = 0, cols = 0;
@@ -592,11 +682,15 @@ public class Matrix implements Serializable {
         return result;
     }
 
-    /** Creates a single matrix that contains all the rows of all
-     *  matricies in the <code>combine</code> array in the order that
-     *  they appear.  This is useful for creating a matrix from row
-     *  vectors.  Requires: all matricies in <code>combine</code>
-     *  array must have the same number of columns. */
+    /**
+     * Creates a single matrix that contains all the rows of all
+     * matricies in the <code>combine</code> array in the order that
+     * they appear.  This is useful for creating a matrix from row
+     * vectors.  Requires: all matricies in <code>combine</code> array
+     * must have the same number of columns.
+     *
+     * @param combine Array of matrices to combine.
+     * @return Combined matrix. */
     public static Matrix combineRows(Matrix combine[]) {
         if (combine == null) return null;
         int rows = 0, cols = 0;
@@ -627,7 +721,11 @@ public class Matrix implements Serializable {
         return result;
     }
     
-    /** Return the string length for this column. */
+    /**
+     * Return the string length for this column.
+     *
+     * @param col Determines which column to evaluate
+     * @return Number of string characters */
     protected int getColWidth(int col) {
         int width = 0;
         for (int i = 0; i < rows; i++) {
@@ -638,8 +736,13 @@ public class Matrix implements Serializable {
         return width;
     }
 
-    /** Returns a string that is <code>s</code> but with enough
-     *  leading spaces to have width of <code>width</code>. */
+    /**
+     * Returns a string that is <code>s</code> but with enough
+     * leading spaces to have width of <code>width</code>.
+     *
+     * @param sb String buffer to fill with padding
+     * @param s String to append
+     * @param width Desired width of padded string. */
     protected void padString(StringBuffer sb, String s, int width) {
         StringBuffer buffer = new StringBuffer();
         for (int i = 0; i < width - s.length(); i++)
@@ -647,7 +750,10 @@ public class Matrix implements Serializable {
         sb.append(s);
     }
 
-    /** Returns a string describing this matrix. */
+    /**
+     * Returns a string describing this matrix.
+     *
+     * @return A string representation of this matrix. */
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         int widths[] = new int[cols];
@@ -672,7 +778,10 @@ public class Matrix implements Serializable {
     public static String usageLine()
     { return "Performs simple matrix algebra."; }
 
-    /** Module unit test. */
+    /**
+     * Module unit test.
+     *
+     * @param args Command line arguments */
     public static void main(String args[]) {
         Matrix A;
         if (args.length > 0) {

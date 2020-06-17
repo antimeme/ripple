@@ -22,8 +22,9 @@ import java.awt.Point;
 
 /** An abstaction for representing hexagonal grids. */
 public class HexagonGrid {
-    /** Distance from the center to the closest point of any side
-     *  of an isometric unit hexagon. */
+    /**
+     * Distance from the center to the closest point of any side
+     * of an isometric unit hexagon. */
     public static final double PERPENDICULAR = Math.sqrt(3.0) / 2.0;
     private Point center;
     private int cellEdge; 
@@ -49,7 +50,17 @@ public class HexagonGrid {
         reshape(target, size, grid);
     }
 
-    /** Changes the dimensions for future drawing operations. */
+    /**
+     * Changes the dimensions for future drawing operations.
+     *
+     *  @param target Indicates the dimensions of the drawing area.  A
+     *  HexagonGrid is not responsible for enforcing this and may draw
+     *  out of bounds if this is convenient for implementaiton.
+     *  @param size Approximate number of pixels along each edge of
+     *  the hexagon that delimits a cell.
+     *  @param grid When true the size parameter is instead
+     *  interpreted as the number of cells along each edge of a grid
+     *  that must fit in the specified drawing area. */
     public void reshape(Rectangle target, int size, boolean grid) {
         if (grid) {
             double adjHeight = PERPENDICULAR * ((4 * size) - 2);
@@ -69,14 +80,22 @@ public class HexagonGrid {
                            target.y + target.height / 2);
     }
 
-    /** Returns the length of one hexagonal cell edge. */
+    /**
+     * Returns the length of one hexagonal cell edge.
+     * @return length of one hexagonal cell edge */
     public int getCellEdge() { return cellEdge; }
 
-    /** Returns the number of hexagons along each grid side. */
+    /**
+     * Returns the number of hexagons along each grid side.
+     * @return number of hexagons along each grid side */
     public int getGridEdge() { return gridEdge; }
 
-    /** Determines the coordinates of the center for the specified
-     *  grid location. */
+    /**
+     * Determines the coordinates of the center for the specified
+     * grid location.
+     * @param row Row of the specified grid cell
+     * @param col Column of the specified grid cell
+     * @return coordinates of the center of the selected cell */
     public Point getGridPoint(int row, int col) {
         return new Point((int)(center.x + 
                                (cellEdge * PERPENDICULAR * 
@@ -106,10 +125,15 @@ public class HexagonGrid {
         }
     }
 
-    /** Computes the row and column of the grid in which a given point
-     *  falls and returns a location object with this result.  Note
-     *  that the center point of HexagonGrid is location (0, 0) and
-     *  that the postive directions are to the right and down.  */
+    /**
+     * Computes the row and column of the grid in which a given point
+     * falls and returns a location object with this result.  Note
+     * that the center point of HexagonGrid is location (0, 0) and
+     * that the postive directions are to the right and down.
+     *
+     * @param p Coordinates from which to find a grid cell
+     * @param clamp When true limits locations to the grid edge
+     * @return representation of the grid cell containing the point */
     public Location getLocation(Point p, boolean clamp) {
         if (cellEdge <= 0) 
             return null;
@@ -156,8 +180,12 @@ public class HexagonGrid {
         return result;
     }
     
-    /** Same as {@link #getLocation(Point, boolean)} but defaults
-     *  to unclamped. */
+    /**
+     * Same as {@link #getLocation(Point, boolean)} but defaults
+     * to unclamped.
+     *
+     * @param p Coordinates from which to find a grid cell
+     * @return representation of the grid cell containing the point */
     public Location getLocation(Point p) {
         return getLocation(p, false);
     }    

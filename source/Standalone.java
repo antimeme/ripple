@@ -307,7 +307,9 @@ public class Standalone
     /**
      * Blocks until the application is terminated.  Usually termination
      * is the result of a user clicking the close button on the frame
-     * window decoration. */
+     * window decoration.
+     * @return This object for chained calls.
+     * @throws InterruptedException If something interrupts. */
     public synchronized Standalone join()
         throws InterruptedException
     {

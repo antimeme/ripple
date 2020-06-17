@@ -1,5 +1,5 @@
 // Ripple.java.in                                    -*- mode: java; -*-
-// Copyright (C) 2007-2017 by Jeff Gold
+// Copyright (C) 2007-2020 by Jeff Gold
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -259,7 +259,10 @@ public class Ripple {
 
     /**
      * Collect a password from the command line.  If possible this
-     * method will avoid echoing characters. */
+     * method will avoid echoing characters.
+     *
+     * @param prompt explains to user which pass phrase is required
+     * @return pass phrase provided by the command line user */
     public static char[] passwdPrompt(String prompt)
     {
         // Java 1.6 introduced a Console class that makes it easy to
@@ -296,9 +299,12 @@ public class Ripple {
         return result;
     }
 
-    /** Collects information about the current process.  This includes
-     *  the process identifier in most Java implementations, but
-     *  that's not guaranteed. */
+    /**
+     * Collects information about the current process.  This includes
+     * the process identifier in most Java implementations, but that's
+     * not guaranteed.
+     *
+     * @return a description of the current runtime */
     public static String getRuntimeName()
     {
         String result = null;
@@ -333,7 +339,12 @@ public class Ripple {
         wrap(o, maxlen + 5, maxlen + 5, 72, usage);
     }
 
-    /** Prints a detailed usage message to the specified stream. */
+    /**
+     * Prints a detailed usage message to the specified stream.
+     *
+     * @param o Usage message is sent to this stream.
+     * @return Zero on success, non-zero if something went wrong.
+     * @throws Exception Anything can happen. */
     public static int help(PrintStream o) throws Exception
     {
         List<String> commands = getCommands();
@@ -452,7 +463,14 @@ public class Ripple {
         return result;
     }
     
-    /** Attempts to get a method on a class described by a string. */
+    /**
+     * Attempts to get a method on a class described by a string.
+     *
+     * @param className
+     * @param methodName
+     * @param argumentType
+     * @return
+     * @throws Exception */
     private static Method getMethod
         (String className, String methodName, Class<?> argumentType)
         throws Exception
@@ -465,7 +483,11 @@ public class Ripple {
         return result;
     }
 
-    /** Entry point that dispatches requests to applications. */
+    /**
+     * Entry point that dispatches requests to applications.
+     *
+     * @param args Command line parameters.
+     * @throws Throwable Anything can happen. */
     public static void main(String[] args) throws Throwable
     {
         int result = 0;
