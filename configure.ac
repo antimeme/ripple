@@ -1,5 +1,5 @@
 dnl configure.ac
-dnl Copyright (C) 2006-2017 by Jeff Gold.
+dnl Copyright (C) 2006-2020 by Jeff Gold.
 dnl 
 dnl This program is free software: you can redistribute it and/or
 dnl modify it under the terms of the GNU General Public License as
@@ -56,14 +56,9 @@ esac], [enable_java=1])
 if test "x$enable_java" = x1; then
     AC_PATH_PROG([JAVA_PATH_NAME], [java])
     if test "x$JAVA_HOME" != x; then
-        # Don't question a user supplied JAVA_HOME
-        true
+        true # Don't question a user supplied JAVA_HOME
     elif test -d /etc/alternatives/java_sdk; then
-        # /etc/alternatives might specify preferred Java installation
-        AC_PATH_PROG([READLINK], [readlink])
-        if test -n "$READLINK"; then
-            JAVA_HOME=`$READLINK /etc/alternatives/java_sdk`
-        else JAVA_HOME=/etc/alterntatives/java_sdk; fi
+        JAVA_HOME=/etc/alterntatives/java_sdk
     elif test -x /usr/libexec/java_home; then
         # Apple OSX 10.5 and later have a JAVA_HOME finder:
         # http://developer.apple.com/library/mac/#qa/qa2001/qa1170.html
@@ -78,13 +73,9 @@ if test "x$enable_java" = x1; then
         export JAVA_HOME
         AC_MSG_RESULT([$JAVA_HOME])
     else AC_MSG_RESULT([missing]); fi
-fi
-if test "x$enable_java" = x1 && test -d "$JAVA_HOME"; then
-   AM_CONDITIONAL([HAVE_JAVA], [true])
-   AC_SUBST([HAVE_JAVA], [1])
+    AM_CONDITIONAL([HAVE_JAVA], [test -n "$JAVA_HOME"])
 else
-   AM_CONDITIONAL([HAVE_JAVA], [false])
-   AC_SUBST([HAVE_JAVA], [0])
+    AM_CONDITIONAL([HAVE_JAVA], [false])
 fi
 
 AC_CONFIG_FILES([

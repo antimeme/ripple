@@ -1,5 +1,5 @@
 ## Makefile.am
-## Copyright (C) 2006-2017 by Jeff Gold.
+## Copyright (C) 2006-2020 by Jeff Gold.
 ##
 ## This program is free software: you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -77,39 +77,63 @@ TESTS += source/random.py source/match.py
 endif
 
 ## Java ================================================================
-# Names of macros such as JCC, JARROOT and JSOURCES have been chosen to
-# avoid the broken and unmaintained autoconf support for Java
-# Possible improvement:
-#   http://www.freesoftwaremagazine.com/articles/autotools_example
+# Names of macros such as JCC, JAR_ROOT and JAVA_SOURCES have been
+# chosen to avoid the broken and unmaintained autoconf support for
+# Java Possible improvement:
+# http://www.freesoftwaremagazine.com/articles/autotools_example
 if HAVE_JAVA
 javadir = $(datadir)/@PACKAGE@
 java_DATA = @PACKAGE@-@VERSION@.jar
 JAR = $(JAVA_HOME)/bin/jar
 JCC = $(JAVA_HOME)/bin/javac
 JAVADOC = $(JAVA_HOME)/bin/javadoc
-JARROOT = $(top_builddir)/.classes
-JSOURCES =  $(srcdir)/source/*.java
+JAR_ROOT = $(top_builddir)/.classes
+WAR_ROOT = $(top_builddir)/WEB-INF
+JAVA_SOURCES = $(srcdir)/source/*.java
+J2EE_SOURCES = $(srcdir)/source/j2ee/*.java
 
 @PACKAGE@-@VERSION@.jar: $(srcdir)/META-INF/MANIFEST.MF \
-			 $(JARROOT)/.classes javadoc
+			 $(JAR_ROOT)/.classes javadoc
 	$(JAR) cvfm $@ $(srcdir)/META-INF/MANIFEST.MF \
 	    -C $(srcdir)/resources sounds \
 	    -C $(srcdir)/resources images \
-	    -C $(top_builddir) javadoc -C $(JARROOT) .
+	    -C $(top_builddir) javadoc -C $(JAR_ROOT) .
 	chmod +x $@
-	rm -f @PACKAGE@.jar
-	$(LN_S) $@ @PACKAGE@.jar
 
-$(JARROOT)/.classes: $(JSOURCES)
-	$(MKDIR_P) $(JARROOT)
-	$(JCC) -d $(JARROOT) -source 1.6 -target 1.6 $^
-	find $(JARROOT) -name \*.class | \
+@PACKAGE@.jar: @PACKAGE@-@VERSION@.jar
+	rm -f $@
+	$(LN_S) @PACKAGE@-@VERSION@.jar $@
+
+$(JAR_ROOT)/.classes: $(JAVA_SOURCES)
+	$(MKDIR_P) $(JAR_ROOT)
+	$(JCC) -d $(JAR_ROOT) -source 1.6 -target 1.6 $^
+	find $(JAR_ROOT) -name \*.class | \
 	    sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
 	    sort -u > $@
 
-javadoc: $(JSOURCES)
+javadoc: $(JAVA_SOURCES)
 	$(JAVADOC) -docencoding utf-8 -public -d javadoc $^
 	@touch $@
+
+@PACKAGE@-@VERSION@.war: javadoc $(srcdir)/META-INF/MANIFEST.MF \
+			 $(JAR_ROOT)/.classes $(WAR_ROOT)/.classes
+	$(JAR) cvfm $@ $(srcdir)/META-INF/MANIFEST.MF \
+	    -C $(srcdir)/resources sounds \
+	    -C $(srcdir)/resources images \
+	    -C $(top_builddir) javadoc $(WAR_ROOT) \
+	    -C $(JAR_ROOT) .
+	chmod +x $@
+
+@PACKAGE@.war: @PACKAGE@-@VERSION@.war
+	@rm -f $@
+	$(LN_S) @PACKAGE@-@VERSION@.war $@
+
+$(WAR_ROOT)/.classes: $(J2EE_SOURCES)
+	$(MKDIR_P) $(WAR_ROOT)
+	$(JCC) -d $(WAR_ROOT) -source 1.6 -target 1.6 $^
+	find $(JAR_ROOT) -name \*.class | \
+	    sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
+	    sort -u > $@
 
 install-data-local: javadoc
 	$(MKDIR_P) $(DESTDIR)$(docdir)
@@ -129,7 +153,7 @@ clean-local-java:
 	-rm -rf javadoc
 
 mostlyclean-local-java:
-	-rm -rf $(JARROOT)
+	-rm -rf $(JAR_ROOT)
 
 else
 clean-local-java:
