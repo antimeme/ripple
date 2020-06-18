@@ -77,7 +77,7 @@ TESTS += source/random.py source/match.py
 endif
 
 ## Java ================================================================
-# Names of macros such as JCC, JAR_ROOT and JAVA_SOURCES have been
+# Names of macros such as JCC, JAR_ROOT and JAVA_SRCFILES have been
 # chosen to avoid the broken and unmaintained autoconf support for
 # Java Possible improvement:
 # http://www.freesoftwaremagazine.com/articles/autotools_example
@@ -89,8 +89,8 @@ JCC = $(JAVA_HOME)/bin/javac
 JAVADOC = $(JAVA_HOME)/bin/javadoc
 JAR_ROOT = $(top_builddir)/.classes
 WAR_ROOT = $(top_builddir)/WEB-INF
-JAVA_SOURCES = $(srcdir)/source/*.java
-J2EE_SOURCES = $(srcdir)/source/j2ee/*.java
+JAVA_SRCFILES = $(srcdir)/source/*.java
+J2EE_SRCFILES = $(srcdir)/source/j2ee/*.java
 
 @PACKAGE@-@VERSION@.jar: $(srcdir)/META-INF/MANIFEST.MF \
 			 $(JAR_ROOT)/.classes javadoc
@@ -104,14 +104,14 @@ J2EE_SOURCES = $(srcdir)/source/j2ee/*.java
 	rm -f $@
 	$(LN_S) @PACKAGE@-@VERSION@.jar $@
 
-$(JAR_ROOT)/.classes: $(JAVA_SOURCES)
+$(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
 	$(MKDIR_P) $(JAR_ROOT)
 	$(JCC) -d $(JAR_ROOT) -source 1.6 -target 1.6 $^
 	find $(JAR_ROOT) -name \*.class | \
 	    sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
 	    sort -u > $@
 
-javadoc: $(JAVA_SOURCES)
+javadoc: $(JAVA_SRCFILES)
 	$(JAVADOC) -docencoding utf-8 -public -d javadoc $^
 	@touch $@
 
@@ -128,7 +128,7 @@ javadoc: $(JAVA_SOURCES)
 	@rm -f $@
 	$(LN_S) @PACKAGE@-@VERSION@.war $@
 
-$(WAR_ROOT)/.classes: $(J2EE_SOURCES)
+$(WAR_ROOT)/.classes: $(J2EE_SRCFILES)
 	$(MKDIR_P) $(WAR_ROOT)
 	$(JCC) -d $(WAR_ROOT) -source 1.6 -target 1.6 $^
 	find $(JAR_ROOT) -name \*.class | \
@@ -164,7 +164,7 @@ endif
 
 clean-local: clean-local-java
 
-mostlyclean-local-java: clean-local-java
+mostlyclean-local: mostlyclean-local-java
 
 ## Docker ==============================================================
 

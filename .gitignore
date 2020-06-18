@@ -24,6 +24,7 @@ test-driver
 package.json
 Makefile
 Makefile.in
+source/.dirstamp
 include/ripple/config.h
 include/ripple/config.h.in
 include/ripple/stamp-h1
