@@ -92,6 +92,13 @@ WAR_ROOT = "$(top_builddir)/WEB-INF"
 JAVA_SRCFILES = $(srcdir)/source/*.java
 J2EE_SRCFILES = $(srcdir)/source/servlet/*.java
 
+$(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
+	$(MKDIR_P) $(JAR_ROOT)
+	$(JCC) -d $(JAR_ROOT) -source 1.7 -target 1.7 $^
+	find $(JAR_ROOT) -name \*.class | \
+	    sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
+	    sort -u > $@
+
 @PACKAGE@-@VERSION@.jar: $(srcdir)/META-INF/MANIFEST.MF \
 			 $(JAR_ROOT)/.classes javadoc
 	$(JAR) cvfm $@ $(srcdir)/META-INF/MANIFEST.MF \
@@ -103,13 +110,6 @@ J2EE_SRCFILES = $(srcdir)/source/servlet/*.java
 @PACKAGE@.jar: @PACKAGE@-@VERSION@.jar
 	rm -f $@
 	$(LN_S) @PACKAGE@-@VERSION@.jar $@
-
-$(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
-	$(MKDIR_P) $(JAR_ROOT)
-	$(JCC) -d $(JAR_ROOT) -source 1.7 -target 1.7 $^
-	find $(JAR_ROOT) -name \*.class | \
-	    sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
-	    sort -u > $@
 
 javadoc: $(JAVA_SRCFILES)
 	$(JAVADOC) -docencoding utf-8 -public -d javadoc $^

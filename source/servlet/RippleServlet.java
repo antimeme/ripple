@@ -17,6 +17,8 @@ public class RippleServlet extends HttpServlet
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
+
+        // File f = getParameter("javax.servlet.context.tempdir");
     }
 
     public void destroy() {}
@@ -24,8 +26,18 @@ public class RippleServlet extends HttpServlet
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
         throws ServletException, IOException {
-        response.setContentType("text/html");
+        if (request.isSecure()) {
+            //X509Certificate certs[] = request.getParameter
+            //    ("javax.servlet.request.X509Certificate");
+            //int key_size = request.getParameter
+            //    ("javax.servlet.request.key_size");
+            //String cipherSuite = request.getParameter
+            //    ("javax.servlet.request.cipher_suite");
+            //String sessionID = request.getParameter
+            //    ("javax.servlet.request.ssl_session_id");
+        }
 
+        response.setContentType("text/html");
         PrintWriter out = response.getWriter();
         out.println("<title>Ripple Servlet</title>");
         out.println("<h1>Ripple Servlet</h1>");
