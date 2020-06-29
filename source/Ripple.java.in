@@ -492,7 +492,7 @@ public class Ripple {
     {
         int result = 0;
         System.out.println("Ripple " + VERSION + " - Copyright (C) " +
-                           "2007-2017 by Jeff Gold.");
+                           "2007-2020 by Jeff Gold.");
         if (args.length == 0)
             result = help(System.out);
         else if ("questions".equals(args[0])) {
