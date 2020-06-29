@@ -84,13 +84,13 @@ endif
 if HAVE_JAVA
 javadir = $(datadir)/@PACKAGE@
 java_DATA = @PACKAGE@-@VERSION@.jar
-JAR = $(JAVA_HOME)/bin/jar
-JCC = $(JAVA_HOME)/bin/javac
-JAVADOC = $(JAVA_HOME)/bin/javadoc
-JAR_ROOT = $(top_builddir)/.classes
-WAR_ROOT = $(top_builddir)/WEB-INF
+JAR = "$(JAVA_HOME)/bin/jar"
+JCC = "$(JAVA_HOME)/bin/javac"
+JAVADOC = "$(JAVA_HOME)/bin/javadoc"
+JAR_ROOT = "$(top_builddir)/.classes"
+WAR_ROOT = "$(top_builddir)/WEB-INF"
 JAVA_SRCFILES = $(srcdir)/source/*.java
-J2EE_SRCFILES = $(srcdir)/source/j2ee/*.java
+J2EE_SRCFILES = $(srcdir)/source/servlet/*.java
 
 @PACKAGE@-@VERSION@.jar: $(srcdir)/META-INF/MANIFEST.MF \
 			 $(JAR_ROOT)/.classes javadoc
@@ -106,7 +106,7 @@ J2EE_SRCFILES = $(srcdir)/source/j2ee/*.java
 
 $(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
 	$(MKDIR_P) $(JAR_ROOT)
-	$(JCC) -d $(JAR_ROOT) -source 1.6 -target 1.6 $^
+	$(JCC) -d $(JAR_ROOT) -source 1.7 -target 1.7 $^
 	find $(JAR_ROOT) -name \*.class | \
 	    sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
 	    sort -u > $@
@@ -114,6 +114,21 @@ $(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
 javadoc: $(JAVA_SRCFILES)
 	$(JAVADOC) -docencoding utf-8 -public -d javadoc $^
 	@touch $@
+
+MVN_REPO_URL = https://repo1.maven.org/maven2/javax/servlet
+MVN_SERVLET_URL = $(MVN_REPO_URL)/javax.servlet-api/4.0.1
+SERVLET_API_URL = $(MVN_SERVLET_URL)/javax.servlet-api-4.0.1.jar
+
+servlet-api.jar:
+	curl -o $@ $(SERVLET_API_URL)
+
+$(WAR_ROOT)/.classes: $(J2EE_SRCFILES) servlet-api.jar
+	$(MKDIR_P) $(WAR_ROOT)
+	$(JCC) -classpath servlet-api.jar -d $(WAR_ROOT) \
+	       -source 1.7 -target 1.7 $(J2EE_SRCFILES)
+	find $(WAR_ROOT) -name \*.class | \
+	    sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
+	    sort -u > $@
 
 @PACKAGE@-@VERSION@.war: javadoc $(srcdir)/META-INF/MANIFEST.MF \
 			 $(JAR_ROOT)/.classes $(WAR_ROOT)/.classes
@@ -127,13 +142,6 @@ javadoc: $(JAVA_SRCFILES)
 @PACKAGE@.war: @PACKAGE@-@VERSION@.war
 	@rm -f $@
 	$(LN_S) @PACKAGE@-@VERSION@.war $@
-
-$(WAR_ROOT)/.classes: $(J2EE_SRCFILES)
-	$(MKDIR_P) $(WAR_ROOT)
-	$(JCC) -d $(WAR_ROOT) -source 1.6 -target 1.6 $^
-	find $(JAR_ROOT) -name \*.class | \
-	    sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
-	    sort -u > $@
 
 install-data-local: javadoc
 	$(MKDIR_P) $(DESTDIR)$(docdir)

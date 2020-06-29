@@ -44,11 +44,14 @@ source/__init__.py
 # Java
 .classes/
 javadoc/
-jartest.sh
 source/Ripple.java
 ripple-*.jar
 ripple.jar
+ripple-*.war
+ripple.war
+servlet-api.jar
+WEB-INF/.classes
+WEB-INF/net/
 
 # JavaScript
-source/node_modules/
 node_modules/
