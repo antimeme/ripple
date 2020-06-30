@@ -50,8 +50,7 @@ ripple.jar
 ripple-*.war
 ripple.war
 servlet-api.jar
-WEB-INF/.classes
-WEB-INF/net/
+WEB-INF/classes/
 
 # JavaScript
 node_modules/

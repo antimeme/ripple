@@ -88,7 +88,7 @@ JAR = "$(JAVA_HOME)/bin/jar"
 JCC = "$(JAVA_HOME)/bin/javac"
 JAVADOC = "$(JAVA_HOME)/bin/javadoc"
 JAR_ROOT = "$(top_builddir)/.classes"
-WAR_ROOT = "$(top_builddir)/WEB-INF"
+WAR_ROOT = "$(top_builddir)/WEB-INF/classes"
 JAVA_SRCFILES = $(srcdir)/source/*.java
 J2EE_SRCFILES = $(srcdir)/source/servlet/*.java
 
@@ -135,7 +135,8 @@ $(WAR_ROOT)/.classes: $(J2EE_SRCFILES) servlet-api.jar
 	$(JAR) cvfm $@ $(srcdir)/META-INF/MANIFEST.MF \
 	    -C $(srcdir)/resources sounds \
 	    -C $(srcdir)/resources images \
-	    -C $(top_builddir) javadoc $(WAR_ROOT) \
+	    -C $(srcdir)/source/servlet index.html \
+	    -C $(top_builddir) javadoc WEB-INF \
 	    -C $(JAR_ROOT) .
 	chmod +x $@
 
@@ -158,10 +159,10 @@ MOSTLYCLEANFILES += @PACKAGE@-@VERSION@.jar @PACKAGE@.jar
 CLEANFILES += scripts/check-java.sh
 
 clean-local-java:
-	-rm -rf javadoc
+	-rm -rf javadoc *.jar *.war
 
 mostlyclean-local-java:
-	-rm -rf $(JAR_ROOT)
+	-rm -rf $(JAR_ROOT) $(WAR_ROOT)
 
 else
 clean-local-java:

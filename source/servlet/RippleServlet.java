@@ -12,13 +12,14 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet(name="RippleServlet", urlPatterns={ "/ripple" })
 public class RippleServlet extends HttpServlet
 {
-    private static final long serialVersionUID = 0;
+    private static final long serialVersionUID = 1L;
+    protected ServletContext srvctx = null;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-
-        // File f = getParameter("javax.servlet.context.tempdir");
+        srvctx = getServletContext();
+        // File f = getInitParameter("javax.servlet.context.tempdir");
     }
 
     public void destroy() {}
