@@ -5,6 +5,9 @@
 *.pyc
 *.log
 *.trs
+*.pem
+*.srl
+*.p12
 .deps/
 .libs/
 aclocal.m4

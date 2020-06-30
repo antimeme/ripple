@@ -135,7 +135,6 @@ $(WAR_ROOT)/.classes: $(J2EE_SRCFILES) servlet-api.jar
 	$(JAR) cvfm $@ $(srcdir)/META-INF/MANIFEST.MF \
 	    -C $(srcdir)/resources sounds \
 	    -C $(srcdir)/resources images \
-	    -C $(srcdir)/source/servlet index.html \
 	    -C $(top_builddir) javadoc WEB-INF \
 	    -C $(JAR_ROOT) .
 	chmod +x $@
@@ -174,6 +173,52 @@ endif
 clean-local: clean-local-java
 
 mostlyclean-local: mostlyclean-local-java
+
+## Certificates ========================================================
+OPENSSL = openssl
+KEYTOOL = $(JAVA_HOME)/bin/keytool
+STOREPASS = 123456
+COMMON_NAME = /C=US/O=esclat.net/OU=CA/CN=
+
+ca-key.pem:
+	$(OPENSSL) genrsa -out $@ $(KEYSIZE)
+
+ca-cert.pem: ca-key.pem
+	$(OPENSSL) req -sha256 -x509 -key $< -out $@ \
+	    -days 3650 -subj "$(COMMON_NAME)Root CA"
+
+tomcat-key.pem:
+	$(OPENSSL) genrsa -out $@ $(KEYSIZE) -nodes
+
+tomcat-req.pem: tomcat-key.pem
+	$(OPENSSL) req -new -key $< \
+	    -subj "$(COMMON_NAME)$(patsubst %-req.pem,%,$@)" \
+	    -sha256 -nodes -out $@
+
+tomcat-cert.pem: tomcat-req.pem ca-key.pem ca-cert.pem
+	$(OPENSSL) x509 -CA ca-cert.pem -CAkey ca-key.pem \
+	  -req -sha256 -days 730 -extfile resources/ca.conf \
+	  -extensions $(patsubst %-cert.pem,%,$@)_role_ext \
+	  -CAcreateserial -CAserial ca.srl -in $< -out $@
+
+tomcat-cert.der: tomcat-cert.pem
+	$(OPENSSL) x509 -in $< -out $@ -outform der
+
+tomcat-chain.pem: tomcat-cert.pem ca-cert.pem
+	if [ ! -e $@ ]; then \
+	    cp $< $@; cat ca-cert.pem >>$@; \
+	else touch $@; fi
+
+tomcat.p12: tomcat-key.pem tomcat-chain.pem
+	$(OPENSSL) pkcs12 -export -name $(patsubst %.p12,%,$@) \
+            -out $@ -inkey $< -keyex -passout pass:"$(STOREPASS)" \
+	    -in $(patsubst %.p12,%,$@)-chain.pem \
+	    -chain -CAfile ca-cert.pem
+
+tomcat.jceks: tomcat.p12
+	$(KEYTOOL) -importkeystore \
+	           -srckeystore %< -srcstoretype PKCS12 \
+	           -srcstorepass "$(STOREPASS)"
 
 ## Docker ==============================================================
 
