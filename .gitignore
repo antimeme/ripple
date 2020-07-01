@@ -45,8 +45,9 @@ ripple.egg-info/
 source/__init__.py
 
 # Java
-.classes/
+classes/
 javadoc/
+.javadoc
 source/Ripple.java
 ripple-*.jar
 ripple.jar
