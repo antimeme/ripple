@@ -1,5 +1,5 @@
 // Board.java
-// Copyright (C) 2006-20015 by Jeff Gold.
+// Copyright (C) 2006-2020 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -23,8 +23,9 @@ import java.util.StringTokenizer;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
-/** Represents the complete state of an abalone board including which
- *  player will move next.  Objects of this class are immutable. */
+/**
+ * Represents the complete state of an abalone board including which
+ * player will move next.  Objects of this class are immutable. */
 public final class Board implements Cloneable {
     public  static final Object GUTTER = null;
     public  static final Object EMPTY  = new Integer( 0);
@@ -44,8 +45,9 @@ public final class Board implements Cloneable {
         { this.row = row; this.col = col; }
     }
 
-    /** Represents a single move for one player without regard for the
-     *  state of the state of the game board. */
+    /**
+     * Represents a single move for one player without regard for the
+     * state of the state of the game board. */
     public static final class Move extends Object implements Cloneable {
         private byte rowS = 0, colS = 0; // coordinate of first piece
         private byte rowE = 0, colE = 0; // coordinate of last piece
@@ -57,15 +59,17 @@ public final class Board implements Cloneable {
             else throw new IllegalArgumentException("missing value");
         }
         
-        /** Creates a move from a valid string encoding.  An encoding
-         *  is valid if it has the form: <code>(RStart, CStart)-(REnd,
-         *  CEnd):(RTarget, CTarget)</code> where the values are
-         *  replaced by integers between one and nine.  The Start
-         *  coordinate is the first point on the line, the End
-         *  coordinate is the last, and the Target coordinate is the
-         *  destination for the piece at the End coordinate.  For
-         *  example, <code>(1,1)-(3,3):(4,4)</code> is a legal move
-         *  for black on a newly initialized board. */
+        /**
+         * Creates a move from a valid string encoding.  An encoding
+         * is valid if it has the form: <code>(RStart, CStart)-(REnd,
+         * CEnd):(RTarget, CTarget)</code> where the values are
+         * replaced by integers between one and nine.  The Start
+         * coordinate is the first point on the line, the End
+         * coordinate is the last, and the Target coordinate is the
+         * destination for the piece at the End coordinate.  For
+         * example, <code>(1,1)-(3,3):(4,4)</code> is a legal move for
+         * black on a newly initialized board.
+         * @param source description of a valid move */
         public Move(String source) {
             byte rowT, colT;
             StringTokenizer tokens = 
@@ -82,8 +86,16 @@ public final class Board implements Cloneable {
                 throw new IllegalArgumentException("too many numbers");
         }
         
-        /** Creates a move based on a complete set of specified 
-         *  board coordinates. */
+        /**
+         * Creates a move based on a complete set of specified
+         * board coordinates.
+         * @param rS starting row
+         * @param cS starting column
+         * @param rE ending row
+         * @param cE ending column
+         * @param rT row for transition relative to end
+         * @param cT row for transition relative to end
+         * */
         public Move(byte rS, byte cS, byte rE, byte cE,
                     byte rT, byte cT) {
             rowS = rS;  colS = cS;
@@ -102,43 +114,55 @@ public final class Board implements Cloneable {
         public byte getRowT() { return (byte)(rowD + rowE); }
         public byte getColT() { return (byte)(colD + rowE); }
         
-        /** Returns the number of pieces selected by a valid move. */
+        /**
+         * Returns the number of pieces selected by a valid move.
+         * @return number of friendly pieces that would be moved */
         public int getCount() {
             return Move.getCount(rowS, colS, rowE, colE);
         }
         
-        /** Returns the location halfway in between the start and end
-         *  locations if one exists and is along a hexagonally correct
-         *  line.  Returns null otherwise. */
+        /**
+         * Returns the location halfway in between the start and end
+         * locations if one exists and is along a hexagonally correct
+         * line.  Returns null otherwise.
+         * @return location of middle position or null */
         public Location getMiddle() {
             return Move.getMiddle(rowS, colS, rowE, colE);
         }
-        
-        /** Returns true if and only if the start and end positions
-         *  form a valid group for an Abalone move. */
+
+        /**
+         * Returns true if and only if the start and end positions
+         * form a valid group for an Abalone move.
+         * @return true if and only if this move a valid group */
         public boolean isGroup() {
             return Move.isGroup(rowS, colS, rowE, colE);
         }
         
-        /** Returns true if and only if this move is well-formed,
-         *  which is to say that it could possibly be valid for some
-         *  arrangement of pieces on a board. */
+        /**
+         * Returns true if and only if this move is well-formed, which
+         * is to say that it could possibly be valid for some
+         * arrangement of pieces on a board.
+         * @return true if and only if the move is valid */
         public boolean isValid() {
             return Move.isValid(rowS, colS, rowE, colE, rowD, colD);
         }
         
-        /** Returns true if and only if this valid move is one with a
-         *  direction in the same line formed by the group.  A single
-         *  piece move is never linear. */
+        /**
+         * Returns true if and only if this valid move is one with a
+         * direction in the same line formed by the group.  A single
+         * piece move is never linear.
+         * @return true if and only if this move is aligned */
         public boolean isLinear() {
             return Move.isLinear(rowS, colS, rowE, colE, rowD, colD);
         }
         
-        /** Returns true if and only if this valid move is one with a
-         *  direction that is different from the line formed by the
-         *  group.  A single piece move is always broadside. */
+        /**
+         * Returns true if and only if this valid move is one with a
+         * direction that is different from the line formed by the
+         * group.  A single piece move is always broadside.
+         * @return true if and only if this is not a linear move */
         public boolean isBroadside() { return !isLinear(); }
-        
+
         public boolean equals(Object that) {
             boolean result = false;
             if (this == that) {
@@ -192,17 +216,29 @@ public final class Board implements Cloneable {
             return buffer.toString();
         }
 
-        /** Returns the number of pieces selected by a valid move. */
+        /**
+         * Returns the number of pieces selected by a valid move.
+         * @param rowS starting row
+         * @param colS starting column
+         * @param rowE ending row
+         * @param colE ending column
+         * @return number of pieces in range */
         public static int getCount(byte rowS, byte colS, 
                                    byte rowE, byte colE) {
             return 1 + Math.max(Math.abs(rowS - rowE), 
                                 Math.abs(colS - colE));
         }
 
-        /** Returns the location of the middle piece for a three piece
-         *  move if and only if there are three or more locations
-         *  specified and they lined up in a hexagonally correct way
-         *  or null otherwise. */
+        /**
+         * Returns the location of the middle piece for a three piece
+         * move if and only if there are three or more locations
+         * specified and they lined up in a hexagonally correct way or
+         * null otherwise.
+         * @param rowS starting row
+         * @param colS starting column
+         * @param rowE ending row
+         * @param colE ending column
+         * @return location of middle piece or null  */
         public static Location getMiddle(byte rowS, byte colS, 
                                          byte rowE, byte colE) {
             if (getCount(rowS, colS, rowE, colE) < 3)
@@ -220,8 +256,14 @@ public final class Board implements Cloneable {
             return new Location(rowM, colM);
         }
     
-        /** Returns true if and only if the start and end positions
-         *  form a valid group for an Abalone move. */
+        /**
+         * Returns true if and only if the start and end positions
+         * form a valid group for an Abalone move.
+         * @param rowS starting row
+         * @param colS starting column
+         * @param rowE ending row
+         * @param colE ending column
+         * @return true if and only if positions are a valid group */
         public static boolean isGroup(byte rowS, byte colS, 
                                       byte rowE, byte colE) {
             if ((Math.abs(rowE - rowS) > 2) ||
@@ -233,9 +275,17 @@ public final class Board implements Cloneable {
             return true;
         }
 
-        /** Returns true if and only if this valid move is one with a
-         *  direction in the same line formed by the group.  A single
-         *  piece move is never linear. */
+        /**
+         * Returns true if and only if this valid move is one with a
+         * direction in the same line formed by the group.  A single
+         * piece move is never linear.
+         * @param rowS starting row
+         * @param colS starting column
+         * @param rowE ending row
+         * @param colE ending column
+         * @param rowD destination row
+         * @param colD destination column
+         * @return true if and only if positions are a linear move*/
         public static boolean isLinear(byte rowS, byte colS,
                                        byte rowE, byte colE, 
                                        byte rowD, byte colD) {
@@ -243,9 +293,17 @@ public final class Board implements Cloneable {
                     (colE - colS == 0) == (colD == 0));
         }
 
-        /** Returns true if and only if this move is well-formed,
-         *  which is to say that it could possibly be valid for some
-         *  arrangement of pieces on a board. */
+        /**
+         * Returns true if and only if this move is well-formed, which
+         * is to say that it could possibly be valid for some
+         * arrangement of pieces on a board.
+         * @param rowS starting row
+         * @param colS starting column
+         * @param rowE ending row
+         * @param colE ending column
+         * @param rowD destination row
+         * @param colD destination column
+         * @return true if and only if positions are a valid move */
         public static boolean isValid(byte rowS, byte colS, 
                                       byte rowE, byte colE, 
                                       byte rowD, byte colD) {
@@ -310,17 +368,19 @@ public final class Board implements Cloneable {
         }   
     }
 
-    /** A fixed sized collection of objects with indices that can
-     *  start and end at an arbitrary integer value.  An attempt to
-     *  get an object outside the array bounds results in null. */
+    /**
+     * A fixed sized collection of objects with indices that can start
+     * and end at an arbitrary integer value.  An attempt to get an
+     * object outside the array bounds results in null. */
     private static class BoundArray implements Cloneable {
         private Object rep[];
         private int lowerBound;
 
-        /** Creates a BoundArray.
-         *  @param lowerB lowest reachable value.
-         *  @param upperB one more than the highest reachable value.
-         *  @param value  default for each position. */
+        /**
+         * Creates a BoundArray.
+         * @param lowerB lowest reachable value.
+         * @param upperB one more than the highest reachable value.
+         * @param value  default for each position. */
         BoundArray(int lowerB, int upperB, Object value) {
             if (lowerB <= upperB) {
                 lowerBound = lowerB;
@@ -332,18 +392,26 @@ public final class Board implements Cloneable {
                        ("upper bound cannot be smaller than lower");
         }
 	
-        /** Returns the number of element positions. */
+        /**
+         * Returns the number of element positions.
+         * @return the number of element positions */
         int getSize() { return rep.length; }
 
-        /** Returns largest permissible index. */
+        /**
+         * Returns largest permissible index.
+         * @return largest permmissible index */
         int getUBound() { return lowerBound + rep.length - 1; }
 
-        /** Returns smallest permissable index. */
+        /**
+         * Returns smallest permissable index.
+         * @return smallest permissable index */
         int getLBound() { return lowerBound; }
 
-        /** Returns the element contained in the specified array
-         *  position, or null if that is out of bounds.
-         *  @param index location of value to be returned. */
+        /**
+         * Returns the element contained in the specified array
+         * position, or null if that is out of bounds.
+         * @param index location of value to be returned.
+         * @return element contained in index position */
         Object getElement(int index) {
             Object result = null;
             if (index >= lowerBound && index < lowerBound + rep.length)
@@ -351,17 +419,20 @@ public final class Board implements Cloneable {
             return result;
         }
 
-        /** Sets the element contained in the specified array
-         *  position.
-         *  @param index location to change.
-         *  @param element value to store. */
+        /**
+         * Sets the element contained in the specified array
+         * position.
+         * @param index location to change.
+         * @param element value to store. */
         void setElement(int index, Object element) {
             if (index >= lowerBound && index < lowerBound + rep.length)
                 rep[index - lowerBound] = element;
         }
 
-        /** Return a value which is shared by all BoundArray objects
-         *  that are equal to this one. */
+        /**
+         * Return a value which is shared by all BoundArray objects
+         * that are equal to this one.
+         * @return value shared by all equal instances */
         public int hashCode() {
             int result = rep.length;
             for (int index = 0; index < rep.length; index++)
@@ -370,8 +441,11 @@ public final class Board implements Cloneable {
             return result;
         }
 
-        /** Returns true if and only if target is a BoundArray with
-         *  identical bounds and all elements are equal. */
+        /**
+         * Returns true if and only if target is a BoundArray with
+         * identical bounds and all elements are equal.
+         * @param that Object to compare
+         * @return true if and only if this and that are equivalent */
         public boolean equals(Object that) {
             if (this == that) return true;
             if (that == null) return false;
@@ -395,7 +469,9 @@ public final class Board implements Cloneable {
             return false;
         }
 
-        /** Return a deep copy of this object. */
+        /**
+         * Return a deep copy of this object.
+         * @return a deep copy of this object */
         public Object clone() throws CloneNotSupportedException {
             // shallow copy
             BoundArray result = (BoundArray)super.clone();
@@ -426,15 +502,26 @@ public final class Board implements Cloneable {
                             EMPTY));
     }
 
-    /** Places a value at a specified board postion. */
+    /**
+     * Places a value at a specified board postion.
+     * @param row placement row
+     * @param col placement column
+     * @param target thing to place */
     private void toPosition(int row, int col, Object target) {
         BoundArray rowArray = (BoundArray)(rep.getElement(row));
         if (rowArray != null)
             rowArray.setElement(col, target);
     }
 
-    /** Returns true if and only if all board locations from the start
-     *  to the end position contain the specified value. */
+    /**
+     * Returns true if and only if all board locations from the start
+     * to the end position contain the specified value.
+     * @param rowS starting row
+     * @param colS starting column
+     * @param rowE ending row
+     * @param colE ending column
+     * @param active
+     * @return true if and only if this is a group of active pieces */
     private boolean isGroupOf(byte rowS, byte colS, 
                               byte rowE, byte colE, 
                               Object active) {
@@ -445,9 +532,15 @@ public final class Board implements Cloneable {
             return true;
         return false;
     }
-    
-    /** Returns true if and only if the specified move could be
-     *  made on this board. */
+
+    /**
+     * Returns true if and only if the specified move could be
+     * made on this board.
+     * @param rowS starting row
+     * @param colS ending row
+     * @param rowE starting column
+     * @param colE ending column
+     * @return true if and only if positions are a legal move */
     private boolean isLegalMove(byte rowS, byte colS, 
                                 byte rowE, byte colE, 
                                 byte rowD, byte colD) {
@@ -583,7 +676,9 @@ public final class Board implements Cloneable {
 
     }
 
-    /** Creates a board based on the encoded string supplied. */
+    /**
+     * Creates a board based on the encoded string supplied.
+     * @param source description of board position */
     public Board(String source) {
         StringTokenizer tokens = 
             new StringTokenizer(source, ": \t\f\r\n");
@@ -718,8 +813,12 @@ public final class Board implements Cloneable {
         return result;
     }
 
-    /** Returns the contents of the board position indicated.  This
-     *  might be GUTTER, EMPTY, BLACK or WHITE. */
+    /**
+     * Returns the contents of the board position indicated.  This
+     * might be GUTTER, EMPTY, BLACK or WHITE.
+     * @param row position row
+     * @param col position column
+     * @return contents of board position */
     public Object atPosition(int row, int col) {
         Object result = rep.getElement(row);
         if (result != null)
@@ -727,8 +826,13 @@ public final class Board implements Cloneable {
         return result;
     }
 
-    /** Returns true if and only if the contents of the board position 
-     *  belong to the player whose turn it is. */
+    /**
+     * Returns true if and only if the contents of the board position
+     * belong to the player whose turn it is.
+     * @param row position row
+     * @param col position column
+     * @return true if and only if position contains a piece belonging
+     * to the player whose turn it is. */
     public boolean activePosition(int row, int col) {
         Object atpos = atPosition(row, col);
         if (atpos == (blackToPlay() ? BLACK : WHITE))
@@ -736,21 +840,39 @@ public final class Board implements Cloneable {
         return false;
     }
 
-    /** Returns the number of displaced white pieces. */
+    /**
+     * Returns the number of displaced white pieces.
+     * @return number of displaced black pieces */
     public int getBlackScore() { return scoreBlack; }
-    /** Returns the number of displaced black pieces. */
+    /**
+     * Returns the number of displaced black pieces.
+     * @return numbr of displaced white pieces */
     public int getWhiteScore() { return scoreWhite; }
-    /** Rturns the number of black pieces on the board. */
+    /**
+     * Returns the number of black pieces on the board.
+     * @return number of black pieces on the board */
     public int getBlackCount() { return countBlack; }
-    /** Returns the number of white pieces on the board. */
+    /**
+     * Returns the number of white pieces on the board.
+     * @return number of white pieces on the board */
     public int getWhiteCount() { return countWhite; }
-    /** Returns true iff the next move must be made by black player. */
+    /**
+     * Returns true iff the next move must be made by black player.
+     * @return true if the next move must be made by black player */
     public boolean blackToPlay() { return nextMoveBlack; }
-    /** Returns true iff the next move must be made by white player. */ 
+    /**
+     * Returns true iff the next move must be made by white player.
+     * @return true iff the next move must be made by white player */
     public boolean whiteToPlay() { return !nextMoveBlack; }
 
-    /** Returns the number of pieces in the group or zero if the
-     *  specified selection would not be a legal group. */
+    /**
+     * Returns the number of pieces in the group or zero if the
+     * specified selection would not be a legal group.
+     * @param rowS starting row
+     * @param colS starting column
+     * @param rowE ending row
+     * @param colE ending column
+     * @return number of pieces in the trough or 0 if illegal */
     public int sizeLegalGroup(byte rowS, byte colS, 
                               byte rowE, byte colE) {
         if (Move.isGroup(rowS, colS, rowE, colE) && 
@@ -760,16 +882,27 @@ public final class Board implements Cloneable {
         return 0;
     }
 
-    /** Returns true if and only if the given move would be legal on
-     *  this board. */
+    /**
+     * Returns true if and only if the given move would be legal on
+     * this board.
+     * @param m a move to evaluate
+     * @return true if and only if move is legal */
     public boolean isLegalMove(Move m) {
         return isLegalMove(m.getRowS(), m.getColS(),
                            m.getRowE(), m.getColE(),
                            m.getRowD(), m.getColD());
     }
 	
-    /** Creates a move and adds it to the given list if and only if
-     *  it is would be a legal move on this board. */
+    /**
+     * Creates a move and adds it to the given list if and only if
+     * it is would be a legal move on this board.
+     * @param rowS starting row
+     * @param colS starting column
+     * @param rowE ending row
+     * @param colE ending column
+     * @param rowD destination row
+     * @param colD destination column
+     * @param a list to which move may be added */
     private void considerMove(byte rowS, byte colS, 
                               byte rowE, byte colE,
                               byte rowD, byte colD,
@@ -780,8 +913,14 @@ public final class Board implements Cloneable {
                            (byte)(colE + colD)));
     }
     
-    /** Creates all moves starting from a given location and adds any
-     *  that happen to be a legal move on this board to the list. */
+    /**
+     * Creates all moves starting from a given location and adds any
+     * that happen to be a legal move on this board to the list.
+     * @param rowS starting row
+     * @param colS starting column
+     * @param rowD destination row
+     * @param colD destination column
+     * @param a list to which moves may be added */
     private void considerMoves(byte rowS, byte colS, 
                                byte rowD, byte colD,
                                ArrayList<Move> a) {
@@ -801,8 +940,10 @@ public final class Board implements Cloneable {
                      rowD, colD, a);
     }
     
-    /** Returns an array containing each unique legal move that can be
-     *  made on this board. */
+    /**
+     * Returns an array containing each unique legal move that can be
+     * made on this board.
+     * @return all legal moves possible from this position */
     public Iterable<Move> getLegalMoves() {
         ArrayList<Move> result = new ArrayList<Move>();
 	
@@ -828,11 +969,13 @@ public final class Board implements Cloneable {
         return result;
     }
     
-    /** Returns an indication of who has won the game.  This will be
-     *  BLACK if the board represents a winning configuration for
-     *  black, WHITE if the board represents a winning configuration
-     *  for white and EMPTY otherwise.  Note that a draw is impossible
-     *  in Abalone. */
+    /**
+     * Returns an indication of who has won the game.  This will be
+     * BLACK if the board represents a winning configuration for
+     * black, WHITE if the board represents a winning configuration
+     * for white and EMPTY otherwise.  Note that a draw is impossible
+     * in Abalone.
+     * @return indication of winning player if there is one */
     public Object winner() {
         Object result = EMPTY;
 
@@ -850,13 +993,18 @@ public final class Board implements Cloneable {
         return result;
     }
     
-    /** Returns a board that is equal to the current board after the
-     *  given move is made, or null if that is not legal. */
+    /**
+     * Returns a board that is equal to the current board after the
+     * given move is made, or null if that is not legal.
+     * @param m move to apply
+     * @return board updated with move consequences */
     public Board makeMove(Move m) {
         return makeMove(m, true);
     }
 
-    /** Conducts some basic tests of board functionality. */
+    /**
+     * Conducts some basic tests of board functionality.
+     * @param board board to perform tests upon */
     private static void doTests(Board board) 
         throws CloneNotSupportedException {
         Board other;
@@ -888,28 +1036,31 @@ public final class Board implements Cloneable {
         System.out.println();	
     }
 
-    /** Performs module unit tests.  Arguments can be either command
-     *  strings or valid move encodings.  Here are eight valid moves
-     *  in sequence.  Try typing them on a command line.
+    /**
+     * Performs module unit tests.  Arguments can be either command
+     * strings or valid move encodings.  Here are eight valid moves in
+     * sequence.  Try typing them on a command line.
      *
-     *  <code>
-     *    "(1,1)-(3,3):(4,4)" "(7,7)-(9,9):(8,8)" 
-     *    "(1,2)-(3,4):(4,5)" "(7,5)-(9,5):(8,5)"
-     *    "(2,2)-(4,4):(5,5)" "(6,6)-(8,6):(7,6)" 
-     *    "(2,3)-(4,5):(5,6)" "(6,6)-(7,6):(6,6)"
-     *  </code>
+     * <code>
+     *   "(1,1)-(3,3):(4,4)" "(7,7)-(9,9):(8,8)"
+     *   "(1,2)-(3,4):(4,5)" "(7,5)-(9,5):(8,5)"
+     *   "(2,2)-(4,4):(5,5)" "(6,6)-(8,6):(7,6)"
+     *   "(2,3)-(4,5):(5,6)" "(6,6)-(7,6):(6,6)"
+     * </code>
      * 
-     *  Currently the supported command strings are "test" and
-     *  "legal".  Each time "test" is encountered some simple tests
-     *  will be performed on the current board positon.  These include
-     *  checking that the board is equal to itself, that it can be
-     *  encoded in string form and read back in to get an equivalent
-     *  board and that clone() works properly.
+     * Currently the supported command strings are "test" and "legal".
+     * Each time "test" is encountered some simple tests will be
+     * performed on the current board positon.  These include checking
+     * that the board is equal to itself, that it can be encoded in
+     * string form and read back in to get an equivalent board and
+     * that clone() works properly.
      * 
-     *  Each time "legal" is encountered all legal moves for the
-     *  current board will be displayed. */
-    public static void main(String args[]) 
-        throws CloneNotSupportedException {
+     * Each time "legal" is encountered all legal moves for the
+     * current board will be displayed.
+     *
+     * @param args command line arguments
+     * @throws Exception anything can happen */
+    public static void main(String args[]) throws Exception {
         Board board = new Board();
 
         if (args.length > 0) {

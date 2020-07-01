@@ -1,5 +1,5 @@
 // Jarbles.java
-// Copyright (C) 2006-2015 by Jeff Gold.
+// Copyright (C) 2006-2020 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -257,7 +257,10 @@ public class Jarbles extends Applet
         return result;
     }
 
-    /** Jarbles application entry point */
+    /**
+     * Jarbles application entry point
+     * @param args command line arguments
+     * @throws Exception anything can happen */
     public static void main(String args[]) throws Exception {
         Jarbles jarbles = new Jarbles();
         MenuBar mb = new MenuBar();
