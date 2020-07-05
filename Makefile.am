@@ -137,12 +137,17 @@ $(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
 	rm -f $@
 	$(LN_S) @PACKAGE@-@VERSION@.jar $@
 
-MVN_REPO_URL = https://repo1.maven.org/maven2/javax/servlet
-MVN_SERVLET_URL = $(MVN_REPO_URL)/javax.servlet-api/4.0.1
-SERVLET_API_URL = $(MVN_SERVLET_URL)/javax.servlet-api-4.0.1.jar
+MVN_REPO_URL = https://repo1.maven.org/maven2
+SERVLET_DIR = javax/servlet/javax.servlet-api/4.0.1
+SERVLET_URL = $(MVN_REPO_URL)/$(SERVLET_DIR)/javax.servlet-api-4.0.1.jar
+JACKSON_DIR = com/fasterxml/jackson/core/jackson-core/2.9.9/
+JACKSON_URL = $(MVN_REPO_URL)/$(JACKSON_DIR)/jackson-core-2.9.9.jar
 
 servlet-api.jar:
-	curl -o $@ $(SERVLET_API_URL)
+	curl -o $@ $(SERVLET_URL)
+
+jackson-core.jar:
+	curl -o $@ $(JACKSON_URL)
 
 $(WAR_ROOT)/.classes: $(J2EE_DISTSRC) servlet-api.jar
 	$(MKDIR_P) $(WAR_ROOT)

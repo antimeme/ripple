@@ -36,6 +36,7 @@ public class RippleServlet extends HttpServlet
         PrintWriter out = response.getWriter();
         out.println("<!DOCTYPE html>");
         out.println("<meta charset=\"utf-8\">");
+        out.println("<link rel=\"icon\" href=\"images/ripple.png\"/>");
         out.println("<title>Ripple Servlet</title>");
         out.println("<h1>Ripple Servlet</h1>");
         out.println("<p>TempDir: " + tempdir.getPath() + "</p>");
