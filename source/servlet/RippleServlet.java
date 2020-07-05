@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet(name="RippleServlet", urlPatterns={ "/ripple" })
+@WebServlet(name="RippleServlet", urlPatterns={ "/ripple/*" })
 public class RippleServlet extends HttpServlet
 {
     private static final long serialVersionUID = 1L;
