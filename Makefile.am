@@ -158,6 +158,7 @@ $(WAR_ROOT)/.classes: $(J2EE_DISTSRC) servlet-api.jar
 	    -C $(srcdir)/resources sounds \
 	    -C $(srcdir)/resources images \
 	    -C $(srcdir) WEB-INF/web.xml \
+	    -C $(srcdir)/source/servlet index.html \
 	    -C $(top_builddir) javadoc WEB-INF/classes/ \
 	    -C $(JAR_ROOT) .
 	chmod +x $@
@@ -165,6 +166,15 @@ $(WAR_ROOT)/.classes: $(J2EE_DISTSRC) servlet-api.jar
 @PACKAGE@.war: @PACKAGE@-@VERSION@.war
 	@rm -f $@
 	$(LN_S) @PACKAGE@-@VERSION@.war $@
+
+deploy: @PACKAGE@.war
+	@if [ -n "$(CATALINA_BASE)" ]; then \
+	    sudo cp $< $(CATALINA_BASE)/webapps && \
+	    sudo chown tomcat:tomcat $(CATALINA_BASE)/webapps/$<; \
+	elif [ -n "$(CATALINA_HOME)" ]; then \
+	    sudo cp $< $(CATALINA_HOME)/webapps && \
+	    sudo chown tomcat:tomcat $(CATALINA_HOME)/webapps/$<; \
+	else echo ERROR: no CATALINA_BASE or CATALINA_HOME; fi
 
 install-data-local: javadoc
 	$(MKDIR_P) $(DESTDIR)$(docdir)
@@ -181,7 +191,7 @@ MOSTLYCLEANFILES += @PACKAGE@-@VERSION@.jar @PACKAGE@.jar
 CLEANFILES += scripts/check-java.sh
 
 clean-local-java:
-	-rm -rf javadoc *.jar *.war
+	-rm -rf .javadoc javadoc *.jar *.war
 
 mostlyclean-local-java:
 	-rm -rf $(JAR_ROOT) $(WAR_ROOT)
@@ -249,5 +259,5 @@ docker: docker-build
 docker-interact: docker-build
 	sudo docker run --tty --interact ripple
 
-.PHONY: clean-local-java mostlyclean-local-java \
+.PHONY: clean-local-java mostlyclean-local-java deploy \
 	docker-build docker docker-interact

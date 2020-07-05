@@ -12,8 +12,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet(name="RippleServlet",
-            urlPatterns={ "/", "/index", "/index.html" })
+@WebServlet(name="RippleServlet", urlPatterns={ "/ripple" })
 public class RippleServlet extends HttpServlet
 {
     private static final long serialVersionUID = 1L;
@@ -40,6 +39,12 @@ public class RippleServlet extends HttpServlet
         out.println("<title>Ripple Servlet</title>");
         out.println("<h1>Ripple Servlet</h1>");
         out.println("<p>TempDir: " + tempdir.getPath() + "</p>");
+        out.println("<p>QueryString: " +
+                    request.getQueryString() + "</p>");
+        out.println("<p>ContextPath: " +
+                    request.getContextPath() + "</p>");
+        out.println("<p>ServletPath: " +
+                    request.getServletPath() + "</p>");
         out.println("<p>PathInfo: " + request.getPathInfo() + "</p>");
 
         if (request.isSecure()) {
