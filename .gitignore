@@ -5,6 +5,9 @@
 *.pyc
 *.log
 *.trs
+*.pem
+*.srl
+*.p12
 .deps/
 .libs/
 aclocal.m4
@@ -42,16 +45,16 @@ ripple.egg-info/
 source/__init__.py
 
 # Java
-.classes/
+classes/
 javadoc/
+.javadoc
 source/Ripple.java
 ripple-*.jar
 ripple.jar
 ripple-*.war
 ripple.war
 servlet-api.jar
-WEB-INF/.classes
-WEB-INF/net/
+WEB-INF/classes/
 
 # JavaScript
 node_modules/

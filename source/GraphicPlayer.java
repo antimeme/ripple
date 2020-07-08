@@ -1,5 +1,5 @@
 // GraphicPlayer.java
-// Copyright (C) 2006-2015 by Jeff Gold.
+// Copyright (C) 2006-2020 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -315,8 +315,10 @@ public class GraphicPlayer extends Component
                 sound_move.play();
         }
 
-        /** Must be called before any paint event and after any
-         *  resize event. */
+        /**
+         * Must be called before any paint event and after any
+         * resize event.
+         * @param dim size of screen */
         public void reshape(Dimension dim) {
             region = new Rectangle(0, 0, dim.width, dim.height);
             boardR        = (Rectangle)region.clone();
@@ -341,15 +343,19 @@ public class GraphicPlayer extends Component
         public Rectangle getMoveR()  { return moveR;  }
         public Rectangle getScoreR() { return scoreR; }
 
-        /** Return clock precision in milliseconds. */
+        /**
+         * Return clock precision in milliseconds.
+         * @return milliseconds for a single clock tick */
         public long getResolution() { return resolution; }
 
-        /** Advance a progress indicator based on elapsed time.  This
-         *  moves in a linear manner by default but could be changed
-         *  for customized themes.
+        /**
+         * Advance a progress indicator based on elapsed time.  This
+         * moves in a linear manner by default but could be changed
+         * for customized themes.
          *
-         *  @param progress Current state.
-         *  @param elapsed Milliseconds since last update. */
+         * @param progress Current state.
+         * @param elapsed Milliseconds since last update.
+         * @return updated progress */
         public float elapse(float progress, long elapsed) {
             return progress + (elapsed / (float)duration);
         }
@@ -539,8 +545,15 @@ public class GraphicPlayer extends Component
                           moveQ.getCellEdge(), true, false);
         }
 
-        /** Returns a rectangle that should completely enclose the
-         *  area between the two board locations. */
+        /**
+         * Returns a rectangle that should completely enclose the area
+         * between the two board locations.
+         *
+         * @param rowS starting row
+         * @param colS starting column
+         * @param rowE ending row
+         * @param colE ending column
+         * @return bounding rectangle for the board locations */
         public Rectangle getBounds(int rowS, int colS, 
                                    int rowE, int colE) {
             Point p = boardQ.getGridPoint(rowS, colS);	
@@ -592,7 +605,15 @@ public class GraphicPlayer extends Component
                       moveQ.getCellEdge(), isBlack, false);
         }
 
-        /** Display the specified board. */
+        /**
+         * Display the specified board.
+         * @param g Graphics context in which to draw
+         * @param b board position to render
+         * @param enabled true when the player can make a move
+         * @param timeBlack time remaining for black
+         * @param timeWhite time remaining for white
+         * @param s which pieces are currently selected
+         * @param a ongoing animation or null */
         public void draw(Graphics g, Board b, boolean enabled,
                          long timeBlack, long timeWhite,
                          Selection s, Animation a) {
@@ -656,7 +677,10 @@ public class GraphicPlayer extends Component
     private Theme     retheme; // replace theme with this one
     private AppletContext ctx; // context for getting sounds
 
-    /** Creates a graphic player. */
+    /**
+     * Creates a graphic player.
+     * @param t theme to use when rendering board
+     * @param b board to render */
     public GraphicPlayer(Theme t, Board b) {
         buffer = null;
         addComponentListener(this);
@@ -673,15 +697,22 @@ public class GraphicPlayer extends Component
         timeBlack = timeWhite = 0;
         timeLast  = System.currentTimeMillis();
     }
-    /** Creates a graphic player with default board. */
+    /**
+     * Creates a graphic player with default board.
+     * @param t theme to use when rendering board */
     public GraphicPlayer(Theme t) { this(t, new Board()); }
-    /** Creates a graphic player with default theme. */
+    /**
+     * Creates a graphic player with default theme.
+     * @param b board to render */
     public GraphicPlayer(Board b) { this(new Theme(), b); }
     /** Creates a graphic player with default theme and board. */
     public GraphicPlayer()
     { this(new Theme(), new Board()); }
 
-    /** Configures themes with any necessary sound clips. */
+    /**
+     * Configures themes with any necessary sound clips.
+     * @param ctx applet context to use for sound clips
+     * @return this GraphicPlayer for chained calls */
     public GraphicPlayer setContext(AppletContext ctx)
     { this.ctx = ctx; theme.setContext(ctx); return this; }
 
@@ -696,12 +727,13 @@ public class GraphicPlayer extends Component
         return this;
     }
 
-    /** Launches a thread to call the {@link #elapse()}
-     *  method on this object every few hundred milliseconds.  Unless
-     *  this method is called the creator of this class should do so
-     *  itself to ensure that animations and clock values are updated.
-     *  The return value can be ignored or interrupted to shut it
-     *  down. */
+    /**
+     * Launches a thread to call the {@link #elapse()} method on this
+     * object every few hundred milliseconds.  Unless this method is
+     * called the creator of this class should do so itself to ensure
+     * that animations and clock values are updated.  The return value
+     * can be ignored or interrupted to shut it down.
+     * @return thread that updates clocl */
     public Thread startElapseThread() {
         Thread result = new Thread(this);
         result.setDaemon(true);
@@ -720,14 +752,17 @@ public class GraphicPlayer extends Component
         }
     }
 
-    /** Update animation and timers.  This method should be called
-     *  about eight times per second for best results. */
+    /**
+     * Update animation and timers.  This method should be called
+     * about eight times per second for best results. */
     public void elapse() { elapse(System.currentTimeMillis()); }
 
-    /** Update animation and timers.  This method should be called
-     *  about eight times per second for best results.  When the
-     *  calling program already has the current time for other
-     *  reasons there is no need for elapse to request it again. */
+    /**
+     * Update animation and timers.  This method should be called
+     * about eight times per second for best results.  When the
+     * calling program already has the current time for other reasons
+     * there is no need for elapse to request it again.
+     * @param timeNow current system time for comparison */
     public synchronized void elapse(long timeNow) {
         long elapsed = timeNow - timeLast;
         timeLast = timeNow;

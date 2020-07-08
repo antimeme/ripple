@@ -1,5 +1,5 @@
 FROM node:10
-LABEL maintainer="Jeff Gold (jgold@esclat.net)"
+LABEL maintainer="Jeff Gold (ripple@esclat.net)"
 ENV container docker
 WORKDIR /usr/src/app
 
