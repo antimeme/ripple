@@ -601,6 +601,9 @@ public class Ripple {
                 ("RESULTS: " + tests + " total " +
                  failures.size() + " errors " +
                  skips + " skipped");
+            if (skips > 0)
+                System.out.println
+                    ("Classes with no test() method are skipped.");
             if (failures.size() > 0) {
                 for (String failure: failures)
                     System.out.println("  FAILED: " + failure);
