@@ -107,8 +107,8 @@ check_context(void)
     snprintf(expected, sizeof(expected), expected_template,
              timestr, pid, __FILE__, __LINE__ - 41,
              __FILE__, __LINE__ - 40,
-             timestr, pid, __FILE__, __LINE__ - 30,
-             timestr, pid, __FILE__, __LINE__ - 29);
+             timestr, pid, __FILE__, __LINE__ - 38,
+             timestr, pid, __FILE__, __LINE__ - 30);
   }
 
   if (strcmp(expected, buffer)) {
