@@ -28,6 +28,7 @@ package.json
 Makefile
 Makefile.in
 source/.dirstamp
+source/check/.dirstamp
 include/ripple/config.h
 include/ripple/config.h.in
 include/ripple/stamp-h1
@@ -56,6 +57,7 @@ ripple-*.war
 ripple.war
 servlet-api.jar
 WEB-INF/classes/
+scripts/check-java.sh
 
 # JavaScript
 node_modules/

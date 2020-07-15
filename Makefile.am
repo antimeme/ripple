@@ -190,7 +190,7 @@ install-data-local: javadoc
 	$(MKDIR_P) $(DESTDIR)$(docdir)
 	cp -R javadoc $(DESTDIR)$(docdir)
 
-scripts/check-java.sh:
+scripts/check-java.sh: @PACKAGE@.jar
 	$(MKDIR_P) scripts
 	echo '#!/bin/sh' > $@
 	echo $(JAVA_HOME)/bin/java -jar @PACKAGE@.jar test >> $@
@@ -285,14 +285,14 @@ tomcat.p12: tomcat-key.pem tomcat-chain.pem
 ## Docker ==============================================================
 
 .docker-build: Dockerfile ca-cert.pem server-chain.pem server-key.pem
-	docker build -t ripple .
+	docker build -t @PACKAGE@ .
 	@echo > $@
 
 docker: .docker-build
-	docker run -d -p 9443:8443/tcp ripple
+	docker run -d -p 9443:8443/tcp @PACKAGE@
 
 docker-interact: .docker-build
-	docker run -ti ripple bash
+	docker run -ti @PACKAGE@ bash
 
 ## Other ===============================================================
 
