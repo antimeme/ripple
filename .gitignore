@@ -36,6 +36,7 @@ ripple.spec
 ripple-*.tar.gz
 check-ripple
 check-ripple.exe
+.docker-build
 
 # Python
 py-compile

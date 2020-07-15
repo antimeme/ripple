@@ -63,10 +63,6 @@ if test "x$enable_java" = x1; then
         # Apple OSX 10.5 and later have a JAVA_HOME finder:
         # http://developer.apple.com/library/mac/#qa/qa2001/qa1170.html
         JAVA_HOME=`/usr/libexec/java_home`
-    # elif test -n "$JAVA_PATH_NAME"; then
-    #    # Check for common Java installation locations :FIXME:
-    #    JAVA_HOME=`echo $JAVA_PATH_NAME | \
-    #        sed "s,\(.*\)\(/bin\)/*java,\1,"`
     fi
     AC_MSG_CHECKING([for JAVA_HOME])
     if test -n "$JAVA_HOME"; then
@@ -81,9 +77,9 @@ fi
 AC_CONFIG_FILES([
     Makefile
     package.json
-    scripts/ripple.spec
-    scripts/ripple.dpkg
     source/__init__.py
     source/Ripple.java
+    scripts/ripple.spec
+    scripts/ripple.dpkg
 ], [test -e ripple/__init__.py && chmod +x ripple/__init__.py])
 AC_OUTPUT

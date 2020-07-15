@@ -17,10 +17,11 @@
 ## ---------------------------------------------------------------------
 EXTRA_DIST = \
 	bootstrap resources \
-	META-INF/MANIFEST.MF \
-	WEB-INF/web.xml \
+	Dockerfile \
 	scripts/@PACKAGE@.spec \
 	scripts/@PACKAGE@.dpkg \
+	META-INF/MANIFEST.MF \
+	WEB-INF/web.xml \
 	$(JAVA_DISTSRC) \
 	$(J2EE_DISTSRC) \
 	source/random.py \
@@ -82,7 +83,7 @@ check_@PACKAGE@_SOURCES  = \
 TESTS = $(check_PROGRAMS)
 MOSTLYCLEANFILES =
 DISTCLEANFILES   =
-CLEANFILES       =
+CLEANFILES       = .docker-build
 
 ## Python ==============================================================
 if HAVE_PYTHON
@@ -143,15 +144,17 @@ SERVLET_URL = $(MVN_REPO_URL)/$(SERVLET_DIR)/javax.servlet-api-4.0.1.jar
 JACKSON_DIR = com/fasterxml/jackson/core/jackson-core/2.9.9/
 JACKSON_URL = $(MVN_REPO_URL)/$(JACKSON_DIR)/jackson-core-2.9.9.jar
 
-servlet-api.jar:
+lib/servlet-api.jar:
+	$(MKDIR_P) lib
 	curl -o $@ $(SERVLET_URL)
 
-jackson-core.jar:
+lib/jackson-core.jar:
+	$(MKDIR_P) lib
 	curl -o $@ $(JACKSON_URL)
 
-$(WAR_ROOT)/.classes: $(J2EE_DISTSRC) servlet-api.jar
+$(WAR_ROOT)/.classes: $(J2EE_DISTSRC) lib/servlet-api.jar
 	$(MKDIR_P) $(WAR_ROOT)
-	$(JCC) -classpath servlet-api.jar -d $(WAR_ROOT) \
+	$(JCC) -classpath lib/*.jar -d $(WAR_ROOT) \
 	       -source 1.7 -target 1.7 -Xlint:-options $(J2EE_DISTSRC)
 	find $(WAR_ROOT) -name \*.class | \
 	    sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
@@ -225,6 +228,28 @@ ca-cert.pem: ca-key.pem
 	$(OPENSSL) req -sha256 -x509 -key $< -out $@ \
 	    -days 3650 -subj "$(COMMON_NAME)Root CA"
 
+server-key.pem:
+	$(OPENSSL) genrsa -out $@ $(KEYSIZE)
+
+server-req.pem: server-key.pem
+	$(OPENSSL) req -new -key $< \
+	    -subj "$(COMMON_NAME)$(patsubst %-req.pem,%,$@)" \
+	    -sha256 -out $@
+
+server-cert.pem: server-req.pem ca-key.pem ca-cert.pem
+	$(OPENSSL) x509 -CA ca-cert.pem -CAkey ca-key.pem \
+	  -req -sha256 -days 730 -extfile resources/ca.conf \
+	  -extensions $(patsubst %-cert.pem,%,$@)_role_ext \
+	  -CAcreateserial -CAserial ca.srl -in $< -out $@
+
+server-cert.der: server-cert.pem
+	$(OPENSSL) x509 -in $< -out $@ -outform der
+
+server-chain.pem: server-cert.pem ca-cert.pem
+	if [ ! -e $@ ]; then \
+	    cp $< $@; cat ca-cert.pem >>$@; \
+	else touch $@; fi
+
 tomcat-key.pem:
 	$(OPENSSL) genrsa -out $@ $(KEYSIZE)
 
@@ -255,14 +280,17 @@ tomcat.p12: tomcat-key.pem tomcat-chain.pem
 
 ## Docker ==============================================================
 
-docker-build:
-	sudo docker build -t ripple .
+.docker-build: Dockerfile ca-cert.pem server-chain.pem server-key.pem
+	docker build -t ripple .
+	@echo > $@
 
-docker: docker-build
-	sudo docker run ripple
+docker: .docker-build
+	docker run -d -p 9443:8443/tcp ripple
 
-docker-interact: docker-build
-	sudo docker run --tty --interact ripple
+docker-interact: .docker-build
+	docker run -ti ripple bash
+
+## Other ===============================================================
 
 .PHONY: clean-local-java mostlyclean-local-java deploy \
-	docker-build docker docker-interact
+	docker docker-interact

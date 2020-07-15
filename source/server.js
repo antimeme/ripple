@@ -7,7 +7,7 @@
     var https = require('https');
     var fs = require('fs');
     var path = require('path');
-    var port = 8080;
+    var port = 8443;
 
     // Responds to normal requests with control over headers
     var respond = function(response, code, headers, data) {
@@ -60,12 +60,7 @@
         return result.join('/');
     };
 
-    https.createServer({
-        key: fs.readFileSync('server-key.pem'),
-        cert: fs.readFileSync('server-chain.pem'),
-        ca: fs.readFileSync('ca-certs.pem'),
-        requestCert: true, rejectUnauthorized: false
-    }, careful(function(request, response) {
+    var processRequest = function(request, response) {
         var url = urlify(request.url);
         if (url === '/')
             url = '/index.html';
@@ -102,6 +97,13 @@
             return respond(response, 200, {
                 'Content-Type': ctype}, data);
         });
-    })).listen(port);
+    };
+
+    https.createServer({
+        key: fs.readFileSync('server-key.pem'),
+        cert: fs.readFileSync('server-chain.pem'),
+        ca: fs.readFileSync('ca-certs.pem'),
+        requestCert: true, rejectUnauthorized: false
+    }, careful(processRequest)).listen(port);
     console.log('Server listening: https://localhost:' + port + '/');
 })();
