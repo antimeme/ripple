@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<style>
+ code pre {
+     border: 2px solid blue; border-radius: 1em;
+     background: #aaaadd; margin: 1em; padding: 1em;
+ }
+</style>
+<title>Operating System Notes</title>
+<h1>Operating System Notes</h1>
+
+<h2>FreeBSD</h2>
+<p>
+    These are the steps I usually take when setting up a FreeBSD
+    virtual machine with VirtualBox.  This gives me an XFCE desktop
+    with lots of convenient tools.  Note that FreeBSD up to 12.1
+    doesn't understand the VMSVGA graphics controller.  Things will
+    work but it won't automatically resize and will have a limited
+    set of available resolutions.  Use VboxVGA or VBoxSVGA instead.
+</p><code><pre>
+pkg install sudo gcc gmake emacs openjdk12 \
+            bash unix2dos curl vim firefox \
+            node npm docker docker-machine \
+            xorg xfce gnome3 virtualbox-ose-additions
+cat &lt;&lt;EOF &gt;&gt;/etc/rc.conf
+hald_enable="YES"
+dbus_enable="YES"
+vboxguest_enable="YES"
+vboxservice_enable="YES"
+#vboxservice_flags="--disable-timesync"
+EOF
+mkdir -p /mnt/shared
+cat &lt;&lt;EOF &gt;&gt;/etc/fstab
+proc            /proc           procfs  rw      0       0
+fdesc           /dev/fd         fdescfs rw      0       0
+shared          /mnt/shared     vboxvfs rw      0       0  
+EOF
+vi /usr/local/etc/gdm/custom.conf
+# Add this to the [daemon] section:
+#   AutomaticLogin=jgold
+#   AutomaticLogin=True
+visudo # Allow wheel to execute commands with no pass phrase
+</pre></code>
