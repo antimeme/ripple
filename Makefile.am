@@ -33,20 +33,20 @@ uninstall-local:
 	rm -rf $(DESTDIR)$(docdir)
 
 JAVA_DISTSRC = \
-	source/Options.java \
-	source/FractionLayout.java \
-	source/Juju.java \
-	source/Standalone.java \
-	source/Matrix.java \
-	source/Vector.java \
-	source/Jarbles.java \
-	source/Board.java \
-	source/Player.java \
-	source/AutoPlayer.java \
-	source/GraphicPlayer.java \
-	source/Aqua.java \
-	source/HexagonGrid.java \
-	source/Octahedron.java
+	$(srcdir)/source/Options.java \
+	$(srcdir)/source/FractionLayout.java \
+	$(srcdir)/source/Juju.java \
+	$(srcdir)/source/Standalone.java \
+	$(srcdir)/source/Matrix.java \
+	$(srcdir)/source/Vector.java \
+	$(srcdir)/source/Jarbles.java \
+	$(srcdir)/source/Board.java \
+	$(srcdir)/source/Player.java \
+	$(srcdir)/source/AutoPlayer.java \
+	$(srcdir)/source/GraphicPlayer.java \
+	$(srcdir)/source/Aqua.java \
+	$(srcdir)/source/HexagonGrid.java \
+	$(srcdir)/source/Octahedron.java
 
 J2EE_DISTSRC = \
 	$(srcdir)/source/servlet/RippleServlet.java
@@ -117,13 +117,15 @@ WAR_ROOT = $(top_builddir)/WEB-INF/classes
 
 $(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
 	$(MKDIR_P) $(JAR_ROOT)
-	$(JCC) -d $(JAR_ROOT) -source 1.7 -target 1.7 -Xlint:-options $^
+	$(JCC) -d $(JAR_ROOT) -source 1.7 -target 1.7 \
+	    -Xlint:-options $(JAVA_SRCFILES)
 	find $(JAR_ROOT) -name \*.class | \
 	    sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
 	    sort -u > $@
 
 .javadoc: $(JAVA_SRCFILES)
-	$(JAVADOC) -docencoding utf-8 -public -d javadoc $^
+	$(JAVADOC) -docencoding utf-8 -public \
+	    -d javadoc $(JAVA_SRCFILES)
 	@touch $@
 
 @PACKAGE@-@VERSION@.jar: $(srcdir)/META-INF/MANIFEST.MF \
@@ -186,7 +188,7 @@ deploy: @PACKAGE@.war
 
 install-data-local: javadoc
 	$(MKDIR_P) $(DESTDIR)$(docdir)
-	cp -R $^ $(DESTDIR)$(docdir)
+	cp -R javadoc $(DESTDIR)$(docdir)
 
 scripts/check-java.sh:
 	$(MKDIR_P) scripts
@@ -195,8 +197,12 @@ scripts/check-java.sh:
 	chmod +x $@
 
 TESTS += scripts/check-java.sh
-MOSTLYCLEANFILES += @PACKAGE@-@VERSION@.jar @PACKAGE@.jar
-CLEANFILES += scripts/check-java.sh
+MOSTLYCLEANFILES += \
+	@PACKAGE@-@VERSION@.jar @PACKAGE@.jar \
+	@PACKAGE@-@VERSION@.war @PACKAGE@.war
+CLEANFILES += \
+	ca-*.pem server-*.pem tomcat-*.pem \
+	scripts/check-java.sh
 
 clean-local-java:
 	-rm -rf .javadoc javadoc *.jar *.war
@@ -232,51 +238,49 @@ server-key.pem:
 	$(OPENSSL) genrsa -out $@ $(KEYSIZE)
 
 server-req.pem: server-key.pem
-	$(OPENSSL) req -new -key $< \
-	    -subj "$(COMMON_NAME)$(patsubst %-req.pem,%,$@)" \
-	    -sha256 -out $@
+	$(OPENSSL) req -new -key server-key.pem \
+	    -subj "$(COMMON_NAME)server" -sha256 -out $@
 
 server-cert.pem: server-req.pem ca-key.pem ca-cert.pem
 	$(OPENSSL) x509 -CA ca-cert.pem -CAkey ca-key.pem \
 	  -req -sha256 -days 730 -extfile resources/ca.conf \
-	  -extensions $(patsubst %-cert.pem,%,$@)_role_ext \
-	  -CAcreateserial -CAserial ca.srl -in $< -out $@
+	  -extensions server_role_ext \
+	  -CAcreateserial -CAserial ca.srl -in server-req.pem -out $@
 
 server-cert.der: server-cert.pem
-	$(OPENSSL) x509 -in $< -out $@ -outform der
+	$(OPENSSL) x509 -in server-cert.pem -out $@ -outform der
 
 server-chain.pem: server-cert.pem ca-cert.pem
 	if [ ! -e $@ ]; then \
-	    cp $< $@; cat ca-cert.pem >>$@; \
+	    cp server-cert.pem $@; cat ca-cert.pem >>$@; \
 	else touch $@; fi
 
 tomcat-key.pem:
 	$(OPENSSL) genrsa -out $@ $(KEYSIZE)
 
 tomcat-req.pem: tomcat-key.pem
-	$(OPENSSL) req -new -key $< \
-	    -subj "$(COMMON_NAME)$(patsubst %-req.pem,%,$@)" \
-	    -sha256 -out $@
+	$(OPENSSL) req -new -key tomcat-key.pem \
+	    -subj "$(COMMON_NAME)tomcat" -sha256 -out $@
 
 tomcat-cert.pem: tomcat-req.pem ca-key.pem ca-cert.pem
 	$(OPENSSL) x509 -CA ca-cert.pem -CAkey ca-key.pem \
 	  -req -sha256 -days 730 -extfile resources/ca.conf \
-	  -extensions $(patsubst %-cert.pem,%,$@)_role_ext \
-	  -CAcreateserial -CAserial ca.srl -in $< -out $@
+	  -extensions tomcat_role_ext \
+	  -CAcreateserial -CAserial ca.srl -in tomcat-req.pem -out $@
 
 tomcat-cert.der: tomcat-cert.pem
-	$(OPENSSL) x509 -in $< -out $@ -outform der
+	$(OPENSSL) x509 -in tomcat-cert.pem -out $@ -outform der
 
 tomcat-chain.pem: tomcat-cert.pem ca-cert.pem
 	if [ ! -e $@ ]; then \
-	    cp $< $@; cat ca-cert.pem >>$@; \
+	    cp tomcat-cert.pem $@; cat ca-cert.pem >>$@; \
 	else touch $@; fi
 
 tomcat.p12: tomcat-key.pem tomcat-chain.pem
-	$(OPENSSL) pkcs12 -export -name $(patsubst %.p12,%,$@) \
-            -out $@ -inkey $< -keyex -passout pass:"$(STOREPASS)" \
-	    -in $(patsubst %.p12,%,$@)-chain.pem \
-	    -chain -CAfile ca-cert.pem
+	$(OPENSSL) pkcs12 -export -name tomcat \
+            -out $@ -inkey tomcat-key.pem -keyex \
+	    -passout pass:"$(STOREPASS)" \
+	    -in tomcat-chain.pem -chain -CAfile ca-cert.pem
 
 ## Docker ==============================================================
 
