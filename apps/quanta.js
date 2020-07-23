@@ -1,5 +1,5 @@
 // quanta.js
-// Copyright (C) 2015-2017 by Jeff Gold.
+// Copyright (C) 2015-2020 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -67,7 +67,8 @@
 
             for (index = 0; index < this.particles.length; ++index) {
                 particle = this.particles[index];
-                velocity = particle.direction.multiply(particle.speed);
+                velocity = particle.direction.multiply(
+                    particle.speed, 0.25);
                 particle.position = particle.position.add(
                     velocity.multiply(delta));
             }
@@ -183,15 +184,16 @@
         // class.  Call the .create() method of the result to create
         // instances of the new particle type.
         mass: 0 /* Given in eV/c^2 */,
-        spin: 0,
-        eCharge: 0,
-        cCharge: 'w',
+        spin: 0 /* Fermions half-integer, bosons integer */,
+        eCharge: 0 /* -1, 0 or +1 */,
+        cCharge: null /* 'r', 'g', 'b', 'c', 'm', 'y' or null */,
         scaleFactor: 0.05,
         phase: Math.PI / 6,
         position: undefined,
         direction: undefined,
         speed: undefined,
         scale: undefined,
+        _rotate: 0,
         _init: function(lab, config) { return this; },
         create: function(lab, config) {
             var result = Object.create(this);
@@ -213,7 +215,10 @@
             else result.speed = 0;
             return result._init(lab, config);
         },
-        _update: function(delta, lab) {},
+        _update: function(delta, lab) {
+            if (!isNaN(this._rotate))
+                this.phase += delta * this._rotate;
+        },
         update: function(delta, lab)
         { return this._update(delta, lab); },
         _draw: function(context) {},
@@ -226,22 +231,427 @@
             var vs = this.direction.multiply(this.speed);
             var vo = other.direction.multiply(other.speed);
             var m = ((vs.x - vo.x) * (vs.x - vo.x) +
-                     (vs.x - vo.y) * (vs.x - vo.y));
+                      (vs.x - vo.y) * (vs.x - vo.y));
             var n = ((this.position.x - other.position.x) *
-                     (this.position.x - other.position.x) *
-                     (vs.x - vo.x) * (vs.x - vo.x) +
-                     (this.position.y - other.position.y) *
-                     (this.position.y - other.position.y) *
-                     (vs.y - vo.y) * (vs.y - vo.y));
+                (this.position.x - other.position.x) *
+                (vs.x - vo.x) * (vs.x - vo.x) +
+                      (this.position.y - other.position.y) *
+                (this.position.y - other.position.y) *
+                (vs.y - vo.y) * (vs.y - vo.y));
             var q = ((this.position.x - other.position.x) *
-                     (this.position.x - other.position.x) +
-                     (this.position.y - other.position.y) *
-                     (this.position.y - other.position.y));
+                (this.position.x - other.position.x) +
+                      (this.position.y - other.position.y) *
+                (this.position.y - other.position.y));
 
             return (!multivec(m).zeroish() ?
                     (Math.sqrt(n * n - m *
                         (q - radius * radius)) - n) / m : undefined);
         }
+    };
+
+    // An electron is the most stable lepton and has a unit negative
+    // electrical charge.
+    quanta.Electron = Object.create(Particle);
+    quanta.Electron.mass = 510998.910;
+    quanta.Electron.spin = 0.5;
+    quanta.Electron.eCharge = -1;
+    quanta.Electron.scaleFactor *= 1.1;
+    quanta.Electron._rotate = 0.001;
+    quanta.Electron._draw = function(context) {
+        context.save();
+        context.translate(this.position.x, this.position.y);
+        context.rotate(this.phase);
+        context.scale(this.scale, this.scale);
+
+        context.beginPath();
+        context.moveTo(1 / 2, 0);
+        context.arc(0, 0, 1 / 2, 0, 2 * Math.PI);
+        context.moveTo(-1 / 4, 0);
+        context.lineTo(1 / 4, 0);
+        context.lineWidth = 1 / 20;
+
+        context.lineCap = 'round';
+        context.fillStyle = "rgb(64,64,255)";
+        context.fill();
+        context.strokeStyle = 'lightgrey';
+        context.stroke();
+
+        context.restore();
+    };
+
+    // A muon is the second generation lepton that decays quickly
+    // into an electron.
+    quanta.Muon = Object.create(quanta.Electron);
+    quanta.Muon.mass = 105660000;
+    quanta.Muon._draw = function(context) {
+        context.save();
+        context.translate(this.position.x, this.position.y);
+        context.rotate(this.phase);
+        context.scale(this.scale, this.scale);
+
+        context.beginPath();
+        context.moveTo(1 / 2, 0);
+        context.arc(0, 0, 1 / 2, 0, 2 * Math.PI);
+        context.moveTo(-1 / 4, 1 / 8);
+        context.lineTo(1 / 4, 1 / 8);
+        context.moveTo(-1 / 4, -1 / 8);
+        context.lineTo(1 / 4, -1 / 8);
+        context.lineWidth = 1 / 20;
+
+        context.lineCap = 'round';
+        context.fillStyle = "rgb(64,64,255)";
+        context.fill();
+        context.strokeStyle = 'lightgrey';
+        context.stroke();
+
+        context.restore();
+    };
+
+    // A muon is the second generation lepton that decays quickly
+    // into an electron.
+    quanta.Tau = Object.create(quanta.Electron);
+    quanta.Tau.mass = 1776800000;
+    quanta.Tau._draw = function(context) {
+        context.save();
+        context.translate(this.position.x, this.position.y);
+        context.rotate(this.phase);
+
+        context.beginPath();
+        context.moveTo(this.scale / 2, 0);
+        context.arc(0, 0, this.scale / 2, 0, 2 * Math.PI);
+        context.moveTo(-this.scale / 4, this.scale / 6);
+        context.lineTo(this.scale / 4, this.scale / 6);
+        context.moveTo(-this.scale / 4, 0);
+        context.lineTo(this.scale / 4, 0);
+        context.moveTo(-this.scale / 4, -this.scale / 6);
+        context.lineTo(this.scale / 4, -this.scale / 6);
+        context.lineWidth = this.scale / 20;
+
+        context.lineCap = 'round';
+        context.fillStyle = "rgb(64,64,255)";
+        context.fill();
+        context.strokeStyle = 'lightgrey';
+        context.stroke();
+
+        context.restore();
+    };
+
+    // A neutrino is a mysterious and almost massless particle that
+    // carries the weak nuclear force.
+    quanta.Neutrino = Object.create(Particle);
+    quanta.Neutrino.spin = 0.5;
+    quanta.Neutrino.eCharge = 0;
+    quanta.Neutrino.scaleFactor *= 1.1;
+    quanta.Neutrino._rotate = 0.001;
+    quanta.Neutrino.mass = 0.1;
+    quanta.Neutrino._draw = function(context) {
+        context.save();
+        context.translate(this.position.x, this.position.y);
+        context.rotate(this.phase);
+
+        context.beginPath();
+        context.moveTo(this.scale / 2, 0);
+        context.arc(0, 0, this.scale / 2, 0, 2 * Math.PI);
+        context.moveTo(this.scale / 3 * Math.cos(0),
+                       this.scale / 3 * Math.sin(0));
+        context.lineTo(this.scale / 3 * Math.cos(Math.PI / 2),
+                       this.scale / 3 * Math.sin(Math.PI / 2));
+        context.lineTo(this.scale / 3 * Math.cos(Math.PI),
+                       this.scale / 3 * Math.sin(Math.PI));
+        context.lineTo(this.scale / 3 * Math.cos(Math.PI * 3 / 2),
+                       this.scale / 3 * Math.sin(Math.PI * 3 / 2));
+        context.lineTo(this.scale / 3 * Math.cos(0),
+                       this.scale / 3 * Math.sin(0));
+        context.lineWidth = this.scale / 20;
+
+        context.lineCap = 'round';
+        context.fillStyle = "rgb(64,64,255)";
+        context.fill();
+        context.strokeStyle = 'lightgrey';
+        context.stroke();
+
+        context.restore();
+    };
+
+    quanta.MuonNeutrino = Object.create(quanta.Neutrino);
+    quanta.MuonNeutrino._rotate = 0.001;
+    quanta.MuonNeutrino.mass = 170000;
+    quanta.MuonNeutrino._draw = function(context) {
+        context.save();
+        context.translate(this.position.x, this.position.y);
+        context.rotate(this.phase);
+
+        context.beginPath();
+        context.moveTo(this.scale / 2, 0);
+        context.arc(0, 0, this.scale / 2, 0, 2 * Math.PI);
+        context.moveTo(this.scale / 3 * Math.cos(0),
+                       this.scale / 3 * Math.sin(0));
+        context.lineTo(this.scale / 3 * Math.cos(Math.PI / 2),
+                       this.scale / 3 * Math.sin(Math.PI / 2));
+        context.lineTo(this.scale / 3 * Math.cos(Math.PI),
+                       this.scale / 3 * Math.sin(Math.PI));
+        context.lineTo(this.scale / 3 * Math.cos(Math.PI * 3 / 2),
+                       this.scale / 3 * Math.sin(Math.PI * 3 / 2));
+        context.lineTo(this.scale / 3 * Math.cos(0),
+                       this.scale / 3 * Math.sin(0));
+        context.lineTo(this.scale / 3 * Math.cos(Math.PI),
+                       this.scale / 3 * Math.sin(Math.PI));
+        context.lineWidth = this.scale / 20;
+
+        context.lineCap = 'round';
+        context.fillStyle = "rgb(64,64,255)";
+        context.fill();
+        context.strokeStyle = 'lightgrey';
+        context.stroke();
+
+        context.restore();
+    };
+
+    quanta.TauNeutrino = Object.create(quanta.Neutrino);
+    quanta.TauNeutrino._rotate = 0.001;
+    quanta.TauNeutrino.mass = 18200000;
+    quanta.TauNeutrino._draw = function(context) {
+        context.save();
+        context.translate(this.position.x, this.position.y);
+        context.rotate(this.phase);
+
+        context.beginPath();
+        context.moveTo(this.scale / 2, 0);
+        context.arc(0, 0, this.scale / 2, 0, 2 * Math.PI);
+        context.moveTo(this.scale / 3 * Math.cos(0),
+                       this.scale / 3 * Math.sin(0));
+        context.lineTo(this.scale / 3 * Math.cos(Math.PI / 2),
+                       this.scale / 3 * Math.sin(Math.PI / 2));
+        context.lineTo(this.scale / 3 * Math.cos(Math.PI),
+                       this.scale / 3 * Math.sin(Math.PI));
+        context.lineTo(this.scale / 3 * Math.cos(Math.PI * 3 / 2),
+                       this.scale / 3 * Math.sin(Math.PI * 3 / 2));
+        context.lineTo(this.scale / 3 * Math.cos(0),
+                       this.scale / 3 * Math.sin(0));
+        context.lineTo(this.scale / 3 * Math.cos(Math.PI),
+                       this.scale / 3 * Math.sin(Math.PI));
+        context.moveTo(this.scale / 3 * Math.cos(Math.PI / 2),
+                       this.scale / 3 * Math.sin(Math.PI / 2));
+        context.lineTo(this.scale / 3 * Math.cos(Math.PI * 3 / 2),
+                       this.scale / 3 * Math.sin(Math.PI * 3 / 2));
+        context.lineWidth = this.scale / 20;
+
+        context.lineCap = 'round';
+        context.fillStyle = "rgb(64,64,255)";
+        context.fill();
+        context.strokeStyle = 'lightgrey';
+        context.stroke();
+
+        context.restore();
+    };
+
+    quanta.UpQuark = Object.create(Particle);
+    quanta.UpQuark.spin = 0.5;
+    quanta.UpQuark.eCharge = 2/3;
+    quanta.UpQuark.scaleFactor *= 1.1;
+    quanta.UpQuark._rotate = 0.001;
+    quanta.UpQuark.mass = 2200000;
+    quanta.UpQuark._draw = function(context) {
+        context.save();
+        context.translate(this.position.x, this.position.y);
+        context.rotate(this.phase);
+
+        context.beginPath();
+        context.moveTo(this.scale / 2, 0);
+        context.arc(0, 0, this.scale / 2, 0, 2 * Math.PI);
+        context.moveTo(this.scale / 3 * Math.cos(0),
+                       this.scale / 3 * Math.sin(0));
+        context.lineTo(this.scale / 3 * Math.cos(Math.PI / 2),
+                       this.scale / 3 * Math.sin(Math.PI / 2));
+        context.lineTo(this.scale / 3 * Math.cos(Math.PI),
+                       this.scale / 3 * Math.sin(Math.PI));
+        context.moveTo(this.scale / 3 * Math.cos(Math.PI * 3 / 2),
+                       this.scale / 3 * Math.sin(Math.PI * 3 / 2));
+        context.lineTo(this.scale / 3 * Math.cos(Math.PI / 2),
+                       this.scale / 3 * Math.sin(Math.PI / 2));
+        context.lineWidth = this.scale / 20;
+
+        context.lineCap = 'round';
+        context.fillStyle = "rgb(64,64,255)";
+        context.fill();
+        context.strokeStyle = 'lightgrey';
+        context.stroke();
+
+        context.restore();
+    };
+
+    quanta.CharmQuark = Object.create(quanta.UpQuark);
+    quanta.CharmQuark._rotate = 0.001;
+    quanta.CharmQuark.mass = 2200000;
+    quanta.CharmQuark._draw = function(context) {
+        context.save();
+        context.translate(this.position.x, this.position.y);
+        context.rotate(this.phase);
+
+        context.beginPath();
+        context.moveTo(this.scale / 2, 0);
+        context.arc(0, 0, this.scale / 2, 0, 2 * Math.PI);
+        context.moveTo(this.scale / 3 * Math.cos(0),
+                       this.scale / 3 * Math.sin(0));
+        context.lineTo(this.scale / 3 * Math.cos(Math.PI / 2),
+                       this.scale / 3 * Math.sin(Math.PI / 2));
+        context.lineTo(this.scale / 3 * Math.cos(Math.PI),
+                       this.scale / 3 * Math.sin(Math.PI));
+        context.moveTo(this.scale / 3 * Math.cos(Math.PI * 3 / 2) +
+                       this.scale / 7,
+                       this.scale / 3 * Math.sin(Math.PI * 3 / 2));
+        context.lineTo(this.scale / 3 * Math.cos(Math.PI / 2) +
+                       this.scale / 7,
+                       this.scale / 3 * Math.sin(Math.PI / 2));
+        context.moveTo(this.scale / 3 * Math.cos(Math.PI * 3 / 2) -
+                       this.scale / 7,
+                       this.scale / 3 * Math.sin(Math.PI * 3 / 2));
+        context.lineTo(this.scale / 3 * Math.cos(Math.PI / 2) -
+                       this.scale / 7,
+                       this.scale / 3 * Math.sin(Math.PI / 2));
+        context.lineWidth = this.scale / 20;
+
+        context.lineCap = 'round';
+        context.fillStyle = "rgb(64,64,255)";
+        context.fill();
+        context.strokeStyle = 'lightgrey';
+        context.stroke();
+
+        context.restore();
+    };
+
+    quanta.TopQuark = Object.create(quanta.UpQuark);
+    quanta.TopQuark._rotate = 0.001;
+    quanta.TopQuark.mass = 2200000;
+    quanta.TopQuark._draw = function(context) {
+        context.save();
+        context.translate(this.position.x, this.position.y);
+        context.rotate(this.phase);
+        context.scale(this.scale, this.scale);
+
+        context.beginPath();
+        context.moveTo(1 / 2, 0);
+        context.arc(0, 0, 1 / 2, 0, 2 * Math.PI);
+        context.moveTo(Math.cos(0) / 3,
+                       Math.sin(0) / 3);
+        context.lineTo(Math.cos(Math.PI / 2) / 3,
+                       Math.sin(Math.PI / 2) / 3);
+        context.lineTo(Math.cos(Math.PI) / 3,
+                       Math.sin(Math.PI) / 3);
+        context.moveTo(Math.cos(Math.PI * 3 / 2) / 3,
+                       Math.sin(Math.PI * 3 / 2) / 3);
+        context.lineTo(Math.cos(Math.PI / 2) / 3,
+                       Math.sin(Math.PI / 2) / 3);
+        context.moveTo(Math.cos(Math.PI * 3 / 2) / 3 + 1 / 5,
+                       Math.sin(Math.PI * 3 / 2) / 3);
+        context.lineTo(Math.cos(Math.PI / 2) / 3 + 1 / 5,
+                       Math.sin(Math.PI / 2) / 3);
+        context.moveTo(Math.cos(Math.PI * 3 / 2) / 3 - 1 / 5,
+                       Math.sin(Math.PI * 3 / 2) / 3);
+        context.lineTo(Math.cos(Math.PI / 2) / 3 - 1 / 5,
+                       Math.sin(Math.PI / 2) / 3);
+        context.lineWidth = 1 / 20;
+
+        context.lineCap = 'round';
+        context.fillStyle = "rgb(64,64,255)";
+        context.fill();
+        context.strokeStyle = 'lightgrey';
+        context.stroke();
+
+        context.restore();
+    };
+
+    quanta.DownQuark = Object.create(Particle);
+    quanta.DownQuark.spin = 0.5;
+    quanta.DownQuark.eCharge = -1/3;
+    quanta.DownQuark.scaleFactor *= 1.1;
+    quanta.DownQuark._rotate = 0.001;
+    quanta.DownQuark.mass = 2200000;
+    quanta.DownQuark._draw = function(context) {
+        context.save();
+        context.translate(this.position.x, this.position.y);
+        context.rotate(this.phase);
+
+        context.beginPath();
+        context.moveTo(this.scale / 2, 0);
+        context.arc(0, 0, this.scale / 2, 0, 2 * Math.PI);
+        context.moveTo(this.scale / 3 * Math.cos(0),
+                       this.scale / 3 * Math.sin(0));
+        context.lineTo(this.scale / 3 * Math.cos(Math.PI),
+                       this.scale / 3 * Math.sin(Math.PI));
+        context.lineTo(this.scale / 3 * Math.cos(-Math.PI / 2),
+                       this.scale / 3 * Math.sin(-Math.PI / 2));
+        context.lineTo(this.scale / 3 * Math.cos(0),
+                       this.scale / 3 * Math.sin(0));
+        context.lineWidth = this.scale / 20;
+
+        context.lineCap = 'round';
+        context.fillStyle = "rgb(64,64,255)";
+        context.fill();
+        context.strokeStyle = 'lightgrey';
+        context.stroke();
+
+        context.restore();
+    };
+
+    quanta.StrangeQuark = Object.create(quanta.DownQuark);
+    quanta.StrangeQuark._rotate = 0.001;
+    quanta.StrangeQuark.mass = 2200000;
+    quanta.StrangeQuark._draw = function(context) {
+        context.save();
+        context.translate(this.position.x, this.position.y);
+        context.rotate(this.phase);
+
+        context.beginPath();
+        context.moveTo(this.scale / 2, 0);
+        context.arc(0, 0, this.scale / 2, 0, 2 * Math.PI);
+        context.moveTo(this.scale / 3 * Math.cos(0),
+                       this.scale / 3 * Math.sin(0));
+        context.lineTo(this.scale / 3 * Math.cos(Math.PI),
+                       this.scale / 3 * Math.sin(Math.PI));
+        context.lineTo(this.scale / 3 * Math.cos(-Math.PI / 2),
+                       this.scale / 3 * Math.sin(-Math.PI / 2));
+        context.lineTo(this.scale / 3 * Math.cos(0),
+                       this.scale / 3 * Math.sin(0));
+        context.lineWidth = this.scale / 20;
+
+        context.lineCap = 'round';
+        context.fillStyle = "rgb(64,64,255)";
+        context.fill();
+        context.strokeStyle = 'lightgrey';
+        context.stroke();
+
+        context.restore();
+    };
+
+    quanta.BottomQuark = Object.create(quanta.DownQuark);
+    quanta.BottomQuark._rotate = 0.001;
+    quanta.BottomQuark.mass = 2200000;
+    quanta.BottomQuark._draw = function(context) {
+        context.save();
+        context.translate(this.position.x, this.position.y);
+        context.rotate(this.phase);
+
+        context.beginPath();
+        context.moveTo(this.scale / 2, 0);
+        context.arc(0, 0, this.scale / 2, 0, 2 * Math.PI);
+        context.moveTo(this.scale / 3 * Math.cos(0),
+                       this.scale / 3 * Math.sin(0));
+        context.lineTo(this.scale / 3 * Math.cos(Math.PI),
+                       this.scale / 3 * Math.sin(Math.PI));
+        context.lineTo(this.scale / 3 * Math.cos(-Math.PI / 2),
+                       this.scale / 3 * Math.sin(-Math.PI / 2));
+        context.lineTo(this.scale / 3 * Math.cos(0),
+                       this.scale / 3 * Math.sin(0));
+        context.lineWidth = this.scale / 20;
+
+        context.lineCap = 'round';
+        context.fillStyle = "rgb(64,64,255)";
+        context.fill();
+        context.strokeStyle = 'lightgrey';
+        context.stroke();
+
+        context.restore();
     };
 
     // A photon is a massless guage boson that mediates the
@@ -275,31 +685,28 @@
 
         var _lerp = function(low, high, i, f) {
             return Math.floor(low.color[i] + f *
-                              (high.color[i] - low.color[i]));
+                (high.color[i] - low.color[i]));
         };
         this._color = 'white';
         if (low !== null && high !== null) { // visible
             fraction = (freq - low.freq) / (high.freq - low.freq);
             this._color = 'rgb(' + _lerp(low, high, 'r', fraction) +
-                ',' + _lerp(low, high, 'g', fraction) + ',' +
-                _lerp(low, high, 'b', fraction) + ')';
+                          ',' + _lerp(low, high, 'g', fraction) + ',' +
+                          _lerp(low, high, 'b', fraction) + ')';
         } else if (low === null && high !== null) { // infra
         } else if (low !== null && high === null) { // ultra
         }
 
-        this._rotrate = Math.log(freq) / (2000 * Math.log(10));
+        this._rotate = Math.log(freq) / (2000 * Math.log(10));
         this.freq = freq;
     };
     quanta.Photon._init = function(lab, config) {
         this.setFreq(config && config.freq ? config.freq :
                      this.spectrum[0].freq + Math.random() *
-                     (this.spectrum[
-                         this.spectrum.length - 1].freq -
-                      this.spectrum[0].freq));
+            (this.spectrum[
+                this.spectrum.length - 1].freq -
+             this.spectrum[0].freq));
         return this;
-    };
-    quanta.Photon._update = function(delta, lab) {
-        this.phase += delta * this._rotrate;
     };
     quanta.Photon._draw = function(context, lab) {
         context.save();
@@ -320,35 +727,153 @@
         context.restore();
     };
 
-    // An electron is the most stable charged lepton.
-    quanta.Electron = Object.create(Particle);
-    quanta.Electron.mass = 510998.910;
-    quanta.Electron.spin = 0.5;
-    quanta.Electron.eCharge = -1;
-    quanta.Electron.scaleFactor *= 1.1;
-    quanta.Electron._draw = function(context) {
+    quanta.Gluon = Object.create(Particle);
+    quanta.Gluon.mass = 0;
+    quanta.Gluon.spin = 1;
+    quanta.Gluon.eCharge = -1;
+    quanta.Gluon.scaleFactor *= 1;
+    quanta.Gluon._color = 'white';
+    quanta.Gluon._rotate = 0.005;
+    quanta.Gluon._draw = function(context, lab) {
         context.save();
         context.translate(this.position.x, this.position.y);
+        context.rotate(this.phase);
         context.beginPath();
         context.moveTo(this.scale / 2, 0);
         context.arc(0, 0, this.scale / 2, 0, 2 * Math.PI);
-        context.moveTo(-this.scale / 4, 0);
-        context.lineTo(this.scale / 4, 0);
-        context.lineWidth = this.scale / 20;
-
+        context.moveTo(this.scale / 2 * Math.cos(Math.PI / 3),
+                       this.scale / 2 * Math.sin(Math.PI / 3));
+        context.bezierCurveTo(
+            this.scale / 2 * Math.cos(Math.PI),
+            this.scale / 2 * Math.sin(Math.PI),
+            this.scale / 2 * Math.cos(0),
+            this.scale / 2 * Math.sin(0),
+            this.scale / 2 * Math.cos(-Math.PI / 3),
+            this.scale / 2 * Math.sin(-Math.PI / 3));
+        context.moveTo(this.scale / 2 * Math.cos(Math.PI * 2 / 3),
+                       this.scale / 2 * Math.sin(Math.PI * 2 / 3));
+        context.bezierCurveTo(
+            this.scale / 2 * Math.cos(Math.PI),
+            this.scale / 2 * Math.sin(Math.PI),
+            this.scale / 2 * Math.cos(0),
+            this.scale / 2 * Math.sin(0),
+            this.scale / 2 * Math.cos(-Math.PI * 2 / 3),
+            this.scale / 2 * Math.sin(-Math.PI * 2 / 3));
+        context.lineWidth = this.scale / 25;
         context.lineCap = 'round';
-        context.fillStyle = "rgb(64,64,255)";
-        context.fill();
-        context.strokeStyle = 'lightgrey';
+        context.strokeStyle = this._color;
         context.stroke();
+        context.restore();
+    };
+
+    quanta.WPlusBoson = Object.create(Particle);
+    quanta.WPlusBoson.mass = 0;
+    quanta.WPlusBoson.spin = 1;
+    quanta.WPlusBoson.eCharge = -1;
+    quanta.WPlusBoson.scaleFactor *= 1;
+    quanta.WPlusBoson._color = 'white';
+    quanta.WPlusBoson._rotate = 0.005;
+    quanta.WPlusBoson._draw = function(context, lab) {
+        context.save();
+        context.translate(this.position.x, this.position.y);
+        context.rotate(this.phase);
+        context.scale(this.scale, this.scale);
 
         context.beginPath();
-        context.rotate(this.phase);
-        context.moveTo(0, -this.scale / 2);
-        context.arc(0, -this.scale / 2, this.scale / 10, 0, 2 * Math.PI);
-        context.fillStyle = 'lightgrey';
-        context.fill();
+        context.moveTo(1 / 2, 0);
+        context.arc(0, 0, 1 / 2, 0, 2 * Math.PI);
+        context.moveTo(1 / 2 * Math.cos(Math.PI / 4),
+                       1 / 2 * Math.sin(Math.PI / 4));
+        context.lineTo(1 / 2 * Math.cos(-Math.PI / 3),
+                       1 / 2 * Math.sin(-Math.PI / 3));
+        context.lineTo(1 / 5 * Math.cos(-Math.PI / 2),
+                       1 / 5 * Math.sin(-Math.PI / 2));
+        context.lineTo(1 / 2 * Math.cos(-Math.PI * 2 / 3),
+                       1 / 2 * Math.sin(-Math.PI * 2 / 3));
+        context.lineTo(1 / 2 * Math.cos(Math.PI * 3 / 4),
+                       1 / 2 * Math.sin(Math.PI * 3 / 4));
 
+        context.moveTo(1 / 7 * Math.cos(Math.PI / 2) - 1 / 7,
+                       1 / 7 * Math.sin(Math.PI / 2));
+        context.lineTo(1 / 7 * Math.cos(Math.PI / 2) + 1 / 7,
+                       1 / 7 * Math.sin(Math.PI / 2));
+        context.moveTo(1 / 7 * Math.cos(Math.PI / 2),
+                       1 / 7 * Math.sin(Math.PI / 2) - 1 / 7);
+        context.lineTo(1 / 7 * Math.cos(Math.PI / 2),
+                       1 / 7 * Math.sin(Math.PI / 2) + 1 / 7);
+        context.lineWidth = 1 / 25;
+        context.lineCap = 'round';
+        context.strokeStyle = this._color;
+        context.stroke();
+        context.restore();
+    };
+
+    quanta.WMinusBoson = Object.create(Particle);
+    quanta.WMinusBoson.mass = 0;
+    quanta.WMinusBoson.spin = 1;
+    quanta.WMinusBoson.eCharge = -1;
+    quanta.WMinusBoson.scaleFactor *= 1;
+    quanta.WMinusBoson._color = 'white';
+    quanta.WMinusBoson._rotate = 0.005;
+    quanta.WMinusBoson._draw = function(context, lab) {
+        context.save();
+        context.translate(this.position.x, this.position.y);
+        context.rotate(this.phase);
+        context.scale(this.scale, this.scale);
+
+        context.beginPath();
+        context.moveTo(1 / 2, 0);
+        context.arc(0, 0, 1 / 2, 0, 2 * Math.PI);
+        context.moveTo(1 / 2 * Math.cos(Math.PI / 4),
+                       1 / 2 * Math.sin(Math.PI / 4));
+        context.lineTo(1 / 2 * Math.cos(-Math.PI / 3),
+                       1 / 2 * Math.sin(-Math.PI / 3));
+        context.lineTo(1 / 5 * Math.cos(-Math.PI / 2),
+                       1 / 5 * Math.sin(-Math.PI / 2));
+        context.lineTo(1 / 2 * Math.cos(-Math.PI * 2 / 3),
+                       1 / 2 * Math.sin(-Math.PI * 2 / 3));
+        context.lineTo(1 / 2 * Math.cos(Math.PI * 3 / 4),
+                       1 / 2 * Math.sin(Math.PI * 3 / 4));
+
+        context.moveTo(1 / 7 * Math.cos(Math.PI / 2) - 1 / 7,
+                       1 / 7 * Math.sin(Math.PI / 2));
+        context.lineTo(1 / 7 * Math.cos(Math.PI / 2) + 1 / 7,
+                       1 / 7 * Math.sin(Math.PI / 2));
+        context.lineWidth = 1 / 25;
+        context.lineCap = 'round';
+        context.strokeStyle = this._color;
+        context.stroke();
+        context.restore();
+    };
+
+    quanta.ZBoson = Object.create(Particle);
+    quanta.ZBoson.mass = 0;
+    quanta.ZBoson.spin = 1;
+    quanta.ZBoson.eCharge = -1;
+    quanta.ZBoson.scaleFactor *= 1;
+    quanta.ZBoson._color = 'white';
+    quanta.ZBoson._rotate = 0.005;
+    quanta.ZBoson._draw = function(context, lab) {
+        context.save();
+        context.translate(this.position.x, this.position.y);
+        context.rotate(this.phase);
+        context.scale(this.scale, this.scale);
+
+        context.beginPath();
+        context.moveTo(1 / 2, 0);
+        context.arc(0, 0, 1 / 2, 0, 2 * Math.PI);
+        context.moveTo(1 / 2 * Math.cos(Math.PI / 4),
+                       1 / 2 * Math.sin(Math.PI / 4));
+        context.lineTo(1 / 2 * Math.cos(Math.PI * 3 / 4),
+                       1 / 2 * Math.sin(Math.PI * 3 / 4));
+        context.lineTo(1 / 2 * Math.cos(-Math.PI / 4),
+                       1 / 2 * Math.sin(-Math.PI / 4));
+        context.lineTo(1 / 2 * Math.cos(-Math.PI * 3 / 4),
+                       1 / 2 * Math.sin(-Math.PI * 3 / 4));
+        context.lineWidth = 1 / 25;
+        context.lineCap = 'round';
+        context.strokeStyle = this._color;
+        context.stroke();
         context.restore();
     };
 
@@ -356,6 +881,8 @@
         // Query Parameters
         var nphotons = Math.max(0, parseInt(
             ripple.param('nphotons') || 3, 10));
+        var ngluons = Math.max(0, parseInt(
+            ripple.param('ngluons') || 3, 10));
         var center = ripple.param('center') || 'center';
         c = Math.max(0.01, parseFloat(ripple.param('customc') || 1.0));
 
@@ -398,9 +925,26 @@
             canvas.attr('width'), canvas.attr('height'));
         for (index = 0; index < nphotons; ++index)
             lab.make(quanta.Photon);
+        for (index = 0; index < ngluons; ++index)
+            lab.make(quanta.Gluon);
         lab.make(quanta.Photon, {freq: 10000});
         lab.make(quanta.Photon, {freq: Math.pow(10, 18)});
+
+        lab.make(quanta.ZBoson);
+        lab.make(quanta.WPlusBoson);
+        lab.make(quanta.WMinusBoson);
         lab.make(quanta.Electron);
+        lab.make(quanta.Muon);
+        lab.make(quanta.Tau);  
+        lab.make(quanta.Neutrino);
+        lab.make(quanta.MuonNeutrino);
+        lab.make(quanta.TauNeutrino);
+        lab.make(quanta.UpQuark);
+        lab.make(quanta.DownQuark);
+        lab.make(quanta.CharmQuark);
+        lab.make(quanta.StrangeQuark);
+        lab.make(quanta.TopQuark);
+        lab.make(quanta.BottomQuark);
     };
 
 })(typeof exports === 'undefined'? this['quanta'] = {}: exports);
