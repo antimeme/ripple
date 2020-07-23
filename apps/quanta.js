@@ -877,6 +877,39 @@
         context.restore();
     };
 
+    quanta.HiggsBoson = Object.create(Particle);
+    quanta.HiggsBoson.mass = 0;
+    quanta.HiggsBoson.spin = 1;
+    quanta.HiggsBoson.eCharge = -1;
+    quanta.HiggsBoson.scaleFactor *= 1;
+    quanta.HiggsBoson._color = 'white';
+    quanta.HiggsBoson._rotate = 0.005;
+    quanta.HiggsBoson._draw = function(context, lab) {
+        context.save();
+        context.translate(this.position.x, this.position.y);
+        context.rotate(this.phase);
+        context.scale(this.scale, this.scale);
+
+        context.beginPath();
+        context.moveTo(1 / 2, 0);
+        context.arc(0, 0, 1 / 2, 0, 2 * Math.PI);
+        context.moveTo(1 / 2 * Math.cos(Math.PI / 3),
+                       1 / 2 * Math.sin(Math.PI / 3));
+        context.lineTo(1 / 2 * Math.cos(-Math.PI / 3),
+                       1 / 2 * Math.sin(-Math.PI / 3));
+        context.moveTo(1 / 2 * Math.cos(Math.PI * 2 / 3),
+                       1 / 2 * Math.sin(Math.PI * 2 / 3));
+        context.lineTo(1 / 2 * Math.cos(-Math.PI * 2 / 3),
+                       1 / 2 * Math.sin(-Math.PI * 2 / 3));
+        context.moveTo(1 / 2 * Math.cos(Math.PI / 3), 0);
+        context.lineTo(1 / 2 * Math.cos(Math.PI * 2 / 3), 0);
+        context.lineWidth = 1 / 25;
+        context.lineCap = 'round';
+        context.strokeStyle = this._color;
+        context.stroke();
+        context.restore();
+    };
+
     quanta.go = function($, container, viewport) {
         // Query Parameters
         var nphotons = Math.max(0, parseInt(
@@ -930,6 +963,7 @@
         lab.make(quanta.Photon, {freq: 10000});
         lab.make(quanta.Photon, {freq: Math.pow(10, 18)});
 
+        lab.make(quanta.HiggsBoson);
         lab.make(quanta.ZBoson);
         lab.make(quanta.WPlusBoson);
         lab.make(quanta.WMinusBoson);
