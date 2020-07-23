@@ -83,7 +83,7 @@ check_@PACKAGE@_SOURCES  = \
 TESTS = $(check_PROGRAMS)
 MOSTLYCLEANFILES =
 DISTCLEANFILES   =
-CLEANFILES       = .docker-build
+CLEANFILES       = *.pem .docker-build
 
 ## Python ==============================================================
 if HAVE_PYTHON
@@ -201,7 +201,6 @@ MOSTLYCLEANFILES += \
 	@PACKAGE@-@VERSION@.jar @PACKAGE@.jar \
 	@PACKAGE@-@VERSION@.war @PACKAGE@.war
 CLEANFILES += \
-	ca-*.pem server-*.pem tomcat-*.pem \
 	scripts/check-java.sh
 
 clean-local-java:
