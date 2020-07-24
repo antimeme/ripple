@@ -8,8 +8,13 @@
 </style>
 <title>Operating System Notes</title>
 <h1>Operating System Notes</h1>
+<ul><li>
+    <a href="#freebsd">FreeBSD</a>
+</li><li>
+    <a href="#linux">Linux</a>
+</li></ul>
 
-<h2>FreeBSD</h2>
+<h2><a name="freebsd">FreeBSD</a></h2>
 <p>
     These are the steps I usually take when setting up a FreeBSD
     virtual machine with VirtualBox.  This gives me an XFCE desktop
@@ -19,9 +24,10 @@
     set of available resolutions.  Use VboxVGA or VBoxSVGA instead.
 </p><code><pre>
 pkg install sudo gcc gmake autoconf automake libtool openjdk12 \
-            bash unix2dos curl emacs vim firefox \
+            bash git unix2dos curl emacs vim firefox \
             node npm docker docker-machine \
             xorg xfce gnome3 virtualbox-ose-additions
+# ??? maven?
 cat &lt;&lt;EOF &gt;&gt;/etc/rc.conf
 hald_enable="YES"
 dbus_enable="YES"
@@ -36,6 +42,27 @@ fdesc           /dev/fd         fdescfs rw      0       0
 shared          /mnt/shared     vboxvfs rw      0       0  
 EOF
 vi /usr/local/etc/gdm/custom.conf
+# Add this to the [daemon] section:
+#   AutomaticLogin=jgold
+#   AutomaticLogin=True
+visudo # Allow wheel to execute commands with no pass phrase
+</pre></code>
+
+<h2><a name="linux">Linux</a></h2>
+<p>
+    These are the steps I usually take when setting up a Linux virtual
+    machine with VirtualBox.  Use VboxVGA for graphic controller.
+</p><code><pre>
+dnf install sudo gcc gcc-c++ make autoconf automake libtool \
+            java-8-openjdk-devel maven \
+            bash git dos2unix unix2dos curl emacs vim firefox \
+            nodejs npm
+dnf groupinstall xfce
+mkdir -p /mnt/shared
+cat &lt;&lt;EOF &gt;&gt;/etc/fstab
+shared          /mnt/shared     vboxsf defaults 0 0
+EOF
+vi /usr/gdm/custom.conf
 # Add this to the [daemon] section:
 #   AutomaticLogin=jgold
 #   AutomaticLogin=True
