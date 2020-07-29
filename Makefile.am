@@ -179,11 +179,11 @@ $(WAR_ROOT)/.classes: $(J2EE_DISTSRC) lib/servlet-api.jar
 
 deploy: @PACKAGE@.war
 	@if [ -n "$(CATALINA_BASE)" ]; then \
-	    cp $< $(CATALINA_BASE)/webapps && \
-	    chown tomcat:tomcat $(CATALINA_BASE)/webapps/$<; \
+	    $(SUDO) cp $< $(CATALINA_BASE)/webapps && \
+	    $(SUDO) chown tomcat:tomcat $(CATALINA_BASE)/webapps/$<; \
 	elif [ -n "$(CATALINA_HOME)" ]; then \
-	    cp $< $(CATALINA_HOME)/webapps && \
-	    chown tomcat:tomcat $(CATALINA_HOME)/webapps/$<; \
+	    $(SUDO) cp $< $(CATALINA_HOME)/webapps && \
+	    $(SUDO) chown tomcat:tomcat $(CATALINA_HOME)/webapps/$<; \
 	else echo ERROR: no CATALINA_BASE or CATALINA_HOME; fi
 
 install-data-local: javadoc
