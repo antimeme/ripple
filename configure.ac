@@ -27,8 +27,7 @@ AC_PROG_CC
 AC_PROG_LIBTOOL
 AC_PROG_MKDIR_P
 AC_PROG_LN_S
-
-AC_CHECK_PROG([SUDO], sudo, sudo, )
+AC_PATH_PROG(SUDO, sudo, )
 
 # Conditionally build Python
 AC_ARG_ENABLE(python,
