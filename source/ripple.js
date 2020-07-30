@@ -1,5 +1,5 @@
 // ripple.js
-// Copyright (C) 2014-2018 by Jeff Gold.
+// Copyright (C) 2014-2020 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -511,7 +511,6 @@
         if (!config)
             config = {};
         this.config = config;
-        this.next = config.next || false;
         this.doubleThreshold = isNaN(config.doubleThreshold) ? 500 :
                                config.doubleThreshold;
         this.doubleQuadrance = isNaN(config.doubleDistance) ? 400 : (
@@ -534,8 +533,11 @@
     };
 
     ripple.gestur.prototype.fireEvent = function(evname) {
-        if (this.config[evname])
-            this.config[evname].apply(this, arguments);
+        if (this.config[evname]) {
+            var args = Array.prototype.slice.call(arguments);
+            args.shift();
+            this.config[evname].apply(this, args);
+        }
     };
 
     ripple.gestur.prototype.reset = function() {

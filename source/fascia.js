@@ -1,5 +1,5 @@
 // fascia.js
-// Copyright (C) 2018 by Jeff Gold.
+// Copyright (C) 2018-2020 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -1093,75 +1093,35 @@
             app.init(camera, canvas, container, redraw);
         redraw();
 
+        var createHandler = function(name) {
+            return function(event) {
+                if (app[name] && !app[name].call(app, event, camera))
+                    redraw();
+            };
+        };
+
         // Combine mouse and touch events to give a consistent
         // interface across modern browsers.
         var g = ripple.gestur({
-            next: true,
-            tap: function(name, event) {
-                if (app.tap && !app.tap(event, camera))
-                    redraw();
-            },
-            doubleTap: function(name, event) {
-                if (app.doubleTap && !app.doubleTap(event, camera))
-                    redraw();
-            },
-            swipe: function(name, event) {
-                if (app.swipe && !app.swipe(event, camera))
-                    redraw();
-            },
-            drag: function(name, event) {
-                if (app.drag && !app.drag(event, camera))
-                    redraw();
-            },
-            pinchStart: function(name, event) {
-                if (app.pinchStart && !app.pinchStart(event, camera))
-                    redraw();
-            },
-            pinchMove: function(name, event) {
-                if (app.pinchMove && !app.pinchMove(event, camera))
-                    redraw();
-            },
-            wheel: function(name, event) {
-                if (app.wheel && !app.wheel(event, camera))
-                    redraw();
-            },
+            tap:        createHandler("tap"),
+            doubleTap:  createHandler("doubleTap"),
+            swipe:      createHandler("swipe"),
+            drag:       createHandler("drag"),
+            pinchStart: createHandler("pinchStart"),
+            pinchMove:  createHandler("pinchMove"),
+            wheel:      createHandler("wheel"),
 
-            touchstart: function(name, event) {
-                if (app.down && !app.down(event, camera))
-                    redraw();
-            },
-            touchmove: function(name, event) {
-                if (app.move && !app.move(event, camera))
-                    redraw();
-            },
-            touchend: function(name, event) {
-                if (app.up && !app.up(event, camera))
-                    redraw();
-            },
-
-            mousedown: function(name, event) {
-                if (app.down && !app.down(event, camera))
-                    redraw();
-            },
-            mousemove: function(name, event) {
-                if (app.move && !app.move(event, camera))
-                    redraw();
-            },
-            mouseup: function(name, event) {
-                if (app.up && !app.up(event, camera))
-                    redraw();
-            },
+            touchstart: createHandler("down"),
+            touchmove:  createHandler("move"),
+            touchend:   createHandler("up"),
+            mousedown:  createHandler("down"),
+            mousemove:  createHandler("move"),
+            mouseup:    createHandler("up"),
         }, canvas);
 
         // Allow the application to process keyboard input.
-	viewport.addEventListener('keydown', function(event) {
-            if (app.keydown && !app.keydown(event, camera))
-                redraw();
-	});
-	viewport.addEventListener('keyup', function(event) {
-            if (app.keyup && !app.keyup(event, camera))
-                redraw();
-	});
+	viewport.addEventListener('keydown', createHandler("keydown"));
+	viewport.addEventListener('keyup',   createHandler("keyup"));
     };
 
     // Bundles ripple.preload and ripple.ready with Fascia so

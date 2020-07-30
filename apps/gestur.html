@@ -141,36 +141,36 @@
      };
 
      ripple.gestur({
-         baseEvents: ripple.paramBoolean('debug'),
-         touchstart: function(name, event) { post(name, event); },
-         touchstop: function(name, event) { post(name, event); },
-         mousedown: function(name, event) { post(name, event); },
-         mouseup: function(name, event) { post(name, event); },
+         //touchstart: function(event) { post("touchstart", event); },
+         //touchstop: function(event) { post("touchstop", event); },
+         //mousedown: function(event) { post("mousedown", event); },
+         //mouseup: function(event) { post("mouseup", event); },
 
-         tap: function(name, event) {
+         tap: function(event) {
              drawTap = event.point;
-             post(name, event.point);
+             post("tap", event.point);
          },
-         doubleTap: function(name, event) {
+         doubleTap: function(event) {
              drawDTap = event.point;
-             post(name, event.point);
+             post("doubleTap", event.point);
          },
-         swipe: function(name, event) {
+         swipe: function(event) {
              drawSwipe = {start: event.start, end: event.end};
-             post(name, drawSwipe);
+             post("swipe", drawSwipe);
          },
-         drag: function(name, event) {
+         drag: function(event) {
              drawDrag = event;
-             post(name, drawDrag);
+             post("drag", drawDrag);
          },
-         wheel: function(name, event) {
-             post(name, event);
+         wheel: function(event) {
+             post("wheel", event);
          },
-         pinchStart: function(name, event) {
-             post(name, {points: event.points});
+         pinchStart: function(event) {
+             post("pinchStart", {points: event.points});
          },
-         pinchMove: function(name, event) {
-             post(name, {length: event.length, angle: event.angle});
+         pinchMove: function(event) {
+             post("pinchMove", {length: event.length,
+                                angle: event.angle});
          },
      }, canvas);
  }); //]]></script>
