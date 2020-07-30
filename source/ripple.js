@@ -103,13 +103,13 @@
                     if ((count === urls.length) && go)
                         go(results);
                 } else {
-                    console.log("ERROR", "???");
-                    alert("ERROR ???");
+                    console.log("ERROR", "missing preload: " + url);
+                    alert("ERROR missing preload: " + url);
                 }
             };
             request.onerror = function() {
-                console.log("ERROR", "???");
-                alert("ERROR ???");
+                console.log("ERROR", "request failed: " + url);
+                alert("ERROR request failed: " + url);
             };
             request.send();
         });
@@ -120,6 +120,7 @@
         });
     };
 
+    // Creates a DOM element with attributes.
     ripple.createElement = function(name, attrs) {
         var result = document.createElement(name);
         var ii, current;
