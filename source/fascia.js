@@ -965,9 +965,10 @@
 
     // Fascia App is a framework for canvas applications that
     // automatically handles resizing, canonicalizing touch and mouse
-    // events.  Here's an example application:
+    // events.  Here's an example application that uses an inline
+    // function so that local variables can be bound by a closure:
     //
-    // fascia.app(function() {
+    // fascia.app((function() {
     //     taps = [];
     //     return {
     //         init: function(camera, canvas, container, redraw) {
@@ -1009,7 +1010,7 @@
     //         },
     //         isActive: function() { return true; }
     //     };
-    // });
+    // })());
     //
     // Fascia creates an HTML canvas element.  By default the entire
     // document body is used.  Fascia always uses a single camera, so
@@ -1042,6 +1043,22 @@
 
         var camera = ripple.camera();
 
+        // Selects a function with the specified name
+        var getAppFunction = function(app, name) {
+            if ((typeof(app.mode) === "string") &&
+                app.modes && (typeof(app.modes) === "object") &&
+                app.modes[name])
+                return app.modes[name];
+            else if ((typeof(app.mode) === "object") &&
+                       app.mode && app.mode[name])
+                return app.mode[name];
+            else if (typeof(app.mode) === "function")
+                return app.mode(name);
+            else if (app[name])
+                return app[name];
+            return function() {};
+        };
+
         // Our draw method gets the drawing context and sets up an
         // idempotent redraw system.  This means applications can call
         // redraw as often as they like.  Actual drawing will happen
@@ -1056,15 +1073,17 @@
             ctx = canvas.getContext('2d');
             ctx.save();
             ctx.clearRect(0, 0, camera.width, camera.height);
-            if (app.drawBefore)
-                app.drawBefore(ctx, camera, now, draw_last);
+            getAppFunction(app, "drawBefore")(
+                ctx, camera, now, draw_last);
             camera.setupContext(ctx);
-            if (app.draw)
-                app.draw(ctx, camera, now, draw_last);
+            getAppFunction(app, "draw")(ctx, camera, now, draw_last);
             ctx.restore();
 
             draw_last = now;
-            if (app.isActive && app.isActive())
+            if (((typeof(app.isActive) === "boolean") &&
+                 app.isActive) ||
+                ((typeof(app.isActive) === "function") &&
+                 app.isActive()))
                 redraw();
         };
         var redraw = function()
@@ -1089,13 +1108,14 @@
         });
         viewport.dispatchEvent(new Event('resize'));
 
-        if (app.init)
-            app.init(camera, canvas, container, redraw);
+        getAppFunction(app, "init")(camera, canvas, container, redraw);
         redraw();
 
+        // Returns an event handler that is responsive to the
+        // current application mode if any.
         var createHandler = function(name) {
             return function(event) {
-                if (app[name] && !app[name].call(app, event, camera))
+                if (!getAppFunction(app, name).call(app, event, camera))
                     redraw();
             };
         };
