@@ -10,63 +10,111 @@
  { position: absolute; padding: 0; margin: 0; overflow: hidden; }
  canvas { background: #222; color: #eee; }
 </style>
+<!-- :TODO: make touch controls work -->
 
 <script src="ripple/polyfill.js"></script>
 <script src="ripple/ripple.js"></script>
 <script src="ripple/fascia.js"></script>
 <script src="ripple/multivec.js"></script>
-<script src="ripple/grid.js"></script>
 <script>//<![CDATA[
  fascia.ready(function() {
      var size = 1000;
+     var asteroids = [];
      var ship = {
          x: 0, y: 0, dx: 0, dy: 0,
          size: 30, direction: -Math.PI/2,
-         left: false, right: false, thrust: false, brake: false,
-         shots: [], lastShot: 0,
+         left: false, right: false,
+         thrust: false, brake: false, target: null,
+         shots: [], lastShot: 0, dead: 0, debris: [],
          draw: function(ctx) {
              ctx.save();
              ctx.translate(this.x, this.y);
              ctx.rotate(this.direction);
              ctx.scale(this.size/2, this.size/2);
              ctx.beginPath();
-             ctx.moveTo(1, 0);
-             ctx.lineTo(-1, 2/3);
-             ctx.lineTo(-2/3, 0);
-             ctx.lineTo(-1, -2/3);
-             ctx.lineTo(1, 0);
-             if (this.thrust) {
-                 ctx.moveTo(-5/4, 2/3);
-                 ctx.lineTo(-3/2, 0);
-                 ctx.lineTo(-5/4, -2/3);
-                 ctx.moveTo(-3/2, 2/3);
-                 ctx.lineTo(-2, 0);
-                 ctx.lineTo(-3/2, -2/3);
-             }
-             if (this.brake) {
-                 ctx.moveTo(0.7, 0.7);   ctx.lineTo(0.5, 0.5);
-                 ctx.moveTo(0.7, -0.7);  ctx.lineTo(0.5, -0.5);
-                 ctx.moveTo(-1, -1); ctx.lineTo(-0.8, -0.8);
-                 ctx.moveTo(-1, 1);  ctx.lineTo(-0.8, 0.8);
+             if (this.dead === 0) {
+                 ctx.moveTo(1, 0);
+                 ctx.lineTo(-1, 2/3);
+                 ctx.lineTo(-2/3, 0);
+                 ctx.lineTo(-1, -2/3);
+                 ctx.lineTo(1, 0);
+                 if (this.thrust) {
+                     ctx.moveTo(-5/4, 2/3);
+                     ctx.lineTo(-3/2, 0);
+                     ctx.lineTo(-5/4, -2/3);
+                     ctx.moveTo(-3/2, 2/3);
+                     ctx.lineTo(-2, 0);
+                     ctx.lineTo(-3/2, -2/3);
+                 }
+                 if (this.brake) {
+                     ctx.moveTo(0.7, 0.7);   ctx.lineTo(0.5, 0.5);
+                     ctx.moveTo(0.7, -0.7);  ctx.lineTo(0.5, -0.5);
+                     ctx.moveTo(-1, -1); ctx.lineTo(-0.8, -0.8);
+                     ctx.moveTo(-1, 1);  ctx.lineTo(-0.8, 0.8);
+                 }
              }
              ctx.restore();
+             if (this.dead > 2500) {
+                 var progress = (3000 - this.dead) / 500;
+                 this.debris.forEach(function(piece) {
+                     piece.x = piece.startx + piece.dx * progress * 100;
+                     piece.y = piece.starty + piece.dy * progress * 100;
+                     ctx.moveTo(piece.x + piece.radius, piece.y);
+                     ctx.arc(piece.x, piece.y, piece.radius,
+                             0, 2 * Math.PI);
+                 });
+             }
              this.shots.forEach(function(shot) {
-                 ctx.moveTo(shot.x + this.size * 0.15, shot.y);
-                 ctx.arc(shot.x, shot.y, this.size * 0.15,
-                         0, 2 * Math.PI);
-             }, this);
+                 ctx.moveTo(shot.x + shot.radius, shot.y);
+                 ctx.arc(shot.x, shot.y, shot.radius, 0, 2 * Math.PI);
+             });
              ctx.stroke();
          },
          update: function(ms, camera) {
+             var activeShots = [];
+             this.shots.forEach(function(shot) {
+                 shot.duration += ms;
+                 if (shot.duration < 500) {
+                     shot.x += shot.dx * ms;
+                     if (shot.x - shot.radius > camera.width/2)
+                         shot.x = -camera.width/2 - shot.radius;
+                     else if (shot.x + shot.radius < -camera.width/2)
+                         shot.x = camera.width/2 + shot.radius;
+                     shot.y += shot.dy * ms;
+                     if (shot.y - shot.radius > camera.height/2)
+                         shot.y = -camera.height/2 - shot.radius;
+                     else if (shot.y + shot.radius < -camera.height/2)
+                         shot.y = camera.height/2 + shot.radius;
+                     activeShots.push(shot);
+                 }
+             }, this);
+             this.shots = activeShots;
+
+             if (this.dead > 0) {
+                 this.x  = this.y  = 0;
+                 this.dx = this.dy = 0;
+                 if (ms > this.dead) {
+                     ms -= this.dead;
+                     this.dead = 0;
+                 } else {
+                     this.dead -= ms;
+                     return;
+                 }
+             }
+
              if (this.left)
                  this.direction -= ms / 200;
-             if (this.right)
+             else if (this.right)
                  this.direction += ms / 200;
-             if (this.thrust)
-                 this.dx += Math.cos(this.direction) * ms / 1000;
-             if (this.thrust)
-                 this.dy += Math.sin(this.direction) * ms / 1000;
-             if (this.brake) {
+             else if (this.target) {
+                 // :TODO: work out which direction to turn the ship
+                 // in order to face that direction
+             }
+
+             if (this.thrust) {
+                 this.dx += Math.cos(this.direction) * ms / 1500;
+                 this.dy += Math.sin(this.direction) * ms / 1500;
+             } else if (this.brake) {
                  this.dx *= 0.98;
                  this.dy *= 0.98;
              }
@@ -74,50 +122,72 @@
              // Movement with wrap around
              this.x += this.dx * ms;
              if (this.x - this.size > camera.width/2)
-                 this.x = -camera.width/2;
+                 this.x = -camera.width/2 - this.size;
              else if (this.x + this.size < -camera.width/2)
-                 this.x = camera.width /2;
+                 this.x = camera.width /2 + this.size;
              this.y += this.dy * ms;
              if (this.y - this.size > camera.height/2)
-                 this.y = -camera.height/2;
+                 this.y = -camera.height/2 - this.size;
              else if (this.y + this.size < -camera.height/2)
-                 this.y = camera.height/2;
-
-             var activeShots = [];
-             this.shots.forEach(function(shot) {
-                 shot.duration += ms;
-                 if (shot.duration < 2000) {
-                     shot.x += shot.dx * ms;
-                     shot.y += shot.dy * ms;
-                     activeShots.push(shot);
-                 }
-             }, this);
-             this.shots = activeShots;
+                 this.y = camera.height/2 + this.size;
          },
          shoot: function() {
-             if (this.shots.length >= 8)
+             if ((this.dead > 0) || (this.shots.length >= 8))
                  return;
              var shot = {
                  x: this.x, y: this.y, duration: 0,
                  dx: Math.cos(this.direction) + this.dx,
-                 dy: Math.sin(this.direction) + this.dy
+                 dy: Math.sin(this.direction) + this.dy,
+                 radius: this.size * 0.15
              }
              this.shots.push(shot);
-             console.log("DEBUG-shot", "{", shot.dx, ",", shot.dy, "}");
-             console.log("DEBUG-ship", "{", this.dx, ",", this.dy, "}");
          },
+         aim: function(point) {
+             var v = { x: point.x - this.x,
+                       y: point.y - this.y };
+             var len = v.x * v.x + v.y * v.y;
+             if (len > this.size * this.size / 4) {
+                 v.x /= len;
+                 v.y /= len;
+                 this.target = v;
+             } else this.shoot();
+         }
      };
-     var createAsteroid = function(size, npoints) {
+
+     var createAsteroid = function(config) {
          var points = [];
          var place = Math.random() * Math.PI * 2;
+         var npoints = 16;
+         var size = 30;
+         var nsplits = 2;
+         var x = Math.cos(place) * 1000;
+         var y = Math.sin(place) * 1000;
+         var direction = Math.random() * Math.PI * 2;
+
+         if ((typeof(config) === "object") && config) {
+             if (!isNaN(config.npoints))
+                 npoints = config.npoints;
+             if (!isNaN(config.size))
+                 size = config.size;
+             if (!isNaN(config.nsplits))
+                 nsplits = config.nsplits;
+             if (!isNaN(config.x))
+                 x = config.x;
+             if (!isNaN(config.y))
+                 y = config.y;
+             if (!isNaN(config.direction))
+                 direction = config.direction;
+         } else if (!isNaN(config))
+             size = config;
+
          for (var ii = 0; ii < (npoints || 16); ++ii)
              points.push(1/2 + Math.random() / 2);
+
          return {
-             x: Math.cos(place) * 1000,
-             y: Math.sin(place) * 1000,
-             speed: 30 / size,
-             size: size,
-             direction: Math.random() * Math.PI * 2,
+             x: x, y: y, size: size, nsplits: nsplits,
+             direction: direction,
+             dx: Math.cos(direction) * 20 / (size + 50),
+             dy: Math.sin(direction) * 20 / (size + 50),
              angle: Math.random() * Math.PI * 2,
              points: points,
              draw: function(ctx) {
@@ -148,23 +218,52 @@
              update: function(ms, camera) {
                  this.angle += ms * Math.PI / (this.size * 30);
 
-                 this.x += ms * this.speed * Math.cos(
-                     this.direction);
+                 this.x += this.dx * ms;
                  if (this.x - this.size > camera.width/2)
-                     this.x = -camera.width/2;
+                     this.x = -camera.width/2 - this.size;
                  else if (this.x + this.size < -camera.width/2)
-                     this.x = camera.width/2;
+                     this.x = camera.width/2 + this.size;
 
-                 this.y += ms * this.speed * Math.sin(
-                     this.direction);
+                 this.y += this.dy * ms;
                  if (this.y - this.size > camera.height/2)
-                     this.y = -camera.height/2;
+                     this.y = -camera.height/2 - this.size;
                  else if (this.y + this.size < -camera.height/2)
-                     this.y = camera.height/2;
+                     this.y = camera.height/2 + this.size;
+             },
+             split: function(active) {
+                 if (this.nsplits > 0) {
+                     active.push(createAsteroid({
+                         size: this.size / 2,
+                         nsplits: this.nsplits - 1,
+                         x: this.x, y: this.y}));
+                     active.push(createAsteroid({
+                         size: this.size / 2,
+                         nsplits: this.nsplits - 1,
+                         x: this.x, y: this.y}));
+                     this.nsplits -= 1;
+                 }
              }
          };
      };
-     var asteroids = [];
+
+     var collideAsteroidShot = function(asteroid, shot, ms) {
+         return multivec.collideRadiusRadius(
+             shot, {x: shot.x + shot.dx * ms,
+                    y: shot.y + shot.dy * ms}, shot.radius,
+             asteroid, {x: asteroid.x + asteroid.dx * ms,
+                        y: asteroid.y + asteroid.dy * ms},
+             asteroid.size/2);
+     };
+
+     var collideAsteroidShip = function(asteroid, ship, ms) {
+         return multivec.collideRadiusRadius(
+             ship, {x: ship.x + ship.dx * ms,
+                    y: ship.y + ship.dy * ms}, ship.size/2,
+             asteroid, {x: asteroid.x + asteroid.dx * ms,
+                        y: asteroid.y + asteroid.dy * ms},
+             asteroid.size/2);
+     };
+
      for (var ii = 0; ii < 8; ++ii)
          asteroids.push(createAsteroid(size / 2));
 
@@ -186,22 +285,60 @@
              });
          },
          update: function(ms, camera) {
-             ship.update(ms, camera);
+             var activeAsteroids = [];
              asteroids.forEach(function(asteroid) {
+                 var survived = true;
+                 var activeShots = [];
+                 ship.shots.forEach(function(shot) {
+                     if (collideAsteroidShot(asteroid, shot, ms)) {
+                         survived = false;
+                         asteroid.split(activeAsteroids);
+                     } else activeShots.push(shot);
+                 });
+                 ship.shots = activeShots;
                  asteroid.update(ms, camera);
+
+                 if (survived && !ship.dead &&
+                     collideAsteroidShip(asteroid, ship, ms)) {
+                     survived = false;
+                     asteroid.split(activeAsteroids);
+                     ship.dead = 3000;
+                     ship.debris = [];
+                     for (var ii = 0; ii < 8; ++ii) {
+                         var direction = Math.random() * Math.PI * 2;
+                         var speed = Math.random() * 0.5 + 0.5;
+                         ship.debris.push({
+                             startx: ship.x,
+                             starty: ship.y,
+                             x: ship.x,
+                             y: ship.y,
+                             dx: Math.cos(direction) * speed,
+                             dy: Math.sin(direction) * speed,
+                             radius: ship.size / 5
+                         });
+                     }
+                 }
+
+                 if (survived)
+                     activeAsteroids.push(asteroid);
              });
+             ship.update(ms, camera);
+             asteroids = activeAsteroids;
          },
+         tap: function(event, camera) { ship.aim(event.point); },
+         doubleTap: function(event, camera) { ship.shoot(); },
          keydown: function(event, camera) {
              if (event.keyCode === 37 || event.key === 'a') {
                  ship.left = true; ship.right = false;
-	     } else if (event.keyCode === 38 || event.key === 'w')
+	     } else if (event.keyCode === 38 || event.key === 'w') {
                  ship.thrust = true;
-	     else if (event.keyCode === 39 || event.key === 'd') {
+	     } else if (event.keyCode === 39 || event.key === 'd') {
                  ship.right = true; ship.left = false;
-	     } else if (event.keyCode === 40 || event.key === 's')
+	     } else if (event.keyCode === 40 || event.key === 's') {
                  ship.brake = true;
-             else if (event.key = ' ' || event.key === "Enter")
+             } else if (event.key === ' ' || event.key === "Enter") {
                  ship.shoot();
+             }
          },
          keyup: function(event, camera) {
              if (event.keyCode === 37 || event.key === 'a')
