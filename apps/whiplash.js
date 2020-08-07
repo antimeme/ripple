@@ -274,13 +274,13 @@
                     this.inventory.resize(camera.width, camera.height);
             },
 
-            draw: function(ctx, camera, now, last) {
+            draw: function(ctx, camera, now) {
                 var size = Math.min(camera.height, camera.width);
                 ctx.lineWidth = Math.max(
                     camera.width, camera.height) / 50;
 
                 camera.position(this.player.position);
-                this.update(now, last);
+                this.update(now);
 
                 this.characters.forEach(function(character) {
                     if (character.drawPre)

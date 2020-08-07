@@ -995,6 +995,9 @@
     //             ctx.strokeStyle = 'rgb(32, 32, 192)';
     //             ctx.stroke();
     //         },
+    //         update: function(ms, camera) {},
+    //         keydown: function(event, camera) {},
+    //         keyup: function(event, camera) {},
     //         tap: function(event, camera) {
     //             taps.push(camera.toWorldFromScreen(event.point));
     //             if (taps.length > 3)
@@ -1008,7 +1011,7 @@
     //         wheel: function(event, camera) {
     //             camera.zoom(1 + 0.1 * event.y, 1, 10);
     //         },
-    //         isActive: function() { return true; }
+    //         isActive: true || function() { return true; }
     //     };
     // })());
     //
@@ -1044,7 +1047,7 @@
         var camera = ripple.camera();
 
         // Selects a function with the specified name
-        var getAppFunction = function(app, name) {
+        var getAppFn = function(app, name, strict) {
             if ((typeof(app.mode) === "string") &&
                 app.modes && (typeof(app.modes) === "object") &&
                 app.modes[name])
@@ -1056,8 +1059,13 @@
                 return app.mode(name);
             else if (app[name])
                 return app[name];
-            return function() {};
+            else if (!strict)
+                return function() {};
+            return null;
         };
+
+        // Facsia Apps get calls to update(ms, camera) every so often
+        var lastUpdate = 0;
 
         // Our draw method gets the drawing context and sets up an
         // idempotent redraw system.  This means applications can call
@@ -1065,21 +1073,27 @@
         // only as frequently as the browser can handle it.
         var draw_id = 0, draw_last = 0;
         var draw = function() {
-            var ii, ctx, width, height;
             var now = Date.now();
+            var ii, ctx, width, height;
             draw_id = 0;
+
+            if (lastUpdate)
+                getAppFn(app, "update").call(
+                    app, now - lastUpdate, camera);
+            lastUpdate = now;
 
             camera.resize(canvas.clientWidth, canvas.clientHeight);
             ctx = canvas.getContext('2d');
+            ctx.strokeStyle = getComputedStyle(canvas).color;
             ctx.save();
             ctx.clearRect(0, 0, camera.width, camera.height);
-            getAppFunction(app, "drawBefore")(
-                ctx, camera, now, draw_last);
+            getAppFn(app, "drawBefore")(ctx, camera, now, lastUpdate);
             camera.setupContext(ctx);
-            getAppFunction(app, "draw")(ctx, camera, now, draw_last);
+            getAppFn(app, "draw")(ctx, camera, now, lastUpdate);
             ctx.restore();
 
-            draw_last = now;
+            // Active apps need to be redrawn while inactive apps
+            // do not.  We let the app itself tell us which it is.
             if (((typeof(app.isActive) === "boolean") &&
                  app.isActive) ||
                 ((typeof(app.isActive) === "function") &&
@@ -1108,14 +1122,19 @@
         });
         viewport.dispatchEvent(new Event('resize'));
 
-        getAppFunction(app, "init")(camera, canvas, container, redraw);
+        getAppFn(app, "init")(camera, canvas, container, redraw);
         redraw();
 
         // Returns an event handler that is responsive to the
         // current application mode if any.
         var createHandler = function(name) {
             return function(event) {
-                if (!getAppFunction(app, name).call(app, event, camera))
+                var now = Date.now();
+                if (lastUpdate)
+                    getAppFn(app, "update").call(
+                        app, lastUpdate - now, camera);
+                lastUpdate = now;
+                if (!getAppFn(app, name).call(app, event, camera))
                     redraw();
             };
         };
