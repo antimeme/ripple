@@ -954,6 +954,10 @@
     // the sum of the radii, which is where edges touch.
     multivec.collideRadiusRadius = function(s1, e1, r1, s2, e2, r2) {
         var result = undefined;
+        s1 = multivec(s1);
+        s2 = multivec(s2);
+        e1 = multivec(e1);
+        e2 = multivec(e2);
         var d1 = e1.subtract(s1);
         var d2 = e2.subtract(s2);
         var gap = r1 + r2;
