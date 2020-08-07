@@ -19,13 +19,14 @@
 <script>//<![CDATA[
  fascia.ready(function() {
      var size = 1000;
+     var debris = [];
      var asteroids = [];
      var ship = {
          x: 0, y: 0, dx: 0, dy: 0,
          size: 30, direction: -Math.PI/2,
          left: false, right: false,
          thrust: false, brake: false, target: undefined,
-         shots: [], lastShot: 0, dead: 0, debris: [],
+         shots: [], lastShot: 0, dead: 0,
          draw: function(ctx) {
              ctx.save();
              ctx.translate(this.x, this.y);
@@ -54,16 +55,6 @@
                  }
              }
              ctx.restore();
-             if (this.dead > 2500) {
-                 var progress = (3000 - this.dead) / 500;
-                 this.debris.forEach(function(piece) {
-                     piece.x = piece.startx + piece.dx * progress;
-                     piece.y = piece.starty + piece.dy * progress;
-                     ctx.moveTo(piece.x + piece.radius, piece.y);
-                     ctx.arc(piece.x, piece.y, piece.radius,
-                             0, 2 * Math.PI);
-                 });
-             }
              this.shots.forEach(function(shot) {
                  ctx.moveTo(shot.x + shot.radius, shot.y);
                  ctx.arc(shot.x, shot.y, shot.radius, 0, 2 * Math.PI);
@@ -166,8 +157,25 @@
                  this.target = Math.acos(v.x);
                  if (v.y < 0)
                      this.target = -this.target;
-                 console.log("DEBUG", this.target, this.direction);
              } else this.shoot();
+         }
+     };
+
+     var drawPointyThing = function(ctx, points, size) {
+         if (points && points.length > 0) {
+             var index = points.length - 1;
+             var point = points[index];
+             ctx.moveTo(
+                 Math.cos(index * 2 * Math.PI /
+                     points.length) * point * size,
+                 Math.sin(index * 2 * Math.PI /
+                     points.length) * point * size);
+             points.forEach(function(point, index) {
+                 ctx.lineTo(
+                     Math.cos(index * 2 * Math.PI /
+                         points.length) * point * size,
+                     Math.sin(index * 2 * Math.PI /
+                         points.length) * point * size); });
          }
      };
 
@@ -213,22 +221,7 @@
                  ctx.rotate(this.angle);
                  ctx.scale(this.size/2, this.size/2);
                  ctx.beginPath();
-                 if (this.points && this.points.length > 0) {
-                     var index = this.points.length - 1;
-                     var point = this.points[index];
-                     ctx.moveTo(
-                         Math.cos(index * 2 * Math.PI /
-                             this.points.length) * point,
-                         Math.sin(index * 2 * Math.PI /
-                             this.points.length) * point);
-                     this.points.forEach(function(point, index) {
-                         ctx.lineTo(
-                             Math.cos(index * 2 * Math.PI /
-                                 this.points.length) * point,
-                             Math.sin(index * 2 * Math.PI /
-                                 this.points.length) * point);
-                     }, this);
-                 }
+                 drawPointyThing(ctx, this.points, 1);
                  ctx.restore();
                  ctx.stroke();
              },
@@ -275,10 +268,46 @@
      var collideAsteroidShip = function(asteroid, ship, ms) {
          return multivec.collideRadiusRadius(
              ship, {x: ship.x + ship.dx * ms,
-                    y: ship.y + ship.dy * ms}, ship.size/2,
+                    y: ship.y + ship.dy * ms}, ship.size/3,
              asteroid, {x: asteroid.x + asteroid.dx * ms,
                         y: asteroid.y + asteroid.dy * ms},
              asteroid.size/2);
+     };
+
+     var createDebris = function(source, size) {
+         var direction = Math.random() * Math.PI * 2;
+         var speed = (Math.random() + 1) / 10;
+         var points = [];
+         var npoints = Math.floor(Math.random() * 3) +  3;
+
+         for (var ii = 0; ii < npoints; ++ii)
+             points.push(1/2 + Math.random() / 2);
+
+         debris.push({
+             startx: source.x, starty: source.y,
+             x: source.x, y: source.y,
+             size: size, duration: 500, points: points,
+             dx: Math.cos(direction) * speed,
+             dy: Math.sin(direction) * speed,
+             update: function(ms) {
+                 this.duration -= ms;
+                 if (this.duration <= 0)
+                     return false;
+                 this.x += this.dx * ms;
+                 this.y += this.dy * ms;
+                 return true;
+             },
+             draw: function(ctx) {
+                 ctx.save();
+                 ctx.translate(this.x, this.y);
+                 ctx.scale(this.size, this.size);
+                 drawPointyThing(ctx, this.points, 1);
+                 ctx.restore();
+                 /* ctx.moveTo(this.x + this.size, this.y);
+                  * ctx.arc(this.x, this.y, this.size,
+                  *         0, 2 * Math.PI); */
+             }
+         });
      };
 
      for (var ii = 0; ii < 8; ++ii)
@@ -298,18 +327,37 @@
 
              ship.draw(ctx);
              asteroids.forEach(function(asteroid) {
-                 asteroid.draw(ctx);
-             });
+                 asteroid.draw(ctx); });
+
+             ctx.beginPath();
+             debris.forEach(function(piece) {
+                 piece.draw(ctx); });
+             ctx.stroke();
          },
          update: function(ms, camera) {
+             while (ms > 100) {
+                 this.update(100, camera);
+                 ms -= 100;
+             }
+
+             var activeDebris = [];
+             debris.forEach(function(piece) {
+                 if (piece.update(ms))
+                     activeDebris.push(piece);
+             });
+             debris = activeDebris;
+
              var activeAsteroids = [];
              asteroids.forEach(function(asteroid) {
                  var survived = true;
+
                  var activeShots = [];
                  ship.shots.forEach(function(shot) {
                      if (collideAsteroidShot(asteroid, shot, ms)) {
                          survived = false;
                          asteroid.split(activeAsteroids);
+                         for (var ii = 0; ii < 6; ++ii)
+                             createDebris(asteroid, ship.size / 5);
                      } else activeShots.push(shot);
                  });
                  ship.shots = activeShots;
@@ -320,27 +368,16 @@
                      survived = false;
                      asteroid.split(activeAsteroids);
                      ship.dead = 3000;
-                     ship.debris = [];
-                     for (var ii = 0; ii < 8; ++ii) {
-                         var direction = Math.random() * Math.PI * 2;
-                         var speed = 100 * (Math.random() * 0.5 + 0.5);
-                         ship.debris.push({
-                             startx: ship.x,
-                             starty: ship.y,
-                             x: ship.x,
-                             y: ship.y,
-                             dx: Math.cos(direction) * speed,
-                             dy: Math.sin(direction) * speed,
-                             radius: ship.size / 5
-                         });
-                     }
+                     for (var ii = 0; ii < 8; ++ii)
+                         createDebris(ship, ship.size / 5);
                  }
 
                  if (survived)
                      activeAsteroids.push(asteroid);
              });
-             ship.update(ms, camera);
              asteroids = activeAsteroids;
+
+             ship.update(ms, camera);
          },
          tap: function(event, camera) {
              ship.aim(event.point, camera);
@@ -359,6 +396,10 @@
                  ship.brake = true;
              } else if (event.key === ' ' || event.key === "Enter") {
                  ship.shoot();
+             } else if (event.key === 'x') {
+                 console.log("DEBUG", debris.length);
+                 for (var ii = 0; ii < debris.length; ++ii)
+                     console.log(" ", ii, debris[ii].duration);
              }
          },
          keyup: function(event, camera) {
