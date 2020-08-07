@@ -1130,9 +1130,9 @@
         var createHandler = function(name) {
             return function(event) {
                 var now = Date.now();
-                if (lastUpdate)
+                if (lastUpdate && (lastUpdate < now))
                     getAppFn(app, "update").call(
-                        app, lastUpdate - now, camera);
+                        app, now - lastUpdate, camera);
                 lastUpdate = now;
                 if (!getAppFn(app, name).call(app, event, camera))
                     redraw();
