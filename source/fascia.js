@@ -1085,6 +1085,7 @@
             camera.resize(canvas.clientWidth, canvas.clientHeight);
             ctx = canvas.getContext('2d');
             ctx.strokeStyle = getComputedStyle(canvas).color;
+            ctx.fillStyle = getComputedStyle(canvas).color;
             ctx.save();
             ctx.clearRect(0, 0, camera.width, camera.height);
             getAppFn(app, "drawBefore")(ctx, camera, now, lastUpdate);
