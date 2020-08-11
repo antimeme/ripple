@@ -37,19 +37,20 @@
      var saucerRespawn = Math.max(
          ripple.paramInt('saucer-respawn') || 8000, 1000);
      var messy = ripple.paramBoolean("messy");
+     var rings = ripple.paramBoolean("rings");
 
      var score = 0;
      var asteroids = [];
      var debris = [];
+     var respawn = 1000; // Milliseconds until astroids respawn
+     var reset = 0;      // Milliseconds until the game resets
      var size = 1000;
-     var respawn = 1000;
-     var reset = 0;
 
      var checkCollide = function(a, b, ms) {
          return ((((a.x - b.x) * (a.x - b.x) +
-                          (a.y - b.y) * (a.y - b.y)) <=
-                              ((a.size + b.size) *
-                                  (a.size + b.size) / 4)) ?
+                              (a.y - b.y) * (a.y - b.y)) <=
+                                  ((a.size + b.size) *
+                                      (a.size + b.size) / 4)) ?
                  true : multivec.collideRadiusRadius(
                      {x: a.x, y: a.y},
                      {x: a.x + a.dx * ms, y: a.y + a.dy * ms},
@@ -257,7 +258,8 @@
              }
              if (this.warp) {
                  // Move the ship to a "safe" location
-                 var place = {x: this.x, y: this.y };
+                 var place = { x: this.x, y: this.y,
+                               dx: 0, dy: 0, size: this.size };
 
                  this.dx = this.dy = 0;
                  for (var ii = 0; ii < 100; ++ii) {
@@ -266,10 +268,11 @@
                          x: ((Math.random() - 0.5) *
                              camera.width * 4 / 5),
                          y: ((Math.random() - 0.5) *
-                             camera.height * 4 / 5) };
+                             camera.height * 4 / 5),
+                         dx: 0, dy: 0, size: this.size };
 
                      asteroids.forEach(function(asteroid) {
-                         if (checkCollide(asteroid, this, 1000))
+                         if (checkCollide(asteroid, place, 1000))
                              crash = true;
                      }, this);
                      if (!crash)
@@ -317,6 +320,7 @@
              for (var ii = 0; ii < npieces; ++ii)
                  debris.push(createDebris(this));
              this.dead = 3000;
+             this.x = this.y = this.dx = this.dy = 0;
              if (this.lives === 0)
                  reset = 5000;
          },
