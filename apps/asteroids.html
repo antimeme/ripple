@@ -32,24 +32,30 @@
  // 10,000 points an extra life was awarded.
  fascia.ready(function() {
      "use strict";
-     var newlife = Math.max(parseInt(
-         ripple.param('nasteroids'), 10), 1000) || 10000;
-     var nasteroids = Math.max(parseInt(
-         ripple.param('nasteroids'), 10), 1) || 8;
+     var newlife = Math.max(
+         ripple.paramInt('nasteroids'), 1000) || 10000;
+     var nasteroids = Math.max(
+         ripple.paramInt('nasteroids'), 1) || 8;
      var saucerRespawn = Math.max(
-         parseInt(ripple.param('saucer-respawn'), 10) || 8000, 1000);
-     var size = 1000;
-     var debris = [];
+         ripple.paramInt('saucer-respawn') || 8000, 1000);
+     var messy = ripple.paramBoolean("messy");
+
      var asteroids = [];
+     var debris = [];
+     var size = 1000;
      var respawn = 1000;
      var reset = 0;
 
      var checkCollide = function(a, b, ms) {
-         return multivec.collideRadiusRadius(
-             {x: a.x, y: a.y},
-             {x: a.x + a.dx * ms, y: a.y + a.dy * ms}, a.size/2,
-             {x: b.x, y: b.y},
-             {x: b.x + b.dx * ms, y: b.y + b.dy * ms}, b.size/2);
+         return ((((a.x - b.x) * (a.x - b.x) +
+                   (a.y - b.y) * (a.y - b.y)) <=
+                   ((a.size + b.size) / 4)) ? 0.001 :
+                 multivec.collideRadiusRadius(
+                     {x: a.x, y: a.y},
+                     {x: a.x + a.dx * ms, y: a.y + a.dy * ms},
+                     a.size/2, {x: b.x, y: b.y},
+                     {x: b.x + b.dx * ms, y: b.y + b.dy * ms},
+                     b.size/2));
      };
 
      var createShot = function(vessel, direction) {
@@ -84,6 +90,44 @@
                       }
                       return result;
                   }
+         };
+     };
+
+     var createDebris = function(source) {
+         var direction = Math.random() * Math.PI * 2;
+         var speed = (Math.random() + 1) / 10;
+         var points = [];
+         var npoints = Math.floor(Math.random() * 3) +  3;
+
+         for (var ii = 0; ii < npoints; ++ii)
+             points.push(1/2 + Math.random() / 2);
+
+         return {
+             startx: source.x, starty: source.y,
+             x: source.x, y: source.y,
+             dx: source.dx + Math.cos(direction) * speed,
+             dy: source.dy + Math.sin(direction) * speed,
+             size: size / 100, duration: 900, points: points,
+             update: function(ms, camera) {
+                 if (!messy) {
+                     this.duration -= ms;
+                     if (this.duration <= 0)
+                         return false;
+                 }
+                 this.x += this.dx * ms;
+                 this.y += this.dy * ms;
+                 return ((this.x <= camera.width) &&
+                         (this.x >= -camera.width) &&
+                         (this.y <= camera.height) &&
+                         (this.y >= -camera.height));
+             },
+             draw: function(ctx) {
+                 ctx.save();
+                 ctx.translate(this.x, this.y);
+                 ctx.scale(this.size, this.size);
+                 drawRock(ctx, this.points, 1);
+                 ctx.restore();
+             }
          };
      };
 
@@ -296,8 +340,8 @@
      var saucer = {
          x: 0, y: 0, dx: 0, dy: 0,
          size: 30, direction: 0,
-         shots: [], dead: -1, score: 0, small: false,
-         turnTimer: 0, shootTimer: 0,
+         shots: [], dead: saucerRespawn * 2,
+         score: 0, small: false, turnTimer: 0, shootTimer: 0,
          resize: function(size) {
              this.size = size / (this.small ? 20 : 10);
          },
@@ -422,7 +466,7 @@
 
      var createAsteroid = function(config) {
          var points = [];
-         var npoints = 8;
+         var npoints = 10;
          var nsplits = 2;
          var score = 100;
          var direction = Math.random() * Math.PI * 2;
@@ -445,7 +489,7 @@
 
          var ii;
          for (var ii = 0; ii < nsplits; ++ii) {
-             npoints += 4;
+             npoints += 2;
              score = Math.floor(score / 20) * 10;
          }
          for (var ii = 0; ii < npoints; ++ii)
@@ -514,39 +558,6 @@
          };
      };
 
-     var createDebris = function(source) {
-         var direction = Math.random() * Math.PI * 2;
-         var speed = (Math.random() + 1) / 10;
-         var points = [];
-         var npoints = Math.floor(Math.random() * 3) +  3;
-
-         for (var ii = 0; ii < npoints; ++ii)
-             points.push(1/2 + Math.random() / 2);
-
-         return {
-             startx: source.x, starty: source.y,
-             x: source.x, y: source.y,
-             dx: source.dx + Math.cos(direction) * speed,
-             dy: source.dy + Math.sin(direction) * speed,
-             size: size / 100, duration: 500, points: points,
-             update: function(ms) {
-                 this.duration -= ms;
-                 if (this.duration <= 0)
-                     return false;
-                 this.x += this.dx * ms;
-                 this.y += this.dy * ms;
-                 return true;
-             },
-             draw: function(ctx) {
-                 ctx.save();
-                 ctx.translate(this.x, this.y);
-                 ctx.scale(this.size, this.size);
-                 drawRock(ctx, this.points, 1);
-                 ctx.restore();
-             }
-         };
-     };
-
      return {
          resize: function(camera) {
              size = Math.min(camera.width, camera.height);
@@ -560,7 +571,7 @@
              ctx.lineWidth = size / 400;
              ctx.font = (size / 20) + "px monospace";
              ctx.fillText(ship.score.toLocaleString(),
-                          size / 40, size / 15);
+                          size / 18, size / 15);
 
              for (var ii = 0; ii < ship.lives; ++ii) {
                  ctx.save();
@@ -601,7 +612,7 @@
 
              var activeDebris = [];
              debris.forEach(function(piece) {
-                 if (piece.update(ms))
+                 if (piece.update(ms, camera))
                      activeDebris.push(piece);
              });
              debris = activeDebris;
@@ -651,8 +662,9 @@
                      reset = 0;
                      respawn = 1000;
                      asteroids = [];
+                     debris = [];
                      ship.score = 0;
-                     ship.lives = 3;
+                     ship.lives = 4;
                      saucer.dead = -1;
                  }
              } else if (respawn > 0) {
