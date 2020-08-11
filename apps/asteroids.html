@@ -10,8 +10,6 @@
  { position: absolute; padding: 0; margin: 0; overflow: hidden; }
  canvas { background: #222; color: #eee; }
 </style>
-<!-- :TODO: make touch controls work -->
-
 <script src="ripple/polyfill.js"></script>
 <script src="ripple/ripple.js"></script>
 <script src="ripple/fascia.js"></script>
@@ -48,14 +46,28 @@
 
      var checkCollide = function(a, b, ms) {
          return ((((a.x - b.x) * (a.x - b.x) +
-                   (a.y - b.y) * (a.y - b.y)) <=
-                   ((a.size + b.size) / 4)) ? 0.001 :
-                 multivec.collideRadiusRadius(
+                       (a.y - b.y) * (a.y - b.y)) <=
+                           ((a.size + b.size) *
+                               (a.size + b.size) / 4)) ?
+                 true : multivec.collideRadiusRadius(
                      {x: a.x, y: a.y},
                      {x: a.x + a.dx * ms, y: a.y + a.dy * ms},
                      a.size/2, {x: b.x, y: b.y},
                      {x: b.x + b.dx * ms, y: b.y + b.dy * ms},
                      b.size/2));
+     };
+
+     var moveWrap = function(thing, ms, camera) {
+         thing.x += thing.dx * ms;
+         if (thing.x - thing.size > camera.width/2)
+             thing.x = -camera.width/2 - thing.size;
+         else if (thing.x + thing.size < -camera.width/2)
+             thing.x = camera.width/2 + thing.size;
+         thing.y += thing.dy * ms;
+         if (thing.y - thing.size > camera.height/2)
+             thing.y = -camera.height/2 - thing.size;
+         else if (thing.y + thing.size < -camera.height/2)
+             thing.y = camera.height/2 + thing.size;
      };
 
      var createShot = function(vessel, direction) {
@@ -70,22 +82,14 @@
                   size: size * 3 / 200,
                   draw: function(ctx) {
                       ctx.moveTo(this.x + this.size/2, this.y);
-                      ctx.arc(this.x, this.y, this.size/2, 0, 2 * Math.PI);
+                      ctx.arc(this.x, this.y, this.size/2,
+                              0, 2 * Math.PI);
                   },
                   update: function(ms, camera) {
                       var result = false;
                       this.duration += ms;
                       if (this.duration < 300) {
-                          this.x += this.dx * ms;
-                          if (this.x - this.size > camera.width/2)
-                              this.x = -camera.width/2 - this.size;
-                          else if (this.x + this.size < -camera.width/2)
-                              this.x = camera.width/2 + this.size;
-                          this.y += this.dy * ms;
-                          if (this.y - this.size > camera.height/2)
-                              this.y = -camera.height/2 - this.size;
-                          else if (this.y + this.size < -camera.height/2)
-                              this.y = camera.height/2 + this.size;
+                          moveWrap(this, ms, camera);
                           result = true;
                       }
                       return result;
@@ -162,13 +166,14 @@
                          {x: -1, y: -1/3},
                      ];
                      var index = figure.length - 1;
+                     figure.forEach(function(point) {
+                         point.x += (Math.random() - 1/2) * 0.33;
+                         point.y += (Math.random() - 1/2) * 0.33;
+                     });
+
                      ctx.moveTo(figure[index].x, figure[index].y);
                      figure.forEach(function(point) {
-                         var factor = 0.33;
-                         var rx = (Math.random() - 1/2) * factor;
-                         var ry = (Math.random() - 1/2) * factor;
-                         ctx.lineTo(point.x + rx, point.y + ry);
-                     });
+                         ctx.lineTo(point.x, point.y); });
                  }
              }
              ctx.restore();
@@ -186,23 +191,24 @@
              // A dead ship eventually respawns, but can't interact
              // with anything until then.
              if (this.dead > 0) {
-                 if (ms >= this.dead) {
-                     ms -= this.dead;
+                 this.dead -= ms;
+                 if (this.dead <= 0) {
+                     ms += this.dead;
                      this.dead = 0;
 
                      if (reset > 0)
-                         this.dead = 500;
+                         this.dead = reset;
                      else asteroids.forEach(function(asteroid) {
                          // Don't respawn if an asteroid is on the way
-                         if (checkCollide(asteroid, this, ms + 2000))
+                         if (checkCollide(asteroid, this, 500))
                              this.dead = 500;
                      }, this);
 
-                     if (this.dead <= 0) {
+                     if (this.dead === 0) {
                          this.lives -= 1;
                          this.clear();
                      }
-                 } else this.dead -= ms;
+                 }
              }
              if (this.dead > 0)
                  return;
@@ -248,7 +254,6 @@
                      0, this.warpCooldown - ms);
                  this.warp = false;
              }
-
              if (this.warp) {
                  // Move the ship to a "safe" location
                  var place = {x: this.x, y: this.y };
@@ -263,7 +268,7 @@
                              camera.height * 4 / 5) };
 
                      asteroids.forEach(function(asteroid) {
-                         if (checkCollide(asteroid, this, ms + 1000))
+                         if (checkCollide(asteroid, this, 1000))
                              crash = true;
                      }, this);
                      if (!crash)
@@ -275,17 +280,7 @@
                  this.warpCooldown = 2000;
              }
 
-             // Movement with wrap around
-             this.x += this.dx * ms;
-             if (this.x - this.size > camera.width/2)
-                 this.x = -camera.width/2 - this.size;
-             else if (this.x + this.size < -camera.width/2)
-                 this.x = camera.width /2 + this.size;
-             this.y += this.dy * ms;
-             if (this.y - this.size > camera.height/2)
-                 this.y = -camera.height/2 - this.size;
-             else if (this.y + this.size < -camera.height/2)
-                 this.y = camera.height/2 + this.size;
+             moveWrap(this, ms, camera);
          },
          shoot: function() {
              if ((this.dead > 0) || (this.shots.length >= 8))
@@ -414,17 +409,7 @@
                      (1 + Math.random()));
              }
 
-             // Movement with wrap around
-             this.x += this.dx * ms;
-             if (this.x - this.size > camera.width/2)
-                 this.x = -camera.width/2 - this.size;
-             else if (this.x + this.size < -camera.width/2)
-                 this.x = camera.width /2 + this.size;
-             this.y += this.dy * ms;
-             if (this.y - this.size > camera.height/2)
-                 this.y = -camera.height/2 - this.size;
-             else if (this.y + this.size < -camera.height/2)
-                 this.y = camera.height/2 + this.size;
+             moveWrap(this, ms, camera);
          },
          shoot: function(ms, camera) {
              if ((this.dead > 0) || (ship.dead > 0) ||
@@ -493,7 +478,7 @@
              score = Math.floor(score / 20) * 10;
          }
          for (var ii = 0; ii < npoints; ++ii)
-             points.push((Math.random() + 1) / 2);
+             points.push((Math.random() * 5 + 7) / 12);
 
          return { // Asteroid
              x: x, y: y, dx: 0, dy: 0, size: 0, score: score,
@@ -515,18 +500,7 @@
                           this.resize(size);
 
                       this.angle += ms * Math.PI / (this.size * 30);
-
-                      this.x += this.dx * ms;
-                      if (this.x - this.size > camera.width/2)
-                          this.x = -camera.width/2 - this.size;
-                      else if (this.x + this.size < -camera.width/2)
-                          this.x = camera.width/2 + this.size;
-
-                      this.y += this.dy * ms;
-                      if (this.y - this.size > camera.height/2)
-                          this.y = -camera.height/2 - this.size;
-                      else if (this.y + this.size < -camera.height/2)
-                          this.y = camera.height/2 + this.size;
+                      moveWrap(this, ms, camera);
                   },
                   resize: function(size) {
                       this.size = size / 20;
@@ -729,7 +703,12 @@
 
          tap: function(event, camera) {
              ship.aim(event.point, camera); },
-         swipe: function(event, camera) { ship.warp = true; },
+         swipe: function(event, camera) {
+             var path = {x: event.end.x - event.start.x,
+                         y: event.end.y - event.start.y};
+             if (path.x * path.x + path.y + path.y > size * size / 9)
+                 ship.warp = true;
+         },
          down: function(event, camera) {
              ship.down = {duration: 0}; },
          up: function(event, camera) { ship.down = null; },
