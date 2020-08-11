@@ -48,9 +48,9 @@
 
      var checkCollide = function(a, b, ms) {
          return ((((a.x - b.x) * (a.x - b.x) +
-                              (a.y - b.y) * (a.y - b.y)) <=
-                                  ((a.size + b.size) *
-                                      (a.size + b.size) / 4)) ?
+                                  (a.y - b.y) * (a.y - b.y)) <=
+                                      ((a.size + b.size) *
+                                          (a.size + b.size) / 4)) ?
                  true : multivec.collideRadiusRadius(
                      {x: a.x, y: a.y},
                      {x: a.x + a.dx * ms, y: a.y + a.dy * ms},
@@ -70,6 +70,17 @@
              thing.y = -camera.height/2 - thing.size;
          else if (thing.y + thing.size < -camera.height/2)
              thing.y = camera.height/2 + thing.size;
+     };
+
+     var drawRing = function(ctx, thing) {
+         if (!rings || (!isNaN(thing.dead) && thing.dead > 0))
+             return;
+         ctx.save();
+         ctx.beginPath();
+         ctx.strokeStyle = "red";
+         ctx.arc(thing.x, thing.y, thing.size/2, 0, Math.PI * 2);
+         ctx.stroke();
+         ctx.restore();
      };
 
      var createShot = function(vessel, direction) {
@@ -181,6 +192,7 @@
              ctx.restore();
              this.shots.forEach(function(shot) { shot.draw(ctx); });
              ctx.stroke();
+             drawRing(ctx, this);
          },
          update: function(ms, camera) {
              var activeShots = [];
@@ -343,8 +355,7 @@
          shots: [], dead: saucerRespawn * 2,
          small: false, turnTimer: 0, shootTimer: 0,
          resize: function(size) {
-             this.size = size / (this.small ? 20 : 10);
-         },
+             this.size = size / (this.small ? 20 : 10); },
          draw: function(ctx) {
              ctx.save();
              ctx.translate(this.x, this.y);
@@ -370,6 +381,7 @@
                  ctx.arc(shot.x, shot.y, shot.size/2, 0, Math.PI * 2);
              });
              ctx.stroke();
+             drawRing(ctx, this);
          },
          update: function(ms, camera) {
              var activeShots = [];
@@ -381,15 +393,15 @@
 
              // A dead saucer eventually respawns, but can't interact
              // with anything or shoot until then.
-             if (this.dead < 0) {
-                 this.dead = saucerRespawn * (1 + Math.random());
-             } else if (this.dead > 0) {
+             if (this.dead > 0) {
                  if (ms > this.dead) {
                      ms -= this.dead;
                      this.dead = 0;
-                     this.x = size;
-                     this.y = size;
-                     this.turn = 2000;
+                     this.x = (camera.width / 2 *
+                         ((Math.random() > 0.5) ? 1 : -1));
+                     this.y = (camera.height / 2 *
+                         ((Math.random() > 0.5) ? 1 : -1));
+                     this.turnTimer = 2000;
 
                      this.small = (Math.random() * 40000 < score);
                      this.resize(size);
@@ -404,7 +416,7 @@
                  var direction = Math.random() * Math.PI * 2;
                  this.dx = Math.cos(direction) / 10;
                  this.dy = Math.sin(direction) / 10;
-                 this.turnTimer = 2000 + 2000 * Math.random();
+                 this.turnTimer = 2000 * (1 * Math.random());
              }
              if (this.shootTimer > 0)
                  this.shootTimer -= ms;
@@ -430,8 +442,6 @@
              var npieces = Math.floor(4 + 4 * Math.random());
              for (var ii = 0; ii < npieces; ++ii)
                  debris.push(createDebris(this));
-             this.x  = this.y  = 1000;
-             this.dx = this.dy = 0;
              this.dead = saucerRespawn * (1 + Math.random());
          }
      };
@@ -499,6 +509,7 @@
                       drawRock(ctx, this.points, 1);
                       ctx.restore();
                       ctx.stroke();
+                      drawRing(ctx, this);
                   },
                   update: function(ms, camera) {
                       if (this.size === 0)
@@ -598,13 +609,11 @@
 
              var activeAsteroids = [];
              asteroids.forEach(function(asteroid) {
-                 var survived = true;
-
                  var checkAsteroidShots = function(vessel) {
                      var activeShots = [];
                      vessel.shots.forEach(function(shot) {
                          if (checkCollide(shot, asteroid, ms)) {
-                             survived = false;
+                             asteroid.dead = true;
                              asteroid.split(activeAsteroids);
                              vessel.award(asteroid.score);
                          } else activeShots.push(shot);
@@ -614,21 +623,21 @@
                  checkAsteroidShots(ship);
                  checkAsteroidShots(saucer);
 
-                 if (survived && !ship.dead &&
+                 if (!asteroid.dead && !ship.dead &&
                      checkCollide(ship, asteroid, ms)) {
                      ship.destroy();
                      asteroid.split(activeAsteroids);
-                     survived = false;
+                     asteroid.dead = true;
                  }
 
-                 if (survived && !saucer.dead &&
+                 if (!asteroid.dead && !saucer.dead &&
                      checkCollide(saucer, asteroid, ms)) {
                      saucer.destroy();
                      asteroid.split(activeAsteroids);
-                     survived = false;
+                     asteroid.dead = true;
                  }
 
-                 if (survived) {
+                 if (!asteroid.dead) {
                      asteroid.update(ms, camera);
                      activeAsteroids.push(asteroid);
                  }
