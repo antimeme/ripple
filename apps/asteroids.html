@@ -38,6 +38,7 @@
          ripple.paramInt('saucer-respawn') || 8000, 1000);
      var messy = ripple.paramBoolean("messy");
 
+     var score = 0;
      var asteroids = [];
      var debris = [];
      var size = 1000;
@@ -46,9 +47,9 @@
 
      var checkCollide = function(a, b, ms) {
          return ((((a.x - b.x) * (a.x - b.x) +
-                       (a.y - b.y) * (a.y - b.y)) <=
-                           ((a.size + b.size) *
-                               (a.size + b.size) / 4)) ?
+                          (a.y - b.y) * (a.y - b.y)) <=
+                              ((a.size + b.size) *
+                                  (a.size + b.size) / 4)) ?
                  true : multivec.collideRadiusRadius(
                      {x: a.x, y: a.y},
                      {x: a.x + a.dx * ms, y: a.y + a.dy * ms},
@@ -141,7 +142,7 @@
          left: false, right: false,
          target: undefined, down: null,
          thrust: false, warp: false, warpCooldown: 0,
-         shots: [], dead: 0, score: 0, lives: 3,
+         shots: [], dead: 0, lives: 3,
          resize: function(size) { this.size = size / 20; },
          drawShape: function(ctx) {
              ctx.moveTo(1, 0);
@@ -306,10 +307,10 @@
              } else this.shoot();
          },
          award: function(npoints) {
-             if (Math.floor((this.score + npoints) / newlife) >
-                 Math.floor(this.score / newlife))
+             if (Math.floor((score + npoints) / newlife) >
+                 Math.floor(score / newlife))
                  this.lives += 1;
-             this.score += npoints;
+             score += npoints;
          },
          destroy: function() {
              var npieces = Math.floor(4 + 4 * Math.random());
@@ -336,7 +337,7 @@
          x: 0, y: 0, dx: 0, dy: 0,
          size: 30, direction: 0,
          shots: [], dead: saucerRespawn * 2,
-         score: 0, small: false, turnTimer: 0, shootTimer: 0,
+         small: false, turnTimer: 0, shootTimer: 0,
          resize: function(size) {
              this.size = size / (this.small ? 20 : 10);
          },
@@ -386,7 +387,7 @@
                      this.y = size;
                      this.turn = 2000;
 
-                     this.small = (Math.random() * 40000 < ship.score);
+                     this.small = (Math.random() * 40000 < score);
                      this.resize(size);
                  } else {
                      this.dead -= ms;
@@ -544,7 +545,7 @@
              ctx.lineCap = "round";
              ctx.lineWidth = size / 400;
              ctx.font = (size / 20) + "px monospace";
-             ctx.fillText(ship.score.toLocaleString(),
+             ctx.fillText(score.toLocaleString(),
                           size / 18, size / 15);
 
              for (var ii = 0; ii < ship.lives; ++ii) {
@@ -634,10 +635,10 @@
                  reset -= ms;
                  if (reset <= 0) {
                      reset = 0;
-                     respawn = 1000;
-                     asteroids = [];
+                     score = 0;
                      debris = [];
-                     ship.score = 0;
+                     asteroids = [];
+                     respawn = 1000;
                      ship.lives = 4;
                      saucer.dead = -1;
                  }
@@ -645,7 +646,7 @@
                  respawn -= ms;
                  if (respawn <= 0) {
                      var count = nasteroids + Math.floor(
-                         ship.score / 10000);
+                         score / 10000);
                      for (var ii = 0; ii < nasteroids; ++ii)
                          asteroids.push(createAsteroid());
                  }
