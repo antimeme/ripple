@@ -49,10 +49,9 @@
      var size = 1000;
 
      var checkCollide = function(a, b, ms) {
-         return ((((a.x - b.x) * (a.x - b.x) +
-                                             (a.y - b.y) * (a.y - b.y)) <=
-                                                 ((a.size + b.size) *
-                                                     (a.size + b.size) / 4)) ?
+         return (((
+             (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)) <=
+                 ((a.size + b.size) * (a.size + b.size) / 4)) ?
                  true : multivec.collideRadiusRadius(
                      {x: a.x, y: a.y},
                      {x: a.x + a.dx * ms, y: a.y + a.dy * ms},
@@ -86,7 +85,6 @@
      };
 
      var createShield = function(enable) {
-         console.log(typeof(enable), enable);
          return {
              ready: enable, recharge: 0,
              draw: function(ctx, vessel) {
@@ -444,37 +442,35 @@
                  if (ms > this.dead) {
                      ms -= this.dead;
                      this.dead = 0;
-                     this.x = (camera.width / 2 *
-                         ((Math.random() > 0.5) ? 1 : -1));
+                     this.x = -(camera.width + this.size) / 2;
                      this.y = (camera.height / 2 *
                          ((Math.random() > 0.5) ? 1 : -1));
                      this.turnTimer = 2000;
 
                      this.small = (Math.random() * 40000 < score);
                      this.resize(size);
-                 } else {
-                     this.dead -= ms;
-                     return;
-                 }
+                 } else { this.dead -= ms; return; }
              }
              if (this.turnTimer > 0)
                  this.turnTimer -= ms;
              if (this.turnTimer <= 0) {
                  var direction = Math.random() * Math.PI * 2;
-                 this.dx = Math.cos(direction) / 10;
-                 this.dy = Math.sin(direction) / 10;
-                 this.turnTimer = 2000 * (1 * Math.random());
+                 this.dx = this.size / 1000;
+                 this.dy = Math.sin(direction) * this.dx;
+                 this.turnTimer = 4000 * (1 * Math.random());
              }
              if (this.shootTimer > 0)
                  this.shootTimer -= ms;
              if (this.shootTimer <= 0) {
                  this.shoot(ms, camera);
-                 this.shootTimer = ((this.small ? 1000 : 2000) *
+                 this.shootTimer = ((this.small ? 800 : 1600) *
                      (1 + Math.random()));
              }
 
              this.shield.update(ms, camera);
              moveWrap(this, ms, camera);
+             if (this.x > camera.width / 2 + this.size / 2)
+                 this.dead = o_saucerRespawn * (1 + Math.random());
          },
          shoot: function(ms, camera) {
              if ((this.dead > 0) || (ship.dead > 0) ||
@@ -703,7 +699,7 @@
                      asteroids = [];
                      respawn = 1000;
                      ship.lives = 4;
-                     saucer.dead = -1;
+                     saucer.dead = o_saucerRespawn * 2;
                  }
              } else if (respawn > 0) {
                  respawn -= ms;
@@ -752,7 +748,8 @@
 	     } else if (event.keyCode === 40 || event.key === 's') {
                  ship.warp = true;
              } else if (event.key === ' ' || event.key === "Enter") {
-                 ship.shoot();
+                 if (o_repeat || !event.repeat)
+                     ship.shoot();
              }
          },
 
