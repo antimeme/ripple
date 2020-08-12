@@ -38,6 +38,8 @@
      var o_nasteroids = Math.max(ripple.paramInt('nasteroids'), 0);
      var o_saucer_respawn = Math.max(ripple.paramInt(
          'saucer-respawn') || 8000, 1000);
+     var o_small_score = Math.max(ripple.paramInt(
+         'small-score'), 0) || 40000;
      var o_messy = ripple.paramBoolean("messy");
      var o_rings = ripple.paramBoolean("rings");
      var o_shields = ripple.paramBoolean("shields");
@@ -455,7 +457,8 @@
                      // they shoot more quickly and aim at the player.
                      // At low scores most saucers are large but
                      // eventually only small saucers can spawn.
-                     this.small = (Math.random() * 40000 < score);
+                     this.small = (Math.random() *
+                         o_small_score < score);
                      this.resize(size);
                  } else { this.dead -= ms; return; }
              }
