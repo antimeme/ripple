@@ -4,12 +4,15 @@
 <meta name="viewport" content="initial-scale=1, maximum-scale=1" />
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes" />
+<link rel="shortcut icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cpolygon points='64,8 107,120 64,98 21,120' stroke-width='12' stroke='%23222' fill='none' /%3E%3Cpolygon points='64,8 107,120 64,98 21,120' stroke-width='4' stroke='%23eee' fill='none' /%3E%3C/svg%3E%0A" />
 <title>Asteroids</title>
 <style>
  html, body
  { position: absolute; padding: 0; margin: 0; overflow: hidden; }
  canvas { background: #222; color: #eee; }
 </style>
+
 <script src="ripple/polyfill.js"></script>
 <script src="ripple/ripple.js"></script>
 <script src="ripple/fascia.js"></script>
@@ -32,8 +35,7 @@
      "use strict";
      var o_newlife = Math.max(ripple.paramInt(
          'newlife'), 1000) || 10000;
-     var o_nasteroids = Math.max(ripple.paramInt(
-         'nasteroids'), 1) || 8;
+     var o_nasteroids = Math.max(ripple.paramInt('nasteroids'), 0);
      var o_saucer_respawn = Math.max(ripple.paramInt(
          'saucer-respawn') || 8000, 1000);
      var o_messy = ripple.paramBoolean("messy");
@@ -525,8 +527,7 @@
          var score = 100;
          var direction = Math.random() * Math.PI * 2;
          var place = Math.random() * Math.PI * 2;
-         var x = Math.cos(place) * 1000;
-         var y = Math.sin(place) * 1000;
+         var x = 0, y = 0;
 
          if ((typeof(config) === "object") && config) {
              if (!isNaN(config.nsplits))
@@ -709,12 +710,13 @@
              } else if (respawn > 0) {
                  respawn -= ms;
                  if (respawn <= 0) {
-                     var count = o_nasteroids + Math.floor(
-                         score / 10000);
+                     var count = (isNaN(o_nasteroids) ? 8 :
+                                  o_nasteroids) + Math.floor(
+                                      score / 10000);
                      for (var ii = 0; ii < count; ++ii)
                          asteroids.push(createAsteroid({
-                             x: camera.width / 2 + size / 40,
-                             y: camera.height / 2 + size / 40 }));
+                             x: camera.width / 2 + size / 10,
+                             y: camera.height / 2 + size / 10 }));
                  }
              } else if (asteroids.length === 0)
                  respawn = 5000;
