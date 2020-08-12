@@ -30,12 +30,12 @@
  // 10,000 points an extra life was awarded.
  fascia.ready(function() {
      "use strict";
-     var o_newlife = Math.max(
-         ripple.paramInt('nasteroids'), 1000) || 10000;
-     var o_nasteroids = Math.max(
-         ripple.paramInt('nasteroids'), 1) || 8;
-     var o_saucerRespawn = Math.max(
-         ripple.paramInt('saucer-respawn') || 8000, 1000);
+     var o_newlife = Math.max(ripple.paramInt(
+         'newlife'), 1000) || 10000;
+     var o_nasteroids = Math.max(ripple.paramInt(
+         'nasteroids'), 1) || 8;
+     var o_saucer_respawn = Math.max(ripple.paramInt(
+         'saucer-respawn') || 8000, 1000);
      var o_messy = ripple.paramBoolean("messy");
      var o_rings = ripple.paramBoolean("rings");
      var o_shields = ripple.paramBoolean("shields");
@@ -245,17 +245,17 @@
 
              // A dead ship eventually respawns, but can't interact
              // with anything until then.
-             if (this.dead > 0) {
+             if (reset > 0)
+                 this.dead = reset;
+             else if (this.dead > 0) {
                  this.dead -= ms;
                  if (this.dead <= 0) {
                      ms += this.dead;
                      this.dead = 0;
 
-                     if (reset > 0)
-                         this.dead = reset;
-                     else asteroids.forEach(function(asteroid) {
+                     asteroids.forEach(function(asteroid) {
                          // Don't respawn if an asteroid is on the way
-                         if (checkCollide(asteroid, this, 500))
+                         if (checkCollide(asteroid, this, 1500))
                              this.dead = 500;
                      }, this);
 
@@ -269,39 +269,34 @@
                  return;
 
              // Respond to user input from keyboard, mouse or touch
+             var thrust_ms = ms;
              if (this.left)
                  this.direction -= ms / 200;
              else if (this.right)
                  this.direction += ms / 200;
-             else if (!isNaN(this.target)) {
-                 var difference = this.target - this.direction;
-                 if (difference > Math.PI) {
-                     this.target -= 2 * Math.PI;
-                     difference = this.target - this.direction;
-                 } else if (difference < -Math.PI) {
-                     this.target += 2 * Math.PI;
-                     difference = this.target - this.direction;
+             else if (this.target) {
+                 var desired = this.__desiredDirection(this.target);
+                 if (!isNaN(desired)) {
+                     var difference = desired - this.direction;
+                     if (difference > Math.PI)
+                         difference -= 2 * Math.PI;
+                     else if (difference < -Math.PI)
+                         difference += 2 * Math.PI;
+                     this.direction += (
+                         (difference < 0) ? -1 : 1) * Math.min(
+                             Math.abs(difference), ms / 200);
+                 } else if (this.down) {
+                     this.down.duration += ms;
+                     if ((this.down.duration > 250) && this.target) {
+                         thrust_ms = Math.min(Math.max(
+                             0, this.down.duration - 250), ms);
+                         this.thrust = true;
+                     }
                  }
-
-                 if (Math.abs(difference) < ms / 200) {
-                     this.direction = this.target;
-                     this.target = undefined;
-                 } else if (difference > 0) {
-                     this.direction += ms / 200;
-                 } else this.direction -= ms / 200;
              }
-
              if (this.thrust) {
-                 this.dx += Math.cos(this.direction) * ms / 1500;
-                 this.dy += Math.sin(this.direction) * ms / 1500;
-             } else if (this.down) {
-                 this.down.duration += ms;
-                 if (this.down.duration > 250) {
-                     var extra = Math.min(
-                         Math.max(0, this.down.duration - 250), ms);
-                     this.dx += Math.cos(this.direction) * extra / 1500;
-                     this.dy += Math.sin(this.direction) * extra / 1500;
-                 }
+                 this.dx += Math.cos(this.direction) * thrust_ms / 1500;
+                 this.dy += Math.sin(this.direction) * thrust_ms / 1500;
              }
 
              if (this.warpCooldown > 0) {
@@ -343,23 +338,31 @@
                  return;
              this.shots.push(createShot(this, this.direction));
          },
-         aim: function(point, camera) {
-             // This causes the ship to turn to face a specified point.
-             var v = { x: (point.x - camera.width / 2) - this.x,
-                       y: (point.y - camera.height / 2) - this.y };
-             var len = v.x * v.x + v.y * v.y;
-             if (len > this.size * this.size / 2) {
-                 len = Math.sqrt(len);
-                 v.x /= len;
-                 v.y /= len;
+         __desiredDirection: function(target) {
+             var result = undefined;
+             var delta = multivec({ x: target.x - this.x,
+                                    y: target.y - this.y });
 
-                 if (v.x * Math.cos(this.direction) +
-                     v.y * Math.sin(this.direction) < 0.99)  {
-                     this.target = Math.acos(v.x);
-                     if (v.y < 0)
-                         this.target = -this.target;
-                 } else this.shoot();
-             } else this.shoot();
+             if (delta.quadrance() > this.size * this.size / 2) {
+                 delta = delta.normalize();
+                 if ((delta.dot({theta: this.direction}) < 0.999)) {
+                     result = Math.acos(delta.x)
+                     if (delta.y < 0)
+                         result = -result;
+                 }
+             }
+             return result;
+         },
+         aim: function(point, camera) {
+             // Signals that the player wants the ship to face a
+             // specified location.  If the ship is already pointing
+             // there or the ship itself is the target we shoot
+             // instead.  This means spam tapping a point will
+             // eventually result in firing at it.
+             if (isNaN(this.__desiredDirection(
+                 this.target = { x: point.x - camera.width / 2,
+                                 y: point.y - camera.height / 2 })))
+                 this.shoot();
          },
          award: function(npoints) {
              if (Math.floor((score + npoints) / o_newlife) >
@@ -395,7 +398,7 @@
      var saucer = {
          x: 0, y: 0, dx: 0, dy: 0,
          size: 30, direction: 0,
-         shots: [], dead: o_saucerRespawn * 2,
+         shots: [], dead: o_saucer_respawn * 2,
          small: false, turnTimer: 0, shootTimer: 0,
          shield: createShield(o_shields),
          resize: function(size) {
@@ -420,10 +423,7 @@
                  ctx.lineTo(-1/2, 0);
              }
              ctx.restore();
-             this.shots.forEach(function(shot) {
-                 ctx.moveTo(shot.x + shot.size/2, shot.y);
-                 ctx.arc(shot.x, shot.y, shot.size/2, 0, Math.PI * 2);
-             });
+             this.shots.forEach(function(shot) { shot.draw(ctx); });
              ctx.stroke();
              this.shield.draw(ctx, this);
              drawRing(ctx, this);
@@ -439,24 +439,31 @@
              // A dead saucer eventually respawns, but can't interact
              // with anything or shoot until then.
              if (this.dead > 0) {
-                 if (ms > this.dead) {
+                 if (ms >= this.dead) {
                      ms -= this.dead;
                      this.dead = 0;
-                     this.x = -(camera.width + this.size) / 2;
-                     this.y = (camera.height / 2 *
-                         ((Math.random() > 0.5) ? 1 : -1));
-                     this.turnTimer = 2000;
+                     this.x = (camera.width + this.size) / 2;
+                     this.y = (camera.height + this.size) / 2;
+                     this.dx = (((Math.random() * 2 > 1) ?
+                                 1 : -1) * this.size /
+                         (this.small ? 400 : 800));
+                     this.turnTimer = 4000;
 
+                     // Small saucers are more challenging because
+                     // they shoot more quickly and aim at the player.
+                     // At low scores most saucers are large but
+                     // eventually only small saucers can spawn.
                      this.small = (Math.random() * 40000 < score);
                      this.resize(size);
                  } else { this.dead -= ms; return; }
              }
+             if (this.dead > 0)
+                 return;
+
              if (this.turnTimer > 0)
                  this.turnTimer -= ms;
              if (this.turnTimer <= 0) {
-                 var direction = Math.random() * Math.PI * 2;
-                 this.dx = this.size / 1000;
-                 this.dy = Math.sin(direction) * this.dx;
+                 this.dy = this.dx * (Math.random() * 2 - 1);
                  this.turnTimer = 4000 * (1 * Math.random());
              }
              if (this.shootTimer > 0)
@@ -469,8 +476,6 @@
 
              this.shield.update(ms, camera);
              moveWrap(this, ms, camera);
-             if (this.x > camera.width / 2 + this.size / 2)
-                 this.dead = o_saucerRespawn * (1 + Math.random());
          },
          shoot: function(ms, camera) {
              if ((this.dead > 0) || (ship.dead > 0) ||
@@ -482,13 +487,16 @@
              this.shots.push(createShot(this, direction));
          },
          award: function(npoints) { /* No score for saucers, sadly */ },
+         clear: function() {
+             this.dead = o_saucer_respawn * (1 + Math.random());
+         },
          destroy: function() {
              if (this.shield.absorb())
                  return;
              var npieces = Math.floor(4 + 4 * Math.random());
              for (var ii = 0; ii < npieces; ++ii)
                  debris.push(createDebris(this));
-             this.dead = o_saucerRespawn * (1 + Math.random());
+             this.clear();
          }
      };
 
@@ -529,8 +537,6 @@
                  y = config.y;
              if (!isNaN(config.direction))
                  direction = config.direction;
-             if (!isNaN(config.size))
-                 size = config.size;
          }
 
          var ii;
@@ -574,9 +580,8 @@
                      (this.size + 50));
              },
              split: function(active) {
-                 // Fragments of the asteroid fly off in all
-                 // directions.  Dramatic!
-                 var npieces = Math.floor(4 + 4 * Math.random());
+                 var npieces = Math.floor(
+                     2 + this.nsplits * 2 + 4 * Math.random());
                  for (var ii = 0; ii < npieces; ++ii)
                      debris.push(createDebris(this));
 
@@ -699,7 +704,7 @@
                      asteroids = [];
                      respawn = 1000;
                      ship.lives = 4;
-                     saucer.dead = o_saucerRespawn * 2;
+                     saucer.clear();
                  }
              } else if (respawn > 0) {
                  respawn -= ms;
@@ -707,7 +712,9 @@
                      var count = o_nasteroids + Math.floor(
                          score / 10000);
                      for (var ii = 0; ii < count; ++ii)
-                         asteroids.push(createAsteroid());
+                         asteroids.push(createAsteroid({
+                             x: camera.width / 2 + size / 40,
+                             y: camera.height / 2 + size / 40 }));
                  }
              } else if (asteroids.length === 0)
                  respawn = 5000;
@@ -739,14 +746,14 @@
          keydown: function(event, camera) {
              if (event.keyCode === 37 || event.key === 'a') {
                  ship.left = true; ship.right = false;
-                 ship.target = undefined;
+                 ship.target = null;
 	     } else if (event.keyCode === 38 || event.key === 'w') {
-                 ship.thrust = true;
+                 ship.thrust = true; ship.target = null;
 	     } else if (event.keyCode === 39 || event.key === 'd') {
                  ship.right = true; ship.left = false;
-                 ship.target = undefined;
+                 ship.target = null;
 	     } else if (event.keyCode === 40 || event.key === 's') {
-                 ship.warp = true;
+                 ship.warp = true; ship.target = null;
              } else if (event.key === ' ' || event.key === "Enter") {
                  if (o_repeat || !event.repeat)
                      ship.shoot();
@@ -762,8 +769,6 @@
                  ship.right = false;
          },
 
-         tap: function(event, camera) {
-             ship.aim(event.point, camera); },
          swipe: function(event, camera) {
              var path = {x: event.end.x - event.start.x,
                          y: event.end.y - event.start.y};
@@ -771,8 +776,11 @@
                  ship.warp = true;
          },
          down: function(event, camera) {
+             ship.aim(event.point, camera);
              ship.down = {duration: 0}; },
-         up: function(event, camera) { ship.down = null; },
+         up: function(event, camera) {
+             ship.down = null;
+             ship.thrust = false;},
          isActive: true
      };
  }); //]]></script>
