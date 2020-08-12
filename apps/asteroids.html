@@ -117,7 +117,10 @@
                  } else result = false;
                  return result;
              },
-             reset: function() { this.ready = true; this.recharge = 0; }
+             reset: function() {
+                 this.ready = o_shields;
+                 this.recharge = 0;
+             }
          }
      };
 
