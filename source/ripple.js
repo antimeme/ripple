@@ -808,66 +808,66 @@
 
         target.addEventListener('touchstart', function(event) {
             event = sanitizeEvent(event);
-            var points = ripple.getInputPoints(
+            event.point = ripple.getInputPoints(
                 event, target, this.scalefn);
 
-            self.fireEvent('touchstart', event, points);
-            self.onStart(target, points, true);
+            self.fireEvent('touchstart', event);
+            self.onStart(target, event.point, true);
             return false; });
         target.addEventListener('touchmove', function(event) {
             event = sanitizeEvent(event);
-            var points = ripple.getInputPoints(
+            event.point = ripple.getInputPoints(
                 event, target, this.scalefn);
 
-            self.fireEvent('touchmove', event, points);
-            self.onMove(event, points, true);
+            self.fireEvent('touchmove', event);
+            self.onMove(target, event.point, true);
             return false; });
         target.addEventListener('touchend', function(event) {
             event = sanitizeEvent(event);
-            var points = ripple.getInputPoints(
+            event.point = ripple.getInputPoints(
                 event, target, this.scalefn);
 
-            self.fireEvent('touchend', event, points);
-            self.onEnd(target, points, true);
+            self.fireEvent('touchend', event);
+            self.onEnd(target, event.point, true);
             return false; });
         target.addEventListener('touchcancel', function(event) {
             event = sanitizeEvent(event);
-            var points = ripple.getInputPoints(
+            event.point = ripple.getInputPoints(
                 event, target, this.scalefn);
 
-            self.fireEvent('touchcancel', event, points);
+            self.fireEvent('touchcancel', event);
             self.reset();
             return false; });
         target.addEventListener('mousedown', function(event) {
             event = sanitizeEvent(event);
-            var points = ripple.getInputPoints(
+            event.point = ripple.getInputPoints(
                 event, target, this.scalefn);
 
-            self.fireEvent('mousedown', event, points);
-            self.onStart(target, points, false);
+            self.fireEvent('mousedown', event);
+            self.onStart(target, event.point, false);
             return false; });
         target.addEventListener('mousemove', function(event) {
             event = sanitizeEvent(event);
-            var points = ripple.getInputPoints(
+            event.point = ripple.getInputPoints(
                 event, target, this.scalefn);
 
-            self.fireEvent('mousemove', event, points);
-            self.onMove(target, points, false);
+            self.fireEvent('mousemove', event);
+            self.onMove(target, event.point, false);
             return false; });
         target.addEventListener('mouseup', function(event) {
             event = sanitizeEvent(event);
-            var points = ripple.getInputPoints(
+            event.point = ripple.getInputPoints(
                 event, target, this.scalefn);
 
-            self.fireEvent('mouseup', event, points);
-            self.onEnd(target, points, false);
+            self.fireEvent('mouseup', event);
+            self.onEnd(target, event.point, false);
             return false; });
         target.addEventListener('mouseleave', function(event) {
             event = sanitizeEvent(event);
-            var points = ripple.getInputPoints(
+            event.point = ripple.getInputPoints(
                 event, target, this.scalefn);
 
-            self.fireEvent('mouseleave', event, points);
+            self.fireEvent('mouseleave', event);
             self.reset();
             return false; });
         ripple.addWheelListener(target, function(event) {
