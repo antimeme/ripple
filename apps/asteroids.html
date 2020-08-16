@@ -4,7 +4,7 @@
 <meta name="viewport" content="initial-scale=1, maximum-scale=1" />
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes" />
-<link rel="shortcut icon"
+<link rel="shortcut icon" data-x="https://yoksel.github.io/url-encoder/"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cpolygon points='64,8 107,120 64,98 21,120' stroke-width='12' stroke='%23222' fill='none' /%3E%3Cpolygon points='64,8 107,120 64,98 21,120' stroke-width='4' stroke='%23eee' fill='none' /%3E%3C/svg%3E%0A" />
 <title>Asteroids</title>
 <style>
@@ -12,6 +12,9 @@
  { position: absolute; padding: 0; margin: 0; overflow: hidden; }
  canvas { background: #222; color: #eee; }
 </style>
+<!-- :TODO: more consistent speed -->
+<!-- :TODO: distribute asteroid spawns -->
+<!-- :TODO: optional on-screen buttons -->
 
 <script src="ripple/polyfill.js"></script>
 <script src="ripple/ripple.js"></script>
@@ -34,22 +37,22 @@
  fascia.ready(function() {
      "use strict";
      var o_newlife = Math.max(ripple.paramInt(
-         'newlife'), 1000) || 10000;
-     var o_nasteroids = Math.max(ripple.paramInt('nasteroids'), 0);
+         "newlife"), 1000) || 10000;
+     var o_nasteroids     = Math.max(ripple.paramInt("nasteroids"), 0);
      var o_saucer_respawn = Math.max(ripple.paramInt(
-         'saucer-respawn') || 8000, 1000);
-     var o_small_score = Math.max(ripple.paramInt(
-         'small-score'), 0) || 40000;
-     var o_messy = ripple.paramBoolean("messy");
-     var o_rings = ripple.paramBoolean("rings");
+         "saucer-respawn") || 8000, 1000);
+     var o_small_score    = Math.max(ripple.paramInt(
+         "small-score"), 0) || 40000;
+     var o_messy   = ripple.paramBoolean("messy");
+     var o_rings   = ripple.paramBoolean("rings");
      var o_shields = ripple.paramBoolean("shields");
-     var o_repeat = ripple.paramBoolean("repeat");
+     var o_repeat  = ripple.paramBoolean("repeat");
 
      var score = 0;
      var asteroids = [];
      var debris = [];
-     var respawn = 1000; // Milliseconds until astroids respawn
-     var reset = 0;      // Milliseconds until the game resets
+     var nextwave = 1000; // Milliseconds until astroids respawn
+     var reset = 0;       // Milliseconds until the game resets
      var size = 1000;
 
      var checkCollide = function(a, b, ms) {
@@ -706,23 +709,30 @@
                      score = 0;
                      debris = [];
                      asteroids = [];
-                     respawn = 1000;
+                     nextwave = 1000;
                      ship.lives = 4;
                      saucer.clear();
                  }
-             } else if (respawn > 0) {
-                 respawn -= ms;
-                 if (respawn <= 0) {
+             } else if (nextwave > 0) {
+                 nextwave -= ms;
+                 if (nextwave <= 0) {
                      var count = (isNaN(o_nasteroids) ? 8 :
                                   o_nasteroids) + Math.floor(
                                       score / 10000);
-                     for (var ii = 0; ii < count; ++ii)
+                     for (var ii = 0; ii < count; ++ii) {
+                         var mx = 1;
+                         var my = 1;
+                         var chance = Math.random();
+                         if (chance < 0.5)
+                             mx = 2 * chance;
+                         else my = 2 * (chance - 0.5);;
                          asteroids.push(createAsteroid({
-                             x: camera.width / 2 + size / 10,
-                             y: camera.height / 2 + size / 10 }));
+                             x: mx * camera.width / 2 + size / 10,
+                             y: my * camera.height / 2 + size / 10 }));
+                     }
                  }
              } else if (asteroids.length === 0)
-                 respawn = 5000;
+                 nextwave = 5000;
 
              var checkEnemyShots = function(vessel, enemy) {
                  if (enemy.dead > 0)
