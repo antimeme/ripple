@@ -555,7 +555,7 @@
 
          var ii;
          for (ii = 0; ii < nsplits; ++ii)
-             npoints += 2, value = Math.floor(score / 20) * 10;
+             npoints += 2, value = Math.floor(value / 20) * 10;
          for (ii = 0; ii < npoints; ++ii)
              points.push((Math.random() * 5 + 7) / 12);
          var computeSize = function(size) {
@@ -743,7 +743,7 @@
                  if (nextwave <= 0) {
                      var count = (isNaN(o_nasteroids) ? 8 :
                                   o_nasteroids) + Math.floor(
-                                      score / 10000);
+                                      Math.sqrt(score) / 100);
                      for (var ii = 0; ii < count; ++ii)
                          asteroids.push(createAsteroid({
                              camera: camera}));
