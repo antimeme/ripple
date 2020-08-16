@@ -12,9 +12,7 @@
  { position: absolute; padding: 0; margin: 0; overflow: hidden; }
  canvas { background: #222; color: #eee; }
 </style>
-<!-- :TODO: more consistent speed -->
-<!-- :TODO: distribute asteroid spawns -->
-<!-- :TODO: optional on-screen buttons -->
+<!-- :TODO: optional on-screen controls -->
 
 <script src="ripple/polyfill.js"></script>
 <script src="ripple/ripple.js"></script>
@@ -130,14 +128,17 @@
      };
 
      var createShot = function(vessel, direction) {
-         if (!isNaN(direction))
-             direction = { x: Math.cos(direction),
-                           y: Math.sin(direction) };
+         var velocity;
+         if (!isNaN(direction)) {
+             var speed = size / 650;
+             velocity = { x: speed * Math.cos(direction),
+                          y: speed * Math.sin(direction) };
+         } else return null;
 
          return {
              x: vessel.x, y: vessel.y, duration: 0,
-             dx: direction.x + vessel.dx,
-             dy: direction.y + vessel.dy,
+             dx: velocity.x + vessel.dx,
+             dy: velocity.y + vessel.dy,
              size: size * 3 / 200, dead: 0,
              draw: function(ctx) {
                  ctx.moveTo(this.x + this.size/2, this.y);
@@ -158,7 +159,7 @@
 
      var createDebris = function(source) {
          var direction = Math.random() * Math.PI * 2;
-         var speed = (Math.random() + 1) / 10;
+         var speed = size * (Math.random() + 1) / 5000;
          var points = [];
          var npoints = Math.floor(Math.random() * 3) +  3;
 
@@ -166,7 +167,6 @@
              points.push(1/2 + Math.random() / 2);
 
          return {
-             startx: source.x, starty: source.y,
              x: source.x, y: source.y,
              dx: source.dx + Math.cos(direction) * speed,
              dy: source.dy + Math.sin(direction) * speed,
@@ -200,7 +200,7 @@
          target: undefined, down: null,
          thrust: false, warp: false, warpCooldown: 0,
          shots: [], dead: 0, lives: 3,
-         size: 30, direction: -Math.PI/2,
+         size: 0, direction: -Math.PI/2,
          shield: createShield(o_shields),
          resize: function(size) { this.size = size / 20; },
          drawShape: function(ctx) {
@@ -237,14 +237,19 @@
                  }
              }
              ctx.restore();
-             this.shots.forEach(function(shot) { shot.draw(ctx); });
+             this.shots.forEach(function(shot) {
+                 if (shot) shot.draw(ctx); });
              ctx.stroke();
              this.shield.draw(ctx, this);
              drawRing(ctx, this);
          },
          update: function(ms, camera) {
+             if (this.size === 0)
+                 this.resize(Math.min(camera.width, camera.height));
+
              var activeShots = [];
              this.shots.forEach(function(shot) {
+                 if (!shot) return;
                  if (shot.update(ms, camera))
                      activeShots.push(shot);
              });
@@ -404,7 +409,7 @@
      // ship aims at the player ship.
      var saucer = {
          x: 0, y: 0, dx: 0, dy: 0,
-         size: 30, direction: 0,
+         size: 0, direction: 0,
          shots: [], dead: o_saucer_respawn * 2,
          small: false, turnTimer: 0, shootTimer: 0,
          shield: createShield(o_shields),
@@ -430,17 +435,20 @@
                  ctx.lineTo(-1/2, 0);
              }
              ctx.restore();
-             this.shots.forEach(function(shot) { shot.draw(ctx); });
+             this.shots.forEach(function(shot) {
+                 if (shot) shot.draw(ctx); });
              ctx.stroke();
              this.shield.draw(ctx, this);
              drawRing(ctx, this);
          },
          update: function(ms, camera) {
+             if (this.size === 0)
+                 this.resize(Math.min(camera.width, camera.height));
+
              var activeShots = [];
              this.shots.forEach(function(shot) {
-                 if (shot.update(ms, camera))
-                     activeShots.push(shot);
-             });
+                 if (shot && shot.update(ms, camera))
+                     activeShots.push(shot); });
              this.shots = activeShots;
 
              // A dead saucer eventually respawns, but can't interact
@@ -527,12 +535,11 @@
      };
 
      var createAsteroid = function(config) {
-         var points = [];
+         var points  = [];
          var npoints = 10;
          var nsplits = 2;
-         var score = 100;
-         var direction = Math.random() * Math.PI * 2;
-         var place = Math.random() * Math.PI * 2;
+         var value   = 100;
+         var camera;
          var x = 0, y = 0;
 
          if ((typeof(config) === "object") && config) {
@@ -542,23 +549,41 @@
                  x = config.x;
              if (!isNaN(config.y))
                  y = config.y;
-             if (!isNaN(config.direction))
-                 direction = config.direction;
+             if (config.camera)
+                 camera = config.camera;
          }
 
          var ii;
-         for (var ii = 0; ii < nsplits; ++ii) {
-             npoints += 2;
-             score = Math.floor(score / 20) * 10;
-         }
-         for (var ii = 0; ii < npoints; ++ii)
+         for (ii = 0; ii < nsplits; ++ii)
+             npoints += 2, value = Math.floor(score / 20) * 10;
+         for (ii = 0; ii < npoints; ++ii)
              points.push((Math.random() * 5 + 7) / 12);
+         var computeSize = function(size) {
+             var result = size / 20;
+             for (ii = 0; ii < nsplits; ++ii)
+                 result *= 2;
+             return result;
+         };
+
+         if (camera) {
+             var size = computeSize(Math.min(
+                 camera.width, camera.height));
+             if (Math.random() > 0.5) {
+                 x = camera.width * (Math.random() - 0.5);
+                 y = (camera.height + size) / 2;
+             } else {
+                 x = (camera.width + size) / 2;
+                 y = camera.height * (Math.random() - 0.5);
+             }
+         }
 
          return {
-             x: x, y: y, dx: 0, dy: 0, size: 0, score: score,
-             nsplits: nsplits, direction: direction,
+             x: x, y: y, dx: 0, dy: 0, size: 0, speed: 0,
+             direction: Math.random() * Math.PI * 2,
              angle: Math.random() * Math.PI * 2,
+             value: value, nsplits: nsplits,
              points: points, dead: 0,
+
              draw: function(ctx) {
                  ctx.save();
                  ctx.translate(this.x, this.y);
@@ -570,22 +595,21 @@
                  ctx.stroke();
                  drawRing(ctx, this);
              },
+
+             resize: function(size) {
+                 this.size = computeSize(size);
+                 this.speed = size / (20 * (this.size + 50));
+                 this.dx = Math.cos(this.direction) * this.speed;
+                 this.dy = Math.sin(this.direction) * this.speed;
+             },
+
              update: function(ms, camera) {
                  if (this.size === 0)
-                     this.resize(size);
-
+                     this.resize(Math.min(camera.width, camera.height));
                  this.angle += ms * Math.PI / (this.size * 30);
                  moveWrap(this, ms, camera);
              },
-             resize: function(size) {
-                 this.size = size / 20;
-                 for (var ii = 0; ii < nsplits; ++ii)
-                     this.size *= 2;
-                 this.dx = (Math.cos(direction) * 20 /
-                     (this.size + 50));
-                 this.dy = (Math.sin(direction) * 20 /
-                     (this.size + 50));
-             },
+
              split: function(active) {
                  var npieces = Math.floor(
                      2 + this.nsplits * 2 + 4 * Math.random());
@@ -670,10 +694,11 @@
                  var checkAsteroidShots = function(vessel) {
                      var activeShots = [];
                      vessel.shots.forEach(function(shot) {
+                         if (!shot) return;
                          if (checkCollide(shot, asteroid, ms)) {
                              asteroid.dead = 1;
                              asteroid.split(activeAsteroids);
-                             vessel.award(asteroid.score);
+                             vessel.award(asteroid.value);
                          } else activeShots.push(shot);
                      });
                      vessel.shots = activeShots;
@@ -719,17 +744,9 @@
                      var count = (isNaN(o_nasteroids) ? 8 :
                                   o_nasteroids) + Math.floor(
                                       score / 10000);
-                     for (var ii = 0; ii < count; ++ii) {
-                         var mx = 1;
-                         var my = 1;
-                         var chance = Math.random();
-                         if (chance < 0.5)
-                             mx = 2 * chance;
-                         else my = 2 * (chance - 0.5);;
+                     for (var ii = 0; ii < count; ++ii)
                          asteroids.push(createAsteroid({
-                             x: mx * camera.width / 2 + size / 10,
-                             y: my * camera.height / 2 + size / 10 }));
-                     }
+                             camera: camera}));
                  }
              } else if (asteroids.length === 0)
                  nextwave = 5000;
@@ -739,6 +756,7 @@
                      return;
                  var activeShots = [];
                  vessel.shots.forEach(function(shot) {
+                     if (!shot) return;
                      if (checkCollide(shot, enemy, ms)) {
                          enemy.destroy();
                          vessel.award(enemy.small ? 1000 : 200);
