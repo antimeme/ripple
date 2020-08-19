@@ -128,12 +128,13 @@
      };
 
      var createShot = function(vessel, direction) {
+         var speed = size / 650;
          var velocity;
          if (!isNaN(direction)) {
-             var speed = size / 650;
              velocity = { x: speed * Math.cos(direction),
                           y: speed * Math.sin(direction) };
-         } else return null;
+         } else velocity = { x: speed * direction.x,
+                             y: speed * direction.y };
 
          return {
              x: vessel.x, y: vessel.y, duration: 0,
@@ -598,7 +599,7 @@
 
              resize: function(size) {
                  this.size = computeSize(size);
-                 this.speed = size / (20 * (this.size + 50));
+                 this.speed = size / (30 * (this.size + 50));
                  this.dx = Math.cos(this.direction) * this.speed;
                  this.dy = Math.sin(this.direction) * this.speed;
              },
