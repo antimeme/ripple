@@ -599,7 +599,13 @@
 
              resize: function(size) {
                  this.size = computeSize(size);
-                 this.speed = size / (30 * (this.size + 50));
+
+                 // Asteroid speed is proportional to screen size
+                 // so the difficult is similar on large and small
+                 // screens.  As score goes up they begin to move
+                 // faster to make things more challenging.
+                 this.speed = ((size * (1 + Math.sqrt(score) / 1000)) /
+                     (30 * (this.size + 50)));
                  this.dx = Math.cos(this.direction) * this.speed;
                  this.dy = Math.sin(this.direction) * this.speed;
              },
