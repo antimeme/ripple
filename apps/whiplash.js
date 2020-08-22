@@ -194,7 +194,9 @@
             chest.checkAccessible(this.player); }, this);
     };
 
-    whiplash.game = function(data) {
+    whiplash.game = function(preloads) {
+        var data = preloads["whiplash.json"];
+
         return {
             debug: browserSettings.debug && !data.schema.disableDebug,
             mazeRings: browserSettings.mazeRings,

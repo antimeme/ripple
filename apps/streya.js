@@ -814,7 +814,7 @@
                 draw: function(ctx, camera, now) {
                     player.draw(ctx, now);
                 },
-                update: function(camera, now) {
+                update: function(camera, ms, now) {
                     if (isNaN(now))
                         now = Date.now();
 

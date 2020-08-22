@@ -11,9 +11,6 @@
         mark: null, zbase: null,
         selected: null, downcell: null,
 
-        update: function(elapsed) {
-        },
-
         isActive: function() { return true; },
 
         draw: function(ctx, camera, now) {

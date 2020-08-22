@@ -16,7 +16,4 @@
 <script src="ripple/fascia.js"></script>
 <script src="whiplash.js"></script>
 <script>//<![CDATA[
- ripple.preload(['whiplash.json'], function(results) {
-     fascia.app(whiplash.game(results['whiplash.json']));
- });
- //]]></script>
+ fascia.ready(whiplash.game, ['whiplash.json']); //]]></script>

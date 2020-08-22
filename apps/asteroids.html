@@ -19,9 +19,28 @@
 <script src="ripple/fascia.js"></script>
 <script src="ripple/multivec.js"></script>
 <script>//<![CDATA[
- // Asteroids is a space-themed multidirectional shooter arcade game
- // designed by Lyle Rains, Ed Logg and Dominic Walsh and released
- // by Atari in 1979.  It's a classic.
+ // asteroids.html
+ // Copyright (C) 2020 by Jeff Gold.
+ //
+ // This program is free software: you can redistribute it and/or
+ // modify it under the terms of the GNU General Public License as
+ // published by the Free Software Foundation, either version 3 of the
+ // License, or (at your option) any later version.
+ //
+ // This program is distributed in the hope that it will be useful, but
+ // WITHOUT ANY WARRANTY; without even the implied warranty of
+ // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ // General Public License for more details.
+ //
+ // You should have received a copy of the GNU General Public License
+ // along with this program.  If not, see
+ // <http://www.gnu.org/licenses/>.
+ //
+ // ---------------------------------------------------------------------
+ //
+ // This file is an independent clone of Asteroids, a space-themed
+ // multidirectional shooter arcade game originally designed by Lyle
+ // Rains, Ed Logg and Dominic Walsh and released by Atari in 1979.
  // Source: https://en.wikipedia.org/wiki/Asteroids_(video_game)
  //
  // The player controls a space ship in an asteroid field which is
@@ -103,7 +122,7 @@
                  ctx.stroke();
                  ctx.restore();
              },
-             update: function(ms, camera) {
+             update: function(camera, ms) {
                  if (this.recharge > 0) {
                      this.recharge -= ms;
                      if (this.recharge <= 0) {
@@ -146,7 +165,7 @@
                  ctx.arc(this.x, this.y, this.size/2,
                          0, 2 * Math.PI);
              },
-             update: function(ms, camera) {
+             update: function(camera, ms) {
                  var result = false;
                  this.duration += ms;
                  if (this.duration < 300) {
@@ -172,7 +191,7 @@
              dx: source.dx + Math.cos(direction) * speed,
              dy: source.dy + Math.sin(direction) * speed,
              size: size / 100, duration: 900, points: points,
-             update: function(ms, camera) {
+             update: function(camera, ms) {
                  if (!o_messy) {
                      this.duration -= ms;
                      if (this.duration <= 0)
@@ -244,14 +263,14 @@
              this.shield.draw(ctx, this);
              drawRing(ctx, this);
          },
-         update: function(ms, camera) {
+         update: function(camera, ms) {
              if (this.size === 0)
                  this.resize(Math.min(camera.width, camera.height));
 
              var activeShots = [];
              this.shots.forEach(function(shot) {
                  if (!shot) return;
-                 if (shot.update(ms, camera))
+                 if (shot.update(camera, ms))
                      activeShots.push(shot);
              });
              this.shots = activeShots;
@@ -343,7 +362,7 @@
                  this.warpCooldown = 2000;
              }
 
-             this.shield.update(ms, camera);
+             this.shield.update(camera, ms);
              moveWrap(this, ms, camera);
          },
          shoot: function() {
@@ -442,13 +461,13 @@
              this.shield.draw(ctx, this);
              drawRing(ctx, this);
          },
-         update: function(ms, camera) {
+         update: function(camera, ms) {
              if (this.size === 0)
                  this.resize(Math.min(camera.width, camera.height));
 
              var activeShots = [];
              this.shots.forEach(function(shot) {
-                 if (shot && shot.update(ms, camera))
+                 if (shot && shot.update(camera, ms))
                      activeShots.push(shot); });
              this.shots = activeShots;
 
@@ -491,7 +510,7 @@
                      (1 + Math.random()));
              }
 
-             this.shield.update(ms, camera);
+             this.shield.update(camera, ms);
              moveWrap(this, ms, camera);
          },
          shoot: function(ms, camera) {
@@ -610,7 +629,7 @@
                  this.dy = Math.sin(this.direction) * this.speed;
              },
 
-             update: function(ms, camera) {
+             update: function(camera, ms) {
                  if (this.size === 0)
                      this.resize(Math.min(camera.width, camera.height));
                  this.angle += ms * Math.PI / (this.size * 30);
@@ -685,13 +704,13 @@
              }
          },
 
-         update: function(ms, camera) {
+         update: function(camera, ms) {
              if (ms > 100)
                  ms = 100;
 
              var activeDebris = [];
              debris.forEach(function(piece) {
-                 if (piece.update(ms, camera))
+                 if (piece.update(camera, ms))
                      activeDebris.push(piece);
              });
              debris = activeDebris;
@@ -728,7 +747,7 @@
                  }
 
                  if (asteroid.dead <= 0) {
-                     asteroid.update(ms, camera);
+                     asteroid.update(camera, ms);
                      activeAsteroids.push(asteroid);
                  }
              });
@@ -779,8 +798,8 @@
                  saucer.destroy();
              }
 
-             ship.update(ms, camera);
-             saucer.update(ms, camera);
+             ship.update(camera, ms);
+             saucer.update(camera, ms);
          },
 
          keydown: function(event, camera) {
