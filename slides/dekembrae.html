@@ -3,6 +3,7 @@
 <link rel="stylesheet" href="lib/sakura.css">
 <style>
  .subskill { padding-left: 2em; }
+ .warning { background-color: #ee8888; }
 </style>
 <title>Dekembr&aelig;</title>
 <h1>Dekembr&aelig;</h1>
@@ -16,8 +17,8 @@
 <p>
     Role playing games have been around a long time but most have
     serious problems that work against story telling and exciting
-    combat.  Dekembr&aelig; seeks to address these and present a more
-    robust system.
+    combat.  Dekembr&aelig; is an experiemental system that attempts
+    to do present a more robust and satisfying system.
 </p>
 
 <h4>Rolling Dice for Abilities</h4>
@@ -119,50 +120,52 @@
     Characters start with a score of 3 in all abilities.  Each can be
     increased by one point at a cost equal to the current value plus
     one.  A score of 4 for an ability is average.  Heroic characters
-    get 50 points to spend.  Other kinds of characters may get fewer.
+    get 50 points to spend.
 </p>
 
-<table>
+<table id="score-costs">
     <caption>Cost to Achieve a Given Score</caption>
-    <tr><th>Score</th><th>Cost</th></tr>
-    <tr><td>3</td><td>0</td></tr>
-    <tr><td>4</td><td>4</td></tr>
-    <tr><td>5</td><td>9</td></tr>
-    <tr><td>6</td><td>15</td></tr>
-    <tr><td>7</td><td>22</td></tr>
-    <tr><td>8</td><td>30</td></tr>
-    <tr><td>9</td><td>39</td></tr>
+    <thead><tr><th>Score</th><th>Cost</th></tr></thead>
+    <tbody>
+        <tr><td>3</td></tr>
+        <tr><td>4</td></tr>
+        <tr><td>5</td></tr>
+        <tr><td>6</td></tr>
+        <tr><td>7</td></tr>
+        <tr><td>8</td></tr>
+        <tr><td>9</td></tr>
+    </tbody>
 </table>
 
-<table>
+<table id="example-scores">
     <caption>Example Score Distributions (50 Points)</caption>
-    <tr>
+    <thead><tr>
         <th>S</th><th>S</th><th>S</th><th>S</th><th>S</th><th>Total</th>
+    </tr></thead><tbody><tr>
+        <td>5</td><td>5</td><td>5</td><td>5</td><td>5</td>
     </tr><tr>
-        <td>5</td><td>5</td><td>5</td><td>5</td><td>5</td><td>45</td>
+        <td>6</td><td>5</td><td>5</td><td>5</td><td>4</td>
     </tr><tr>
-        <td>6</td><td>5</td><td>5</td><td>5</td><td>4</td><td>46</td>
+        <td>6</td><td>6</td><td>5</td><td>4</td><td>4</td>
     </tr><tr>
-        <td>6</td><td>6</td><td>5</td><td>4</td><td>4</td><td>47</td>
+        <td>6</td><td>6</td><td>5</td><td>5</td><td>3</td>
     </tr><tr>
-        <td>6</td><td>6</td><td>5</td><td>5</td><td>3</td><td>48</td>
+        <td>6</td><td>6</td><td>6</td><td>3</td><td>3</td>
     </tr><tr>
-        <td>6</td><td>6</td><td>6</td><td>3</td><td>3</td><td>45</td>
+        <td>7</td><td>5</td><td>5</td><td>5</td><td>3</td>
     </tr><tr>
-        <td>7</td><td>5</td><td>5</td><td>5</td><td>3</td><td>49</td>
+        <td>7</td><td>6</td><td>4</td><td>4</td><td>4</td>
     </tr><tr>
-        <td>7</td><td>6</td><td>4</td><td>4</td><td>4</td><td>49</td>
+        <td>7</td><td>7</td><td>4</td><td>3</td><td>3</td>
     </tr><tr>
-        <td>7</td><td>7</td><td>4</td><td>3</td><td>3</td><td>48</td>
+        <td>8</td><td>4</td><td>4</td><td>4</td><td>4</td>
     </tr><tr>
-        <td>8</td><td>4</td><td>4</td><td>4</td><td>4</td><td>46</td>
+        <td>8</td><td>5</td><td>4</td><td>4</td><td>3</td>
     </tr><tr>
-        <td>8</td><td>5</td><td>4</td><td>4</td><td>3</td><td>47</td>
+        <td>9</td><td>4</td><td>4</td><td>3</td><td>3</td>
     </tr><tr>
-        <td>9</td><td>4</td><td>4</td><td>3</td><td>3</td><td>47</td>
-    </tr><tr>
-        <td>9</td><td>5</td><td>3</td><td>3</td><td>3</td><td>48</td>
-    </tr>
+        <td>9</td><td>5</td><td>3</td><td>3</td><td>3</td>
+    </tr></tbody>
 </table>
 
 <p>
@@ -309,45 +312,54 @@
 <p>
     Attacks are resolved with the following system.  The attacker
     begins with the number of ranks in a base skill such as strike,
-    throw or aim.  To this the attacker adds any ranks in an category
-    skill such as blades or polearms.  Then the attacker adds specific
-    skills such as dagger or halbard.  The total number is the number
-    of ranks available.  This is used to make a skill roll which
-    determines the attack score.
+    throw or aim.  To this the attacker adds ranks in an category
+    skill that applies to the weapon in use.  For example, blade or
+    polearm ranks.  Then the attacker adds specific skills such as
+    dagger or halbard.  The total is the number of ranks available.
+    Each rank is usually converted into a single die roll.  The sum of
+    all dice is the attack score.
 </p>
 
 <p>
     Each possible weapon attack has a difficulty value.  If the attack
-    score is less than this value then the attack was an embarrassing
-    fumble.  Otherwise, subtract the difficulty from the attack score
-    and continue.
+    score is less than this value then the attack was a fumble that
+    would not have hit an inanimate target.  Otherwise, subtract the
+    difficulty from the attack score and continue.
 </p>
 
 <p>
-    When a defender is conscious and aware of the attacker, compare
-    the current attack score to the agility of the defender.  If the
-    attack score is smaller, the defender steps aside effortlessly.
-    Otherwise subtract the passive dodge score and continue.
+    When a defender is conscious, unbound and aware of the attacker,
+    passive dodge applies.  Compare the current attack score to the
+    agility of the defender.  If the attack score is smaller, the
+    defender dodges the attack with little effort. Otherwise subtract
+    the agility score and continue.
 </p>
 
 <p>
     If the attack score is still more than zero and the defender is
-    conscious and able to move, the defender active defense must be
-    resolved.  Active defense uses stamina to reduce the attack score.
-    Each point of stamina can reduce the attack by the defender
-    agility.  If the defender has enough stamina to reduce the attack
-    to zero or below then that many points are spent and the attack is
-    narrowly avoided.  If not, the defender loses only a single point
-    of stamina and the attack continues.
+    conscious and able to move, active dodge applies.  Every defender
+    has a number of defense points equal to their agility plus dodge
+    ranks.
+
+    The defender spends stamina to reduce the attack score.  Each point
+    of stamina can reduce the attack by the defender agility.  If the
+    defender has enough stamina to reduce the attack to zero or below
+    then that many points are spent and the attack is narrowly
+    avoided.  If not, the defender loses only a single point of
+    stamina and the attack continues.
 </p>
 
 <p>
     Note that even if the attack is avoided in this way, the weapon
-    still contacts the defender and may draw blood unless completely
-    absorbed by defender armor.  A defender in defensive mode adds
-    another five points to the attack score and spends enough stamina
-    to reduce this to zero if possible.  This may be important if
-    effects like poison are in play.
+    still makes contact with the defender, which may be important for
+    effects like poison or magic.  Armor in the hit region with any
+    effectiveness against the attack type elminates the contact.
+    Defenders can choose to enter defensive mode on their turn.  In
+    this mode the defender attempts to avoid all contact with an
+    attacker at the cost of additional stamina.  In this mode the
+    defender spends enough stamina to reduce the attack score to
+    negative five if possible.  If successful the attack does not make
+    contact.
 </p>
 
 <p>
@@ -465,24 +477,26 @@
 
 <h3>Hit Regions</h3>
 <p>
-    Every character has hit regions.  For humans these regions are:
+    Every character has hit regions.  Which side can be determined by
+    the direction from which the attack originates or by a coin flip.
+    For humans these regions are:
 </p>
 
 <table>
     <tr><th>Region</th><th>Weight</th></tr>
-    <tr><td>Head</td><td>10</td></tr>
-    <tr><td>Body</td><td>30</td></tr>
-    <tr><td>Right Arm</td><td>15</td></tr>
-    <tr><td>Left Arm</td><td>15</td></tr>
-    <tr><td>Right Leg</td><td>15</td></tr>
-    <tr><td>Left Leg</td><td>15</td></tr>
+    <tr><td>Head</td><td>15</td></tr>
+    <tr><td>Body</td><td>35</td></tr>
+    <tr><td>Arm</td><td>25</td></tr>
+    <tr><td>Leg</td><td>25</td></tr>
 </table>
 
 <p>
-    Some special attacks can target a region.  Otherwise the region
-    hit is determined at random according to the relative weights.
     Non-human characters may have different region maps (for instance
     there may be a tail region).
+</p><p>
+    Attackers can target a region by witholding dice.  Each die
+    allows the attacker to reroll the hit region.  The result then
+    stands unless another reroll is used.
 </p>
 
 <h3></h3>
@@ -556,6 +570,31 @@
 <script src="ripple/polyfill.js"></script>
 <script src="ripple/ripple.js"></script>
 <script>//<![CDATA[
+ var scoreCost = function(value) {
+     // Compute the cost of an ability score value.
+     var result = 0;
+     while (value > 3)
+         result += value--;
+     return result;
+ };
+
+ var addSumColumn = function(tbody, fn) {
+     // Add a sum column to each row of a table.
+     var ii, jj, row, sum, value;
+     for (var ii = 0; ii < tbody.children.length; ++ii) {
+         row = tbody.children[ii];
+         sum = 0;
+
+         for (jj = 0; jj < row.children.length; ++jj) {
+             value = parseInt(row.children[jj].innerHTML, 10);
+             if (!isNaN(value))
+                 sum += (fn ? fn : function(x) { return x; })(value);
+         }
+         console.log("DEBUG", sum);
+         row.appendChild(ripple.createElement('td', null, sum));
+     }
+ };
+
  ripple.preload(['dekembrae.json'], function(results) {
      var dekembrae = results['dekembrae.json'];
      var skillTable = document.getElementById("skillTable");
@@ -580,4 +619,9 @@
                          "td", null, subskill.description)));
              });
      });
+
+     addSumColumn(document.querySelector(
+         "#score-costs tbody"), scoreCost);
+     addSumColumn(document.querySelector(
+         "#example-scores tbody"), scoreCost);
  }); //]]></script>
