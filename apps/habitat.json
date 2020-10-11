@@ -1,0 +1,68 @@
+{
+    "schema": { "version": "0.0.1" },
+    "districts": {
+        "Empty": {
+            "comments": [
+                "An empty district contains basic infrastructure."]
+        },
+        "Abandoned": {
+            "comments": ["A district that has fallen into decay."]
+        },
+        "Residential": {
+            "comments": ["Housing and an occasional small park"],
+            "housing": 250, "jobs": 5,
+            "construction": {}
+        },
+        "Commercial": {
+            "comments": ["Shops"],
+            "jobs": 50
+        },
+        "Industrial": {
+            "comments": ["Factories and warehouses"],
+            "jobs": 20
+        },
+        "Government": {
+            "comments": ["Court houses and the like"],
+            "jobs": 20
+        },
+        "Military": {
+            "comments": ["Barracks mostly"],
+            "housing": 100,
+            "jobs": 80
+        },
+        "Medical": {
+            "comments": ["Hospitals"],
+            "beds": 20,
+            "jobs": 50
+        },
+        "Port": {
+            "comments": ["Docks and immigration"],
+            "jobs": 30
+        },
+        "Park": {
+            "comments": ["Recreational spaces"],
+            "jobs": 10
+        },
+        "Agriculture": {
+            "comments": ["Food production"],
+            "jobs": 20
+        },
+        "Education": {
+            "comments": ["Schools and libraries"],
+            "jobs": 20
+        }
+    },
+    "factors": {
+        "conflict": {},
+        "immigration": {},
+        "trade": {},
+        "resource": {}
+    },
+    "attributes": {
+        "population": {},
+        "employment": {},
+        "health": {},
+        "happiness": {},
+        "coordination": {}
+    }
+}

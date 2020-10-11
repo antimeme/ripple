@@ -973,43 +973,6 @@
         ctx.translate(-this.x, -this.y);
     };
 
-    /*
-     * Call this to run an application in standalone mode using
-     * the electron NPM library.
-     *
-     * @return true unless electron is missing. */
-    ripple.standalone = function(page) {
-        const electron = require('electron');
-
-        if (electron && electron.app) {
-            // Stand alone desktop application mode
-            //   $ npm run-script streya
-            const path = require('path');
-            const url  = require('url');
-            var mainWindow;
-
-            electron.app.on('ready', function() {
-                mainWindow = new electron.BrowserWindow(
-                    {width: 800, height: 600,
-                     webPreferences: { nodeIntegration: false }});
-                mainWindow.loadURL(url.format({
-                    pathname: path.join(__dirname, page),
-                    protocol: 'file:',
-                    slashes: true }));
-                if (ripple.paramBoolean('debug'))
-                    mainWindow.webContents.openDevTools();
-                mainWindow.setMenu(null);
-                mainWindow.on('closed', function () {
-                    mainWindow = null; });
-            }).on('window-all-closed', function () {
-                electron.app.quit();
-            }).on('activate', function () {
-                if (mainWindow === null)
-                    createWindow(); });
-            return true;
-        } return false;
-    };
-
 })(typeof exports === 'undefined' ? window['ripple'] = {} : exports);
 
 // Library routines that apply only to Node.js applications

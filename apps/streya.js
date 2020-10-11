@@ -1162,7 +1162,4 @@
         (this.streya = {}) : ((typeof module !== undefined) ?
                               (module.exports = exports) : exports));
 
-if ((typeof require !== 'undefined') && (require.main === module)) {
-    const ripple = require('./ripple/ripple.js');
-    ripple.standalone("streya.html");
-}
+if ((typeof require !== 'undefined') && (require.main === module)) {}
