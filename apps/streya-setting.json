@@ -154,6 +154,14 @@
         "Pluto": { "category": "Dwarf Planet", "orbits": "Sol" },
         "Charon": { "category": "Dwarf Planet", "orbits": "Sol" },
 
+        "Parker IV": {
+            "name": "Parker IV Solar Observatory",
+            "category": "station",
+            "comments": [
+                "This observatory is the closest habitable ",
+                "object to sol."]
+        },
+
         "SPA": {
             "name": "Saturn Plantery Authority",
             "category": "organization",
