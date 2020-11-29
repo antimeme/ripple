@@ -1,0 +1,316 @@
+{
+    "schema": { "version": "0.0.1" },
+    "notes": {
+        "districts": [
+            "A space station contains two caps and a cylinder that ",
+            "rotates to create comfortable gravity.  The cylinder ",
+            "contains a rectangular grid of districts.  The left and ",
+            "right edges may contain port districts.  The top and ",
+            "bottom wrap around.  Each district is optimized for ",
+            "some types of buildings but is less effective for ",
+            "others.  Each district can contain up to four large ",
+            "buildings (100x100), sixteen medium buildings (50x50) ",
+            "or sixty-four small buildings (25x25)."]},
+    "districts": {
+        "Empty": {
+            "comments": [
+                "Contains atmosphere but lacks infrastructure for ",
+                "buildings (such as lighting, power, sanitation)."]
+        },
+        "Ruins": {
+            "comments": [
+                "Remains of an unmaintained distrct.  Can be salvaged ",
+                "for materials."]
+        },
+        "Port": {
+            "comments": [
+                "Contains an interchange elevator for accessng one of ",
+                "the station caps.  Most buildings can be built in a ",
+                "port district without too much disadvantage."],
+            "requiresEdge": true,
+            "buildCost": {
+                "common-building-materials": 2000,
+                "advanced-building-materials": 500
+            }
+        },
+        "Residential": {
+            "comments": [
+                "Optimized for comfortable living spaces."],
+            "buildCost": {
+                "common-building-materials": 1000,
+                "advanced-building-materials": 100
+            }
+        },
+        "Commercial": {
+            "comments": [
+                "Optimized for shops"],
+            "buildCost": {
+                "common-building-materials": 1500,
+                "advanced-building-materials": 200
+            }
+        },
+        "Industrial": {
+            "comments": [
+                "Optimized for factories and warehouses"],
+            "buildCost": {
+                "common-building-materials": 3000,
+                "advanced-building-materials": 1000
+            }
+        },
+        "Agricultural": {
+            "comments": [
+                "Optimized for food production"],
+            "buildCost": {
+                "common-building-materials": 2000,
+                "advanced-building-materials": 200
+            }
+        },
+        "Recreation": {
+            "comments": [
+                "Optimized for parks and attractions"],
+            "buildCost": {
+                "common-building-materials": 2000,
+                "advanced-building-materials": 100
+            }
+        },
+        "Education": {
+            "comments": [
+                "Optimized for learning"],
+            "buildCost": {
+                "common-building-materials": 1000,
+                "advanced-building-materials": 100
+            }
+        },
+        "Luxury": {
+            "comments": [
+                "Optimized for wealthy housing"],
+            "buildCost": {
+                "common-building-materials": 3000,
+                "advanced-building-materials": 1000
+            }
+        },
+        "Administrative": {
+            "comments": [
+                "Optimized for offices"],
+            "buildCost": {
+                "common-building-materials": 3000,
+                "advanced-building-materials": 1000
+            }
+        }
+    },
+    "buildings": {
+        "apartment": {
+            "size": 2,
+            "housing": 50,
+            "comfort": 50,
+            "buildCost": {
+                "common-building-materials": 250,
+                "advanced-building-materials": 50
+            }
+        },
+        "tenament": {
+            "size": 3,
+            "housing": 250,
+            "comfort": 25,
+            "buildCost": {
+                "common-building-materials": 900,
+                "advanced-building-materials": 180
+            }
+        },
+        "hotel": {
+            "size": 2,
+            "visitors": 20,
+            "comfort": 50,
+            "buildCost": {
+                "common-building-materials": 250,
+                "advanced-building-materials": 50
+            }
+        },
+        "warehouse": {
+            "size": 2,
+            "storage": 1000,
+            "buildCost": {
+                "common-building-materials": 200,
+                "advanced-building-materials": 10
+            }
+        },
+        "fusion-reactor": {
+            "comment": [
+                "D-D fusion produces 2.5 * 10^15 joules per metric ",
+                "ton when fused."],
+            "size": 1,
+            "power": 250000000000000,
+            "buildCost": {
+                "common-building-materials": 500,
+                "advanced-building-materials": 500,
+                "rare-building-materials": 200
+            }
+        },
+        "shopping-mall": {
+            "size": 2,
+            "buildCost": {
+                "common-building-materials": 300,
+                "advanced-building-materials": 50
+            }
+        },
+        "prison": {
+            "size": 3,
+            "buildCost": {
+                "common-building-materials": 1000,
+                "advanced-building-materials": 200
+            }
+        },
+        "water-treatment-plant": {
+            "size": 2,
+            "buildCost": {
+                "common-building-materials": 500,
+                "advanced-building-materials": 100
+            }
+        },
+        "waste-treatment-plant": {
+            "size": 2,
+            "buildCost": {
+                "common-building-materials": 500,
+                "advanced-building-materials": 100
+            }
+        }
+    },
+    "resources": {
+        "h2o": {
+            "comments": [
+                "Essential for life.  Can be used to create oxygen, ",
+                "for drinking, to create fusion fuel."],
+            "forms": ["liquid", "gas"]
+        },
+        "o2": {
+            "comments": [
+                "Necessary for cellular respiration.",
+                "At least 10 kPa required for life.  Preferably 20 kPa"],
+            "forms": ["gas"]
+        },
+        "n2": {
+            "comments": [
+                "A neutral gas that makes life more comfrotable.  ",
+                "Preferably 70-80 kPa"],
+            "forms": ["gas"]
+        },
+        "co2": {
+            "comments": [
+                "Necessary for plant growth.  "],
+            "forms": ["gas"]
+        },
+        "greywater": {
+            "comments": [
+                "Produced by living things.  Can be recycled."],
+            "forms": ["liquid"]
+        },
+        "common-ore": {
+            "comments": [
+                "Mined from asteroids.  Can be refined."],
+            "forms": ["solid"]
+        },
+        "advanced-ore": {
+            "comments": [
+                "Mined from asteroids.  Can be refined."],
+            "forms": ["solid"]
+        },
+        "rare-ore": {
+            "comments": [
+                "Mined from asteroids.  Can be refined."],
+            "forms": ["solid"]
+        },
+        "common-alloys": {
+            "comments": [
+                "Used to create other things."],
+            "forms": ["solid"]
+        },
+        "advanced-alloys": {
+            "comments": [
+                "Used to create other things."],
+            "forms": ["solid"]
+        },
+        "rare-alloys": {
+            "comments": [
+                "Used to create other things."],
+            "forms": ["solid"]
+        },
+        "organic-waste": {
+            "comments": [
+                "Created by living things.  Can be recycled."],
+            "forms": ["solid"]
+        },
+        "vegetables": {
+            "comments": [
+                "Created by plants.  Food for animals."],
+            "forms": ["solid"]
+        },
+        "fruit": {
+            "comments": [
+                "Created by plants.  Food for animals."],
+            "forms": ["solid"]
+        },
+        "fibers": {
+            "comments": [
+                "Created by plants.  Used to construct other things."],
+            "forms": ["solid"]
+        },
+        "cloth": {
+            "comments": [
+                "Made from fibers.  Used to make things."],
+            "forms": ["solid"]
+        },
+        "soft-goods": {
+            "comments": [
+                "Required by people.  Made from fibers"],
+            "forms": ["solid"]
+        },
+        "tools": {
+            "comments": [
+                "Used by people to make things."],
+            "forms": ["solid"]
+        },
+        "electronic-goods": {
+            "comments": [
+                "Makes people happy and productive."],
+            "forms": ["solid"]
+        },
+        "common-building-materials": {
+            "comments": [
+                "Used to construct buildings."],
+            "forms": ["solid"]
+        },
+        "advanced-building-materials": {
+            "comments": [
+                "Used to construct buildings."],
+            "forms": ["solid"]
+        },
+        "rare-building-materials": {
+            "comments": [
+                "Used to construct buildings."],
+            "forms": ["solid"]
+        },
+        "common-scrap": {
+            "comments": [
+                "Can be recycled."],
+            "forms": ["solid"]
+        },
+        "advanced-scrap": {
+            "comments": [
+                "Can be recycled."],
+            "forms": ["solid"]
+        },
+        "rare-scrap": {
+            "comments": [
+                "Can be recycled."],
+            "forms": ["solid"]
+        },
+        "fusion-fuel": {
+            "comments": [
+                "Refined material used to create energy.  ",
+                "Required by ships and stations to generate power.  ",
+                "Required by ships for propulsion.  ",
+                "Generally this is a mixture of He3 and Deuterium.  "],
+            "forms": ["solid"]
+        }
+    }
+}

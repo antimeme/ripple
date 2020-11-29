@@ -109,20 +109,31 @@
 
         // Selects a function with the specified name
         var getAppFn = function(app, name, strict) {
-            if ((typeof(app.mode) === "string") &&
-                app.modes && (typeof(app.modes) === "object") &&
-                app.modes[name])
-                return app.modes[name];
+            var result = null;
+
+            if (typeof(app.mode) === "function")
+                result = function() {
+                    return app.mode(name).apply(app, arguments); };
             else if ((typeof(app.mode) === "object") &&
                      app.mode && app.mode[name])
-                return app.mode[name];
-            else if (typeof(app.mode) === "function")
-                return app.mode(name);
+                result = function() {
+                    return app.mode[name].apply(app.mode, arguments); };
+            else if ((typeof(app.mode) === "string") &&
+                     app.modes && (typeof(app.modes) === "object") &&
+                     app.modes[app.mode] &&
+                     (typeof(app.modes[app.mode]) === "object") &&
+                     app.modes[app.mode][name] &&
+                     (typeof(app.modes[app.mode][name]) === "function"))
+                result = function() {
+                    return app.modes[app.mode][name].apply(
+                        app.modes[app.mode], arguments); };
             else if (app[name])
-                return app[name];
-            else if (!strict)
-                return function() {};
-            return null;
+                result = function() {
+                    return app[name].apply(app, arguments); };
+
+            if (!strict && !result)
+                result = function() {};
+            return result;
         };
 
         // Facsia Apps get calls to update(camera, ms, now) each frame
@@ -135,18 +146,19 @@
         var draw_id = 0, draw_last = 0;
         var draw = function() {
             var now = Date.now();
-            var ii, ctx, width, height;
+            var ii, cstyle, ctx, width, height;
             draw_id = 0;
 
             if (lastUpdate)
                 getAppFn(app, "update").call(
                     app, camera, now - lastUpdate, now);
-            lastUpdate = now;
 
             camera.resize(canvas.clientWidth, canvas.clientHeight);
             ctx = canvas.getContext('2d');
-            ctx.strokeStyle = getComputedStyle(canvas).color;
-            ctx.fillStyle = getComputedStyle(canvas).color;
+            cstyle = getComputedStyle(canvas);
+            ctx.strokeStyle = cstyle.color;
+            ctx.fillStyle   = cstyle.color;
+
             ctx.save();
             ctx.clearRect(0, 0, camera.width, camera.height);
             getAppFn(app, "drawBefore").call(
@@ -155,6 +167,8 @@
             getAppFn(app, "draw").call(
                 app, ctx, camera, now, lastUpdate);
             ctx.restore();
+            getAppFn(app, "drawAfter").call(
+                app, ctx, camera, now, lastUpdate);
 
             // Active apps need to be redrawn while inactive apps
             // do not.  We let the app itself tell us which it is.
@@ -163,6 +177,7 @@
                 ((typeof(app.isActive) === "function") &&
                  app.isActive()))
                 redraw();
+            lastUpdate = now;
         };
         var redraw = function()
         { if (!draw_id) draw_id = requestAnimationFrame(draw); };
@@ -178,8 +193,10 @@
             if (!width || !height)
                 return;
             camera.resize(width, height);
-            canvas.style.width  = canvas.width  = width;
-            canvas.style.height = canvas.height = height;
+            canvas.width  = width;
+            canvas.height = height;
+            canvas.style.width  = (width || 0) + "px";
+            canvas.style.height = (height || 0) + "px";
             if (app.resize)
                 app.resize(camera, container);
             redraw();
@@ -889,7 +906,9 @@
         } else image = settings.image;
 
         element.setAttribute('class', className);
-        element.style['background-image'] = image;
+        if (image)
+            element.style['background-image'] = image;
+        else console.error("ERROR: missing image");
         element.style['background-position'] = position;
         element.style['background-size'] = backsize;
         element.style.width = this.size + 'px';
@@ -1146,6 +1165,7 @@
         item, index, itemPane) {
         var element = document.createElement('div');
 
+        console.log("DEBUG addItem", JSON.stringify(item));
         element = this.imageSystem.applyItem(
             {icon: item.icon, title: item.toString(),
              drag: item,
