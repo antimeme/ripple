@@ -64,6 +64,7 @@
      var o_rings   = ripple.paramBoolean("rings");
      var o_shields = ripple.paramBoolean("shields");
      var o_repeat  = ripple.paramBoolean("repeat");
+     var o_nobuttons = ripple.paramBoolean("nobuttons");
 
      var score = 0;
      var asteroids = [];
@@ -659,7 +660,9 @@
      var screenButtons = {
          size: 0, horizontal: false, collapsed: true,
          draw: function(ctx, camera, now, last) {
-             var radius = this.size * 2 / 3;
+             if (o_nobuttons)
+                 return;
+             var radius = this.size * 3 / 5;
              ctx.save();
              ctx.translate(this.size, camera.height - this.size);
 
@@ -674,6 +677,8 @@
                  ctx.moveTo(-radius / 2, -radius / 4);
                  ctx.lineTo(radius / 2, -radius / 4);
              } else {
+                 var delx = this.horizontal ? (3 / 2 * this.size) : 0;
+                 var dely = this.horizontal ? 0 : -(3 / 2 * this.size);
                  var offx = 0, offy = 0;
 
                  // Collapse
@@ -683,33 +688,60 @@
                  ctx.lineTo(offx + radius / 2, offy + radius / 2);
                  ctx.moveTo(offx + radius / 2, offy - radius / 2);
                  ctx.lineTo(offx - radius / 2, offy + radius / 2);
-                 if (this.horizontal)
-                     offx += 3 / 2 * this.size;
-                 else offy -= 3 / 2 * this.size;
+                 offx += delx;
+                 offy += dely;
 
+                 // Shoot
                  ctx.moveTo(radius + offx, offy);
                  ctx.arc(offx, offy, radius, 0, 2 * Math.PI);
-                 if (this.horizontal)
-                     offx += 3 / 2 * this.size;
-                 else offy -= 3 / 2 * this.size;
+                 ctx.moveTo(offx + radius / 5, offy - radius / 3);
+                 ctx.arc(offx, offy - radius / 3, radius / 5,
+                         0, 2 * Math.PI);
+                 ctx.moveTo(offx, offy + radius / 2);
+                 ctx.lineTo(offx, offy);
+                 offx += delx;
+                 offy += dely;
 
+                 // Left turn
                  ctx.moveTo(radius + offx, offy);
                  ctx.arc(offx, offy, radius, 0, 2 * Math.PI);
-                 if (this.horizontal)
-                     offx += 3 / 2 * this.size;
-                 else offy -= 3 / 2 * this.size;
+                 ctx.moveTo(offx + Math.cos(Math.PI / 3) * radius / 2,
+                            offy + Math.sin(Math.PI / 3) * radius / 2);
+                 ctx.arc(offx, offy, radius / 2,
+                         Math.PI / 3, -Math.PI * 2 / 3, true);
+                 ctx.lineTo(offx, offy - radius / 2);
+                 ctx.lineTo(offx, offy - radius / 4);
+                 ctx.lineTo(
+                     offx + Math.cos(-Math.PI * 2 / 3) * radius / 2,
+                     offy + Math.sin(-Math.PI * 2 / 3) * radius / 2);
+                 offx += delx;
+                 offy += dely;
 
+                 // Thrust
                  ctx.moveTo(radius + offx, offy);
                  ctx.arc(offx, offy, radius, 0, 2 * Math.PI);
-                 if (this.horizontal)
-                     offx += 3 / 2 * this.size;
-                 else offy -= 3 / 2 * this.size;
+                 ctx.moveTo(offx, offy + radius / 2);
+                 ctx.lineTo(offx, offy - radius / 2);
+                 ctx.lineTo(offx + radius / 5, offy - radius / 3);
+                 ctx.lineTo(offx - radius / 5, offy - radius / 3);
+                 ctx.lineTo(offx, offy - radius / 2);
+                 offx += delx;
+                 offy += dely;
 
+                 // Right turn
                  ctx.moveTo(radius + offx, offy);
                  ctx.arc(offx, offy, radius, 0, 2 * Math.PI);
-                 if (this.horizontal)
-                     offx += 3 / 2 * this.size;
-                 else offy -= 3 / 2 * this.size;
+                 ctx.moveTo(
+                     offx + Math.cos(Math.PI * 2 / 3) * radius / 2,
+                     offy + Math.sin(Math.PI * 2 / 3) * radius / 2);
+                 ctx.arc(offx, offy, radius / 2,
+                         Math.PI * 2 / 3, -Math.PI / 3);
+                 ctx.lineTo(offx, offy - radius / 2);
+                 ctx.lineTo(offx, offy - radius / 4);
+                 ctx.lineTo(offx + Math.cos(-Math.PI / 3) * radius / 2,
+                            offy + Math.sin(-Math.PI / 3) * radius / 2);
+                 offx += delx;
+                 offy += dely;
              }
              ctx.stroke();
              ctx.restore();
@@ -722,16 +754,60 @@
              var size = Math.min(camera.width, camera.height);
              this.size = size / 10;
          },
-         tap: function(event, camera) {
+         down: function(event, camera) {
+             if (o_nobuttons)
+                 return;
+             var delx = this.horizontal ? (3 / 2 * this.size) : 0;
+             var dely = this.horizontal ? 0 : -(3 / 2 * this.size);
+             var offx = 0, offy = 0;
+             var threshold = this.size * this.size * 9 / 25;
              var position = multivec({
                  x: event.clientX, y: event.clientY});
-             if (position.minus({
-                 x: this.size,
-                 y: camera.height - this.size}).quadrance() <
-                 this.size * this.size * 4 / 9) {
-                 this.collapsed = !this.collapsed;
-                 return true;
-             }
+             var buttons = [];
+             buttons.push({x: this.size + offx,
+                           y: camera.height - this.size + offy,
+                           action: function() {
+                               this.collapsed = !this.collapsed; }});
+             offx += delx;  offy += dely;
+             buttons.push({x: this.size + offx,
+                           y: camera.height - this.size + offy,
+                           action: function() { ship.shoot(); }});
+             offx += delx;  offy += dely;
+             buttons.push({x: this.size + offx,
+                           y: camera.height - this.size + offy,
+                           action: function() {
+                               ship.right = false; ship.left = true;
+                               ship.target = null;
+                           }});
+             offx += delx;  offy += dely;
+             buttons.push({x: this.size + offx,
+                           y: camera.height - this.size + offy,
+                           action: function() {
+                               ship.thrust = true; }});
+             offx += delx;  offy += dely;
+             buttons.push({x: this.size + offx,
+                           y: camera.height - this.size + offy,
+                           action: function() {
+                               ship.right = true; ship.left = false;
+                               ship.target = null;
+                           }});
+             offx += delx;  offy += dely;
+             var found = false;
+
+             buttons.forEach(function(button) {
+                 if (position.minus(button).quadrance() < threshold) {
+                     button.action.call(this);
+                     found = true;
+                 }
+             }, this);
+             return found;
+         },
+         up: function(event, camera) {
+             if (o_nobuttons)
+                 return;
+             ship.right  = false;
+             ship.left   = false;
+             ship.thrust = false;
          }
      };
 
@@ -918,12 +994,14 @@
                  ship.warp = true;
          },
          down: function(event, camera) {
-             if (!screenButtons.tap(event, camera)) {
-                 ship.aim(event.point, camera);
-                 ship.down = {duration: 0};
-             }
+             if (screenButtons.down(event, camera))
+                 return;
+             ship.aim(event.point, camera);
+             ship.down = {duration: 0};
          },
          up: function(event, camera) {
+             if (screenButtons.up(event, camera))
+                 return;
              ship.down = null;
              ship.thrust = false;
          },
