@@ -24,22 +24,22 @@
 
 .inventory-header {
     top: 0; left: 0; right: 0;
-    //background-color: rgba(180, 180, 240, 0.5);
+    /* background-color: rgba(180, 180, 240, 0.5); */
     border-top-left-radius: 15px;
     border-top-right-radius: 15px; }
 
 .inventory-footer {
     position: absolute; bottom: 0; left: 0; right: 0;
-    //background-color: rgba(180, 180, 240, 0.5);
+    /* background-color: rgba(180, 180, 240, 0.5); */
     border-bottom-left-radius: 15px;
     border-bottom-right-radius: 15px; }
 
 .inventory-self {
-    //background-color: rgba(200, 200, 240, 0.5);
+    /* background-color: rgba(200, 200, 240, 0.5); */
     left: 0; width: 50%; }
 
 .inventory-other {
-    //background-color: rgba(48, 144, 48, 0.5);
+    /* background-color: rgba(48, 144, 48, 0.5); */
     right: 0; width: 50%; }
 
 .inventory-portrait {
