@@ -656,6 +656,85 @@
          };
      };
 
+     var screenButtons = {
+         size: 0, horizontal: false, collapsed: true,
+         draw: function(ctx, camera, now, last) {
+             var radius = this.size * 2 / 3;
+             ctx.save();
+             ctx.translate(this.size, camera.height - this.size);
+
+             ctx.beginPath();
+             if (this.collapsed) {
+                 ctx.moveTo(radius, 0);
+                 ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+                 ctx.moveTo(-radius / 2, radius / 4);
+                 ctx.lineTo(radius / 2, radius / 4);
+                 ctx.moveTo(-radius / 2, 0);
+                 ctx.lineTo(radius / 2, 0);
+                 ctx.moveTo(-radius / 2, -radius / 4);
+                 ctx.lineTo(radius / 2, -radius / 4);
+             } else {
+                 var offx = 0, offy = 0;
+
+                 // Collapse
+                 ctx.moveTo(radius + offx, offy);
+                 ctx.arc(offx, offy, radius, 0, 2 * Math.PI);
+                 ctx.moveTo(offx - radius / 2, offy - radius / 2);
+                 ctx.lineTo(offx + radius / 2, offy + radius / 2);
+                 ctx.moveTo(offx + radius / 2, offy - radius / 2);
+                 ctx.lineTo(offx - radius / 2, offy + radius / 2);
+                 if (this.horizontal)
+                     offx += 3 / 2 * this.size;
+                 else offy -= 3 / 2 * this.size;
+
+                 ctx.moveTo(radius + offx, offy);
+                 ctx.arc(offx, offy, radius, 0, 2 * Math.PI);
+                 if (this.horizontal)
+                     offx += 3 / 2 * this.size;
+                 else offy -= 3 / 2 * this.size;
+
+                 ctx.moveTo(radius + offx, offy);
+                 ctx.arc(offx, offy, radius, 0, 2 * Math.PI);
+                 if (this.horizontal)
+                     offx += 3 / 2 * this.size;
+                 else offy -= 3 / 2 * this.size;
+
+                 ctx.moveTo(radius + offx, offy);
+                 ctx.arc(offx, offy, radius, 0, 2 * Math.PI);
+                 if (this.horizontal)
+                     offx += 3 / 2 * this.size;
+                 else offy -= 3 / 2 * this.size;
+
+                 ctx.moveTo(radius + offx, offy);
+                 ctx.arc(offx, offy, radius, 0, 2 * Math.PI);
+                 if (this.horizontal)
+                     offx += 3 / 2 * this.size;
+                 else offy -= 3 / 2 * this.size;
+             }
+             ctx.stroke();
+             ctx.restore();
+         },
+         update: function(camera, elapsed) {
+             if (!size)
+                 this.resize(camera);
+         },
+         resize: function(camera) {
+             var size = Math.min(camera.width, camera.height);
+             this.size = size / 10;
+         },
+         tap: function(event, camera) {
+             var position = multivec({
+                 x: event.clientX, y: event.clientY});
+             if (position.minus({
+                 x: this.size,
+                 y: camera.height - this.size}).quadrance() <
+                 this.size * this.size * 4 / 9) {
+                 this.collapsed = !this.collapsed;
+                 return true;
+             }
+         }
+     };
+
      return {
          resize: function(camera) {
              size = Math.min(camera.width, camera.height);
@@ -663,8 +742,11 @@
              saucer.resize(size);
              asteroids.forEach(function(asteroid) {
                  asteroid.resize(size); });
+             screenButtons.resize(camera);
          },
          drawBefore: function(ctx, camera, now, last) {
+             screenButtons.draw(ctx, camera, now, last);
+
              ctx.lineCap = "round";
              ctx.lineWidth = size / 400;
              ctx.font = (size / 20) + "px monospace";
@@ -800,6 +882,7 @@
 
              ship.update(camera, ms);
              saucer.update(camera, ms);
+             screenButtons.update(camera, ms);
          },
 
          keydown: function(event, camera) {
@@ -835,11 +918,15 @@
                  ship.warp = true;
          },
          down: function(event, camera) {
-             ship.aim(event.point, camera);
-             ship.down = {duration: 0}; },
+             if (!screenButtons.tap(event, camera)) {
+                 ship.aim(event.point, camera);
+                 ship.down = {duration: 0};
+             }
+         },
          up: function(event, camera) {
              ship.down = null;
-             ship.thrust = false;},
+             ship.thrust = false;
+         },
          isActive: true
      };
  }); //]]></script>
