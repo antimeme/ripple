@@ -9,7 +9,7 @@
         "Ripple"
     ],
     "dependencies": {
-        "sqlite": "~4.0.11",
+        "sqlite": "*",
         "electron": "*"
     },
     "devDependencies": {
