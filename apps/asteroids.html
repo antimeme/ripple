@@ -762,7 +762,7 @@
              var offx = 0, offy = 0;
              var threshold = this.size * this.size * 9 / 25;
              var position = multivec({
-                 x: event.clientX, y: event.clientY});
+                 x: event.point.x, y: event.point.y});
              var buttons = [];
              buttons.push({x: this.size + offx,
                            y: camera.height - this.size + offy,
