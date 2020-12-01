@@ -65,6 +65,7 @@
      var o_shields = ripple.paramBoolean("shields");
      var o_repeat  = ripple.paramBoolean("repeat");
      var o_nobuttons = ripple.paramBoolean("nobuttons");
+     var o_vbuttons  = ripple.paramBoolean("vbuttons");
 
      var score = 0;
      var asteroids = [];
@@ -658,7 +659,7 @@
      };
 
      var screenButtons = {
-         size: 0, horizontal: true, collapsed: true,
+         size: 0, horizontal: !o_vbuttons, collapsed: true,
          draw: function(ctx, camera, now, last) {
              if (o_nobuttons)
                  return;
