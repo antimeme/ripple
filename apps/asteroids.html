@@ -679,7 +679,7 @@
              } else {
                  var delx = this.horizontal ? (3 / 2 * this.size) : 0;
                  var dely = this.horizontal ? 0 : -(3 / 2 * this.size);
-                 var offx = 0, offy = 0;
+                 var offx = 0, offy = 0, angle, ii;
 
                  // Collapse
                  ctx.moveTo(radius + offx, offy);
@@ -688,17 +688,6 @@
                  ctx.lineTo(offx + radius / 2, offy + radius / 2);
                  ctx.moveTo(offx + radius / 2, offy - radius / 2);
                  ctx.lineTo(offx - radius / 2, offy + radius / 2);
-                 offx += delx;
-                 offy += dely;
-
-                 // Shoot
-                 ctx.moveTo(radius + offx, offy);
-                 ctx.arc(offx, offy, radius, 0, 2 * Math.PI);
-                 ctx.moveTo(offx + radius / 5, offy - radius / 3);
-                 ctx.arc(offx, offy - radius / 3, radius / 5,
-                         0, 2 * Math.PI);
-                 ctx.moveTo(offx, offy + radius / 2);
-                 ctx.lineTo(offx, offy);
                  offx += delx;
                  offy += dely;
 
@@ -717,17 +706,6 @@
                  offx += delx;
                  offy += dely;
 
-                 // Thrust
-                 ctx.moveTo(radius + offx, offy);
-                 ctx.arc(offx, offy, radius, 0, 2 * Math.PI);
-                 ctx.moveTo(offx, offy + radius / 2);
-                 ctx.lineTo(offx, offy - radius / 2);
-                 ctx.lineTo(offx + radius / 5, offy - radius / 3);
-                 ctx.lineTo(offx - radius / 5, offy - radius / 3);
-                 ctx.lineTo(offx, offy - radius / 2);
-                 offx += delx;
-                 offy += dely;
-
                  // Right turn
                  ctx.moveTo(radius + offx, offy);
                  ctx.arc(offx, offy, radius, 0, 2 * Math.PI);
@@ -742,6 +720,48 @@
                             offy + Math.sin(-Math.PI / 3) * radius / 2);
                  offx += delx;
                  offy += dely;
+
+                 // Warp
+                 ctx.moveTo(radius + offx, offy);
+                 ctx.arc(offx, offy, radius, 0, 2 * Math.PI);
+                 for (ii = 0; ii < 6; ++ii) {
+                     var angle = ii * Math.PI * 2 / 6;
+                     ctx.moveTo(offx + radius * Math.cos(angle) / 3,
+                                offy + radius * Math.sin(angle) / 3);
+                     ctx.lineTo(offx + radius * Math.cos(angle) * 2 / 3,
+                                offy + radius * Math.sin(angle) * 2 / 3);
+                 }
+                 offx += delx;
+                 offy += dely;
+
+                 // Thrust
+                 ctx.moveTo(radius + offx, offy);
+                 ctx.arc(offx, offy, radius, 0, 2 * Math.PI);
+                 ctx.moveTo(offx, offy + radius / 2);
+                 ctx.lineTo(offx, offy - radius / 2);
+                 ctx.lineTo(offx + radius / 5, offy - radius / 3);
+                 ctx.lineTo(offx - radius / 5, offy - radius / 3);
+                 ctx.lineTo(offx, offy - radius / 2);
+                 offx += delx;
+                 offy += dely;
+
+                 // Shoot
+                 ctx.moveTo(radius + offx, offy);
+                 ctx.arc(offx, offy, radius, 0, 2 * Math.PI);
+                 ctx.moveTo(offx + radius / 15, offy - radius * 3 / 5);
+                 ctx.arc(offx, offy - radius * 3 / 5, radius / 15,
+                         0, 2 * Math.PI);
+                 ctx.moveTo(offx, offy);
+                 ctx.lineTo(offx, offy - radius * 2 / 5);
+                 ctx.save();
+                 ctx.translate(offx, offy + radius / 3);
+                 ctx.rotate(-Math.PI / 2);
+                 ctx.scale(radius / 4, radius / 4);
+                 ship.drawShape(ctx);
+                 ctx.restore();
+                 offx += delx;
+                 offy += dely;
+
              }
              ctx.stroke();
              ctx.restore();
@@ -771,10 +791,6 @@
              offx += delx;  offy += dely;
              buttons.push({x: this.size + offx,
                            y: camera.height - this.size + offy,
-                           action: function() { ship.shoot(); }});
-             offx += delx;  offy += dely;
-             buttons.push({x: this.size + offx,
-                           y: camera.height - this.size + offy,
                            action: function() {
                                ship.right = false; ship.left = true;
                                ship.target = null;
@@ -783,14 +799,22 @@
              buttons.push({x: this.size + offx,
                            y: camera.height - this.size + offy,
                            action: function() {
-                               ship.thrust = true; }});
+                               ship.right = true; ship.left = false;
+                               ship.target = null;
+                           }});
+             offx += delx;  offy += dely;
+             buttons.push({x: this.size + offx,
+                           y: camera.height - this.size + offy,
+                           action: function() { ship.warp = true; }});
              offx += delx;  offy += dely;
              buttons.push({x: this.size + offx,
                            y: camera.height - this.size + offy,
                            action: function() {
-                               ship.right = true; ship.left = false;
-                               ship.target = null;
-                           }});
+                               ship.thrust = true; }});
+             offx += delx;  offy += dely;
+             buttons.push({x: this.size + offx,
+                           y: camera.height - this.size + offy,
+                           action: function() { ship.shoot(); }});
              offx += delx;  offy += dely;
              var found = false;
 
