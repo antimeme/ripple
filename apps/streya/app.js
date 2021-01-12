@@ -574,26 +574,22 @@
         var viewZoom = function(factor) {
             console.log("Premature viewZoom"); };
         var colorSelected = 'rgba(192, 192, 0, 0.2)';
-        var imageSystem = fascia.imageSystem(
-            preloads['streya.json'].imageSystem);
-        var itemSystem = fascia.itemSystem(
-            preloads['streya.json'].items);
+        var rules = preloads['rules.json'];
+        var imageSystem = fascia.imageSystem(rules.imageSystem);
+        var itemSystem = fascia.itemSystem(rules.items);
         var inventoryScreen;
         var apparatusScreen;
         var settingsScreen;
 
-        streya.Apparatus.data =
-            preloads['streya.json'].shipComponents.apparatus;
-        streya.Boundary.data =
-            preloads['streya.json'].shipComponents.boundaries;
+        streya.Apparatus.data = rules.shipComponents.apparatus;
+        streya.Boundary.data  = rules.shipComponents.boundaries;
         // :TODO: different mass for different grid types?
-        streya.Ship.massStructure =
-            preloads['streya.json'].shipComponents.structure.mass;
+        streya.Ship.massStructure = rules.shipComponents.structure.mass;
 
         var player = fascia.createPlayer(
             ripple.mergeConfig(
-                (preloads['streya.json'].characterDefinitions &&
-                 preloads['streya.json'].characterDefinitions.player) ||
+                (rules.characterDefinitions &&
+                 rules.characterDefinitions.player) ||
                 null, {
                     position: {x: 0, y: 0},
                     itemSystem: itemSystem,
@@ -634,10 +630,8 @@
 
         var ship = menuShipUpdate(streya.Ship.create(
             (ripple.param('ship') &&
-             ripple.param('ship') in
-                preloads['streya.json'].shipDesigns) ?
-            preloads['streya.json'].shipDesigns[
-                ripple.param('ship')] : undefined));
+             ripple.param('ship') in rules.shipDesigns) ?
+            rules.shipDesigns[ripple.param('ship')] : undefined));
 
         var system, systems = {
             edit: {
@@ -949,8 +943,8 @@
         menu.appendChild(ripple.createElement('li', null, shipName));
         var designs = ripple.createElement('select');
         designs.appendChild(ripple.createElement('option', null, '-'));
-        if (preloads['streya.json'].shipDesigns) {
-            Object.keys(preloads['streya.json'].shipDesigns)
+        if (rules.shipDesigns) {
+            Object.keys(rules.shipDesigns)
                   .forEach(function(key) {
                       designs.appendChild(ripple.createElement(
                           'option', null, key));
@@ -958,8 +952,7 @@
             designs.addEventListener('change', function(event) {
                 if (designs.value !== '-') {
                     ship = menuShipUpdate(streya.Ship.create(
-                        preloads['streya.json']
-                            .shipDesigns[designs.value]));
+                        rules.shipDesigns[designs.value]));
                     if (ship.comments) {
                         console.log("DEBUG", ship.comments.join(''));
                         menu.setAttribute('title', ship.comments.join(''));
