@@ -88,7 +88,7 @@
     //
     // Use the isActive function to dymanically control whether the
     // application should be continuously redrawn.  For example, this
-    // function might return true when an anmiation is in progress
+    // function might return true when an animation is in progress
     // but false when it is complete.  Unconditionally returning true
     // will cause the browser to redraw indefinitely.
     fascia.app = function(app, container, viewport) {
@@ -99,15 +99,22 @@
 
         // Create an HTML canvas element and make it the first child
         // of our container.  This makes the use of canvas an
-        // implementation detail that client code doesn't need to
-        // manage.  We could in principal replace this in the future.
+        // implementation detail that client code doesn't manage.
         var canvas = ripple.createElement(
             'canvas', {'class': 'fascia-canvas'});
         container.insertBefore(canvas, container.firstChild);
 
         var camera = ripple.camera();
 
-        // Selects a function with the specified name
+        // Selects a function from the application configuration.
+        // When the app has a mode active this will prefer the
+        // named function from that mode.  A string mode is used
+        // as an index into the modes field of the app.  A
+        // function mode is called with the name of the function
+        // to retrieve.  Apps without mode use functions from the
+        // top level instead.  If no suitable function is found
+        // this routine returns an empty function so that the
+        // caller doesn't have to check the result in most cases.
         var getAppFn = function(app, name, strict) {
             var result = null;
 
@@ -136,13 +143,15 @@
             return result;
         };
 
-        // Facsia Apps get calls to update(camera, ms, now) each frame
+        // Facsia apps get calls to update(camera, elapsed, now) each
+        // frame.  We keep track of the previous update to compute
+        // the time elapsed in milliseconds.
         var lastUpdate = 0;
 
         // Our draw method gets the drawing context and sets up an
-        // idempotent redraw system.  This means applications can call
-        // redraw as often as they like.  Actual drawing will happen
-        // only as frequently as the browser can handle it.
+        // idempotent redraw system.  Apps can call redraw as often as
+        // they like.  Actual drawing will happen only as frequently as
+        // the browser can handle it.
         var draw_id = 0, draw_last = 0;
         var draw = function() {
             var now = Date.now();
@@ -203,6 +212,9 @@
         });
         viewport.dispatchEvent(new Event('resize'));
 
+        // Note that apps are initialized before being resized.
+        // This means apps should not assume sizes are sensible
+        // until after the first resize call.
         getAppFn(app, "init").call(
             app, camera, canvas, container, redraw);
         redraw();
@@ -216,6 +228,8 @@
                     getAppFn(app, "update").call(
                         app, camera, now - lastUpdate, now);
                 lastUpdate = now;
+
+                // :TODO: adjust event.point according to camera
                 if (!getAppFn(app, name).call(app, event, camera, now))
                     redraw();
             };
@@ -249,9 +263,7 @@
     // applications can start with a single step.
     fascia.ready = function(appfn) {
         var urls = [];
-        var ii;
-
-        for (ii = 1; ii < arguments.length; ++ii)
+        for (var ii = 1; ii < arguments.length; ++ii)
             urls.push(arguments[ii]);
 
         ripple.ready(function() {
@@ -798,7 +810,7 @@
             var result = Object.create(this.baseitem);
             result.type = key;
             Object.keys(itemdefs[key]).forEach(function(field) {
-                result[field] = itemdefs[field]; }, this);
+                result[field] = itemdefs[key][field]; }, this);
             this.definitions[key] = result;
         }, this);
     };
@@ -908,7 +920,7 @@
         element.setAttribute('class', className);
         if (image)
             element.style['background-image'] = image;
-        else console.error("ERROR: missing image");
+        else console.error("ERROR: missing image", image);
         element.style['background-position'] = position;
         element.style['background-size'] = backsize;
         element.style.width = this.size + 'px';
@@ -1165,7 +1177,6 @@
         item, index, itemPane) {
         var element = document.createElement('div');
 
-        console.log("DEBUG addItem", JSON.stringify(item));
         element = this.imageSystem.applyItem(
             {icon: item.icon, title: item.toString(),
              drag: item,
