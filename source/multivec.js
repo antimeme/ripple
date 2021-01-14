@@ -1,5 +1,5 @@
 // multivec.js
-// Copyright (C) 2017-2020 by Jeff Gold.
+// Copyright (C) 2017-2021 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -1087,9 +1087,11 @@
 
     // This library exports only one function so the name of the
     // library itself is used.
-    if (typeof exports === 'undefined') {
-        window['multivec'] = multivec;
-    } else { exports = multivec; }
+    if (typeof(module) !== "undefined") {
+        module.exports = multivec;
+    } else if (typeof(exports) !== "undefined") {
+        exports = multivec;
+    } else window['multivec'] = multivec;
 }).call(this);
 
 // Aumotated testing framework
