@@ -334,6 +334,7 @@
                 value = fn.apply(argument);
 
                 if ((result.values.length === 0) &&
+                    (result.variables.length === 0) &&
                     lambda.isPrototypeOf(value))
                     result = value;
                 else result.values.unshift(value);
@@ -477,7 +478,7 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
     var expression;
 
     process.argv.splice(2).forEach(function (argument) {
-        //expression = solvo.create(argument); 
+        //expression = solvo.create(argument);
         //console.log(expression.toString() + " => " +
         //            solvo.simplify(expression).toString());
 
