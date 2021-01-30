@@ -223,7 +223,7 @@
             var current = result;
             var next;
             var depth = 0;
-            var abstraction = false;
+            var abstraction = null;
 
             tokens.forEach(function(token) {
                 if (token === '(') {
@@ -249,7 +249,7 @@
                 } else if ((token === '\u03bb') ||
                            (token === "lambda")) {
                     if (!abstraction) {
-                        abstraction = true;
+                        abstraction = {};
                         if (current.values > 0) {
                             current.values.push(
                                 next = this.__create(current));
@@ -261,8 +261,11 @@
                         throw "Invalid abstraction termination";
                     } else if (current.variables.length === 0) {
                         throw "Invalid empty abstraction";
-                    } else abstraction = false;
+                    } else abstraction = null;
                 } else if (abstraction) {
+                    if (abstraction[token])
+                        throw "Invalid variable repetition: " + token;
+                    abstraction[token] = true;
                     current.variables.push(token);
                 } else current.values.push(token);
             }, this);
@@ -285,6 +288,12 @@
                    });
         },
 
+        getVariables: function() {
+            var result = {};
+            
+            return result;
+        },
+
         replace: function(variable, replacement) {
             // Replace a variable with some value except in cases
             // where some lambda argument shadows the variable
@@ -292,6 +301,7 @@
             var replaced = false;
             var values = [];
 
+            // Accumulate replacement values recursively
             this.values.forEach(function(value) {
                 var current = value;
                 if (lambda.isPrototypeOf(value)) {
@@ -305,6 +315,7 @@
                     replaced = true;
             });
 
+            // Return the same instance if no changes were made
             if (replaced) {
                 result = lambda.create(this);
                 result.values = values;
@@ -313,6 +324,9 @@
         },
 
         apply: function(argument) {
+            // Substitute the argument provided for the first variable
+            // of this expression.  Obviously it's an error to apply to
+            // an expression with no variables.
             if (this.variables.length === 0)
                 throw "Cannot apply argument to application expression";
             var result = lambda.create(this);
@@ -321,6 +335,7 @@
         },
 
         reduce: function() {
+            // Attempt to simplify this expression.
             var result = this;
             var fn, argument, value;
 
