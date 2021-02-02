@@ -19,39 +19,17 @@
 (function(solvo) {
     "use strict";
 
-    var tokenize = function(data) {
-        var result = [], ii, start = undefined;
-        var accept = function(tokens, data, start, ii) {
-            var token;
-            if (!isNaN(start)) {
-                token = data.substring(start, ii);
-                if (isNaN(token) && !isNaN(token[0]))
-                    throw 'Invalid variable "' + token + '"';
-                tokens.push(token);
-            }
-        };
-
-        for (ii = 0; ii < data.length; ++ii) {
-            if (/\s/.test(data[ii])) {
-                start = accept(result, data, start, ii);
-            } else if ('(+-*/^)'.includes(data[ii])) {
-                start = accept(result, data, start, ii);
-                result.push(data[ii]);
-            } else if (isNaN(start)) {
-                start = ii;
-            }
-        }
-        start = accept(result, data, start, ii);
-        return result;
-    };
-
-    var expression = {
-        create: function(up) {
+    solvo.arithmetic = {
+        create: function(value) {
             var result = Object.create(this);
-            result.values = [];
-            result.op = undefined;
-            result.up = up;
-            result.term = false;
+            if (typeof(value) === "string") {
+                result = this.__parse(this.__tokenize(value));
+            } else {
+                result.values = [];
+                result.op = undefined;
+                result.up = value;
+                result.term = false
+            }
             return result;
         },
         toString: function() {
@@ -66,67 +44,94 @@
             }
             return result;
         },
-    };
 
-    var parse = function(tokens) {
-        var result = expression.create();
-        var current = result, next;
-        var ii;
-        var item;
-        var depth = 0;
-        var ready = true;
-
-        for (ii = 0; ii < tokens.length; ++ii) {
-            if (tokens[ii] === '(') {
-                current.values.push(next = expression.create(current));
-                current = next;
-                depth += 1;
-            } else if (tokens[ii] === ')') {
-                if (current.values.length === 0) {
-                    throw 'Empty parentheses';
-                } else if (current.up) {
-                    if (current.term)
-                        current = current.up;
-                    current = current.up;
-                    depth -= 1;
-                } else throw 'Mismatched parentheses';
-            } else if (tokens[ii] === '^') {
-                // TODO
-            } else if ('-/'.includes(tokens[ii])) {
-                // TODO
-            } else if ('+*'.includes(tokens[ii])) {
-                if (!current.op)
-                    current.op = tokens[ii];
-                else if (current.op === '+' && tokens[ii] === '*') {
-                    item = current.values.pop();
-                    current.values.push(
-                        next = expression.create(current));
-                    next.term = true;
-                    next.op = '*';
-                    next.values.push(item);
-                    current = next;
-                } else if (current.op === '*' && tokens[ii] === '+') {
-                    if (current.term) {
-                         current = current.up;
-                    } else {
-                        next = expression.create();
-                        next.op = '*';
-                        next.values = current.values;
-                        current.values = [next];
-                        current.op = '+';
-                    }
+        __tokenize: function(data) {
+            var result = [], ii, start = undefined;
+            var accept = function(tokens, data, start, ii) {
+                var token;
+                if (!isNaN(start)) {
+                    token = data.substring(start, ii);
+                    if (isNaN(token) && !isNaN(token[0]))
+                        throw 'Invalid variable "' + token + '"';
+                    tokens.push(token);
                 }
-                ready = true;
-            } else if (ready) {
-                current.values.push(tokens[ii]);
-                ready = false;
-            } else throw 'No operator between values';
-        }
-        if (depth > 0)
-            throw 'Missing terminating parenthesis';
-        if (ready)
-            throw 'Missing expression component';
-        return result;
+            };
+
+            for (ii = 0; ii < data.length; ++ii) {
+                if (/\s/.test(data[ii])) {
+                    start = accept(result, data, start, ii);
+                } else if ('(+-*/^)'.includes(data[ii])) {
+                    start = accept(result, data, start, ii);
+                    result.push(data[ii]);
+                } else if (isNaN(start)) {
+                    start = ii;
+                }
+            }
+            start = accept(result, data, start, ii);
+            return result;
+        },
+
+        __parse: function(tokens) {
+            var result = this.create();
+            var current = result, next;
+            var ii;
+            var item;
+            var depth = 0;
+            var ready = true;
+
+            for (ii = 0; ii < tokens.length; ++ii) {
+                if (tokens[ii] === '(') {
+                    current.values.push(next = this.create(current));
+                    current = next;
+                    depth += 1;
+                } else if (tokens[ii] === ')') {
+                    if (current.values.length === 0) {
+                        throw 'Empty parentheses';
+                    } else if (current.up) {
+                        if (current.term)
+                            current = current.up;
+                        current = current.up;
+                        depth -= 1;
+                    } else throw 'Mismatched parentheses';
+                } else if (tokens[ii] === '^') {
+                    // TODO
+                } else if ('-/'.includes(tokens[ii])) {
+                    // TODO
+                } else if ('+*'.includes(tokens[ii])) {
+                    if (!current.op)
+                        current.op = tokens[ii];
+                    else if (current.op === '+' && tokens[ii] === '*') {
+                        item = current.values.pop();
+                        current.values.push(
+                            next = this.create(current));
+                        next.term = true;
+                        next.op = '*';
+                        next.values.push(item);
+                        current = next;
+                    } else if (current.op === '*' &&
+                               tokens[ii] === '+') {
+                        if (current.term) {
+                            current = current.up;
+                        } else {
+                            next = this.create();
+                            next.op = '*';
+                            next.values = current.values;
+                            current.values = [next];
+                            current.op = '+';
+                        }
+                    }
+                    ready = true;
+                } else if (ready) {
+                    current.values.push(tokens[ii]);
+                    ready = false;
+                } else throw 'No operator between values';
+            }
+            if (depth > 0)
+                throw 'Missing terminating parenthesis';
+            if (ready)
+                throw 'Missing expression component';
+            return result;
+        },
     };
 
     solvo.simplify = function(value) {
@@ -170,10 +175,6 @@
         return value;
     };
 
-    solvo.create = function(data) {
-        return parse(tokenize(data));
-    };
-
     var lambda = {
         create: function(value) {
             // Creates a lambda expression from a string description
@@ -190,7 +191,6 @@
 
         __create: function(parent) {
             var result = Object.create(this);
-            result.parent    = parent;
             result.variables = [];
             result.values    = [];
             result.normal    = false;
@@ -220,6 +220,7 @@
 
         __parse: function(tokens) {
             var result = this.__create();
+            var stack  = [];
             var current = result;
             var next;
             var depth = 0;
@@ -228,8 +229,9 @@
             tokens.forEach(function(token) {
                 if (token === '(') {
                     if (!abstraction) {
-                        current.values.push(
-                            next = this.__create(current));
+                        stack.push(current);
+                        next = this.__create();
+                        current.values.push(next);
                         current = next;
                         depth += 1;
                     } else throw "Invalid lambda expression";
@@ -238,12 +240,14 @@
                         throw "Invalid lambda expression";
                     else if (current.values.length === 0)
                         throw 'Empty parentheses';
-                    else if (!current.parent)
+                    else if (depth === 0)
                         throw "Mismatched parentheses";
                     else {
-                        if (current.term)
-                            current = current.parent;
-                        current = current.parent;
+                        next = stack.pop();
+                        if ((current.variables > 0) &&
+                            (next.values.count > 1))
+                            next = stack.pop();
+                        current = next;
                         depth -= 1;
                     }
                 } else if ((token === '\u03bb') ||
@@ -251,8 +255,9 @@
                     if (!abstraction) {
                         abstraction = {};
                         if (current.values > 0) {
-                            current.values.push(
-                                next = this.__create(current));
+                            stack.push(current);
+                            next = this.__create();
+                            current.values.push(next);
                             current = next;
                         }
                     } else throw "Invalid abstraction nesting";
@@ -490,22 +495,22 @@
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
     var solvo = exports;
-    var expression;
 
     process.argv.splice(2).forEach(function (argument) {
-        //expression = solvo.create(argument);
-        //console.log(expression.toString() + " => " +
-        //            solvo.simplify(expression).toString());
-
-        expression = solvo.lambda(argument);
-
-        var count = 20;
-        do {
-            console.log(expression.toString());
-            expression = expression.reduce();
-        } while (!expression.normal && (--count > 0));
-        if (count <= 0)
-            console.log("ERROR: depth exceeded");
-        console.log();
+        if (0) {
+            var expression = solvo.arithmetic.create(argument);
+            console.log(expression.toString() + " => " +
+                        solvo.simplify(expression).toString());
+        } else {
+            var expression = solvo.lambda(argument);
+            var count = 20;
+            do {
+                console.log(expression.toString());
+                expression = expression.reduce();
+            } while (!expression.normal && (--count > 0));
+            if (count <= 0)
+                console.log("ERROR: depth exceeded");
+            console.log();
+        }
     });
 }
