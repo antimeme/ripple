@@ -24,10 +24,13 @@
             var result = Object.create(this);
             if (typeof(value) === "string") {
                 result = this.__parse(this.__tokenize(value));
+            } else if (solvo.arithmetic.isPrototypeOf(value)) {
+                result.values = value.values.slice();
+                result.op     = value.op;
+                result.term   = value.term;
             } else {
                 result.values = [];
                 result.op = undefined;
-                result.up = value;
                 result.term = false
             }
             return result;
@@ -74,6 +77,7 @@
         __parse: function(tokens) {
             var result = this.create();
             var current = result, next;
+            var stack = [];
             var ii;
             var item;
             var depth = 0;
@@ -81,16 +85,18 @@
 
             for (ii = 0; ii < tokens.length; ++ii) {
                 if (tokens[ii] === '(') {
-                    current.values.push(next = this.create(current));
+                    next = this.create();
+                    current.values.push(next);
+                    stack.push(current);
                     current = next;
                     depth += 1;
                 } else if (tokens[ii] === ')') {
                     if (current.values.length === 0) {
                         throw 'Empty parentheses';
-                    } else if (current.up) {
+                    } else if (stack.length > 0) {
                         if (current.term)
-                            current = current.up;
-                        current = current.up;
+                            current = stack.pop();
+                        current = stack.pop();
                         depth -= 1;
                     } else throw 'Mismatched parentheses';
                 } else if (tokens[ii] === '^') {
@@ -102,8 +108,10 @@
                         current.op = tokens[ii];
                     else if (current.op === '+' && tokens[ii] === '*') {
                         item = current.values.pop();
-                        current.values.push(
-                            next = this.create(current));
+                        next = this.create();
+                        current.values.push(next);
+                        stack.push(current);
+
                         next.term = true;
                         next.op = '*';
                         next.values.push(item);
@@ -111,7 +119,7 @@
                     } else if (current.op === '*' &&
                                tokens[ii] === '+') {
                         if (current.term) {
-                            current = current.up;
+                            current = stack.pop();
                         } else {
                             next = this.create();
                             next.op = '*';
@@ -294,8 +302,27 @@
         },
 
         getVariables: function() {
+            // Collects all free and bound variables in this
+            // expression.  Bound variables are those that are given a
+            // value
+            // by application (they map to "false" here).  Free
+            // variables are those that cannot be reduced (they
+            // map to "true" here).
             var result = {};
-            
+            this.variables.forEach(function(variable) {
+                result[variable] = false; // bound
+            }, this);
+            this.values.forEach(function(value) {
+                if (lambda.isPrototypeOf(value)) {
+                    var subresult = value.getVariables();
+                    Object.keys(subresult).forEach(function(key) {
+                        if ((subresult[key]) && !(key in result))
+                            result[key] = true;
+                    });
+                } else if ((typeof(value) === "string") &&
+                           !(value in result))
+                    result[value] = true; // free
+            }, this);
             return result;
         },
 
@@ -434,15 +461,15 @@
     };
 
     lambda.defaultLibrary = {
-        TRUE: { name: "Logical Truth",
+        TRUE: { name: "Logical TRUE",
                 expression: lambda.combinators.K },
-        FALSE: { name: "Logical Falsity",
+        FALSE: { name: "Logical FALSE",
                  expression: lambda.combinators.KI },
-        NOT: { name: "Logical Not",
+        NOT: { name: "Logical NOT",
                expression: lambda.combinators.C },
-        AND: { name: "Logical And",
+        AND: { name: "Logical AND",
                expression: lambda.create("lambda p q.p q p") },
-        OR: { name: "Logical Or",
+        OR: { name: "Logical OR",
               expression: lambda.create("lambda p q.p p q") },
         BOOLEQ: { name: "Boolean Equality",
                   expression: lambda.create("lambda p q.p q (NOT q)") },
