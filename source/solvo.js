@@ -98,7 +98,8 @@
                             current = stack.pop();
                         current = stack.pop();
                         depth -= 1;
-                    } else throw 'Mismatched parentheses';
+                    } else throw ('Mismatched parentheses: ' +
+                                  tokens.join(" "));
                 } else if (tokens[ii] === '^') {
                     // TODO
                 } else if ('-/'.includes(tokens[ii])) {
@@ -185,16 +186,19 @@
 
     var lambda = {
         create: function(value) {
+            var result;
+
             // Creates a lambda expression from a string description
             if (lambda.isPrototypeOf(value)) {
-                var result = Object.create(this);
+                result = Object.create(this);
                 result.parent    = value.parent;
                 result.variables = value.variables.slice();
                 result.values    = value.values.slice();
                 result.normal    = value.normal;
-                return result;
-            }
-            return this.__parse(this.__tokenize(value));
+            } else if (typeof(value) === "string")
+                result = this.__parse(this.__tokenize(value));
+            else throw "Invalid expression initializer: " + value
+            return result;
         },
 
         __create: function(parent) {
@@ -242,14 +246,18 @@
                         current.values.push(next);
                         current = next;
                         depth += 1;
-                    } else throw "Invalid lambda expression";
+                    } else throw ("Invalid lambda expression: " +
+                                  tokens.join(' '));
                 } else if (token === ')') {
                     if (abstraction)
-                        throw "Invalid lambda expression";
+                        throw ("Invalid lambda expression: " +
+                               tokens.join(' '));
                     else if (current.values.length === 0)
-                        throw 'Empty parentheses';
+                        throw ("Empty parentheses: " +
+                               tokens.join(' '));
                     else if (depth === 0)
-                        throw "Mismatched parentheses";
+                        throw ("Mismatched parentheses: " +
+                               tokens.join(' '));
                     else {
                         next = stack.pop();
                         if ((current.variables > 0) &&
@@ -262,28 +270,35 @@
                            (token === "lambda")) {
                     if (!abstraction) {
                         abstraction = {};
-                        if (current.values > 0) {
+                        if ((current.values > 0) ||
+                            (current.variables > 0)) {
                             stack.push(current);
                             next = this.__create();
                             current.values.push(next);
                             current = next;
                         }
-                    } else throw "Invalid abstraction nesting";
-                } else if ('.'.includes(token)) {
+                    } else throw ("Invalid abstraction nesting: " +
+                                  tokens.join(' '));
+                } else if ('.' === token) {
                     if (!abstraction) {
-                        throw "Invalid abstraction termination";
+                        throw ("Invalid abstraction termination: " +
+                               tokens.join(' '));
                     } else if (current.variables.length === 0) {
-                        throw "Invalid empty abstraction";
+                        throw ("Invalid empty abstraction: " +
+                               tokens.join(' '));
                     } else abstraction = null;
                 } else if (abstraction) {
                     if (abstraction[token])
-                        throw "Invalid variable repetition: " + token;
+                        throw ("Invalid repetition of \"" + token +
+                               "\": " + tokens.join(' '));
                     abstraction[token] = true;
                     current.variables.push(token);
                 } else current.values.push(token);
             }, this);
             if (depth > 0)
-                throw "Missing terminating parenthesis";
+                throw ("Missing terminating parenthesis: " +
+                       tokens.join(' '));
+            console.error("DEBUG-parse", result);
             return result;
         },
 
@@ -302,12 +317,10 @@
         },
 
         getVariables: function() {
-            // Collects all free and bound variables in this
-            // expression.  Bound variables are those that are given a
-            // value
-            // by application (they map to "false" here).  Free
-            // variables are those that cannot be reduced (they
-            // map to "true" here).
+            // Collects all free and bound variables in this expression.
+            // Bound variables are those that are given a value by
+            // application (they map to "false" here).  Free variables
+            // are those that cannot be reduced (they map to "true").
             var result = {};
             this.variables.forEach(function(variable) {
                 result[variable] = false; // bound
@@ -316,13 +329,36 @@
                 if (lambda.isPrototypeOf(value)) {
                     var subresult = value.getVariables();
                     Object.keys(subresult).forEach(function(key) {
-                        if ((subresult[key]) && !(key in result))
+                        if (subresult[key] && !(key in result))
                             result[key] = true;
                     });
                 } else if ((typeof(value) === "string") &&
                            !(value in result))
                     result[value] = true; // free
             }, this);
+            return result;
+        },
+
+        forEachFree: function(fn, self) {
+            var result = fn ? [] : this;
+            var variables = getVariables();
+            Object.keys(variables).forEach(function(variable, index) {
+                if (!variables[variable])
+                    variable = variable; // skip bound variables
+                else if (fn)
+                    fn.apply(self, variable, index);
+                else result.push(variable);
+            });
+            return result;
+        },
+
+        forEachBound: function(fn, self) {
+            var result = fn ? [] : this;
+            this.variables.forEach(function(variable, index) {
+                if (fn)
+                    fn.apply(self, variable, index);
+                else result.push(variable);
+            });
             return result;
         },
 
@@ -360,10 +396,9 @@
             // of this expression.  Obviously it's an error to apply to
             // an expression with no variables.
             if (this.variables.length === 0)
-                throw "Cannot apply argument to application expression";
+                throw "Cannot apply argument to expression";
             var result = lambda.create(this);
-            var variable = result.variables.shift();
-            return result.replace(variable, argument);
+            return result.replace(result.variables.shift(), argument);
         },
 
         reduce: function() {
@@ -371,6 +406,7 @@
             var result = this;
             var fn, argument, value;
 
+            // Apply a function if possible
             if ((result.values.length >= 2) &&
                 (lambda.isPrototypeOf(result.values[0])) &&
                 (result.values[0].variables.length > 0)) {
@@ -387,25 +423,29 @@
                 else result.values.unshift(value);
             }
 
+            // Recursively reduce the terms of the current expression
             var values = [];
             var replaced = false;
             result.values.forEach(function(value) {
                 var current = value;
-                if (lambda.isPrototypeOf(current)) {
+                if (lambda.isPrototypeOf(current))
                     current = current.reduce();
-                    if ((current.variables.length === 0) &&
-                        (current.values.length === 1))
-                        current = current.values[0];
-                }
                 if (current !== value)
                     replaced = true;
                 values.push(current);
             });
             if (replaced) {
-                if (result === this)
-                    result = lambda.create(result);
+                result = (result === this) ?
+                         lambda.create(result) : result;
                 result.values = values;
             }
+
+            // Replace single value expressions with their value.
+            // This avoids unnecessary and confusing extra layers.
+            while ((result.variables.length === 0) &&
+                   (result.values.length === 1) &&
+                   lambda.isPrototypeOf(result.values[0]))
+                result = result.values[0];
 
             result.normal = (result === this);
             return result;
@@ -440,79 +480,109 @@
 
     lambda.combinators = {
         I: { name: "Identity",
-             expression: lambda.create("lambda a.a") },
+             expression: "lambda a.a" },
         M: { name: "Mockingbird",
-             expression: lambda.create("lambda a.a a") },
+             expression: "lambda a.a a" },
+        S: { name: "Starling",
+             expression: "lambda a b c.a c (b c)" },
         K: { name: "Kestral",
-             expression: lambda.create("lambda a b.a") },
+             expression: "lambda a b.a" },
         KI: { name: "Kite",
-              expression: lambda.create("lambda a b.b") },
+              expression: "lambda a b.b" },
         C: { name: "Cardinal",
-             expression: lambda.create("lambda a b c.a c b") },
+             expression: "lambda a b c.a c b" },
         B: { name: "Bluebird",
-             expression: lambda.create("lambda a b c.a (b c)") },
+             expression: "lambda a b c.a (b c)" },
         T: { name: "Thrush",
-             expression: lambda.create("lambda a b.b a") },
+             expression: "lambda a b.b a" },
         V: { name: "Virio",
-             expression: lambda.create("lambda a b f.f a b") },
+             expression: "lambda a b f.f a b" },
         Y: { name: "Fixed-Point",
-             expression: lambda.create(
+             expression: (
                  "lambda f.(lambda a.f (a a)) (lambda a.f (a a))") }
     };
 
     lambda.defaultLibrary = {
         TRUE: { name: "Logical TRUE",
-                expression: lambda.combinators.K },
+                expression: lambda.combinators.K.expression },
         FALSE: { name: "Logical FALSE",
-                 expression: lambda.combinators.KI },
+                 expression: lambda.combinators.KI.expression },
         NOT: { name: "Logical NOT",
-               expression: lambda.combinators.C },
+               expression: lambda.combinators.C.expression },
         AND: { name: "Logical AND",
-               expression: lambda.create("lambda p q.p q p") },
+               expression: "lambda p q.p q p" },
         OR: { name: "Logical OR",
-              expression: lambda.create("lambda p q.p p q") },
+              expression: "lambda p q.p p q" },
         BOOLEQ: { name: "Boolean Equality",
-                  expression: lambda.create("lambda p q.p q (NOT q)") },
-        PAIR: { expression: lambda.combinators.V },
-        HEAD: { expression: lambda.create("lambda p.p TRUE") },
-        TAIL: { expression: lambda.create("lambda p.p FALSE") },
-        NIL: { expression: lambda.create("lambda a.TRUE") },
-        ISNIL: { expression: lambda.create(
-            "lambda p.p (lambda a b.FALSE)") },
-        ZERO: { name: "Church Numeral Zero",
-                expression: lambda.combinators.KI },
+                  expression: "lambda p q.p q (NOT q)" },
+        PAIR: { expression: lambda.combinators.V.expression },
+        HEAD: { expression: "lambda p.p TRUE" },
+        TAIL: { expression: "lambda p.p FALSE" },
+        ISNIL: { expression: "lambda p.p (lambda a b.FALSE)" },
+        NIL: { expression: "lambda a.TRUE" },
         SUCCESSOR: { name: "Successor",
-                     expression: lambda.create(
-                         "lambda n f a.f (n f a)") },
+                     expression: "lambda n f a.f (n f a)" },
+        ZERO: { name: "Church Numeral ZERO",
+                expression: lambda.combinators.KI.expression },
+        ONE: { name: "Church Numeral ONE",
+               expression: "(SUCCESSOR ZERO)"},
+        TWO: { name: "Church Numeral TWO",
+               expression: "(SUCCESSOR ONE)"},
+        THREE: { name: "Church Numeral THREE",
+                 expression: "(SUCCESSOR TWO)"},
+        FOUR: { name: "Church Numeral FOUR",
+                expression: "(SUCCESSOR THREE)"},
+        FIVE: { name: "Church Numeral FIVE",
+                expression: "(SUCCESSOR FOUR)"},
+        SIX: { name: "Church Numeral SIX",
+               expression: "(SUCCESSOR FIVE)"},
+        SEVEN: { name: "Church Numeral SEVEN",
+                 expression: "(SUCCESSOR SIX)"},
+        EIGHT: { name: "Church Numeral EIGHT",
+                 expression: "(SUCCESSOR SEVEN)"},
+        NINE: { name: "Church Numeral NINE",
+                expression: "(SUCCESSOR EIGHT)"},
         ADD: { name: "Church Numeral Addition",
-               expression: lambda.create(
-                   "lambda m n.n SUCCESSOR m") },
+               expression: "lambda m n.n SUCCESSOR m" },
         MULTIPLY: { name: "Church Numeral Multiplication",
-                    expression: lambda.combinators.B },
+                    expression: lambda.combinators.B.expression },
         POWER: { name: "Church Numeral Exponentiation",
-                 expression: lambda.combinators.T },
+                 expression: lambda.combinators.T.expression },
         ISZERO: { name: "Church Numeral Zero Check",
-                  expression: lambda.create(
-                      "lambda n.n (TRUE FALSE) TRUE") },
+                  expression: "lambda n.n (TRUE FALSE) TRUE" },
         PHI: { name: "Helper for PREDECESSOR",
-               expression: lambda.create(
+               expression: (
                    "lambda p.PAIR (TAIL p) (SUCCESSOR (TAIL p))") },
         PREDECESSOR: { name: "Church Numeral Decrement",
-                       expression: lambda.create(
+                       expression: (
                            "lambda n.HEAD (n PHI (PAIR ZERO ZERO))") },
         SUBTRACT: { name: "Church Numeral Subtraction",
-                    expression: lambda.create(
-                        "lambda m n.n PREDECESSOR m") },
+                    expression: "lambda m n.n PREDECESSOR m" },
         LESSEQ: { name: "Church Numeral Less Than or Equal",
-                  expression: lambda.create(
-                      "lambda m n.ISZERO (SUBTRACT n m)") },
+                  expression: "lambda m n.ISZERO (SUBTRACT n m)" },
         EQ: { name: "Church Numeral Equality",
-              expression: lambda.create(
-                  "lambda m n.AND (LESSEQ m n) (LESSEQ n m)") },
+              expression: "lambda m n.AND (LESSEQ m n) (LESSEQ n m)" },
         GREATER: { name: "Church Numeral Greater Than",
-                   expression: lambda.create(
-                       "lambda m n.NOT (LESSEQ m n)") }
+                   expression: "lambda m n.NOT (LESSEQ m n)" }
     };
+
+    lambda.tests = [
+        {test: "(lambda a.a) (lambda a.a)",
+         description: [
+             "Applies identity to itself and should redcue to the ",
+             "identity in a straightforward way."]},
+        {test: "(lambda a.a a) (lambda a.a a)",
+         description: [
+             "Applies the mockingbird to itself.  This reduces to ",
+             "itself and so never terminates in a normal form."]},
+        {test: "(lambda b.(lambda a.a b)) a",
+         description: [
+             "This test ticks a naive implementation into producing ",
+             "the mockingbird.  That's not actually correct because ",
+             "the free variable a is not the same as the bound ",
+             "variable a and should result in either an exception ",
+             "or a dynamic rewrite of the internal function."]}
+    ];
 
     solvo.lambda = function(value) {
         return lambda.create(value);
@@ -537,6 +607,7 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
             } while (!expression.normal && (--count > 0));
             if (count <= 0)
                 console.log("ERROR: depth exceeded");
+            console.log("Variables:", expression.getVariables());
             console.log();
         }
     });
