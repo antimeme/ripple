@@ -16,6 +16,8 @@
 // <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
+// :TODO: equality test should not care about bound variable names
+// :TODO: mixing bound and free variables should report an error
 (function(solvo) {
     "use strict";
 
@@ -201,7 +203,7 @@
             return result;
         },
 
-        __create: function(parent) {
+        __create: function() {
             var result = Object.create(this);
             result.variables = [];
             result.values    = [];
@@ -233,6 +235,7 @@
         __parse: function(tokens) {
             var result = this.__create();
             var stack  = [];
+            var pstack = [];
             var current = result;
             var next;
             var depth = 0;
@@ -241,6 +244,7 @@
             tokens.forEach(function(token) {
                 if (token === '(') {
                     if (!abstraction) {
+                        pstack.push(true);
                         stack.push(current);
                         next = this.__create();
                         current.values.push(next);
@@ -259,19 +263,18 @@
                         throw ("Mismatched parentheses: " +
                                tokens.join(' '));
                     else {
-                        next = stack.pop();
-                        if ((current.variables > 0) &&
-                            (next.values.count > 1))
-                            next = stack.pop();
+                        do next = stack.pop();
+                        while (!pstack.pop());
                         current = next;
                         depth -= 1;
                     }
                 } else if ((token === '\u03bb') ||
-                           (token === "lambda")) {
+                           (token.toLowerCase() === "lambda")) {
                     if (!abstraction) {
                         abstraction = {};
                         if ((current.values > 0) ||
                             (current.variables > 0)) {
+                            pstack.push(false);
                             stack.push(current);
                             next = this.__create();
                             current.values.push(next);
@@ -298,7 +301,6 @@
             if (depth > 0)
                 throw ("Missing terminating parenthesis: " +
                        tokens.join(' '));
-            console.error("DEBUG-parse", result);
             return result;
         },
 
@@ -406,7 +408,7 @@
             var result = this;
             var fn, argument, value;
 
-            // Apply a function if possible
+            // Apply an outermost function if possible
             if ((result.values.length >= 2) &&
                 (lambda.isPrototypeOf(result.values[0])) &&
                 (result.values[0].variables.length > 0)) {
@@ -415,30 +417,29 @@
                 fn       = result.values.shift();
                 argument = result.values.shift();
                 value = fn.apply(argument);
-
-                if ((result.values.length === 0) &&
-                    (result.variables.length === 0) &&
-                    lambda.isPrototypeOf(value))
-                    result = value;
-                else result.values.unshift(value);
+                while (lambda.isPrototypeOf(value) &&
+                       (value.variables.length === 0) &&
+                       (value.values.length === 1))
+                    value = value.values[0];
+                result.values.unshift(value);
+            } else { // Recursively check for inner functions to apply
+                var values = [];
+                var replaced = false;
+                result.values.forEach(function(value) {
+                    var current = value;
+                    if (!replaced && lambda.isPrototypeOf(current))
+                        current = current.reduce();
+                    if (current !== value)
+                        replaced = true;
+                    values.push(current);
+                });
+                if (replaced) {
+                    result = (result === this) ?
+                             lambda.create(result) : result;
+                    result.values = values;
+                }
             }
-
-            // Recursively reduce the terms of the current expression
-            var values = [];
-            var replaced = false;
-            result.values.forEach(function(value) {
-                var current = value;
-                if (lambda.isPrototypeOf(current))
-                    current = current.reduce();
-                if (current !== value)
-                    replaced = true;
-                values.push(current);
-            });
-            if (replaced) {
-                result = (result === this) ?
-                         lambda.create(result) : result;
-                result.values = values;
-            }
+            
 
             // Replace single value expressions with their value.
             // This avoids unnecessary and confusing extra layers.
@@ -465,7 +466,7 @@
                 separator = '';
             }
 
-            this.values.forEach(function(value, index) {
+            this.values.forEach(function(value) {
                 var representation = value.toString();
                 if (lambda.isPrototypeOf(value) &&
                     (this.values.length > 1))
@@ -476,6 +477,69 @@
 
             return result;
         },
+
+        runTests: function(tests) {
+            if (!tests || (tests.length === 0))
+                tests = this.tests;
+            tests.forEach(function(test) {
+                var expression, expected, description, forever = false;
+                if (test && (typeof(test) === "object")) {
+                    expression = lambda.create(test.test);
+                    if (test.expected)
+                        expected = lambda.create(test.expected);
+                    if (test.forever)
+                        forever = true;
+                    if (test.description)
+                        description = test.description;
+                } else if (typeof(test) === "string")
+                    expression = lambda.create(test);
+
+                if (typeof(description) === "string")
+                    console.log(description);
+                else if (Array.isArray(description))
+                    description.forEach(function(line) {
+                        console.log(line); });
+                var count = 100;
+                do {
+                    if (!forever)
+                        console.log(expression.toString());
+                    expression = expression.reduce();
+                } while (!expression.normal && (--count > 0));
+                if (!forever && (count <= 0))
+                    console.error("ERROR: depth exceeded");
+                else if (forever && (count > 0))
+                    console.error("ERROR: infinite loop halted");
+                else if (expected && !expected.equals(expression))
+                    console.error("ERROR: expected",
+                                  expected.toString());
+                else console.log("Success:",
+                                 expression.getVariables());
+                console.log();
+            });
+        },
+        tests: [
+            {test: "(lambda a.a) (lambda b.b)", expected: "lambda b.b",
+             description: [
+                 "Simple reduction with identity applied to itself."]},
+            {test: "(lambda a.a) (lambda b.b)", expected: "lambda c.c",
+             description: [
+                 "Check that variable names don't matter."]},
+            {test: "(lambda a.a a) (lambda a.a a)", forever: true,
+             description: [
+                 "Check that expressions with no normal form work."]},
+            {test: "(lambda a.b) ((lambda a.a a) (lambda a.a a))",
+             expected: "b",
+             description: [
+                 "Check that normal order evaluation works."]},
+            {test: "(lambda a.lambda b.a) b", expected: "lambda c.b",
+             description: [
+                 "Tricks a naive implementation into producing the ",
+                 "mockingbird.  The free variable b is not the same ",
+                 "as the bound variable of the same name and should ",
+                 "either cause an exception dynamic renaming of the ",
+                 "bound variable."]}
+        ],
+
     };
 
     lambda.combinators = {
@@ -563,52 +627,36 @@
         EQ: { name: "Church Numeral Equality",
               expression: "lambda m n.AND (LESSEQ m n) (LESSEQ n m)" },
         GREATER: { name: "Church Numeral Greater Than",
-                   expression: "lambda m n.NOT (LESSEQ m n)" }
+                   expression: "lambda m n.NOT (LESSEQ m n)" },
+        FACTORIAL: { name: "Church Numeral FACTORIAL",
+                     expression: "Y (lambda f n.(EQ n ZERO) 1 " +
+                                 "(MUTIPLY n (f (PREDECESSOR n))))" },
     };
 
-    lambda.tests = [
-        {test: "(lambda a.a) (lambda a.a)",
-         description: [
-             "Applies identity to itself and should redcue to the ",
-             "identity in a straightforward way."]},
-        {test: "(lambda a.a a) (lambda a.a a)",
-         description: [
-             "Applies the mockingbird to itself.  This reduces to ",
-             "itself and so never terminates in a normal form."]},
-        {test: "(lambda b.(lambda a.a b)) a",
-         description: [
-             "This test ticks a naive implementation into producing ",
-             "the mockingbird.  That's not actually correct because ",
-             "the free variable a is not the same as the bound ",
-             "variable a and should result in either an exception ",
-             "or a dynamic rewrite of the internal function."]}
-    ];
-
-    solvo.lambda = function(value) {
-        return lambda.create(value);
-    };
-
+    solvo.lambda = function(value) { lambda.create(value); };
+    solvo.runLambdaTests = function(tests) { lambda.runTests(tests); };
 })(typeof exports === 'undefined'? this['solvo'] = {}: exports);
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
     var solvo = exports;
+    var action = "lambda";
+    var actions = [];
 
     process.argv.splice(2).forEach(function (argument) {
-        if (0) {
-            var expression = solvo.arithmetic.create(argument);
+        if (argument.startsWith("--")) {
+            if (argument === "--math")
+                action = "math";
+            else if (argument === "--lambda")
+                action = "lambda";
+        } else actions.push(argument);
+    });
+
+    if (action === "math") {
+        actions.forEach(function(action) {
+            var expression = solvo.arithmetic.create(action);
             console.log(expression.toString() + " => " +
                         solvo.simplify(expression).toString());
-        } else {
-            var expression = solvo.lambda(argument);
-            var count = 20;
-            do {
-                console.log(expression.toString());
-                expression = expression.reduce();
-            } while (!expression.normal && (--count > 0));
-            if (count <= 0)
-                console.log("ERROR: depth exceeded");
-            console.log("Variables:", expression.getVariables());
-            console.log();
-        }
-    });
+        });
+    } else if (action === "lambda")
+        solvo.runLambdaTests(actions);
 }
