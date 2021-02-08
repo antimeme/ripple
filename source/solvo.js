@@ -420,10 +420,10 @@
             this.values.forEach(function(value) {
                 if ((typeof(value) === "string") &&
                     (value in library) && !(value in exclude)) {
-                    if (!library[value].ready)
-                        library[value].ready = lambda.create(
-                            library[value].expression);
-                    values.push(library[value].ready);
+                    if (!library[value].expression)
+                        library[value].expression = lambda.create(
+                            library[value].value);
+                    values.push(library[value].expression);
                     replaced = true;
                 } else if (lambda.isPrototypeOf(value)) {
                     var current = value.useLibrary(library, exclude);
@@ -465,10 +465,14 @@
                 var replaced = false;
                 result.values.forEach(function(value) {
                     var current = value;
-                    if (!replaced && lambda.isPrototypeOf(current))
+                    if (!replaced && lambda.isPrototypeOf(current)) {
                         current = current.reduce();
-                    if (current !== value)
-                        replaced = true;
+                        if ((current.variables.length === 0) &&
+                            (current.values.length === 1))
+                            current = current.values[0];
+                        if (current !== value)
+                            replaced = true;
+                    }
                     values.push(current);
                 });
                 if (replaced) {
@@ -582,101 +586,126 @@
                  "bound variable."]}
         ],
 
-    };
-
-    lambda.combinators = {
-        I: { name: "Identity",
-             expression: "lambda a.a" },
-        M: { name: "Mockingbird",
-             expression: "lambda a.a a" },
-        S: { name: "Starling",
-             expression: "lambda a b c.a c (b c)" },
-        K: { name: "Kestral",
-             expression: "lambda a b.a" },
-        KI: { name: "Kite",
-              expression: "lambda a b.b" },
-        C: { name: "Cardinal",
-             expression: "lambda a b c.a c b" },
-        B: { name: "Bluebird",
-             expression: "lambda a b c.a (b c)" },
-        T: { name: "Thrush",
-             expression: "lambda a b.b a" },
-        V: { name: "Virio",
-             expression: "lambda a b f.f a b" },
-        Y: { name: "Fixed-Point",
-             expression: (
-                 "lambda f.(lambda a.f (a a)) (lambda a.f (a a))") }
+        combinators: {
+            I: { name: "Identity",
+                 value: "lambda a.a" },
+            M: { name: "Mockingbird",
+                 value: "lambda a.a a" },
+            S: { name: "Starling",
+                 value: "lambda a b c.a c (b c)" },
+            K: { name: "Kestral",
+                 value: "lambda a b.a" },
+            KI: { name: "Kite", value: "lambda a b.b" },
+            C: { name: "Cardinal", value: "lambda a b c.a c b" },
+            B: { name: "Bluebird", value: "lambda a b c.a (b c)" },
+            T: { name: "Thrush", value: "lambda a b.b a" },
+            V: { name: "Virio", value: "lambda a b f.f a b" },
+            Y: { name: "Fixed-Point",
+                 value: "lambda f.(lambda m.m m) " +
+                             "(lambda a.f (a a))" },
+        },
     };
 
     lambda.defaultLibrary = {
         TRUE: { name: "Logical TRUE",
-                expression: lambda.combinators.K.expression },
+                value: lambda.combinators.K.value },
         FALSE: { name: "Logical FALSE",
-                 expression: lambda.combinators.KI.expression },
+                 value: lambda.combinators.KI.value },
         NOT: { name: "Logical NOT",
-               expression: lambda.combinators.C.expression },
+               value: lambda.combinators.C.value },
         AND: { name: "Logical AND",
-               expression: "lambda p q.p q p" },
+               value: "lambda p q.p q p" },
         OR: { name: "Logical OR",
-              expression: "lambda p q.p p q" },
+              value: "lambda p q.p p q" },
         BOOLEQ: { name: "Boolean Equality",
-                  expression: "lambda p q.p q (NOT q)" },
-        PAIR: { expression: lambda.combinators.V.expression },
-        HEAD: { expression: "lambda p.p TRUE" },
-        TAIL: { expression: "lambda p.p FALSE" },
-        ISNIL: { expression: "lambda p.p (lambda a b.FALSE)" },
-        NIL: { expression: "lambda a.TRUE" },
+                  value: "lambda p q.p q (NOT q)" },
+        PAIR: { value: lambda.combinators.V.value },
+        HEAD: { value: "lambda p.p TRUE" },
+        TAIL: { value: "lambda p.p FALSE" },
+        ISNIL: { value: "lambda p.p (lambda a b.FALSE)" },
+        NIL: { value: "lambda a.TRUE" },
         SUCCESSOR: { name: "Successor",
-                     expression: "lambda n f a.f (n f a)" },
+                     value: "lambda n f a.f (n f a)" },
         ZERO: { name: "Church Numeral ZERO",
-                expression: lambda.combinators.KI.expression },
+                value: lambda.combinators.KI.value },
         ONE: { name: "Church Numeral ONE",
-               expression: "(SUCCESSOR ZERO)"},
+               value: "lambda f a.f a"},
         TWO: { name: "Church Numeral TWO",
-               expression: "(SUCCESSOR ONE)"},
+               value: "lambda f a.f (f a)"},
         THREE: { name: "Church Numeral THREE",
-                 expression: "(SUCCESSOR TWO)"},
+                 value: "lambda f a.f (f (f a))"},
         FOUR: { name: "Church Numeral FOUR",
-                expression: "(SUCCESSOR THREE)"},
+                value: "lambda f a.f (f (f (f a)))"},
         FIVE: { name: "Church Numeral FIVE",
-                expression: "(SUCCESSOR FOUR)"},
+                value: "lambda f a.f (f (f (f (f a))))"},
         SIX: { name: "Church Numeral SIX",
-               expression: "(SUCCESSOR FIVE)"},
+               value: "lambda f a.f (f (f (f (f (f a)))))"},
         SEVEN: { name: "Church Numeral SEVEN",
-                 expression: "(SUCCESSOR SIX)"},
+                 value: "lambda f a.f (f (f (f (f (f (f a))))))"},
         EIGHT: { name: "Church Numeral EIGHT",
-                 expression: "(SUCCESSOR SEVEN)"},
+                 value: "SUCCESSOR SEVEN"},
         NINE: { name: "Church Numeral NINE",
-                expression: "(SUCCESSOR EIGHT)"},
+                value: "SUCCESSOR EIGHT"},
+        TEN: { name: "Church Numeral TEN",
+               value: "SUCCESSOR NINE"},
+        ELEVEN: { name: "Church Numeral ELEVEN",
+                  value: "SUCCESSOR TEN"},
+        TWELVE: { name: "Church Numeral TWELVE",
+                  value: "SUCCESSOR ELEVEN"},
         ADD: { name: "Church Numeral Addition",
-               expression: "lambda m n.n SUCCESSOR m" },
+               value: "lambda m n.n SUCCESSOR m" },
+        PLUS: { name: "Church Numeral Addition",
+                value: "lambda m n.n SUCCESSOR m" },
         MULTIPLY: { name: "Church Numeral Multiplication",
-                    expression: lambda.combinators.B.expression },
+                    value: lambda.combinators.B.value },
+        TIMES: { name: "Church Numeral Multiplication",
+                 value: lambda.combinators.B.value },
         POWER: { name: "Church Numeral Exponentiation",
-                 expression: lambda.combinators.T.expression },
+                 value: lambda.combinators.T.value },
         ISZERO: { name: "Church Numeral Zero Check",
-                  expression: "lambda n.n (TRUE FALSE) TRUE" },
+                  value: "lambda n.n (TRUE FALSE) TRUE" },
         PHI: { name: "Helper for PREDECESSOR",
-               expression: (
-                   "lambda p.PAIR (TAIL p) (SUCCESSOR (TAIL p))") },
+               value: "lambda p.PAIR (TAIL p) (SUCCESSOR (TAIL p))" },
         PREDECESSOR: { name: "Church Numeral Decrement",
-                       expression: (
-                           "lambda n.HEAD (n PHI (PAIR ZERO ZERO))") },
+                       value: "lambda n.HEAD " +
+                              "(n PHI (PAIR ZERO ZERO))" },
         SUBTRACT: { name: "Church Numeral Subtraction",
-                    expression: "lambda m n.n PREDECESSOR m" },
+                    value: "lambda m n.n PREDECESSOR m" },
+        MINUS: { name: "Church Numeral Subtraction",
+                 value: "lambda m n.n PREDECESSOR m" },
         LESSEQ: { name: "Church Numeral Less Than or Equal",
-                  expression: "lambda m n.ISZERO (SUBTRACT n m)" },
-        EQ: { name: "Church Numeral Equality",
-              expression: "lambda m n.AND (LESSEQ m n) (LESSEQ n m)" },
+                  value: "lambda m n.ISZERO (SUBTRACT n m)" },
+        EQUAL: { name: "Church Numeral Equality",
+                 value: "lambda m n.AND (LESSEQ m n) (LESSEQ n m)" },
         GREATER: { name: "Church Numeral Greater Than",
-                   expression: "lambda m n.NOT (LESSEQ m n)" },
+                   value: "lambda m n.NOT (LESSEQ m n)" },
+        LESS: { name: "Church Numeral Less Than",
+                value: "lambda m n.AND (LESSEQ m n) " +
+                       "(NOT (EQUAL m n))" },
+        GREATEREQ: { name: "Church Numeral Greater Than or Equal",
+                     value: "lambda m n.NOT (LESS m n)" },
+        FIX: { name: "Fix-point Combinator",
+               value: lambda.combinators.Y.value },
         FACTORIAL: { name: "Church Numeral FACTORIAL",
-                     expression: "Y (lambda f n.(EQ n ZERO) 1 " +
-                                 "(MUTIPLY n (f (PREDECESSOR n))))" },
+                     value: "FIX (lambda f n.(EQUAL n ZERO) ONE " +
+                            "(MULTIPLY n (f (PREDECESSOR n))))" },
     };
 
     solvo.lambda = function(value) { return lambda.create(value); };
     solvo.runLambdaTests = function(tests) { lambda.runTests(tests); };
+    solvo.forEachLambda = function(fn, self) {
+        var result = fn ? self : [];
+        Object.keys(lambda.defaultLibrary).forEach(function(name) {
+            var entry = lambda.defaultLibrary[name];
+            if (!entry.expression)
+                entry.expression = lambda.create(entry.value);
+            if (fn)
+                fn.call(self, entry.expression, name);
+            else result.push({
+                name: name, expression: entry.expression});
+        });
+        return result;
+    };
 })(typeof exports === 'undefined'? this['solvo'] = {}: exports);
 
 if ((typeof require !== 'undefined') && (require.main === module)) {

@@ -8,23 +8,128 @@
 </style>
 <title>Lambda Calculus</title>
 <h1>Lambda Calculus</h1>
-<textarea id="expression" rows="24" cols="80">
+<textarea id="expression" rows="12" cols="80">
 </textarea><br />
 <button id="reduce">Reduce</button>
 <button id="repeat">Repeat</button>
-<button id="library">Library</button>
 Steps: <input id="steps" type="text" disabled="disabled" />
+<br />
+<button id="library">Library</button>
+<select id="library-expressions">
+    <option></option>
+</select>
+<button id="restore">Restore</button>
 
 <p>
-    Welcome.  This program demonstrates lambda calculus.  While lambda
-    calculus itself has no logic, data structures or math all of these
-    can be constructed using functions.  Try putting "EQ (ADD TWO TWO)
-    FOUR" into the text box above.  Click on the "Library" button a
-    few times to convert the operators into pure lambda calculus
-    expressions.  Then click "Reduce" many times to get the answer to
-    this logical question.  This is not efficient but it does
-    eventually produce the lambda calculus truth value, which is
-    lambda a b.a!
+    Lambda Calculus is an abstract model of computation.  Alan Turing
+    proved that it is equivalent to his notion of a Turing machine.
+    This program implements lambda expressions, normal order reduction
+    and a library of useful functions.  The lambda calculus itself
+    contains only variables, grouping, abstractions and applications.
+    Notice that this does not include boolean logic, data structures
+    recursion or numbers.  And yet the included library contains all
+    of these things because there are indirect ways to implement them
+    on the minimal foundation that lambda calculus provides.
+</p>
+<h2>Contents</h2>
+<ol><li>
+    <a href="#computation">Computation</a>
+</li><li>
+    <a href="#arithmetic">Arithmetic</a>
+</li><li>
+    <a href="#recusion">Recusion</a>
+</li></ol>
+<h2><a name="computation">Computation</a></h2>
+<p>
+    As we will see, lambda calculus is not an efficient way to perform
+    computations.  However it's still impressive that such a simple
+    system can be universal.  Select a library function from the drop
+    down box to study it.  Can you understand how it works?  Or type
+    your own lambda expressions into the text area.
+</p><p>
+    Click the Reduce button to perform a single step of computation.
+    Most computations require a large number of steps, so you can
+    instead click the repeat button to continuously perform reductions.
+    This will terminate when no more reductions are possible, though
+    of course not all programs terminate.  For an example of a program
+    that doesn't terminate try this:
+</p><blockquote><pre>
+                (lambda n.n n) (lambda m.m m)
+</pre></blockquote><p>
+    Copy and paste this into the text area above and click repeat.
+    This will reduce indefinitely.  Click reduce to stop the process --
+    it will never stop on its own.
+</p>
+<h2><a name="arithmetic">Arithmetic</a></h2>
+<p>
+    Let's explore a computation that does terminate.  We'll use the
+    built in library to add two numbers.  Copy and paste the following
+    into the text area:
+</p><blockquote><pre>
+                ADD TWO THREE
+</pre></blockquote><p>
+    This will not reduce further since all three of the terms here are
+    free variables.  Click the Library button twice to replace these
+    free variables with combinators.  Once there are no more free
+    variables click repeat.  This should reduce to normal form in
+    thirteen steps.  But what did it reduce to?  This is a function
+    that takes two arguments and applies the first to the second five
+    times.  That is the Church Numeral representation of five. In
+    other words, two plus three is five!
+</p><p>
+    How can we be sure?  We can use the library to check.  Change the
+    buffer by prepending so that it looks like this:
+</p><blockquote><pre>
+                EQ FIVE lambda f a.f (f (f (f (f a))))
+</pre></blockquote><p>
+    Click the Library button until there are no more free variables.
+    Then click repeat and get comfortable.  This will take 384 steps
+    and considerable time.  But it will return the lambda calculus
+    value of TRUE which is: lambda a b.a
+</p><p>
+    In the lambda calculus true and false are functions that accept
+    two arguments and return their first and second arguments,
+    respectively.  We can use free variables to make this more clear:
+</p><blockquote><pre>
+                (EQ FIVE lambda f a.f (f (f (f (f a))))) YES NO
+</pre></blockquote><p>
+    After 386 steps this should reduce to YES.  We can check that
+    this is meaningful by trying an incorrect equation:
+</p><blockquote><pre>
+                (EQ SEVEN lambda f a.f (f (f (f (f a))))) YES NO
+</pre></blockquote><p>
+    Now after 416 steps this reduces to NO.  That makes sense, doesn't
+    it?  Seven is not equal to five.
+</p><p>
+    Another way we could have checked is to select FIVE from the
+    drop down box.  This produces the same expression.  We can see
+    that both the answer to or original expression and the library
+    version of FIVE are the same.
+</p>
+<h2><a name="recusion">Recursion</a></h2>
+<p>
+    Sometimes computatsion are more convenient to express in terms
+    of recursion.  This means a function calls itself on a reduced
+    form of its input in order to break down the problem.  Of course,
+    lambda calculas has no support for recursion.  Even so, our
+    library contains a recursive function called FACTORIAL.  Here
+    is an example of this function you can try running yourself:
+</p><blockquote><pre>
+                FACTORIAL THREE
+</pre></blockquote><p>
+    After 2907 steps this arrives at the Church Numeral representation
+    of SIX (because three factorial is three times two times one).
+    This representation of six looks a little different.  In
+    particular, it uses a different variable name.  We can check that
+    this is SIX the same way we compared our earlier result to five.
+</p><p>
+    So how does this work?  It makes use of the FIX combinator -- also
+    known as the
+    <a href="https://en.wikipedia.org/wiki/Fixed-point_combinator">Y
+        combinator</a>.  The Y combinator causes a function to be
+    called with itself as an argument.  This makes it possible for
+    the function to call itself without any support for recursion in
+    the programming environment.
 </p>
 
 <script src="ripple/ripple.js"></script>
@@ -33,11 +138,28 @@ Steps: <input id="steps" type="text" disabled="disabled" />
  var expression = document.getElementById("expression");
  var reduce     = document.getElementById("reduce");
  var repeat     = document.getElementById("repeat");
+ var restore    = document.getElementById("restore");
  var library    = document.getElementById("library");
+ var lexprs     = document.getElementById("library-expressions");
  var steps      = document.getElementById("steps");
-
  var stepCount = 0;
  var repeating = false;
+ var previous = null;
+
+ solvo.forEachLambda(function(expression, name) {
+     var option = document.createElement("option");
+     option.setAttribute("value", expression.toString());
+     option.innerHTML = name;
+     lexprs.appendChild(option);
+ });
+ lexprs.addEventListener("change", function(event) {
+     if (lexprs.value) {
+         previous = expression.value;
+         expression.value = lexprs.value;
+         steps.value = stepCount = 0;
+     }
+ });
+
  var continuousReduce = function() {
      var expr = solvo.lambda(expression.value);
      expr = expr.reduce();
@@ -53,8 +175,8 @@ Steps: <input id="steps" type="text" disabled="disabled" />
 
  expression.addEventListener("change", function(event) {
      repeating = false;
-     stepCount = 0;
-     steps.value = stepCount;
+     steps.value = stepCount = 0;
+     lexprs.value = "";
  });
 
  reduce.addEventListener("click", function(event) {
@@ -68,9 +190,17 @@ Steps: <input id="steps" type="text" disabled="disabled" />
      repeating = false;
  });
  repeat.addEventListener("click", function(event) {
+     previous = expression.value;
+     steps.value = stepCount = 0;
      repeating = true;
-     stepCount = 0;
      setTimeout(continuousReduce, 50);
+ });
+ restore.addEventListener("click", function(event) {
+     if (previous)
+         expression.value = previous;
+     steps.value = stepCount = 0;
+     previous = null;
+     repeating = true;
  });
  library.addEventListener("click", function(event) {
      var expr = solvo.lambda(expression.value);
