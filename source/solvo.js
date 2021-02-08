@@ -18,7 +18,7 @@
 // ---------------------------------------------------------------------
 // :TODO: equality test should not care about bound variable names
 // :TODO: mixing bound and free variables should report an error
-// :TODO: allow use of internal library
+// :TODO: allow use of internal library on command line
 // :TODO: consolidate curried expressions when possible
 (function(solvo) {
     "use strict";

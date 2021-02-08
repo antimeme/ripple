@@ -13,6 +13,7 @@
 <button id="reduce">Reduce</button>
 <button id="repeat">Repeat</button>
 <button id="library">Library</button>
+Steps: <input id="steps" type="text" disabled="disabled" />
 
 <p>
     Welcome.  This program demonstrates lambda calculus.  While lambda
@@ -33,28 +34,42 @@
  var reduce     = document.getElementById("reduce");
  var repeat     = document.getElementById("repeat");
  var library    = document.getElementById("library");
+ var steps      = document.getElementById("steps");
 
+ var stepCount = 0;
  var repeating = false;
  var continuousReduce = function() {
      var expr = solvo.lambda(expression.value);
      expr = expr.reduce();
-     expression.value = expr.toString();
 
-     if (!expr.normal && repeating)
-         setTimeout(continuousReduce, 50);
+     if (!expr.normal) {
+         expression.value = expr.toString();
+         stepCount += 1;
+         steps.value = stepCount;
+         if (repeating)
+             setTimeout(continuousReduce, 50);
+     }
  };
 
  expression.addEventListener("change", function(event) {
      repeating = false;
+     stepCount = 0;
+     steps.value = stepCount;
  });
 
  reduce.addEventListener("click", function(event) {
      var expr = solvo.lambda(expression.value);
-     expression.value = expr.reduce().toString();
+     expr = expr.reduce();
+     if (!expr.normal) {
+         expression.value = expr.toString();
+         stepCount += 1;
+         steps.value = stepCount;
+     }
      repeating = false;
  });
  repeat.addEventListener("click", function(event) {
      repeating = true;
+     stepCount = 0;
      setTimeout(continuousReduce, 50);
  });
  library.addEventListener("click", function(event) {
