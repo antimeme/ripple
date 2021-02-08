@@ -19,6 +19,7 @@
 // :TODO: equality test should not care about bound variable names
 // :TODO: mixing bound and free variables should report an error
 // :TODO: allow use of internal library
+// :TODO: consolidate curried expressions when possible
 (function(solvo) {
     "use strict";
 
@@ -273,8 +274,8 @@
                            (token.toLowerCase() === "lambda")) {
                     if (!abstraction) {
                         abstraction = {};
-                        if ((current.values > 0) ||
-                            (current.variables > 0)) {
+                        if ((current.values.length > 0) ||
+                            (current.variables.length > 0)) {
                             pstack.push(false);
                             stack.push(current);
                             next = this.__create();
@@ -404,8 +405,44 @@
             return result.replace(result.variables.shift(), argument);
         },
 
+        useLibrary: function(library, exclude) {
+            var result   = this;
+            var replaced = false;
+            var values   = [];
+
+            if (!library)
+                library = lambda.defaultLibrary;
+            if (!exclude)
+                exclude = {};
+            this.variables.forEach(function(variable) {
+                exclude[variable] = true; });
+
+            this.values.forEach(function(value) {
+                if ((typeof(value) === "string") &&
+                    (value in library) && !(value in exclude)) {
+                    if (!library[value].ready)
+                        library[value].ready = lambda.create(
+                            library[value].expression);
+                    values.push(library[value].ready);
+                    replaced = true;
+                } else if (lambda.isPrototypeOf(value)) {
+                    var current = value.useLibrary(library, exclude);
+                    values.push(current);
+                    if (current !== value)
+                        replaced = true;
+                } else values.push(value);
+            });
+            if (replaced) {
+                result = lambda.create(this);
+                result.values = values;
+            }
+            return result;
+        },
+
         reduce: function() {
-            // Attempt to simplify this expression.
+            // Attempt to simplify this expression using normal
+            // order evaluation.  This means we look for the
+            // outer most and left most substitution possible.
             var result = this;
             var fn, argument, value;
 
@@ -440,7 +477,6 @@
                     result.values = values;
                 }
             }
-            
 
             // Replace single value expressions with their value.
             // This avoids unnecessary and confusing extra layers.
@@ -639,7 +675,7 @@
                                  "(MUTIPLY n (f (PREDECESSOR n))))" },
     };
 
-    solvo.lambda = function(value) { lambda.create(value); };
+    solvo.lambda = function(value) { return lambda.create(value); };
     solvo.runLambdaTests = function(tests) { lambda.runTests(tests); };
 })(typeof exports === 'undefined'? this['solvo'] = {}: exports);
 

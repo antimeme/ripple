@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<style>
+</style>
+<title>Lambda Calculus</title>
+<h1>Lambda Calculus</h1>
+<textarea id="expression" rows="24" cols="80">
+</textarea><br />
+<button id="reduce">Reduce</button>
+<button id="repeat">Repeat</button>
+<button id="library">Library</button>
+
+<p>
+    Welcome.  This program demonstrates lambda calculus.  While lambda
+    calculus itself has no logic, data structures or math all of these
+    can be constructed using functions.  Try putting "EQ (ADD TWO TWO)
+    FOUR" into the text box above.  Click on the "Library" button a
+    few times to convert the operators into pure lambda calculus
+    expressions.  Then click "Reduce" many times to get the answer to
+    this logical question.  This is not efficient but it does
+    eventually produce the lambda calculus truth value, which is
+    lambda a b.a!
+</p>
+
+<script src="ripple/ripple.js"></script>
+<script src="ripple/solvo.js"></script>
+<script>//<![CDATA[
+ var expression = document.getElementById("expression");
+ var reduce     = document.getElementById("reduce");
+ var repeat     = document.getElementById("repeat");
+ var library    = document.getElementById("library");
+
+ var repeating = false;
+ var continuousReduce = function() {
+     var expr = solvo.lambda(expression.value);
+     expr = expr.reduce();
+     expression.value = expr.toString();
+
+     if (!expr.normal && repeating)
+         setTimeout(continuousReduce, 50);
+ };
+
+ expression.addEventListener("change", function(event) {
+     repeating = false;
+ });
+
+ reduce.addEventListener("click", function(event) {
+     var expr = solvo.lambda(expression.value);
+     expression.value = expr.reduce().toString();
+     repeating = false;
+ });
+ repeat.addEventListener("click", function(event) {
+     repeating = true;
+     setTimeout(continuousReduce, 50);
+ });
+ library.addEventListener("click", function(event) {
+     var expr = solvo.lambda(expression.value);
+     expression.value = expr.useLibrary().toString();
+     repeating = false;
+ });
+ //]]></script>
