@@ -18,6 +18,7 @@
 // ---------------------------------------------------------------------
 // :TODO: equality test should not care about bound variable names
 // :TODO: mixing bound and free variables should report an error
+// :TODO: allow use of internal library
 (function(solvo) {
     "use strict";
 
@@ -520,17 +521,22 @@
         tests: [
             {test: "(lambda a.a) (lambda b.b)", expected: "lambda b.b",
              description: [
-                 "Simple reduction with identity applied to itself."]},
-            {test: "(lambda a.a) (lambda b.b)", expected: "lambda c.c",
+                 "Check a simple reduction."]},
+            {test: "(lambda a.a a) (lambda b.b) 12", expected: "12",
              description: [
-                 "Check that variable names don't matter."]},
+                 "Check a more complex reduction."]},
             {test: "(lambda a.a a) (lambda a.a a)", forever: true,
              description: [
-                 "Check that expressions with no normal form work."]},
+                 "Check that infinite loops keep looping."]},
             {test: "(lambda a.b) ((lambda a.a a) (lambda a.a a))",
              expected: "b",
              description: [
                  "Check that normal order evaluation works."]},
+            {test: "(lambda a.(lambda a.a) a) b", expected: "b",
+             description: "Check that variables get shadowed."},
+            {test: "(lambda a.a) (lambda b.b)", expected: "lambda c.c",
+             description: [
+                 "Check that variable names don't matter."]},
             {test: "(lambda a.lambda b.a) b", expected: "lambda c.b",
              description: [
                  "Tricks a naive implementation into producing the ",
