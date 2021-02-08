@@ -27,19 +27,170 @@ Steps: <input id="steps" type="text" disabled="disabled" />
     and a library of useful functions.  The lambda calculus itself
     contains only variables, grouping, abstractions and applications.
     Notice that this does not include boolean logic, data structures
-    recursion or numbers.  And yet the included library contains all
-    of these things because there are indirect ways to implement them
-    on the minimal foundation that lambda calculus provides.
+    recursion or numbers.  And yet the library included here contains
+    all of these things because there are indirect ways to implement
+    them on the minimal foundation that lambda calculus provides.
 </p>
 <h2>Contents</h2>
 <ol><li>
+    <a href="#definition">Definition</a>
+</li><li>
     <a href="#computation">Computation</a>
+</li><li>
+    <a href="#halting">Halting</a>
+</li><li>
+    <a href="#instructions">Instructions</a>
 </li><li>
     <a href="#arithmetic">Arithmetic</a>
 </li><li>
     <a href="#recusion">Recusion</a>
 </li></ol>
+<h2><a name="definition">Definition</a></h2>
+<p>
+    A lambda calculus expression is composed from four components.
+    Note that while all lambda calculus abstractions accept exactly
+    one variable, in practice we allow more than one variable
+    with a simplified notation.  For example, instead of writing
+    <code>lambda a.lambda b.a</code> we will usually write
+    <code>lambda a b.a</code> instead.
+</p><ul><li>
+    Variable: any identifier not containing lambda,
+    <q>(</q>, <q>)</q> or <q>.</q>
+</li><li>
+    Grouping: ( [expression] )
+</li><li>
+    Abstraction: lambda [variable].[expression]
+</li><li>
+    Application: [expression1] [expression2]
+</li></ul><p>
+    Any combination of these components is a valid lambda calculus
+    expression.  Here are some examples:
+</p><ul><li><code>
+    λa.a
+</code></li><li><code>
+    (λa b f.f a b) (λf a.f a) ((λa b f.f a b) (λf a.f (f a)) ((λa b f.f a b) (λf a.f (f (f a))) (λa.λa b.a)))
+</code></li><li><code>FIX (λf n.(EQUAL n ZERO) ONE
+     (MULTIPLY n (f (PREDECESSOR n))))
+</code></li></li></ul><p>
+    Variables within a lambda calculus expression are either bound or
+    free.  Any variable following a lambda is bound in the expression
+    following the next dot.  A variable not bound in this way is free.
+    The first two examples above have no free variables.  The third
+    has many free variables, including <code>FIX</code>,
+    <code>EQUAL</code> and <code>MULTIPLY</code>.
+</p><p>
+    Any lambda expression with no free variables is called a
+    combinator.  Many combinators are useful enough that we give them
+    names.  For example λa.a is called the identity combinator.  This
+    is the simplest possible combinator.
+</p>
+
 <h2><a name="computation">Computation</a></h2>
+<p>
+    Computation in lambda calculus is performed by reductions.  A
+    reduction applies an expression to an abstraction by replacing
+    all instance of a variable with that expression inside the body
+    of the abstraction.  For example, let's reduce the following
+    lambda expression:
+</p><ul><li>
+    <code>(λa.a) VALUE</code>
+</li><li>
+    <code>a [a := VALUE]</code>
+</li><li>
+    <code>VALUE</code>
+</li></ul><p>
+    We reduce the abstraction by replacing it with its body.  In this
+    case the body consists only of the variable <code>a</code>.
+    However, we must also replace all instances of the variable with
+    the value we are applying.  That's simple in this case, but there
+    may be no instance to replace or there may be many.  Here is
+    another example with more than one instance:
+</p><ul><li>
+    <code>(λf a.f (f a)) λb.b</code>
+</li><li>
+    <code>(λa.f (f a)) [f := (λb.b)]</code>
+</li><li>
+    <code>(λa.(λb.b) ((λb.b) a))</code>
+</li></ul><p>
+    Often it will be possible to further reduce a reduced value, as
+    in this example:
+</p><ul><li>
+    <code>(λn.n ((λa b.a) (λa b.b)) (λa b.a)) (λa b.b)</code>
+</li><li>
+    <code>n ((λa b.a) (λa b.b)) (λa b.a) [n := (λa b.b)]</code>
+</li><li>
+    <code>(λa b.b) ((λa b.a) (λa b.b)) (λa b.a)</code>
+</li><li>
+    <code>(λb.b) [a := ((λa b.a) (λa b.b))] (λa b.a)</code>
+</li><li>
+    <code>(λb.b) (λa b.a)</code>
+</li><li>
+    <code>b [b := (λa b.a)]</code>
+</li><li>
+    <code>(λa b.a)</code>
+</li></ul><p>
+    We will usually want to continue reducing until no more reductions
+    are possible.  When this happens we say that the expression is in
+    normal form.  Not all expressions have a normal form, but for those
+    that do there is only one.  This is the
+    <a href="https://en.wikipedia.org/wiki/Church%E2%80%93Rosser_theorem"
+    >Church-Rosser Theorem</a>.
+</p><p>
+    What would an expression without a normal form look like?  There is
+    a simple example we can create using the Mockingbird combinator:
+</p><ul><li>
+    <code>(λm.m m) (λm.m m)</code>
+</li><li>
+    <code>m m [m := (λm.m m)]</code>
+</li><li>
+    <code>(λm.m m) (λm.m m)</code>
+</li></ul><p>
+    Each time we reduce this expression, we end up back where we
+    started.  There are always more reductions to perform so there is
+    no normal form.
+</p>
+<h2><a name="halting">Halting Problem</a></h2>
+<p>
+    Let's use the lambda calculus to take on the famous
+    <a href="https://en.wikipedia.org/wiki/Halting_problem">halting
+        problem</a>.  Can we write a program that accepts another
+    program as input and returns TRUE if it has a normal form and
+    FALSE if it doesn't?  It turns out that this is impossible.  Let's
+    use the lambda calculus to understand why.
+</p><p>
+    Suppose we could solve the problem.  Suppose a lambda
+    expression which we'll call <code>DOES-HALT?</code> does
+    the job.  Here is what that might look like:
+</p><ul><li>
+    <code>DOES-HALT? p</code>
+</li></ul><p>
+    This reduces to TRUE if p has a normal form and FALSE otherwise.
+    Maybe we aren't clever enough to figure out how to implement this
+    but it certainly seems like it should be possible.  But even the
+    existance of such a program is enough to create a profoundly
+    troubling situation.  Let's start by doing this:
+</p><ul><li>
+    <code>(λp.(DOES-HALT? p) ((λm.m m) (λm.m m)) TRUE)</code>
+</li></ul><p>
+    This is clearly a valid lambda calculus expression.  Given an
+    input program with a normal form this program reduces to a program
+    without a normal form.  Otherwise it reduces to TRUE, which does
+    have a normal form.  So it does the opposite of the program it has
+    been given.  Again, this seems reasonable enough.  But consider
+    what happens when we try this:
+</p><ul><li>
+    <code>DOES-HALT? ((λm.m m) (λp.(DOES-HALT? p)
+                       ((λm.m m) (λm.m m)) TRUE))</code>
+</li></ul><p>
+    What happens when we apply this program to itself?  Does it halt?
+    If the answer is yes then it clearly doesn't halt because it
+    reduces to a program without a normal form.  But if the answer is
+    no then it clearly does because it reduces to TRUE!  There's no
+    way <code>DOES-HALT?</code> could return either TRUE or FALSE!
+    The only way to resolve this contradiction is to accept that
+    <code>DOES-HALT?</code> is impossible to construct.
+</p>
+<h2><a name="computation">Instructions</a></h2>
 <p>
     As we will see, lambda calculus is not an efficient way to perform
     computations.  However it's still impressive that such a simple
