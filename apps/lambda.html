@@ -12,6 +12,7 @@
 </textarea><br />
 <button id="reduce">Reduce</button>
 <button id="repeat">Repeat</button>
+<input id="delay" type="range" min="5" value="50" max="1000" />
 Steps: <input id="steps" type="text" disabled="disabled" />
 <br />
 <button id="library">Library</button>
@@ -21,15 +22,17 @@ Steps: <input id="steps" type="text" disabled="disabled" />
 <button id="restore">Restore</button>
 
 <p>
-    Lambda Calculus is an abstract model of computation.  Alan Turing
-    proved that it is equivalent to his notion of a Turing machine.
-    This program implements lambda expressions, normal order reduction
+    Lambda Calculus is an abstract model of computation.  Other models,
+    such as the Turing Machine are equivalent (proven as the
+    <a href="https://en.wikipedia.org/wiki/Church%E2%80%93Turing_thesis"
+    >Church-Turing Thesis</a>).
+       This program implements lambda expressions, normal order reduction
     and a library of useful functions.  The lambda calculus itself
     contains only variables, grouping, abstractions and applications.
     Notice that this does not include boolean logic, data structures
     recursion or numbers.  And yet the library included here contains
-    all of these things because there are indirect ways to implement
-    them on the minimal foundation that lambda calculus provides.
+    all of these things because lambda calculus provides a universal
+    foundation on which any computation can be built.
 </p>
 <h2>Contents</h2>
 <ol><li>
@@ -48,28 +51,31 @@ Steps: <input id="steps" type="text" disabled="disabled" />
 <h2><a name="definition">Definition</a></h2>
 <p>
     A lambda calculus expression is composed from four components.
-    Note that while all lambda calculus abstractions accept exactly
-    one variable, in practice we allow more than one variable
-    with a simplified notation.  For example, instead of writing
-    <code>lambda a.lambda b.a</code> we will usually write
-    <code>lambda a b.a</code> instead.
 </p><ul><li>
-    Variable: any identifier not containing lambda,
-    <q>(</q>, <q>)</q> or <q>.</q>
+    Variable: any identifier other than <code>lambda</code> which
+    does not contain <code>λ</code>, <code>.</code>, <code>(</code>
+    or <code>)</code>
 </li><li>
-    Grouping: ( [expression] )
+    Grouping: <code>(</code> [expression] <code>)</code>
 </li><li>
-    Abstraction: lambda [variable].[expression]
+    Abstraction: <code>lambda</code>
+    [variable]<code>.</code>[expression]
 </li><li>
     Application: [expression1] [expression2]
 </li></ul><p>
     Any combination of these components is a valid lambda calculus
-    expression.  Here are some examples:
+    expression.  Note that while all lambda calculus abstractions
+    accept exactly one argument, in practice we allow more than one by
+    providing additional variables between the lambda and the dot.
+    For example, instead of writing
+    <code>λa.λb.a</code> we will usually write
+    <code>λa b.a</code> instead.  These have the same meaning.  Here
+    are some examples:
 </p><ul><li><code>
     λa.a
 </code></li><li><code>
-    (λa b f.f a b) (λf a.f a) ((λa b f.f a b) (λf a.f (f a)) ((λa b f.f a b) (λf a.f (f (f a))) (λa.λa b.a)))
-</code></li><li><code>FIX (λf n.(EQUAL n ZERO) ONE
+    λn f a.n (λg h.h (g f)) (λu.a) (λu.u)
+</code></li><li><code>FIX (λf n.(EQUAL? n ZERO) ONE
      (MULTIPLY n (f (PREDECESSOR n))))
 </code></li></li></ul><p>
     Variables within a lambda calculus expression are either bound or
@@ -77,19 +83,41 @@ Steps: <input id="steps" type="text" disabled="disabled" />
     following the next dot.  A variable not bound in this way is free.
     The first two examples above have no free variables.  The third
     has many free variables, including <code>FIX</code>,
-    <code>EQUAL</code> and <code>MULTIPLY</code>.
+    <code>EQUAL?</code> and <code>MULTIPLY</code>.
 </p><p>
     Any lambda expression with no free variables is called a
     combinator.  Many combinators are useful enough that we give them
     names.  For example λa.a is called the identity combinator.  This
-    is the simplest possible combinator.
-</p>
+    is the simplest possible combinator.  In 1985 Raymond Smullyan
+    wrote a book entitled
+    <a href="https://en.wikipedia.org/wiki/To_Mock_a_Mockingbird">To
+        Mock a Mockingbird</a> which is the source of many of these
+    names.  Here are some examples:
+</p><ul><li>
+    Identity: <code>λa.a</code>
+</li><li>
+    Mockingbird: <code>λm.m m</code>
+</li><li>
+    Starling: <code>λa b c.a c (b c)</code>
+</li><li>
+    Kestrel: <code>λa b.a</code>
+</li><li>
+    Kite: <code>λa b.b</code>
+</li><li>
+    Cardinal: <code>λa b c.a c b</code>
+</li><li>
+    Bluebird: <code>λa b c.a (b c)</code>
+</li><li>
+    Thrush: <code>λa b.b a</code>
+</li><li>
+    Virio: <code>λa b f.f a b</code>
+</li></ul>
 
 <h2><a name="computation">Computation</a></h2>
 <p>
     Computation in lambda calculus is performed by reductions.  A
     reduction applies an expression to an abstraction by replacing
-    all instance of a variable with that expression inside the body
+    all instances of a variable with that expression inside the body
     of the abstraction.  For example, let's reduce the following
     lambda expression:
 </p><ul><li>
@@ -99,21 +127,23 @@ Steps: <input id="steps" type="text" disabled="disabled" />
 </li><li>
     <code>VALUE</code>
 </li></ul><p>
-    We reduce the abstraction by replacing it with its body.  In this
-    case the body consists only of the variable <code>a</code>.
-    However, we must also replace all instances of the variable with
-    the value we are applying.  That's simple in this case, but there
-    may be no instance to replace or there may be many.  Here is
-    another example with more than one instance:
+    The first step above is our original expression.  In the second
+    step we replace an abstraction with its body and note the need to
+    replace all instances of its variable with some value.  In the
+    third step we perform that replacement and the reduction is
+    complete.  That's simple in this case, but there may be no
+    instance to replace or there may be more than one.  Here is
+    another example where the substition must be done twice:
 </p><ul><li>
     <code>(λf a.f (f a)) λb.b</code>
 </li><li>
-    <code>(λa.f (f a)) [f := (λb.b)]</code>
+    <code>λa.f (f a) [f := (λb.b)]</code>
 </li><li>
-    <code>(λa.(λb.b) ((λb.b) a))</code>
+    <code>λa.(λb.b) ((λb.b) a)</code>
 </li></ul><p>
-    Often it will be possible to further reduce a reduced value, as
-    in this example:
+    Once a reduction is complete it may be possible to further reduce
+    the expression as it is in the example above.  In the following
+    example, we reduce three times:
 </p><ul><li>
     <code>(λn.n ((λa b.a) (λa b.b)) (λa b.a)) (λa b.b)</code>
 </li><li>
@@ -127,17 +157,17 @@ Steps: <input id="steps" type="text" disabled="disabled" />
 </li><li>
     <code>b [b := (λa b.a)]</code>
 </li><li>
-    <code>(λa b.a)</code>
+    <code>λa b.a</code>
 </li></ul><p>
-    We will usually want to continue reducing until no more reductions
-    are possible.  When this happens we say that the expression is in
-    normal form.  Not all expressions have a normal form, but for those
-    that do there is only one.  This is the
+    At the end of this process no further reductions are possible.
+    When this happens we say that the expression is in normal form.
+    If an expression has a normal form there is only one.  This is the
     <a href="https://en.wikipedia.org/wiki/Church%E2%80%93Rosser_theorem"
     >Church-Rosser Theorem</a>.
 </p><p>
-    What would an expression without a normal form look like?  There is
-    a simple example we can create using the Mockingbird combinator:
+    Not all expressions have a normal form.  What would an expression
+    without a normal form look like?  One example is the mockingbird
+    combinator applied to itself:
 </p><ul><li>
     <code>(λm.m m) (λm.m m)</code>
 </li><li>
@@ -145,71 +175,87 @@ Steps: <input id="steps" type="text" disabled="disabled" />
 </li><li>
     <code>(λm.m m) (λm.m m)</code>
 </li></ul><p>
-    Each time we reduce this expression, we end up back where we
-    started.  There are always more reductions to perform so there is
-    no normal form.
+    Our reduction is complete, but we're back where we started.  This
+    expression can be further reduced but it will never make progress
+    toward any conclusion.  As a consequence it will never reach a
+    normal form.
 </p>
 <h2><a name="halting">Halting Problem</a></h2>
 <p>
     Let's use the lambda calculus to take on the famous
     <a href="https://en.wikipedia.org/wiki/Halting_problem">halting
         problem</a>.  Can we write a program that accepts another
-    program as input and returns TRUE if it has a normal form and
-    FALSE if it doesn't?  It turns out that this is impossible.  Let's
-    use the lambda calculus to understand why.
+    program as input and returns <code>TRUE</code> if it has a normal
+    form and <code>FALSE</code> if it doesn't?  The answer is no.
+    Let's use the lambda calculus to understand why.
 </p><p>
     Suppose we could solve the problem.  Suppose a lambda
-    expression which we'll call <code>DOES-HALT?</code> does
-    the job.  Here is what that might look like:
+    expression which we'll call <code>HALTS?</code> accepts any
+    program and after a finite number of steps reduces to
+    <code>TRUE</code> if the input has a normal form and
+    <code>FALSE</code> otherwise.  Here is what that might look like:
 </p><ul><li>
-    <code>DOES-HALT? p</code>
+    <code>HALTS? p</code>
 </li></ul><p>
-    This reduces to TRUE if p has a normal form and FALSE otherwise.
     Maybe we aren't clever enough to figure out how to implement this
-    but it certainly seems like it should be possible.  But even the
-    existance of such a program is enough to create a profoundly
-    troubling situation.  Let's start by doing this:
+    ourselves but it certainly seems like it might be possible.  But
+    we can use the existance of such a program to prove that it's not
+    possible.  Let's start by doing this:
 </p><ul><li>
-    <code>(λp.(DOES-HALT? p) ((λm.m m) (λm.m m)) TRUE)</code>
+    <code>(λp.(HALTS? (p p)) ((λm.m m) (λm.m m)) TRUE)</code>
 </li></ul><p>
     This is clearly a valid lambda calculus expression.  Given an
-    input program with a normal form this program reduces to a program
-    without a normal form.  Otherwise it reduces to TRUE, which does
-    have a normal form.  So it does the opposite of the program it has
-    been given.  Again, this seems reasonable enough.  But consider
-    what happens when we try this:
+    input program that can be applied to itself with a normal form
+    this program reduces to the mockingbird applied to itself, which
+    has no normal form.  Given a program which has no normal form when
+    applied to itself -- such as the mockingbird -- this program
+    reduces to <code>TRUE</code> and therefore does have a normal
+    form.  So it does the opposite of the program it has been given.
+    This may seem silly but it's clearly a valid combination of
+    expressions.  But what happens when we apply this program to
+    itself?
 </p><ul><li>
-    <code>DOES-HALT? ((λm.m m) (λp.(DOES-HALT? p)
+    <code>(λm.m m) (λp.(HALTS? (p p)) ((λm.m m) (λm.m m)) TRUE)</code>
+</li></ul><p>
+    Does it halt?  Let's ask our halting checker:
+</p><ul><li>
+    <code>HALTS? ((λm.m m) (λp.(HALTS? (p p))
                        ((λm.m m) (λm.m m)) TRUE))</code>
 </li></ul><p>
-    What happens when we apply this program to itself?  Does it halt?
-    If the answer is yes then it clearly doesn't halt because it
-    reduces to a program without a normal form.  But if the answer is
-    no then it clearly does because it reduces to TRUE!  There's no
-    way <code>DOES-HALT?</code> could return either TRUE or FALSE!
-    The only way to resolve this contradiction is to accept that
-    <code>DOES-HALT?</code> is impossible to construct.
+    What does this reduce to?  Well, it can't possibly reduce to
+    <code>TRUE</code>!  If it did that would mean
+    <code>HALTS? (p p)</code> must also reduce to
+    <code>TRUE</code> which means the outer expression reduces to
+    <code>(λm.m m) (λm.m m)</code> which clearly does not halt.  But
+    it also can't reduce to <code>FALSE</code>!  If it did then
+    <code>HALTS? (p p)</code> must also reduce to <code>FALSE</code>
+    and that means the outer expression reduces to <code>TRUE</code>
+    which clearly halts.  Our original assumption that
+    <code>HALTS?</code> always reduces in a finite number of steps
+    to either <code>TRUE</code> or <code>FALSE</code> is clearly
+    impossible!
 </p>
-<h2><a name="computation">Instructions</a></h2>
+<h2><a name="instructions">Instructions</a></h2>
 <p>
     As we will see, lambda calculus is not an efficient way to perform
     computations.  However it's still impressive that such a simple
-    system can be universal.  Select a library function from the drop
-    down box to study it.  Can you understand how it works?  Or type
-    your own lambda expressions into the text area.
+    system is universal.  Select a library function from the drop down
+    box to study it.  Can you understand how it works?  Or type your
+    own lambda expressions into the text area.  It's okay to type the
+    word <code>lambda</code> rather than the <code>λ</code> symbol as
+    long as you put a space between it and the variable name.
 </p><p>
     Click the Reduce button to perform a single step of computation.
     Most computations require a large number of steps, so you can
     instead click the repeat button to continuously perform reductions.
-    This will terminate when no more reductions are possible, though
-    of course not all programs terminate.  For an example of a program
-    that doesn't terminate try this:
+    This will terminate when no more reductions are possible, if that
+    ever happens.  You can see what happens to a program that does
+    not terminate by copying and pasting the following:
 </p><blockquote><pre>
                 (lambda n.n n) (lambda m.m m)
 </pre></blockquote><p>
-    Copy and paste this into the text area above and click repeat.
-    This will reduce indefinitely.  Click reduce to stop the process --
-    it will never stop on its own.
+    Click repeat to watch this reduce indefinitely.  Click reduce to
+    stop the process -- it will never stop on its own.
 </p>
 <h2><a name="arithmetic">Arithmetic</a></h2>
 <p>
@@ -223,7 +269,7 @@ Steps: <input id="steps" type="text" disabled="disabled" />
     free variables.  Click the Library button twice to replace these
     free variables with combinators.  Once there are no more free
     variables click repeat.  This should reduce to normal form in
-    thirteen steps.  But what did it reduce to?  This is a function
+    six steps.  But what did it reduce to?  This is a function
     that takes two arguments and applies the first to the second five
     times.  That is the Church Numeral representation of five. In
     other words, two plus three is five!
@@ -231,37 +277,48 @@ Steps: <input id="steps" type="text" disabled="disabled" />
     How can we be sure?  We can use the library to check.  Change the
     buffer by prepending so that it looks like this:
 </p><blockquote><pre>
-                EQ FIVE lambda f a.f (f (f (f (f a))))
+                EQUAL? FIVE lambda f a.f (f (f (f (f a))))
 </pre></blockquote><p>
     Click the Library button until there are no more free variables.
-    Then click repeat and get comfortable.  This will take 384 steps
+    Then click repeat and get comfortable.  This will take 134 steps
     and considerable time.  But it will return the lambda calculus
-    value of TRUE which is: lambda a b.a
+    value of <code>TRUE</code> which is: <code>lambda a b.a</code>
 </p><p>
     In the lambda calculus true and false are functions that accept
     two arguments and return their first and second arguments,
     respectively.  We can use free variables to make this more clear:
 </p><blockquote><pre>
-                (EQ FIVE lambda f a.f (f (f (f (f a))))) YES NO
+                (EQUAL? FIVE lambda f a.f (f (f (f (f a))))) YES NO
 </pre></blockquote><p>
-    After 386 steps this should reduce to YES.  We can check that
-    this is meaningful by trying an incorrect equation:
+    After 136 steps this should reduce to <code>YES</code>.  We can
+    check that this is meaningful by trying an incorrect equation:
 </p><blockquote><pre>
-                (EQ SEVEN lambda f a.f (f (f (f (f a))))) YES NO
+                (EQUAL? SEVEN lambda f a.f (f (f (f (f a))))) YES NO
 </pre></blockquote><p>
-    Now after 416 steps this reduces to NO.  That makes sense, doesn't
-    it?  Seven is not equal to five.
+    Now after 151 steps this reduces to <code>NO</code>.  That makes
+    sense, doesn't it?  Seven is not equal to five.
 </p><p>
-    Another way we could have checked is to select FIVE from the
-    drop down box.  This produces the same expression.  We can see
-    that both the answer to or original expression and the library
-    version of FIVE are the same.
+    Another way we could have checked is to select <code>FIVE</code>
+    from the drop down box.  This produces the same expression.  We
+    can see that both the answer to or original expression and the
+    library version of <code>FIVE</code> are the same.
+</p><p>
+    We could instead do all of this in one program.  Try this:
+</p><blockquote><pre>
+                (EQUAL? FIVE (ADD TWO THREE)) YES NO
+</pre></blockquote><p>
+    After 148 steps this reduces to <code>YES</code>.  Replace five
+    with some other number to get <code>NO</code>.  Try other numbers
+    in expressions like this to confirm that correct equations reduce
+    to <code>YES</code> and incorrect equations reduce to
+    <code>NO</code>.  <code>SUBTRACT</code>, <code>MULTIPLY</code>,
+    <code>DIVIDE</code> and <code>POWER</code> are also available.
 </p>
 <h2><a name="recusion">Recursion</a></h2>
 <p>
-    Sometimes computatsion are more convenient to express in terms
+    Sometimes computations are more convenient to express in terms
     of recursion.  This means a function calls itself on a reduced
-    form of its input in order to break down the problem.  Of course,
+    form of its input in order to break down a problem.  Of course,
     lambda calculas has no support for recursion.  Even so, our
     library contains a recursive function called FACTORIAL.  Here
     is an example of this function you can try running yourself:
@@ -269,13 +326,24 @@ Steps: <input id="steps" type="text" disabled="disabled" />
                 FACTORIAL THREE
 </pre></blockquote><p>
     After 2907 steps this arrives at the Church Numeral representation
-    of SIX (because three factorial is three times two times one).
-    This representation of six looks a little different.  In
-    particular, it uses a different variable name.  We can check that
-    this is SIX the same way we compared our earlier result to five.
-</p><p>
-    So how does this work?  It makes use of the FIX combinator -- also
-    known as the
+    of <code>SIX</code> (because three factorial is three times two
+    times one).  This representation of six looks a little different.
+    In particular, it uses a different variable name.  We can check
+    that this is <code>SIX</code> the same way we compared our earlier
+    result to five.  Computing <code>FACTORIAL FIVE</code> takes
+    50,586 steps and a long time but it produces this:
+</p><p><code>
+    λc.λa.c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c
+    (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c
+    (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c
+    (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c
+    (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c
+    (c (c (c (c (c (c (c (c (c (c (c (c a)
+    )))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+    )))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+</code></p><p>
+    So how does this work?  It makes use of the <code>FIX</code>
+    combinator -- also known as the
     <a href="https://en.wikipedia.org/wiki/Fixed-point_combinator">Y
         combinator</a>.  The Y combinator causes a function to be
     called with itself as an argument.  This makes it possible for
@@ -292,10 +360,11 @@ Steps: <input id="steps" type="text" disabled="disabled" />
  var restore    = document.getElementById("restore");
  var library    = document.getElementById("library");
  var lexprs     = document.getElementById("library-expressions");
+ var delay      = document.getElementById("delay");
  var steps      = document.getElementById("steps");
  var stepCount = 0;
  var repeating = false;
- var previous = null;
+ var previous  = null;
 
  solvo.forEachLambda(function(expression, name) {
      var option = document.createElement("option");
@@ -320,7 +389,7 @@ Steps: <input id="steps" type="text" disabled="disabled" />
          stepCount += 1;
          steps.value = stepCount;
          if (repeating)
-             setTimeout(continuousReduce, 50);
+             setTimeout(continuousReduce, delay.value);
      }
  };
 
@@ -344,7 +413,7 @@ Steps: <input id="steps" type="text" disabled="disabled" />
      previous = expression.value;
      steps.value = stepCount = 0;
      repeating = true;
-     setTimeout(continuousReduce, 50);
+     setTimeout(continuousReduce, delay.value);
  });
  restore.addEventListener("click", function(event) {
      if (previous)
