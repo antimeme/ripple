@@ -617,8 +617,8 @@
                value: "lambda p q.p q p" },
         OR: { name: "Logical OR",
               value: "lambda p q.p p q" },
-        BOOLEQ: { name: "Boolean Equality",
-                  value: "lambda p q.p q (NOT q)" },
+        "BOOLEQ?": { name: "Boolean Equality",
+                     value: "lambda p q.p q (NOT q)" },
         PAIR: { value: lambda.combinators.V.value },
         HEAD: { value: "lambda p.p TRUE" },
         TAIL: { value: "lambda p.p FALSE" },
@@ -643,51 +643,61 @@
         SEVEN: { name: "Church Numeral SEVEN",
                  value: "lambda f a.f (f (f (f (f (f (f a))))))"},
         EIGHT: { name: "Church Numeral EIGHT",
-                 value: "SUCCESSOR SEVEN"},
+                 value: "lambda f a.f (f (f (f (f (f (f (f a)))))))"},
         NINE: { name: "Church Numeral NINE",
-                value: "SUCCESSOR EIGHT"},
-        TEN: { name: "Church Numeral TEN",
-               value: "SUCCESSOR NINE"},
+                value: "lambda f a.f (f (f (f (f (f (f (f " +
+                       "(f a))))))))"},
+        TEN: { name: "Church Numeral TEN", value: "SUCCESSOR NINE"},
         ELEVEN: { name: "Church Numeral ELEVEN",
                   value: "SUCCESSOR TEN"},
         TWELVE: { name: "Church Numeral TWELVE",
                   value: "SUCCESSOR ELEVEN"},
         ADD: { name: "Church Numeral Addition",
-               value: "lambda m n.n SUCCESSOR m" },
+               value: "lambda m n f a.m f (n f a)" },
         PLUS: { name: "Church Numeral Addition",
-                value: "lambda m n.n SUCCESSOR m" },
+                value: "lambda m n f a.m f (n f a)" },
         MULTIPLY: { name: "Church Numeral Multiplication",
                     value: lambda.combinators.B.value },
         TIMES: { name: "Church Numeral Multiplication",
                  value: lambda.combinators.B.value },
         POWER: { name: "Church Numeral Exponentiation",
-                 value: lambda.combinators.T.value },
-        ISZERO: { name: "Church Numeral Zero Check",
+                 value: "lambda m n f a.(n m) f a" },
+        "ISZERO?": { name: "Church Numeral Zero Check",
                   value: "lambda n.n (TRUE FALSE) TRUE" },
-        PHI: { name: "Helper for PREDECESSOR",
-               value: "lambda p.PAIR (TAIL p) (SUCCESSOR (TAIL p))" },
         PREDECESSOR: { name: "Church Numeral Decrement",
-                       value: "lambda n.HEAD " +
-                              "(n PHI (PAIR ZERO ZERO))" },
+                       value: "lambda n f a.n (lambda g h.h (g f)) " +
+                              "(lambda u.a) (lambda u.u)" },
         SUBTRACT: { name: "Church Numeral Subtraction",
                     value: "lambda m n.n PREDECESSOR m" },
         MINUS: { name: "Church Numeral Subtraction",
                  value: "lambda m n.n PREDECESSOR m" },
+        DIVIDE: { name: "Church Numeral Division",
+                  value: "lambda n.((lambda f.(lambda x.x x) " +
+                         "(lambda x.f (x x))) (lambda c.lambda " +
+                         "n.lambda m.lambda f.lambda x.(lambda " +
+                         "d.(lambda n.n (lambda x.(lambda " +
+                         "a.lambda b.b)) (lambda a.lambda b.a)) d " +
+                         "((lambda f.lambda x.x) f x) " +
+                         "(f (c d m f x))) ((lambda m.lambda n.n " +
+                         "(lambda n.lambda f.lambda x.n (lambda " +
+                         "g.lambda h.h (g f)) (lambda u.x) " +
+                         "(lambda u.u)) m) n m))) ((lambda " +
+                         "n.lambda f.lambda x. f (n f x)) n)"},
         LESSEQ: { name: "Church Numeral Less Than or Equal",
-                  value: "lambda m n.ISZERO (SUBTRACT n m)" },
-        EQUAL: { name: "Church Numeral Equality",
-                 value: "lambda m n.AND (LESSEQ m n) (LESSEQ n m)" },
+                  value: "lambda m n.ISZERO? (SUBTRACT n m)" },
+        "EQUAL?": { name: "Church Numeral Equality",
+                    value: "lambda m n.AND (LESSEQ m n) (LESSEQ n m)" },
         GREATER: { name: "Church Numeral Greater Than",
                    value: "lambda m n.NOT (LESSEQ m n)" },
         LESS: { name: "Church Numeral Less Than",
                 value: "lambda m n.AND (LESSEQ m n) " +
-                       "(NOT (EQUAL m n))" },
+                       "(NOT (EQUAL? m n))" },
         GREATEREQ: { name: "Church Numeral Greater Than or Equal",
                      value: "lambda m n.NOT (LESS m n)" },
         FIX: { name: "Fix-point Combinator",
                value: lambda.combinators.Y.value },
         FACTORIAL: { name: "Church Numeral FACTORIAL",
-                     value: "FIX (lambda f n.(EQUAL n ZERO) ONE " +
+                     value: "FIX (lambda f n.(EQUAL? n ZERO) ONE " +
                             "(MULTIPLY n (f (PREDECESSOR n))))" },
     };
 
