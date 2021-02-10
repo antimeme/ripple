@@ -701,17 +701,18 @@
                          "g.lambda h.h (g f)) (lambda u.x) " +
                          "(lambda u.u)) m) n m))) ((lambda " +
                          "n.lambda f.lambda x. f (n f x)) n)"},
-        LESSEQ: { name: "Church Numeral Less Than or Equal",
-                  value: "lambda m n.ISZERO? (SUBTRACT n m)" },
+        "LESSEQ?": { name: "Church Numeral Less Than or Equal",
+                  value: "lambda m n.ISZERO? (SUBTRACT m n)" },
         "EQUAL?": { name: "Church Numeral Equality",
-                    value: "lambda m n.AND (LESSEQ m n) (LESSEQ n m)" },
-        GREATER: { name: "Church Numeral Greater Than",
-                   value: "lambda m n.NOT (LESSEQ m n)" },
-        LESS: { name: "Church Numeral Less Than",
-                value: "lambda m n.AND (LESSEQ m n) " +
-                       "(NOT (EQUAL? m n))" },
-        GREATEREQ: { name: "Church Numeral Greater Than or Equal",
-                     value: "lambda m n.NOT (LESS m n)" },
+                    value: "lambda m n.AND (LESSEQ? m n) " +
+                           "(LESSEQ? n m)" },
+        "GREATER?": { name: "Church Numeral Greater Than",
+                      value: "lambda m n.NOT (LESSEQ? m n)" },
+        "LESS?": { name: "Church Numeral Less Than",
+                   value: "lambda m n.AND (LESSEQ? m n) " +
+                          "(NOT (EQUAL? m n))" },
+        "GREATEREQ?": { name: "Church Numeral Greater Than or Equal",
+                        value: "lambda m n.NOT (LESS? m n)" },
         FIX: { name: "Fix-point Combinator",
                value: lambda.combinators.Y.value },
         FACTORIAL: { name: "Church Numeral FACTORIAL",

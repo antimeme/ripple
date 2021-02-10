@@ -29,7 +29,7 @@ Steps: <input id="steps" type="text" disabled="disabled" />
        This program implements lambda expressions, normal order reduction
     and a library of useful functions.  The lambda calculus itself
     contains only variables, grouping, abstractions and applications.
-    Notice that this does not include boolean logic, data structures
+    Notice that this does not include boolean logic, data structures,
     recursion or numbers.  And yet the library included here contains
     all of these things because lambda calculus provides a universal
     foundation on which any computation can be built.
@@ -50,7 +50,7 @@ Steps: <input id="steps" type="text" disabled="disabled" />
 </li></ol>
 <h2><a name="definition">Definition</a></h2>
 <p>
-    A lambda calculus expression is composed from four components.
+    A lambda calculus expression is composed from four patterns:
 </p><ul><li>
     Variable: any identifier other than <code>lambda</code> which
     does not contain <code>λ</code>, <code>.</code>, <code>(</code>
@@ -328,8 +328,16 @@ Steps: <input id="steps" type="text" disabled="disabled" />
     with some other number to get <code>NO</code>.  Try other numbers
     in expressions like this to confirm that correct equations reduce
     to <code>YES</code> and incorrect equations reduce to
-    <code>NO</code>.  <code>SUBTRACT</code>, <code>MULTIPLY</code>,
-    <code>DIVIDE</code> and <code>POWER</code> are also available.
+    <code>NO</code>.
+</p><p>
+    <code>GREATER?</code>, <code>LESS?</code>, <code>SUBTRACT</code>,
+    <code>MULTIPLY</code>, <code>DIVIDE</code> and <code>POWER</code>
+    are also available.  Try creating simple arithmetic expressions
+    like this one:
+</p><blockquote><pre>
+                (GREATER? (SUBTRACT FIVE TWO) TWO) YES NO
+</pre></blockquote><p>
+    This should reduce to <code>YES</code> in 66 steps.
 </p>
 <h2><a name="recusion">Recursion</a></h2>
 <p>
