@@ -87,9 +87,9 @@ Steps: <input id="steps" type="text" disabled="disabled" />
 </p><p>
     Any lambda expression with no free variables is called a
     combinator.  Many combinators are useful enough that we give them
-    names.  For example λa.a is called the identity combinator.  This
-    is the simplest possible combinator.  In 1985 Raymond Smullyan
-    wrote a book entitled
+    names.  For example <code>λa.a</code> is called the identity
+    combinator.  This is the simplest possible combinator.  In 1985
+    Raymond Smullyan wrote a book entitled
     <a href="https://en.wikipedia.org/wiki/To_Mock_a_Mockingbird">To
         Mock a Mockingbird</a> which is the source of many of these
     names.  Here are some examples:
@@ -204,12 +204,11 @@ Steps: <input id="steps" type="text" disabled="disabled" />
 </p><ul><li>
     <code>(λp.(HALTS? (p p)) ((λm.m m) (λm.m m)) TRUE)</code>
 </li></ul><p>
-    This is clearly a valid lambda calculus expression.  Given an
-    input program that can be applied to itself with a normal form
-    this program reduces to the mockingbird applied to itself, which
-    has no normal form.  Given a program which has no normal form when
-    applied to itself -- such as the mockingbird -- this program
-    reduces to <code>TRUE</code> and therefore does have a normal
+    Given an input program that can be applied to itself with a normal
+    form this program reduces to the mockingbird applied to itself,
+    which has no normal form.  Given a program which has no normal
+    form when applied to itself -- such as the mockingbird -- this
+    program reduces to <code>TRUE</code> and therefore does have a normal
     form.  So it does the opposite of the program it has been given.
     This may seem silly but it's clearly a valid combination of
     expressions.  But what happens when we apply this program to
@@ -255,7 +254,7 @@ Steps: <input id="steps" type="text" disabled="disabled" />
                 (lambda n.n n) (lambda m.m m)
 </pre></blockquote><p>
     Click repeat to watch this reduce indefinitely.  Click reduce to
-    stop the process -- it will never stop on its own.
+    stop the process; it will never stop on its own.
 </p>
 <h2><a name="arithmetic">Arithmetic</a></h2>
 <p>
@@ -320,12 +319,12 @@ Steps: <input id="steps" type="text" disabled="disabled" />
     of recursion.  This means a function calls itself on a reduced
     form of its input in order to break down a problem.  Of course,
     lambda calculas has no support for recursion.  Even so, our
-    library contains a recursive function called FACTORIAL.  Here
-    is an example of this function you can try running yourself:
+    library contains a recursive function called <code>FACTORIAL</code>.
+    Here is an example of this function you can try running yourself:
 </p><blockquote><pre>
                 FACTORIAL THREE
 </pre></blockquote><p>
-    After 2907 steps this arrives at the Church Numeral representation
+    After 2,907 steps this arrives at the Church Numeral representation
     of <code>SIX</code> (because three factorial is three times two
     times one).  This representation of six looks a little different.
     In particular, it uses a different variable name.  We can check
@@ -394,6 +393,7 @@ Steps: <input id="steps" type="text" disabled="disabled" />
  };
 
  expression.addEventListener("change", function(event) {
+     previous = expression.value;
      repeating = false;
      steps.value = stepCount = 0;
      lexprs.value = "";
@@ -401,6 +401,9 @@ Steps: <input id="steps" type="text" disabled="disabled" />
 
  reduce.addEventListener("click", function(event) {
      var expr = solvo.lambda(expression.value);
+
+     if (!previous)
+         previous = expression.value;
      expr = expr.reduce();
      if (!expr.normal) {
          expression.value = expr.toString();
@@ -410,7 +413,8 @@ Steps: <input id="steps" type="text" disabled="disabled" />
      repeating = false;
  });
  repeat.addEventListener("click", function(event) {
-     previous = expression.value;
+     if (!previous)
+         previous = expression.value;
      steps.value = stepCount = 0;
      repeating = true;
      setTimeout(continuousReduce, delay.value);

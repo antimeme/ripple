@@ -19,7 +19,6 @@
 // :TODO: equality test should not care about bound variable names
 // :TODO: mixing bound and free variables should report an error
 // :TODO: allow use of internal library on command line
-// :TODO: consolidate curried expressions when possible
 (function(solvo) {
     "use strict";
 
@@ -488,6 +487,25 @@
                    (result.values.length === 1) &&
                    lambda.isPrototypeOf(result.values[0]))
                 result = result.values[0];
+
+            // Attempt to consolidate nested abstractions
+            while ((result.variables.length > 0) &&
+                   (result.values.length === 1) &&
+                   lambda.isPrototypeOf(result.values[0]) &&
+                   (result.values[0].variables.length > 0)) {
+                if (result.variables.some(function(variable) {
+                    return variable ===
+                        result.values[0].variables[0]; }))
+                    break;
+
+                result = lambda.create(result);
+                var subresult = lambda.create(result.values.shift());
+
+                result.variables.push(subresult.variables.shift());
+                if (subresult.variables.length > 0)
+                    result.values.unshift(subresult);
+                else result.values = subresult.values;
+            }
 
             result.normal = (result === this);
             return result;
