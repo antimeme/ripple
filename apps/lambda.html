@@ -5,6 +5,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <style>
+ input[type=range] { width: 8%; }
+ input[type=text]  { text-align: right; width: 8%; }
+ #canonical { display: none; }
 </style>
 <title>Lambda Calculus</title>
 <h1>Lambda Calculus</h1>
@@ -12,13 +15,17 @@
 </textarea><br />
 <button id="reduce">Reduce</button>
 <button id="repeat">Repeat</button>
+Delay:
 <input id="delay" type="range" min="5" value="50" max="1000" />
 Steps: <input id="steps" type="text" disabled="disabled" />
+<button id="clear">Clear</button>
 <br />
 <button id="library">Library</button>
 <select id="library-expressions">
     <option></option>
 </select>
+<button id="discover">Discover</button>
+<button id="canonical">Canonical</button>
 <button id="restore">Restore</button>
 
 <p>
@@ -26,7 +33,7 @@ Steps: <input id="steps" type="text" disabled="disabled" />
     such as the Turing Machine are equivalent (proven as the
     <a href="https://en.wikipedia.org/wiki/Church%E2%80%93Turing_thesis"
     >Church-Turing Thesis</a>).
-       This program implements lambda expressions, normal order reduction
+    This program implements lambda expressions, normal order reduction
     and a library of useful functions.  The lambda calculus itself
     contains only variables, grouping, abstractions and applications.
     Notice that this does not include boolean logic, data structures,
@@ -252,7 +259,7 @@ Steps: <input id="steps" type="text" disabled="disabled" />
     program that does not terminate by copying and pasting the
     following:
 </p><blockquote><pre>
-                (lambda n.n n) (lambda m.m m)
+      (lambda n.n n) (lambda m.m m)
 </pre></blockquote><p>
     Click <q>Repeat</q> to watch this reduce indefinitely.  Click
     <q>Reduce</q> to stop the process; it will never stop on its own.
@@ -263,7 +270,7 @@ Steps: <input id="steps" type="text" disabled="disabled" />
     built in library to add two numbers.  Copy and paste the following
     into the text area:
 </p><blockquote><pre>
-                ADD TWO THREE
+      ADD TWO THREE
 </pre></blockquote><p>
     This will not reduce further since all three of the terms here are
     free variables.  It's one thing to type these words but lambda
@@ -294,25 +301,21 @@ Steps: <input id="steps" type="text" disabled="disabled" />
     the library to check.  Change the buffer by prepending so that it
     looks like this:
 </p><blockquote><pre>
-                EQUAL? FIVE λf a.f (f (f (f (f a))))
+      EQUAL? FIVE λf a.f (f (f (f (f a))))
 </pre></blockquote><p>
-    Click the Library button until there are no more free variables.
-    Then click repeat and get comfortable.  This will take 134 steps
-    and considerable time.  But it will return the lambda calculus
-    value of <code>TRUE</code> which is: <code>lambda a b.a</code>
+    Click the <q>Library</q> button until there are no more free
+    variables.  Then click repeat and get comfortable.  This will take
+    134 steps and considerable time.  But it will return the lambda
+    calculus expression: <code>lambda a b.a</code>  What does that
+    mean?  Click the <q>Discover</q> button to find out which library
+    function this matches.  You should see that it's <code>TRUE</code>.
 </p><p>
-    In the lambda calculus true and false are functions that accept
-    two arguments and return their first and second arguments,
-    respectively.  We can use free variables to make this more clear:
+    We can check that this result is meaningful by trying an incorrect
+    equation:
 </p><blockquote><pre>
-                (EQUAL? FIVE λf a.f (f (f (f (f a))))) YES NO
+      EQUAL? SEVEN λf a.f (f (f (f (f a))))
 </pre></blockquote><p>
-    After 136 steps this should reduce to <code>YES</code>.  We can
-    check that this is meaningful by trying an incorrect equation:
-</p><blockquote><pre>
-                (EQUAL? SEVEN λf a.f (f (f (f (f a))))) YES NO
-</pre></blockquote><p>
-    Now after 151 steps this reduces to <code>NO</code>.  That makes
+    Now after 148 steps this reduces to <code>FALSE</code>.  That makes
     sense, doesn't it?  Seven is not equal to five.
 </p><p>
     Another way we could have checked is to select <code>FIVE</code>
@@ -322,22 +325,22 @@ Steps: <input id="steps" type="text" disabled="disabled" />
 </p><p>
     We could instead do all of this in one program.  Try this:
 </p><blockquote><pre>
-                (EQUAL? FIVE (ADD TWO THREE)) YES NO
+      EQUAL? FIVE (ADD TWO THREE)
 </pre></blockquote><p>
-    After 148 steps this reduces to <code>YES</code>.  Replace five
-    with some other number to get <code>NO</code>.  Try other numbers
+    After 148 steps this reduces to <code>TRUE</code>.  Replace five
+    with some other number to get <code>FALSE</code>.  Try other numbers
     in expressions like this to confirm that correct equations reduce
-    to <code>YES</code> and incorrect equations reduce to
-    <code>NO</code>.
+    to <code>TRUE</code> and incorrect equations reduce to
+    <code>FALSE</code>.
 </p><p>
     <code>GREATER?</code>, <code>LESS?</code>, <code>SUBTRACT</code>,
     <code>MULTIPLY</code>, <code>DIVIDE</code> and <code>POWER</code>
     are also available.  Try creating simple arithmetic expressions
     like this one:
 </p><blockquote><pre>
-                (GREATER? (SUBTRACT FIVE TWO) TWO) YES NO
+      GREATER? (SUBTRACT FIVE TWO) TWO
 </pre></blockquote><p>
-    This should reduce to <code>YES</code> in 66 steps.
+    This should reduce to <code>TRUE</code> in 66 steps.
 </p>
 <h2><a name="recusion">Recursion</a></h2>
 <p>
@@ -348,7 +351,7 @@ Steps: <input id="steps" type="text" disabled="disabled" />
     library contains a recursive function called <code>FACTORIAL</code>.
     Here is an example of this function you can try running yourself:
 </p><blockquote><pre>
-                FACTORIAL THREE
+      FACTORIAL THREE
 </pre></blockquote><p>
     After 2,907 steps this arrives at the Church Numeral representation
     of <code>SIX</code> (because three factorial is three times two
@@ -385,30 +388,34 @@ Steps: <input id="steps" type="text" disabled="disabled" />
  var reduce     = document.getElementById("reduce");
  var repeat     = document.getElementById("repeat");
  var restore    = document.getElementById("restore");
+ var clear      = document.getElementById("clear");
  var library    = document.getElementById("library");
  var lexprs     = document.getElementById("library-expressions");
+ var discover   = document.getElementById("discover");
  var delay      = document.getElementById("delay");
  var steps      = document.getElementById("steps");
  var stepCount = 0;
  var repeating = false;
  var previous  = null;
 
+ // Populate library drop down box
  solvo.forEachLambda(function(expression, name) {
      var option = document.createElement("option");
      option.setAttribute("value", expression.toString());
      option.innerHTML = name;
      lexprs.appendChild(option);
  });
- lexprs.addEventListener("change", function(event) {
-     if (lexprs.value) {
-         previous = expression.value;
-         expression.value = lexprs.value;
-         steps.value = stepCount = 0;
-     }
- });
+
+ var getExpression = function() {
+     var result;
+     try {
+         result = solvo.lambda(expression.value);
+     } catch(ex) { alert(ex); }
+     return result;
+ };
 
  var continuousReduce = function() {
-     var expr = solvo.lambda(expression.value);
+     var expr = getExpression();
      expr = expr.reduce();
 
      if (!expr.normal) {
@@ -427,19 +434,36 @@ Steps: <input id="steps" type="text" disabled="disabled" />
      lexprs.value = "";
  });
 
+ lexprs.addEventListener("change", function(event) {
+     if (lexprs.value) {
+         previous = expression.value;
+         expression.value = lexprs.value;
+         steps.value = stepCount = 0;
+     }
+ });
+
+ clear.addEventListener("click", function(event) {
+     previous = expression.value;
+     expression.value = "";
+     repeating = false;
+     steps.value = stepCount = 0;
+     lexprs.value = "";
+ });
+
  reduce.addEventListener("click", function(event) {
-     var expr = solvo.lambda(expression.value);
+     var expr = getExpression();
 
      if (!previous)
          previous = expression.value;
      expr = expr.reduce();
+     expression.value = expr.toString();
      if (!expr.normal) {
-         expression.value = expr.toString();
          stepCount += 1;
          steps.value = stepCount;
      }
      repeating = false;
  });
+
  repeat.addEventListener("click", function(event) {
      if (!previous)
          previous = expression.value;
@@ -447,6 +471,7 @@ Steps: <input id="steps" type="text" disabled="disabled" />
      repeating = true;
      setTimeout(continuousReduce, delay.value);
  });
+
  restore.addEventListener("click", function(event) {
      if (previous)
          expression.value = previous;
@@ -454,9 +479,28 @@ Steps: <input id="steps" type="text" disabled="disabled" />
      previous = null;
      repeating = true;
  });
+
  library.addEventListener("click", function(event) {
-     var expr = solvo.lambda(expression.value);
+     var expr = getExpression();
      expression.value = expr.useLibrary().toString();
+     repeating = false;
+ });
+
+ discover.addEventListener("click", function(event) {
+     var expr = getExpression();
+     var discovered = false;
+     solvo.forEachLambda(function(current, name) {
+         if (!discovered && expr.equals(current)) {
+             expression.value = name;
+             discovered = true;
+         }
+     });
+     repeating = false;
+ });
+
+ canonical.addEventListener("click", function(event) {
+     var expr = getExpression();
+     expression.value = expr.__canonicalize().toString();
      repeating = false;
  });
  //]]></script>

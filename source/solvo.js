@@ -305,18 +305,43 @@
             return result;
         },
 
+        __canonicalize: function(index, variables) {
+            // Replace all bound variables in the expression with
+            // enumerated values.  This should make it possible to
+            // compare expressions that are structurally identical
+            // but with different bound variable names.
+            var result = lambda.__create();
+            index = !isNaN(index) ? index : 0;
+            variables = (typeof(variables) === "object") ?
+                        JSON.parse(JSON.stringify(variables)) : {};
+            this.variables.forEach(function(variable) {
+                var canonicalVariable = "v" + (++index);
+                variables[variable] = canonicalVariable;
+                result.variables.push(canonicalVariable);
+            }, this);
+            this.values.forEach(function(value) {
+                var current = value;
+                if ((typeof(value) === "string") && variables[value])
+                    current = variables[value];
+                else if (lambda.isPrototypeOf(value))
+                    current = value.__canonicalize(index, variables);
+                result.values.push(current);
+            }, this);
+            return result;
+        },
+
         equals: function(other) {
-            return lambda.isPrototypeOf(other) &&
-                   (this.variables.length == other.variables.length) &&
-                   (this.values.length === other.values.length) &&
-                   this.variables.every(function(variable, index) {
-                       return (variable === other.variables[index]);
-                   }) &&
-                   this.values.every(function(value, index) {
+            var aa = this.__canonicalize();
+            var bb = lambda.isPrototypeOf(other) ?
+                     other.__canonicalize() : lambda.__create();
+            return (aa.variables.length == bb.variables.length) &&
+                   (aa.values.length === bb.values.length) &&
+                   aa.variables.every(function(variable, index) {
+                       return (variable === bb.variables[index]); }) &&
+                   aa.values.every(function(value, index) {
                        return lambda.isPrototypeOf(value) ?
-                              value.equals(other.values[index]) :
-                              (value === other.values[index]);
-                   });
+                              value.equals(bb.values[index]) :
+                              (value === bb.values[index]); });
         },
 
         getVariables: function() {
@@ -571,8 +596,7 @@
                 else if (expected && !expected.equals(expression))
                     console.error("ERROR: expected",
                                   expected.toString());
-                else console.log("Success:",
-                                 expression.getVariables());
+                else console.log("Success:", expression.getVariables());
                 console.log();
             });
         },
@@ -684,7 +708,7 @@
                   value: "lambda n.n (TRUE FALSE) TRUE" },
         PREDECESSOR: { name: "Church Numeral Decrement",
                        value: "lambda n f a.n (lambda g h.h (g f)) " +
-                              "(lambda u.a) (lambda u.u)" },
+                              "(lambda c.a) (lambda b.b)" },
         SUBTRACT: { name: "Church Numeral Subtraction",
                     value: "lambda m n.n PREDECESSOR m" },
         MINUS: { name: "Church Numeral Subtraction",
@@ -740,15 +764,18 @@
 if ((typeof require !== 'undefined') && (require.main === module)) {
     var solvo = exports;
     var action = "lambda";
-    var actions = [];
+    var tests = [];
+    var allowOptions = true;
 
-    process.argv.splice(2).forEach(function (argument) {
-        if (argument.startsWith("--")) {
+    process.argv.splice(2).forEach(function(argument) {
+        if (allowOptions && (argument === "--")) {
+            allowOptions = false;
+        } else if (allowOptions && argument.startsWith("--")) {
             if (argument === "--math")
                 action = "math";
             else if (argument === "--lambda")
                 action = "lambda";
-        } else actions.push(argument);
+        } else tests.push(argument);
     });
 
     if (action === "math") {
@@ -758,5 +785,6 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
                         solvo.simplify(expression).toString());
         });
     } else if (action === "lambda")
-        solvo.runLambdaTests(actions);
+        solvo.runLambdaTests(tests);
+    else throw "Unknown action: " + action;
 }
