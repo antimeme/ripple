@@ -244,17 +244,18 @@ Steps: <input id="steps" type="text" disabled="disabled" />
     word <code>lambda</code> rather than the <code>λ</code> symbol as
     long as you put a space between it and the variable name.
 </p><p>
-    Click the Reduce button to perform a single step of computation.
-    Most computations require a large number of steps, so you can
-    instead click the repeat button to continuously perform reductions.
-    This will terminate when no more reductions are possible, if that
-    ever happens.  You can see what happens to a program that does
-    not terminate by copying and pasting the following:
+    Click the <q>Reduce</q> button to perform a single step of
+    computation.  Most computations require a large number of steps,
+    so you can instead click the <q>Repeat</q> button to continuously
+    perform reductions.  This will terminate when no more reductions
+    are possible, if that ever happens.  You can see what happens to a
+    program that does not terminate by copying and pasting the
+    following:
 </p><blockquote><pre>
                 (lambda n.n n) (lambda m.m m)
 </pre></blockquote><p>
-    Click repeat to watch this reduce indefinitely.  Click reduce to
-    stop the process; it will never stop on its own.
+    Click <q>Repeat</q> to watch this reduce indefinitely.  Click
+    <q>Reduce</q> to stop the process; it will never stop on its own.
 </p>
 <h2><a name="arithmetic">Arithmetic</a></h2>
 <p>
@@ -265,18 +266,35 @@ Steps: <input id="steps" type="text" disabled="disabled" />
                 ADD TWO THREE
 </pre></blockquote><p>
     This will not reduce further since all three of the terms here are
-    free variables.  Click the Library button twice to replace these
-    free variables with combinators.  Once there are no more free
-    variables click repeat.  This should reduce to normal form in
-    six steps.  But what did it reduce to?  This is a function
-    that takes two arguments and applies the first to the second five
-    times.  That is the Church Numeral representation of five. In
-    other words, two plus three is five!
+    free variables.  It's one thing to type these words but lambda
+    calculus itself assigns no meaning to numbers like two and three,
+    much less to addition.  We will solve this problem using
+    <a href="https://en.wikipedia.org/wiki/Church_encoding">Church
+        Encoding</a>.  Instead of numbers we will use a function that
+    takes two arguments and applies the first to the second a number
+    of times.  This means that <code>TWO</code> can be replaced by
+    <code>λf a.f (f a)</code> and <code>THREE</code> can be replaced
+    by <code>λf a.f (f (f a))</code>.  It's possible to implement
+    addition as well.  We could do this by editing the expression
+    directly but this program contains a library that will do this
+    automatically.
 </p><p>
-    How can we be sure?  We can use the library to check.  Change the
-    buffer by prepending so that it looks like this:
+    Click the <q>Library</q> button to replace these free variables
+    with combinators.  (In this case once is enough, but some library
+    functions use other library functions so it will sometimes be
+    necessary to keep clicking to get to a final expression.)  Now
+    that there are no free variables we can click the <q>Repeat</q>
+    to reduce this to a normal form, which takes six steps.  But what
+    did it reduce to?  This is a function that takes two arguments and
+    applies the first to the second five times.  That is the Church
+    Numeral representation of five!
+</p><p>
+    In this case it's easy to count the number of function
+    applications but how can we be sure in other cases?  We can use
+    the library to check.  Change the buffer by prepending so that it
+    looks like this:
 </p><blockquote><pre>
-                EQUAL? FIVE lambda f a.f (f (f (f (f a))))
+                EQUAL? FIVE λf a.f (f (f (f (f a))))
 </pre></blockquote><p>
     Click the Library button until there are no more free variables.
     Then click repeat and get comfortable.  This will take 134 steps
@@ -287,12 +305,12 @@ Steps: <input id="steps" type="text" disabled="disabled" />
     two arguments and return their first and second arguments,
     respectively.  We can use free variables to make this more clear:
 </p><blockquote><pre>
-                (EQUAL? FIVE lambda f a.f (f (f (f (f a))))) YES NO
+                (EQUAL? FIVE λf a.f (f (f (f (f a))))) YES NO
 </pre></blockquote><p>
     After 136 steps this should reduce to <code>YES</code>.  We can
     check that this is meaningful by trying an incorrect equation:
 </p><blockquote><pre>
-                (EQUAL? SEVEN lambda f a.f (f (f (f (f a))))) YES NO
+                (EQUAL? SEVEN λf a.f (f (f (f (f a))))) YES NO
 </pre></blockquote><p>
     Now after 151 steps this reduces to <code>NO</code>.  That makes
     sense, doesn't it?  Seven is not equal to five.
@@ -329,17 +347,19 @@ Steps: <input id="steps" type="text" disabled="disabled" />
     times one).  This representation of six looks a little different.
     In particular, it uses a different variable name.  We can check
     that this is <code>SIX</code> the same way we compared our earlier
-    result to five.  Computing <code>FACTORIAL FIVE</code> takes
-    50,586 steps and a long time but it produces this:
+    result to <code>FIVE</code>.
+</p><p>
+    Computing <code>FACTORIAL FIVE</code> takes 50,586 steps and a
+    long time but it produces this:
 </p><p><code>
-    λc.λa.c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c
+    λc a.c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c
     (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c
     (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c
     (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c
     (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c
     (c (c (c (c (c (c (c (c (c (c (c (c a)
-    )))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
-    )))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+    )))))))))) )))))))))) ))))))))))) )))))))))) ))))))))) )))))))))
+    )))))))))) )))))))))) ))))))))))) )))))))))) ))))))))) )))))))))
 </code></p><p>
     So how does this work?  It makes use of the <code>FIX</code>
     combinator -- also known as the
