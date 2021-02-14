@@ -16,7 +16,6 @@
 // <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-// :TODO: equality test should not care about bound variable names
 // :TODO: mixing bound and free variables should report an error
 // :TODO: allow use of internal library on command line
 (function(solvo) {
@@ -189,30 +188,34 @@
 
     var lambda = {
         create: function(value) {
+            // Parse or copy an expression.  When given an expression
+            // object this method creates a shallow copy which
+            // shares no data structures with its source.  When given
+            // a string this method attempts to parse it and create
+            // an expression from it.
             var result;
 
-            // Creates a lambda expression from a string description
-            if (lambda.isPrototypeOf(value)) {
+            if (lambda.isPrototypeOf(value)) { // shallow copy
                 result = Object.create(this);
                 result.parent    = value.parent;
                 result.variables = value.variables.slice();
                 result.values    = value.values.slice();
                 result.normal    = value.normal;
-            } else if (typeof(value) === "string")
+                result.__canonical = false;
+            } else if (typeof(value) === "string") {
                 result = this.__parse(this.__tokenize(value));
-            else throw "Invalid expression initializer: " + value
-            return result;
-        },
-
-        __create: function() {
-            var result = Object.create(this);
-            result.variables = [];
-            result.values    = [];
-            result.normal    = false;
+            } else {
+                result = Object.create(this);
+                result.variables = [];
+                result.values    = [];
+                result.normal    = false;
+                result.__canonical = false;
+            }
             return result;
         },
 
         __tokenize: function(value) {
+            // Break a string down into tokens for easier parsing.
             var result = [], ii;
             var start = undefined; // index where current token starts
             var accept = function(tokens, value, start, ii) {
@@ -223,7 +226,7 @@
             for (ii = 0; ii < value.length; ++ii) {
                 if (/\s/.test(value[ii])) {
                     start = accept(result, value, start, ii);
-                } else if ('(.\u03bb)'.includes(value[ii])) {
+                } else if ('(.\\\u03bb)'.includes(value[ii])) {
                     start = accept(result, value, start, ii);
                     result.push(value[ii]);
                 } else if (isNaN(start))
@@ -234,7 +237,9 @@
         },
 
         __parse: function(tokens) {
-            var result = this.__create();
+            // Parse an array of string tokens and return the
+            // expression they represent.
+            var result = this.create();
             var stack  = [];
             var pstack = [];
             var current = result;
@@ -247,7 +252,7 @@
                     if (!abstraction) {
                         pstack.push(true);
                         stack.push(current);
-                        next = this.__create();
+                        next = this.create();
                         current.values.push(next);
                         current = next;
                         depth += 1;
@@ -269,7 +274,7 @@
                         current = next;
                         depth -= 1;
                     }
-                } else if ((token === '\u03bb') ||
+                } else if ((token === '\u03bb') || (token === '\\') ||
                            (token.toLowerCase() === "lambda")) {
                     if (!abstraction) {
                         abstraction = {};
@@ -277,7 +282,7 @@
                             (current.variables.length > 0)) {
                             pstack.push(false);
                             stack.push(current);
-                            next = this.__create();
+                            next = this.create();
                             current.values.push(next);
                             current = next;
                         }
@@ -310,7 +315,11 @@
             // enumerated values.  This should make it possible to
             // compare expressions that are structurally identical
             // but with different bound variable names.
-            var result = lambda.__create();
+            var result;
+            if (this.__canonical)
+                return this;
+
+            result = lambda.create();
             index = !isNaN(index) ? index : 0;
             variables = (typeof(variables) === "object") ?
                         JSON.parse(JSON.stringify(variables)) : {};
@@ -327,13 +336,18 @@
                     current = value.__canonicalize(index, variables);
                 result.values.push(current);
             }, this);
+            result.__canonical = true;
             return result;
         },
 
         equals: function(other) {
+            // Return true if and only if this expression and the other
+            // are the same from the perspective of lambda calculus.
+            // For this purpose the names of bound variables don't
+            // matter so "lambda a.a b" and "lambda x.x b" are equal.
             var aa = this.__canonicalize();
             var bb = lambda.isPrototypeOf(other) ?
-                     other.__canonicalize() : lambda.__create();
+                     other.__canonicalize() : lambda.create();
             return (aa.variables.length == bb.variables.length) &&
                    (aa.values.length === bb.values.length) &&
                    aa.variables.every(function(variable, index) {
@@ -374,7 +388,7 @@
                 if (!variables[variable])
                     variable = variable; // skip bound variables
                 else if (fn)
-                    fn.apply(self, variable, index);
+                    fn.call(self, variable, index);
                 else result.push(variable);
             });
             return result;
@@ -384,7 +398,7 @@
             var result = fn ? [] : this;
             this.variables.forEach(function(variable, index) {
                 if (fn)
-                    fn.apply(self, variable, index);
+                    fn.call(self, variable, index);
                 else result.push(variable);
             });
             return result;
@@ -429,28 +443,49 @@
             return result.replace(result.variables.shift(), argument);
         },
 
-        useLibrary: function(library, exclude) {
+        applyLibrary: function(library, exclude) {
             var result   = this;
             var replaced = false;
             var values   = [];
 
-            if (!library)
-                library = lambda.defaultLibrary;
-            if (!exclude)
-                exclude = {};
+            library = library ? library : lambda.defaultLibrary;
+            exclude = exclude ? JSON.parse(JSON.stringify(
+                exclude)) : {};
             this.variables.forEach(function(variable) {
                 exclude[variable] = true; });
 
             this.values.forEach(function(value) {
-                if ((typeof(value) === "string") &&
-                    (value in library) && !(value in exclude)) {
+                if (lambda.isPrototypeOf(value)) {
+                    var current = value.applyLibrary(library, exclude);
+                    values.push(current);
+                    if (current !== value)
+                        replaced = true;
+                } else if ((typeof(value) === "string") &&
+                           (value in library) && !(value in exclude)) {
                     if (!library[value].expression)
                         library[value].expression = lambda.create(
                             library[value].value);
                     values.push(library[value].expression);
                     replaced = true;
-                } else if (lambda.isPrototypeOf(value)) {
-                    var current = value.useLibrary(library, exclude);
+                } else values.push(value);
+            });
+            if (replaced) {
+                result = lambda.create(this);
+                result.values = values;
+            }
+            return result;
+        },
+
+        reverseLibrary: function(library) {
+            var result   = this;
+            var replaced = false;
+            var values   = [];
+
+            library = library ? library : lambda.defaultLibrary;
+
+            this.values.forEach(function(value) {
+                if (lambda.isPrototypeOf(value)) {
+                    var current = value.reverseLibrary(library);
                     values.push(current);
                     if (current !== value)
                         replaced = true;
@@ -460,6 +495,15 @@
                 result = lambda.create(this);
                 result.values = values;
             }
+            replaced = result.__canonicalize();
+            Object.keys(library).forEach(function(name) {
+                var entry = library[name];
+                if (!entry.expression)
+                    entry.expression =
+                        lambda.create(entry.value);
+                if (entry.expression.equals(result))
+                    result = name;
+            });
             return result;
         },
 
@@ -558,7 +602,6 @@
                 result += separator + representation;
                 separator = ' ';
             }, this);
-
             return result;
         },
 
@@ -643,8 +686,8 @@
             T: { name: "Thrush", value: "lambda a b.b a" },
             V: { name: "Virio", value: "lambda a b f.f a b" },
             Y: { name: "Fixed-Point",
-                 value: "lambda f.(lambda m.m m) " +
-                             "(lambda a.f (a a))" },
+                 value: "lambda f.(lambda a.f (a a)) " +
+                        "(lambda a.f (a a))" },
         },
     };
 
@@ -670,42 +713,14 @@
                      value: "lambda n f a.f (n f a)" },
         ZERO: { name: "Church Numeral ZERO",
                 value: lambda.combinators.KI.value },
-        ONE: { name: "Church Numeral ONE",
-               value: "lambda f a.f a"},
-        TWO: { name: "Church Numeral TWO",
-               value: "lambda f a.f (f a)"},
-        THREE: { name: "Church Numeral THREE",
-                 value: "lambda f a.f (f (f a))"},
-        FOUR: { name: "Church Numeral FOUR",
-                value: "lambda f a.f (f (f (f a)))"},
-        FIVE: { name: "Church Numeral FIVE",
-                value: "lambda f a.f (f (f (f (f a))))"},
-        SIX: { name: "Church Numeral SIX",
-               value: "lambda f a.f (f (f (f (f (f a)))))"},
-        SEVEN: { name: "Church Numeral SEVEN",
-                 value: "lambda f a.f (f (f (f (f (f (f a))))))"},
-        EIGHT: { name: "Church Numeral EIGHT",
-                 value: "lambda f a.f (f (f (f (f (f (f (f a)))))))"},
-        NINE: { name: "Church Numeral NINE",
-                value: "lambda f a.f (f (f (f (f (f (f (f " +
-                       "(f a))))))))"},
-        TEN: { name: "Church Numeral TEN", value: "SUCCESSOR NINE"},
-        ELEVEN: { name: "Church Numeral ELEVEN",
-                  value: "SUCCESSOR TEN"},
-        TWELVE: { name: "Church Numeral TWELVE",
-                  value: "SUCCESSOR ELEVEN"},
         ADD: { name: "Church Numeral Addition",
                value: "lambda m n f a.m f (n f a)" },
-        PLUS: { name: "Church Numeral Addition",
-                value: "lambda m n f a.m f (n f a)" },
         MULTIPLY: { name: "Church Numeral Multiplication",
                     value: lambda.combinators.B.value },
-        TIMES: { name: "Church Numeral Multiplication",
-                 value: lambda.combinators.B.value },
         POWER: { name: "Church Numeral Exponentiation",
                  value: "lambda m n f a.(n m) f a" },
         "ISZERO?": { name: "Church Numeral Zero Check",
-                  value: "lambda n.n (TRUE FALSE) TRUE" },
+                     value: "lambda n.n (TRUE FALSE) TRUE" },
         PREDECESSOR: { name: "Church Numeral Decrement",
                        value: "lambda n f a.n (lambda g h.h (g f)) " +
                               "(lambda c.a) (lambda b.b)" },
@@ -726,7 +741,7 @@
                          "(lambda u.u)) m) n m))) ((lambda " +
                          "n.lambda f.lambda x. f (n f x)) n)"},
         "LESSEQ?": { name: "Church Numeral Less Than or Equal",
-                  value: "lambda m n.ISZERO? (SUBTRACT m n)" },
+                     value: "lambda m n.ISZERO? (SUBTRACT m n)" },
         "EQUAL?": { name: "Church Numeral Equality",
                     value: "lambda m n.AND (LESSEQ? m n) " +
                            "(LESSEQ? n m)" },
@@ -740,9 +755,33 @@
         FIX: { name: "Fix-point Combinator",
                value: lambda.combinators.Y.value },
         FACTORIAL: { name: "Church Numeral FACTORIAL",
-                     value: "FIX (lambda f n.(EQUAL? n ZERO) ONE " +
+                     value: "FIX (lambda f n.(ISZERO? n) ONE " +
                             "(MULTIPLY n (f (PREDECESSOR n))))" },
+        DEBUG: { name: "Debug",
+                 value: "FIX (lambda f n.(ISZERO? n) n " +
+                        "(f (PREDECESSOR n)))"},
     };
+    (function(library) {
+        var numbers = ["ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX",
+                       "SEVEN", "EIGHT", "NINE", "TEN", "ELEVEN",
+                       "TWELVE", "THIRTEEN", "FOURTEEN", "FIFTEEN",
+                       "SIXTEEN", "SEVENTEEN", "EIGHTEEN", "NINETEEN",
+                       "TWENTY", "TWENTYONE"];
+        for (var ii = 1; ii <= 20; ++ii) {
+            var entry = { name: "Church Numeral " + numbers[ii - 1],
+                          value: null };
+            var expression = "f a";
+            for (var jj = 2; jj <= ii; ++jj)
+                expression = "f (" + expression + ")";
+            entry.value = "lambda f a." + expression;
+            library[numbers[ii - 1]] = entry;
+            library[ii] = entry;
+        }
+
+        library["+"] = library["PLUS"]  = library["ADD"];
+        library["*"] = library["TIMES"] = library["MULTIPLY"];
+        library["="] = library["EQUAL?"];
+    })(lambda.defaultLibrary);
 
     solvo.lambda = function(value) { return lambda.create(value); };
     solvo.runLambdaTests = function(tests) { lambda.runTests(tests); };
@@ -750,8 +789,11 @@
         var result = fn ? self : [];
         Object.keys(lambda.defaultLibrary).forEach(function(name) {
             var entry = lambda.defaultLibrary[name];
-            if (!entry.expression)
+            if (!entry.expression) {
                 entry.expression = lambda.create(entry.value);
+                if (entry.color)
+                    entry.expression.color = entry.color;
+            }
             if (fn)
                 fn.call(self, entry.expression, name);
             else result.push({

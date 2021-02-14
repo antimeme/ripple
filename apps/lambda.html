@@ -6,8 +6,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <style>
  input[type=range] { width: 8%; }
- input[type=text]  { text-align: right; width: 8%; }
+ #steps    { text-align: right; width: 8%; }
+ #size     { text-align: right; width: 8%; }
+ #previous { text-align: right; width: 50%; }
  #canonical { display: none; }
+ .blue { color: blue; }
 </style>
 <title>Lambda Calculus</title>
 <h1>Lambda Calculus</h1>
@@ -18,7 +21,11 @@
 Delay:
 <input id="delay" type="range" min="5" value="50" max="1000" />
 Steps: <input id="steps" type="text" disabled="disabled" />
+Size: <input id="size" type="text" disabled="disabled" />
+<br />
 <button id="clear">Clear</button>
+<button id="restore">Restore</button>
+<input id="previous" type="text" disabled="disabled" />
 <br />
 <button id="library">Library</button>
 <select id="library-expressions">
@@ -26,11 +33,10 @@ Steps: <input id="steps" type="text" disabled="disabled" />
 </select>
 <button id="discover">Discover</button>
 <button id="canonical">Canonical</button>
-<button id="restore">Restore</button>
 
 <p>
     Lambda Calculus is an abstract model of computation.  Other models,
-    such as the Turing Machine are equivalent (proven as the
+    such as the Turing Machine, are equivalent (this is the
     <a href="https://en.wikipedia.org/wiki/Church%E2%80%93Turing_thesis"
     >Church-Turing Thesis</a>).
     This program implements lambda expressions, normal order reduction
@@ -201,16 +207,16 @@ Steps: <input id="steps" type="text" disabled="disabled" />
     program and after a finite number of steps reduces to
     <code>TRUE</code> if the input has a normal form and
     <code>FALSE</code> otherwise.  Here is what that might look like:
-</p><ul><li>
-    <code>HALTS? p</code>
-</li></ul><p>
+</p><blockquote><code>
+      HALTS? p
+</code></blockquote><p>
     Maybe we aren't clever enough to figure out how to implement this
     ourselves but it certainly seems like it might be possible.  But
     we can use the existance of such a program to prove that it's not
     possible.  Let's start by doing this:
-</p><ul><li>
-    <code>(λp.(HALTS? (p p)) ((λm.m m) (λm.m m)) TRUE)</code>
-</li></ul><p>
+</p><blockquote><code>
+      (λp.(HALTS? (p p)) ((λm.m m) (λm.m m)) TRUE)
+</code></blockquote><p>
     Given an input program that can be applied to itself with a normal
     form this program reduces to the mockingbird applied to itself,
     which has no normal form.  Given a program which has no normal
@@ -220,14 +226,13 @@ Steps: <input id="steps" type="text" disabled="disabled" />
     This may seem silly but it's clearly a valid combination of
     expressions.  But what happens when we apply this program to
     itself?
-</p><ul><li>
-    <code>(λm.m m) (λp.(HALTS? (p p)) ((λm.m m) (λm.m m)) TRUE)</code>
-</li></ul><p>
+</p><blockquote><code>
+    (λm.m m) (λp.(HALTS? (p p)) ((λm.m m) (λm.m m)) TRUE)
+</code></blockquote><p>
     Does it halt?  Let's ask our halting checker:
-</p><ul><li>
-    <code>HALTS? ((λm.m m) (λp.(HALTS? (p p))
-                       ((λm.m m) (λm.m m)) TRUE))</code>
-</li></ul><p>
+</p><blockquote><code>
+    HALTS? ((λm.m m) (λp.(HALTS? (p p)) ((λm.m m) (λm.m m)) TRUE))
+</code></blockquote><p>
     What does this reduce to?  Well, it can't possibly reduce to
     <code>TRUE</code>!  If it did that would mean
     <code>HALTS? (p p)</code> must also reduce to
@@ -393,15 +398,16 @@ Steps: <input id="steps" type="text" disabled="disabled" />
  var lexprs     = document.getElementById("library-expressions");
  var discover   = document.getElementById("discover");
  var delay      = document.getElementById("delay");
+ var previous   = document.getElementById("previous");
+ var sizes      = document.getElementById("size");
  var steps      = document.getElementById("steps");
  var stepCount = 0;
  var repeating = false;
- var previous  = null;
 
  // Populate library drop down box
  solvo.forEachLambda(function(expression, name) {
      var option = document.createElement("option");
-     option.setAttribute("value", expression.toString());
+     option.setAttribute("value", expression.toString({showColor: true}));
      option.innerHTML = name;
      lexprs.appendChild(option);
  });
@@ -416,10 +422,13 @@ Steps: <input id="steps" type="text" disabled="disabled" />
 
  var continuousReduce = function() {
      var expr = getExpression();
+     if (!expr)
+         return;
      expr = expr.reduce();
 
      if (!expr.normal) {
          expression.value = expr.toString();
+         size.value = expression.value.length;
          stepCount += 1;
          steps.value = stepCount;
          if (repeating)
@@ -428,7 +437,7 @@ Steps: <input id="steps" type="text" disabled="disabled" />
  };
 
  expression.addEventListener("change", function(event) {
-     previous = expression.value;
+     previous.value = expression.value;
      repeating = false;
      steps.value = stepCount = 0;
      lexprs.value = "";
@@ -436,27 +445,31 @@ Steps: <input id="steps" type="text" disabled="disabled" />
 
  lexprs.addEventListener("change", function(event) {
      if (lexprs.value) {
-         previous = expression.value;
+         previous.value = expression.value;
          expression.value = lexprs.value;
          steps.value = stepCount = 0;
      }
  });
 
  clear.addEventListener("click", function(event) {
-     previous = expression.value;
+     previous.value = expression.value;
      expression.value = "";
      repeating = false;
      steps.value = stepCount = 0;
      lexprs.value = "";
+     size.value = "";
  });
 
  reduce.addEventListener("click", function(event) {
      var expr = getExpression();
+     if (!expr)
+         return;
 
-     if (!previous)
-         previous = expression.value;
+     if (!previous.value)
+         previous.value = expression.value;
      expr = expr.reduce();
      expression.value = expr.toString();
+     size.value = expression.value.length;
      if (!expr.normal) {
          stepCount += 1;
          steps.value = stepCount;
@@ -465,41 +478,41 @@ Steps: <input id="steps" type="text" disabled="disabled" />
  });
 
  repeat.addEventListener("click", function(event) {
-     if (!previous)
-         previous = expression.value;
+     if (!previous.value)
+         previous.value = expression.value;
      steps.value = stepCount = 0;
      repeating = true;
      setTimeout(continuousReduce, delay.value);
  });
 
  restore.addEventListener("click", function(event) {
-     if (previous)
-         expression.value = previous;
+     if (previous.value)
+         expression.value = previous.value;
      steps.value = stepCount = 0;
-     previous = null;
+     previous.value = "";
      repeating = true;
  });
 
  library.addEventListener("click", function(event) {
      var expr = getExpression();
-     expression.value = expr.useLibrary().toString();
+     if (!expr)
+         return;
+     expression.value = expr.applyLibrary().toString();
      repeating = false;
  });
 
  discover.addEventListener("click", function(event) {
      var expr = getExpression();
-     var discovered = false;
-     solvo.forEachLambda(function(current, name) {
-         if (!discovered && expr.equals(current)) {
-             expression.value = name;
-             discovered = true;
-         }
-     });
+     if (!expr)
+         return;
+     expression.value = expr.reverseLibrary().toString();
      repeating = false;
  });
 
  canonical.addEventListener("click", function(event) {
      var expr = getExpression();
+     if (!expr)
+         return;
      expression.value = expr.__canonicalize().toString();
      repeating = false;
  });
