@@ -12873,19 +12873,77 @@
         <section>
             <h2>Lambda Calculus</h2>
             <p>
-                Expressions
+                &#x03bb;f.(&#x03bb;a.f (a a)) (&#x03bb;a.f (a a))
             </p>
-            <ul>
-                <li>
-                    Variable: a
-                </li><li>
-                    Abstraction: &#x03bb;a.E
-                </li><li>
-                    Application: E<sub>1</sub> E<sub>2</sub>
-                </li><li>
-                    Grouping: (E)
-                </li>
-            </ul>
+        </section>
+        <section>
+            <h3>Expressions</h3>
+            <p>
+                Expressions are combinations of the following:
+            </p><ul><li class="fragment">
+                Variable: [identifier]
+            </li><li class="fragment">
+                Abstraction: &#x03bb;[identifier].[expression]
+            </li><li class="fragment">
+                Application: [expression] [expression]
+            </li><li class="fragment">
+                Grouping: ([expression])
+            </li></ul>
+        </section>
+        <section>
+            <h3>Examples</h3>
+            <ul><li class="fragment">
+                a
+            </li><li class="fragment">
+                &#x03bb;a.a
+            </li><li class="fragment">
+                b &#x03bb;a.a
+            </li><li class="fragment">
+                (&#x03bb;a.a a) &#x03bb;a.a a
+            </li><li class="fragment">
+                &#x03bb;f.(&#x03bb;a.f (a a)) (&#x03bb;a.f (a a))
+            </li></ul>
+        </section>
+        <section>
+            <h3>Equivalence</h3>
+            <p>
+                Chaning the identifier used in an abstraction
+                does not change the meaning of an expression.
+            </p><ul><li class="fragment">
+                &#x03bb;a.a a &#x2251; &#x03bb;b.b b
+            </li><li class="fragment">
+                &#x03bb;f.(&#x03bb;a.f (a a)) (&#x03bb;a.f (a a))
+                &#x2251;<br />
+                &#x03bb;g.(&#x03bb;b.g (b b)) (&#x03bb;a.g (b b))
+            </li></ul>
+        </section>
+        <section>
+            <h3>Reduction</h3>
+            <p>
+                A reduction replaces the first variable in some
+                abstraction with the first element of  expression
+                that follows it.  Let's look at some reductions.
+            </p>
+        </section>
+        <section>
+            <h3>Reduction: Examples</h3>
+            <p>
+                (&#x03bb;a.a x) (&#x03bb;a.a))
+            </p><ul><li class="fragment">
+                (&#x03bb;a.<span class="intro">a x</span>) (&#x03bb;a.a)
+            </li><li class="fragment">
+                (&#x03bb;a.<span class="intro">a</span>) x
+            </li><li class="fragment">
+                x
+            </li></ul>
+        </section>
+        <section>
+            <h3>Free Variables</h3>
+            <ul><li class="fragment">
+                a b c
+            </li><li class="fragment">
+                (&#x03bb;a.a a) b c
+            </li></ul>
         </section>
         <section>
             <h3>Combinators</h3>
@@ -12897,43 +12955,43 @@
         </section>
         <section>
             <h3>Combinator Birds</h3>
-            <ul>
-                <li>
-                    Ibis(Identity): &#x03bb;a.a
-                </li><li>
-                    Mockingbird(Self-Apply): &#x03bb;a.a a
-                </li><li>
-                    Kestral(True): &#x03bb;ab.a
-                </li><li>
-                    Kite(False): &#x03bb;ab.b
-                </li><li>
-                    Cardinal: &#x03bb;fab.f b a
-                </li><li>
-                    Bluebird(Compose):
-                    &#x03bb;fga.f (g a)
-                </li><li>
-                    Thrush: &#x03bb;af.f a
-                </li><li>
-                    Vireo(Pair): &#x03bb;abf.f a b
-                </li><li>
-                    Blackbird:
-                    &#x03bb;fgab.f (g a b)
-                </li><li>
-                    Starling: &#x03bb;abc.a c (b c)
-                </li>
-            </ul>
+            <ul><li>
+                Ibis(Identity): &#x03bb;a.a
+            </li><li>
+                Mockingbird(Self-Apply): &#x03bb;a.a a
+            </li><li>
+                Kestral(Const/True): &#x03bb;a b.a
+            </li><li>
+                Kite(False/Zero): &#x03bb;a b.b
+            </li><li>
+                Cardinal(Flip/Not): &#x03bb;f a b.f b a
+            </li><li>
+                Bluebird(Compose):
+                &#x03bb;f g a.f (g a)
+            </li><li>
+                Thrush(Power): &#x03bb;a f.f a
+            </li><li>
+                Vireo(Pair): &#x03bb;a b f.f a b
+            </li><li>
+                Blackbird:
+                &#x03bb;f g a b.f (g a b)
+            </li><li>
+                Starling: &#x03bb;a b c.a c (b c)
+            </li></ul>
         </section>
         <section>
             <h3>Combinator Data Structures</h3>
             <ul>
                 <li>
-                    PAIR: &#x03bb;abf.f a b [Verio]
+                    PAIR: &#x03bb;a b f.f a b [Verio]
                 </li><li>
-                    FIRST: &#x03bb;p.p &#x03bb;ab.a
-                    [&#x03bb;p.p Kestral]
+                    HEAD: &#x03bb;p.p TRUE
                 </li><li>
-                    REST: &#x03bb;p.p &#x03bb;ab.b
-                    [&#x03bb;p.p Kite]
+                    TAIL: &#x03bb;p.p FALSE
+                </li><li>
+                    NIL: &#x03bb;a.TRUE
+                </li><li>
+                    ISNIL: &#x03bb;p.p &#x03bb;a b.FALSE
                 </li>
             </ul>
         </section>
@@ -12941,130 +12999,121 @@
             <h3>Combinator Logic</h3>
             <ul>
                 <li>
-                    TRUE: &#x03bb;ab.a [Kestral]
+                    TRUE: &#x03bb;a b.a [Kestral]
                 </li><li>
-                    FALSE: &#x03bb;ab.b [Kite]
+                    FALSE: &#x03bb;a b.b [Kite]
                 </li><li>
-                    NOT: &#x03bb;p.p FALSE TRUE
+                    NOT: &#x03bb;p a b.p b a [Cardinal]
                 </li><li>
-                    AND: &#x03bb;pq.p q p
+                    AND: &#x03bb;p q.p q p
                 </li><li>
-                    OR: &#x03bb;pq.p p q
+                    OR: &#x03bb;p q.p p q
                 </li><li>
-                    BOOLEQ: &#x03bb;pq.p q (NOT q)
+                    BOOLEQ: &#x03bb;p q.p q (NOT q)
                 </li>
             </ul>
         </section>
         <section id="combinator-stroke">
             <h3>Sheffer Stroke</h3>
             <ul><li>
-                NAND: &#x03bb;ab.a (b FALSE TRUE) TRUE
+                NAND: &#x03bb;p q.p (q FALSE TRUE) TRUE
             </li><li>
-                NOT: &#x03bb;a.NAND a a
+                NOT: &#x03bb;p.NAND p p
             </li><li>
-                AND: &#x03bb;ab.NOT (NAND a b)
+                AND: &#x03bb;p q.NOT (NAND p q)
             </li><li>
-                OR: &#x03bb;ab.NAND (NOT a) (NOT a)
+                OR: &#x03bb;p q.NAND (NOT p) (NOT q)
             </li><li>
-                IMPLIES: &#x03bb;ab.NAND a (NOT b)
+                IMPLIES: &#x03bb;p q.NAND p (NOT q)
             </li><li>
-                BOOLEQ: &#x03bb;ab.AND (IMPLIES a b) (IMPLIES b a)
+                BOOLEQ: &#x03bb;p q.AND (IMPLIES p q) (IMPLIES q p)
             </li></ul>
         </section>
         <section>
             <h3>Combinator Numbers</h3>
             <ul><li>
-                ZERO: &#x03bb;fa.a [Kite/FALSE]
+                ZERO: &#x03bb;f a.a [Kite/FALSE]
             </li><li>
-                SUCCESSOR: &#x03bb;nfa.f (n f a)
+                SUCCESSOR: &#x03bb;n f a.f (n f a)
             </li><li>
-                ADD: &#x03bb;nk.n SUCCESSOR k
+                ADD: &#x03bb;m n.n SUCCESSOR m
             </li><li>
-                MULTIPLY: &#x03bb;nkf.n (k f) [Bluebird]
+                MULTIPLY: &#x03bb;m n f.m (n f) [Bluebird]
             </li><li>
-                POWER: &#x03bb;nk.k n [Thrush]
+                POWER: &#x03bb;n m.m n [Thrush]
             </li><li>
-                ISZERO: &#x03bb;n.n (&#x03bb;k.FALSE) TRUE
+                ISZERO: &#x03bb;n.n (&#x03bb;a.FALSE) TRUE
             </li></ul>
         </section>
         <section>
             <h3>Combinator Subtraction</h3>
-            <ul>
-                <li>
-                    PHI: &#x03bb;p.PAIR (REST p) (SUCCESSOR (REST p))
-                </li><li>
-                    PREDECESSOR: &#x03bb;n.FIRST
-                    (n PHI (PAIR ZERO ZERO))
-                </li><li>
-                    SUBTRACT: &#x03bb;nk.k PREDECESSOR n
-                </li><li>
-                    LESSEQ: &#x03bb;nk.ISZERO (SUBTRACT n k)
-                </li><li>
-                    EQ: &#x03bb;nk.AND (LESSEQ n k) (LESSEQ k n)
-                </li><li>
-                    GREATER: &#x03bb;nk.NOT (LESSEQ n k)
-                </li>
-            </ul>
+            <ul><li>
+                PHI: &#x03bb;p.PAIR (REST p) (SUCCESSOR (REST p))
+            </li><li>
+                PREDECESSOR: &#x03bb;n.FIRST
+                (n PHI (PAIR ZERO ZERO))
+            </li><li>
+                SUBTRACT: &#x03bb;nk.k PREDECESSOR n
+            </li><li>
+                LESSEQ: &#x03bb;nk.ISZERO (SUBTRACT n k)
+            </li><li>
+                EQ: &#x03bb;nk.AND (LESSEQ n k) (LESSEQ k n)
+            </li><li>
+                GREATER: &#x03bb;nk.NOT (LESSEQ n k)
+            </li></ul>
         </section>
         <section>
             <h3>Combinator Basis: S and K</h3>
-            <ul>
-                <li>
-                    Ibis: I = S K K = S K S
-                </li><li>
-                    Vireo: V = (S (K ((S ((S (K ((S (K S)) K))) S))
-                    (K K)))) ((S (K (S ((S K) K)))) K)
-                </li><li>
-                    Mockingbird: M = ((S((SK)K))((SK)K))
-                </li><li>
-                    Kite: Ki = (K((SK)K))
-                </li><li>
-                    Cardinal: C = ((S((S(K((S(KS))K)))S))(KK))
-                </li><li>
-                    Bluebird: B = ((S(KS))K)
-                </li><li>
-                    Thrush: Th = ((S(K(S((SK)K))))K)
-                </li><li>
-                    Vireo: V = (S (K ((S ((S (K ((S (K S)) K))) S))
-                    (K K)))) ((S (K (S ((S K) K)))) K)
-                </li><li>
-                    Blackbird: Bl = ((S(K((S(KS))K)))((S(KS))K))
-                </li><li>
-                    Kestral: K
-                </li><li>
-                    Starling: S
-                </li>
-            </ul>
+            <ul><li>
+                Ibis: I = S K K = S K S
+            </li><li>
+                Vireo: V = (S (K ((S ((S (K ((S (K S)) K))) S))
+                (K K)))) ((S (K (S ((S K) K)))) K)
+            </li><li>
+                Mockingbird: M = ((S((SK)K))((SK)K))
+            </li><li>
+                Kite: Ki = (K((SK)K))
+            </li><li>
+                Cardinal: C = ((S((S(K((S(KS))K)))S))(KK))
+            </li><li>
+                Bluebird: B = ((S(KS))K)
+            </li><li>
+                Thrush: Th = ((S(K(S((SK)K))))K)
+            </li><li>
+                Vireo: V = (S (K ((S ((S (K ((S (K S)) K))) S))
+                (K K)))) ((S (K (S ((S K) K)))) K)
+            </li><li>
+                Blackbird: Bl = ((S(K((S(KS))K)))((S(KS))K))
+            </li><li>
+                Kestral: K
+            </li><li>
+                Starling: S
+            </li></ul>
         </section>
         <section>
             <h3>Combinator Basis</h3>
             <p>
                 Basis: K I C B M
-            </p>
-            <ul>
-                <li>
-                    Ki = K I = C K
-                </li><li>
-                    Bl = B B B
-                </li><li>
-                    Th = C I
-                </li><li>
-                    V = B C Th = B C (C I)
-                </li>
-            </ul>
+            </p><ul><li>
+                Ki = K I = C K
+            </li><li>
+                Bl = B B B
+            </li><li>
+                Th = C I
+            </li><li>
+                V = B C Th = B C (C I)
+            </li></ul>
         </section>
         <section>
             <h3>Y Combinator</h3>
-            <ul>
-                <li>
-                    Y = &#x03bb;f.(&#x03bb;a.f (a a))
-                    (&#x03bb;a.f (a a))
-                </li><li>
-                    Y g = g (Y g) = g (g (Y g)) = ...
-                </li><li>
-                    Y = S (K (S I I)) (S (S (K S) K) (K (S I I)))
-                </li>
-            </ul>
+            <ul><li>
+                Y = &#x03bb;f.(&#x03bb;a.f (a a))
+                (&#x03bb;a.f (a a))
+            </li><li>
+                Y g = g (Y g) = g (g (Y g)) = ...
+            </li><li>
+                Y = S (K (S I I)) (S (S (K S) K) (K (S I I)))
+            </li></ul>
         </section>
     </section></div></div>
     <script src="lib/reveal/head.min.js"></script>
