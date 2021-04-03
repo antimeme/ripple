@@ -16,6 +16,13 @@
 // <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
+// A collection of tools for solving equations.
+//
+// The solvo.lambda object is a complete implementation of the untyped
+// lambda calculus.  For a brief introduction see:
+//     http://www.cs.yale.edu/homes/hudak/CS201S08/lambda.pdf
+//     https://en.wikipedia.org/wiki/Lambda_calculus
+//
 // :TODO: mixing bound and free variables should report an error
 // :TODO: allow use of internal library on command line
 (function(solvo) {
@@ -201,7 +208,6 @@
                 result.variables = value.variables.slice();
                 result.values    = value.values.slice();
                 result.normal    = value.normal;
-                result.__canonical = false;
             } else if (typeof(value) === "string") {
                 result = this.__parse(this.__tokenize(value));
             } else {
@@ -209,8 +215,8 @@
                 result.variables = [];
                 result.values    = [];
                 result.normal    = false;
-                result.__canonical = false;
             }
+            result.__canonical = false;
             return result;
         },
 
@@ -344,10 +350,11 @@
             // Return true if and only if this expression and the other
             // are the same from the perspective of lambda calculus.
             // For this purpose the names of bound variables don't
-            // matter so "lambda a.a b" and "lambda x.x b" are equal.
+            // matter so "lambda a.a b" and "lambda c.c b" are equal.
+            if (!lambda.isPrototypeOf(other))
+                return false;
             var aa = this.__canonicalize();
-            var bb = lambda.isPrototypeOf(other) ?
-                     other.__canonicalize() : lambda.create();
+            var bb = other.__canonicalize();
             return (aa.variables.length == bb.variables.length) &&
                    (aa.values.length === bb.values.length) &&
                    aa.variables.every(function(variable, index) {
@@ -381,30 +388,7 @@
             return result;
         },
 
-        forEachFree: function(fn, self) {
-            var result = fn ? [] : this;
-            var variables = getVariables();
-            Object.keys(variables).forEach(function(variable, index) {
-                if (!variables[variable])
-                    variable = variable; // skip bound variables
-                else if (fn)
-                    fn.call(self, variable, index);
-                else result.push(variable);
-            });
-            return result;
-        },
-
-        forEachBound: function(fn, self) {
-            var result = fn ? [] : this;
-            this.variables.forEach(function(variable, index) {
-                if (fn)
-                    fn.call(self, variable, index);
-                else result.push(variable);
-            });
-            return result;
-        },
-
-        replace: function(variable, replacement) {
+        __replace: function(variable, replacement) {
             // Replace a variable with some value except in cases
             // where some lambda argument shadows the variable
             var result = this;
@@ -417,7 +401,8 @@
                 if (lambda.isPrototypeOf(value)) {
                     if (!value.variables.some(
                         function(v) { return v === variable; }))
-                        current = value.replace(variable, replacement);
+                        current = value.__replace(
+                            variable, replacement);
                 } else if (value === variable)
                     current = replacement;
                 values.push(current);
@@ -440,7 +425,7 @@
             if (this.variables.length === 0)
                 throw "Cannot apply argument to expression";
             var result = lambda.create(this);
-            return result.replace(result.variables.shift(), argument);
+            return result.__replace(result.variables.shift(), argument);
         },
 
         applyLibrary: function(library, exclude) {
@@ -662,7 +647,7 @@
             {test: "(lambda a.a) (lambda b.b)", expected: "lambda c.c",
              description: [
                  "Check that variable names don't matter."]},
-            {test: "(lambda a.lambda b.a) b", expected: "lambda c.b",
+            {test: "(lambda a.lambda b.a) b", expected: "lambda a.b",
              description: [
                  "Tricks a naive implementation into producing the ",
                  "mockingbird.  The free variable b is not the same ",

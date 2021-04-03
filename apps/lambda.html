@@ -28,11 +28,13 @@ Size: <input id="size" type="text" disabled="disabled" />
 <input id="previous" type="text" disabled="disabled" />
 <br />
 <button id="library">Library</button>
+<button id="discover">Discover</button>
 <select id="library-expressions">
     <option></option>
 </select>
-<button id="discover">Discover</button>
 <button id="canonical">Canonical</button>
+<button id="variables">Variables</button>
+<input id="vdisplay" type="text" disabled="disabled" />
 
 <p>
     Lambda Calculus is an abstract model of computation.  Other models,
@@ -395,8 +397,10 @@ Size: <input id="size" type="text" disabled="disabled" />
  var restore    = document.getElementById("restore");
  var clear      = document.getElementById("clear");
  var library    = document.getElementById("library");
- var lexprs     = document.getElementById("library-expressions");
  var discover   = document.getElementById("discover");
+ var lexprs     = document.getElementById("library-expressions");
+ var variables  = document.getElementById("variables");
+ var vdisplay   = document.getElementById("vdisplay");
  var delay      = document.getElementById("delay");
  var previous   = document.getElementById("previous");
  var sizes      = document.getElementById("size");
@@ -458,6 +462,7 @@ Size: <input id="size" type="text" disabled="disabled" />
      steps.value = stepCount = 0;
      lexprs.value = "";
      size.value = "";
+     vdisplay.value = "";
  });
 
  reduce.addEventListener("click", function(event) {
@@ -507,6 +512,13 @@ Size: <input id="size" type="text" disabled="disabled" />
          return;
      expression.value = expr.reverseLibrary().toString();
      repeating = false;
+ });
+
+ variables.addEventListener("click", function(event) {
+     var expr = getExpression();
+     if (!expr)
+         return;
+     vdisplay.value = Object.keys(expr.getVariables()).join(' ');
  });
 
  canonical.addEventListener("click", function(event) {
