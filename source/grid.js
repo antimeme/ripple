@@ -324,6 +324,13 @@
         } else throw "Options are invalid";
 
         if (start && end) {
+            // Ensure that cells inside the rectangle are included
+            for (var row = Math.min(start.row, end.row);
+                row <= Math.max(start.row, end.row); ++row)
+                for (var col = Math.min(start.col, end.col);
+                    col <= Math.max(start.col, end.col); ++col)
+                    visit({row: row, col: col});
+
             // Follow the rectangle marked by start and end
             this.eachSegment({x: start.x, y: start.y},
                              {x: start.x, y: end.y}, visit);
@@ -334,12 +341,6 @@
             this.eachSegment({x: end.x, y: start.y},
                              {x: start.x, y: start.y}, visit);
 
-            // Ensure that cells inside the rectangle are included
-            for (var row = Math.min(start.row, end.row);
-                row <= Math.max(start.row, end.row); ++row)
-                for (var col = Math.min(start.col, end.col);
-                    col <= Math.max(start.col, end.col); ++col)
-                    visit({row: row, col: col});
         } else if (start && radius) {
             var current, id, queue = [this.markCenter({
                 row: start.row, col: start.col})];
