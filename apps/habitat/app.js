@@ -18,6 +18,9 @@
         this.rows = (config && config.rows) ? config.rows : 5;
         this.cols = (config && config.cols) ? config.cols : 5;
     };
+    createStation.prototype.getDistrict = function(row, col) {
+        
+    };
 
     var station = createStation({});
 
