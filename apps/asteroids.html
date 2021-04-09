@@ -53,13 +53,14 @@
  // 10,000 points an extra life was awarded.
  fascia.ready(function() {
      "use strict";
-     var o_newlife = Math.max(ripple.paramInt(
-         "newlife"), 1000) || 10000;
-     var o_nasteroids     = Math.max(ripple.paramInt("nasteroids"), 0);
-     var o_saucer_respawn = Math.max(ripple.paramInt(
-         "saucer-respawn") || 8000, 1000);
-     var o_small_score    = Math.max(ripple.paramInt(
-         "small-score"), 0) || 40000;
+     var o_newlife = ripple.paramInteger("newlife", {
+         min: 500, default: 10000});
+     var o_nasteroids = ripple.paramInteger("nasteroids", {
+         min: 0, default: 8});
+     var o_saucer_respawn = ripple.paramInteger("saucer-respawn", {
+         min: 1000, default: 8000});
+     var o_small_score    = ripple.paramInteger("small-score", {
+         min: 0, default: 40000});
      var o_messy   = ripple.paramBoolean("messy");
      var o_rings   = ripple.paramBoolean("rings");
      var o_shields = ripple.paramBoolean("shields");

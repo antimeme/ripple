@@ -23,7 +23,7 @@
      * Parameter values either from page search string or Node.js
      * environemnt variables */
     var __params = undefined;
-    ripple.param = function(name) {
+    ripple.param = function(name, config) {
         if (!__params) {
             __params = {};
 
@@ -42,29 +42,27 @@
             } else if (typeof process !== 'undefined')
                 __params = process.env;
         }
-        return __params[name];
+        return (name in __params) ? __params[name] :
+               ((config && config["default"]) ? config["default"] :
+                undefined);
     };
 
-    ripple.paramBoolean = function(name) {
-        var result = ripple.param(name);
-        ['false', 'f', 'no', 'n', 'off', 0].forEach(function(value) {
-            if (result === value)
-                result = undefined;
-        });
-        return result ? true : false;
+    ripple.paramBoolean = function(name, config) {
+        var result = ripple.param(name, config);
+        if (typeof(result) === "string")
+            result = result.toLowerCase();
+        result = (['false', 'f', 'no', 'n', 'off', 0].some
+            (function(value) { return value === result; }));
     };
 
-    ripple.paramInt = function(name, config) {
-        var result = ripple.param(name);
-        if (isNaN(result)) {
-            if (config && !isNaN(config.default))
-                result = config.default;
-        } else {
+    ripple.paramInteger = function(name, config) {
+        var result = ripple.param(name, config);
+        if (!isNaN(result)) {
             result = parseInt(result, 10);
-            if (config && config.min)
-                result = Math.min(result, config.min);
-            if (config && config.max)
-                result = Math.max(result, config.max);
+            if (config && !isNaN(config.min))
+                result = Math.max(result, config.min);
+            if (config && !isNaN(config.max))
+                result = Math.min(result, config.max);
         }
         return result;
     };

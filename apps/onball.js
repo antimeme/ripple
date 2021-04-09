@@ -272,9 +272,9 @@
         var parent = document.body;
         var shapeName = ripple.param('shape') in shapes ?
                         ripple.param('shape') : 'cube';
-        var steps = ripple.paramInt(
+        var steps = ripple.paramInteger(
             'steps', {default: 0, min: 0, max: 8});
-        var cull = ripple.paramInt(
+        var cull = ripple.paramInteger(
             'cull', {default: 0, min: 0, max: 100});
         var minzoom = 1.1;
         var camera = new THREE.PerspectiveCamera(
