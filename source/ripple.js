@@ -20,8 +20,11 @@
     'use strict';
 
     /**
-     * Parameter values either from page search string or Node.js
-     * environemnt variables */
+     * Routines to retrieve parameter values either from page
+     * search string or Node.js environemnt variables.  Support
+     * for default values is included:
+     *     ripple.param("paramname", {default: "value"});
+     * This provides strings.  Other types are included below. */
     var __params = undefined;
     ripple.param = function(name, config) {
         if (!__params) {
@@ -51,7 +54,8 @@
         var result = ripple.param(name, config);
         if (typeof(result) === "string")
             result = result.toLowerCase();
-        result = (['false', 'f', 'no', 'n', 'off', 0].some
+        return (["false", "f", "no", "n",
+                "off", "disable", "disabled", 0].some
             (function(value) { return value === result; }));
     };
 
@@ -68,7 +72,9 @@
     };
 
     /**
-     * Call given function when document is ready */
+     * Call given function when document is ready.  This ensures
+     * that the browser has all the information needed before
+     * scripts begin executing. */
     ripple.ready = function(fn) {
         if (document.attachEvent ? (document.readyState === "complete") :
             (document.readyState !== "loading"))
@@ -118,7 +124,14 @@
         });
     };
 
-    // Creates a DOM element with attributes.
+    /**
+     * Creates a DOM element with attributes.  This is a shortcut
+     * for document.createElement followed by some number of calls
+     * to the setAttribute method on DOM elements.  Any arguments
+     * after the second are added as child elements.  If they are
+     * strings they are wrapped with document.createTextNode()
+     * first.  Arrays are assumed to contain strings which are joined
+     * by white space.  Otherwise arguments are added directly. */
     ripple.createElement = function(name, attrs) {
         var result = document.createElement(name);
         var ii, current;
@@ -197,21 +210,31 @@
     ripple.isVisible = function(element) {
         return !!(element.offsetWidth || element.offsetHeight ||
                   element.getClientRects().length); };
+
     ripple.toggleVisible = function(element, display) {
         if (ripple.isVisible(element))
             ripple.hide(element);
         else ripple.show(element, display);
         return element;
     };
+
     ripple.show = function(element, display) {
         element.style.display = display ? display : 'block';
         return element;
     };
+
     ripple.hide = function(element) {
         element.style.display = 'none';
         return element;
     };
 
+    /**
+     * Provide the browser with the supplied object as a JSON download.
+     * This would normally be called from within a button handler or
+     * something similar.
+     *
+     * @param obj Javascript object to be converted to JSON
+     * @param name file name to present in browser */
     ripple.downloadJSON = function(obj, name) {
         var data = "data:text/json;charset=utf-8," +
                    encodeURIComponent(JSON.stringify(obj));
@@ -230,9 +253,9 @@
      * copied to the top level object x and y.  Applications can use
      * that unless multitouch support is needed.
      *
-     * @event DOM event from which to extract points
-     * @element (optional) DOM element where event occured
-     * @scalefn (optional) function called to adjust coordinates
+     * @param event DOM event from which to extract points
+     * @param element (optional) DOM element where event occured
+     * @param scalefn (optional) function called to adjust coordinates
      * @return object containing x (number), y (number),
      *         targets (array) and changed (array) */
     ripple.getInputPoints = function(event, element, scalefn) {
@@ -356,6 +379,7 @@
         }
         if (req) req.apply(elem);
     };
+
     ripple.exitFullscreen = function() {
         var efs = document.exitFullscreen ||
                   document.exitFullScreen;
@@ -368,6 +392,7 @@
         console.log("efs");
         if (efs) efs.apply(document);
     };
+
     ripple.toggleFullscreen = function(elem) {
         var fse = document.fullscreenElement ||
                   document.fullScreenElement;
@@ -382,43 +407,47 @@
 
     // === Pairing Functions
 
-    // Represents a reversable transformation from a pair of positive
-    // integers to a single positive integer.
-    //   http://www.math.drexel.edu/~tolya/cantorpairing.pdf
-    var cantorPair = {
-        name: "Cantor",
-        pair: function(x, y) {
-            return (x + y) * (x + y + 1) / 2 + y; },
-        unpair: function(z) {
-            var w = Math.floor((Math.sqrt(8 * z + 1) - 1) / 2);
-            var t = (w * w + w) / 2;
-            var y = z - t;
-            return {x: w - y, y: y};
+    var pairFunctions = {
+        cantor: {
+            // Represents a reversable transformation from a pair of
+            // positive integers to a single positive integer.
+            //   http://www.math.drexel.edu/~tolya/cantorpairing.pdf
+            pair: function() {
+                return (x + y) * (x + y + 1) / 2 + y;
+            },
+            unpair: function(z) {
+                var w = Math.floor((Math.sqrt(8 * z + 1) - 1) / 2);
+                var t = (w * w + w) / 2;
+                var y = z - t;
+                return {x: w - y, y: y};
+            }
+        },
+        szudzik: {
+            // Represents a reversable transformation from a pair of
+            // positive integers to a single positive integer.
+            //   http://szudzik.com/ElegantPairing.pdf
+            pair: function(x, y) {
+                return (x >= y) ? x * x + x + y :  y * y + x; },
+            unpair: function(z) {
+                var rz = Math.floor(Math.sqrt(z));
+                return ((z - rz * rz < rz) ?
+                        {x: z - rz * rz, y: rz } :
+                        {x: rz, y: z - rz * rz - rz});
+            }
         }
     };
 
-    // Represents a reversable transformation from a pair of positive
-    // integers to a single positive integer.
-    //   http://szudzik.com/ElegantPairing.pdf
-    var szudzikPair = {
-        name: "Szudzik",
-        pair: function(x, y) {
-            return (x >= y) ? x * x + x + y :  y * y + x; },
-        unpair: function(z) {
-            var rz = Math.floor(Math.sqrt(z));
-            return ((z - rz * rz < rz) ?
-                    {x: z - rz * rz, y: rz } :
-                    {x: rz, y: z - rz * rz - rz});
-        }
-    };
-
-    ripple.pair = function(x, y) {
+    ripple.pair = function(x, y, method) {
+        var method = (method && method in pairFunctions) ?
+                     pairFunctions[method] : pairFunctions.szudzik;
         var nx = (x >= 0) ? (2 * x) : (-2 * x - 1);
         var ny = (y >= 0) ? (2 * y) : (-2 * y - 1);
-        return szudzikPair.pair(nx, ny);
+        return method.pair(nx, ny);
     };
     ripple.unpair = function(z, pair) {
-        var result = szudzikPair.unpair(z);
+        var method = (method && method in pairFunctions) ?
+                     pairFunctions[method] : pairFunctions.szudzik;
+        var result = method.unpair(z);
         if (result.x % 2)
             result.x = -(result.x + 1);
         if (result.y % 2)
