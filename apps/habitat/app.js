@@ -28,16 +28,31 @@
         grid: grid.create({type: "square", size: 100}),
         wheel: function(event, camera) {
             camera.zoom(1 + 0.1 * event.y); },
+        drag: function(event, camera) {
+            camera.pan({
+                x: (event.last.x - event.current.x) /
+                camera.scale,
+                y: (event.last.y - event.current.y) /
+                camera.scale }); },
         draw: function(ctx, camera, now) {
             var size = Math.min(camera.height, camera.width);
 
             this.grid.map({
-                start: {x: -camera.width / 4, y: -camera.height / 4},
-                end: {x: camera.width / 4, y: camera.height / 4}
+                start: camera.toWorldFromScreen({x: 0, y: 0}),
+                end:   camera.toWorldFromScreen(
+                    {x: camera.width, y: camera.height})
             }, function(node) {
+                if ((node.row < 0) || (node.row > 10) ||
+                    (node.col < 0) || (node.col > 10))
+                    return;
+
+                var colors = ["blue", "red", "green",
+                              "cyan", "magenta", "yellow"];
+
                 ctx.beginPath();
                 this.grid.draw(ctx, this.grid.markCenter(node));
-                ctx.fillStyle = "rgb(128,128,192)";
+                ctx.fillStyle = colors[(node.col + node.row) %
+                    colors.length];
                 ctx.fill();
                 ctx.strokeStyle = "rgb(64,64,160)";
                 ctx.lineWidth = 5;
