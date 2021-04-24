@@ -12,6 +12,51 @@
         this.pathf    = require("./ripple/pathf.js");
     }
 
+    // A building is a single structure inside a habitat.
+    var Building = {
+        create: function(config) {
+            var result = Object.create(this);
+            var rand = (config && config.rand) ? config.rand : Math;
+            var lot = (config && config.lot) ? config.lot :
+                      {start: {row: -10, col: -10},
+                       end:   {row: 10, col: 10}};
+            result.start = {
+                row: Math.min(lot.start.row, lot.end.row),
+                col: Math.min(lot.start.col, lot.end.col) };
+            result.end = {
+                row: Math.max(lot.start.row, lot.end.row),
+                col: Math.max(lot.start.col, lot.end.col) };
+            if (Math.abs(result.start.row - result.end.row) > 10) {
+                result.start.row += 1 + Math.floor(rand.random() * 3);
+                result.end.row -= 1 + Math.floor(rand.random() * 3);
+            }
+            if (Math.abs(result.start.col - result.end.col) > 10) {
+                result.start.col += 1 + Math.floor(rand.random() * 3);
+                result.end.col -= 1 + Math.floor(rand.random() * 3);
+            }
+            return result;
+        },
+        draw: function(ctx, grid, node) {
+            ctx.beginPath();
+            ctx.moveTo(node.x + this.start.row,
+                       node.y + this.start.col);
+            ctx.lineTo(node.x + this.end.row,
+                       node.y + this.start.col);
+            ctx.lineTo(node.x + this.end.row,
+                       node.y + this.end.col);
+            ctx.lineTo(node.x + this.start.row,
+                       node.y + this.end.col);
+            ctx.lineTo(node.x + this.start.row,
+                       node.y + this.start.col);
+            ctx.fillStyle = "rgb(128, 128, 128)";
+            ctx.fill();
+            ctx.lineWidth = 1;
+            ctx.lineCap   = "round";
+            ctx.strokeStyle = "rgb(192, 192, 240)";
+            ctx.stroke();
+        },
+    };
+
     // A district is a substantial section of a space station.
     // Districts contain buildings and other structures that have an
     // effect on the station and its population.  Districts have a
@@ -21,29 +66,141 @@
     var District = {
         create: function(config) {
             var result = Object.create(this);
-            result.row = (config && config.row) ? config.row : 0;
-            result.col = (config && config.col) ? config.col : 0;
             result.grid = grid.create({type: "square", size: 1});
-
-            // For now we randomly assign a district type
-            var rand   = (config && config.random) ?
-                         config.random : Math;
-            var names = Object.keys(this.types);
-            result.type = this.types[
-                names[Math.floor(rand.random() * names.length)]];
+            result.row  = (config && config.row) ? config.row : 0;
+            result.col  = (config && config.col) ? config.col : 0;
+            result.rand = (config && config.random) ?
+                          config.random : Math;
+            if (config && config.type) {
+                result.type = config.type;
+            } else {
+                var names = Object.keys(this.types);
+                var name  = names[Math.floor(
+                    result.rand.random() * names.length)];
+                result.type = this.types[name];
+            }
 
             result.buildings = [];
-            for (var ii = 0; ii < 4; ++ii)
-                result.buildings.push(Math.random());
+            var size = Math.floor((this.cellCount - 1) / 2);
+            [{start: {row:  1, col:  1}, end: {row:  size, col:  size}},
+             {start: {row: -1, col:  1}, end: {row: -size, col:  size}},
+             {start: {row: -1, col: -1}, end: {row: -size, col: -size}},
+             {start: {row:  1, col: -1}, end: {row:  size, col: -size}}]
+                .forEach(function(lot) {
+                    result.__createRandomBuilding(lot);
+                });
             return result;
+        },
+
+        __rand: Math,
+        __createRandomBuilding: function(lot) {
+            var result = null;
+            var size = Math.min(
+                Math.abs(lot.start.row - lot.end.row),
+                Math.abs(lot.start.col - lot.end.col));
+            var determinant = this.rand.random();
+            if (determinant < 0.10) {
+                // Leave the lot empty
+            } else if ((size > 20) && (determinant < 0.55)) {
+                // Split the lot into four
+                var subsize = Math.floor((size - 1) / 2);
+                [{start: {row: lot.start.row, col: lot.start.col},
+                  end:   {row: lot.end.row, end: lot.end.col}}]
+                    .forEach(function(lot) {
+                        this.__createRandomBuilding(lot);
+                    }, this);
+            } else {
+                // Place a building in the lot
+                result = Building.create({
+                    lot: lot, district: this});
+            }
+            if (result)
+                this.buildings.push(result);
         },
 
         cellCount: 255,
         types: {
-            residential:  { color: "lightblue" },
-            commercial:   { color: "orangered" },
-            industrial:   { color: "gray"      },
-            recreational: { color: "green"     }
+            residential:  {
+                color: "rgb(192, 192, 255)",
+                iconColor: "rgb(96, 96, 255)",
+                draw: function(ctx, grid, node) {
+                    var size = grid.size();
+                    var width = 1/5;
+                    var height = 1/10;
+                    var peak = 1/10;
+                    var door = 1/50;
+
+                    ctx.save();
+                    ctx.translate(node.x, node.y);
+                    ctx.scale(2 * size, 2 * size);
+                    ctx.beginPath();
+                    ctx.moveTo(0, -peak);
+                    ctx.lineTo(-width/2, -height/2);
+                    ctx.lineTo(-width/2,  height/2);
+                    ctx.lineTo(-door,  height/2);
+                    ctx.lineTo(-door,  height/2 - 2 * door);
+                    ctx.lineTo(+door,  height/2 - 2 * door);
+                    ctx.lineTo(+door,  height/2);
+                    ctx.lineTo( width/2,  height/2);
+                    ctx.lineTo( width/2, -height/2);
+                    ctx.lineTo(0, -peak);
+                    ctx.fillStyle = this.iconColor;
+                    ctx.fill();
+                    ctx.lineWidth = 0.01;
+                    ctx.lineCap   = "round";
+                    ctx.strokeStyle = "rgb(128, 128, 128)";
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            },
+            commercial:   {
+                color: "rgb(255, 128, 64)",
+                iconColor: "rgb(96, 96, 255)",
+                draw: function(ctx, grid, node) {
+                    var size = grid.size();
+                    var width = 1/10;
+                    var height = 1/20;
+                    var wheel = 1/75;
+                    var door = 1/50;
+
+                    ctx.save();
+                    ctx.translate(node.x, node.y);
+                    ctx.scale(2 * size, 2 * size);
+                    ctx.beginPath();
+                    ctx.moveTo(-2 * width/3 + 2*wheel/3, -height);
+                    ctx.arc(-2 * width/3, -height, 2*wheel/3,
+                            0, Math.PI * 2);
+                    ctx.moveTo(-2 * width/3, -height);
+                    ctx.lineTo(-width/2, -height/2);
+                    ctx.lineTo(-5 * width/12, height/2);
+                    ctx.lineTo(5 * width/12, height/3);
+                    ctx.lineTo(width/2, -height/2);
+                    ctx.lineTo(-5 * width/12, -height/2);
+                    ctx.moveTo(-width/3 + wheel, height);
+                    ctx.arc(-width/3, height, wheel,
+                            0, Math.PI * 2);
+                    ctx.moveTo(width/3 + wheel, height);
+                    ctx.arc(width/3, height, wheel,
+                            0, Math.PI * 2);
+                    ctx.fillStyle = this.iconColor;
+                    ctx.fill();
+                    ctx.lineWidth = 0.01;
+                    ctx.lineCap   = "round";
+                    ctx.strokeStyle = "rgb(128, 128, 128)";
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            },
+            industrial:   {
+                color: "gray",
+                draw: function(ctx) {
+                }
+            },
+            recreational: {
+                color: "green",
+                draw: function(ctx) {
+                }
+            }
         },
 
         draw: function(ctx, camera, grid, node) {
@@ -51,12 +208,16 @@
             grid.draw(ctx, node);
             ctx.fillStyle = this.type.color;
             ctx.fill();
+            ctx.strokeStyle = "rgb(64,64,160)";
+            ctx.lineWidth = 1;
+            ctx.lineCap = "square";
+            ctx.stroke();
 
             // Drawing is different depending on the scale.
             var size = Math.min(camera.width, camera.height);
             if (camera.scale * District.cellCount > 15 * size) {
                 // At this scale we'll show individual features of
-                // characters and structures...
+                // characters and buildings
                 var offset = Math.floor(District.cellCount / 2);
                 this.grid.map({
                     start: {x: node.x - offset, y: node.y - offset},
@@ -67,20 +228,17 @@
                     ctx.lineWidth = 0.05;
                     ctx.strokeStyle = "rgb(64,64,160)";
                     ctx.stroke();
-                    // TODO
+
+                    // TODO: place detailed building stuff
+                    // TODO: draw a character if one is in this cell
                 }, this);
-            } else if (camera.scale * District.cellCount > 5 * size) {
-                // TODO: draw building outlines only
-                ctx.strokeStyle = "rgb(64,64,160)";
-                ctx.lineWidth = 1;
-                ctx.lineCap = "square";
-                ctx.stroke();
-            } else {
-                ctx.strokeStyle = "rgb(64,64,160)";
-                ctx.lineWidth = 5;
-                ctx.lineCap = "square";
-                ctx.stroke();
-            }
+            } else if (camera.scale * District.cellCount > size/3) {
+                // At this scale buildings should be rendered in
+                // an abstract form.
+                this.buildings.forEach(function(building) {
+                    building.draw(ctx, grid, node);
+                }, this);
+            } else this.type.draw(ctx, grid, node);
         }
     };
 
