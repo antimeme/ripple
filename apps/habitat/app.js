@@ -20,6 +20,8 @@
             var lot = (config && config.lot) ? config.lot :
                       {start: {row: -10, col: -10},
                        end:   {row: 10, col: 10}};
+            result.district = (config && config.district) ?
+                              config.district : null;
             result.start = {
                 row: Math.min(lot.start.row, lot.end.row),
                 col: Math.min(lot.start.col, lot.end.col) };
@@ -48,11 +50,15 @@
                        node.y + this.end.col);
             ctx.lineTo(node.x + this.start.row,
                        node.y + this.start.col);
-            ctx.fillStyle = "rgb(128, 128, 128)";
+            ctx.fillStyle = this.district ?
+                            this.district.type.buildingColor :
+                            "rgb(128, 128, 128)";
             ctx.fill();
             ctx.lineWidth = 1;
             ctx.lineCap   = "round";
-            ctx.strokeStyle = "rgb(192, 192, 240)";
+            ctx.strokeStyle = this.district ?
+                              this.district.type.wallColor :
+                              "rgb(192, 192, 240)";
             ctx.stroke();
         },
     };
@@ -121,8 +127,10 @@
         cellCount: 255,
         types: {
             residential:  {
-                color: "rgb(192, 192, 255)",
-                iconColor: "rgb(96, 96, 255)",
+                color:         "rgb(192, 192, 240)",
+                iconColor:     "rgb(96, 96, 240)",
+                buildingColor: "rgb(96, 96, 240)",
+                wallColor:     "rgb(32, 32, 128)",
                 draw: function(ctx, grid, node) {
                     var size = grid.size();
                     var width = 1/5;
@@ -154,8 +162,10 @@
                 }
             },
             commercial:   {
-                color: "rgb(255, 128, 64)",
-                iconColor: "rgb(96, 96, 255)",
+                color:         "rgb(240, 128, 64)",
+                iconColor:     "rgb(192, 96, 64)",
+                buildingColor: "rgb(192, 96, 64)",
+                wallColor:     "rgb(172, 64, 32)",
                 draw: function(ctx, grid, node) {
                     var size = grid.size();
                     var width = 1/10;
@@ -192,12 +202,18 @@
                 }
             },
             industrial:   {
-                color: "gray",
+                color: "darkgray",
+                iconColor: "gray",
+                buildingColor: "gray",
+                wallColor: "gray",
                 draw: function(ctx) {
                 }
             },
             recreational: {
                 color: "green",
+                iconColor: "forestgreen",
+                buildingColor: "forestgreen",
+                wallColor: "darkgreen",
                 draw: function(ctx) {
                 }
             }
