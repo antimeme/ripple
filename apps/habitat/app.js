@@ -132,7 +132,7 @@
 
                     ctx.save();
                     ctx.translate(node.x, node.y);
-                    ctx.scale(2 * size, 2 * size);
+                    ctx.scale(size, size);
                     ctx.beginPath();
                     ctx.moveTo(0, -peak);
                     ctx.lineTo(-width/2, -height/2);
