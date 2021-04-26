@@ -91,7 +91,8 @@
                 start: {row: -Math.floor((this.cellCount - 1) / 2),
                         col: -Math.floor((this.cellCount - 1) / 2)},
                 end: {row: Math.floor((this.cellCount - 1) / 2),
-                      col: Math.floor((this.cellCount - 1) / 2)}});
+                      col: Math.floor((this.cellCount - 1) / 2)}},
+                                          0.95, 0.99);
             return result;
         },
 
@@ -144,24 +145,21 @@
             return result;
         },
 
-        __createRandomBuilding: function(lot) {
+        __createRandomBuilding: function(lot, p_split, p_used) {
             var result = null;
             var size = Math.min(
                 Math.abs(lot.start.row - lot.end.row),
                 Math.abs(lot.start.col - lot.end.col));
-            var determinant = this.rand.random();
-            if (determinant < 0.05) {
-                // Leave the lot empty
-            } else if ((size > 128) ||
-                       ((size > 20) && (determinant < 0.55))) {
-                // Split the lot into four
+
+            if ((size > 128) ||
+                ((size > 16) && (this.rand.random() < p_split))) {
                 this.__splitLot(lot).forEach(function(lot) {
-                    this.__createRandomBuilding(lot); }, this);
-            } else {
-                // Place a building in the lot
+                    this.__createRandomBuilding(
+                        lot, p_split * p_split, p_used * p_used);
+                }, this);
+            } else if (this.rand.random() < p_used)
                 result = Building.create({
                     lot: lot, district: this});
-            }
             if (result)
                 this.buildings.push(result);
         },
