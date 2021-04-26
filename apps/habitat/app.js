@@ -55,7 +55,7 @@
                             "rgb(128, 128, 128)";
             ctx.fill();
             ctx.lineWidth = 1;
-            ctx.lineCap   = "round";
+            ctx.lineCap   = "square";
             ctx.strokeStyle = this.district ?
                               this.district.type.wallColor :
                               "rgb(192, 192, 240)";
@@ -87,34 +87,76 @@
             }
 
             result.buildings = [];
-            var size = Math.floor((this.cellCount - 1) / 2);
-            [{start: {row:  1, col:  1}, end: {row:  size, col:  size}},
-             {start: {row: -1, col:  1}, end: {row: -size, col:  size}},
-             {start: {row: -1, col: -1}, end: {row: -size, col: -size}},
-             {start: {row:  1, col: -1}, end: {row:  size, col: -size}}]
-                .forEach(function(lot) {
-                    result.__createRandomBuilding(lot);
-                });
+            result.__createRandomBuilding({
+                start: {row: -Math.floor((this.cellCount - 1) / 2),
+                        col: -Math.floor((this.cellCount - 1) / 2)},
+                end: {row: Math.floor((this.cellCount - 1) / 2),
+                      col: Math.floor((this.cellCount - 1) / 2)}});
             return result;
         },
 
         __rand: Math,
+
+        // Returns an equivalent lot such that the start row and column
+        // are no greater than the end row and column.
+        __orderLot: function(lot) {
+            return ((lot.start.row <= lot.end.row) &&
+                    (lot.start.col <= lot.end.col)) ? lot : {
+                        start: {
+                            row: Math.min(lot.start.row, lot.end.row),
+                            col: Math.min(lot.start.col, lot.end.col)
+                        }, end: {
+                            row: Math.max(lot.start.row, lot.end.row),
+                            col: Math.max(lot.start.col, lot.end.col)
+                    }};
+        },
+
+        __splitLot: function(lot) {
+            var width  = lot.end.col - lot.start.col;
+            var height = lot.end.row - lot.start.row;
+            var result = [{
+                start: {row: lot.start.row, col: lot.start.col},
+                end:   {row: lot.start.row +
+                             Math.floor((height - 1) / 2),
+                        col: lot.start.col +
+                             Math.floor((width - 1)/ 2)}
+            }, {
+                start: {row: lot.start.row,
+                        col: lot.end.col -
+                             Math.floor((width - 1)/ 2)},
+                end:   {row: lot.start.row +
+                             Math.floor((height - 1) / 2),
+                        col: lot.end.col}
+            }, {
+                start: {row: lot.end.row -
+                             Math.floor((height - 1) / 2),
+                        col: lot.start.col},
+                end:   {row: lot.end.row,
+                        col: lot.start.col +
+                             Math.floor((width - 1)/ 2)}
+            }, {
+                start: {row: lot.end.row -
+                             Math.floor((height - 1) / 2),
+                        col: lot.end.col -
+                             Math.floor((width - 1) / 2)},
+                end:   {row: lot.end.row, col: lot.end.col}
+            }];
+            return result;
+        },
+
         __createRandomBuilding: function(lot) {
             var result = null;
             var size = Math.min(
                 Math.abs(lot.start.row - lot.end.row),
                 Math.abs(lot.start.col - lot.end.col));
             var determinant = this.rand.random();
-            if (determinant < 0.10) {
+            if (determinant < 0.05) {
                 // Leave the lot empty
-            } else if ((size > 20) && (determinant < 0.55)) {
+            } else if ((size > 128) ||
+                       ((size > 20) && (determinant < 0.55))) {
                 // Split the lot into four
-                var subsize = Math.floor((size - 1) / 2);
-                [{start: {row: lot.start.row, col: lot.start.col},
-                  end:   {row: lot.end.row, end: lot.end.col}}]
-                    .forEach(function(lot) {
-                        this.__createRandomBuilding(lot);
-                    }, this);
+                this.__splitLot(lot).forEach(function(lot) {
+                    this.__createRandomBuilding(lot); }, this);
             } else {
                 // Place a building in the lot
                 result = Building.create({
@@ -131,7 +173,7 @@
                 iconColor:     "rgb(96, 96, 240)",
                 buildingColor: "rgb(96, 96, 240)",
                 wallColor:     "rgb(32, 32, 128)",
-                draw: function(ctx, grid, node) {
+                drawIcon: function(ctx, grid, node) {
                     var size = grid.size();
                     var width = 1/5;
                     var height = 1/10;
@@ -166,7 +208,7 @@
                 iconColor:     "rgb(192, 96, 64)",
                 buildingColor: "rgb(192, 96, 64)",
                 wallColor:     "rgb(172, 64, 32)",
-                draw: function(ctx, grid, node) {
+                drawIcon: function(ctx, grid, node) {
                     var size = grid.size();
                     var width = 1/10;
                     var height = 1/20;
@@ -206,7 +248,7 @@
                 iconColor: "gray",
                 buildingColor: "gray",
                 wallColor: "gray",
-                draw: function(ctx) {
+                drawIcon: function(ctx) {
                 }
             },
             recreational: {
@@ -214,7 +256,7 @@
                 iconColor: "forestgreen",
                 buildingColor: "forestgreen",
                 wallColor: "darkgreen",
-                draw: function(ctx) {
+                drawIcon: function(ctx) {
                 }
             }
         },
@@ -254,7 +296,7 @@
                 this.buildings.forEach(function(building) {
                     building.draw(ctx, grid, node);
                 }, this);
-            } else this.type.draw(ctx, grid, node);
+            } else this.type.drawIcon(ctx, grid, node);
         }
     };
 
@@ -263,8 +305,8 @@
             var result = Object.create(this);
             result.grid = grid.create({
                 type: "square", size: District.cellCount});
-            result.rows = (config && config.rows) ? config.rows : 8;
-            result.cols = (config && config.cols) ? config.cols : 12;
+            result.rows = (config && config.rows) ? config.rows : 12;
+            result.cols = (config && config.cols) ? config.cols : 6;
             result.districts = [];
             for (var rr = 0; rr < result.rows; ++rr)
                 for (var cc = 0; cc < result.cols; ++cc)
@@ -315,7 +357,10 @@
         tap: function(event, camera, now) {
             var point = station.grid.markCell(
                 camera.toWorldFromScreen(event.point));
-            console.log("DEBUG-tap", camera.scale, camera.height); },
+            console.log("DEBUG-tap", camera.scale,
+                        Math.min(camera.width, camera.height),
+                        camera.scale *
+                        Math.min(camera.width, camera.height)); },
         draw: function(ctx, camera, now) {
             station.draw(ctx, camera, now); }
     };
