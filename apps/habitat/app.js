@@ -341,14 +341,26 @@
     var station = Station.create({});
 
     var stationMode = {
+        zoomMin: function(camera) {
+            return Math.min(camera.width, camera.height) / (
+                District.cellCount * station.rows);
+        },
+        zoomMax: function(camera) {
+            // A zoom value larger than this would make a single
+            // character cell take up more than a third of the screen.
+            // Getting that close serves no purpose other than to
+            // confuse the user.
+            return 1/3 * Math.min(camera.width, camera.height);
+        },
         wheel: function(event, camera) {
             camera.zoom(1 + 0.1 * event.y,
-                        station.zoomMin, station.zoomMax); },
+                        this.zoomMin(camera), this.zoomMax(camera)); },
         pinchStart: function(event, camera) {
             this._pinchScale = camera.scale; },
         pinchMove: function(event, camera) {
             camera.setScale(this._pinchScale * event.length,
-                            station.zoomMin, station.zoomMax); },
+                            this.zoomMin(camera),
+                            this.zoomMax(camera)); },
         drag: function(event, camera) {
             camera.pan({
                 x: (event.last.x - event.current.x) / camera.scale,
@@ -359,8 +371,8 @@
                 camera.toWorldFromScreen(event.point));
             console.log("DEBUG-tap", camera.scale,
                         Math.min(camera.width, camera.height),
-                        camera.scale *
-                        Math.min(camera.width, camera.height)); },
+                        Math.min(camera.width, camera.height) /
+                camera.scale); },
         draw: function(ctx, camera, now) {
             station.draw(ctx, camera, now); }
     };
