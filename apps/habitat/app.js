@@ -87,12 +87,14 @@
             }
 
             result.buildings = [];
+            result.vacantLots = [];
             result.__createRandomBuilding({
                 start: {row: -Math.floor((this.cellCount - 1) / 2),
                         col: -Math.floor((this.cellCount - 1) / 2)},
                 end: {row: Math.floor((this.cellCount - 1) / 2),
                       col: Math.floor((this.cellCount - 1) / 2)}},
-                                          0.95, 0.99);
+                                          result.type.pSplit,
+                                          result.type.pUsed);
             return result;
         },
 
@@ -160,6 +162,8 @@
             } else if (this.rand.random() < p_used)
                 result = Building.create({
                     lot: lot, district: this});
+            else this.vacantLots.push(lot);
+
             if (result)
                 this.buildings.push(result);
         },
@@ -167,6 +171,7 @@
         cellCount: 255,
         types: {
             residential:  {
+                pSplit: 0.99, pUsed: 0.96,
                 color:         "rgb(192, 192, 240)",
                 iconColor:     "rgb(96, 96, 240)",
                 buildingColor: "rgb(96, 96, 240)",
@@ -202,6 +207,7 @@
                 }
             },
             commercial:   {
+                pSplit: 0.98, pUsed: 0.90,
                 color:         "rgb(240, 128, 64)",
                 iconColor:     "rgb(192, 96, 64)",
                 buildingColor: "rgb(192, 96, 64)",
@@ -242,6 +248,7 @@
                 }
             },
             industrial:   {
+                pSplit: 0.98, pUsed: 0.96,
                 color: "darkgray",
                 iconColor: "gray",
                 buildingColor: "gray",
@@ -250,6 +257,7 @@
                 }
             },
             recreational: {
+                pSplit: 0.98, pUsed: 0.96,
                 color: "green",
                 iconColor: "forestgreen",
                 buildingColor: "forestgreen",
@@ -321,6 +329,16 @@
                     (col >= 0) && (col < this.cols)) ?
                    this.districts[row * this.cols + col] : null; },
 
+        eachDistrict: function(fn, context) {
+            var result = fn ? undefined : [];
+            this.districts.forEach(function(district) {
+                if (fn)
+                    fn.call(context ? context : this, district);
+                else result.push(district);
+            }, this);
+            return result;
+        },
+
         draw: function(ctx, camera) {
             var size = Math.min(camera.height, camera.width);
 
@@ -367,10 +385,14 @@
         tap: function(event, camera, now) {
             var point = station.grid.markCell(
                 camera.toWorldFromScreen(event.point));
-            console.log("DEBUG-tap", camera.scale,
-                        Math.min(camera.width, camera.height),
-                        Math.min(camera.width, camera.height) /
-                camera.scale); },
+
+            var buildingCount = 0;
+            var vacantCount   = 0;
+            station.eachDistrict(function(district) {
+                buildingCount += district.buildings.length;
+                vacantCount   += district.vacantLots.length;
+            });
+            console.log("DEBUG-tap", buildingCount, vacantCount); },
         draw: function(ctx, camera, now) {
             station.draw(ctx, camera, now); }
     };
