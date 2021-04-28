@@ -1,3 +1,5 @@
+// Habitat App
+// Copyright (C) 2021 by Jeff Gold.  All rights reserved.
 // Habitat is a science fiction video game for web browsers.  Players
 // control a rotating space station with space for habitation.  The
 // game takes place in the Kuiper Belt around 2220 CE and confines
@@ -309,9 +311,21 @@
     var Station = {
         create: function(config) {
             var result = Object.create(this);
+
+            // Artificial gravity is created by rotating a cylinder.
+            // (https://en.wikipedia.org/wiki/Artificial_gravity).
+            // Rotation at or less than two revolutions per minute
+            // should limit inner ear problems.  This is a rotation
+            // period of thirty seconds.  According to the same
+            // source, the rotation period T = 2π(r/a)^1/2 where r is
+            // the radius of the station and a is the acceleration.
+            // Plugging in 9.8 for the acceleration and assuming each
+            // district measures 255 meters on each side we get a
+            // period of 28.59 seconds with six rows of districts.
             result.grid = grid.create({
                 type: "square", size: District.cellCount});
-            result.rows = (config && config.rows) ? config.rows : 12;
+            result.rows = Math.min((config && config.rows) ?
+                                   config.rows : 6, 6);
             result.cols = (config && config.cols) ? config.cols : 6;
             result.districts = [];
             for (var rr = 0; rr < result.rows; ++rr)
