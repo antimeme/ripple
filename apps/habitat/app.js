@@ -14,6 +14,7 @@
         this.pathf    = require("./ripple/pathf.js");
     }
     var rules = undefined;
+    var station;
 
     // A building is a single structure inside a habitat.
     var Building = {
@@ -222,7 +223,25 @@
             }
         },
 
-        draw: function(ctx, camera, districtGrid, node) { // District
+        draw: function(ctx, camera, cellGrid, center) {
+            cellGrid.map({
+                start: camera.toWorldFromScreen({x: 0, y: 0}),
+                end:   camera.toWorldFromScreen(
+                    {x: camera.width, y: camera.height})
+            }, function(node, index, cGrid) {
+                var range = Math.floor((District.cellCount - 1) / 2);
+                var relative = {row: center.row - node.row,
+                                col: center.col - node.col};
+
+                if ((Math.abs(relative.row) > range) ||
+                    (Math.abs(relative.col) > range))
+                    return; // Only draw if in our district
+
+                ctx.beginPath();
+                cellGrid.draw(ctx, node);
+                ctx.fillStyle = this.type.color;
+                ctx.fill();
+            }, this);
         }
     };
 
@@ -301,18 +320,18 @@
         }
     };
 
-    var station;
-
     var stationMode = {
         zoomMin: function(camera) {
+            // A zoom value smaller than this would show one or more
+            // rows more than once, since the cylinder wraps around.
             return Math.min(camera.width, camera.height) / (
                 District.cellCount * station.rows);
         },
         zoomMax: function(camera) {
             // A zoom value larger than this would make a single
-            // character cell take up more than a third of the screen.
-            // Getting that close serves no purpose other than to
-            // confuse the user.
+            // character cell take up more than a third of the screen
+            // along its shortest dimension.  Getting that close
+            // serves no purpose other than to confuse the user.
             return 1/3 * Math.min(camera.width, camera.height);
         },
         wheel: function(event, camera) {
@@ -330,16 +349,10 @@
                 y: (event.last.y - event.current.y) / camera.scale });
         },
         tap: function(event, camera, now) {
-            var point = station.districtGrid.markCell(
+            var point = station.cellGrid.markCell(
                 camera.toWorldFromScreen(event.point));
 
-            var buildingCount = 0;
-            var vacantCount   = 0;
-            station.eachDistrict(function(district) {
-                buildingCount += district.buildings.length;
-                vacantCount   += district.vacantLots.length;
-            });
-            console.log("DEBUG-tap", buildingCount, vacantCount); },
+            console.log("DEBUG-tap", point); },
         draw: function(ctx, camera, now) {
             station.draw(ctx, camera, now); }
     };
