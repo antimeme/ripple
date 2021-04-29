@@ -13,6 +13,7 @@
         this.grid     = require("./ripple/grid.js");
         this.pathf    = require("./ripple/pathf.js");
     }
+    var rules = undefined;
 
     // A building is a single structure inside a habitat.
     var Building = {
@@ -74,19 +75,13 @@
     var District = {
         create: function(config) {
             var result = Object.create(this);
-            result.grid = grid.create({type: "square", size: 1});
             result.row  = (config && config.row) ? config.row : 0;
             result.col  = (config && config.col) ? config.col : 0;
             result.rand = (config && config.random) ?
                           config.random : Math;
             if (config && config.type) {
                 result.type = config.type;
-            } else {
-                var names = Object.keys(this.types);
-                var name  = names[Math.floor(
-                    result.rand.random() * names.length)];
-                result.type = this.types[name];
-            }
+            } else result.type = this.__selectType(result.rand);
 
             result.buildings = [];
             result.vacantLots = [];
@@ -101,6 +96,13 @@
         },
 
         __rand: Math,
+
+        __selectType: function(rand) {
+            var names = Object.keys(rules.districtTypes);
+            var name  = names[Math.floor(
+                (rand ? rand : Math).random() * names.length)];
+            return rules.districtTypes[name];
+        },
 
         // Returns an equivalent lot such that the start row and column
         // are no greater than the end row and column.
@@ -171,140 +173,56 @@
         },
 
         cellCount: 255,
-        types: {
-            residential:  {
-                pSplit: 0.99, pUsed: 0.96,
-                color:         "rgb(192, 192, 240)",
-                iconColor:     "rgb(96, 96, 240)",
-                buildingColor: "rgb(96, 96, 240)",
-                wallColor:     "rgb(32, 32, 128)",
-                drawIcon: function(ctx, grid, node) {
-                    var size = grid.size();
-                    var width = 1/5;
-                    var height = 1/10;
-                    var peak = 1/10;
-                    var door = 1/50;
 
-                    ctx.save();
-                    ctx.translate(node.x, node.y);
-                    ctx.scale(size, size);
-                    ctx.beginPath();
-                    ctx.moveTo(0, -peak);
-                    ctx.lineTo(-width/2, -height/2);
-                    ctx.lineTo(-width/2,  height/2);
-                    ctx.lineTo(-door,  height/2);
-                    ctx.lineTo(-door,  height/2 - 2 * door);
-                    ctx.lineTo(+door,  height/2 - 2 * door);
-                    ctx.lineTo(+door,  height/2);
-                    ctx.lineTo( width/2,  height/2);
-                    ctx.lineTo( width/2, -height/2);
-                    ctx.lineTo(0, -peak);
-                    ctx.fillStyle = this.iconColor;
-                    ctx.fill();
-                    ctx.lineWidth = 0.01;
-                    ctx.lineCap   = "round";
-                    ctx.strokeStyle = "rgb(128, 128, 128)";
-                    ctx.stroke();
-                    ctx.restore();
-                }
-            },
-            commercial:   {
-                pSplit: 0.98, pUsed: 0.90,
-                color:         "rgb(240, 128, 64)",
-                iconColor:     "rgb(192, 96, 64)",
-                buildingColor: "rgb(192, 96, 64)",
-                wallColor:     "rgb(172, 64, 32)",
-                drawIcon: function(ctx, grid, node) {
-                    var size = grid.size();
-                    var width = 1/10;
-                    var height = 1/20;
-                    var wheel = 1/75;
-                    var door = 1/50;
-
-                    ctx.save();
-                    ctx.translate(node.x, node.y);
-                    ctx.scale(2 * size, 2 * size);
-                    ctx.beginPath();
-                    ctx.moveTo(-2 * width/3 + 2*wheel/3, -height);
-                    ctx.arc(-2 * width/3, -height, 2*wheel/3,
-                            0, Math.PI * 2);
-                    ctx.moveTo(-2 * width/3, -height);
-                    ctx.lineTo(-width/2, -height/2);
-                    ctx.lineTo(-5 * width/12, height/2);
-                    ctx.lineTo(5 * width/12, height/3);
-                    ctx.lineTo(width/2, -height/2);
-                    ctx.lineTo(-5 * width/12, -height/2);
-                    ctx.moveTo(-width/3 + wheel, height);
-                    ctx.arc(-width/3, height, wheel,
-                            0, Math.PI * 2);
-                    ctx.moveTo(width/3 + wheel, height);
-                    ctx.arc(width/3, height, wheel,
-                            0, Math.PI * 2);
-                    ctx.fillStyle = this.iconColor;
-                    ctx.fill();
-                    ctx.lineWidth = 0.01;
-                    ctx.lineCap   = "round";
-                    ctx.strokeStyle = "rgb(128, 128, 128)";
-                    ctx.stroke();
-                    ctx.restore();
-                }
-            },
-            industrial:   {
-                pSplit: 0.98, pUsed: 0.96,
-                color: "darkgray",
-                iconColor: "gray",
-                buildingColor: "gray",
-                wallColor: "gray",
-                drawIcon: function(ctx) {
-                }
-            },
-            recreational: {
-                pSplit: 0.98, pUsed: 0.96,
-                color: "green",
-                iconColor: "forestgreen",
-                buildingColor: "forestgreen",
-                wallColor: "darkgreen",
-                drawIcon: function(ctx) {
-                }
-            }
-        },
-
-        draw: function(ctx, camera, grid, node) {
+        drawBackground: function(ctx, districtGrid, node) {
             ctx.beginPath();
-            grid.draw(ctx, node);
+            districtGrid.draw(ctx, node);
             ctx.fillStyle = this.type.color;
             ctx.fill();
             ctx.strokeStyle = "rgb(64,64,160)";
             ctx.lineWidth = 1;
             ctx.lineCap = "square";
             ctx.stroke();
+        },
 
-            // Drawing is different depending on the scale.
-            var size = Math.min(camera.width, camera.height);
-            if (camera.scale * District.cellCount > 15 * size) {
-                // At this scale we'll show individual features of
-                // characters and buildings
-                var offset = Math.floor(District.cellCount / 2);
-                this.grid.map({
-                    start: {x: node.x - offset, y: node.y - offset},
-                    end:   {x: node.x + offset, y: node.y + offset}
-                }, function(node) {
-                    ctx.beginPath();
-                    this.grid.draw(ctx, node);
-                    ctx.lineWidth = 0.05;
-                    ctx.strokeStyle = "rgb(64,64,160)";
-                    ctx.stroke();
+        drawIcon: function(ctx, districtGrid, node) {
+            if (this.type && this.type.icon &&
+                Array.isArray(this.type.icon)) {
+                var size = districtGrid.size();
+                var scale = isNaN(this.type.iconScale) ?
+                            1 : this.type.iconScale;
+                ctx.save();
+                ctx.translate(node.x, node.y);
+                ctx.scale(size * scale, size * scale);
+                ctx.beginPath();
 
-                    // TODO: place detailed building stuff
-                    // TODO: draw a character if one is in this cell
-                }, this);
-            } else if (camera.scale * District.cellCount > size/3) {
-                // At this scale buildings should be rendered in
-                // an abstract form.
-                this.buildings.forEach(function(building) {
-                    building.draw(ctx, grid, node);
-                }, this);
-            } else this.type.drawIcon(ctx, grid, node);
+                this.type.icon.forEach(function(element) {
+                    if (element.type === "polygon") {
+                        var start = element.vertices[
+                            element.vertices.length - 1]; 
+                        ctx.moveTo(start.x, start.y);
+                        element.vertices.forEach(function(vertex) {
+                            ctx.lineTo(vertex.x, vertex.y);
+                        });
+                    } else if (element.type === "circle") {
+                        ctx.moveTo(element.x + element.radius,
+                                   element.y);
+                        ctx.arc(element.x, element.y, element.radius,
+                                0, 2 * Math.PI);
+                    }
+                });
+
+                ctx.fillStyle = this.type.iconColor;
+                ctx.fill();
+                ctx.lineWidth = 0.01;
+                ctx.lineCap   = "square";
+                ctx.strokeStyle = "rgb(128, 128, 128)";
+                ctx.stroke();
+                ctx.restore();
+            }
+        },
+
+        draw: function(ctx, camera, districtGrid, node) { // District
         }
     };
 
@@ -322,8 +240,9 @@
             // Plugging in 9.8 for the acceleration and assuming each
             // district measures 255 meters on each side we get a
             // period of 28.59 seconds with six rows of districts.
-            result.grid = grid.create({
+            result.districtGrid = grid.create({
                 type: "square", size: District.cellCount});
+            result.cellGrid = grid.create({type: "square", size: 1});
             result.rows = Math.min((config && config.rows) ?
                                    config.rows : 6, 6);
             result.cols = (config && config.cols) ? config.cols : 6;
@@ -355,20 +274,34 @@
 
         draw: function(ctx, camera) {
             var size = Math.min(camera.height, camera.width);
+            var districtPixels = camera.scale * District.cellCount;
 
-            this.grid.map({
+            this.districtGrid.map({
                 start: camera.toWorldFromScreen({x: 0, y: 0}),
                 end:   camera.toWorldFromScreen(
                     {x: camera.width, y: camera.height})
-            }, function(node) {
+            }, function(node, index, dGrid) {
                 var district = this.getDistrict(node.row, node.col);
-                if (district)
-                    district.draw(ctx, camera, this.grid, node);
+                if (!district) {
+                } else if (size < districtPixels / 15) {
+                    var center = this.cellGrid.markCenter({
+                        row: Math.floor(node.row / District.cellCount),
+                        col: Math.floor(node.col / District.cellCount)
+                    });
+                    district.draw(ctx, camera, this.cellGrid, center);
+                } else if (size < districtPixels * 3) {
+                    district.drawBackground(ctx, dGrid, node);
+                    district.buildings.forEach(function(building) {
+                        building.draw(ctx, dGrid, node); });
+                } else {
+                    district.drawBackground(ctx, dGrid, node);
+                    district.drawIcon(ctx, dGrid, node);
+                }
             }, this);
         }
     };
 
-    var station = Station.create({});
+    var station;
 
     var stationMode = {
         zoomMin: function(camera) {
@@ -397,7 +330,7 @@
                 y: (event.last.y - event.current.y) / camera.scale });
         },
         tap: function(event, camera, now) {
-            var point = station.grid.markCell(
+            var point = station.districtGrid.markCell(
                 camera.toWorldFromScreen(event.point));
 
             var buildingCount = 0;
@@ -411,9 +344,34 @@
             station.draw(ctx, camera, now); }
     };
 
+    var buildingMode = {
+        resize: function(camera) {
+            camera.setScale();
+        },
+        zoomMin: function(camera) {
+        },
+        zoomMax: function(camera) {
+        },
+        wheel: function(event, camera) {
+            camera.zoom(1 + 0.1 * event.y,
+                        this.zoomMin(camera), this.zoomMax(camera)); },
+        pinchStart: function(event, camera) {
+            this._pinchScale = camera.scale; },
+        pinchMove: function(event, camera) {
+            camera.setScale(this._pinchScale * event.length,
+                            this.zoomMin(camera),
+                            this.zoomMax(camera)); },
+        tap: function(event, camera, now) { },
+        draw: function(ctx, camera, now) { }
+    };
+
     app.create = function(preloads) {
+        rules = preloads["app.json"];
+        station = Station.create({});
         return {
-            modes: {station: stationMode},
+            modes: {
+                station:  stationMode,
+                building: buildingMode},
             mode: "station"
         };
     };

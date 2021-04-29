@@ -2,15 +2,81 @@
     "schema": { "version": "0.0.1" },
     "notes": {
         "districts": [
-            "A space station contains two caps and a cylinder that ",
-            "rotates to create comfortable gravity.  The cylinder ",
-            "contains a rectangular grid of districts.  The left and ",
-            "right edges may contain port districts.  The top and ",
+            "A space station is a cylinder that rotates to create ",
+            "comfortable artificial gravity.  The cylinder ",
+            "contains a rectangular grid of districts.  The top and ",
             "bottom wrap around.  Each district is optimized for ",
             "some types of buildings but is less effective for ",
-            "others.  Each district can contain up to four large ",
-            "buildings (100x100), sixteen medium buildings (50x50) ",
-            "or sixty-four small buildings (25x25)."]},
+            "others.  Each district is 255 by 255 meters in size."]},
+    "districtTypes": {
+        "Residential":  {
+            "color":         "rgb(192, 192, 240)",
+            "iconColor":     "rgb(96, 96, 240)",
+            "buildingColor": "rgb(96, 96, 240)",
+            "wallColor":     "rgb(32, 32, 128)",
+            "randomWeight": 100, "pSplit": 0.99, "pUsed": 0.96,
+            "icon": [{
+                "type": "polygon",
+                "vertices": [
+                    {"x": -0.1,  "y": -0.05},
+                    {"x": -0.1,  "y":  0.05},
+                    {"x": -0.02, "y":  0.05},
+                    {"x": -0.02, "y":  0.01},
+                    {"x":  0.02, "y":  0.01},
+                    {"x":  0.02, "y":  0.05},
+                    {"x":  0.1,  "y":  0.05},
+                    {"x":  0.1,  "y": -0.05},
+                    {"x":  0,    "y": -0.1}
+                ]
+            }]
+        },
+        "Commercial":   {
+            "color":         "rgb(240, 128, 64)",
+            "iconColor":     "rgb(192, 96, 64)",
+            "buildingColor": "rgb(192, 96, 64)",
+            "wallColor":     "rgb(172, 64, 32)",
+            "randomWeight": 100, "pSplit": 0.98, "pUsed": 0.90,
+            "iconScale": 2,
+            "icon": [{
+                "type": "circle",
+                "radius": 0.00888,
+                "x": -0.06666, "y": -0.05
+            }, {
+                "type": "polygon",
+                "vertices": [
+                    {"x": -0.06666, "y": -0.05},
+                    {"x": -0.05,    "y": -0.025},
+                    {"x": -0.04166, "y":  0.025},
+                    {"x":  0.04166, "y":  0.01666},
+                    {"x":  0.05,    "y": -0.025},
+                    {"x": -0.04166, "y": -0.025}]
+            }, {
+                "type": "circle",
+                "radius": 0.01333,
+                "x": -0.03333, "y": 0.035
+            }, {
+                "type": "circle",
+                "radius": 0.01333,
+                "x": 0.03333, "y": 0.035 }]
+        },
+        "Industrial": {
+            "color": "darkgray",
+            "iconColor": "gray",
+            "buildingColor": "gray",
+            "wallColor": "gray",
+            "randomWeight": 100, "pSplit": 0.98, "pUsed": 0.96
+        },
+        "Recreation": {
+            "color": "green",
+            "iconColor": "forestgreen",
+            "buildingColor": "forestgreen",
+            "wallColor": "darkgreen",
+            "randomWeight": 100, "pSplit": 0.98, "pUsed": 0.96
+        }
+    },
+
+
+
     "districts": {
         "Empty": {
             "comments": [
