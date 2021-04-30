@@ -1,5 +1,5 @@
 // grid.js
-// Copyright (C) 2013-2019 by Jeff Gold.
+// Copyright (C) 2013-2021 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -296,7 +296,7 @@
             var id = ripple.pair(node.row, node.col);
             if (!visited[id]) {
                 fn.call(context, self.markCenter(
-                    {row: node.row, col: node.col}), index++);
+                    {row: node.row, col: node.col}), index++, self);
                 visited[id] = true;
             }
         };
