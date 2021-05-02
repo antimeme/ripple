@@ -35,7 +35,7 @@
             "iconColor":     "rgb(192, 96, 64)",
             "buildingColor": "rgb(192, 96, 64)",
             "wallColor":     "rgb(172, 64, 32)",
-            "randomWeight": 100, "pSplit": 0.98, "pUsed": 0.90,
+            "randomWeight": 25, "pSplit": 0.98, "pUsed": 0.90,
             "iconScale": 2,
             "icon": [{
                 "type": "circle",
@@ -64,7 +64,7 @@
             "iconColor": "gray",
             "buildingColor": "gray",
             "wallColor": "gray",
-            "randomWeight": 100, "pSplit": 0.98, "pUsed": 0.96,
+            "randomWeight": 50, "pSplit": 0.98, "pUsed": 0.96,
             "iconScale": 0.75,
             "icon": [{
                 "type": "polygon",
@@ -87,7 +87,7 @@
             "iconColor": "#228b22",
             "buildingColor": "#107010",
             "wallColor": "#006400",
-            "randomWeight": 100, "pSplit": 0.98, "pUsed": 0.96
+            "randomWeight": 25, "pSplit": 0.98, "pUsed": 0.96
         }
     },
 

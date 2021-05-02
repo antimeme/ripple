@@ -78,31 +78,45 @@
             var result = Object.create(this);
             result.row  = (config && config.row) ? config.row : 0;
             result.col  = (config && config.col) ? config.col : 0;
-            result.rand = (config && config.random) ?
-                          config.random : Math;
-            if (config && config.type) {
-                result.type = config.type;
-            } else result.type = this.__selectType(result.rand);
-
+            result.rand = (config && config.rand) ? config.rand : Math;
+            result.type = (config && config.type) ? config.type : null;
             result.buildings = [];
             result.vacantLots = [];
-            result.__createRandomBuilding({
+
+            var startingLot = {
                 start: {row: -Math.floor((this.cellCount - 1) / 2),
                         col: -Math.floor((this.cellCount - 1) / 2)},
                 end: {row: Math.floor((this.cellCount - 1) / 2),
-                      col: Math.floor((this.cellCount - 1) / 2)}},
-                                          result.type.pSplit,
-                                          result.type.pUsed);
+                      col: Math.floor((this.cellCount - 1) / 2)}};
+            if (config && config.random) {
+                if (!result.type)
+                    result.type = this.__randomType(result.rand);
+                result.__createRandomBuilding(
+                    startingLot, result.type.pSplit, result.type.pUsed);
+            } else result.vacantLots.push(startingLot);
+
             return result;
         },
 
         __rand: Math,
 
-        __selectType: function(rand) {
-            var names = Object.keys(rules.districtTypes);
-            var name  = names[Math.floor(
-                (rand ? rand : Math).random() * names.length)];
-            return rules.districtTypes[name];
+        __randomType: function(rand) {
+            var entries = [];
+            Object.keys(rules.districtTypes).forEach(function(name) {
+                entries.push({
+                    name: name,
+                    weight: rules.districtTypes[name].randomWeight});
+            });
+            var selected = undefined;
+            var determinant = ((rand ? rand : Math).random() *
+                entries.reduce(function(accm, entry) {
+                    return accm + entry.weight; }, 0));
+            entries.forEach(function(entry) {
+                if (!selected && (determinant < entry.weight))
+                    selected = entry.name;
+                else determinant -= entry.weight;
+            });
+            return rules.districtTypes[selected];
         },
 
         // Returns an equivalent lot such that the start row and column
@@ -269,7 +283,7 @@
             for (var rr = 0; rr < result.rows; ++rr)
                 for (var cc = 0; cc < result.cols; ++cc)
                     result.districts.push(District.create(
-                        { row: rr, col: cc }));
+                        { random: true, row: rr, col: cc }));
             return result;
         },
 
@@ -304,8 +318,8 @@
                 if (!district) {
                 } else if (size < districtPixels / 15) {
                     var center = this.cellGrid.markCenter({
-                        row: Math.floor(node.row / District.cellCount),
-                        col: Math.floor(node.col / District.cellCount)
+                        row: Math.floor(node.row * District.cellCount),
+                        col: Math.floor(node.col * District.cellCount)
                     });
                     district.draw(ctx, camera, this.cellGrid, center);
                 } else if (size < districtPixels * 3) {
