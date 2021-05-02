@@ -64,13 +64,29 @@
             "iconColor": "gray",
             "buildingColor": "gray",
             "wallColor": "gray",
-            "randomWeight": 100, "pSplit": 0.98, "pUsed": 0.96
+            "randomWeight": 100, "pSplit": 0.98, "pUsed": 0.96,
+            "iconScale": 0.75,
+            "icon": [{
+                "type": "polygon",
+                "vertices": [
+                    {"x": -0.2,  "y": -0.1},
+                    {"x": -0.1,  "y": -0.05},
+                    {"x": -0.1,  "y": -0.1},
+                    {"x":  0.0,  "y": -0.05},
+                    {"x":  0.0,  "y": -0.1},
+                    {"x":  0.1,  "y": -0.05},
+                    {"x":  0.1,  "y": -0.15},
+                    {"x":  0.18, "y": -0.15},
+                    {"x":  0.18, "y":  0.075},
+                    {"x": -0.2,  "y":  0.075}
+                ]
+            }]
         },
         "Recreation": {
-            "color": "green",
-            "iconColor": "forestgreen",
-            "buildingColor": "forestgreen",
-            "wallColor": "darkgreen",
+            "color": "#20a020",
+            "iconColor": "#228b22",
+            "buildingColor": "#107010",
+            "wallColor": "#006400",
             "randomWeight": 100, "pSplit": 0.98, "pUsed": 0.96
         }
     },
