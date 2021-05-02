@@ -42,18 +42,33 @@
             }
             return result;
         },
+
+        eachCell: function(fn, context) {
+            var result = fn ? this : [];
+            var row, col;
+            for (row = this.start.row; row <= this.end.row; ++row) {
+                for (col = this.start.col; col <= this.end.col; ++col) {
+                    var node = {row: row, col: col};
+                    if (fn)
+                        fn.call(context, node);
+                    else result.push(node);
+                }
+            }
+            return result;
+        },
+
         draw: function(ctx, grid, node) {
             ctx.beginPath();
-            ctx.moveTo(node.x + this.start.row,
-                       node.y + this.start.col);
-            ctx.lineTo(node.x + this.end.row,
-                       node.y + this.start.col);
-            ctx.lineTo(node.x + this.end.row,
-                       node.y + this.end.col);
-            ctx.lineTo(node.x + this.start.row,
-                       node.y + this.end.col);
-            ctx.lineTo(node.x + this.start.row,
-                       node.y + this.start.col);
+            ctx.moveTo(node.x - this.start.col,
+                       node.y - this.start.row);
+            ctx.lineTo(node.x - this.end.col,
+                       node.y - this.start.row);
+            ctx.lineTo(node.x - this.end.col,
+                       node.y - this.end.row);
+            ctx.lineTo(node.x - this.start.col,
+                       node.y - this.end.row);
+            ctx.lineTo(node.x - this.start.col,
+                       node.y - this.start.row);
             ctx.fillStyle = this.district ?
                             this.district.type.buildingColor :
                             "rgb(128, 128, 128)";
@@ -71,17 +86,15 @@
     // Districts contain buildings and other structures that have an
     // effect on the station and its population.  Districts have a
     // type which reflects the kind of infrastructure they contain.
-    // This infrastructur confers advantages and disadvantages to
-    // buildings and other structures.
+    // This infrastructure confers advantages and disadvantages.
     var District = {
         create: function(config) {
             var result = Object.create(this);
-            result.row  = (config && config.row) ? config.row : 0;
-            result.col  = (config && config.col) ? config.col : 0;
             result.rand = (config && config.rand) ? config.rand : Math;
             result.type = (config && config.type) ? config.type : null;
-            result.buildings = [];
-            result.vacantLots = [];
+            result.__buildings = [];
+            result.__vacantLots = [];
+            result.__cellMap = {};
 
             var startingLot = {
                 start: {row: -Math.floor((this.cellCount - 1) / 2),
@@ -93,9 +106,27 @@
                     result.type = this.__randomType(result.rand);
                 result.__createRandomBuilding(
                     startingLot, result.type.pSplit, result.type.pUsed);
-            } else result.vacantLots.push(startingLot);
+            } else result.__vacantLots.push(startingLot);
 
             return result;
+        },
+
+        eachBuilding: function(fn, context) {
+            var result = fn ? this : [];
+            this.__buildings.forEach(function(building, index) {
+                if (fn)
+                    fn.call(context, building, index);
+                else result.push(building);
+            });
+            return result;
+        },
+
+        addBuilding: function(building) {
+            building.eachCell(function(cell) {
+                this.__cellMap[ripple.pair(
+                    cell.row, cell.col)] = building;
+            }, this);
+            this.__buildings.push(building);
         },
 
         __rand: Math,
@@ -181,10 +212,10 @@
             } else if (this.rand.random() < p_used)
                 result = Building.create({
                     lot: lot, district: this});
-            else this.vacantLots.push(lot);
+            else this.__vacantLots.push(lot);
 
             if (result)
-                this.buildings.push(result);
+                this.addBuilding(result);
         },
 
         cellCount: 255,
@@ -200,6 +231,14 @@
             ctx.stroke();
         },
 
+        drawOverview: function(ctx, districtGrid, node) {
+            this.eachBuilding(function(building) {
+                building.draw(ctx, districtGrid, node); });
+        },
+
+        // Draw the icon for this district.  Each district type has an
+        // optional icon which helps to identify the district type
+        // when zoomed out.
         drawIcon: function(ctx, districtGrid, node) {
             if (this.type && this.type.icon &&
                 Array.isArray(this.type.icon)) {
@@ -251,10 +290,16 @@
                     (Math.abs(relative.col) > range))
                     return; // Only draw if in our district
 
-                ctx.beginPath();
-                cellGrid.draw(ctx, node);
-                ctx.fillStyle = this.type.color;
-                ctx.fill();
+                var contents = this.__cellMap[ripple.pair(
+                    relative.row, relative.col)];
+                if (contents) {
+                    // TODO
+                } else {
+                    ctx.beginPath();
+                    cellGrid.draw(ctx, node);
+                    ctx.fillStyle = this.type.color;
+                    ctx.fill();
+                }
             }, this);
         }
     };
@@ -316,7 +361,7 @@
             }, function(node, index, dGrid) {
                 var district = this.getDistrict(node.row, node.col);
                 if (!district) {
-                } else if (size < districtPixels / 15) {
+                } else if (size < districtPixels / 10) {
                     var center = this.cellGrid.markCenter({
                         row: Math.floor(node.row * District.cellCount),
                         col: Math.floor(node.col * District.cellCount)
@@ -324,8 +369,7 @@
                     district.draw(ctx, camera, this.cellGrid, center);
                 } else if (size < districtPixels * 3) {
                     district.drawBackground(ctx, dGrid, node);
-                    district.buildings.forEach(function(building) {
-                        building.draw(ctx, dGrid, node); });
+                    district.drawOverview(ctx, dGrid, node);
                 } else {
                     district.drawBackground(ctx, dGrid, node);
                     district.drawIcon(ctx, dGrid, node);
