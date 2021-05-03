@@ -40,6 +40,25 @@
                 result.start.col += 1 + Math.floor(rand.random() * 3);
                 result.end.col -= 1 + Math.floor(rand.random() * 3);
             }
+
+            result.__cellEmpty = {
+                draw: function(ctx, cellGrid, node) {
+                    ctx.beginPath();
+                    cellGrid.draw(ctx, node);
+                    ctx.fillStyle = result.district.type.buildingColor;
+                    ctx.fill();
+                }
+            };
+
+            result.__cellWall = {
+                draw: function(ctx, cellGrid, node) {
+                    ctx.beginPath();
+                    cellGrid.draw(ctx, node);
+                    ctx.fillStyle = result.district.type.wallColor;
+                    ctx.fill();
+                }
+            };
+
             return result;
         },
 
@@ -53,6 +72,22 @@
                         fn.call(context, node);
                     else result.push(node);
                 }
+            }
+            return result;
+        },
+
+        getContents: function(node) {
+            var result = null;
+            if ((node.row >= this.start.row) ||
+                (node.row <= this.end.row) ||
+                (node.col >= this.start.col) ||
+                (node.col <= this.end.col)) {
+                if ((node.row === this.start.row) ||
+                    (node.row === this.end.row) ||
+                    (node.col === this.start.col) ||
+                    (node.col === this.end.col))
+                    result = this.__cellWall;
+                else result = this.__cellEmpty;
             }
             return result;
         },
@@ -124,7 +159,7 @@
         addBuilding: function(building) {
             building.eachCell(function(cell) {
                 this.__cellMap[ripple.pair(
-                    cell.row, cell.col)] = building;
+                    cell.row, cell.col)] = building.getContents(cell);
             }, this);
             this.__buildings.push(building);
         },
@@ -292,14 +327,12 @@
 
                 var contents = this.__cellMap[ripple.pair(
                     relative.row, relative.col)];
-                if (contents) {
-                    // TODO
-                } else {
+                if (!contents) {
                     ctx.beginPath();
                     cellGrid.draw(ctx, node);
                     ctx.fillStyle = this.type.color;
                     ctx.fill();
-                }
+                } else contents.draw(ctx, cellGrid, node);
             }, this);
         }
     };
@@ -368,11 +401,11 @@
                     });
                     district.draw(ctx, camera, this.cellGrid, center);
                 } else if (size < districtPixels * 3) {
-                    district.drawBackground(ctx, dGrid, node);
-                    district.drawOverview(ctx, dGrid, node);
+                    district.drawBackground(ctx, this.districtGrid, node);
+                    district.drawOverview(ctx, this.districtGrid, node);
                 } else {
-                    district.drawBackground(ctx, dGrid, node);
-                    district.drawIcon(ctx, dGrid, node);
+                    district.drawBackground(ctx, this.districtGrid, node);
+                    district.drawIcon(ctx, this.districtGrid, node);
                 }
             }, this);
         }
