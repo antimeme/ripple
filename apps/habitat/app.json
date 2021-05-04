@@ -34,7 +34,7 @@
             "color":         "rgb(240, 128, 64)",
             "iconColor":     "rgb(192, 96, 64)",
             "buildingColor": "rgb(192, 96, 64)",
-            "wallColor":     "rgb(172, 64, 32)",
+            "wallColor":     "rgb(96, 64, 32)",
             "randomWeight": 25, "pSplit": 0.98, "pUsed": 0.90,
             "iconScale": 2,
             "icon": [{
@@ -63,7 +63,7 @@
             "color": "darkgray",
             "iconColor": "gray",
             "buildingColor": "gray",
-            "wallColor": "gray",
+            "wallColor": "#202020",
             "randomWeight": 50, "pSplit": 0.98, "pUsed": 0.96,
             "iconScale": 0.75,
             "icon": [{

@@ -305,7 +305,7 @@
                 ctx.fill();
                 ctx.lineWidth = 0.01;
                 ctx.lineCap   = "square";
-                ctx.strokeStyle = "rgb(128, 128, 128)";
+                ctx.strokeStyle = this.type.wallColor;
                 ctx.stroke();
                 ctx.restore();
             }
@@ -400,9 +400,16 @@
                         col: Math.floor(node.col * District.cellCount)
                     });
                     district.draw(ctx, camera, this.cellGrid, center);
-                } else if (size < districtPixels * 3) {
+                } else if (size < districtPixels * 3 / 2) {
                     district.drawBackground(ctx, this.districtGrid, node);
                     district.drawOverview(ctx, this.districtGrid, node);
+                } else if (size < districtPixels * 3) {
+                    district.drawBackground(ctx, this.districtGrid, node);
+                    ctx.save();
+                    ctx.globalAlpha = 0.2;
+                    district.drawOverview(ctx, this.districtGrid, node);
+                    ctx.restore();
+                    district.drawIcon(ctx, this.districtGrid, node);
                 } else {
                     district.drawBackground(ctx, this.districtGrid, node);
                     district.drawIcon(ctx, this.districtGrid, node);
