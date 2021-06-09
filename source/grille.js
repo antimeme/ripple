@@ -17,14 +17,72 @@
 //
 // ---------------------------------------------------------------------
 // An abstraction that represents a variety of two dimensional grids.
+//
+// Create a grid by calling the grille.createGrid method:
+//
+//     var g = grile.createGrid({type: "square", edge: 20});
+//
+// This creates a square grid with an edge length of twenty units.
+// Instead, you could specify a radius.  This should give a more
+// uniform size among different grid types.
+//
+//     var g = grille.createGrid({type: "hex", radius: 15});
+//
+// This creates a hexagonal grid with a radius of fifteen units.
+// The markCenter method puts the x and y coordinates of the center
+// of the grid cell.
+//
+// Once a grid has been created you can use a row and column to find
+// the coordinates of the center of the cell:
+//
+//     var cell = g.markCenter({row: 1, col: 1});
+//     console.log("x:", cell.x, "y:", cell.y);
+//
+// Often it is useful to identify which grid cell a coordinate pair
+// falls within.  For example, this is useful for converting mouse
+// clicks to a cell.
+//
+//     var cell = g.markCell({x: 202, y: 115});
+//     console.log("row:", cell.row, "col:", cell.col);
+//
+// Both of these methods operate in place, which assumes mutable data.
+// To avoid side effects, use g.getCenter(cell) or g.getCell(cell)
+// instead.  The argument will not be modified in these cases.
+//
+// Every grid cell has a set of points that define the polygon.  Use
+// the getPoints method to retreive these as an array.
+//
+// Each cell has neightbors, over which you can iterate:
+//
+//     g.eachNeighbor(cell, null, function(neighbor) {
+//         console.log("row:", neighbor.row, "col:": neighbor.col); });
+//
+// Use the getPairPoints method to retrieve the line segment shared
+// between two neighboring cells.  In some cases, such as diagonal
+// neightbors in square grids, neighbors share only a single point.
+//
+// Iteration over all cells along a line segment is supported with the
+// eachSegement method:
+//
+//     g.eachSegment(cellStart, cellEnd, function(cell) {
+//         console.log("row:", cell.row, "col:", cell.col); });
+//
+// Another advanced option is to map over a rectangual or circular
+// area of cells.  The map method does this:
+//
+//     g.map({start: {x: 22, y: -144}, end: {x: 405, y: 255}},
+//           function(cell) {
+//               console.log("row:", cell.row, "col:", cell.col ); });
+//
+// Note that the grid does not support offsets.  You will need to use
+// some other method of transforming coordinates as necessary.
 (function(grille) {
     "use strict";
     var sqrt2 = Math.sqrt(2);
     var sqrt3 = Math.sqrt(3);
-    var epsilon = 0.000001;
-    var zeroish = function(value) {
-        return (value < epsilon) && (value > -epsilon);
-    };
+    var epsilon = 1 / (1 << 20); // approximately one in a million
+    var zeroish = function(value)
+    { return (value < epsilon) && (value > -epsilon); };
 
     // Return the sum of the square of each argument
     var sumSquares = function() {
@@ -36,9 +94,34 @@
         return result;
     };
 
-    // Return the square root of the sum of the squares of each argument
-    var sumSquaresRoot = function() {
-        return Math.sqrt(sumSquares.apply(null, arguments));
+    // Given a pair of points for each of two lines, returns the point
+    // at which the two lines intersect.  Euclidian space is assumed so
+    // If the lines have the same slope they either don't intersect or
+    // are the same line.
+    var intersect2D = function(s, e, p, q) {
+        var result;
+        var denominator = ((e.y - s.y) * (p.x - q.x) -
+                           (p.y - q.y) * (e.x - s.x));
+        if (!zeroish(denominator)) {
+            var x = (((s.x * (e.y - s.y) * (p.x - q.x)) -
+                      (q.x * (p.y - q.y) * (e.x - s.x)) -
+                      (s.y - q.y) * (e.x - s.x) * (p.x - q.x)) /
+                denominator);
+            return { x: x,
+                     y: zeroish(e.x - s.x) ?
+                        ((p.y - q.y) * (x - q.x) / (p.x - q.x)) + q.y :
+                        ((e.y - s.y) * (x - s.x) / (e.x - s.x)) + s.y};
+        }
+        return result;
+    };
+
+    // Given two points that make up a line segment return true iff
+    // a third point lies between them.
+    var between2D = function(s, e, p) {
+        var dotSegP = ((e.x - s.x) * (p.x - s.x) + (
+            e.y - s.y) * (p.y - s.y));
+        return ((dotSegP >= 0) &&
+                (dotSegP <= sumSquares(e.x - s.x, e.y - s.y)));
     };
 
     // Throws an error if the node does not contain a numeric "row"
@@ -62,25 +145,28 @@
             var result = Object.create(this);
             // Every grid has an edge length and a radius.  The meaning
             // of these depends on the grid type but at least one of
-            // them must be present or the grid itself is invalid.
+            // them must be specified.
 
             if (config && !isNaN(config.radius))
                 result._radius = config.radius;
-            else if (result._edge)
-                result._radius = result._getRadius(result._edge);
             else if (config && !isNaN(config.edge))
                 result._radius = result._getRadius(config.edge);
+            else if (result._edge)
+                result._radius = result._getRadius(result._edge);
 
             if (config && !isNaN(config.edge))
                 result._edge = config.edge;
-            else if (result._radius)
-                result._edge = result._getEdge(result._radius);
             else if (config && !isNaN(config.radius))
                 result._edge = result._getEdge(config.radius);
+            else if (result._radius)
+                result._edge = result._getEdge(result._radius);
 
-            if (!result._radius || !result.edge)
-                throw new Error("Invalid grid size: " + result._radius);
-            return result._init(config);
+            if (isNaN(result._radius) || isNaN(result._edge))
+                throw new Error("Must specify grid size (radius: \"" +
+                                result._radius + "\", edge: \"" +
+                                result._edge + "\")");
+            result._init(config);
+            return result;
         },
 
         // Returns the radius of a single cell
@@ -121,8 +207,8 @@
         // Call a specified function for each cell in the line segment
         // between the start and end nodes.
         eachSegment: function(start, end, fn, context) {
-            // Given a start and end with coordinates, call a function for
-            // each cell in the line segment line between them.
+            // Given a start and end with coordinates, call a function
+            // for each cell in the line segment line between them.
             // WARNING: this has a bug that only seems to manifest on
             // the right triangle grids.  Sometimes it works but other
             // times it stops part way through.
@@ -134,22 +220,25 @@
             var current = this.markCell({x: start.x, y: start.y});
             end = this.markCell({x: end.x, y: end.y});
 
-            while ((current.row != end.row) || (current.col != end.col)) {
+            while ((current.row != end.row) ||
+                   (current.col != end.col)) {
                 var step = null;
                 this.eachNeighbor(current, {points: true}, function(
                     neighbor) {
-                    if (!neighbor.points || (neighbor.points.length < 2) ||
+                    if (!neighbor.points ||
+                        (neighbor.points.length < 2) ||
                         (previous &&
                          (previous.row == neighbor.row) &&
                          (previous.col == neighbor.col)))
                         return;
                     var crossing = intersect2D(
-                        start, end, neighbor.points[0], neighbor.points[1]);
+                        start, end, neighbor.points[0],
+                        neighbor.points[1]);
                     if (crossing && between2D(
-                        neighbor.points[0], neighbor.points[1], crossing) &&
-                        between2D(start, end, crossing)) {
+                        neighbor.points[0], neighbor.points[1],
+                        crossing) &&
+                        between2D(start, end, crossing))
                         step = neighbor;
-                    }
                 });
 
                 fn.call(context, current);
@@ -170,7 +259,7 @@
                     this.push(node) }, []);
             var start, end, radius, index = 0;
             var self = this;
-            var visited = {}; // ensure one visit per node
+            var visited = {}; // ensure at most one visit per node
             var visit = function(node) {
                 var id = ripple.pair(node.row, node.col);
                 if (!visited[id]) {
@@ -200,7 +289,7 @@
                 start = this.markCell(
                     {x: config.start.x, y: config.start.y});
                 radius = config.radius;
-            } else throw "Configuration is invalid";
+            } else throw Error("Configuration is invalid");
 
             if (start && end) {
                 // Ensure that cells inside the rectangle are included
@@ -249,7 +338,16 @@
             if (!fn)
                 return this.eachNeighbor(node, config, function(node) {
                     this.push(node); }, []);
-            this._eachNeighbor(node, config, fn, context);
+            var self = this;
+            var index = 0;
+            this._eachNeighbor(node, function(neighbor) {
+                if (config && config.center)
+                    neighbor = self.getCenter(neighbor);
+                if (config && config.points)
+                    neighbor.points = self.getPairPoints(
+                        node, neighbor);
+                fn.call(context, neighbor, index++);
+            });
             return context;
         },
 
@@ -260,18 +358,24 @@
         // Returns a set of points that make up a grid cell
         getPoints: function(node) {
             checkCell(node);
+            if (isNaN(node.x) || isNaN(node.y))
+                node = this.getCenter(node);
             return this._getPoints(node);
         },
 
         // Returns a set of points that make up a grid cell
         getPairPoints: function(nodeA, nodeB) {
             checkCell(nodeA);
+            if (isNaN(nodeA.x) || isNaN(nodeA.y))
+                nodeA = this.getCenter(nodeA);
             checkCell(nodeB);
+            if (isNaN(nodeB.x) || isNaN(nodeB.y))
+                nodeB = this.getCenter(nodeB);
             return this._getPairPoints(nodeA, nodeB);
         },
 
         // Draws a grid cell on a canvas
-        draw: function(ctx) {
+        draw: function(ctx, node) {
             var points = this.getPoints(node);
             if (points.length > 1) {
                 var last = points[points.length - 1];
@@ -280,10 +384,11 @@
                     ctx.lineTo(points[index].x,
                                points[index].y);
             } else if (points.length === 1) {
-                ctx.moveTo(points[0].x + this.getRadius() / 2,
+                var radius = this.getRadius();
+                ctx.moveTo(points[0].x + radius / 2,
                            points[0].y);
                 ctx.arc(points[0].x, points[0].y,
-                        this.getRadius() / 2, 0, 2 * Math.PI);
+                        radius / 2, 0, 2 * Math.PI);
             }
         },
 
@@ -292,16 +397,16 @@
         },
 
         // Every grid should override most of these
-        _init:      function(config) { return this; },
-        _getRadius: function(edge) { return edge; },
-        _getEdge:   function(radius) { return radius; },
+        _init:       function(config) { return this; },
+        _getRadius:  function(edge)   { return edge; },
+        _getEdge:    function(radius) { return radius; },
         _markCenter: function(node)
         { throw new Error("BaseGrid markCenter is not valid"); },
-        _markCell: function(node)
+        _markCell:   function(node)
         { throw new Error("BaseGrid markCell is not valid"); },
-        _eachNeighbor: function(node, fn, context)
+        _eachNeighbor:  function(node, fn)
         { throw new Error("BaseGrid eachNeighbor is not valid"); },
-        _getPoints: function(node)
+        _getPoints:     function(node)
         { throw new Error("BaseGrid getPoints is not valid"); },
         _getPairPoints: function(nodeA, nodeB)
         { throw new Error("BaseGrid getPairPoints is not valid"); },
@@ -311,8 +416,8 @@
         var result = Object.create(BaseGrid);
 
         result._init = function(config) {
-            this._diagonal = (config && config.diagonal) ?
-                             config.diagonal : false;
+            this.diagonal = (config && config.diagonal) ?
+                            config.diagonal : false;
         };
 
         result._getRadius = function(edge) { return edge / sqrt2; };
@@ -332,20 +437,20 @@
             return node;
         };
 
-        result._eachNeighbor = function(node, fn, context) {
-            fn.call(context, {row: node.row, col: node.col + 1});
-            fn.call(context, {row: node.row, col: node.col - 1});
-            fn.call(context, {row: node.row + 1, col: node.col});
-            fn.call(context, {row: node.row - 1, col: node.col});
+        result._eachNeighbor = function(node, fn) {
+            fn({row: node.row, col: node.col + 1});
+            fn({row: node.row, col: node.col - 1});
+            fn({row: node.row + 1, col: node.col});
+            fn({row: node.row - 1, col: node.col});
             if (this.diagonal) {
-                fn.call(context, {row: node.row + 1,
-                                  col: node.col + 1, cost: sqrt2});
-                fn.call(context, {row: node.row + 1,
-                                  col: node.col - 1, cost: sqrt2});
-                fn.call(context, {row: node.row - 1,
-                                  col: node.col + 1, cost: sqrt2});
-                fn.call(context, {row: node.row - 1,
-                                  col: node.col - 1, cost: sqrt2});
+                fn({row: node.row + 1,
+                    col: node.col + 1, cost: sqrt2});
+                fn({row: node.row + 1,
+                    col: node.col - 1, cost: sqrt2});
+                fn({row: node.row - 1,
+                    col: node.col + 1, cost: sqrt2});
+                fn({row: node.row - 1,
+                    col: node.col - 1, cost: sqrt2});
             }
         };
 
@@ -359,25 +464,25 @@
 
         result._getPairPoints = function(nodeA, nodeB) {
             var result = [];
+            var halfedge = this._edge / 2;
             if ((nodeA.row - nodeB.row) && (nodeA.col - nodeB.col)) {
+                // Diagonal neightbors get a single point
                 result.push({x: nodeA.x + (nodeB.x - nodeA.x) / 2,
                              y: nodeA.y + (nodeB.y - nodeA.y) / 2});
-            } else {
-                var midpoint = {x: (nodeB.x - nodeA.x) / 2,
-                                y: (nodeB.y - nodeA.y) / 2};
-                var rotated = {x: (nodeA.y - nodeB.y) / 2,
-                               y: (nodeB.x - nodeA.x) / 2};
-                var factor = this._edge / (2 * sumSquaresRoot(
-                    rotated.x, rotated.y));
-                var scaled = {x: rotated.x * factor,
-                              y: rotated.y * factor};
-                result.push({x: nodeA.x + midpoint.x + scaled.x,
-                             y: nodeA.y + midpoint.y + scaled.y});
-                result.push({x: nodeA.x + midpoint.x - scaled.x,
-                             y: nodeA.y + midpoint.y - scaled.y});
-            }
+            } else if (nodeA.row - nodeB.row) {
+                result.push({x: nodeA.x - halfedge,
+                             y: nodeA.y + (nodeB.y - nodeA.y) / 2});
+                result.push({x: nodeA.x + halfedge,
+                             y: nodeA.y + (nodeB.y - nodeA.y) / 2});
+            } else if (nodeA.col - nodeB.col) {
+                result.push({x: nodeA.x + (nodeB.x - nodeA.x) / 2,
+                             y: nodeA.y - halfedge});
+                result.push({x: nodeA.x + (nodeB.x - nodeA.x) / 2,
+                             y: nodeA.y + halfedge});
+            } else throw Error("getPairPoints called on same node");
             return result;
         };
+
         return result;
     })();
 
@@ -392,6 +497,16 @@
         return result;
     })();
 
+    // Exposes grid types for use in user menus.  The first element of
+    // each list is the grid name.  The second, if present, is the
+    // option structure which creates that grid type.
+    grille.canonical = [
+        {name: "Square(strict)", type: "square"},
+        {name: "Square(diagonal)", type: "square", diagonal: true},
+        {name: "Hex(point)", type: "hex", orient: "point"},
+        {name: "Hex(edge)", type: "hex", orient: "edge"},
+        {name: "Triangle", type: "triangle"}];
+
     grille.createGrid = function(config) {
         var types = {
             "square":   SquareGrid,
@@ -399,10 +514,10 @@
             "triangle": TriangleGrid };
         var configType = (config && config.type) ?
                          config.type.toLowerCase() : undefined;
-
         return ((configType in types) ? types[configType] :
                 SquareGrid).create(config);
     };
+
 }).call(this, typeof exports === 'undefined' ?
         (this.grille = {}) :
         ((typeof module !== undefined) ?

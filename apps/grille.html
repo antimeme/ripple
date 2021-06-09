@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="X-UA-Compatible" content="chrome=1">
+<title>Grille Test</title>
+<style>
+ html, body {
+     padding: 0; margin: 0; overflow: hidden;
+     position: relative; background: gray;
+ }
+ canvas { background: white; color: #336; }
+ .menu {
+     position: absolute; padding: 0.5em;
+     background: #333; color: white;
+     border: 2px solid white; border-radius: 5px;
+     list-style-type: none; list-style-position: outside;
+ }
+ .menu a { text-decoration: none; color: white; }
+ .menu li { padding: 0.5em; border-radius: 5px; }
+ .menu li:hover { background: #55e; }
+</style>
+
+<script src="ripple/polyfill.js"></script>
+<script src="ripple/ripple.js"></script>
+<script src="ripple/grille.js"></script>
+<script>//<![CDATA[
+ var test = function(parent, viewport) {
+     var instance;
+     var camera;
+     var self = document.createElement('canvas');
+     (parent ? parent : document.body).appendChild(self);
+
+     var colorTapInner = 'rgba(45, 45, 128, 0.8)';
+     var colorTapOuter = 'rgba(128, 255, 128, 0.6)';
+     var colorSelected = 'rgba(192, 192, 0, 0.6)';
+     var colorNeighbor = 'rgba(128, 128, 0, 0.4)';
+     var colorRadius   = 'rgba(128, 128, 128, 0.2)';
+     var colorLine     = 'rgba(128, 128, 224, 0.5)';
+     var colorSegment  = 'rgba(128, 128, 224, 0.5)';
+     var colorOccupied = 'rgba(128, 192, 128, 0.5)';
+
+     var lineWidth = 0, lineFactor = 40;
+     var numbers = false, combined = false;
+     var tap, selected, when, previous;
+     var drag, zooming, gesture, press = 0;
+
+     if (!viewport)
+         viewport = parent ? parent : window;
+
+     var draw_id = 0;
+     var draw = function() {
+         if (!self.getContext)
+             throw Error("canvas has no getContext");
+         var ctx = self.getContext('2d');
+         var width  = self.clientWidth;
+         var height = self.clientHeight;
+         var style  = getComputedStyle(self);
+         var color = (style.color === 'transparent') ?
+                     'white' : style.color;
+         var points, last, index;
+         var neighbors, vector, radius;
+
+         if (!camera)
+             camera = ripple.camera(width, height);
+
+         if (!instance) {
+             instance = grille.createGrid({radius: 25});
+             lineWidth = instance.getRadius() / lineFactor;
+         }
+
+         ctx.save();
+         ctx.fillStyle = 'black'; // makes holes in map obvious
+         ctx.fillRect(0, 0, width, height);
+         camera.setupContext(ctx);
+
+         ctx.beginPath();
+         ctx.lineWidth = lineWidth;
+         ctx.textAlign = 'center';
+         ctx.font = 'bold ' + 12 + 'pt sans-serif';
+         instance.map({width: width, height: height},
+                      function(node) { instance.draw(ctx, node); });
+         ctx.fillStyle = style['background-color'];
+         ctx.fill();
+         ctx.strokeStyle = color;
+         ctx.stroke();
+         if (combined)
+             instance.map({
+                 start: camera.toWorldFromScreen({x: 0, y: 0}),
+                 end:   camera.toScreenFromWorld({
+                     x: width, y: height})},
+                          function(node) {
+                              ctx.fillStyle = color;
+                              ctx.fillText(
+                                  ripple.pair(node.row, node.col),
+                                  node.x, node.y); });
+         else if (numbers)
+             instance.map({
+                 start: camera.toWorldFromScreen({x: 0, y: 0}),
+                 end:   camera.toScreenFromWorld({
+                     x: width, y: height})},
+                          function(node) {
+                              ctx.fillStyle = color;
+                              ctx.fillText(
+                                  '(' + node.row + ', ' +
+                                  node.col + ')', node.x, node.y); });
+
+         if (selected) {
+             ctx.beginPath();
+             instance.map(
+                 {start: selected, radius: instance.getEdge()},
+                 function(node) { instance.draw(ctx, node); });
+             ctx.fillStyle = colorRadius;
+             ctx.fill();
+
+             // Coordinates of the selected square must be
+             // updated in case the grid offsets have moved
+             // since the last draw call.
+             ctx.beginPath();
+             instance.draw(ctx, instance.getCenter(selected));
+             ctx.fillStyle = colorSelected;
+             ctx.fill();
+
+             // Show the cells adjacent to the selected cell.
+             neighbors = instance.neighbors(
+                 selected, {points: true});
+             ctx.beginPath();
+             neighbors.forEach(function(neighbor) {
+                 instance.draw(ctx, neighbor); });
+             ctx.fillStyle = colorNeighbor;
+             ctx.fill();
+
+             // Show the boundaries between cells using a different
+             // color for each adjacent cell.
+             var colors = [
+                 'red', 'green', 'blue', 'cyan', 'magenta',
+                 'yellow', 'black', 'white'];
+             neighbors.forEach(function(neighbor, index) {
+                 var points = neighbor.points;
+
+                 ctx.beginPath();
+                 if (points.length > 1) {
+                     vector = {x: points[1].x - points[0].x,
+                               y: points[1].y - points[0].y};
+                     ctx.moveTo(points[0].x + 0.25 * vector.x,
+                                points[0].y + 0.25 * vector.y);
+                     ctx.lineTo(points[0].x + 0.75 * vector.x,
+                                points[0].y + 0.75 * vector.y);
+                 } else if (points.length === 1) {
+                     radius = lineWidth * 5;
+                     ctx.moveTo(points[0].x + radius,
+                                points[0].y);
+                     ctx.arc(points[0].x, points[0].y,
+                             radius, 0, 2 * Math.PI);
+                 }
+                 ctx.moveTo(neighbor.x + lineWidth * 2,
+                            neighbor.y);
+                 ctx.arc(neighbor.x, neighbor.y,
+                         lineWidth * 2, 0, 2 * Math.PI);
+
+                 ctx.lineWidth = lineWidth;
+                 ctx.strokeStyle = colors[index % colors.length];
+                 ctx.stroke();
+             });
+
+             if (previous) {
+                 ctx.beginPath();
+                 instance.eachSegment(
+                     previous, selected, function(node) {
+                         instance.draw(
+                             ctx, instance.markCenter(node)); });
+                 ctx.fillStyle = colorLine;
+                 ctx.fill();
+
+                 ctx.beginPath();
+                 ctx.moveTo(previous.x, previous.y);
+                 ctx.lineTo(selected.x, selected.y);
+                 ctx.lineWidth = 2 * lineWidth;
+                 ctx.lineCap = 'round';
+                 ctx.strokeStyle = colorSegment;
+                 ctx.stroke();
+             }
+         }
+
+         if (tap) {
+             var targets = tap.targets || [tap];
+             for (index = 0; index < targets.length; ++index) {
+                 ctx.beginPath();
+                 ctx.arc(targets[index].x,
+                         targets[index].y,
+                         20, 0, 2 * Math.PI);
+                 ctx.fillStyle = colorTapOuter;
+                 ctx.fill();
+             }
+
+             if (targets.length > 1) {
+                 ctx.beginPath();
+                 instance.eachSegment(
+                     targets[0], targets[1], function(node) {
+                         instance.draw(
+                             ctx, instance.getCenter(node)); });
+                 ctx.fillStyle = colorLine;
+                 ctx.fill();
+
+                 ctx.beginPath();
+                 ctx.moveTo(targets[0].x, targets[0].y);
+                 ctx.lineTo(targets[1].x, targets[1].y);
+                 ctx.lineWidth = 2 * lineWidth;
+                 ctx.lineCap = 'round';
+                 ctx.strokeStyle = colorSegment;
+                 ctx.stroke();
+             }
+
+             ctx.beginPath();
+             ctx.arc(tap.x, tap.y, 10, 0, 2 * Math.PI);
+             ctx.fillStyle = colorTapInner;
+             ctx.fill();
+         }
+
+         ctx.restore();
+         draw_id = 0;
+     };
+     var redraw = function()
+     { if (!draw_id) draw_id = requestAnimationFrame(draw); };
+
+     viewport.addEventListener('resize', function(event) {
+         // Consume enough space to fill the viewport.
+         self.height = viewport.innerHeight || viewport.clientHeight;
+         self.width = viewport.innerWidth || viewport.clientWidth;
+
+         zooming = drag = undefined;
+         redraw();
+     });
+     viewport.dispatchEvent(new Event('resize'));
+
+     var animation = new (function() {
+         var id, current, start, stop, limit = 60000;
+         var choose = function(size) {
+             return Math.floor(size * Math.random());
+         };
+
+         this.start = function() {
+             var now = new Date().getTime();
+             if (!current)
+                 current = now;
+             do {
+                 if (!stop) {
+                     var offset = instance.offset();
+                     var angle = 2 * Math.PI * Math.random();
+                     var magnitude = 100 + choose(50);
+
+                     if (now - current > limit)
+                         current = now - limit;
+                     start = {left: offset.left, top: offset.top,
+                              time: current};
+                     stop = {left: offset.left + magnitude *
+                         Math.cos(angle),
+                             top:  offset.top  + magnitude *
+                         Math.sin(angle),
+                             time: current + choose(5000) + 2500};
+                 }
+                 var portion = Math.min(1.0, (now - start.time) /
+                     (stop.time - start.time));
+                 instance.offset(
+                     Math.floor(start.left + portion *
+                         (stop.left - start.left)),
+                     Math.floor(start.top + portion *
+                         (stop.top - start.top)));
+                 if (stop.time < now) {
+                     current = stop.time;
+                     stop = undefined;
+                 }
+             } while (!stop);
+             draw();
+             var a = this;
+             id = requestAnimationFrame(function() { a.start(); });
+         };
+         this.stop = function() {
+             if (id)
+                 cancelAnimationFrame(id);
+             id = 0;
+             current = undefined;
+             stop = undefined;
+         };
+         this.toggle = function() {
+             if (!id)
+                 this.start();
+             else this.stop();
+         };
+     })();
+
+     // Populate menu with available grid types
+     var menu = ripple.hide(ripple.createElement(
+         'ul', {'class': 'menu'}));
+     self.parentElement.appendChild(menu);
+     grille.canonical.forEach(function (entry) {
+         var options = JSON.stringify(entry);
+         menu.appendChild(ripple.createElement(
+             'li', {
+                 data: {'grid-type': entry.name,
+                        'grid-options': options}},
+             entry.name));
+     });
+     menu.appendChild(document.createElement('hr'));
+     menu.appendChild(ripple.createElement(
+         'li', {data: {action: "animation"}}, 'Toggle Animation'));
+     menu.appendChild(ripple.createElement(
+         'li', {data: {action: "numbers"}}, 'Toggle Numbers'));
+     menu.appendChild(ripple.createElement(
+         'li', {data: {action: "colors"}}, 'Swap Colors'));
+     menu.appendChild(ripple.createElement(
+         'li', {data: {action: "full-screen"}}, 'Full Screen'));
+     menu.addEventListener('click',function(event) {
+         if (event.target.tagName.toLowerCase() !== 'li')
+             return false;
+         ripple.hide(menu);
+         var gridType = event.target.getAttribute('data-grid-type');
+         if (gridType) {
+             var options = JSON.parse(decodeURIComponent(
+                 event.target.getAttribute('data-grid-options')));
+             if (!options)
+                 options = {type: gridType};
+             options.width  = self.clientWidth;
+             options.height = self.clientHeight;
+             instance = grille.createGrid(options);
+             lineWidth = instance.size() / lineFactor;
+
+             tap = undefined;
+             selected = undefined;
+             previous = undefined;
+             redraw();
+         }
+
+         switch (event.target.getAttribute('data-action')) {
+             case 'full-screen': {
+                 ripple.toggleFullscreen(self.parentElement);
+             } break;
+             case 'animation': {
+                 animation.toggle();
+             } break;
+             case 'numbers': {
+                 if (combined) {
+                     numbers = combined = false;
+                 } else if (numbers)
+                     combined = true;
+                 else numbers = true;
+                 redraw();
+             } break;
+             case 'colors': {
+                 var style = getComputedStyle(self);
+                 var swap = style.color;
+                 self.style.color = style['background-color'];
+                 self.style['background-color'] = swap;
+                 redraw();
+             } break;
+         }
+     });
+
+     // Show grid menu at event location
+     var menuate = function(tap) {
+         menu.style.top = 10 + 'px';
+         menu.style.left = 25 + 'px';
+         ripple.show(menu);
+         drag = undefined;
+     };
+
+     var zoom = function(left, top, size, x, y, factor) {
+         if (factor && factor > 0) {
+             var screenSize = Math.min(
+                 self.clientWidth, self.clientHeight);
+             if ((size * factor > (screenSize / 50)) &&
+                 (size * factor < screenSize)) {
+                 instance.offset((left - x) * factor + x,
+                                 (top - y)  * factor + y);
+                 instance.size(size * factor);
+                 lineWidth = instance.size() / lineFactor;
+             }
+             redraw();
+         }
+     };
+
+     // Process mouse and touch events on grid itself
+     ripple.addWheelListener(self, function(event) {
+         var offset = instance.offset();
+         var x, y;
+         if (tap) {
+             x = tap.x; y = tap.y;
+         } else {
+             x = self.clientWidth / 2;
+             y = self.clientHeight / 2;
+         }
+         zoom(offset.left, offset.top, instance.size(), x, y,
+              1 + 0.1 * event.deltaY);
+     });
+     var downEvent = function(event) {
+         var targets = ripple.getInputPoints(event, self);
+         ripple.hide(menu);
+         if (event.which > 1) {
+             // Reserve right and middle clicks for browser menus
+             return true;
+         } else if (targets.targets && targets.targets.length > 1) {
+             tap = targets;
+             if (targets.targets.length == 2) {
+                 var t0 = targets.targets[0];
+                 var t1 = targets.targets[1];
+                 zooming = {
+                     diameter: sumSquaresRoot(
+                         t1.x - t0.x, t1.y - t0.y),
+                     x: (t0.x + t1.x) / 2, y: (t0.y + t1.y) / 2,
+                     size: instance.size(),
+                     offset: instance.offset()};
+             }
+             if (press) { clearTimeout(press); press = 0; }
+         } else {
+             var now = Date.now();
+             tap = drag = targets;
+             if (when && now < when + 1000)
+                 previous = selected;
+             else previous = undefined;
+             when = now;
+             selected = instance.markCell(tap);
+             if (tap.targets && tap.targets.length > 1)
+                 selected.range = [
+                     instance.markCell(tap.targets[0]),
+                     instance.markCell(tap.targets[1])];
+
+             // Show a menu on either double tap or long press.
+             // There are some advantages to using a native double
+             // click event on desktop platforms (for example, the
+             // timing can be linked to operating system
+             // accessibility) but here testing is what matters.
+             var now = new Date().getTime();
+             if (gesture && gesture.time > now &&
+                 sumSquares(gesture.x - tap.x,
+                            gesture.y - tap.y) < 225) {
+                 gesture = undefined;
+                 menuate(tap);
+             } else {
+                 gesture = {time: now + 600, x: tap.x, y: tap.y};
+                 press = setTimeout(function() { menuate(tap); },
+                                    1000);
+             }
+         }
+
+         redraw();
+         if (event.preventDefault)
+             event.preventDefault();
+         return false;
+     };
+     self.addEventListener('mousedown', downEvent);
+     self.addEventListener('touchstart', downEvent);
+     var moveEvent = function(event) {
+         if (drag) {
+             animation.stop();
+             tap = ripple.getInputPoints(event, self);
+             var goff = instance.offset();
+             instance.offset(goff.left + tap.x - drag.x,
+                             goff.top + tap.y - drag.y);
+             if ((sumSquares(tap.x - drag.x,
+                             tap.y - drag.y) > 125) && press)
+                 clearTimeout(press);
+             redraw();
+             drag = tap;
+         }
+         if (zooming) {
+             animation.stop();
+             var targets = ripple.getInputPoints(event, self);
+             var factor;
+             if (zooming.diameter && targets.targets.length == 2) {
+                 var t0 = targets.targets[0];
+                 var t1 = targets.targets[1];
+                 var diameter = sumSquaresRoot(
+                     t1.x - t0.x, t1.y - t0.y);
+                 factor = diameter / zooming.diameter;
+             }
+             if (factor && factor > 0)
+                 zoom(zooming.offset.left, zooming.offset.top,
+                      zooming.size,
+                      zooming.x, zooming.y, factor);
+         }
+
+         if (event.preventDefault)
+             event.preventDefault();
+         return false;
+     };
+     self.addEventListener('mousemove', moveEvent);
+     self.addEventListener('touchmove', moveEvent);
+     var upEvent = function(event) {
+         drag = zooming = undefined;
+         if (press) { clearTimeout(press); press = 0; }
+
+         if (event.preventDefault)
+             event.preventDefault();
+         return false;
+     };
+     self.addEventListener('mouseleave', upEvent);
+     self.addEventListener('mouseup', upEvent);
+     self.addEventListener('touchend', upEvent);
+ };
+
+ ripple.ready(function() { test(); }); //]]></script>
