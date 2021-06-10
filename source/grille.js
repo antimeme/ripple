@@ -438,10 +438,10 @@
         };
 
         result._eachNeighbor = function(node, fn) {
-            fn({row: node.row, col: node.col + 1});
-            fn({row: node.row, col: node.col - 1});
-            fn({row: node.row + 1, col: node.col});
             fn({row: node.row - 1, col: node.col});
+            fn({row: node.row, col: node.col + 1});
+            fn({row: node.row + 1, col: node.col});
+            fn({row: node.row, col: node.col - 1});
             if (this.diagonal) {
                 fn({row: node.row + 1,
                     col: node.col + 1, cost: sqrt2});
