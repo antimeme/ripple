@@ -105,14 +105,6 @@
                                   node.col + ')', node.x, node.y); });
 
          if (selected) {
-             /* ctx.beginPath();
-              * instance.map(
-              *     {start: selected, radius: instance.getEdge()},
-              *     function(node) { instance.draw(ctx, node); });
-              * ctx.fillStyle = colorRadius;
-              * ctx.fill();
-              */
-
              // Show the currently selected cell.
              ctx.beginPath();
              instance.draw(ctx, selected);
@@ -133,7 +125,8 @@
                  'red', 'green', 'blue', 'cyan', 'magenta',
                  'yellow', 'black', 'white'];
              instance.eachNeighbor(
-                 selected, {points: true}, function(neighbor, index) {
+                 selected, {center: true, points: true},
+                 function(neighbor, index) {
                      var points = neighbor.points;
 
                      ctx.beginPath();
@@ -266,14 +259,31 @@
      var menu = ripple.hide(ripple.createElement(
          'ul', {'class': 'menu'}));
      self.parentElement.appendChild(menu);
+     var gridSelect = ripple.createElement('select');
      grille.canonical.forEach(function (entry) {
-         var options = JSON.stringify(entry);
-         menu.appendChild(ripple.createElement(
-             'li', {
-                 data: {'grid-type': entry.name,
-                        'grid-options': options}},
-             entry.name));
+         var value = JSON.stringify(entry);
+         gridSelect.appendChild(ripple.createElement(
+             'option', {value: value}, entry.name));
      });
+     gridSelect.addEventListener("change", function(event) {
+         var gridType = event.target.value;
+         if (gridType) {
+             var options = JSON.parse(decodeURIComponent(
+                 event.target.value));
+             if (!options)
+                 options = {type: gridType};
+             options.radius = 50;
+             instance = grille.createGrid(options);
+             lineWidth = instance.getRadius() / lineFactor;
+
+             tap = undefined;
+             selected = undefined;
+             previous = undefined;
+             ripple.hide(menu);
+             redraw();
+         }
+     });
+     menu.appendChild(gridSelect);
      menu.appendChild(document.createElement('hr'));
      menu.appendChild(ripple.createElement(
          'li', {data: {action: "numbers"}}, 'Toggle Numbers'));
@@ -285,23 +295,6 @@
          if (event.target.tagName.toLowerCase() !== 'li')
              return false;
          ripple.hide(menu);
-         var gridType = event.target.getAttribute('data-grid-type');
-         if (gridType) {
-             var options = JSON.parse(decodeURIComponent(
-                 event.target.getAttribute('data-grid-options')));
-             if (!options)
-                 options = {type: gridType};
-             options.width  = self.clientWidth;
-             options.height = self.clientHeight;
-             instance = grille.createGrid(options);
-             lineWidth = instance.size() / lineFactor;
-
-             tap = undefined;
-             selected = undefined;
-             previous = undefined;
-             redraw();
-         }
-
          switch (event.target.getAttribute('data-action')) {
              case 'full-screen': {
                  ripple.toggleFullscreen(self.parentElement);
