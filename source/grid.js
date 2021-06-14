@@ -348,7 +348,6 @@
             while (queue.length > 0) {
                 current = queue.pop();
                 id = ripple.pair(current.row, current.col);
-                console.log("DEBUG-map", id, Object.keys(visited));
 
                 if (!visited[id] &&
                     (sumSquares(radius) >= sumSquares(
