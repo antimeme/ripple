@@ -80,6 +80,7 @@
     "use strict";
     var sqrt2 = Math.sqrt(2);
     var sqrt3 = Math.sqrt(3);
+    var sqrt5 = Math.sqrt(5);
     var epsilon = 1 / (1 << 20); // approximately one in a million
     var zeroish = function(value)
     { return (value < epsilon) && (value > -epsilon); };
@@ -178,12 +179,12 @@
         // Given a node with row and col properties, set the x and y
         // coordinates of the center of that node in place.
         markCenter: function(node)
-        { return this._markCenter(checkCell(node)); },
+        { this._markCenter(checkCell(node)); return node; },
 
         // Given a node with row and col properties, set the x and y
         // coordinates of the center of that node in place.
         markCell: function(node)
-        { return this._markCell(checkCoordinates(node)); },
+        { this._markCell(checkCoordinates(node)); return node; },
 
         // Given a node with row and col properties, return a new node
         // with the same row and col but with x and y set to the
@@ -341,7 +342,7 @@
             var self = this;
             var index = 0;
             this._eachNeighbor(node, function(neighbor) {
-                if (config && (config.center || config.points))
+                if (config && (config.mark || config.points))
                     neighbor = self.getCenter(neighbor);
                 if (config && config.points)
                     neighbor.points = self.getPairPoints(
@@ -408,8 +409,19 @@
         { throw new Error("BaseGrid eachNeighbor is not valid"); },
         _getPoints:     function(node)
         { throw new Error("BaseGrid getPoints is not valid"); },
-        _getPairPoints: function(nodeA, nodeB)
-        { throw new Error("BaseGrid getPairPoints is not valid"); },
+        _getPairPoints: function(nodeA, nodeB) {
+            var midpoint = {x: (nodeB.x - nodeA.x) / 2,
+                            y: (nodeB.y - nodeA.y) / 2};
+            var rotated = {x: (nodeA.y - nodeB.y) / 2,
+                           y: (nodeB.x - nodeA.x) / 2};
+            var factor = this._edge / (2 * Math.sqrt(sumSquares(
+                rotated.x, rotated.y)));
+            var scaled = {x: rotated.x * factor, y: rotated.y * factor};
+            return [{x: nodeA.x + midpoint.x + scaled.x,
+                     y: nodeA.y + midpoint.y + scaled.y},
+                    {x: nodeA.x + midpoint.x - scaled.x,
+                     y: nodeA.y + midpoint.y - scaled.y}];
+        },
     };
 
     var SquareGrid = (function() {
@@ -427,31 +439,32 @@
         result._markCenter = function(node) {
             node.x = node.col * this._edge;
             node.y = node.row * this._edge;
-            return node;
         };
 
         result._markCell = function(node) {
             var halfedge = this._edge / 2;
             node.row = Math.floor((node.y + halfedge) / this._edge);
             node.col = Math.floor((node.x + halfedge) / this._edge);
-            return node;
         };
 
         result._eachNeighbor = function(node, fn) {
+            // Neighbors are provided clockwise from the top
             fn({row: node.row - 1, col: node.col});
+            if (this.diagonal)
+                fn({row: node.row - 1,
+                    col: node.col + 1, cost: sqrt2});
             fn({row: node.row, col: node.col + 1});
+            if (this.diagonal)
+                fn({row: node.row + 1,
+                    col: node.col + 1, cost: sqrt2});
             fn({row: node.row + 1, col: node.col});
+            if (this.diagonal)
+                fn({row: node.row + 1,
+                    col: node.col - 1, cost: sqrt2});
             fn({row: node.row, col: node.col - 1});
-            if (this.diagonal) {
-                fn({row: node.row + 1,
-                    col: node.col + 1, cost: sqrt2});
-                fn({row: node.row + 1,
-                    col: node.col - 1, cost: sqrt2});
-                fn({row: node.row - 1,
-                    col: node.col + 1, cost: sqrt2});
+            if (this.diagonal)
                 fn({row: node.row - 1,
                     col: node.col - 1, cost: sqrt2});
-            }
         };
 
         result._getPoints = function(node) {
@@ -490,29 +503,44 @@
         var result = Object.create(BaseGrid);
 
         result._init = function(config) {
+            this._hexw = sqrt3 * this._radius;
             this.point = (config && ("point" in config)) ?
                          config.point : false;
-            this._hexw = sqrt3 * this._radius;
+            if (this.point) {
+                this._adjustCoords = function(node) { return node; };
+                this._adjustCell   = function(node) { return node; };
+            } else {
+                this._adjustCoords = function(node) {
+                    var swap = node.x;
+                    node.x = node.y;
+                    node.y = swap;
+                    return node;
+                };
+                this._adjustCell = function(node) {
+                    var swap = node.row;
+                    node.row = node.col;
+                    node.col = swap;
+                    return node;
+                };
+            }
         };
 
         result._getRadius = function(edge)   { return edge; };
         result._getEdge   = function(radius) { return radius; };
 
         result._markCenter = function(node) {
-            if (!this.point)
-                node = {row: node.col, col: node.row};
+            this._adjustCell(node);
             node.x = (node.col * this._hexw +
                       this._hexw / 2 * Math.abs(node.row % 2));
             node.y = node.row * this._radius * 3 / 2;
-            return node;
+            this._adjustCoords(node);
+            this._adjustCell(node);
         };
 
         result._markCell = function(node) {
-            if (!this.point)
-                node = {row: node.col, col: node.row};
-            var halfedge = this._edge / 2;
+            this._adjustCoords(node);
             var x_band = node.x * 2 / this._hexw;
-            var y_band  = node.y / halfedge;
+            var y_band = node.y / (this._edge / 2);
             var row = Math.floor((y_band + 1) / 3);
             var col = Math.floor((x_band + (row % 2 ? 0 : 1)) / 2);
 
@@ -525,56 +553,57 @@
                 } else if (y_fraction > x_fraction)
                     col -= (++row % 2) ? 1 : 0;
             }
-
             node.row = row;
             node.col = col;
-            return node;
+            this._adjustCell(node);
+            this._adjustCoords(node);
         };
 
         result._eachNeighbor = function(node, fn) {
-            fn({row: node.row + 1, col: node.col});
-            fn({row: node.row - 1, col: node.col});
-            fn({row: node.row, col: node.col + 1});
-            fn({row: node.row, col: node.col - 1});
-            if (this.point) {
-                fn({row: node.row - 1,
-                    col: node.col + ((node.row % 2) ? 1 : -1)});
-                fn({row: node.row + 1,
-                    col: node.col + ((node.row % 2) ? 1 : -1)});
+            // Neighbors are provided clockwise from the top left.
+            if (this.point && (node.row % 2)) {
+                fn({row: node.row - 1, col: node.col + 1});
+                fn({row: node.row,     col: node.col + 1});
+                fn({row: node.row + 1, col: node.col + 1});
+                fn({row: node.row + 1, col: node.col});
+                fn({row: node.row,     col: node.col - 1});
+                fn({row: node.row - 1, col: node.col});
+            } else if (this.point && !(node.row % 2)) {
+                fn({row: node.row - 1, col: node.col});
+                fn({row: node.row,     col: node.col + 1});
+                fn({row: node.row + 1, col: node.col});
+                fn({row: node.row + 1, col: node.col - 1});
+                fn({row: node.row,     col: node.col - 1});
+                fn({row: node.row - 1, col: node.col - 1});
+            } else if (node.col % 2) {
+                fn({row: node.row - 1, col: node.col});
+                fn({row: node.row,     col: node.col + 1});
+                fn({row: node.row + 1, col: node.col + 1});
+                fn({row: node.row + 1, col: node.col});
+                fn({row: node.row + 1, col: node.col - 1});
+                fn({row: node.row,     col: node.col - 1});
             } else {
-                fn({row: node.row + (node.col % 2 ? 1 : -1),
-                    col: node.col - 1});
-                fn({row: node.row + (node.col % 2 ? 1 : -1),
-                    col: node.col + 1});
+                fn({row: node.row - 1, col: node.col});
+                fn({row: node.row - 1, col: node.col + 1});
+                fn({row: node.row,     col: node.col + 1});
+                fn({row: node.row + 1, col: node.col});
+                fn({row: node.row,     col: node.col - 1});
+                fn({row: node.row - 1, col: node.col - 1});
             }
         };
 
         result._getPoints = function(node) {
-            var p = (this.point) ?
-                    function(x, y) { return {x: x, y: y}; } :
-                    function(y, x) { return {x: x, y: y}; };
+            var p = this._adjustCoords;
             var perp     = this._hexw / 2;
             var halfedge = this._edge / 2;
-            return [p(node.x, node.y - this._edge),
-                    p(node.x + perp, node.y - halfedge),
-                    p(node.x + perp, node.y + halfedge),
-                    p(node.x, node.y + this._edge),
-                    p(node.x - perp, node.y + halfedge),
-                    p(node.x - perp, node.y - halfedge)];
-        };
+            node = this._adjustCoords({x: node.x, y: node.y});
 
-        result._getPairPoints = function(nodeA, nodeB) {
-            var midpoint = {x: (nodeB.x - nodeA.x) / 2,
-                            y: (nodeB.y - nodeA.y) / 2};
-            var rotated = {x: (nodeA.y - nodeB.y) / 2,
-                           y: (nodeB.x - nodeA.x) / 2};
-            var factor = this._edge / (2 * Math.sqrt(sumSquares(
-                rotated.x, rotated.y)));
-            var scaled = {x: rotated.x * factor, y: rotated.y * factor};
-            return [{x: nodeA.x + midpoint.x + scaled.x,
-                     y: nodeA.y + midpoint.y + scaled.y},
-                    {x: nodeA.x + midpoint.x - scaled.x,
-                     y: nodeA.y + midpoint.y - scaled.y}];
+            return [p({x: node.x,        y: node.y - this._edge}),
+                    p({x: node.x + perp, y: node.y - halfedge}),
+                    p({x: node.x + perp, y: node.y + halfedge}),
+                    p({x: node.x,        y: node.y + this._edge}),
+                    p({x: node.x - perp, y: node.y + halfedge}),
+                    p({x: node.x - perp, y: node.y - halfedge})];
         };
 
         return result;
@@ -618,19 +647,51 @@
 
     var IsometricGrid = (function() {
         var result = Object.create(BaseGrid);
-        result._init = function(config) { };
-        result._getRadius = function(edge)   { return edge; };
-        result._getEdge = function(radius) { return radius; };
-        result._markCenter = function(node)
-        { throw new Error("IsometricGrid markCenter is not valid"); };
-        result._markCell = function(node)
-        { throw new Error("IsometricGrid markCell is not valid"); };
-        result._eachNeighbor = function(node, fn)
-        { throw new Error("IsometricGrid eachNeighbor is not valid"); };
-        result._getPoints = function(node)
-        { throw new Error("IsometricGrid getPoints is not valid"); };
-        result._getPairPoints = function(nodeA, nodeB)
-        { throw new Error("IsometricGrid getPairPoints is not valid"); };
+
+        result._init = function(config) {
+        };
+
+        result._getRadius = function(edge) {
+            return edge * 2 / sqrt5;
+        };
+
+        result._getEdge = function(radius) {
+            return radius * sqrt5 / 2;
+        };
+
+        result._markCenter = function(node) {
+            node.x = (node.col - node.row) * this._radius;
+            node.y = (node.col + node.row) * this._radius / 2;
+        };
+
+        result._markCell = function(node) {
+            var radius = this._radius;
+            var x = node.x;
+            var y = node.y + radius / 2;
+            node.row = Math.floor((y * 2 / radius - x / radius) / 2);
+            node.col = Math.floor((x / radius + y * 2 / radius) / 2);
+        };
+
+        result._eachNeighbor = function(node, fn) {
+            fn({row: node.row,     col: node.col - 1});
+            fn({row: node.row + 1, col: node.col});
+            fn({row: node.row,     col: node.col + 1});
+            fn({row: node.row - 1, col: node.col});
+        };
+
+        result._getPoints = function(node) {
+            return [
+                {x: node.x, y: node.y - this._radius / 2},
+                {x: node.x + this._radius, y: node.y},
+                {x: node.x, y: node.y + this._radius / 2},
+                {x: node.x - this._radius, y: node.y},
+            ];
+        };
+
+        result._getPairPoints = function(nodeA, nodeB) {
+            return []; // FIXME
+        };
+
         return result;
     })();
 
@@ -642,13 +703,18 @@
         {name: "Square(diagonal)", type: "square", diagonal: true},
         {name: "Hex(point)", type: "hex", point: true},
         {name: "Hex(edge)", type: "hex", point: false},
-        {name: "Triangle", type: "triangle"}];
+        //{name: "Triangle", type: "triangle"},
+        //{name: "Wedge", type: "wedge"},
+        {name: "Isometric", type: "isometric"},
+    ];
 
     grille.createGrid = function(config) {
         var types = {
-            "square":   SquareGrid,
-            "hex":      HexGrid,
-            "triangle": TriangleGrid };
+            "square":    SquareGrid,
+            "hex":       HexGrid,
+            "triangle":  TriangleGrid,
+            "wedge":     TriangleGrid,
+            "isometric": IsometricGrid };
         var configType = (config && config.type) ?
                          config.type.toLowerCase() : undefined;
         return ((configType in types) ? types[configType] :

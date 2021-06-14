@@ -26,6 +26,8 @@
 <script src="ripple/ripple.js"></script>
 <script src="ripple/grille.js"></script>
 <script>//<![CDATA[
+ var o_gridType = ripple.param("gtype");
+
  ripple.ready(function() {
      var instance;
      var camera = ripple.camera(320, 240);
@@ -59,7 +61,9 @@
          var neighbors, vector, radius;
 
          if (!instance) {
-             instance = grille.createGrid({radius: 50});
+             console.log("DEBUG-gtype", o_gridType);
+             instance = grille.createGrid(
+                 {type: o_gridType, radius: 50});
              lineWidth = instance.getRadius() / lineFactor;
          }
 
@@ -79,6 +83,7 @@
                       function(node) { instance.draw(ctx, node); });
          ctx.fillStyle = style['background-color'];
          ctx.fill();
+         ctx.lineCap = "round";
          ctx.strokeStyle = color;
          ctx.stroke();
 
@@ -122,10 +127,10 @@
              // Show the boundaries between cells using a different
              // color for each adjacent cell.
              var colors = [
-                 'red', 'green', 'blue', 'cyan', 'magenta',
-                 'yellow', 'black', 'white'];
+                 "red", "green", "blue", "cyan", "magenta",
+                 "yellow", "black", "white", "gray", "orange"];
              instance.eachNeighbor(
-                 selected, {center: true, points: true},
+                 selected, {mark: true, points: true},
                  function(neighbor, index) {
                      var points = neighbor.points;
 
