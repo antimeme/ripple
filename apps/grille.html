@@ -61,7 +61,6 @@
          var neighbors, vector, radius;
 
          if (!instance) {
-             console.log("DEBUG-gtype", o_gridType);
              instance = grille.createGrid(
                  {type: o_gridType, radius: 50});
              lineWidth = instance.getRadius() / lineFactor;
@@ -77,37 +76,35 @@
          ctx.lineWidth = lineWidth;
          ctx.textAlign = 'center';
          ctx.font = 'bold ' + 12 + 'pt sans-serif';
-         instance.map({
-             start: camera.toWorldFromScreen({x: 0, y: 0}),
-             end:   camera.toWorldFromScreen({x: width, y: height})},
-                      function(node) { instance.draw(ctx, node); });
+
+         instance.mapRectangle(
+             camera.toWorldFromScreen({x: 0, y: 0}),
+             camera.toWorldFromScreen({x: width, y: height}),
+             function(node) { instance.draw(ctx, node); });
          ctx.fillStyle = style['background-color'];
          ctx.fill();
          ctx.lineCap = "round";
          ctx.strokeStyle = color;
          ctx.stroke();
 
-         // Drawn grid numbers if configured
-         if (combined)
-             instance.map({
-                 start: camera.toWorldFromScreen({x: 0, y: 0}),
-                 end:   camera.toWorldFromScreen({
-                     x: width, y: height})},
-                          function(node) {
-                              ctx.fillStyle = color;
-                              ctx.fillText(
-                                  ripple.pair(node.row, node.col),
-                                  node.x, node.y); });
-         else if (numbers)
-             instance.map({
-                 start: camera.toWorldFromScreen({x: 0, y: 0}),
-                 end:   camera.toWorldFromScreen({
-                     x: width, y: height})},
-                          function(node) {
-                              ctx.fillStyle = color;
-                              ctx.fillText(
-                                  '(' + node.row + ', ' +
-                                  node.col + ')', node.x, node.y); });
+         if (combined) // Draw cell identifier
+             instance.mapRectangle(
+                 camera.toWorldFromScreen({x: 0, y: 0}),
+                 camera.toWorldFromScreen({x: width, y: height}),
+                 function(node) {
+                     ctx.fillStyle = color;
+                     ctx.fillText(
+                         ripple.pair(node.row, node.col),
+                         node.x, node.y); });
+         else if (numbers) // Draw cell row and column
+             instance.mapRectangle(
+                 camera.toWorldFromScreen({x: 0, y: 0}),
+                 camera.toWorldFromScreen({x: width, y: height}),
+                 function(node) {
+                     ctx.fillStyle = color;
+                     ctx.fillText(
+                         '(' + node.row + ', ' +
+                         node.col + ')', node.x, node.y); });
 
          if (selected) {
              // Show the currently selected cell.
@@ -116,7 +113,7 @@
              ctx.fillStyle = colorSelected;
              ctx.fill();
 
-             // Show the cells adjacent to the selected cell.
+             // Show neighbors of the selected cell.
              ctx.beginPath();
              instance.eachNeighbor(
                  selected, {points: true}, function(neighbor) {
