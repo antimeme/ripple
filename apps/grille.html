@@ -27,39 +27,42 @@
 <script src="ripple/grille.js"></script>
 <script>//<![CDATA[
  var o_gridType = ripple.param("gtype");
+ var o_numbers  = ripple.paramBoolean("numbers");
+ var o_combined = ripple.paramBoolean("combined");
+ var o_segment  = ripple.paramBoolean("segment");
 
  ripple.ready(function() {
      var instance;
      var camera = ripple.camera(320, 240);
-     var self = document.createElement('canvas');
+     var self = document.createElement("canvas");
      document.body.appendChild(self);
 
-     var colorTapInner = 'rgba(45, 45, 128, 0.8)';
-     var colorTapOuter = 'rgba(128, 255, 128, 0.6)';
-     var colorSelected = 'rgba(192, 192, 0, 0.6)';
-     var colorNeighbor = 'rgba(128, 128, 0, 0.4)';
-     var colorRadius   = 'rgba(128, 128, 128, 0.2)';
-     var colorLine     = 'rgba(128, 128, 224, 0.5)';
-     var colorSegment  = 'rgba(128, 128, 224, 0.5)';
-     var colorOccupied = 'rgba(128, 192, 128, 0.5)';
+     var colorTapInner = "rgba( 45,  45, 128, 0.8)";
+     var colorTapOuter = "rgba(128, 255, 128, 0.6)";
+     var colorSelected = "rgba(192, 192,   0, 0.6)";
+     var colorNeighbor = "rgba(128, 128,   0, 0.4)";
+     var colorRadius   = "rgba(128, 128, 128, 0.2)";
+     var colorLine     = "rgba(128, 128, 224, 0.5)";
+     var colorSegment  = "rgba( 64,  64, 112, 0.5)";
+     var colorOccupied = "rgba(128, 192, 128, 0.5)";
 
      var lineWidth = 0;
      var lineFactor = 40;
-     var numbers = false;
-     var combined = false;
-     var segment = false;
+     var numbers  = o_numbers;
+     var combined = o_combined;
+     var segment = o_segment;
      var tap, selected, previous;
 
      var draw_id = 0;
      var draw = function() {
          if (!self.getContext)
              throw Error("canvas has no getContext");
-         var ctx = self.getContext('2d');
+         var ctx = self.getContext("2d");
          var width  = self.clientWidth;
          var height = self.clientHeight;
          var style  = getComputedStyle(self);
-         var color = (style.color === 'transparent') ?
-                     'white' : style.color;
+         var color  = (style.color === "transparent") ?
+                      "white" : style.color;
          var points, last, index;
          var neighbors, vector, radius;
 
@@ -70,21 +73,21 @@
          }
 
          ctx.save();
-         ctx.fillStyle = 'black';
+         ctx.fillStyle = "black";
          ctx.fillRect(0, 0, width, height);
          camera.setupContext(ctx);
 
          // Draw the grid itself
          ctx.beginPath();
          ctx.lineWidth = lineWidth;
-         ctx.textAlign = 'center';
-         ctx.font = 'bold ' + 12 + 'pt sans-serif';
+         ctx.textAlign = "center";
+         ctx.font = "bold " + 12 + "pt sans-serif";
 
          instance.mapRectangle(
-             camera.toWorldFromScreen({x: 0, y: 0}),
+             camera.toWorldFromScreen({x: 0,     y: 0}),
              camera.toWorldFromScreen({x: width, y: height}),
              function(node) { instance.draw(ctx, node); });
-         ctx.fillStyle = style['background-color'];
+         ctx.fillStyle = style["background-color"];
          ctx.fill();
          ctx.lineCap = "round";
          ctx.strokeStyle = color;
@@ -92,7 +95,7 @@
 
          if (combined) // Draw cell identifier
              instance.mapRectangle(
-                 camera.toWorldFromScreen({x: 0, y: 0}),
+                 camera.toWorldFromScreen({x: 0,     y: 0}),
                  camera.toWorldFromScreen({x: width, y: height}),
                  function(node) {
                      ctx.fillStyle = color;
@@ -101,13 +104,13 @@
                          node.x, node.y); });
          else if (numbers) // Draw cell row and column
              instance.mapRectangle(
-                 camera.toWorldFromScreen({x: 0, y: 0}),
+                 camera.toWorldFromScreen({x: 0,     y: 0}),
                  camera.toWorldFromScreen({x: width, y: height}),
                  function(node) {
                      ctx.fillStyle = color;
                      ctx.fillText(
-                         '(' + node.row + ', ' +
-                         node.col + ')', node.x, node.y); });
+                         "(" + node.row + ", " +
+                         node.col + ")", node.x, node.y); });
 
          if (selected) {
              // Show the currently selected cell.
@@ -119,8 +122,9 @@
              // Show neighbors of the selected cell.
              ctx.beginPath();
              instance.eachNeighbor(
-                 selected, {points: true}, function(neighbor) {
-                     instance.draw(ctx, neighbor); });
+                 selected, function(neighbor) {
+                     instance.draw(ctx, instance.markCenter(neighbor));
+             });
              ctx.fillStyle = colorNeighbor;
              ctx.fill();
 
@@ -130,9 +134,9 @@
                  "red", "green", "blue", "cyan", "magenta",
                  "yellow", "black", "white", "gray", "orange"];
              instance.eachNeighbor(
-                 selected, {mark: true, points: true},
-                 function(neighbor, index) {
-                     var points = neighbor.points;
+                 selected, function(neighbor, index) {
+                     var points = instance.getPairPoints(
+                         selected, instance.markCenter(neighbor));
 
                      ctx.beginPath();
                      if (points.length > 1) {
@@ -162,7 +166,7 @@
              if (segment && previous) {
                  ctx.beginPath();
                  instance.eachSegment(
-                     previous, selected, function(node) {
+                     previous, tap, function(node) {
                          instance.draw(ctx, instance.markCenter(node));
                  });
                  ctx.fillStyle = colorLine;
@@ -170,7 +174,7 @@
 
                  ctx.beginPath();
                  ctx.moveTo(previous.x, previous.y);
-                 ctx.lineTo(selected.x, selected.y);
+                 ctx.lineTo(tap.x, tap.y);
                  ctx.lineWidth = 2 * lineWidth;
                  ctx.lineCap = "round";
                  ctx.strokeStyle = colorSegment;
@@ -202,7 +206,7 @@
                  ctx.moveTo(targets[0].x, targets[0].y);
                  ctx.lineTo(targets[1].x, targets[1].y);
                  ctx.lineWidth = 2 * lineWidth;
-                 ctx.lineCap = 'round';
+                 ctx.lineCap = "round";
                  ctx.strokeStyle = colorSegment;
                  ctx.stroke();
              }
@@ -219,21 +223,21 @@
      var redraw = function()
      { if (!draw_id) draw_id = requestAnimationFrame(draw); };
 
-     window.addEventListener('resize', function(event) {
+     window.addEventListener("resize", function(event) {
          // Consume enough space to fill the window.
          self.height = window.innerHeight || window.clientHeight;
          self.width = window.innerWidth || window.clientWidth;
          camera.resize(self.width, self.height);
          redraw();
      });
-     window.dispatchEvent(new Event('resize'));
+     window.dispatchEvent(new Event("resize"));
 
      ripple.gestur({
          tap: function(event) {
+             previous = tap;
              tap = instance.getCell(
                  camera.toWorldFromScreen(event.point));
 
-             previous = selected;
              selected = instance.getCenter(tap);
              redraw();
          },
@@ -262,13 +266,14 @@
 
      // Populate menu with available grid types
      var menu = ripple.hide(ripple.createElement(
-         'ul', {'class': 'menu'}));
+         "ul", {"class": "menu"}));
      self.parentElement.appendChild(menu);
-     var gridSelect = ripple.createElement('select');
-     grille.canonical.forEach(function (entry) {
+     var gridSelect = ripple.createElement("select");
+     grille.canonical.forEach(function(entry) {
+         var selected = o_gridType === entry.type;
          var value = JSON.stringify(entry);
          gridSelect.appendChild(ripple.createElement(
-             'option', {value: value}, entry.name));
+             "option", {value: value, selected: selected}, entry.name));
      });
      gridSelect.addEventListener("change", function(event) {
          var gridType = event.target.value;
@@ -298,8 +303,8 @@
          "li", {data: {action: "colors"}}, "Swap Colors"));
      menu.appendChild(ripple.createElement(
          "li", {data: {action: "full-screen"}}, "Full Screen"));
-     menu.addEventListener('click',function(event) {
-         if (event.target.tagName.toLowerCase() !== 'li')
+     menu.addEventListener("click",function(event) {
+         if (event.target.tagName.toLowerCase() !== "li")
              return false;
          ripple.hide(menu);
          switch (event.target.getAttribute("data-action")) {

@@ -209,24 +209,15 @@
 
         // Call a specified function on each neighbor of the
         // provided node.
-        eachNeighbor: function(node, config, fn, context) {
-            if (typeof(config) === "function")
-            { context = fn; fn = config; config = null; }
+        eachNeighbor: function(node, fn, context) {
             if (!fn)
-                return this.eachNeighbor(node, config, function(node) {
+                return this.eachNeighbor(node, function(node) {
                     this.push(node); }, []);
             checkCell(node);
 
-            var self = this;
             var index = 0;
-            this._eachNeighbor(node, function(neighbor) {
-                if (config && (config.mark || config.points))
-                    self.markCenter(neighbor);
-                if (config && config.points)
-                    neighbor.points = self.getPairPoints(
-                        node, neighbor);
-                fn.call(context, neighbor, index++);
-            });
+            this._eachNeighbor(node, function(neighbor)
+                { fn.call(context, neighbor, index++); });
             return context;
         },
 
@@ -257,42 +248,38 @@
         eachSegment: function(start, end, fn, context) {
             // Given a start and end with coordinates, call a function
             // for each cell in the line segment line between them.
-            // WARNING: this has a bug that only seems to manifest on
-            // the right triangle grids.  Sometimes it works but other
-            // times it stops part way through.
             if (!fn)
                 return this.eachSegment(start, end, function(node) {
                     this.push(node); }, []);
 
             var previous = null;
-            var current = this.markCell({x: start.x, y: start.y});
-            end = this.markCell({x: end.x, y: end.y});
+            var current = this.getCell(start);
+            end         = this.getCell(end);
 
             while ((current.row != end.row) ||
                    (current.col != end.col)) {
-                var step = null;
-                this.eachNeighbor(current, {points: true}, function(
-                    neighbor) {
-                    if (!neighbor.points ||
-                        (neighbor.points.length < 2) ||
+                var next = null;
+                this.eachNeighbor(current, function(neigh) {
+                    var points = this.getPairPoints(
+                        this.getCenter(current),
+                        this.markCenter(neigh));
+                    if (next || (points.length < 2) ||
                         (previous &&
-                         (previous.row == neighbor.row) &&
-                         (previous.col == neighbor.col)))
+                         (previous.row == neigh.row) &&
+                         (previous.col == neigh.col)))
                         return;
                     var crossing = intersect2D(
-                        start, end, neighbor.points[0],
-                        neighbor.points[1]);
-                    if (crossing && between2D(
-                        neighbor.points[0], neighbor.points[1],
-                        crossing) &&
+                        start, end, points[0], points[1]);
+                    if (crossing &&
+                        between2D(points[0], points[1], crossing) &&
                         between2D(start, end, crossing))
-                        step = neighbor;
-                });
+                        next = neigh;
+                }, this);
 
                 fn.call(context, current);
-                if (step) {
+                if (next) {
                     previous = current;
-                    current = step;
+                    current  = next;
                 } else break;
             }
             fn.call(context, end);
@@ -579,19 +566,55 @@
 
     var TriangleGrid = (function() {
         var result = Object.create(BaseGrid);
-        result._init = function(config) { };
-        result._getRadius = function(edge)   { return edge; };
-        result._getEdge = function(radius) { return radius; };
-        result._markCenter = function(node)
-        { throw new Error("TriangleGrid markCenter is not valid"); };
-        result._markCell = function(node)
-        { throw new Error("TriangleGrid markCell is not valid"); };
-        result._eachNeighbor = function(node, fn)
-        { throw new Error("TriangleGrid eachNeighbor is not valid"); };
-        result._getPoints = function(node)
-        { throw new Error("TriangleGrid getPoints is not valid"); };
-        result._getPairPoints = function(nodeA, nodeB)
-        { throw new Error("TriangleGrid getPairPoints is not valid"); };
+        result._init = function(config) {
+            this._rowh    = this._edge * sqrt3 / 2;
+            this._centerh = this._edge * sqrt3 / 6
+        };
+
+        result._getRadius = function(edge)
+        { return edge * sqrt3 / 3; };
+        result._getEdge = function(radius)
+        { return radius * 3 / sqrt3; };
+
+        result._markCenter = function(node) {
+            node.x = node.col * this._edge / 2;
+            node.y = (node.row * this.rowh) - (
+                (node.row + node.col) % 2) ? this._centerh : 0;
+        };
+
+        result._markCell = function(node) {
+            var halfedge = this._edge / 2;
+            var row = Math.floor((node.y + this._radius) / this._rowh);
+            var col = Math.floor(node.x / halfedge);
+            var xfrac = node.x / halfedge;
+            var yfrac = (node.y + this._radius) / this._rowh;
+            if ((row + col) % 2) {
+                if ((yfrac - Math.ceil(yfrac)) +
+                       (xfrac - Math.floor(xfrac)) > 0)
+                    col += 1;
+            } else if ((yfrac - Math.floor(yfrac)) -
+                       (xfrac - Math.floor(xfrac)) < 0)
+                col += 1;
+            node.row = row;
+            node.col = col;
+        };
+
+        result._eachNeighbor = function(node, fn) {
+            fn({row: node.row, col: node.col + 1});
+            fn({row: node.row, col: node.col - 1});
+            fn({row: node.row + (((node.row + node.col) % 2) ? -1 : 1),
+                col: node.col});
+        };
+
+        result._getPoints = function(node) {
+            var direction = ((node.row + node.col) % 2) ? -1 : 1;
+            return [{x: node.x, y: node.y - this.radius * direction},
+                    {x: node.x + this._edge / 2,
+                     y: node.y + this._centerh * direction},
+                    {x: node.x - this._edge / 2,
+                     y: node.y + this._centerh * direction}];
+        };
+
         return result;
     })();
 
@@ -701,9 +724,11 @@
         {name: "Square(diagonal)", type: "square", diagonal: true},
         {name: "Hex(point)", type: "hex", point: true},
         {name: "Hex(edge)", type: "hex", point: false},
-        //{name: "Triangle", type: "triangle"},
+        {name: "Triangle", type: "triangle"},
         //{name: "Wedge", type: "wedge"},
-        {name: "Isometric", type: "isometric", diagonal: true},
+        {name: "Isometric(strict)", type: "isometric", diagonal: false},
+        {name: "Isometric(diagonal)",
+         type: "isometric", diagonal: true},
     ];
 
     grille.createGrid = function(config) {
