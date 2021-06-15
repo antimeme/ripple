@@ -43,8 +43,11 @@
      var colorSegment  = 'rgba(128, 128, 224, 0.5)';
      var colorOccupied = 'rgba(128, 192, 128, 0.5)';
 
-     var lineWidth = 0, lineFactor = 40;
-     var numbers = false, combined = false;
+     var lineWidth = 0;
+     var lineFactor = 40;
+     var numbers = false;
+     var combined = false;
+     var segment = false;
      var tap, selected, previous;
 
      var draw_id = 0;
@@ -156,23 +159,23 @@
                      ctx.stroke();
              });
 
-             /* if (previous) {
-              *     ctx.beginPath();
-              *     instance.eachSegment(
-              *         previous, selected, function(node) {
-              *             instance.draw(
-              *                 ctx, instance.markCenter(node)); });
-              *     ctx.fillStyle = colorLine;
-              *     ctx.fill();
+             if (segment && previous) {
+                 ctx.beginPath();
+                 instance.eachSegment(
+                     previous, selected, function(node) {
+                         instance.draw(ctx, instance.markCenter(node));
+                 });
+                 ctx.fillStyle = colorLine;
+                 ctx.fill();
 
-              *     ctx.beginPath();
-              *     ctx.moveTo(previous.x, previous.y);
-              *     ctx.lineTo(selected.x, selected.y);
-              *     ctx.lineWidth = 2 * lineWidth;
-              *     ctx.lineCap = 'round';
-              *     ctx.strokeStyle = colorSegment;
-              *     ctx.stroke();
-              * } */
+                 ctx.beginPath();
+                 ctx.moveTo(previous.x, previous.y);
+                 ctx.lineTo(selected.x, selected.y);
+                 ctx.lineWidth = 2 * lineWidth;
+                 ctx.lineCap = "round";
+                 ctx.strokeStyle = colorSegment;
+                 ctx.stroke();
+             }
          }
 
          if (tap) {
@@ -286,22 +289,24 @@
          }
      });
      menu.appendChild(gridSelect);
-     menu.appendChild(document.createElement('hr'));
+     menu.appendChild(document.createElement("hr"));
      menu.appendChild(ripple.createElement(
-         'li', {data: {action: "numbers"}}, 'Toggle Numbers'));
+         "li", {data: {action: "numbers"}}, "Toggle Numbers"));
      menu.appendChild(ripple.createElement(
-         'li', {data: {action: "colors"}}, 'Swap Colors'));
+         "li", {data: {action: "segment"}}, "Toggle Segment"));
      menu.appendChild(ripple.createElement(
-         'li', {data: {action: "full-screen"}}, 'Full Screen'));
+         "li", {data: {action: "colors"}}, "Swap Colors"));
+     menu.appendChild(ripple.createElement(
+         "li", {data: {action: "full-screen"}}, "Full Screen"));
      menu.addEventListener('click',function(event) {
          if (event.target.tagName.toLowerCase() !== 'li')
              return false;
          ripple.hide(menu);
-         switch (event.target.getAttribute('data-action')) {
-             case 'full-screen': {
+         switch (event.target.getAttribute("data-action")) {
+             case "full-screen": {
                  ripple.toggleFullscreen(self.parentElement);
              } break;
-             case 'numbers': {
+             case "numbers": {
                  if (combined) {
                      numbers = combined = false;
                  } else if (numbers)
@@ -309,11 +314,15 @@
                  else numbers = true;
                  redraw();
              } break;
-             case 'colors': {
+             case "segment": {
+                 segment = !segment;
+                 redraw();
+             } break;
+             case "colors": {
                  var style = getComputedStyle(self);
                  var swap = style.color;
-                 self.style.color = style['background-color'];
-                 self.style['background-color'] = swap;
+                 self.style.color = style["background-color"];
+                 self.style["background-color"] = swap;
                  redraw();
              } break;
          }
@@ -321,8 +330,8 @@
 
      // Show grid menu at event location
      var menuate = function(tap) {
-         menu.style.top = 10 + 'px';
-         menu.style.left = 25 + 'px';
+         menu.style.top = 10 + "px";
+         menu.style.left = 25 + "px";
          ripple.show(menu);
          drag = undefined;
      };
