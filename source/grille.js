@@ -353,6 +353,10 @@
             throw new Error("Not yet implemented"); // FIXME
         },
 
+        // Removes the first level of grid adapter, if any
+        getUnderlyingGrid: function()
+        { return this._getUnderlyingGrid(); },
+
         // Every grid should override most of these
         _init:       function(config) { return this; },
         _getRadius:  function(edge)   { return edge; },
@@ -378,6 +382,7 @@
                     {x: nodeA.x + midpoint.x - scaled.x,
                      y: nodeA.y + midpoint.y - scaled.y}];
         },
+        _getUnderlyingGrid: function() { return this; },
     };
 
     var SquareGrid = (function() {
@@ -626,19 +631,91 @@
 
     var WedgeGrid = (function() {
         var result = Object.create(BaseGrid);
-        result._init = function(config) { };
-        result._getRadius = function(edge)   { return edge; };
-        result._getEdge = function(radius) { return radius; };
-        result._markCenter = function(node)
-        { throw new Error("WedgeGrid markCenter is not valid"); };
-        result._markCell = function(node)
-        { throw new Error("WedgeGrid markCell is not valid"); };
-        result._eachNeighbor = function(node, fn)
-        { throw new Error("WedgeGrid eachNeighbor is not valid"); };
-        result._getPoints = function(node)
-        { throw new Error("WedgeGrid getPoints is not valid"); };
-        result._getPairPoints = function(nodeA, nodeB)
-        { throw new Error("WedgeGrid getPairPoints is not valid"); };
+
+        result._init = function(config) {
+            this.diamond = (config && ("diamond" in config)) ?
+                           config.diamond : false;
+        };
+
+        result._getRadius = function(edge) { return edge / sqrt2; };
+
+        result._getEdge = function(radius) { return radius * sqrt2; };
+
+        result._markCenter = function(node) {
+            var halfsize = this._edge / 2;
+            var fifth = this._edge / 5;
+            var x_sign = (node.col % 2) ? 1 : -1;
+            var y_sign = x_sign * ((this.diamond && ((node.row < 0) ^
+                (node.col < 0))) ? -1 : 1);
+            node.x = Math.floor(node.col / 2) * this._edge +
+                     halfsize + fifth * x_sign;
+            node.y = node.row * this._edge + halfsize + fifth * y_sign;
+        };
+
+        result._markCell = function(node) {
+            var halfsize = this._edge / 2;
+            var xband = node.x / this._edge;
+            var yband = node.y / this._edge;
+            var row = Math.floor(yband);
+            var col = Math.floor(xband) * 2;
+            if (!this.diamond || !((row < 0) ^ (col < 0))) {
+                if (Math.abs(xband - Math.floor(xband)) +
+                    Math.abs(yband - Math.floor(yband)) > 1)
+                    col += 1;
+            } else if (Math.abs(xband - Math.floor(xband)) -
+                       Math.abs(yband - Math.floor(yband)) > 0)
+                col += 1;
+
+            node.row = row;
+            node.col = col;
+        };
+
+        result._eachNeighbor = function(node, fn) {
+            var rmod = node.col % 2 ?  1 : -1;
+            var cmod = node.col % 2 ? -1 :  1;
+            if (this.diamond) {
+                rmod *= ((node.row < 0) ^ (node.col < 0)) ? -1 : 1;
+                cmod *= ((node.row < 0) ^ (node.row + rmod < 0)) ? 0 : 1;
+            }
+            fn.call(self, {row: node.row, col: node.col + 1});
+            fn.call(self, {row: node.row, col: node.col - 1});
+            fn.call(self, {row: node.row + rmod, col: node.col + cmod});
+        };
+
+        result._getPoints = function(node) {
+            var halfsize = this._edge / 2;
+            var fifth = this._edge / 5;
+            var x_sign = (node.col % 2) ? 1 : -1;
+            var y_sign = x_sign *
+            ((this.diamond && ((node.row < 0) ^ (node.col < 0))) ?
+            -1 : 1);
+            var corner = Math.abs(node.col % 2) * this._edge;
+            var x = node.x - (halfsize + x_sign * fifth);
+            var y = node.y - (halfsize + y_sign * fifth);
+            return (y_sign == x_sign) ? [
+                {x: x + corner, y: y + corner},
+                {x: x + this._edge, y: y},
+                {x: x, y: y + this._edge}] : [
+                    {x: x + this._edge * Math.abs(node.col % 2),
+                     y: y + this._edge * Math.abs((node.col + 1) % 2)},
+                    {x: x, y: y}, {x: x + this._edge, y: y + this._edge}];
+        };
+
+        result._getPairPoints = function(nodeA, nodeB) {
+            var result = null;
+            if ((nodeA.row !== nodeB.row) ||
+                (nodeA.col + (nodeA.col % 2 ? -1 : 1) !== nodeB.col)) {
+                var sign = (!this.diamond ||
+                            ((nodeA.row < 0) === (nodeA.col < 0)));
+                var points = this._getPoints(nodeA);
+                result = [points[0], ((nodeA.row !== nodeB.row) ===
+                    (nodeA.col % 2 ? !sign : sign)) ?
+                        points[1] : points[2]];
+            } else result = BaseGrid._getPairPoints.call(
+                this, nodeA, nodeB);
+            return result;
+        };
+
         return result;
     })();
 
@@ -731,10 +808,11 @@
         {name: "Hex(point)", type: "hex", point: true},
         {name: "Hex(edge)", type: "hex", point: false},
         {name: "Triangle", type: "triangle"},
-        //{name: "Wedge", type: "wedge"},
-        {name: "Isometric(strict)", type: "isometric", diagonal: false},
-        {name: "Isometric(diagonal)",
-         type: "isometric", diagonal: true},
+        {name: "Wedge(regular)", type: "wedge"},
+        {name: "Wedge(diamond)", type: "wedge", diamond: true},
+        {name: "Isometric(strict)", type: "isometric"},
+        {name: "Isometric(diagonal)", type: "isometric",
+         diagonal: true},
     ];
 
     grille.createGrid = function(config) {
@@ -742,7 +820,7 @@
             "square":    SquareGrid,
             "hex":       HexGrid,
             "triangle":  TriangleGrid,
-            "wedge":     TriangleGrid,
+            "wedge":     WedgeGrid,
             "isometric": IsometricGrid };
         var configType = (config && config.type) ?
                          config.type.toLowerCase() : undefined;

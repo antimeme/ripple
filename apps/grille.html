@@ -164,10 +164,8 @@
 
              if (segment && previous) {
                  ctx.beginPath();
-                 instance.eachSegment(
-                     previous, tap, function(node) {
-                         instance.draw(ctx, instance.markCenter(node));
-                 });
+                 instance.eachSegment(previous, tap, function(node) {
+                     instance.draw(ctx, instance.markCenter(node)); });
                  ctx.fillStyle = colorLine;
                  ctx.fill();
 
