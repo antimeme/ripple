@@ -142,6 +142,8 @@
         return node;
     };
 
+    grille.debugDots = null;
+
     var BaseGrid = {
         create: function(config) {
             var result = Object.create(this);
@@ -252,35 +254,34 @@
                 return this.eachSegment(start, end, function(node) {
                     this.push(node); }, []);
 
-            var previous = null;
-            var current = this.getCell(start);
-            end         = this.getCell(end);
+            start = this.getCell(start);
+            end   = this.getCell(end);
+            var current = this.getCenter(start);
+            var visited = {};
 
             while ((current.row != end.row) ||
                    (current.col != end.col)) {
                 var next = null;
+                var id = ripple.pair(current.row, current.col);
+                visited[id] = current;
                 this.eachNeighbor(current, function(neigh) {
                     var points = this.getPairPoints(
-                        this.getCenter(current),
-                        this.markCenter(neigh));
+                        current, this.markCenter(neigh));
                     if (next || (points.length < 2) ||
-                        (previous &&
-                         (previous.row == neigh.row) &&
-                         (previous.col == neigh.col)))
+                        (visited[ripple.pair(neigh.row, neigh.col)]))
                         return;
                     var crossing = intersect2D(
                         start, end, points[0], points[1]);
                     if (crossing &&
                         between2D(points[0], points[1], crossing) &&
                         between2D(start, end, crossing))
-                        next = neigh;
+                        visited[id] = next = this.markCenter(neigh);
                 }, this);
 
                 fn.call(context, current);
-                if (next) {
-                    previous = current;
-                    current  = next;
-                } else break;
+                if (!next)
+                    break;
+                current  = next;
             }
             fn.call(context, end);
             return context;
@@ -294,6 +295,7 @@
                     this.push(node) }, []);
             checkCoordinates(start);
             checkCoordinates(end);
+            var debugCount = 0;
             var self    = this;
             var index   = 0;
             var queue   = [];
@@ -301,9 +303,18 @@
             var visit   = function(node) {
                 var id = ripple.pair(node.row, node.col);
                 if (!visited[id]) {
-                    fn.call(context, self.markCenter(
-                        {row: node.row, col: node.col}), index++, self);
                     visited[id] = true;
+                    fn.call(context, self.getCenter(node),
+                            index++, self);
+
+                    debugCount += 1;
+                    if (!(debugCount % 1000)) {
+                        console.log("DEBUG-mapRectangle: " + debugCount);
+                        console.log("node: ", node.row, ",", node.col);
+                        if (!(debugCount % 100000))
+                            alert("DEBUG-mapRectangle: " + debugCount);
+                    }
+
                     self.eachNeighbor(node, function(neigh) {
                         var id = ripple.pair(neigh.row, neigh.col);
                         if (!visited[id])
