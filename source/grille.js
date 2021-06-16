@@ -719,85 +719,63 @@
         return result;
     })();
 
-    var IsometricGrid = (function() {
-        var result = Object.create(BaseGrid);
+    var createAdapterGrid = function(underlying, toWorld, fromWorld) {
+        var result = Object.create(underlying);
 
-        result._init = function(config) {
-            this.diagonal = (config && config.diagonal) ?
-                            config.diagonal : false;
-        };
-
-        result._getRadius = function(edge)
-        { return edge * 2 / sqrt5; };
-
-        result._getEdge = function(radius)
-        { return radius * sqrt5 / 2; };
+        result._getUnderlyingGrid = function() { return underlying; };
 
         result._markCenter = function(node) {
-            node.x = (node.col - node.row) * this._radius;
-            node.y = (node.col + node.row) * this._radius / 2;
+            underlying._markCenter(node);
+            toWorld(node);
         };
 
         result._markCell = function(node) {
-            var radius = this._radius;
-            var x = node.x;
-            var y = node.y + radius / 2;
-            node.row = Math.floor((y * 2 / radius - x / radius) / 2);
-            node.col = Math.floor((x / radius + y * 2 / radius) / 2);
-        };
-
-        result._eachNeighbor = function(node, fn) {
-            fn({row: node.row - 1, col: node.col});
-            if (this.diagonal)
-                fn({row: node.row - 1, col: node.col + 1});
-            fn({row: node.row,     col: node.col + 1});
-            if (this.diagonal)
-                fn({row: node.row + 1, col: node.col + 1});
-            fn({row: node.row + 1, col: node.col});
-            if (this.diagonal)
-                fn({row: node.row + 1, col: node.col - 1});
-            fn({row: node.row,     col: node.col - 1});
-            if (this.diagonal)
-                fn({row: node.row - 1, col: node.col - 1});
+            fromWorld(node);
+            underlying._markCell(node);
+            toWorld(node);
         };
 
         result._getPoints = function(node) {
-            return [
-                {x: node.x, y: node.y - this._radius / 2},
-                {x: node.x + this._radius, y: node.y},
-                {x: node.x, y: node.y + this._radius / 2},
-                {x: node.x - this._radius, y: node.y},
-            ];
+            var result;
+            fromWorld(node);
+            result = underlying._getPoints(node);
+            result.forEach(toWorld);
+            toWorld(node);
+            return result;
         };
 
         result._getPairPoints = function(nodeA, nodeB) {
-            var result = [];
-            var radius  = this._radius;
-            var halfrad = radius / 2;
+            var result;
 
-            if ((nodeA.row - nodeB.row) && (nodeA.col - nodeB.col)) {
-                // Diagonal neightbors get a single point
-                if (nodeB.row > nodeA.row) {
-                    if (nodeB.col > nodeA.col)
-                        result.push({x: nodeA.x, y: nodeA.y + halfrad});
-                    else result.push({x: nodeA.x - radius, y: nodeA.y});
-                } else if (nodeB.col > nodeA.col)
-                    result.push({x: nodeA.x + radius, y: nodeA.y});
-                else result.push({x: nodeA.x, y: nodeA.y - halfrad});
-            } else if (nodeB.row - nodeA.row) {
-                var sign = (nodeB.row > nodeA.row) ? 1 : -1;
-                result.push({x: nodeA.x - radius * sign, y: nodeA.y});
-                result.push({x: nodeA.x, y: nodeA.y + halfrad * sign});
-            } else if (nodeB.col - nodeA.col) {
-                var sign = (nodeB.col > nodeA.col) ? 1 : -1;
-                result.push({x: nodeA.x + radius * sign, y: nodeA.y});
-                result.push({x: nodeA.x, y: nodeA.y + halfrad * sign});
-            } else throw Error("getPairPoints called on same node");
+            fromWorld(nodeA);
+            fromWorld(nodeB);
+            result = underlying._getPairPoints(nodeA, nodeB);
+            result.forEach(toWorld);
+            toWorld(nodeA);
+            toWorld(nodeB);
             return result;
         };
 
         return result;
-    })();
+    };
+
+    var adaptGridIsometric = function(underlying) {
+        var toWorld = function(node) {
+            var x = node.y - node.x;
+            var y = (node.x + node.y) / 2;
+            node.x = x;
+            node.y = y;
+        };
+
+        var fromWorld = function(node) {
+            var x = (2 * node.y - node.x) / 2;
+            var y = (2 * node.y + node.x) / 2;
+            node.x = x;
+            node.y = y;
+        };
+
+        return createAdapterGrid(underlying, toWorld, fromWorld);
+    };
 
     // Exposes grid types for use in user menus.  The first element of
     // each list is the grid name.  The second, if present, is the
@@ -810,9 +788,9 @@
         {name: "Triangle", type: "triangle"},
         {name: "Wedge(regular)", type: "wedge"},
         {name: "Wedge(diamond)", type: "wedge", diamond: true},
-        {name: "Isometric(strict)", type: "isometric"},
-        {name: "Isometric(diagonal)", type: "isometric",
-         diagonal: true},
+        {name: "IsometricSquare", type: "square", isometric: true},
+        {name: "IsometricHex", type: "hex", isometric: true},
+        {name: "IsomemtricTriangle", type: "triangle", isometric: true},
     ];
 
     grille.createGrid = function(config) {
@@ -820,12 +798,14 @@
             "square":    SquareGrid,
             "hex":       HexGrid,
             "triangle":  TriangleGrid,
-            "wedge":     WedgeGrid,
-            "isometric": IsometricGrid };
+            "wedge":     WedgeGrid };
         var configType = (config && config.type) ?
                          config.type.toLowerCase() : undefined;
-        return ((configType in types) ? types[configType] :
-                SquareGrid).create(config);
+        var result = ((configType in types) ? types[configType] :
+                      SquareGrid).create(config);
+        if (config && config.isometric)
+            result = adaptGridIsometric(result);
+        return result;
     };
 
 }).call(this, typeof exports === 'undefined' ?
