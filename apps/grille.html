@@ -67,8 +67,11 @@
          var neighbors, vector, radius;
 
          if (!instance) {
-             instance = grille.createGrid(
-                 {type: o_gridType, radius: 50});
+             var gconfig = o_gridType ? {type: o_gridType} :
+                           JSON.parse(JSON.stringify(
+                               grille.canonical[0]));
+             gconfig.radius = 50;
+             instance = grille.createGrid(gconfig);
              lineWidth = instance.getRadius() / lineFactor;
          }
 
@@ -238,7 +241,7 @@
              selected = instance.getCenter(tap);
              redraw();
          },
-         doubleTap: function(event) { menuate(event.point); },
+         doubleTap: function(event) { menuate(); },
          drag: function(event) {
              var start = camera.toWorldFromScreen(event.current);
              var end   = camera.toWorldFromScreen(event.last);
@@ -262,42 +265,52 @@
      }, self);
 
      // Populate menu with available grid types
+     var menuSelectGrid = ripple.createElement("select");
+     var menuCheckIsometric = ripple.createElement(
+         "input", {type: "checkbox", value: "isometric"});
+     grille.canonical.forEach(function(entry) {
+         var selected = o_gridType && (o_gridType === entry.type);
+         menuSelectGrid.appendChild(ripple.createElement(
+             "option", {
+                 value: JSON.stringify(entry),
+                 selected: selected || undefined},
+             entry.name));
+     });
+
+     var setGrid = function() {
+         var options = JSON.parse(decodeURIComponent(
+             menuSelectGrid.value));
+         if (!options)
+             options = {type: gridType};
+         options.isometric = menuCheckIsometric.checked;
+         options.radius = 50;
+         instance = grille.createGrid(options);
+         lineWidth = instance.getRadius() / lineFactor;
+
+         tap = undefined;
+         selected = undefined;
+         previous = undefined;
+         ripple.hide(menu);
+         redraw();
+     };
+     menuSelectGrid.addEventListener("change", setGrid);
+     menuCheckIsometric.addEventListener("change", setGrid);
+
      var menu = ripple.hide(ripple.createElement(
          "ul", {"class": "menu"}));
      self.parentElement.appendChild(menu);
-     var gridSelect = ripple.createElement("select");
-     grille.canonical.forEach(function(entry) {
-         var selected = o_gridType === entry.type;
-         var value = JSON.stringify(entry);
-         gridSelect.appendChild(ripple.createElement(
-             "option", {value: value, selected: selected}, entry.name));
-     });
-     gridSelect.addEventListener("change", function(event) {
-         var gridType = event.target.value;
-         if (gridType) {
-             var options = JSON.parse(decodeURIComponent(
-                 event.target.value));
-             if (!options)
-                 options = {type: gridType};
-             options.radius = 50;
-             instance = grille.createGrid(options);
-             lineWidth = instance.getRadius() / lineFactor;
 
-             tap = undefined;
-             selected = undefined;
-             previous = undefined;
-             ripple.hide(menu);
-             redraw();
-         }
-     });
-     menu.appendChild(gridSelect);
+     menu.appendChild(menuSelectGrid);
+     menu.appendChild(document.createElement("br"));
+     menu.appendChild(ripple.createElement(
+         "label", null, menuCheckIsometric, "Isometric"));
      menu.appendChild(document.createElement("hr"));
      menu.appendChild(ripple.createElement(
          "li", {data: {action: "numbers"}}, "Toggle Numbers"));
      menu.appendChild(ripple.createElement(
          "li", {data: {action: "segment"}}, "Toggle Segment"));
      menu.appendChild(ripple.createElement(
-         "li", {data: {action: "colors"}}, "Swap Colors"));
+         "li", {data: {action: "colors"}}, "Toggle Colors"));
      menu.appendChild(ripple.createElement(
          "li", {data: {action: "full-screen"}}, "Full Screen"));
      menu.addEventListener("click",function(event) {
@@ -331,7 +344,7 @@
      });
 
      // Show grid menu at event location
-     var menuate = function(tap) {
+     var menuate = function() {
          menu.style.top = 10 + "px";
          menu.style.left = 25 + "px";
          ripple.show(menu);

@@ -788,9 +788,6 @@
         {name: "Triangle", type: "triangle"},
         {name: "Wedge(regular)", type: "wedge"},
         {name: "Wedge(diamond)", type: "wedge", diamond: true},
-        {name: "IsometricSquare", type: "square", isometric: true},
-        {name: "IsometricHex", type: "hex", isometric: true},
-        {name: "IsomemtricTriangle", type: "triangle", isometric: true},
     ];
 
     grille.createGrid = function(config) {
