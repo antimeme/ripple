@@ -81,8 +81,6 @@
          ctx.beginPath();
          ctx.lineWidth = lineWidth;
          ctx.textAlign = "center";
-         ctx.font = "bold " + 12 + "pt sans-serif";
-
          instance.mapRectangle(
              camera.toWorldFromScreen({x: 0,     y: 0}),
              camera.toWorldFromScreen({x: width, y: height}),
@@ -93,6 +91,7 @@
          ctx.strokeStyle = color;
          ctx.stroke();
 
+         ctx.font = "bold " + 12 + "pt sans-serif";
          if (combined) // Draw cell identifier
              instance.mapRectangle(
                  camera.toWorldFromScreen({x: 0,     y: 0}),
@@ -215,27 +214,6 @@
              ctx.arc(tap.x, tap.y, 10, 0, 2 * Math.PI);
              ctx.fillStyle = colorTapInner;
              ctx.fill();
-         }
-
-         if (grille.debugDots) {
-             grille.debugDots.forEach(function(dots) {
-                 var fillStyle = "blue";
-                 dots.forEach(function(dot) {
-                     ctx.beginPath();
-                     ctx.arc(dot.x, dot.y, 5, 0, 2 * Math.PI);
-                     ctx.fillStyle = fillStyle;
-                     ctx.fill();
-                     fillStyle = "orange";
-                 });
-             });
-             grille.debugDots.forEach(function(dots) {
-                 var fillStyle = "blue";
-                 ctx.beginPath();
-                 ctx.arc(dots[0].x, dots[0].y, 5, 0, 2 * Math.PI);
-                 ctx.fillStyle = fillStyle;
-                 ctx.fill();
-                 fillStyle = "orange";
-             });
          }
 
          ctx.restore();

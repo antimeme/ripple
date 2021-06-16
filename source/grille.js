@@ -142,8 +142,6 @@
         return node;
     };
 
-    grille.debugDots = null;
-
     var BaseGrid = {
         create: function(config) {
             var result = Object.create(this);
@@ -295,7 +293,6 @@
                     this.push(node) }, []);
             checkCoordinates(start);
             checkCoordinates(end);
-            var debugCount = 0;
             var self    = this;
             var index   = 0;
             var queue   = [];
@@ -303,21 +300,18 @@
             var visit   = function(node) {
                 var id = ripple.pair(node.row, node.col);
                 if (!visited[id]) {
-                    visited[id] = true;
-                    fn.call(context, self.getCenter(node),
+                    visited[id] = node;
+                    fn.call(context, self.markCenter(node),
                             index++, self);
-
-                    debugCount += 1;
-                    if (!(debugCount % 1000)) {
-                        console.log("DEBUG-mapRectangle: " + debugCount);
-                        console.log("node: ", node.row, ",", node.col);
-                        if (!(debugCount % 100000))
-                            alert("DEBUG-mapRectangle: " + debugCount);
-                    }
 
                     self.eachNeighbor(node, function(neigh) {
                         var id = ripple.pair(neigh.row, neigh.col);
-                        if (!visited[id])
+                        self.markCenter(neigh);
+                        if (!visited[id] &&
+                            (neigh.x >= start.x) &&
+                            (neigh.x <= end.x) &&
+                            (neigh.y >= start.y) &&
+                            (neigh.y <= end.y))
                             queue.push(neigh);
                     });
                 }
@@ -332,12 +326,8 @@
                              {x: end.x, y: start.y}, visit);
             this.eachSegment({x: end.x, y: start.y},
                              {x: start.x, y: start.y}, visit);
-            while (queue.length > 0) {
-                var current = this.markCenter(queue.shift());
-                if ((current.x >= start.x) && (current.x <= end.x) &&
-                    (current.y >= start.y) && (current.y <= end.y))
-                    visit(current);
-            }
+            while (queue.length > 0)
+                visit(queue.shift());
             return context;
         },
 
@@ -579,7 +569,7 @@
         var result = Object.create(BaseGrid);
         result._init = function(config) {
             this._rowh    = this._edge * sqrt3 / 2;
-            this._centerh = this._edge * sqrt3 / 6
+            this._centerh = this._edge * sqrt3 / 6;
         };
 
         result._getRadius = function(edge)
@@ -589,8 +579,8 @@
 
         result._markCenter = function(node) {
             node.x = node.col * this._edge / 2;
-            node.y = (node.row * this.rowh) - (
-                (node.row + node.col) % 2) ? this._centerh : 0;
+            node.y = node.row * this._rowh - ((
+                (node.row + node.col) % 2) ? this._centerh : 0);
         };
 
         result._markCell = function(node) {
@@ -601,7 +591,7 @@
             var yfrac = (node.y + this._radius) / this._rowh;
             if ((row + col) % 2) {
                 if ((yfrac - Math.ceil(yfrac)) +
-                       (xfrac - Math.floor(xfrac)) > 0)
+                         (xfrac - Math.floor(xfrac)) > 0)
                     col += 1;
             } else if ((yfrac - Math.floor(yfrac)) -
                        (xfrac - Math.floor(xfrac)) < 0)
@@ -611,15 +601,20 @@
         };
 
         result._eachNeighbor = function(node, fn) {
-            fn({row: node.row, col: node.col + 1});
-            fn({row: node.row, col: node.col - 1});
-            fn({row: node.row + (((node.row + node.col) % 2) ? -1 : 1),
-                col: node.col});
+            if ((node.row + node.col) % 2) {
+                fn({row: node.row - 1, col: node.col});
+                fn({row: node.row,     col: node.col + 1});
+                fn({row: node.row,     col: node.col - 1});
+            } else {
+                fn({row: node.row,     col: node.col + 1});
+                fn({row: node.row + 1, col: node.col});
+                fn({row: node.row,     col: node.col - 1});
+            }
         };
 
         result._getPoints = function(node) {
             var direction = ((node.row + node.col) % 2) ? -1 : 1;
-            return [{x: node.x, y: node.y - this.radius * direction},
+            return [{x: node.x, y: node.y - this._radius * direction},
                     {x: node.x + this._edge / 2,
                      y: node.y + this._centerh * direction},
                     {x: node.x - this._edge / 2,
