@@ -13,6 +13,7 @@
  canvas { background: white; color: #336; }
  .menu {
      position: absolute; padding: 0.5em;
+     top: 10px; left: 25px;
      background: #333; color: white;
      border: 2px solid white; border-radius: 5px;
      list-style-type: none; list-style-position: outside;
@@ -241,7 +242,7 @@
              selected = instance.getCenter(tap);
              redraw();
          },
-         doubleTap: function(event) { menuate(); },
+         doubleTap: function(event) { ripple.show(menu); },
          drag: function(event) {
              var start = camera.toWorldFromScreen(event.current);
              var end   = camera.toWorldFromScreen(event.last);
@@ -287,7 +288,7 @@
          instance = grille.createGrid(options);
          lineWidth = instance.getRadius() / lineFactor;
 
-         tap = undefined;
+         tap      = undefined;
          selected = undefined;
          previous = undefined;
          ripple.hide(menu);
@@ -342,13 +343,5 @@
              } break;
          }
      });
-
-     // Show grid menu at event location
-     var menuate = function() {
-         menu.style.top = 10 + "px";
-         menu.style.left = 25 + "px";
-         ripple.show(menu);
-         drag = undefined;
-     };
 
  }); //]]></script>

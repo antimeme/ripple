@@ -761,15 +761,36 @@
 
     var adaptGridIsometric = function(underlying) {
         var toWorld = function(node) {
-            var x = node.y - node.x;
+            var x = node.x - node.y;
             var y = (node.x + node.y) / 2;
             node.x = x;
             node.y = y;
         };
 
         var fromWorld = function(node) {
-            var x = (2 * node.y - node.x) / 2;
-            var y = (2 * node.y + node.x) / 2;
+            var x = (2 * node.y + node.x) / 2;
+            var y = (2 * node.y - node.x) / 2;
+            node.x = x;
+            node.y = y;
+        };
+
+        return createAdapterGrid(underlying, toWorld, fromWorld);
+    };
+
+    var adaptGridRotate = function(underlying, radians) {
+        var cosFactor = Math.cos(radians);
+        var sinFactor = Math.sin(radians);
+
+        var toWorld = function(node) {
+            var x = node.x * cosFactor - node.y * sinFactor;
+            var y = node.y * cosFactor + node.x * sinFactor;
+            node.x = x;
+            node.y = y;
+        };
+
+        var fromWorld = function(node) {
+            var x = node.x * cosFactor + node.y * sinFactor;
+            var y = node.y * cosFactor - node.x * sinFactor;
             node.x = x;
             node.y = y;
         };
@@ -800,6 +821,8 @@
                          config.type.toLowerCase() : undefined;
         var result = ((configType in types) ? types[configType] :
                       SquareGrid).create(config);
+        if (config && !isNaN(config.rotate))
+            result = adaptGridRotate(result, config.rotate);
         if (config && config.isometric)
             result = adaptGridIsometric(result);
         return result;
