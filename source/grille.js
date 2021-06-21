@@ -399,7 +399,7 @@
                     {x: nodeA.x + midpoint.x - scaled.x,
                      y: nodeA.y + midpoint.y - scaled.y}];
         },
-        _getEdgeSelection:   function(node) {
+        _getEdgeSelection: function(node) {
             var self = this;
             var best = null;
             var shortest  = null;
@@ -796,6 +796,15 @@
             result.forEach(toWorld);
             toWorld(nodeA);
             toWorld(nodeB);
+            return result;
+        };
+
+        result._getEdgeSelection = function(node) {
+            var result;
+            fromWorld(node);
+            result = underlying._getEdgeSelection(node);
+            toWorld(node);
+            toWorld(result);
             return result;
         };
 
