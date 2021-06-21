@@ -27,10 +27,11 @@
 <script src="ripple/ripple.js"></script>
 <script src="ripple/grille.js"></script>
 <script>//<![CDATA[
- var o_gridType = ripple.param("gtype");
- var o_numbers  = ripple.paramBoolean("numbers");
- var o_combined = ripple.paramBoolean("combined");
- var o_segment  = ripple.paramBoolean("segment");
+ var o_gridType   = ripple.param("gtype");
+ var o_numbers    = ripple.paramBoolean("numbers");
+ var o_combined   = ripple.paramBoolean("combined");
+ var o_edgeSelect = ripple.paramBoolean("edge-select");
+ var o_segment    = ripple.paramBoolean("segment");
 
  ripple.ready(function() {
      var instance;
@@ -38,20 +39,20 @@
      var self = document.createElement("canvas");
      document.body.appendChild(self);
 
-     var colorTapInner = "rgba( 45,  45, 128, 0.8)";
-     var colorTapOuter = "rgba(128, 255, 128, 0.6)";
-     var colorSelected = "rgba(192, 192,   0, 0.6)";
-     var colorNeighbor = "rgba(128, 128,   0, 0.4)";
-     var colorRadius   = "rgba(128, 128, 128, 0.2)";
-     var colorLine     = "rgba(128, 128, 224, 0.5)";
-     var colorSegment  = "rgba( 64,  64, 112, 0.5)";
-     var colorOccupied = "rgba(128, 192, 128, 0.5)";
+     var colorTapInner   = "rgba( 45,  45, 128, 0.8)";
+     var colorTapOuter   = "rgba(128, 255, 128, 0.6)";
+     var colorSelected   = "rgba(192, 192,   0, 0.6)";
+     var colorNeighbor   = "rgba(128, 128,   0, 0.4)";
+     var colorLine       = "rgba(128, 128, 224, 0.5)";
+     var colorSegment    = "rgba( 64,  64, 112, 0.5)";
+     var colorEdgeSelect = "rgba(128, 128, 224, 1.0)";
 
-     var lineWidth = 0;
+     var lineWidth  = 0;
      var lineFactor = 40;
-     var numbers  = o_numbers;
-     var combined = o_combined;
-     var segment = o_segment;
+     var numbers    = o_numbers;
+     var combined   = o_combined;
+     var edgeSelect = o_edgeSelect;
+     var segment    = o_segment;
      var tap, selected, previous;
 
      var draw_id = 0;
@@ -115,7 +116,7 @@
                          "(" + node.row + ", " +
                          node.col + ")", node.x, node.y); });
 
-         if (selected) {
+         if (!edgeSelect && selected) {
              // Show the currently selected cell.
              ctx.beginPath();
              instance.draw(ctx, selected);
@@ -181,36 +182,34 @@
                  ctx.strokeStyle = colorSegment;
                  ctx.stroke();
              }
+         } else if (edgeSelect && selected) {
+             var color = colorSelected;
+             var edgeSelection = instance.getEdgeSelection(tap);
+             edgeSelection.nodes.forEach(function(node) {
+                 ctx.beginPath();
+                 instance.draw(ctx, node);
+                 ctx.fillStyle = color;
+                 ctx.fill();
+                 color = colorNeighbor;
+             });
+             ctx.beginPath();
+             ctx.moveTo(edgeSelection.points[0].x,
+                        edgeSelection.points[0].y);
+             ctx.lineTo(edgeSelection.points[1].x,
+                        edgeSelection.points[1].y);
+             ctx.lineWidth = 2 * lineWidth;
+             ctx.strokeStyle = colorEdgeSelect;
+             ctx.stroke();
          }
 
          if (tap) {
              var targets = tap.targets || [tap];
-             for (index = 0; index < targets.length; ++index) {
+             targets.forEach(function(target) {
                  ctx.beginPath();
-                 ctx.arc(targets[index].x,
-                         targets[index].y,
-                         20, 0, 2 * Math.PI);
+                 ctx.arc(target.x, target.y, 20, 0, 2 * Math.PI);
                  ctx.fillStyle = colorTapOuter;
                  ctx.fill();
-             }
-
-             if (targets.length > 1) {
-                 ctx.beginPath();
-                 instance.eachSegment(
-                     targets[0], targets[1], function(node) {
-                         instance.draw(
-                             ctx, instance.getCenter(node)); });
-                 ctx.fillStyle = colorLine;
-                 ctx.fill();
-
-                 ctx.beginPath();
-                 ctx.moveTo(targets[0].x, targets[0].y);
-                 ctx.lineTo(targets[1].x, targets[1].y);
-                 ctx.lineWidth = 2 * lineWidth;
-                 ctx.lineCap = "round";
-                 ctx.strokeStyle = colorSegment;
-                 ctx.stroke();
-             }
+             });
 
              ctx.beginPath();
              ctx.arc(tap.x, tap.y, 10, 0, 2 * Math.PI);
@@ -277,6 +276,9 @@
                  selected: selected || undefined},
              entry.name));
      });
+     var menuSliderRotate = ripple.createElement(
+         "input", {type: "range", value: 0, step: Math.PI / 60,
+                   min: -Math.PI, max: Math.PI});
 
      var setGrid = function() {
          var options = JSON.parse(decodeURIComponent(
@@ -285,17 +287,23 @@
              options = {type: gridType};
          options.isometric = menuCheckIsometric.checked;
          options.radius = 50;
+         if (!isNaN(menuSliderRotate.value))
+             options.rotate = menuSliderRotate.value;
          instance = grille.createGrid(options);
          lineWidth = instance.getRadius() / lineFactor;
-
          tap      = undefined;
          selected = undefined;
          previous = undefined;
-         ripple.hide(menu);
          redraw();
      };
-     menuSelectGrid.addEventListener("change", setGrid);
-     menuCheckIsometric.addEventListener("change", setGrid);
+     var setGridClose = function() {
+         setGrid();
+         ripple.hide(menu);
+     };
+
+     menuSelectGrid.addEventListener("change", setGridClose);
+     menuCheckIsometric.addEventListener("change", setGridClose);
+     menuSliderRotate.addEventListener("change", setGrid);
 
      var menu = ripple.hide(ripple.createElement(
          "ul", {"class": "menu"}));
@@ -305,9 +313,13 @@
      menu.appendChild(document.createElement("br"));
      menu.appendChild(ripple.createElement(
          "label", null, menuCheckIsometric, "Isometric"));
+     menu.appendChild(document.createElement("br"));
+     menu.appendChild(menuSliderRotate);
      menu.appendChild(document.createElement("hr"));
      menu.appendChild(ripple.createElement(
          "li", {data: {action: "numbers"}}, "Toggle Numbers"));
+     menu.appendChild(ripple.createElement(
+         "li", {data: {action: "edge-select"}}, "Toggle Edge Select"));
      menu.appendChild(ripple.createElement(
          "li", {data: {action: "segment"}}, "Toggle Segment"));
      menu.appendChild(ripple.createElement(
@@ -328,6 +340,10 @@
                  } else if (numbers)
                      combined = true;
                  else numbers = true;
+                 redraw();
+             } break;
+             case "edge-select": {
+                 edgeSelect = !edgeSelect;
                  redraw();
              } break;
              case "segment": {

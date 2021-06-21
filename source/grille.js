@@ -182,8 +182,8 @@
         markCenter: function(node)
         { this._markCenter(checkCell(node)); return node; },
 
-        // Given a node with row and col properties, set the x and y
-        // coordinates of the center of that node in place.
+        // Given a node with x and y properties, set the row and col
+        // properties of the cell the coordinates fall within.
         markCell: function(node)
         { this._markCell(checkCoordinates(node)); return node; },
 
@@ -241,6 +241,22 @@
             if (isNaN(nodeB.x) || isNaN(nodeB.y))
                 nodeB = this.getCenter(nodeB);
             return this._getPairPoints(nodeA, nodeB);
+        },
+
+        // Given a node with x and y properties, determine which
+        // edge is closest, add a peer attribute with the closest
+        // neighboring node and add a points attribute containing the
+        // points along which the neighbors meet.
+        getEdgeSelection: function(node) {
+            checkCoordinates(node);
+            if (isNaN(node.row) || isNaN(node.col))
+                node = this.getCell(node);
+
+            var best = this._getEdgeSelection(node);
+            var centered = {row: node.row, col: node.col};
+            this._markCenter(centered);
+            return {nodes: [centered, best],
+                    points: this._getPairPoints(centered, best)};
         },
 
         // Call a specified function for each cell in the line segment
@@ -357,7 +373,7 @@
         getUnderlyingGrid: function()
         { return this._getUnderlyingGrid(); },
 
-        // Every grid should override most of these
+        // A concrete grid should override most of these
         _init:       function(config) { return this; },
         _getRadius:  function(edge)   { return edge; },
         _getEdge:    function(radius) { return radius; },
@@ -374,13 +390,28 @@
                             y: (nodeB.y - nodeA.y) / 2};
             var rotated = {x: (nodeA.y - nodeB.y) / 2,
                            y: (nodeB.x - nodeA.x) / 2};
-            var factor = this._edge / (2 * Math.sqrt(sumSquares(
-                rotated.x, rotated.y)));
-            var scaled = {x: rotated.x * factor, y: rotated.y * factor};
+            var factor = this._edge / (2 * Math.sqrt(
+                sumSquares(rotated.x, rotated.y)));
+            var scaled = {x: rotated.x * factor,
+                          y: rotated.y * factor};
             return [{x: nodeA.x + midpoint.x + scaled.x,
                      y: nodeA.y + midpoint.y + scaled.y},
                     {x: nodeA.x + midpoint.x - scaled.x,
                      y: nodeA.y + midpoint.y - scaled.y}];
+        },
+        _getEdgeSelection:   function(node) {
+            var self = this;
+            var best = null;
+            var shortest  = null;
+            this._markCell(node);
+            this._eachNeighbor(node, function(neigh) {
+                self._markCenter(neigh);
+                var dSquared = sumSquares(
+                    neigh.x - node.x, neigh.y - node.y);
+                if (!best || (dSquared < shortest))
+                    best = neigh, shortest = dSquared;
+            });
+            return best;
         },
         _getUnderlyingGrid: function() { return this; },
     };
@@ -711,8 +742,20 @@
                 result = [points[0], ((nodeA.row !== nodeB.row) ===
                     (nodeA.col % 2 ? !sign : sign)) ?
                         points[1] : points[2]];
-            } else result = BaseGrid._getPairPoints.call(
-                this, nodeA, nodeB);
+            } else {
+                var midpoint = {x: (nodeB.x - nodeA.x) / 2,
+                                y: (nodeB.y - nodeA.y) / 2};
+                var rotated = {x: (nodeA.y - nodeB.y) / 2,
+                               y: (nodeB.x - nodeA.x) / 2};
+                var factor = sqrt2 * this._edge / (2 * Math.sqrt(
+                    sumSquares(rotated.x, rotated.y)));
+                var scaled = {x: rotated.x * factor,
+                              y: rotated.y * factor};
+                result = [{x: nodeA.x + midpoint.x + scaled.x,
+                           y: nodeA.y + midpoint.y + scaled.y},
+                          {x: nodeA.x + midpoint.x - scaled.x,
+                           y: nodeA.y + midpoint.y - scaled.y}];
+            }
             return result;
         };
 
