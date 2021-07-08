@@ -363,10 +363,9 @@
         <section>
             <h3>Sheffer Stroke</h3>
             <p>
-                A <span class="intro">stroke</span> (Sheffer 1913
-                CE) of two propositions is true unless both the
-                statements it comprises are true: P
-                <span class="intro">&#x22bc;</span> Q
+                A <span class="intro">stroke</span> (Sheffer 1913 CE)
+                is true unless both the statements it comprises are
+                true: P <span class="intro">&#x22bc;</span> Q
             </p>
             <table>
                 <tr>
@@ -425,9 +424,8 @@
         <section>
             <h3>Conjunction</h3>
             <p>
-                A <span class="intro">conjunction</span> of two
-                propositions is true when both the first
-                <span class="intro">and</span> the second are true.
+                A <span class="intro">conjunction</span> is true
+                if and only if both statements are true.
             </p><p>
                 (P <span class="intro">&and;</span> Q) &#x225d;
                 <span class="intro">&not;(P &#x22bc; Q)</span> =
@@ -470,8 +468,8 @@
             <h3>Disjunction</h3>
             <p>
                 A <span class="intro">disjunction</span> of two
-                propositions is true when either the first
-                <span class="intro">or</span> the second is true.
+                propositions is true when at least one statement is
+                true.
             </p><p>
                 (P <span class="intro">&or;</span> Q) &#x225d;
                 <span class="intro">&not;P &#x22bc; &not;Q</span> =
@@ -601,8 +599,7 @@
             <p>
                 Every implication has a
                 <span class="intro">converse</span>, which is
-                equivalent only when the antecedent and consequent
-                have the same value.
+                not logically equivalent.
             </p>
             <table>
                 <tr>
@@ -944,8 +941,7 @@
             <h3>Rule of Detatchment</h3>
             <p>
                 Detatchment allows us to construct theorems by
-                extracting part of a thesis once we've
-                established another.
+                extracting part of an established thesis.
             </p>
             <p>
                 P &#x22bc; (Q &#x22bc; R), P
@@ -1451,13 +1447,18 @@
                 &#x2200;a,b (a <span class="intro">=</span> b)
                 &#x27fa; (&#x2200;c c&#x2208;a &#x27fa; c&#x2208;b)
             </p><p>
-                Two sets that contain the same elements are the
-                same set.
-            </p>
-            <p class="fragment">
-                { &clubs;, &clubs;,
+                Set equality is determined by membership.
+            </p><p class="fragment">
+                Sets have no order: { &clubs;,
                 <span class="redsuit">&diams;</span>, &spades;,
                 <span class="redsuit">&hearts;</span> } =
+                { &spades;, <span class="redsuit">&hearts;</span>,
+                &clubs;, <span class="redsuit">&diams;</span> }
+            </p><p class="fragment">
+                Sets have no repetition: { &spades;, &spades;,
+                <span class="redsuit">&hearts;</span>
+                &clubs;,
+                <span class="redsuit">&diams;</span> } =
                 { &spades;, <span class="redsuit">&hearts;</span>,
                 &clubs;, <span class="redsuit">&diams;</span> }
             </p>
@@ -1499,9 +1500,8 @@
             </p><p class="fragment">
                 Extensionality means this set must be unique.
             </p><p class="fragment">
-                If any set exists specification allows us to prove
-                that the empty set also exists:
-            </p><p class="fragment">
+                The empty set can be created by specification:
+                <br />
                 &#x2203;a &#x27f9; &#x2203;{ b&#x2208;a : b &ne; b }
                 = <span class="intro">{}</span>
             </p>
@@ -1513,14 +1513,15 @@
                 (c&#x2208;{a, b} &#x27fa; (c=a &or; c=b))
             </p>
             <p>
-                Any two members or sets can be used to create a set
-                which contains only those two sets:
+                Any two sets can be used to create a set
+                which contains only themselves:
                 { &spades;, &clubs; }
             </p>
             <div class="fragment">
                 <p>
-                    Elements of the pair may be equal. Extensionality
-                    means that there only a single member:
+                    Elements of the pair may be equal, in which
+                    case extensionality
+                    means there is a single member:
                 </p><p>
                     { &spades;, &spades; } = { &spades; }
                 </p>
@@ -1545,9 +1546,9 @@
             </p>
             <p class="fragment">
                 <span class="intro">&cup;</span>{
-                {&spades;, <span class="redsuit">&hearts;</span>},
-                {<span class="redsuit">&hearts;</span>,
-                <span class="redsuit">&diams;</span>, &clubs;} } =
+                { &spades;, &clubs; },
+                { <span class="redsuit">&hearts;</span>,
+                 <span class="redsuit">&diams;</span> } } =
                 {&spades;, <span class="redsuit">&hearts;</span>,
                 &clubs;, <span class="redsuit">&diams;</span>}
             </p>
@@ -1573,16 +1574,14 @@
                 The intersection of a set of sets contains all members
                 that are present in all the members.  This can be
                 defined on a pair of sets.
-            </p>
-            <p>
+            </p><p class="fragment">
+                <span class="intro">&cap;</span>
+                { { &spades;, <span class="redsuit">&hearts;</span> },
+                { &spades;, <span class="redsuit">&diams;</span> } } =
+                { &spades; }
+            </p><p class="fragment">
                 &#x2200;a,b (a <span class="intro">&cap;</span> b)
                 &#x225d; <span class="intro">&cap;</span>{ a, b }
-            </p>
-            <p>
-                { &spades;, <span class="redsuit">&hearts;</span> }
-                <span class="intro">&cap;</span>
-                { &spades;, <span class="redsuit">&diams;</span> } =
-                { &spades; }
             </p>
         </section>
         <section>
@@ -1698,6 +1697,22 @@
                     &#x27f9; (a &#x2286; c)
                 </li>
             </ul>
+        </section>
+        <section>
+            <h3>Proper Subsets</h3>
+            <p>
+                &#x2200;a,b (a <span class="intro">&#x2282;</span> b)
+                &#x225d; (a &#x2286; b) &and; (a &ne; b)
+            </p><p>
+                A proper subset is not equal the other set.
+                <span class="fragment">It follows from
+                extensionality that b must contain at least one
+                element not found in a.</span>
+            </p>
+            <p class="fragment">
+                &#x2200;a,b (a &#x2286; b) &and; (a &ne; b) &#x27f9;
+                &#x2203;c (c &#x2208; b) &and; (c &#x2209; a)
+            </p>
         </section>
         <section>
             <h3>Axiom of Power Set</h3>
@@ -2792,88 +2807,6 @@
             </aside>
         </section>
         <section>
-            <h3>Induction</h3>
-            <p>
-                Induction allows us to prove something for a set like
-                the natural numbers by showing that it's true for
-                some base case (usually 0<sub>&#x2115;</sub>) and that
-                when it's true for some value it follows that the
-                successor also has the same property.
-            </p>
-        </section>
-        <section>
-            <h3>Trichotomy &#x2115;</h3>
-            <p>
-                &#x2200;a,b&#x2208;&#x2115;
-                (a = b) &or; (a &#x2208; b) &or; (b &#x2208; a)
-            </p><ul><li>
-                Base: &#x2200;a&#x2208;&#x2115;
-                (a = 0<sub>&#x2115;</sub>) &or;
-                (a &#x2208; 0<sub>&#x2115;</sub>) &or;
-                (0<sub>&#x2115;</sub> &#x2208; a)
-            </li><li>
-                Step: &#x2200;a,b&#x2208;&#x2115;
-                [(a = b) &or; (a &#x2208; b) &or; (b &#x2208; a)]
-                &#x27f9; <br /> [(a<sup>+</sup> = b) &or;
-                (a<sup>+</sup> &#x2208; b) &or;
-                (b &#x2208; a<sup>+</sup>)]
-            </li></ul>
-            <aside class="notes">
-            </aside>
-        </section>
-        <section>
-            <h3>Trichotomy with Zero &#x2115;</h3>
-            <p>
-                &#x2200;a&#x2208;&#x2115;
-                (a = 0<sub>&#x2115;</sub>) &or;
-                (a &#x2208; 0<sub>&#x2115;</sub>) &or;
-                (0<sub>&#x2115;</sub> &#x2208; a)
-            </p><ul><li class="fragment qed">
-                Base: 0<sub>&#x2115;</sub> = 0<sub>&#x2115;</sub>
-                :: Extensionality
-            </li><li class="fragment">
-                Step: &#x2200;a&#x2208;&#x2115;
-                ((a = 0<sub>&#x2115;</sub>) &or;
-                (a &#x2208; 0<sub>&#x2115;</sub>)) &#x27f9;
-                (a<sup>+</sup> &#x2208; 0<sub>&#x2115;</sub>)
-                <ul><li class="fragment">
-                    (a = 0<sub>&#x2115;</sub>) &#x27f9;
-                    0<sub>&#x2115;</sub><sup>+</sup> = 
-                    0<sub>&#x2115;</sub> &cup;
-                    { 0<sub>&#x2115;</sub> } :: Successor
-                </li><li class="fragment">
-                    (0<sub>&#x2115;</sub> &cup;
-                    { 0<sub>&#x2115;</sub> }) &#x2208;
-                    0<sub>&#x2115;</sub> :: Axiom of Union
-                </li><li class="fragment qed">
-                    0<sub>&#x2115;</sub><sup>+</sup> &#x2208;
-                    0<sub>&#x2115;</sub> :: Successor
-                </li><li class="fragment qed">
-                    (a &#x2208; 0<sub>&#x2115;</sub>) &#x27f9;
-                    (a<sup>+</sup> &#x2208; 0<sub>&#x2115;</sub>)
-                    :: Successor Containment
-                </li></ul>
-            </li></ul>
-            <aside class="notes">
-                We'll use induction to prove the inductive base
-                case.  It's induction all the way down!
-            </aside>
-        </section>
-        <section>
-            <h3>Trichotomy &#x2115;</h3>
-            <p>
-                &#x2200;a,b&#x2208;&#x2115;
-                [(a = b) &or; (a &#x2208; b) &or; (b &#x2208; a)]
-                &#x27f9; <br /> [(a<sup>+</sup> = b) &or;
-                (a<sup>+</sup> &#x2208; b) &or;
-                (b &#x2208; a<sup>+</sup>)]
-            </p><ul><li>
-            </li><li>
-            </li></ul>
-            <aside class="notes">
-            </aside>
-        </section>
-        <section>
             <h3>Equality &#x2115;</h3>
             <p>
                 &#x2200;a,b&#x2208;&#x2115;
@@ -2924,6 +2857,16 @@
             </aside>
         </section>
         <section>
+            <h3>Induction</h3>
+            <p>
+                Induction allows us to prove something for a set like
+                the natural numbers by showing that it's true for
+                some base case (usually 0<sub>&#x2115;</sub>) and that
+                when it's true for some value it follows that the
+                successor also has the same property.
+            </p>
+        </section>
+        <section>
             <h3>Order &#x2115;: Connex</h3>
             <p>
                 &#x2200;a,b&#x2208;&#x2115;
@@ -2934,13 +2877,10 @@
                 &#x2200;a&#x2208;&#x2115;
                 (0<sub>&#x2115;</sub> &#x2286; a)
                 :: Definition 0<sub>&#x2115;</sub>
-            </li><li class="fragment">
+            </li><li class="fragment qed">
                 &#x2200;b&#x2208;&#x2115;
                 (0<sub>&#x2115;</sub> &#x2286; b) &or;
                 (b &#x2286; 0<sub>&#x2115;</sub>) :: Base
-            </li><li class="fragment">
-                &#x2203;a&#x2208;&#x2115; &#x2200;b&#x2208;&#x2115;
-                (a &#x2286; b) &or; (b &#x2286; a) :: Assumption
             </li></ul>
             <aside class="notes">
                 Remember that the empty set is a subset of any set.
@@ -2956,23 +2896,29 @@
                 &#x2200;a,b&#x2208;&#x2115;
                 (a &#x2286; b) &or; (b &#x2286; a)
             </p><ul><li class="fragment">
-                (b &#x2286; a) &#x27f9; (b &#x2286; a)<sup>+</sup>
-                :: Transitive &#x2286;
+                &#x2203;a&#x2208;&#x2115; &#x2200;b&#x2208;&#x2115;
+                (a &#x2286; b) &or; (b &#x2286; a) :: Assumption
             </li><li class="fragment">
-                (a &#x2286; b) &#x27f9; (a = b) &or; (a &#x2282; b)
-            </li><li class="fragment">
-                (a = b) &#x27f9; (b &#x2286; a)<sup>+</sup> ::<br />
-                Successor Subsets
-            </li><li class="fragment">
-                (a &#x2282; b) &#x27f9; (a) &#x2286; b<sup>+</sup>
-                :: Definition &#x2115;
-            </li><li class="fragment">
+                &#x2200;a,b&#x2208;&#x2115;
                 (a &#x2286; b) &or; (b &#x2286; a) &#x27f9;
-                (a) &#x2286; b<sup>+</sup> &or;<br />
-                (b &#x2286; a)<sup>+</sup> :: Induction
+                (a<sup>+</sup> &#x2286; b) &or;
+                (b &#x2286; a<sup>+</sup>)
+            </li><li class="fragment">
+                TODO
+            </li><li class="fragment">
+                TODO
+            </li><li class="fragment">
+                TODO
+            </li><li class="fragment">
+                TODO
             </li></ul>
             <aside class="notes">
             </aside>
+        </section>
+        <section>
+            <h2>Trichotomy &#x2115;</h2>
+            <p>&#x2200;a,b&#x2208;&#x2115;
+                (a = b) &or; (a &lt; b) &or; (b &lt; a)</p>
         </section>
         <section>
             <h2>Natural Numbers &#x2115;</h2>
@@ -6146,10 +6092,8 @@
                 </span>
             </p>
             <p>
-                Real numbers extend the rational numbers.  They
-                make it possible to find roots of many algebraic
-                expressions as well as represent some convergant
-                infinite series. (Dedekind 1858-1862)
+                Real numbers extend the rational numbers by filing in
+                all the holes.  (Dedekind 1858-1862)
             </p>
         </section>
         <section>
@@ -6176,6 +6120,25 @@
                         &#x2200;b&#x2208;a &#x2203;c&#x2208;a c&gt;b
                     </li>
             </ul>
+        </section>
+        <section>
+            <h3>More Complete Dedekind Cuts</h3>
+            <p>
+                &#x2200;a&#x2208;&#x211d;
+                a = &#x27e8;{ b&#x2208;&#x211a; : P(b) },
+                { b&#x2208;&#x211a; : &not;P(b) }&#x27e9;
+            </p><p>
+                This is a more conventional definition of Dedekind cuts.
+                Ours is simpler and makes proofs easier, but proofs for
+                the upper set are similar.
+            </p><aside class="notes">
+                In the literature it is common to define Dedekind cuts
+                as an ordered pair of sets, one which is closed
+                downward with no largest member and one which is closed
+                upward with no smallest member.  We will use a simpler
+                definition to make our proofs easier, but it should be
+                easy to see how we could extend our proofs.
+            </aside>
         </section>
         <section>
             <h3>Middle &#x211a;</h3>
@@ -6409,20 +6372,25 @@
             </p>
             <ul>
                 <li class="fragment">
-                    &#x2200;a,b&#x2208;&#x211d; &not;(a &#x2286; b)
+                    &#x2200;a,b&#x2208;&#x211d; a > b
                     <span class="fragment">
+                        &#x27f9; &not;(a &#x2286; b)
+                    </span><span class="fragment">
                         &#x27f9; &#x2203;c&#x2208;&#x211a;
-                        (c&#x2208;a &and; c&#x2209;b) :: Subset
+                        (c&#x2208;a &and; c&#x2209;b)
                     </span>
                 </li><li class="fragment">
-                    &#x2200;d&#x2208;&#x211a; (d &lt; c) &#x27f9;
-                    (d &#x2208; a) :: a is Closed Downward
+                    &#x2200;d&#x2208;&#x211a;
+                    <span class="fragment">
+                        (d &lt; c) &#x27f9;
+                        (d &#x2208; a) :: a is Closed Downward
+                    </span>
                 </li><li class="fragment">
                     &#x2200;d&#x2208;&#x211a; (d &ge; c) &#x27f9;
                     (d &#x2209; b) :: b is Closed Downward
                 </li><li class="fragment">
                     &#x2200;d&#x2208;&#x211a; (d &#x2208; b)
-                    &#x27f9; (d &lt; c) :: Transposition
+                    &#x27f9; (d &lt; c) :: Contrapositive
                 </li><li class="fragment">
                     &#x2200;d&#x2208;&#x211a; (d &#x2208; b)
                     &#x27f9; (d &#x2208; a) :: Deduction
@@ -6474,75 +6442,39 @@
             </p>
         </section>
         <section>
-            <h3>Order Gaps &#x211a;</h3>
-            <p>
-                &#x2200;a,b&#x2208;&#x211a; (a &lt; b) &#x27f9;
-                &#x2203;c&#x2208;&#x211a; (c &gt; 0) &and; (a + c = b)
-            </p>
-            <ul>
-                <li>
-                    (a &lt; b) &#x27f9; &not;(a &ge; b)
-                </li><li>
-                </li><li>
-                </li><li>
-                </li><li>
-                    ???
-                </li>
-            </ul>
-        </section>
-        <section>
             <h3>Addition &#x211d; Example: 3 + 2 = 5</h3>
-            <ul>
-                <li class="fragment">
-                    3<sub>&#x211d;</sub> + 2<sub>&#x211d;</sub> &#x2286;
-                    5<sub>&#x211d;</sub>
-                    <span class="fragment">
-                        &#x2200;a,b&#x2208;&#x211a;
-                    </span>
-                    <ul>
-                        <li class="fragment">
-                            (a + b)&#x2208;(3<sub>&#x211d;</sub> +
-                            2<sub>&#x211d;</sub>) &#x27f9;
-                            (a &lt; 3<sub>&#x211a;</sub>) &and;
-                            (b &lt; 2<sub>&#x211a;</sub>)
-                        </li><li class="fragment">
-                            (a &lt; 3<sub>&#x211a;</sub>) &and;
-                            (b &lt; 2<sub>&#x211a;</sub>) &#x27f9;
-                            (a + b) &lt; (3<sub>&#x211a;</sub> +
-                            2<sub>&#x211a;</sub>)
-                        </li><li class="fragment">
-                            (a + b) &lt; 5<sub>&#x211a;</sub> &#x27f9;
-                            (a + b) &#x2208; 5<sub>&#x211d;</sub>
-                        </li>
-                    </ul>
-                </li><li class="fragment">
-                    5<sub>&#x211d;</sub> &#x2286;
-                    3<sub>&#x211d;</sub> + 2<sub>&#x211d;</sub>
-                    <span class="fragment">
-                        &#x2200;a,b&#x2208;&#x211a;
-                    </span>
-                    <ul>
-                        <li class="fragment">
-                            (a &#x2208; 5<sub>&#x211d;</sub>) &#x27f9;
-                            (a &lt; 5<sub>&#x211a;</sub>)
-                            <span class="fragment">
-                                &#x27f9;
-                                &#x2203;b&lt;0<sub>&#x211a;</sub>
-                                5<sub>&#x211a;</sub> + b = a
-                            </span>
-                        </li><li class="fragment">
-                            (3<sub>&#x211a;</sub> + (b &times; 1/2)) +
-                            (2<sub>&#x211a;</sub> + (b &times; 1/2)) =
-                            a
-                        </li><li class="fragment">
-                            (3<sub>&#x211a;</sub> + (b &times; 1/2))
-                            &#x2208;3<sub>&#x211d;</sub> &and;
-                            (2<sub>&#x211a;</sub> + (b &times; 1/2))
-                            &#x2208;2<sub>&#x211d;</sub>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
+            <ul><li class="fragment">
+                3<sub>&#x211d;</sub> + 2<sub>&#x211d;</sub> =
+                5<sub>&#x211d;</sub>
+            </li><li class="fragment">
+                (29/10<sub>&#x211a;</sub> &lt; 3<sub>&#x211a;</sub>)
+                &#x27f9; 29/10<sub>&#x211a;</sub> &#x2208;
+                3<sub>&#x211d;</sub>
+            </li><li class="fragment">
+                (19/10<sub>&#x211a;</sub> &lt; 2<sub>&#x211a;</sub>)
+                &#x27f9; 19/10<sub>&#x211a;</sub> &#x2208;
+                2<sub>&#x211d;</sub>
+            </li><li class="fragment">
+                (29 + 19)/10<sub>&#x211a;</sub> &#x2208;
+                3<sub>&#x211d;</sub> + 2<sub>&#x211d;</sub>
+            </li><li class="fragment">
+                (48/10<sub>&#x211a;</sub> &lt; 5<sub>&#x211a;</sub>)
+                &#x27f9; 48/10<sub>&#x211a;</sub> &#x2208;
+                5<sub>&#x211d;</sub>
+            </li><li class="fragment">
+                (2999 + 1999)/1000<sub>&#x211a;</sub> <
+                5<sub>&#x211a;</sub> &#x2208;
+                3<sub>&#x211d;</sub> + 2<sub>&#x211d;</sub>
+            </li><li class="fragment">
+                (4998/1000<sub>&#x211a;</sub> &lt; 5<sub>&#x211a;</sub>)
+                &#x27f9; 48/10<sub>&#x211a;</sub> &#x2208;
+                5<sub>&#x211d;</sub>
+            </li><li class="fragment">
+                ... <span class="fragment"><em>
+                Note: 49/10<sub>&#x211a;</sub> =
+                195/100<sub>&#x211a;</sub> + 295/100<sub>&#x211a;</sub>
+                </em></span>
+            </li></ul>
         </section>
         <section>
             <h2>Addition &#x211d;: Closed</h2>
@@ -6550,33 +6482,29 @@
                 &#x2200;a,b&#x2208;&#x211d;
                 a + b &#x2208;&#x211d;
             </p>
-            <ul>
-                <li>
-                    (&#x2203;c&#x2208;a &and; &#x2203;d&#x2208;b)
-                    &#x27f9; (c + d) &#x2208; (a + b)
+            <ul><li>
+                (&#x2203;c&#x2208;a &and; &#x2203;d&#x2208;b)
+                &#x27f9; (c + d)<sub>&#x211a;</sub> &#x2208;
+                (a + b)<sub>&#x211d;</sub>
+            </li><li>
+                Closed Downward: &#x2200;c,d&#x2208;&#x211a;
+                (c&#x2208;a) &and; (d&#x2208;b)
+                <ul><li>
+                    &#x2200;e&#x2208;&#x211a; (e &lt; (c + d))
+                    &#x2203;f&gt;0<sub>&#x211a;</sub>
+                    (e + f) = (c + d)
                 </li><li>
-                    Closed Downward: &#x2200;c,d&#x2208;&#x211a;
-                    (c&#x2208;a) &and; (d&#x2208;b)
-                    <ul>
-                        <li>
-                            &#x2200;e&#x2208;&#x211a; (e &lt; (c + d))
-                            &#x2203;f&gt;0<sub>&#x211a;</sub>
-                            (e + f) = (c + d)
-                        </li><li>
-                            (c + (-f) &lt; c) &#x27f9;
-                            (c + (-f)) &#x2208; a &#x27f9;
-                            (c + (-f)) + d &#x2208; (a + b)
-                        </li>
-                    </ul>
+                    (c - f &lt; c) &#x27f9;
+                    (c - f) &#x2208; a<sub>&#x211d;</sub> &#x27f9;
+                    (c - f) + d &#x2208; (a + b)<sub>&#x211d;</sub>
+                </li></ul>
+            </li><li>
+                No Largest Member:
+                <ul><li>
                 </li><li>
-                    No Largest Member:
-                    <ul>
-                        <li>
-                        </li><li>
-                        </li>
-                    </ul>
                 </li>
-            </ul>
+                </ul>
+            </li></ul>
         </section>
         <section>
             <h2>Addition &#x211d;: Associative</h2>
