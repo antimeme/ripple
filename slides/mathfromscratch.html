@@ -2082,7 +2082,7 @@
                 <span class="fragment">
                     =<br />{
                     &spades;, <span class="redsuit">&hearts;</span>,
-                    &clubs;, <span class="redsuit">&diams;</span>}
+                    &clubs;, <span class="redsuit">&diams;</span> }
                 </span>
             </p>
         </section>
@@ -2118,7 +2118,7 @@
                 &#x27e8;John, Patrica&#x27e9;,
                 &#x27e8;Robert, Jennifer&#x27e9;,<br />
                 &#x27e8;Michael, William&#x27e9;,
-                &#x27e8;William, Michael&#x27e9;}
+                &#x27e8;William, Michael&#x27e9; }
             </p>
             <p>
                 is-wife-of &#x225d; {
@@ -2126,7 +2126,7 @@
                 &#x27e8;Patrica, John&#x27e9;,
                 &#x27e8;Jennifer, Robert&#x27e9;,<br />
                 &#x27e8;Linda, Elizabeth&#x27e9;,
-                &#x27e8;Elizabeth, Linda&#x27e9;}
+                &#x27e8;Elizabeth, Linda&#x27e9; }
             </p>
             <p>is-spouse-of &#x225d; is-husband-of &cup; is-wife-of</p>
             <aside class="notes">
@@ -2150,7 +2150,7 @@
                 </li><li class="fragment">
                     <span class="intro">Transitive</span>:
                     &#x2200;a,b,c&#x2208;&cup;&cup;R
-                    (a R b) &and; (b R c) &#x27fa; (a R c)
+                    (a R b) &and; (b R c) &#x27f9; (a R c)
                 </li><li class="fragment">
                     <span class="intro">Connex</span>:
                     &#x2200;a,b&#x2208;&cup;&cup;R
@@ -2450,15 +2450,15 @@
                 &#x2200;a,b (a &#x2286; b) &and; (b &#x2286; a)
                 &#x27f9; (a = b)
             </p><ul><li class="fragment">
-                (a &#x2286; b) &#x27f9; &#x2200;c (c &#x2208; a)
-                &#x27f9; (c &#x2208; b) :: Subset/Union
+                (a &#x2286; b) &#x27f9; &#x2200;c [(c &#x2208; a)
+                &#x27f9; (c &#x2208; b)] :: Subset/Union
             </li><li class="fragment">
-                (b &#x2286; a) &#x27f9; &#x2200;c (c &#x2208; b)
-                &#x27f9; (c &#x2208; a) :: Subset/Union
+                (b &#x2286; a) &#x27f9; &#x2200;c [(c &#x2208; b)
+                &#x27f9; (c &#x2208; a)] :: Subset/Union
             </li><li class="fragment">
                 (a &#x2286; b) &and; (b &#x2286; a) &#x27f9;
-                &#x2200;c (c &#x2208; b)
-                &#x27fa; (c &#x2208; a) :: Definition of Biconditional
+                &#x2200;c [ (c &#x2208; b)
+                &#x27fa; (c &#x2208; a) ] :: Biconditional
             </li><li class="fragment qed">
                 (a &#x2286; b) &and; (b &#x2286; a) &#x27f9;
                 (a = b) :: Extensionality
@@ -2903,14 +2903,23 @@
                 (a &#x2286; b) &or; (b &#x2286; a) &#x27f9;
                 (a<sup>+</sup> &#x2286; b) &or;
                 (b &#x2286; a<sup>+</sup>)
+                <ul><li class="fragment">
+                    &#x2200;a,b&#x2208;&#x2115;
+                    (a &#x2286; b) &#x27f9; (a<sup>+</sup> &#x2286; b)
+                    &or; (b &#x2286; a<sup>+</sup>)
+                </li><li class="fragment">
+                    &#x2200;a,b&#x2208;&#x2115;
+                    (b &#x2286; a) &#x27f9; (a<sup>+</sup> &#x2286; b)
+                    &or; (b &#x2286; a<sup>+</sup>)
+                </li></ul>
             </li><li class="fragment">
-                TODO
+                &#x2200;a&#x2208;&#x2115; a &#x2286; a<sup>+</sup>
+                :: Successor Containment
             </li><li class="fragment">
-                TODO
-            </li><li class="fragment">
-                TODO
-            </li><li class="fragment">
-                TODO
+                &#x2200;a,b&#x2208;&#x2115; (b &#x2286; a) &and;
+                (a &#x2286; a<sup>+</sup>) &#x27f9;
+                (b &#x2286; a<sup>+</sup>)
+                :: Transitive Subsets
             </li></ul>
             <aside class="notes">
             </aside>
@@ -8612,6 +8621,9 @@
                 engineering but we pay a heavy price for this.
                 David Hestenes rescued geometric algebra.
             </aside>
+            <!-- Axiomatic treatment of geometric algebra, complete
+                 with proofs of important theorems:
+                 See https://arxiv.org/pdf/1205.5935.pdf -->
         </section>
         <section>
             <h3>Orthonormal Basis</h3>
