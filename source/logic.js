@@ -753,7 +753,9 @@
 
     logic.eachThesis = function(name, fn, context) {
         var index = 0;
-        Object.keys(internalLibrary[name].theorems).forEach(
+        if (!internalLibrary[name])
+            console.error("No library found: " + name);
+        else Object.keys(internalLibrary[name].theorems).forEach(
             function(formula) {
                 var proof = [];
                 var expression = logic.expression(
@@ -763,7 +765,7 @@
                 fn.call(context, expression, {
                     formula: formula, name: name
                 }, index++);
-            });
+        });
     };
 
     logic.eachLibrary = function(fn, context) {
