@@ -42,8 +42,6 @@
                 result.end.col -= 1 + Math.floor(rand.random() * 3);
             }
 
-            result.__contents = {};
-
             result.__cellEmpty = {
                 draw: function(ctx, cellGrid, node) {
                     ctx.beginPath();
@@ -62,7 +60,72 @@
                 }
             };
 
+            result.__contents = {};
+            if (config && config.randomize)
+                result.__createRandomLayout();
+
             return result;
+        },
+
+        __setCell: function(row, col, value) {
+            this.__contents[ripple.pair(row, col)] =
+                this.__cellWall;
+            return value;
+        },
+
+        __createRandomLayout: function() {
+            var buildingRowSize = this.end.row - this.start.row;
+            var buildingColSize = this.end.col - this.start.col;
+            var roomSize = (buildingRowSize >= 14) ? 5 : 4;
+            var hallwaySize = (buildingRowSize >= 14) ? 4 : 3;
+
+            var rowRooms = Math.floor(
+                (buildingRowSize + hallwaySize) /
+                (roomSize + hallwaySize));
+            var colRooms = Math.floor(
+                (buildingColSize + hallwaySize) /
+                (roomSize + hallwaySize));
+
+            var ii, jj, row, col;
+            for (row = this.start.row; row <= this.end.row; ++row) {
+                col = this.start.col;
+                this.__setCell(row, col, this.__cellWall);
+
+                col = this.end.col;
+                this.__setCell(row, col, this.__cellWall);
+            }
+            for (col = this.start.col; col <= this.end.col; ++col) {
+                row = this.start.row;
+                this.__setCell(row, col, this.__cellWall);
+
+                row = this.end.row;
+                this.__setCell(row, col, this.__cellWall);
+            }
+
+            for (ii = 0; ii < rowRooms - 1; ++ii) {
+                for (jj = 0; jj < buildingColSize; ++jj) {
+                    row = this.start.row + ii * (roomSize + hallwaySize);
+                    col = this.start.col + jj;
+
+                    row += roomSize + 1;
+                    this.__setCell(row, col, this.__cellWall);
+
+                    row += hallwaySize - 1;
+                    this.__setCell(row, col, this.__cellWall);
+                }
+            }
+            for (jj = 0; jj < colRooms - 1; ++jj) {
+                for (ii = 0; ii < buildingRowSize; ++ii) {
+                    row = this.start.row + ii;
+                    col = this.start.col + jj * (roomSize + hallwaySize);
+
+                    col += roomSize + 1;
+                    this.__setCell(row, col, this.__cellWall);
+
+                    col += hallwaySize - 1;
+                    this.__setCell(row, col, this.__cellWall);
+                }
+            }
         },
 
         eachCell: function(fn, context) {
@@ -86,12 +149,7 @@
                 (node.col >= this.start.col) ||
                 (node.col <= this.end.col)) {
                 var index = ripple.pair(node.row, node.col);
-                if ((node.row === this.start.row) ||
-                    (node.row === this.end.row) ||
-                    (node.col === this.start.col) ||
-                    (node.col === this.end.col))
-                    result = this.__cellWall;
-                else if (index in this.__contents)
+                if (index in this.__contents)
                     result = this.__contents[index];
                 else result = this.__cellEmpty;
             }
@@ -252,7 +310,7 @@
                 }, this);
             } else if (this.rand.random() < p_used)
                 result = Building.create({
-                    lot: lot, district: this});
+                    lot: lot, district: this, randomize: true});
             else this.__vacantLots.push(lot);
 
             if (result)
