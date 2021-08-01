@@ -7,13 +7,20 @@
             "contains a rectangular grid of districts.  The top and ",
             "bottom wrap around.  Each district is optimized for ",
             "some types of buildings but is less effective for ",
-            "others.  Each district is 255 by 255 meters in size."]},
+            "others.  Each district is 255 by 255 meters in size.",
+            "",
+            "color: empty tiles outside of buildings",
+            "iconColor: color of the district icon",
+            "buildingColor: emtpy tiles in buildings",
+            "wallColor: color of building walls",
+            "doorColor: color of doors in the district"]},
     "districtTypes": {
         "Residential":  {
             "color":         "rgb(192, 192, 240)",
-            "iconColor":     "rgb(96, 96, 240)",
-            "buildingColor": "rgb(96, 96, 240)",
-            "wallColor":     "rgb(32, 32, 128)",
+            "iconColor":     "rgb( 96,  96, 240)",
+            "buildingColor": "rgb( 96,  96, 240)",
+            "wallColor":     "rgb( 32,  32, 128)",
+            "doorColor":     "rgb(112, 112, 184)",
             "randomWeight": 100, "pSplit": 0.99, "pUsed": 0.96,
             "icon": [{
                 "type": "polygon",
@@ -32,9 +39,10 @@
         },
         "Commercial":   {
             "color":         "rgb(240, 128, 64)",
-            "iconColor":     "rgb(192, 96, 64)",
-            "buildingColor": "rgb(192, 96, 64)",
-            "wallColor":     "rgb(96, 64, 32)",
+            "iconColor":     "rgb(192,  96, 64)",
+            "buildingColor": "rgb(192,  96, 64)",
+            "wallColor":     "rgb( 96,  64, 32)",
+            "doorColor":     "rgb(168,  96, 48)",
             "randomWeight": 25, "pSplit": 0.98, "pUsed": 0.90,
             "icon": [{
                 "type": "polygon",
@@ -56,10 +64,11 @@
                 "x": 0.06666, "y": 0.07 }]
         },
         "Industrial": {
-            "color": "darkgray",
-            "iconColor": "gray",
-            "buildingColor": "gray",
-            "wallColor": "#202020",
+            "color":         "#a9a9a9",
+            "iconColor":     "#808080",
+            "buildingColor": "#808080",
+            "wallColor":     "#202020",
+            "doorColor":     "#505050",
             "randomWeight": 50, "pSplit": 0.98, "pUsed": 0.96,
             "iconScale": 0.75,
             "icon": [{
@@ -79,10 +88,11 @@
             }]
         },
         "Recreation": {
-            "color": "#20a020",
-            "iconColor": "#228b22",
+            "color":         "#20a020",
+            "iconColor":     "#228b22",
             "buildingColor": "#107010",
-            "wallColor": "#006400",
+            "wallColor":     "#006400",
+            "doorColor":     "#108210",
             "randomWeight": 25, "pSplit": 0.98, "pUsed": 0.96,
             "icon": [{
                 "type": "circle",
@@ -113,172 +123,6 @@
         }
     },
 
-
-
-    "districts": {
-        "Empty": {
-            "comments": [
-                "Contains atmosphere but lacks infrastructure for ",
-                "buildings (such as lighting, power, sanitation)."]
-        },
-        "Ruins": {
-            "comments": [
-                "Remains of an unmaintained distrct.  Can be salvaged ",
-                "for materials."]
-        },
-        "Port": {
-            "comments": [
-                "Contains an interchange elevator for accessng one of ",
-                "the station caps.  Most buildings can be built in a ",
-                "port district without too much disadvantage."],
-            "requiresEdge": true,
-            "buildCost": {
-                "common-building-materials": 2000,
-                "advanced-building-materials": 500
-            }
-        },
-        "Residential": {
-            "comments": [
-                "Optimized for comfortable living spaces."],
-            "buildCost": {
-                "common-building-materials": 1000,
-                "advanced-building-materials": 100
-            }
-        },
-        "Commercial": {
-            "comments": [
-                "Optimized for shops"],
-            "buildCost": {
-                "common-building-materials": 1500,
-                "advanced-building-materials": 200
-            }
-        },
-        "Industrial": {
-            "comments": [
-                "Optimized for factories and warehouses"],
-            "buildCost": {
-                "common-building-materials": 3000,
-                "advanced-building-materials": 1000
-            }
-        },
-        "Agricultural": {
-            "comments": [
-                "Optimized for food production"],
-            "buildCost": {
-                "common-building-materials": 2000,
-                "advanced-building-materials": 200
-            }
-        },
-        "Recreation": {
-            "comments": [
-                "Optimized for parks and attractions"],
-            "buildCost": {
-                "common-building-materials": 2000,
-                "advanced-building-materials": 100
-            }
-        },
-        "Education": {
-            "comments": [
-                "Optimized for learning"],
-            "buildCost": {
-                "common-building-materials": 1000,
-                "advanced-building-materials": 100
-            }
-        },
-        "Luxury": {
-            "comments": [
-                "Optimized for wealthy housing"],
-            "buildCost": {
-                "common-building-materials": 3000,
-                "advanced-building-materials": 1000
-            }
-        },
-        "Administrative": {
-            "comments": [
-                "Optimized for offices"],
-            "buildCost": {
-                "common-building-materials": 3000,
-                "advanced-building-materials": 1000
-            }
-        }
-    },
-    "buildings": {
-        "apartment": {
-            "size": 2,
-            "housing": 50,
-            "comfort": 50,
-            "buildCost": {
-                "common-building-materials": 250,
-                "advanced-building-materials": 50
-            }
-        },
-        "tenament": {
-            "size": 3,
-            "housing": 250,
-            "comfort": 25,
-            "buildCost": {
-                "common-building-materials": 900,
-                "advanced-building-materials": 180
-            }
-        },
-        "hotel": {
-            "size": 2,
-            "visitors": 20,
-            "comfort": 50,
-            "buildCost": {
-                "common-building-materials": 250,
-                "advanced-building-materials": 50
-            }
-        },
-        "warehouse": {
-            "size": 2,
-            "storage": 1000,
-            "buildCost": {
-                "common-building-materials": 200,
-                "advanced-building-materials": 10
-            }
-        },
-        "fusion-reactor": {
-            "comment": [
-                "D-D fusion produces 2.5 * 10^15 joules per metric ",
-                "ton when fused."],
-            "size": 1,
-            "power": 250000000000000,
-            "buildCost": {
-                "common-building-materials": 500,
-                "advanced-building-materials": 500,
-                "rare-building-materials": 200
-            }
-        },
-        "shopping-mall": {
-            "size": 2,
-            "buildCost": {
-                "common-building-materials": 300,
-                "advanced-building-materials": 50
-            }
-        },
-        "prison": {
-            "size": 3,
-            "buildCost": {
-                "common-building-materials": 1000,
-                "advanced-building-materials": 200
-            }
-        },
-        "water-treatment-plant": {
-            "size": 2,
-            "buildCost": {
-                "common-building-materials": 500,
-                "advanced-building-materials": 100
-            }
-        },
-        "waste-treatment-plant": {
-            "size": 2,
-            "buildCost": {
-                "common-building-materials": 500,
-                "advanced-building-materials": 100
-            }
-        }
-    },
     "resources": {
         "h2o": {
             "comments": [

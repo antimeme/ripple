@@ -16,6 +16,7 @@
     var rules = undefined;
     var station;
 
+
     // A building is a single structure inside a habitat.
     var Building = {
         create: function(config) {
@@ -40,6 +41,8 @@
                 result.start.col += 1 + Math.floor(rand.random() * 3);
                 result.end.col -= 1 + Math.floor(rand.random() * 3);
             }
+
+            result.__contents = {};
 
             result.__cellEmpty = {
                 draw: function(ctx, cellGrid, node) {
@@ -82,11 +85,14 @@
                 (node.row <= this.end.row) ||
                 (node.col >= this.start.col) ||
                 (node.col <= this.end.col)) {
+                var index = ripple.pair(node.row, node.col);
                 if ((node.row === this.start.row) ||
                     (node.row === this.end.row) ||
                     (node.col === this.start.col) ||
                     (node.col === this.end.col))
                     result = this.__cellWall;
+                else if (index in this.__contents)
+                    result = this.__contents[index];
                 else result = this.__cellEmpty;
             }
             return result;
