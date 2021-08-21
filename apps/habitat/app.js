@@ -10,7 +10,7 @@
         this.ripple   = require("./ripple/ripple.js");
         this.fascia   = require("./ripple/fascia.js");
         this.multivec = require("./ripple/multivec.js");
-        this.grid     = require("./ripple/grid.js");
+        this.grille   = require("./ripple/grille.js");
         this.pathf    = require("./ripple/pathf.js");
     }
     var rules = undefined;
@@ -341,7 +341,7 @@
         drawIcon: function(ctx, districtGrid, node) {
             if (this.type && this.type.icon &&
                 Array.isArray(this.type.icon)) {
-                var size = districtGrid.size();
+                var size = districtGrid.getEdge();
                 var scale = isNaN(this.type.iconScale) ?
                             1 : this.type.iconScale;
                 ctx.save();
@@ -376,28 +376,28 @@
         },
 
         draw: function(ctx, camera, cellGrid, center) {
-            cellGrid.map({
-                start: camera.toWorldFromScreen({x: 0, y: 0}),
-                end:   camera.toWorldFromScreen(
-                    {x: camera.width, y: camera.height})
-            }, function(node, index, cGrid) {
-                var range = Math.floor((District.cellCount - 1) / 2);
-                var relative = {row: center.row - node.row,
-                                col: center.col - node.col};
+            cellGrid.mapRectangle(
+                camera.toWorldFromScreen({x: 0, y: 0}),
+                camera.toWorldFromScreen(
+                    {x: camera.width, y: camera.height}),
+                function(node, index, cGrid) {
+                    var range = Math.floor((District.cellCount - 1) / 2);
+                    var relative = {row: center.row - node.row,
+                                    col: center.col - node.col};
 
-                if ((Math.abs(relative.row) > range) ||
-                    (Math.abs(relative.col) > range))
-                    return; // Only draw if in our district
+                    if ((Math.abs(relative.row) > range) ||
+                        (Math.abs(relative.col) > range))
+                        return; // Only draw if in our district
 
-                var contents = this.__cellMap[ripple.pair(
-                    relative.row, relative.col)];
-                if (!contents) {
-                    ctx.beginPath();
-                    cellGrid.draw(ctx, node);
-                    ctx.fillStyle = this.type.color;
-                    ctx.fill();
-                } else contents.draw(ctx, cellGrid, node);
-            }, this);
+                    var contents = this.__cellMap[ripple.pair(
+                        relative.row, relative.col)];
+                    if (!contents) {
+                        ctx.beginPath();
+                        cellGrid.draw(ctx, node);
+                        ctx.fillStyle = this.type.color;
+                        ctx.fill();
+                    } else contents.draw(ctx, cellGrid, node);
+                }, this);
         }
     };
 
@@ -415,9 +415,10 @@
             // Plugging in 9.8 for the acceleration and assuming each
             // district measures 255 meters on each side we get a
             // period of 28.59 seconds with six rows of districts.
-            result.districtGrid = grid.create({
-                type: "square", size: District.cellCount});
-            result.cellGrid = grid.create({type: "square", size: 1});
+            result.districtGrid = grille.createGrid({
+                type: "square", edge: District.cellCount});
+            result.cellGrid = grille.createGrid({
+                type: "square", edge: 1});
             result.rows = Math.min((config && config.rows) ?
                                    config.rows : 6, 6);
             result.cols = (config && config.cols) ? config.cols : 6;
@@ -451,34 +452,42 @@
             var size = Math.min(camera.height, camera.width);
             var districtPixels = camera.scale * District.cellCount;
 
-            this.districtGrid.map({
-                start: camera.toWorldFromScreen({x: 0, y: 0}),
-                end:   camera.toWorldFromScreen(
-                    {x: camera.width, y: camera.height})
-            }, function(node, index, dGrid) {
-                var district = this.getDistrict(node.row, node.col);
-                if (!district) {
-                } else if (size < districtPixels / 10) {
-                    var center = this.cellGrid.markCenter({
-                        row: Math.floor(node.row * District.cellCount),
-                        col: Math.floor(node.col * District.cellCount)
-                    });
-                    district.draw(ctx, camera, this.cellGrid, center);
-                } else if (size < districtPixels * 3 / 2) {
-                    district.drawBackground(ctx, this.districtGrid, node);
-                    district.drawOverview(ctx, this.districtGrid, node);
-                } else if (size < districtPixels * 3) {
-                    district.drawBackground(ctx, this.districtGrid, node);
-                    ctx.save();
-                    ctx.globalAlpha = 0.2;
-                    district.drawOverview(ctx, this.districtGrid, node);
-                    ctx.restore();
-                    district.drawIcon(ctx, this.districtGrid, node);
-                } else {
-                    district.drawBackground(ctx, this.districtGrid, node);
-                    district.drawIcon(ctx, this.districtGrid, node);
-                }
-            }, this);
+            this.districtGrid.mapRectangle(
+                camera.toWorldFromScreen({x: 0, y: 0}),
+                camera.toWorldFromScreen(
+                    {x: camera.width, y: camera.height}),
+                function(node, index, dGrid) {
+                    var district = this.getDistrict(node.row, node.col);
+                    if (!district) {
+                    } else if (size < districtPixels / 10) {
+                        var center = this.cellGrid.markCenter({
+                            row: Math.floor(
+                                node.row * District.cellCount),
+                            col: Math.floor(
+                                node.col * District.cellCount)
+                        });
+                        district.draw(
+                            ctx, camera, this.cellGrid, center);
+                    } else if (size < districtPixels * 3 / 2) {
+                        district.drawBackground(
+                            ctx, this.districtGrid, node);
+                        district.drawOverview(
+                            ctx, this.districtGrid, node);
+                    } else if (size < districtPixels * 3) {
+                        district.drawBackground(
+                            ctx, this.districtGrid, node);
+                        ctx.save();
+                        ctx.globalAlpha = 0.2;
+                        district.drawOverview(
+                            ctx, this.districtGrid, node);
+                        ctx.restore();
+                        district.drawIcon(ctx, this.districtGrid, node);
+                    } else {
+                        district.drawBackground(
+                            ctx, this.districtGrid, node);
+                        district.drawIcon(ctx, this.districtGrid, node);
+                    }
+                }, this);
         }
     };
 
