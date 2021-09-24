@@ -7904,11 +7904,10 @@
             <h3>Points</h3>
             <p>
                 Euclid defines a point as <q>that which has no part.</q>
-                A point is a position in space but has no spacial
-                extents in any direction.
             </p><p>
-                We call the set of all possible points
-                <span class="intro">&#x2119;</span>
+                A point is a position in space but has no spacial
+                extents in any direction.  We call the set of all
+                possible points <span class="intro">&#x2119;</span>
             </p>
         </section>
         <section>
@@ -7944,9 +7943,9 @@
             <h3>Metric Space Examples</h3>
             <ul><li class="fragment">
                 &#x27e8;&#x211d;, d<sub>0</sub>&#x27e9;:
-                &#x2200;a,b&#x2208;&#x2119;
+                &#x2200;a,b&#x2208;&#x2119; <br />
                 ((a = b) &#x27f9; d<sub>0</sub>(a, b) &#x225d;
-                0<sub>&#x211d;</sub>) &and;<br />
+                0<sub>&#x211d;</sub>) &and;
                 ((a &ne; b) &#x27f9; d<sub>0</sub>(a, b) &#x225d;
                 1<sub>&#x211d;</sub>)
             </li><li class="fragment">
@@ -7956,20 +7955,20 @@
             </li><li class="fragment">
                 &#x27e8;&#x211d;&#x229b;&#x211d;, d<sub>1</sub>&#x27e9;:
                 &#x2200;A,B&#x2208;&#x2119; d<sub>1</sub>(A, B) &#x225d;
-                |A<sub>0</sub> - B<sub>0</sub>| +
-                |A<sub>1</sub> - B<sub>1</sub>|
+                |A<sub>1</sub> - B<sub>1</sub>| +
+                |A<sub>2</sub> - B<sub>2</sub>|
             </li><li class="fragment">
                 &#x27e8;&#x211d;&#x229b;&#x211d;, d<sub>2</sub>&#x27e9;:
                 &#x2200;A,B&#x2208;&#x2119; d<sub>2</sub>(A, B) &#x225d;
-                <br /> &#x221a;((A<sub>0</sub> -
-                B<sub>0</sub>)<sup>2</sup> + (A<sub>1</sub> -
-                B<sub>1</sub>)<sup>2</sup>)
+                <br /> &#x221a;((A<sub>1</sub> -
+                B<sub>1</sub>)<sup>2</sup> + (A<sub>2</sub> -
+                B<sub>2</sub>)<sup>2</sup>)
             </li><li class="fragment">
                 &#x27e8;&#x211d;&#x229b;&#x211d;,
                 d<sub>&infin;</sub>&#x27e9;:
                 &#x2200;A,B&#x2208;&#x2119; d<sub>&infin;</sub>(A, B)
-                &#x225d; <br /> MAX(|A<sub>0</sub> - B<sub>0</sub>|,
-                |A<sub>1</sub> - B<sub>1</sub>|)
+                &#x225d; <br /> MAX(|A<sub>1</sub> - B<sub>1</sub>|,
+                |A<sub>2</sub> - B<sub>2</sub>|)
             </li></ul>
         </section>
         <section>
@@ -8057,6 +8056,60 @@
             </li><li>
                 Axiom V:
             </li></ul>
+        </section>
+    </section>
+    <section id="circle-inversion">
+        <section>
+            <h2>Circle Inversion</h2>
+            <canvas class="triggy" data-inversionCircle="50|50|25|black"
+                    data-inversionPoint1="70|45|blue|A"
+                    data-inversionPoint2="60|60|red|B">
+            </canvas>
+        </section>
+        <section>
+            <h3>Circle Inversion</h3>
+            <p>
+                Given a circle with center point O and radius r
+                greater than zero:
+            </p><p>
+                &#x2200;A&#x2208;&#x2119; (A &ne; O) &#x27f9;
+                &#x2203; A' (|A - O| &times; |A' - O| =
+                r<sup>2</sup>) &and;<br />
+                (A &#x29f3; (O A') &or; A' &#x29f3; (O A)
+            </p>
+        </section>
+        <section>
+            <h3>Inversion Distances</h3>
+            <p>
+                &#x2200;A&#x2208;&#x2119; (A &ne; O)
+                &#x27f9; &#x2203; A'
+            </p><ul><li class="fragment">
+                |A - O| &times; |A' - O| = r<sup>2</sup>
+            </li><li class="fragment">
+                |A' - O| = r<sup>2</sup> / |A - O|
+            </li></ul>
+        </section>
+        <section>
+            <h3>Circles and Lines</h3>
+            <canvas class="triggy" data-inversionCircle="50|50|25|black"
+                    data-inversionPoint1="70|45|green|A"
+                    data-inversionPoint2="60|60|green|B"
+                    data-inversionPoint3="60|50|green|C"
+                    data-inversionCircline1="1|2|3|gray">
+            </canvas>
+        </section>
+        <section>
+            <h3>Triangles</h3>
+            <canvas class="triggy" data-inversionCircle="50|50|25|black"
+                    data-inversionPoint1="70|45|green|A"
+                    data-inversionPoint2="60|60|green|B"
+                    data-inversionTriangle1="1|2|gray">
+            </canvas>
+        </section>
+    </section>
+    <section id="vector-algebra">
+        <section>
+            <h2>Vector Algebra</h2>
         </section>
         <section>
             <h3>Vectors</h3>

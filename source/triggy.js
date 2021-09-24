@@ -1,5 +1,5 @@
 // triggy.js
-// Copyright (C) 2018-2019 by Jeff Gold.
+// Copyright (C) 2018-2021 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -16,7 +16,9 @@
 // <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-// A library for visualizing trigonometry using HTML canvas elements.
+// A library for visualizing geometry and trigonometry using HTML
+// canvas elements.
+//
 // The plan is to illustrate this:
 //   http://www.clowder.net/hop/cos(a+b).html
 //   https://math.stackexchange.com/questions/1292/how-can-i-understand-and-prove-the-sum-and-difference-formulas-in-trigonometry
@@ -37,7 +39,7 @@
         var index;
         var nextEntry = function(canvas, entry, index) {
             var result = canvas.getAttribute('data-' + entry + index);
-            return (result === null) ? undefined : result;
+            return (result !== null) ? result : undefined;
         };
 
         for (index = 1; typeof(value = nextEntry(
@@ -60,6 +62,31 @@
             });
         }
         return result;
+    };
+
+    var drawCircle = function(ctx, points) {
+        // Uses conformal geometric algebra to draw a circle from
+        // three distinct points.
+        var circle = multivec(points[0])
+            .createPoint()
+            .wedge(multivec(points[1]).createPoint())
+            .wedge(multivec(points[2]).createPoint());
+        var descrim = circle.wedge(multivec.infinityPoint)
+                            .normSquared();
+        
+        if (multivec.zeroish(descrim)) {
+            var last = points[points.length - 1];
+            ctx.moveTo(last.x, last.y);
+            points.forEach(function(point) {
+                ctx.lineTo(point.x, point.y); });
+        } else {
+            var center = circle.conformalCenter();
+            var radius = Math.sqrt(
+                circle.times(circle.conjugate())
+                      .divide(descrim).scalar);
+            ctx.moveTo(center.x + radius, center.y);
+            ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
+        }
     };
 
     var features = {
@@ -268,6 +295,7 @@
                 }
                 return {points: points, color: color};
             },
+
             draw: function(canvas, ctx, bounds, clicked, config) {
                 var settings = this.getSettings(config);
                 if (!settings)
@@ -321,6 +349,7 @@
                 ctx.fillStyle = settings.color;
                 ctx.fill();
             },
+
             down: function(canvas, bounds, clicked, config) {
                 var settings = this.getSettings(config);
                 if (!settings)
@@ -339,6 +368,7 @@
                     }
                 }, this);
             },
+
             drag: function(canvas, bounds, clicked, config) {
                 var settings = this.getSettings(config);
                 if (!settings || isNaN(this.which))
@@ -358,6 +388,247 @@
                     settings.points[2].x.toFixed(3) + '|' +
                     settings.points[2].y.toFixed(3) + '|' +
                     settings.color
+                );
+            }
+        },
+
+        inversionCircle: {
+            // This module visualizes inversion with respect to a
+            // circle.  This is similar to reflection around a line
+            // but is more round.  It's a useful tool for proving
+            // Ptolemy's Theorem, which in turn can be used to prove
+            // the famous Pthagorean Theorem.
+            getSettings: function(config, canvas) {
+                var center, radius, color = "black";
+                if (typeof(config) === 'string') {
+                    var components = config.split('|');
+                    if (components.length < 3) {
+                        console.error("FAILED-inversionCircle:",
+                                      "insufficient data:", config);
+                        return false;
+                    }
+                    center = multivec({
+                        x: parseFloat(components[0]),
+                        y: parseFloat(components[1])})
+                        .createPoint();
+                    radius = parseFloat(components[2]);
+                    if (components.length > 3)
+                        color = components[3];
+                } else {
+                    console.error("FAILED-inversionCircle:",
+                                  "unknown config type:",
+                                  typeof(config));
+                    return false;
+                }
+
+                var result = {
+                    center: center, radius: radius, color: color,
+                    points: [], triangles: [], circlines: []
+                };
+
+                eachEntry(canvas, "inversionPoint", function(value) {
+                    var components = value.split('|');
+                    if (components.length < 2)
+                        return;
+                    var point = {
+                        x: parseFloat(components[0]),
+                        y: parseFloat(components[1]),
+                        color: (components.length >= 3) ?
+                               components[2] : undefined,
+                        label: (components.length >= 4) ?
+                               components[3] : "blue"
+                    };
+                    if (!isNaN(point.x) && !isNaN(point.y))
+                        this.points.push(point);
+                }, result);
+
+                eachEntry(canvas, "inversionCircline", function(
+                    circline) {
+                    var components = circline.split('|');
+                    if (components < 3)
+                        return;
+                    var i1 = parseInt(components[0], 10);
+                    var i2 = parseInt(components[1], 10);
+                    var i3 = parseInt(components[2], 10);
+                    var color = (components.length >= 4) ?
+                                components[3] : "green";
+                    if ((i1 >= 1) && (i2 >= 1) && (i3 >= 1) &&
+                        (i1 <= this.points.length) &&
+                        (i2 <= this.points.length) &&
+                        (i3 <= this.points.length) &&
+                        (i1 !== i2) && (i2 !== i3) && (i3 !== i1))
+                        this.circlines.push({
+                            i1: i1, i2: i2, i3: i3, color: color });
+                }, result);
+
+                eachEntry(canvas, "inversionTriangle", function(
+                    triangle) {
+                    var components = triangle.split('|');
+                    if (components.length < 2)
+                        return;
+                    var first  = parseInt(components[0], 10);
+                    var second = parseInt(components[1], 10);
+                    var color  = (components.length >= 3) ?
+                                 components[2] : "green";
+                    if ((first >= 1) && (second >= 1) &&
+                        (first !== second) &&
+                        (first <= this.points.length) &&
+                        (second <= this.points.length))
+                        this.triangles.push({
+                            first:  first,
+                            second: second,
+                            color:  color});
+                }, result);
+                return result;
+            },
+
+            invert: function(settings, point) {
+                var result = {
+                    x: point.x - settings.center.x,
+                    y: point.y - settings.center.y };
+                var factor = (settings.radius * settings.radius /
+                    (result.x * result.x + result.y * result.y));
+                result.x = settings.center.x + result.x * factor;
+                result.y = settings.center.y + result.y * factor;
+                return result;
+            },
+
+            draw: function(canvas, ctx, bounds, clicked, config) {
+                var settings = this.getSettings(config, canvas);
+                if (!settings)
+                    return;
+
+                if (settings.color) {
+                    ctx.save();
+                    ctx.translate(bounds.left, bounds.top);
+                    ctx.scale(bounds.size / 100, bounds.size / 100);
+
+                    ctx.beginPath();
+                    ctx.lineWidth = 1;
+                    ctx.moveTo(settings.center.x + ctx.lineWidth / 2,
+                               settings.center.y);
+                    ctx.arc(settings.center.x, settings.center.y,
+                            ctx.lineWidth / 2, 0, 2 * Math.PI);
+                    ctx.fillStyle = settings.color;
+                    ctx.fill();
+
+                    ctx.moveTo(settings.center.x + settings.radius,
+                               settings.center.y);
+                    ctx.arc(settings.center.x, settings.center.y,
+                            settings.radius, 0, 2 * Math.PI);
+                    ctx.strokeStyle = settings.color;
+                    ctx.stroke();
+                }
+
+                settings.circlines.forEach(function(circline) {
+                    var p1 = settings.points[circline.i1 - 1];
+                    var p2 = settings.points[circline.i2 - 1];
+                    var p3 = settings.points[circline.i3 - 1];
+
+                    ctx.beginPath();
+                    drawCircle(ctx, [p1, p2, p3]);
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = circline.color;
+                    ctx.stroke();
+
+                    p1 = this.invert(settings, p1);
+                    p2 = this.invert(settings, p2);
+                    p3 = this.invert(settings, p3);
+                    drawCircle(ctx, [p1, p2, p3]);
+                    ctx.setLineDash([5, 2, 2, 2]);
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = circline.color;
+                    ctx.stroke();
+                }, this);
+
+                settings.triangles.forEach(function(triangle) {
+                    var p1 = settings.points[triangle.first - 1];
+                    var p2 = settings.points[triangle.second - 1];
+
+                    ctx.beginPath();
+                    ctx.moveTo(settings.center.x, settings.center.y);
+                    ctx.lineTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.lineTo(settings.center.x, settings.center.y);
+
+                    p1 = this.invert(settings, p1);
+                    p2 = this.invert(settings, p2);
+                    ctx.lineTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.lineTo(settings.center.x, settings.center.y);
+
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = triangle.color;
+                    ctx.stroke();
+                }, this);
+
+                settings.points.forEach(function(point) {
+                    var ratio = 3;
+                    ctx.lineWidth = 1 / ratio;
+
+                    ctx.beginPath();
+                    ctx.moveTo(point.x + ratio * ctx.lineWidth,
+                               point.y);
+                    ctx.arc(point.x, point.y,
+                            ratio * ctx.lineWidth, 0, 2 * Math.PI);
+                    ctx.fillStyle = point.color;
+                    ctx.fill();
+
+                    var inverted = this.invert(settings, point);
+                    ctx.beginPath();
+                    ctx.moveTo(inverted.x + ratio * ctx.lineWidth,
+                               inverted.y);
+                    ctx.arc(inverted.x, inverted.y,
+                            ratio * ctx.lineWidth, 0, 2 * Math.PI);
+                    ctx.strokeStyle = point.color;
+                    ctx.stroke();
+                }, this);
+
+                ctx.restore();
+            },
+
+            down: function(canvas, bounds, clicked, config) {
+                // Determine which point is nearest and mark that
+                // for use in the drag method below
+                var settings = this.getSettings(config, canvas);
+                if (!settings)
+                    return;
+                var current;
+                var adjusted = multivec({
+                    x: 100 * (clicked.x - bounds.left) / bounds.size,
+                    y: 100 * (clicked.y - bounds.top) / bounds.size
+                });
+                this.which = undefined;
+                settings.points.forEach(function(point, index) {
+                    var dsquared = adjusted.minus(point).quadrance();
+                    if (isNaN(this.which) || (dsquared < current)) {
+                        this.which = index;
+                        current = dsquared;
+                    }
+                }, this);
+            },
+
+            drag: function(canvas, bounds, clicked, config) {
+                // Change the chosen points coordinates and push them
+                // to the canvas data attributes
+                var settings = this.getSettings(config, canvas);
+                if (!settings || isNaN(this.which) ||
+                    (this.which < 0) ||
+                    (this.which > settings.points.length))
+                    return;
+                var adjusted = {
+                    x: 100 * (clicked.x - bounds.left) / bounds.size,
+                    y: 100 * (clicked.y - bounds.top) / bounds.size,
+                    label: settings.points[this.which].label,
+                    color: settings.points[this.which].color
+                };
+                settings.points[this.which] = adjusted;
+                canvas.setAttribute(
+                    'data-inversionPoint' + (this.which + 1),
+                    settings.points[this.which].x.toFixed(3) + '|' +
+                    settings.points[this.which].y.toFixed(3) + '|' +
+                    settings.points[this.which].color + '|' +
+                    settings.points[this.which].label
                 );
             }
         }
