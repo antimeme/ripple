@@ -8062,21 +8062,38 @@
         <section>
             <h2>Circle Inversion</h2>
             <canvas class="triggy" data-inversionCircle="50|50|25|black"
-                    data-inversionPoint1="70|45|blue|A"
+                    data-inversionPoint1="65|45|blue|A"
                     data-inversionPoint2="60|60|red|B">
             </canvas>
         </section>
         <section>
             <h3>Circle Inversion</h3>
             <p>
-                Given a circle with center point O and radius r
-                greater than zero:
-            </p><p>
+                Given a circle with postive radius:
+            </p><ul><li class="fragment">
+                &#x2200;O&#x2208;&#x2119;,
+                r&#x2208;&#x211d; r &gt; 0<sub>&#x211d;</sub>
+            </li><li class="fragment">
                 &#x2200;A&#x2208;&#x2119; (A &ne; O) &#x27f9;
-                &#x2203; A' (|A - O| &times; |A' - O| =
-                r<sup>2</sup>) &and;<br />
-                (A &#x29f3; (O A') &or; A' &#x29f3; (O A)
+                &#x2203; A'
+                <ul><li class="fragment">
+                    (|A - O| &times; |A' - O| = r<sup>2</sup>)
+                </li><li class="fragment">
+                    (A &#x29f3; (O A') &or; A' &#x29f3; (O A)
+                </li></ul>
+            </li></ul><p class="fragment">
+                Every point except the center has an inversion
+                point with the above properties.
             </p>
+        </section>
+        <section>
+            <h3>Circles and Lines</h3>
+            <canvas class="triggy" data-inversionCircle="50|50|25|black"
+                    data-inversionPoint1="70|45|green"
+                    data-inversionPoint2="60|60|green"
+                    data-inversionPoint3="60|50|green"
+                    data-inversionCircline1="1|2|3|gray">
+            </canvas>
         </section>
         <section>
             <h3>Inversion Distances</h3>
@@ -8090,21 +8107,50 @@
             </li></ul>
         </section>
         <section>
-            <h3>Circles and Lines</h3>
-            <canvas class="triggy" data-inversionCircle="50|50|25|black"
-                    data-inversionPoint1="70|45|green|A"
-                    data-inversionPoint2="60|60|green|B"
-                    data-inversionPoint3="60|50|green|C"
-                    data-inversionCircline1="1|2|3|gray">
-            </canvas>
-        </section>
-        <section>
-            <h3>Triangles</h3>
+            <h3>Similar Triangles</h3>
             <canvas class="triggy" data-inversionCircle="50|50|25|black"
                     data-inversionPoint1="70|45|green|A"
                     data-inversionPoint2="60|60|green|B"
                     data-inversionTriangle1="1|2|gray">
             </canvas>
+        </section>
+        <section>
+            <h3>Similar Triangles</h3>
+            <p>
+            </p><ul><li class="fragment">
+                &#x2220; A O B = &#x2220; A' O B'
+                <span class="fragment">
+                    &#x27f9; &#x2221; A O B = &#x2221; B' O A'
+                </span>
+            </li><li class="fragment">
+                | A - O | / | B' - O | <span class="fragment">
+                = | B - O | / | A' - O |</span>
+                <ul><li class="fragment">
+                    | A - O | &times; | A' - O | =
+                    | B - O | &times; | B' - O |
+                </li><li class="fragment">
+                    |A - O| &times; (r<sup>2</sup> / |A - O|) =
+                    |B - O| &times; (r<sup>2</sup> / |B - O|)
+                </li><li class="fragment qed">
+                    r<sup>2</sup> = r<sup>2</sup>
+                </li></ul>
+            </li><li class="fragment">
+                |A'-B'|/|A-B| = |B'-O|/|A-O| = |A'-O|/|B-O|
+            </li></ul>
+        </section>
+        <section>
+            <h3>Inversion Distances</h3>
+            <p>
+                We can use similar triangles to find the distance
+                between inverted points in terms of original points
+            </p><ul><li class="fragment">
+                | A' - B' | / | A - B | = | B' - O | / | A - O |
+            </li><li class="fragment">
+                | A' - B' | = | B' - O | &times; | A - B | / | A - O |
+            </li><li class="fragment">
+                | A' - B' | = r<sup>2</sup> &times; | A - B | /
+                (| A - O | &times; | B - O|)
+            </li></ul>
         </section>
     </section>
     <section id="vector-algebra">

@@ -35,6 +35,10 @@
     }
 
     var eachEntry = function(canvas, entry, fn, context) {
+        // Call a function on the contents of each data entry
+        // matching a string followed by a number in a canvas.
+        // Starts at one and stops when the next number is missing
+        // or empty.
         var value;
         var index;
         var nextEntry = function(canvas, entry, index) {
@@ -65,7 +69,7 @@
     };
 
     var drawCircle = function(ctx, points) {
-        // Uses conformal geometric algebra to draw a circle from
+        // Use conformal geometric algebra to draw a circle from
         // three distinct points.
         var circle = multivec(points[0])
             .createPoint()
@@ -87,6 +91,15 @@
             ctx.moveTo(center.x + radius, center.y);
             ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
         }
+    };
+
+    var drawLabel = function(ctx, point) {
+        if (!point.label)
+            return;
+        ctx.font = 5 + 'px sans';
+        ctx.fillText(point.label,
+                     point.x + ((point.x < 50) ? -4 : +1),
+                     point.y + ((point.y < 50) ? -2 : +4));
     };
 
     var features = {
@@ -433,10 +446,8 @@
                     var point = {
                         x: parseFloat(components[0]),
                         y: parseFloat(components[1]),
-                        color: (components.length >= 3) ?
-                               components[2] : undefined,
-                        label: (components.length >= 4) ?
-                               components[3] : "blue"
+                        color: components[2] || "blue",
+                        label: components[3]
                     };
                     if (!isNaN(point.x) && !isNaN(point.y))
                         this.points.push(point);
@@ -490,6 +501,9 @@
                     (result.x * result.x + result.y * result.y));
                 result.x = settings.center.x + result.x * factor;
                 result.y = settings.center.y + result.y * factor;
+                result.color = point.color;
+                result.label = point.label ?
+                               (point.label + '\'') : undefined;
                 return result;
             },
 
@@ -527,6 +541,7 @@
 
                     ctx.beginPath();
                     drawCircle(ctx, [p1, p2, p3]);
+                    ctx.setLineDash([]);
                     ctx.lineWidth = 1;
                     ctx.strokeStyle = circline.color;
                     ctx.stroke();
@@ -550,6 +565,10 @@
                     ctx.lineTo(p1.x, p1.y);
                     ctx.lineTo(p2.x, p2.y);
                     ctx.lineTo(settings.center.x, settings.center.y);
+                    ctx.setLineDash([]);
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = triangle.color;
+                    ctx.stroke();
 
                     p1 = this.invert(settings, p1);
                     p2 = this.invert(settings, p2);
@@ -557,6 +576,7 @@
                     ctx.lineTo(p2.x, p2.y);
                     ctx.lineTo(settings.center.x, settings.center.y);
 
+                    ctx.setLineDash([5, 2, 2, 2]);
                     ctx.lineWidth = 1;
                     ctx.strokeStyle = triangle.color;
                     ctx.stroke();
@@ -573,6 +593,7 @@
                             ratio * ctx.lineWidth, 0, 2 * Math.PI);
                     ctx.fillStyle = point.color;
                     ctx.fill();
+                    drawLabel(ctx, point);
 
                     var inverted = this.invert(settings, point);
                     ctx.beginPath();
@@ -582,6 +603,7 @@
                             ratio * ctx.lineWidth, 0, 2 * Math.PI);
                     ctx.strokeStyle = point.color;
                     ctx.stroke();
+                    drawLabel(ctx, inverted);
                 }, this);
 
                 ctx.restore();
@@ -619,17 +641,19 @@
                 var adjusted = {
                     x: 100 * (clicked.x - bounds.left) / bounds.size,
                     y: 100 * (clicked.y - bounds.top) / bounds.size,
-                    label: settings.points[this.which].label,
-                    color: settings.points[this.which].color
+                    color: settings.points[this.which].color,
+                    label: settings.points[this.which].label
                 };
                 settings.points[this.which] = adjusted;
-                canvas.setAttribute(
-                    'data-inversionPoint' + (this.which + 1),
+                var attribute = 
                     settings.points[this.which].x.toFixed(3) + '|' +
                     settings.points[this.which].y.toFixed(3) + '|' +
-                    settings.points[this.which].color + '|' +
-                    settings.points[this.which].label
-                );
+                    settings.points[this.which].color;
+                if (settings.points[this.which].label)
+                    attribute += '|' +
+                                 settings.points[this.which].label;
+                canvas.setAttribute('data-inversionPoint' +
+                                    (this.which + 1), attribute);
             }
         }
     };
