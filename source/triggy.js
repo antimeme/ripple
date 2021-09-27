@@ -275,136 +275,6 @@
             }
         },
 
-        userCircle: {
-            which: undefined,
-            getSettings: function(config) {
-                var points, color = "blue";
-                if (typeof(config) === 'string') {
-                    var components = config.split('|');
-                    if (components.length < 6) {
-                        console.log("FAILED-userCircle:",
-                                    "insufficient point data:", config);
-                        return false;
-                    }
-                    points = [];
-                    points.push(multivec({
-                        x: parseFloat(components[0]),
-                        y: parseFloat(components[1])})
-                        .createPoint());
-                    points.push(multivec({
-                        x: parseFloat(components[2]),
-                        y: parseFloat(components[3])})
-                        .createPoint());
-                    points.push(multivec({
-                        x: parseFloat(components[4]),
-                        y: parseFloat(components[5])})
-                        .createPoint());
-                    if (components.length > 6)
-                        color = components[6];
-                } else {
-                    console.log("FAILED-userCircle:",
-                                "unknown config type:", typeof(config));
-                    return false;
-                }
-                return {points: points, color: color};
-            },
-
-            draw: function(canvas, ctx, bounds, clicked, config) {
-                var settings = this.getSettings(config);
-                if (!settings)
-                    return;
-
-                var circle = settings.points[0]
-                                     .wedge(settings.points[1])
-                                     .wedge(settings.points[2]);
-                var descrim = circle.wedge(multivec.infinityPoint)
-                                    .normSquared();
-                ctx.beginPath();
-                if (multivec.zeroish(descrim)) {
-                    var last = settings.points[
-                        settings.points.length - 1];
-                    ctx.moveTo(
-                        bounds.left + bounds.size * last.x / 100,
-                        bounds.top + bounds.size * last.y / 100);
-                    settings.points.forEach(function(point) {
-                        ctx.lineTo(
-                            bounds.left + bounds.size * point.x / 100,
-                            bounds.top + bounds.size * point.y / 100);
-                    });
-                    ctx.strokeStyle = 'purple';
-                } else {
-                    var center = circle.conformalCenter();
-                    var radius = Math.sqrt(
-                        circle.times(circle.conjugate())
-                              .divide(descrim).scalar) / 100;
-                    ctx.moveTo(bounds.left + bounds.size *
-                        center.x / 100 + bounds.size * radius,
-                               bounds.top + bounds.size *
-                        center.y / 100);
-                    ctx.arc(bounds.left + bounds.size * center.x / 100,
-                            bounds.top + bounds.size * center.y / 100,
-                            bounds.size * radius, 0, 2 * Math.PI);
-                    ctx.strokeStyle = settings.color;
-                }
-                ctx.lineWidth = bounds.size / 150;
-                ctx.stroke();
-
-                ctx.beginPath();
-                settings.points.forEach(function(point) {
-                    ctx.moveTo(
-                        bounds.left + bounds.size * point.x / 100,
-                        bounds.top + bounds.size * point.y / 100);
-                    ctx.arc(
-                        bounds.left + bounds.size * point.x / 100,
-                        bounds.top + bounds.size * point.y / 100,
-                        bounds.size / 75, 0, 2 * Math.PI);
-                });
-                ctx.fillStyle = settings.color;
-                ctx.fill();
-            },
-
-            down: function(canvas, bounds, clicked, config) {
-                var settings = this.getSettings(config);
-                if (!settings)
-                    return;
-                var current;
-                var adjusted = multivec({
-                    x: 100 * (clicked.x - bounds.left) / bounds.size,
-                    y: 100 * (clicked.y - bounds.top) / bounds.size
-                }).createPoint();
-                this.which = undefined;
-                settings.points.forEach(function(point, index) {
-                    var dsquared = adjusted.dot(point).times(-2).scalar;
-                    if (isNaN(this.which) || dsquared < current) {
-                        this.which = index;
-                        current = dsquared;
-                    }
-                }, this);
-            },
-
-            drag: function(canvas, bounds, clicked, config) {
-                var settings = this.getSettings(config);
-                if (!settings || isNaN(this.which))
-                    return;
-                var adjusted = multivec({
-                    x: 100 * (clicked.x - bounds.left) / bounds.size,
-                    y: 100 * (clicked.y - bounds.top) / bounds.size
-                }).createPoint();
-                settings.points[this.which] =
-                    multivec(adjusted).createPoint();
-                canvas.setAttribute(
-                    'data-userCircle',
-                    settings.points[0].x.toFixed(3) + '|' +
-                    settings.points[0].y.toFixed(3) + '|' +
-                    settings.points[1].x.toFixed(3) + '|' +
-                    settings.points[1].y.toFixed(3) + '|' +
-                    settings.points[2].x.toFixed(3) + '|' +
-                    settings.points[2].y.toFixed(3) + '|' +
-                    settings.color
-                );
-            }
-        },
-
         inversionCircle: {
             // This module visualizes inversion with respect to a
             // circle.  This is similar to reflection around a line
@@ -425,8 +295,7 @@
                         y: parseFloat(components[1])})
                         .createPoint();
                     radius = parseFloat(components[2]);
-                    if (components.length > 3)
-                        color = components[3];
+                    color = components[3] || null;
                 } else {
                     console.error("FAILED-inversionCircle:",
                                   "unknown config type:",
@@ -447,7 +316,8 @@
                         x: parseFloat(components[0]),
                         y: parseFloat(components[1]),
                         color: components[2] || "blue",
-                        label: components[3]
+                        icolor: components[3] || null,
+                        label: components[4]
                     };
                     if (!isNaN(point.x) && !isNaN(point.y))
                         this.points.push(point);
@@ -461,15 +331,16 @@
                     var i1 = parseInt(components[0], 10);
                     var i2 = parseInt(components[1], 10);
                     var i3 = parseInt(components[2], 10);
-                    var color = (components.length >= 4) ?
-                                components[3] : "green";
+                    var color  = components[3] || "green";
+                    var icolor = components[4] || null;
                     if ((i1 >= 1) && (i2 >= 1) && (i3 >= 1) &&
                         (i1 <= this.points.length) &&
                         (i2 <= this.points.length) &&
                         (i3 <= this.points.length) &&
                         (i1 !== i2) && (i2 !== i3) && (i3 !== i1))
                         this.circlines.push({
-                            i1: i1, i2: i2, i3: i3, color: color });
+                            i1: i1, i2: i2, i3: i3,
+                            color: color, icolor: icolor });
                 }, result);
 
                 eachEntry(canvas, "inversionTriangle", function(
@@ -479,8 +350,8 @@
                         return;
                     var first  = parseInt(components[0], 10);
                     var second = parseInt(components[1], 10);
-                    var color  = (components.length >= 3) ?
-                                 components[2] : "green";
+                    var color  = components[2] || "green";
+                    var icolor = components[3] || null;
                     if ((first >= 1) && (second >= 1) &&
                         (first !== second) &&
                         (first <= this.points.length) &&
@@ -488,7 +359,7 @@
                         this.triangles.push({
                             first:  first,
                             second: second,
-                            color:  color});
+                            color:  color, icolor: icolor});
                 }, result);
                 return result;
             },
@@ -501,7 +372,7 @@
                     (result.x * result.x + result.y * result.y));
                 result.x = settings.center.x + result.x * factor;
                 result.y = settings.center.y + result.y * factor;
-                result.color = point.color;
+                result.color = point.icolor;
                 result.label = point.label ?
                                (point.label + '\'') : undefined;
                 return result;
@@ -511,11 +382,11 @@
                 var settings = this.getSettings(config, canvas);
                 if (!settings)
                     return;
+                ctx.save();
+                ctx.translate(bounds.left, bounds.top);
+                ctx.scale(bounds.size / 100, bounds.size / 100);
 
                 if (settings.color) {
-                    ctx.save();
-                    ctx.translate(bounds.left, bounds.top);
-                    ctx.scale(bounds.size / 100, bounds.size / 100);
 
                     ctx.beginPath();
                     ctx.lineWidth = 1;
@@ -546,13 +417,15 @@
                     ctx.strokeStyle = circline.color;
                     ctx.stroke();
 
+                    if (!circline.icolor)
+                        return;
                     p1 = this.invert(settings, p1);
                     p2 = this.invert(settings, p2);
                     p3 = this.invert(settings, p3);
                     drawCircle(ctx, [p1, p2, p3]);
                     ctx.setLineDash([5, 2, 2, 2]);
                     ctx.lineWidth = 1;
-                    ctx.strokeStyle = circline.color;
+                    ctx.strokeStyle = circline.icolor;
                     ctx.stroke();
                 }, this);
 
@@ -570,37 +443,41 @@
                     ctx.strokeStyle = triangle.color;
                     ctx.stroke();
 
+                    if (!triangle.icolor)
+                        return;
                     p1 = this.invert(settings, p1);
                     p2 = this.invert(settings, p2);
                     ctx.lineTo(p1.x, p1.y);
                     ctx.lineTo(p2.x, p2.y);
                     ctx.lineTo(settings.center.x, settings.center.y);
-
                     ctx.setLineDash([5, 2, 2, 2]);
                     ctx.lineWidth = 1;
-                    ctx.strokeStyle = triangle.color;
+                    ctx.strokeStyle = triangle.icolor;
                     ctx.stroke();
                 }, this);
 
                 settings.points.forEach(function(point) {
                     var ratio = 3;
                     ctx.lineWidth = 1 / ratio;
+                    ctx.setLineDash([]);
 
                     ctx.beginPath();
                     ctx.moveTo(point.x + ratio * ctx.lineWidth,
                                point.y);
                     ctx.arc(point.x, point.y,
-                            ratio * ctx.lineWidth, 0, 2 * Math.PI);
+                            1, 0, 2 * Math.PI);
                     ctx.fillStyle = point.color;
                     ctx.fill();
                     drawLabel(ctx, point);
 
+                    if (!point.icolor)
+                        return;
                     var inverted = this.invert(settings, point);
                     ctx.beginPath();
                     ctx.moveTo(inverted.x + ratio * ctx.lineWidth,
                                inverted.y);
                     ctx.arc(inverted.x, inverted.y,
-                            ratio * ctx.lineWidth, 0, 2 * Math.PI);
+                            1, 0, 2 * Math.PI);
                     ctx.strokeStyle = point.color;
                     ctx.stroke();
                     drawLabel(ctx, inverted);
@@ -641,14 +518,16 @@
                 var adjusted = {
                     x: 100 * (clicked.x - bounds.left) / bounds.size,
                     y: 100 * (clicked.y - bounds.top) / bounds.size,
-                    color: settings.points[this.which].color,
-                    label: settings.points[this.which].label
+                    color:  settings.points[this.which].color,
+                    icolor: settings.points[this.which].icolor,
+                    label:  settings.points[this.which].label
                 };
                 settings.points[this.which] = adjusted;
                 var attribute = 
                     settings.points[this.which].x.toFixed(3) + '|' +
                     settings.points[this.which].y.toFixed(3) + '|' +
-                    settings.points[this.which].color;
+                    settings.points[this.which].color + '|' +
+                    (settings.points[this.which].icolor || '');
                 if (settings.points[this.which].label)
                     attribute += '|' +
                                  settings.points[this.which].label;

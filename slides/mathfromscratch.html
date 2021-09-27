@@ -8062,8 +8062,8 @@
         <section>
             <h2>Circle Inversion</h2>
             <canvas class="triggy" data-inversionCircle="50|50|25|black"
-                    data-inversionPoint1="65|45|blue|A"
-                    data-inversionPoint2="60|60|red|B">
+                    data-inversionPoint1="65|45|blue|blue|A"
+                    data-inversionPoint2="60|60|red|red|B">
             </canvas>
         </section>
         <section>
@@ -8088,15 +8088,16 @@
         </section>
         <section>
             <h3>Circles and Lines</h3>
-            <canvas class="triggy" data-inversionCircle="50|50|25|black"
-                    data-inversionPoint1="70|45|green"
-                    data-inversionPoint2="60|60|green"
-                    data-inversionPoint3="60|50|green"
-                    data-inversionCircline1="1|2|3|gray">
+            <canvas class="triggy"
+                    data-inversionCircle="50|50|25|black"
+                    data-inversionPoint1="70|45|green|green"
+                    data-inversionPoint2="60|60|green|green"
+                    data-inversionPoint3="60|50|green|green"
+                    data-inversionCircline1="1|2|3|gray|gray">
             </canvas>
         </section>
         <section>
-            <h3>Inversion Distances</h3>
+            <h3>Inversion Lengths</h3>
             <p>
                 &#x2200;A&#x2208;&#x2119; (A &ne; O)
                 &#x27f9; &#x2203; A'
@@ -8108,10 +8109,11 @@
         </section>
         <section>
             <h3>Similar Triangles</h3>
-            <canvas class="triggy" data-inversionCircle="50|50|25|black"
-                    data-inversionPoint1="70|45|green|A"
-                    data-inversionPoint2="60|60|green|B"
-                    data-inversionTriangle1="1|2|gray">
+            <canvas class="triggy"
+                    data-inversionCircle="50|50|25|black"
+                    data-inversionPoint1="70|45|green|green|A"
+                    data-inversionPoint2="60|60|green|green|B"
+                    data-inversionTriangle1="1|2|gray|gray">
             </canvas>
         </section>
         <section>
@@ -8135,7 +8137,11 @@
                     r<sup>2</sup> = r<sup>2</sup>
                 </li></ul>
             </li><li class="fragment">
-                |A'-B'|/|A-B| = |B'-O|/|A-O| = |A'-O|/|B-O|
+                &#x25b3;AOB ~ &#x25b3;B'OA'
+                <span class="fragment">
+                    &#x27f9; <br />
+                    |A'-B'|/|A-B| = |B'-O|/|A-O| = |A'-O|/|B-O|
+                </span>
             </li></ul>
         </section>
         <section>
@@ -8146,7 +8152,7 @@
             </p><ul><li class="fragment">
                 | A' - B' | / | A - B | = | B' - O | / | A - O |
             </li><li class="fragment">
-                | A' - B' | = | B' - O | &times; | A - B | / | A - O |
+                | A' - B' | = | A - B | &times; | B' - O | / | A - O |
             </li><li class="fragment">
                 | A' - B' | = r<sup>2</sup> &times; | A - B | /
                 (| A - O | &times; | B - O|)
@@ -12174,7 +12180,11 @@
             <h3>Conformal Circle</h3>
             <p>Any three distinct points define a circumcircle.</p>
             <canvas class="triggy"
-                    data-userCircle="25|25|75|65|25|60">
+                    data-inversionCircle="50|50|30"
+                    data-inversionPoint1="25|25|blue"
+                    data-inversionPoint2="75|65|blue"
+                    data-inversionPoint3="25|60|blue"
+                    data-inversionCircline1="1|2|3|blue">
             </canvas>
         </section>
         <section>
@@ -12211,7 +12221,11 @@
                 </span>
             </p>
             <canvas class="triggy fragment"
-                    data-userCircle="25|25|75|75|50|50">
+                    data-inversionCircle="50|50|30"
+                    data-inversionPoint1="25|25|blue"
+                    data-inversionPoint2="75|75|blue"
+                    data-inversionPoint3="50|50|blue"
+                    data-inversionCircline1="1|2|3|blue">
             </canvas>
         </section>
         <section>
