@@ -8063,7 +8063,7 @@
             <h2>Circle Inversion</h2>
             <canvas class="triggy" data-inversionCircle="50|50|25|black"
                     data-inversionPoint1="65|45|blue|blue|A"
-                    data-inversionPoint2="60|60|red|red|B">
+                    data-inversionPoint2="80|80|red|red|B">
             </canvas>
         </section>
         <section>
@@ -8077,24 +8077,14 @@
                 &#x2200;A&#x2208;&#x2119; (A &ne; O) &#x27f9;
                 &#x2203; A'
                 <ul><li class="fragment">
-                    (|A - O| &times; |A' - O| = r<sup>2</sup>)
+                    A &#x29f3; (O A') &or; A' &#x29f3; (O A)
                 </li><li class="fragment">
-                    (A &#x29f3; (O A') &or; A' &#x29f3; (O A)
+                    |A - O| &times; |A' - O| = r<sup>2</sup>
                 </li></ul>
             </li></ul><p class="fragment">
                 Every point except the center has an inversion
                 point with the above properties.
             </p>
-        </section>
-        <section>
-            <h3>Circles and Lines</h3>
-            <canvas class="triggy"
-                    data-inversionCircle="50|50|25|black"
-                    data-inversionPoint1="70|45|green|green"
-                    data-inversionPoint2="60|60|green|green"
-                    data-inversionPoint3="60|50|green|green"
-                    data-inversionCircline1="1|2|3|gray|gray">
-            </canvas>
         </section>
         <section>
             <h3>Inversion Lengths</h3>
@@ -8106,6 +8096,51 @@
             </li><li class="fragment">
                 |A' - O| = r<sup>2</sup> / |A - O|
             </li></ul>
+        </section>
+        <section>
+            <h3>Inversion Bijection</h3>
+            <p>
+                &#x2200;A&#x2208;&#x2119; (A &ne; O) &#x2203; A'
+                <span class="fragment">
+                    &and; A' &ne; O &#x27f9; &#x2203; A''</span>
+                <span class="fragment">&#x27f9; A'' = A</span>
+            </p><ul><li class="fragment">
+                |A - O| &times; |A' - O| = r<sup>2</sup>
+                <span class="fragment">
+                    &#x27f9; |A' - O| = r<sup>2</sup> / |A - O|
+                </span>
+            </li><li class="fragment">
+                (r<sup>2</sup> &gt 0) &and; (|A - O| &gt 0)
+                <span class="fragment">
+                    &#x27f9; r<sup>2</sup> / |A - O| &gt; 0
+                </span>
+            </li><li class="fragment">
+                r<sup>2</sup> / |A - O| &gt; 0
+                &#x27f9; |A' - O| &gt; 0
+                <span class="fragment">&#x27f9; A' &ne; O</span>
+            </li><li class="fragment">
+                |A'' - O| = r<sup>2</sup> / |A' - O|
+                <span class="fragment"> = |A - O|</span>
+            </li><li class="fragment">
+                A'' &#x29f3; (O A') &or; A' &#x29f3; (O A'')
+                <span class="fragment">
+                    &#x27f9; <br />
+                    A'' &#x29f3; (O A) &or; A &#x29f3; (O A'')
+                    <span class="fragment">&#x27f9; A'' = A</span>
+                </span>
+            </li></ul><p class="fragment">
+                Inversion is a bijection between inside and outside.
+            </p>
+        </section>
+        <section>
+            <h3>Circles and Lines</h3>
+            <canvas class="triggy"
+                    data-inversionCircle="50|50|25|black"
+                    data-inversionPoint1="70|45|green|green"
+                    data-inversionPoint2="60|60|green|green"
+                    data-inversionPoint3="60|50|green|green"
+                    data-inversionCircline1="1|2|3|gray|gray">
+            </canvas>
         </section>
         <section>
             <h3>Similar Triangles</h3>
@@ -8122,25 +8157,26 @@
             </p><ul><li class="fragment">
                 &#x2220; A O B = &#x2220; A' O B'
                 <span class="fragment">
-                    &#x27f9; &#x2221; A O B = &#x2221; B' O A'
+                    &#x27f9; &#x2221; A O B = &#x00b1;&#x2221; B' O A'
                 </span>
             </li><li class="fragment">
-                | A - O | / | B' - O | <span class="fragment">
-                = | B - O | / | A' - O |</span>
+                |A - O| / |B' - O| <span class="fragment">
+                = |B - O| / |A' - O|</span>
                 <ul><li class="fragment">
-                    | A - O | &times; | A' - O | =
-                    | B - O | &times; | B' - O |
-                </li><li class="fragment">
-                    |A - O| &times; (r<sup>2</sup> / |A - O|) =
-                    |B - O| &times; (r<sup>2</sup> / |B - O|)
-                </li><li class="fragment qed">
                     r<sup>2</sup> = r<sup>2</sup>
+                    <span class="fragment">
+                        &#x27f9; |A - O| &times; |A' - O| =
+                        |B - O| &times; |B' - O|
+                    </span>
+                </li><li class="fragment qed">
+                    |A - O| / |B' - O| = |B - O| / |A' - O|
                 </li></ul>
             </li><li class="fragment">
                 &#x25b3;AOB ~ &#x25b3;B'OA'
                 <span class="fragment">
                     &#x27f9; <br />
-                    |A'-B'|/|A-B| = |B'-O|/|A-O| = |A'-O|/|B-O|
+                    |A' - B'| / |A - B| = |B' - O| / |A - O| = <br />
+                    |A' - O| / |B - O|
                 </span>
             </li></ul>
         </section>
@@ -8150,12 +8186,84 @@
                 We can use similar triangles to find the distance
                 between inverted points in terms of original points
             </p><ul><li class="fragment">
-                | A' - B' | / | A - B | = | B' - O | / | A - O |
+                |A' - B'| / |A - B| = |B' - O| / |A - O|
             </li><li class="fragment">
-                | A' - B' | = | A - B | &times; | B' - O | / | A - O |
+                |A' - B'| = |A - B| &times; |B' - O| / |A - O|
             </li><li class="fragment">
-                | A' - B' | = r<sup>2</sup> &times; | A - B | /
-                (| A - O | &times; | B - O|)
+                |A' - B'| = |A - B| &times; r<sup>2</sup> /
+                (|A - O| &times; |B - O|)
+            </li></ul>
+        </section>
+        <section>
+            <h3>Cyclic Quadrilateral</h3>
+            <canvas class="triggy"
+                    data-origin="center" data-circle="on"
+                    data-angle1="1.57079"
+                    data-angle2="3.66519"
+                    data-angle3="5.75958"
+                    data-angle4="2.61799"
+                    data-chords1="red:2,green:3,blue:4"
+                    data-chords2="blue:3,green:4"
+                    data-chords3="red:4"
+                    data-enableAngles="1,2,3,4">
+            </canvas>
+        </section>
+        <section>
+            <h3>Ptolemy's Theorem</h3>
+            <p>
+                Given a cyclic quadrilateral with points A, B, C and D
+                we can create a inversion circle with center D and
+                radius r &gt 0.  Because the circle on which points A,
+                B and C lie goes through the origin, D, the points A',
+                B' and C' lie on a line.
+            </p><p class="fragment">
+                |A' - B'| + |B' - C'| = |A' - C'|
+            </p>
+        </section>
+        <section>
+            <h3>Ptolemy's Theorem</h3>
+            <ul><li>
+                |A' - B'| + |B' - C'| = |A' - C'|
+            </li><li class="fragment">
+                |A - B| &times; r<sup>2</sup> /
+                (|A - D| &times |B - D|) + <br />
+                |B - C| &times; r<sup>2</sup> /
+                (|B - D| &times |C - D|) = <br />
+                |A - C| &times; r<sup>2</sup> /
+                (|A - D| &times |C - D|)
+            </li><li class="fragment qed">
+                |A - B| &times; |C - D| +
+                |B - C| &times; |A - D| = <br />
+                |A - C| &times; |B - D|
+            </li></ul>
+        </section>
+        <section>
+            <h3>Ptolemy's Theorem</h3>
+            <canvas class="triggy"
+                    data-origin="center" data-circle="on"
+                    data-angle1="1.57079"
+                    data-angle2="3.66519"
+                    data-angle3="5.75958"
+                    data-angle4="2.61799"
+                    data-chords1="red:2,green:3,blue:4"
+                    data-chords2="blue:3,green:4"
+                    data-chords3="red:4"
+                    data-enableAngles="1,2,3,4">
+            </canvas>
+        </section>
+        <section>
+            <h3>Pythagoras' Theorem</h3>
+            <p>
+                Suppose our cyclic quadrilateral is a rectangle.
+            </p><ul><li class="fragment">
+                (|A - B| = |C - D|) &and; (|B - C| = |A - D|)
+                &and; <br /> (|A - C| = |B - D|)
+            </li><li class="fragment">
+                |A - B| &times; |A - B| + |B - C| &times; |B - C| =
+                <br />|A - C| &times; |A - C|
+            </li><li class="fragment qed">
+                |A - B|<sup>2</sup> + |B - C|<sup>2</sup> =
+                |A - C|<sup>2</sup>
             </li></ul>
         </section>
     </section>

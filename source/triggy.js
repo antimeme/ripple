@@ -99,7 +99,7 @@
         ctx.font = 5 + 'px sans';
         ctx.fillText(point.label,
                      point.x + ((point.x < 50) ? -4 : +1),
-                     point.y + ((point.y < 50) ? -2 : +4));
+                     point.y + ((point.y < 50) ? -2 : +5));
     };
 
     var features = {
@@ -492,15 +492,16 @@
                 var settings = this.getSettings(config, canvas);
                 if (!settings)
                     return;
-                var current;
                 var adjusted = multivec({
                     x: 100 * (clicked.x - bounds.left) / bounds.size,
                     y: 100 * (clicked.y - bounds.top) / bounds.size
                 });
+                var current = undefined;
                 this.which = undefined;
+
                 settings.points.forEach(function(point, index) {
-                    var dsquared = adjusted.minus(point).quadrance();
-                    if (isNaN(this.which) || (dsquared < current)) {
+                    var dsquared = adjusted.minus(point).normSquared();
+                    if (isNaN(current) || (dsquared < current)) {
                         this.which = index;
                         current = dsquared;
                     }
@@ -510,10 +511,10 @@
             drag: function(canvas, bounds, clicked, config) {
                 // Change the chosen points coordinates and push them
                 // to the canvas data attributes
+                if (isNaN(this.which) || (this.which < 0))
+                    return;
                 var settings = this.getSettings(config, canvas);
-                if (!settings || isNaN(this.which) ||
-                    (this.which < 0) ||
-                    (this.which > settings.points.length))
+                if (!settings || (this.which >= settings.points.length))
                     return;
                 var adjusted = {
                     x: 100 * (clicked.x - bounds.left) / bounds.size,
