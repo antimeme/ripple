@@ -13035,6 +13035,9 @@
             <h2>Lambda Calculus</h2>
             <p>
                 &#x03bb;f.(&#x03bb;a.f (a a)) (&#x03bb;a.f (a a))
+            </p><p>
+                Lambda calculus is a simple, compact and universal
+                model of computation.
             </p>
         </section>
         <section>
@@ -13052,11 +13055,28 @@
             </li></ul>
         </section>
         <section>
-            <h3>Examples</h3>
+            <h3>Currying</h3>
+            <p>
+                Rather than next lambda expressions we extend
+                the syntax with a shortuct.
+            </p><ul><li>
+                &#x03bb;a.&#x03bb;b.a
+            </li><li>
+                &#x03bb;a b.a
+            </li><li>
+                (&#x03bb;a b.a) c
+            </li><li>
+                &#x03bb;b.c
+            </li></ul>
+        </section>
+        <section>
+            <h3>Expression Examples</h3>
             <ul><li class="fragment">
                 a
             </li><li class="fragment">
                 &#x03bb;a.a
+            </li><li class="fragment">
+                &#x03bb;a.&#x03bb;b.a
             </li><li class="fragment">
                 b &#x03bb;a.a
             </li><li class="fragment">
@@ -13089,13 +13109,29 @@
         <section>
             <h3>Reduction: Examples</h3>
             <p>
-                (&#x03bb;a.a x) (&#x03bb;a.a)
+                (&#x03bb;a.a x) (&#x03bb;b.b)
             </p><ul><li class="fragment">
-                (&#x03bb;a.<span class="intro">a x</span>) (&#x03bb;a.a)
+                (&#x03bb;a.<span class="intro">a x</span>) (&#x03bb;b.b)
             </li><li class="fragment">
-                (&#x03bb;a.<span class="intro">a</span>) x
+                (&#x03bb;b.<span class="intro">b</span>) x
             </li><li class="fragment">
                 x
+            </li></ul>
+        </section>
+        <section>
+            <h3>Reduction: Currying</h3>
+            <p>
+                Nested lambda expressions can sometimes be
+                expressed with multiple arguments instead.
+            </p><ul><li class="fragment">
+                &#x03bb;a.&#x03bb;b.b a &#x2251; &#x03bb;a b.b a
+            </li><li class="fragment">
+                (&#x03bb;a b.b a) c d
+                <span class="fragment">
+                    &#x27f9; (&#x03bb;b.b c) d
+                </span><span class="fragment">
+                    &#x27f9; d c
+                </span>
             </li></ul>
         </section>
         <section>
