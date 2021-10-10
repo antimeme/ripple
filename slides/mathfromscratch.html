@@ -13075,7 +13075,7 @@
             </li><li class="fragment">
                 &#x03bb;f.(&#x03bb;a.f (a a)) (&#x03bb;a.f (a a))
                 &#x2251;<br />
-                &#x03bb;g.(&#x03bb;b.g (b b)) (&#x03bb;a.g (b b))
+                &#x03bb;g.(&#x03bb;b.g (b b)) (&#x03bb;b.g (b b))
             </li></ul>
         </section>
         <section>
@@ -13089,7 +13089,7 @@
         <section>
             <h3>Reduction: Examples</h3>
             <p>
-                (&#x03bb;a.a x) (&#x03bb;a.a))
+                (&#x03bb;a.a x) (&#x03bb;a.a)
             </p><ul><li class="fragment">
                 (&#x03bb;a.<span class="intro">a x</span>) (&#x03bb;a.a)
             </li><li class="fragment">
@@ -13112,143 +13112,208 @@
                 A combinator is a function with no free variables.  That
                 is, all variables appear inside abstractions for which
                 they are parameters.
+            </p><p class="fragment">
+                Raymond Smullyan wrote a book about combinatory logic
+                titled
+                <a href="https://en.wikipedia.org/wiki/To_Mock_a_Mockingbird">
+                    To Mock a Mockingbird</a>.
             </p>
         </section>
         <section>
             <h3>Combinator Birds</h3>
-            <ul><li>
+            <ul><li class="fragment">
                 Ibis(Identity): &#x03bb;a.a
-            </li><li>
+            </li><li class="fragment">
                 Mockingbird(Self-Apply): &#x03bb;a.a a
-            </li><li>
+            </li><li class="fragment">
                 Kestral(Const/True): &#x03bb;a b.a
-            </li><li>
+            </li><li class="fragment">
                 Kite(False/Zero): &#x03bb;a b.b
-            </li><li>
+            </li><li class="fragment">
                 Cardinal(Flip/Not): &#x03bb;f a b.f b a
-            </li><li>
+            </li><li class="fragment">
                 Bluebird(Compose):
                 &#x03bb;f g a.f (g a)
-            </li><li>
+            </li><li class="fragment">
                 Thrush(Power): &#x03bb;a f.f a
-            </li><li>
+            </li><li class="fragment">
                 Vireo(Pair): &#x03bb;a b f.f a b
-            </li><li>
+            </li><li class="fragment">
                 Blackbird:
                 &#x03bb;f g a b.f (g a b)
-            </li><li>
+            </li><li class="fragment">
                 Starling: &#x03bb;a b c.a c (b c)
             </li></ul>
         </section>
         <section>
-            <h3>Combinator Data Structures</h3>
-            <ul>
-                <li>
-                    PAIR: &#x03bb;a b f.f a b [Verio]
-                </li><li>
-                    HEAD: &#x03bb;p.p TRUE
-                </li><li>
-                    TAIL: &#x03bb;p.p FALSE
-                </li><li>
-                    NIL: &#x03bb;a.TRUE
-                </li><li>
-                    ISNIL: &#x03bb;p.p &#x03bb;a b.FALSE
-                </li>
-            </ul>
-        </section>
-        <section>
             <h3>Combinator Logic</h3>
-            <ul>
-                <li>
-                    TRUE: &#x03bb;a b.a [Kestral]
-                </li><li>
-                    FALSE: &#x03bb;a b.b [Kite]
-                </li><li>
-                    NOT: &#x03bb;p a b.p b a [Cardinal]
-                </li><li>
-                    AND: &#x03bb;p q.p q p
-                </li><li>
-                    OR: &#x03bb;p q.p p q
-                </li><li>
-                    BOOLEQ: &#x03bb;p q.p q (NOT q)
-                </li>
-            </ul>
+            <ul><li class="fragment">
+                TRUE: &#x03bb;a b.a [Kestral]
+            </li><li class="fragment">
+                FALSE: &#x03bb;a b.b [Kite]
+            </li><li class="fragment">
+                NOT: &#x03bb;p a b.p b a [Cardinal]
+            </li><li class="fragment">
+                AND: &#x03bb;p q.p q p
+            </li><li class="fragment">
+                OR: &#x03bb;p q.p p q
+            </li><li class="fragment">
+                BOOLEQ: &#x03bb;p q.p q (NOT q)
+            </li></ul>
         </section>
         <section id="combinator-stroke">
             <h3>Sheffer Stroke</h3>
-            <ul><li>
+            <ul><li class="fragment">
                 NAND: &#x03bb;p q.p (q FALSE TRUE) TRUE
-            </li><li>
+            </li><li class="fragment">
                 NOT: &#x03bb;p.NAND p p
-            </li><li>
+            </li><li class="fragment">
                 AND: &#x03bb;p q.NOT (NAND p q)
-            </li><li>
+            </li><li class="fragment">
                 OR: &#x03bb;p q.NAND (NOT p) (NOT q)
-            </li><li>
+            </li><li class="fragment">
                 IMPLIES: &#x03bb;p q.NAND p (NOT q)
-            </li><li>
+            </li><li class="fragment">
                 BOOLEQ: &#x03bb;p q.AND (IMPLIES p q) (IMPLIES q p)
             </li></ul>
         </section>
         <section>
+            <h3>Combinator Data Structures</h3>
+            <ul><li class="fragment">
+                PAIR: &#x03bb;a b f.f a b [Verio]
+            </li><li class="fragment">
+                HEAD: &#x03bb;p.p TRUE
+            </li><li class="fragment">
+                TAIL: &#x03bb;p.p FALSE
+            </li><li class="fragment">
+                NIL: &#x03bb;a.TRUE
+            </li><li class="fragment">
+                ISNIL?: &#x03bb;p.p &#x03bb;a b.FALSE
+            </li></ul>
+        </section>
+        <section>
             <h3>Combinator Numbers</h3>
-            <ul><li>
+            <ul><li class="fragment">
                 ZERO: &#x03bb;f a.a [Kite/FALSE]
-            </li><li>
+            </li><li class="fragment">
                 SUCCESSOR: &#x03bb;n f a.f (n f a)
-            </li><li>
+            </li><li class="fragment">
+                ISZERO?: &#x03bb;n.n (&#x03bb;a.FALSE) TRUE
+            </li><li class="fragment">
                 ADD: &#x03bb;m n.n SUCCESSOR m
-            </li><li>
+            </li><li class="fragment">
                 MULTIPLY: &#x03bb;m n f.m (n f) [Bluebird]
-            </li><li>
+            </li><li class="fragment">
                 POWER: &#x03bb;n m.m n [Thrush]
-            </li><li>
-                ISZERO: &#x03bb;n.n (&#x03bb;a.FALSE) TRUE
             </li></ul>
         </section>
         <section>
             <h3>Combinator Subtraction</h3>
-            <ul><li>
-                PHI: &#x03bb;p.PAIR (REST p) (SUCCESSOR (REST p))
-            </li><li>
-                PREDECESSOR: &#x03bb;n.FIRST
+            <ul><li class="fragment">
+                PHI: &#x03bb;p.PAIR (TAIL p) (SUCCESSOR (TAIL p))
+            </li><li class="fragment">
+                PREDECESSOR: &#x03bb;n.HEAD
                 (n PHI (PAIR ZERO ZERO))
-            </li><li>
-                SUBTRACT: &#x03bb;nk.k PREDECESSOR n
-            </li><li>
-                LESSEQ: &#x03bb;nk.ISZERO (SUBTRACT n k)
-            </li><li>
-                EQ: &#x03bb;nk.AND (LESSEQ n k) (LESSEQ k n)
-            </li><li>
-                GREATER: &#x03bb;nk.NOT (LESSEQ n k)
+            </li><li class="fragment">
+                SUBTRACT: &#x03bb;m n.n PREDECESSOR m
+            </li></ul>
+        </section>
+        <section>
+            <h3>Combinator Comparisons</h3>
+            <ul><li class="fragment">
+                LESSEQ?: &#x03bb;n k.ISZERO? (SUBTRACT n k)
+            </li><li class="fragment">
+                GREATEREQ?: &#x03bb;n k.ISZERO? (SUBTRACT k n)
+            </li><li class="fragment">
+                EQ?: &#x03bb;n k.AND (LESSEQ? n k) (LESSEQ? k n)
+            </li><li class="fragment">
+                LESS?: &#x03bb;n k.NOT (GREATEREQ? n k)
+            </li><li class="fragment">
+                GREATER?: &#x03bb;n k.NOT (LESSEQ? n k)
+            </li></ul>
+        </section>
+        <section>
+            <h3>Combinator Recursion</h3>
+            <p>
+                There are no names or recursion in lambda calculus.
+                However, there is a way to achieve the same effect
+                using a combinator:
+            </p><ul><li class="fragment">
+                Y = &#x03bb;f.(&#x03bb;a.f (a a))
+                (&#x03bb;a.f (a a))
+            </li><li class="fragment">
+                Y g
+                <span class="fragment">
+                    = (&#x03bb;a.g (a a))
+                    (&#x03bb;a.g (a a))
+                </span>
+            </li><li class="fragment">
+                Y g = g ((&#x03bb;a.g (a a)) (&#x03bb;a.g (a a)))
+                <span class="fragment">= g (Y g)</span>
+            </li><li class="fragment">
+                Y g = g (Y g)
+                <span class="fragment">
+                    = g (g (Y g))
+                </span><span class="fragment">
+                    = g (g (g (Y g)))
+                </span><span class="fragment">
+                    = ...
+                </span>
+            </li></ul>
+        </section>
+        <section>
+            <h3>Factorial</h3>
+            <p>
+                FACTORIAL: (lambda f n.(ISZERO? n) ONE
+                (MULTIPLY n (f (PREDECESSOR n))))
+            </p><ul><li class="fragment">
+                Y FACTORIAL TWO
+            </li><li class="fragment">
+                MULTIPLY TWO ((Y FACTORIAL) ONE)
+            </li><li class="fragment">
+                MULTIPLY TWO (MUTLIPLY ONE ((Y FACTORIAL) ZERO))
+            </li><li class="fragment">
+                MULTIPLY TWO (MUTLIPLY ONE ONE)
+            </li><li class="fragment">
+                MULTIPLY TWO ONE
+                <span class="fragment">
+                    &#x27f9; TWO
+                </span>
             </li></ul>
         </section>
         <section>
             <h3>Combinator Basis: S and K</h3>
-            <ul><li>
+            <p>
+                All combinators can be constructed from the Starling
+                and Kestral combinators, which makes these two
+                universal.
+            </p><ul><li>
+                Starling (S): &#x03bb;a b c.a c (b c)
+            </li><li>
+                Kestral (K): &#x03bb;a b.a
+            </li></ul>
+        </section>
+        <section>
+            <h3>Combinator Basis: S and K</h3>
+            <ul><li class="fragment">
                 Ibis: I = S K K = S K S
-            </li><li>
+            </li><li class="fragment">
+                Mockingbird: M = (S ((S K) K)) ((S K) K)
+            </li><li class="fragment">
+                Kite: Ki = K ((S K) K)
+            </li><li class="fragment">
+                Cardinal: C = (S ((S (K ((S (K S)) K))) S)) (K K)
+            </li><li class="fragment">
+                Bluebird: B = (S (K S)) K
+            </li><li class="fragment">
+                Thrush: Th = (S (K (S ((S K) K)))) K
+            </li><li class="fragment">
                 Vireo: V = (S (K ((S ((S (K ((S (K S)) K))) S))
                 (K K)))) ((S (K (S ((S K) K)))) K)
-            </li><li>
-                Mockingbird: M = ((S((SK)K))((SK)K))
-            </li><li>
-                Kite: Ki = (K((SK)K))
-            </li><li>
-                Cardinal: C = ((S((S(K((S(KS))K)))S))(KK))
-            </li><li>
-                Bluebird: B = ((S(KS))K)
-            </li><li>
-                Thrush: Th = ((S(K(S((SK)K))))K)
-            </li><li>
-                Vireo: V = (S (K ((S ((S (K ((S (K S)) K))) S))
-                (K K)))) ((S (K (S ((S K) K)))) K)
-            </li><li>
-                Blackbird: Bl = ((S(K((S(KS))K)))((S(KS))K))
-            </li><li>
-                Kestral: K
-            </li><li>
-                Starling: S
+            </li><li class="fragment">
+                Blackbird: Bl = (S (K ((S (K S)) K))) ((S (K S)) K)
+            </li><li class="fragment">
+                Y = S (K (S I I)) (S (S (K S) K) (K (S I I)))
             </li></ul>
         </section>
         <section>
@@ -13263,17 +13328,6 @@
                 Th = C I
             </li><li>
                 V = B C Th = B C (C I)
-            </li></ul>
-        </section>
-        <section>
-            <h3>Y Combinator</h3>
-            <ul><li>
-                Y = &#x03bb;f.(&#x03bb;a.f (a a))
-                (&#x03bb;a.f (a a))
-            </li><li>
-                Y g = g (Y g) = g (g (Y g)) = ...
-            </li><li>
-                Y = S (K (S I I)) (S (S (K S) K) (K (S I I)))
             </li></ul>
         </section>
     </section></div></div>
