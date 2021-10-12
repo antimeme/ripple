@@ -6,8 +6,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <style>
  input[type=range] { width: 8%; }
- #steps    { text-align: right; width: 8%; }
- #size     { text-align: right; width: 8%; }
+ #steps    { text-align: right; width: 6%; }
+ #size     { text-align: right; width: 6%; }
+ #maxsize  { text-align: right; width: 6%; }
  #previous { text-align: right; width: 50%; }
  #canonical { display: none; }
  .blue { color: blue; }
@@ -22,6 +23,7 @@ Delay:
 <input id="delay" type="range" min="5" value="50" max="1000" />
 Steps: <input id="steps" type="text" disabled="disabled" />
 Size: <input id="size" type="text" disabled="disabled" />
+Max Size: <input id="maxsize" type="text" disabled="disabled" />
 <br />
 <button id="clear">Clear</button>
 <button id="restore">Restore</button>
@@ -404,6 +406,7 @@ Size: <input id="size" type="text" disabled="disabled" />
  var delay      = document.getElementById("delay");
  var previous   = document.getElementById("previous");
  var sizes      = document.getElementById("size");
+ var maxsize    = document.getElementById("maxsize");
  var steps      = document.getElementById("steps");
  var stepCount = 0;
  var repeating = false;
@@ -424,17 +427,26 @@ Size: <input id="size" type="text" disabled="disabled" />
      return result;
  };
 
+ var setSize = function(value) {
+     size.value = value.length;
+     if (isNaN(maxsize.value) ||
+         (parseInt(size.value) > parseInt(maxsize.value)))
+         maxsize.value = size.value;
+ };
+
  var continuousReduce = function() {
      var expr = getExpression();
      if (!expr)
          return;
      expr = expr.reduce();
 
+
      if (!expr.normal) {
-         expression.value = expr.toString();
-         size.value = expression.value.length;
          stepCount += 1;
          steps.value = stepCount;
+
+         expression.value = expr.toString();
+         setSize(expression.value);
          if (repeating)
              setTimeout(continuousReduce, delay.value);
      }
@@ -462,6 +474,7 @@ Size: <input id="size" type="text" disabled="disabled" />
      steps.value = stepCount = 0;
      lexprs.value = "";
      size.value = "";
+     maxsize.value = "";
      vdisplay.value = "";
  });
 
@@ -473,12 +486,13 @@ Size: <input id="size" type="text" disabled="disabled" />
      if (!previous.value)
          previous.value = expression.value;
      expr = expr.reduce();
-     expression.value = expr.toString();
-     size.value = expression.value.length;
      if (!expr.normal) {
          stepCount += 1;
          steps.value = stepCount;
      }
+
+     expression.value = expr.toString();
+     setSize(expression.value);
      repeating = false;
  });
 
