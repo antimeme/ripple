@@ -115,8 +115,6 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
 </li><li>
     Mockingbird: <code>λm.m m</code>
 </li><li>
-    Starling: <code>λa b c.a c (b c)</code>
-</li><li>
     Kestrel: <code>λa b.a</code>
 </li><li>
     Kite: <code>λa b.b</code>
@@ -128,6 +126,8 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
     Thrush: <code>λa b.b a</code>
 </li><li>
     Virio: <code>λa b f.f a b</code>
+</li><li>
+    Starling: <code>λa b c.a c (b c)</code>
 </li></ul>
 
 <h2><a name="computation">Computation</a></h2>
@@ -438,8 +438,8 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
      var expr = getExpression();
      if (!expr)
          return;
-     expr = expr.reduce();
-
+     try { expr = expr.reduce(); }
+     catch (ex) { alert(ex); return; }
 
      if (!expr.normal) {
          stepCount += 1;
@@ -485,7 +485,8 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
 
      if (!previous.value)
          previous.value = expression.value;
-     expr = expr.reduce();
+     try { expr = expr.reduce(); }
+     catch (ex) { alert(ex); }
      if (!expr.normal) {
          stepCount += 1;
          steps.value = stepCount;
@@ -532,7 +533,7 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
      var expr = getExpression();
      if (!expr)
          return;
-     vdisplay.value = Object.keys(expr.getVariables()).join(' ');
+     vdisplay.value = Object.keys(expr.free).join(' ');
  });
 
  canonical.addEventListener("click", function(event) {

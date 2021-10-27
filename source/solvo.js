@@ -23,7 +23,6 @@
 //     http://www.cs.yale.edu/homes/hudak/CS201S08/lambda.pdf
 //     https://en.wikipedia.org/wiki/Lambda_calculus
 //
-// :TODO: mixing bound and free variables should report an error
 // :TODO: allow use of internal library on command line
 (function(solvo) {
     "use strict";
@@ -202,18 +201,20 @@
             // an expression from it.
             var result;
 
-            if (lambda.isPrototypeOf(value)) { // shallow copy
+            if (typeof(value) === "string") {
+                result = this.__parse(this.__tokenize(value));
+            } else if (lambda.isPrototypeOf(value)) { // shallow copy
                 result = Object.create(this);
                 result.parent    = value.parent;
                 result.variables = value.variables.slice();
                 result.values    = value.values.slice();
+                result.free      = Object.assign(value.free);
                 result.normal    = value.normal;
-            } else if (typeof(value) === "string") {
-                result = this.__parse(this.__tokenize(value));
             } else {
                 result = Object.create(this);
                 result.variables = [];
                 result.values    = [];
+                result.free      = {};
                 result.normal    = false;
             }
             result.__canonical = false;
@@ -308,7 +309,25 @@
                                "\": " + tokens.join(' '));
                     abstraction[token] = true;
                     current.variables.push(token);
-                } else current.values.push(token);
+                } else {
+                    current.values.push(token);
+                    if (!current.variables.some(function(v) {
+                        return v === token; })) {
+                        // A variable is free if it does not appear in
+                        // the variables list for an expressions.
+                        // Once an expression on the stack binds the
+                        // variable it can't be free any more.
+                        var bound = false;
+                        current.free[token] = true;
+                        stack.slice().reverse().forEach(
+                            function(entry) {
+                                if (bound) return;
+                                if (!entry.variables.some(function(v) {
+                                    return v === token; }))
+                                    entry.free[token] = true;
+                                else bound = true; });
+                    }
+                }
             }, this);
             if (depth > 0)
                 throw ("Missing terminating parenthesis: " +
@@ -365,35 +384,101 @@
                               (value === bb.values[index]); });
         },
 
-        getVariables: function() {
-            // Collects all free and bound variables in this expression.
-            // Bound variables are those that are given a value by
-            // application (they map to "false" here).  Free variables
-            // are those that cannot be reduced (they map to "true").
-            var result = {};
-            this.variables.forEach(function(variable) {
-                result[variable] = false; // bound
-            }, this);
-            this.values.forEach(function(value) {
-                if (lambda.isPrototypeOf(value)) {
-                    var subresult = value.getVariables();
-                    Object.keys(subresult).forEach(function(key) {
-                        if (subresult[key] && !(key in result))
-                            result[key] = true;
-                    });
-                } else if ((typeof(value) === "string") &&
-                           !(value in result))
-                    result[value] = true; // free
-            }, this);
+        __pickCandidates: undefined, // Cached data for __pickUnique
+
+        __pickUnique: function(exclude) {
+            // Return a variable name which is not a key in used
+            var result = "";
+            var candidates = this.__pickCandidates;
+            var initCandidates = function() {
+                if (!candidates) {
+                    candidates = [];
+                    for (var ii = 0; ii < 26; ++ii)
+                        candidates.push(
+                            String.fromCharCode(0x61 + ii));
+                }
+                return candidates;
+            };
+            this.__pickCandidates = initCandidates();
+
+            var increment = function(components, candidates) {
+                // Advance an array of components, propagating backwards
+                // as necessary to ensure unique values.
+                var current = components.pop();
+                current += 1;
+
+                if (current >= candidates.length) {
+                    current = 0;
+                    if (components.length > 0)
+                        increment(components, candidates);
+                    else components.push(0);
+                }
+                components.push(current);
+                return components;
+            };
+
+            var components = [-1];
+            do {
+                increment(components, candidates);
+                result = components.reduce(function(value, current) {
+                    return value + candidates[current];
+                }, "");
+            } while (result in exclude);
+            return result;
+        },
+
+        __rename: function(variable, exclude) {
+            // Makes use of the equivalence of lambda expressions which
+            // differ only in the name of bound variables to correct
+            // problems caused by free variables that match bound
+            // variables and change the meaning of expressions.
+            var replacement;
+            var extra = {};
+            this.variables.forEach(function(current) {
+                extra[current] = true; });
+            exclude = Object.assign(exclude, extra);
+            exclude = Object.assign(exclude, this.free);
+            replacement = lambda.__pickUnique(exclude);
+
+            var replace = function(expression) {
+                if (lambda.isPrototypeOf(expression)) {
+                    if (!expression.variables.some(v => v === variable))
+                        expression.values =
+                            expression.values.map(replace);
+                } else if (expression === variable)
+                    expression = replacement;
+                return expression;
+            };
+
+            this.values = this.values.map(replace);
+            this.variables = this.variables.map(function(current) {
+                return (current == variable) ?
+                       replacement : current; });
+            return this;
+        },
+
+        __getFreeVariables: function(value) {
+            var result;
+            if (!lambda.isPrototypeOf(value)) {
+                result = {};
+                result[value] = true;
+            } else result = value.free;
             return result;
         },
 
         __replace: function(variable, replacement) {
             // Replace a variable with some value except in cases
             // where some lambda argument shadows the variable
-            var result = this;
+            var result   = this;
             var replaced = false;
-            var values = [];
+            var values   = [];
+            var free = this.__getFreeVariables(replacement);
+
+            // Free variables in the replacment must not match
+            // bound variables or the results may be wrong
+            this.variables.forEach(function(variable) {
+                if (variable in free)
+                    this.__rename(variable, free); }, this);
 
             // Accumulate replacement values recursively
             this.values.forEach(function(value) {
@@ -410,7 +495,7 @@
                     replaced = true;
             });
 
-            // Return the same instance if no changes were made
+            // Return the same instance unless changes were made
             if (replaced) {
                 result = lambda.create(this);
                 result.values = values;
@@ -624,37 +709,10 @@
                 else if (expected && !expected.equals(expression))
                     console.error("ERROR: expected",
                                   expected.toString());
-                else console.log("Success:", expression.getVariables());
+                else console.log("Success:", expression.free);
                 console.log();
             });
         },
-        tests: [
-            {test: "(lambda a.a) (lambda b.b)", expected: "lambda b.b",
-             description: [
-                 "Check a simple reduction."]},
-            {test: "(lambda a.a a) (lambda b.b) 12", expected: "12",
-             description: [
-                 "Check a more complex reduction."]},
-            {test: "(lambda a.a a) (lambda a.a a)", forever: true,
-             description: [
-                 "Check that infinite loops keep looping."]},
-            {test: "(lambda a.b) ((lambda a.a a) (lambda a.a a))",
-             expected: "b",
-             description: [
-                 "Check that normal order evaluation works."]},
-            {test: "(lambda a.(lambda a.a) a) b", expected: "b",
-             description: "Check that variables get shadowed."},
-            {test: "(lambda a.a) (lambda b.b)", expected: "lambda c.c",
-             description: [
-                 "Check that variable names don't matter."]},
-            {test: "(lambda a.lambda b.a) b", expected: "lambda a.b",
-             description: [
-                 "Tricks a naive implementation into producing the ",
-                 "mockingbird.  The free variable b is not the same ",
-                 "as the bound variable of the same name and should ",
-                 "either cause an exception dynamic renaming of the ",
-                 "bound variable."]}
-        ],
 
         combinators: {
             I: { name: "Identity",
@@ -674,6 +732,28 @@
                  value: "lambda f.(lambda a.f (a a)) " +
                         "(lambda a.f (a a))" },
         },
+
+        tests: [
+            {test: "(lambda a.a) (lambda b.b)", expected: "lambda b.b",
+             description: ["Check a simple reduction."]},
+            {test: "(lambda a.a a) (lambda b.b) 12", expected: "12",
+             description: ["Check a more complex reduction."]},
+            {test: "(lambda a.a a) (lambda a.a a)", forever: true,
+             description: ["Check that infinite loops keep looping."]},
+            {test: "(lambda a.b) ((lambda a.a a) (lambda a.a a))",
+             expected: "b", description: [
+                 "Check that normal order evaluation works."]},
+            {test: "(lambda a.(lambda a.a) a) b", expected: "b",
+             description: "Check that variables get shadowed."},
+            {test: "(lambda a.a) (lambda b.b)", expected: "lambda c.c",
+             description: ["Check that variable names don't matter."]},
+            {test: "(lambda a.lambda b.a) b", expected: "lambda a.b",
+             description: [
+                 "Tricks a naive implementation into producing the ",
+                 "identity.  The free variable b is not the same ",
+                 "as the bound variable of the same name and should ",
+                 "either cause an exception or dynamic renaming of ",
+                 "the bound variable."]} ],
     };
 
     lambda.defaultLibrary = {
