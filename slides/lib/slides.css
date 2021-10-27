@@ -1,0 +1,29 @@
+/* Settings for slides */
+canvas.triggy { width: 100%; height: 100%; }
+.intro { color: blue; } /* Terms introduced in current slide */
+.true { color: green; }
+.false { color: red; }
+.qed { background-color: #99ee99; } /* Proof results */
+.expression { color: #7777dd; }
+del { color: darkred; }
+em { color: #448899; }
+ul.symbolic { list-style-type: none; }
+.left { float: left; }
+.right { float: right; }
+th.vertical { vertical-align: top; }
+table.cayley th { color: blue; }
+table.large { font-size: 80%; }
+table.xlarge { font-size: 60%; }
+td.signflip { color: blue; }
+td.moveflip { color: purple; }
+td.moveonly { color: green; }
+.redsuit { color: red; }
+table.matrix { display: inline-block; }
+table.matrix td { border: none; }
+table.matrix td:first-child { border-left: 2px solid black; }
+table.matrix td:last-child  { border-right: 2px solid black; }
+table.wedge3d {
+    white-space: nowrap;
+    font-size: 70%;
+    margin-left: -8em;
+}
