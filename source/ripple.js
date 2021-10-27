@@ -54,8 +54,8 @@
         var result = ripple.param(name, config);
         if (typeof(result) === "string")
             result = result.toLowerCase();
-        return (["false", "f", "no", "n",
-                "off", "disable", "disabled", 0].some
+        return (["true", "t", "yes", "y",
+                 "on", "enable", "enabled", 0].some
             (function(value) { return value === result; }));
     };
 
@@ -262,7 +262,8 @@
         var target = element ? element : event.target;
         var brect = target.getBoundingClientRect();
         var transform = function(id, x, y) {
-            var result = {id: id, x: x - brect.left, y: y - brect.top };
+            var result = {
+                id: id, x: x - brect.left, y: y - brect.top };
             return scalefn ? scalefn(result) : result;
         };
         var ii;
