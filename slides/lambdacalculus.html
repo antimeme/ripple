@@ -77,16 +77,18 @@
                 FV[a] &#x225d; {a}
             </li><li class="fragment">
                 FV[&#x03bb;a.<span class="expression">E</span>] &#x225d;
-                FV(<span class="expression">E</span>) - {a}
+                FV[<span class="expression">E</span>] - {a}
             </li><li class="fragment">
                 FV[<span class="expression">E</span>
                 <span class="expression">F</span>] &#x225d;
-                FV(<span class="expression">E</span>) &cup;
-                FV(<span class="expression">F</span>)
+                FV[<span class="expression">E</span>] &cup;
+                FV[<span class="expression">F</span>]
             </li><li class="fragment">
                 FV[(<span class="expression">E</span>)] &#x225d;
-                FV(<span class="expression">E</span>)
-            </li></ul>
+                FV[<span class="expression">E</span>]
+            </li></ul><p class="fragment">
+                These rules cover all possible expressions.
+            </p>
         </section>
         <section>
             <h3>Free Variables: Examples</h3>
@@ -145,10 +147,10 @@
                 <span class="expression">E</span>
                 <span class="expression">F</span>
                 [a := <span class="expression">G</span>] &#x225d;
-                (<span class="expression">E</span>
-                [a := <span class="expression">G</span>)
-                (<span class="expression">F</span>
-                [a := <span class="expression">G</span>])
+                <span class="expression">E</span>
+                [a := <span class="expression">G</span>]
+                <span class="expression">F</span>
+                [a := <span class="expression">G</span>]
             </li><li class="fragment">
                 (<span class="expression">E</span>)
                 [a := <span class="expression">G</span>] &#x225d;
@@ -211,8 +213,8 @@
         <section>
             <h3>Reduction: Free Variables</h3>
             <p>
-                When free variables in the abstraction match bound
-                variables in the application we must change variables.
+                Free variables in the application must not match any
+                bound variables in the abstraction.
             </p><p class="fragment">
                 (&#x03bb;a.&#x03bb;b.a) b
                 <span class="fragment false">
@@ -283,12 +285,21 @@
                 reduction first when more than one are available.
             </p><ul><li class="fragment">
                 (&#x03bb;a.a a) ((&#x03bb;b.b) c)
+                <span class="fragment">
+                    &#x27f9; a a [a := ((&#x03bb;b.b) c)]
+                </span>
             </li><li class="fragment">
                 ((&#x03bb;b.b) c) ((&#x03bb;b.b) c)
+                <span class="fragment">
+                    &#x27f9; b [b := c] ((&#x03bb;b.b) c)]
+                </span>
             </li><li class="fragment">
                 c ((&#x03bb;b.b) c)
-                <span class="fragment">&#x27f9; c c</span>
-                <span class="fragment">&#10003;</span>
+                <span class="fragment">
+                    &#x27f9; c b [b := c]
+                </span><span class="fragment">
+                    &#x27f9; c c
+                </span><span class="fragment">&#10003;</span>
             </li></ul><p class="fragment">
                 Any expression with a normal form is guaranteed to
                 eventually reach it with normal order evaluation.
@@ -302,9 +313,16 @@
                 solves this problem.
             </p><ul><li class="fragment">
                 (&#x03bb;a.a a) ((&#x03bb;b.b) c)
+                <span class="fragment">
+                    &#x27f9; (&#x03bb;a.a a) b [b := c]
+                </span>
             </li><li class="fragment">
-                (&#x03bb;a.a a) c <span class="fragment">&#x27f9;
-                c c <span class="fragment">&#10003;</span>
+                (&#x03bb;a.a a) c
+                <span class="fragment">
+                    &#x27f9; a a [a := c]
+                </span><span class="fragment">
+                    &#x27f9; c c
+                </span><span class="fragment">&#10003;</span>
             </li></ul><p class="fragment">
                 But sometimes eager evaluation fails...
             </p>
@@ -334,7 +352,9 @@
                 </li><li class="fragment">
                     ...
                 </li></ul>
-            </td></tr></table>
+            </td></tr></table><p class="fragment">
+                Stable or efficient -- pick one!
+            </p>
         </section>
         <section>
             <h3>Reduction: Lazy Order</h3>
@@ -343,6 +363,9 @@
                 of expressions so they're evaluated only once.
             </p><ul><li class="fragment">
                 (&#x03bb;a.a a) ((&#x03bb;b.b) c)
+                <span class="fragment">
+                    &#x27f9; a a [a := ((&#x03bb;b.b) c)]
+                </span>
             </li><li class="fragment">
                 ((&#x03bb;b.b) c) ((&#x03bb;b.b) c)
                 <span class="fragment">&#x27f9; c c</span>
@@ -403,7 +426,7 @@
                 supposed to be universal?  There's no boolean logic,
                 no numbers, no data structures and no recusion.
             </p><p>
-                We can construct all of these things using combinatos.
+                We can construct all of these things using combinators.
             </p>
         </section>
         <section>
@@ -417,7 +440,7 @@
             </p>
         </section>
         <section>
-            <h3>Combinator Birds</h3>
+            <h3>Meet the Combinator Birds</h3>
             <ul><li class="fragment">
                 Ibis (Identity): &#x03bb;a.a
             </li><li class="fragment">
@@ -441,79 +464,404 @@
             </li><li class="fragment">
                 Starling: &#x03bb;a b c.a c (b c)
             </li></ul>
-        </section>
-        <section>
-            <h3>Combinator Logic</h3>
+        </section><section>
+            <h3>Combinator Booleans</h3>
+            <p>
+                One thing we might want to compute is boolean logic.
+                Everything must evaluate to true or false.  How could
+                we represent these in lambda calculus?
+            </p>
             <ul><li class="fragment">
-                TRUE: &#x03bb;a b.a [Kestral]
+                <span class="true">TRUE</span>: &#x03bb;a b.a [Kestral]
             </li><li class="fragment">
-                FALSE: &#x03bb;a b.b [Kite]
-            </li><li class="fragment">
+                <span class="false">FALSE</span>: &#x03bb;a b.b [Kite]
+            </li></ul><p class="fragment">
+                Consider: &#x03bb;p.p (&#x03bb;a.a)
+                ((&#x03bb;a.a a) &#x03bb;a.a a)
+            </p>
+        </section><section>
+            <h3>Combinator NOT</h3>
+            <p>
                 NOT: &#x03bb;p a b.p b a [Cardinal]
+            </p><table><tr><td><ul><li class="fragment">
+                NOT TRUE
             </li><li class="fragment">
+                &#x03bb;a b.TRUE b a
+            </li><li class="fragment">
+                &#x03bb;a b.b
+                <span class="fragment">&#x27f9; FALSE</span>
+            </li></ul></td><td><ul><li class="fragment">
+                NOT FALSE
+            </li><li class="fragment">
+                &#x03bb;a b.FALSE b a
+            </li><li class="fragment">
+                &#x03bb;a b.a
+                <span class="fragment">&#x27f9; TRUE</span>
+            </li></ul></td></tr></table>
+        </section><section>
+            <h3>Combinator AND</h3>
+            <p>
                 AND: &#x03bb;p q.p q p
+            </p><table><tr><td><ul><li class="fragment">
+                AND TRUE TRUE
             </li><li class="fragment">
+                TRUE TRUE TRUE
+            </li><li class="fragment">
+                TRUE
+            </li></ul></td><td><ul><li class="fragment">
+                AND TRUE FALSE
+            </li><li class="fragment">
+                TRUE FALSE TRUE
+            </li><li class="fragment">
+                FALSE
+            </li></ul></td></tr><tr><td><ul><li class="fragment">
+                AND FALSE TRUE
+            </li><li class="fragment">
+                FALSE TRUE FALSE
+            </li><li class="fragment">
+                FALSE
+            </li></ul></td><td><ul><li class="fragment">
+                AND FALSE FALSE
+            </li><li class="fragment">
+                FALSE FALSE FALSE
+            </li><li class="fragment">
+                FALSE
+            </li></ul></td></tr></table>
+        </section><section>
+            <h3>Combinator OR</h3>
+            <p>
                 OR: &#x03bb;p q.p p q
+            </p><table><tr><td><ul><li class="fragment">
+                OR TRUE TRUE
             </li><li class="fragment">
-                BOOLEQ: &#x03bb;p q.p q (NOT q)
+                TRUE TRUE TRUE
+            </li><li class="fragment">
+                TRUE
+            </li></ul></td><td><ul><li class="fragment">
+                OR TRUE FALSE
+            </li><li class="fragment">
+                TRUE TRUE FALSE
+            </li><li class="fragment">
+                TRUE
+            </li></ul></td></tr><tr><td><ul><li class="fragment">
+                OR FALSE TRUE
+            </li><li class="fragment">
+                FALSE FALSE TRUE
+            </li><li class="fragment">
+                TRUE
+            </li></ul></td><td><ul><li class="fragment">
+                OR FALSE FALSE
+            </li><li class="fragment">
+                FALSE FALSE FALSE
+            </li><li class="fragment">
+                FALSE
+            </li></ul></td></tr></table>
+        </section><section>
+            <h3>Combinator Booleans</h3>
+            <p>
+                BOOLEQ?: &#x03bb;p q.p q (NOT q)
+            </p><table class="large"><tr><td><ul><li class="fragment">
+                BOOLEQ? TRUE TRUE
+            </li><li class="fragment">
+                TRUE TRUE (NOT TRUE)
+            </li><li class="fragment">
+                TRUE
+            </li></ul></td><td><ul><li class="fragment">
+                BOOLEQ? TRUE FALSE
+            </li><li class="fragment">
+                TRUE FALSE (NOT FALSE)
+            </li><li class="fragment">
+                FALSE
+            </li></ul></td></tr><tr><td><ul><li class="fragment">
+                BOOLEQ? FALSE TRUE
+            </li><li class="fragment">
+                FALSE TRUE (NOT TRUE)
+            </li><li class="fragment">
+                NOT TRUE
+            </li><li class="fragment">
+                FALSE
+            </li></ul></td><td><ul><li class="fragment">
+                BOOLEQ? FALSE FALSE
+            </li><li class="fragment">
+                FALSE FALSE (NOT FALSE)
+            </li><li class="fragment">
+                NOT FALSE
+            </li><li class="fragment">
+                TRUE
+            </li></ul></td></tr></table>
+        </section><section>
+            <h3>Combinator Booleans</h3>
+            <ul><li>
+                TRUE: &#x03bb;a b.a [Kestral]
+            </li><li>
+                FALSE: &#x03bb;a b.b [Kite]
+            </li><li>
+                NOT: &#x03bb;p a b.p b a [Cardinal]
+            </li><li>
+                AND: &#x03bb;p q.p q p
+            </li><li>
+                OR: &#x03bb;p q.p p q
+            </li><li>
+                BOOLEQ?: &#x03bb;p q.p q (NOT q)
             </li></ul>
-        </section>
-        <section>
-            <h3>Combinator Data Structures</h3>
+        </section><section>
+            <h3>Combinator Numbers</h3>
+            <p>
+                Church Numerals represent numbers by repeatedly
+                applying a first argument a second.
+            </p><ul><li class="fragment">
+                ONE: &#x03bb;f a.f a
+            </li><li class="fragment">
+                TWO: &#x03bb;f a.f (f a)
+            </li><li class="fragment">
+                THREE: &#x03bb;f a.f (f (f a))
+            </li><li class="fragment">
+                ...
+            </li></ul>
+        </section><section>
+            <h3>Combinator Successor</h3>
+            <p>
+                Natural numbers include zero and its successors.
+            </p><p class="fragment">
+                ZERO: &#x03bb;f a.a
+                <span class="fragment">[Kite/FALSE]</span>
+            </p><p class="fragment">
+                SUCCESSOR: &#x03bb;n f a.f (n f a)
+            </p><ul><li class="fragment">
+                SUCCESSOR ZERO
+            </li><li class="fragment">
+                &#x03bb;f a.f (ZERO f a)
+            </li><li class="fragment">
+                &#x03bb;f a.f a <span class="fragment">[ONE]</span>
+            </li></ul>
+        </section><section>
+            <h3>Combinator Addition</h3>
+            <p>
+                Take the successor n times to add:
+            </p><p>
+                ADD: &#x03bb;m n.n SUCCESSOR m
+            </p><ul><li class="fragment">
+                ADD THREE TWO
+            </li><li class="fragment">
+                TWO SUCCESSOR THREE
+            </li><li class="fragment">
+                SUCCESSOR (SUCCESSOR THREE)
+            </li><li class="fragment">
+                SUCCESSOR FOUR
+            </li><li class="fragment">
+                FIVE
+            </li></ul>
+        </section><section>
+            <h3>Combinator Multiplication</h3>
+            <p>
+                Compose numbers to multiply:
+            </p><p>
+                MULTIPLY: &#x03bb;m n f.m (n f) [Bluebird]
+            </p><ul><li class="fragment">
+                MULTIPLY THREE TWO
+            </li><li class="fragment">
+                &#x03bb;f.THREE (TWO f)
+            </li><li class="fragment">
+                &#x03bb;f.THREE ((&#x03bb;f a.f (f a)) f)
+            </li><li class="fragment">
+                &#x03bb;f.THREE (&#x03bb;a.f (f a))
+            </li><li class="fragment">
+                &#x03bb;f.&#x03bb;a.f (f (f (f (f (f a)))))
+            </li><li class="fragment">
+                &#x03bb;f a.f (f (f (f (f (f a)))))
+                <span class="fragment">[SIX]</span>
+            </li></ul>
+        </section><section>
+            <h3>Combinator Exponentiation</h3>
+            <p>
+                Raise one number to the power of another:
+            </p><p>
+                POWER: &#x03bb;n m.m n [Thrush]
+            </p><ul><li class="fragment">
+                POWER THREE TWO
+            </li><li class="fragment">
+                TWO THREE
+            </li><li class="fragment">
+                (&#x03bb;f a.f (f a)) &#x03bb;f a.f (f (f a))
+            </li><li class="fragment">
+                ...
+            </li><li class="fragment">
+                &#x03bb;f a.f (f (f (f (f (f (f (f (f a))
+                <span class="fragment">[NINE]</span>
+            </li></ul>
+        </section><section>
+            <h3>Combinator Numbers</h3>
+            <ul><li>
+                ZERO: &#x03bb;f a.a [Kite/FALSE]
+            </li><li>
+                SUCCESSOR: &#x03bb;n f a.f (n f a)
+            </li><li>
+                ADD: &#x03bb;m n.n SUCCESSOR m
+            </li><li>
+                MULTIPLY: &#x03bb;m n f.m (n f) [Bluebird]
+            </li><li>
+                POWER: &#x03bb;n m.m n [Thrush]
+            </li></ul>
+        </section><section>
+            <h3>Combinator Inverses</h3>
+            <p>
+                Can we subtract and divide?
+                <span class="fragment">Yes, but...</span>
+            </p><p class="fragment">
+                SUBTRACT: &#x03bb;m n.n PREDECESSOR m
+            </p><p class="fragment">
+                PREDECESSOR: &#x03bb;n f a.n (&#x03bb;g h.h (g f))
+                (&#x03bb;c.a) (&#x03bb;b.b)
+            </p><p class="fragment">
+                DIVIDE: &#x03bb;n.((&#x03bb;f.(&#x03bb;x.x x)
+                (&#x03bb;x.f (x x)))
+                (&#x03bb;c n m f x.
+                (&#x03bb;d.(&#x03bb;n.n
+                (&#x03bb;x a b.b)
+                (&#x03bb;a b.a)) d
+                ((&#x03bb;f x) f x) (f (c d m f x)))
+                ((&#x03bb;m n.n
+                (&#x03bb;n f x.n
+                (&#x03bb;g h.h (g f)) (&#x03bb;u.x)
+                (&#x03bb;u.u)) m) n m)))
+                ((&#x03bb;n f x.f (n f x)) n)
+            </p>
+        </section><section>
+            <h3>Combinator Zero Test</h3>
+            <p>
+                We can ask questions about numbers:
+            </p><p>
+                IS-ZERO?: &#x03bb;n.n (&#x03bb;a.FALSE) TRUE
+            </p><table class="large"><tr><td><ul><li class="fragment">
+                IS-ZERO? ZERO
+            </li><li class="fragment">
+                ZERO (&#x03bb;a.FALSE) TRUE
+            </li><li class="fragment">
+                TRUE
+            </li></ul></td><td><ul><li class="fragment">
+                IS-ZERO? ONE
+            </li><li class="fragment">
+                ONE (&#x03bb;a.FALSE) TRUE
+            </li><li class="fragment">
+                FALSE
+            </li></ul></td></tr></table><p class="fragment">
+                Exercise: create an expression for "IS-EVEN?"
+            </p>
+        </section><section>
+            <h3>Combinator Comparisons</h3>
             <ul><li class="fragment">
+                LESSEQ?: &#x03bb;n m.IS-ZERO? (SUBTRACT n m)
+            </li><li class="fragment">
+                GREATEREQ?: &#x03bb;n m.IS-ZERO? (SUBTRACT m n)
+            </li><li class="fragment">
+                EQUAL?: &#x03bb;n m.AND (LESSEQ? n m) (LESSEQ? m n)
+            </li><li class="fragment">
+                LESS?: &#x03bb;n m.NOT (GREATEREQ? n m)
+            </li><li class="fragment">
+                GREATER?: &#x03bb;n m.NOT (LESSEQ? n m)
+            </li></ul>
+        </section><section>
+            <h3>Combinator Ordered Pairs</h3>
+            <p>
+                We can take advantage of closure to store values.
+            </p><ul><li class="fragment">
                 PAIR: &#x03bb;a b f.f a b [Verio]
             </li><li class="fragment">
                 HEAD: &#x03bb;p.p TRUE
             </li><li class="fragment">
                 TAIL: &#x03bb;p.p FALSE
+            </li></ul><p class="fragment">
+                This will serve as a foundation for data structures.
+            </p>
+        </section><section>
+            <h3>Combinator Ordered Pairs</h3>
+            <table class="xlarge"><tr><td><ul><li class="fragment">
+                HEAD (PAIR TWO THREE)
             </li><li class="fragment">
+                HEAD (&#x03bb;f.f TWO THREE)
+            </li><li class="fragment">
+                (&#x03bb;p.p TRUE) (&#x03bb;f.f TWO THREE)
+            </li><li class="fragment">
+                (&#x03bb;f.f TWO THREE) TRUE
+            </li><li class="fragment">
+                TRUE TWO THREE
+                <span class="fragment">&#x27f9; TWO</span>
+            </li></ul></td><td><ul><li class="fragment">
+                TAIL (PAIR TWO THREE)
+            </li><li class="fragment">
+                TAIL (&#x03bb;f.f TWO THREE)
+            </li><li class="fragment">
+                (&#x03bb;p.p FALSE) (&#x03bb;f.f TWO THREE)
+            </li><li class="fragment">
+                (&#x03bb;f.f TWO THREE) FALSE
+            </li><li class="fragment">
+                FALSE TWO THREE
+                <span class="fragment">&#x27f9; THREE</span>
+            </li></ul></td></tr></table>
+        </section><section>
+            <h3>Combinator Lists</h3>
+            <p>
+                Chaining ordered pairs together to make lists requires
+                a way to find the end.
+            </p><ul><li class="fragment">
                 NIL: &#x03bb;a.TRUE
             </li><li class="fragment">
                 ISNIL?: &#x03bb;p.p &#x03bb;a b.FALSE
             </li></ul>
-        </section>
-        <section>
-            <h3>Combinator Numbers</h3>
-            <ul><li class="fragment">
-                ZERO: &#x03bb;f a.a [Kite/FALSE]
+        </section><section>
+            <h3>Combinator Lists</h3>
+            <p>
+                ISNIL? NIL
+            </p><ul><li class="fragment">
+                (&#x03bb;p.p &#x03bb;a b.FALSE) &#x03bb;a.TRUE
             </li><li class="fragment">
-                SUCCESSOR: &#x03bb;n f a.f (n f a)
-            </li><li class="fragment">
-                ISZERO?: &#x03bb;n.n (&#x03bb;a.FALSE) TRUE
-            </li><li class="fragment">
-                ADD: &#x03bb;m n.n SUCCESSOR m
-            </li><li class="fragment">
-                MULTIPLY: &#x03bb;m n f.m (n f) [Bluebird]
-            </li><li class="fragment">
-                POWER: &#x03bb;n m.m n [Thrush]
+                (&#x03bb;a.TRUE) &#x03bb;a b.FALSE
+                <span class="fragment">&#x27f9; TRUE</span>
             </li></ul>
-        </section>
-        <section>
-            <h3>Combinator Subtraction</h3>
-            <ul><li class="fragment">
-                PHI: &#x03bb;p.PAIR (TAIL p) (SUCCESSOR (TAIL p))
+        </section><section>
+            <h3>Combinator Lists</h3>
+            <p>
+                ISNIL? (PAIR TWO THREE)
+            </p><ul><li class="fragment">
+                (&#x03bb;p.p &#x03bb;a b.FALSE) (PAIR TWO THREE)
             </li><li class="fragment">
-                PREDECESSOR: &#x03bb;n.HEAD
-                (n PHI (PAIR ZERO ZERO))
+                (PAIR TWO THREE) &#x03bb;a b.FALSE
             </li><li class="fragment">
-                SUBTRACT: &#x03bb;m n.n PREDECESSOR m
+                (&#x03bb;f.f TWO THREE) &#x03bb;a b.FALSE
+            </li><li class="fragment">
+                (&#x03bb;a b.FALSE) TWO THREE
+                <span class="fragment">&#x27f9; FALSE</span>
             </li></ul>
-        </section>
-        <section>
-            <h3>Combinator Comparisons</h3>
-            <ul><li class="fragment">
-                LESSEQ?: &#x03bb;n k.ISZERO? (SUBTRACT n k)
+        </section><section>
+            <h3>Combinator Lists</h3>
+            <p>
+                Now we can construct lists of arbitrary length.
+            </p><ul><li class="fragment">
+                PAIR ONE NIL
             </li><li class="fragment">
-                GREATEREQ?: &#x03bb;n k.ISZERO? (SUBTRACT k n)
+                PAIR ONE (PAIR TWO NIL)
             </li><li class="fragment">
-                EQUAL?: &#x03bb;n k.AND (LESSEQ? n k) (LESSEQ? k n)
+                PAIR ONE (PAIR TWO (PAIR THREE NIL))
             </li><li class="fragment">
-                LESS?: &#x03bb;n k.NOT (GREATEREQ? n k)
-            </li><li class="fragment">
-                GREATER?: &#x03bb;n k.NOT (LESSEQ? n k)
+                ...
+            </li></ul><p class="fragment">
+                We can also make more sophisticated data structures
+                such as balanced binary trees and so on.
+            </p>
+        </section><section>
+            <h3>Combinator Data Structures</h3>
+            <ul><li>
+                PAIR: &#x03bb;a b f.f a b [Verio]
+            </li><li>
+                HEAD: &#x03bb;p.p TRUE
+            </li><li>
+                TAIL: &#x03bb;p.p FALSE
+            </li><li>
+                NIL: &#x03bb;a.TRUE
+            </li><li>
+                ISNIL?: &#x03bb;p.p &#x03bb;a b.FALSE
             </li></ul>
-        </section>
-        <section>
+        </section><section>
             <h3>Combinator Recursion</h3>
             <p>
                 There are no names or recursion in lambda calculus.
@@ -521,15 +869,15 @@
                 using a combinator:
             </p><ul><li class="fragment">
                 Y &#x225d; &#x03bb;f.(&#x03bb;a.f (a a))
-                (&#x03bb;a.f (a a))
+                &#x03bb;a.f (a a)
             </li><li class="fragment">
                 Y g
                 <span class="fragment">
                     = (&#x03bb;a.g (a a))
-                    (&#x03bb;a.g (a a))
+                    &#x03bb;a.g (a a)
                 </span>
             </li><li class="fragment">
-                Y g = g ((&#x03bb;a.g (a a)) (&#x03bb;a.g (a a)))
+                Y g = g ((&#x03bb;a.g (a a)) &#x03bb;a.g (a a))
                 <span class="fragment">= g (Y g)</span>
             </li><li class="fragment">
                 Y g = g (Y g)
@@ -545,7 +893,7 @@
         <section>
             <h3>Factorial</h3>
             <p>
-                FACT-STEP: (&#x03bb; f n.(ISZERO? n) ONE
+                FACT-STEP: (&#x03bb; f n.(IS-ZERO? n) ONE
                 (MULTIPLY n (f (PREDECESSOR n))))
             </p><ul><li class="fragment">
                 FACTORIAL TWO <span class="fragment">
@@ -562,7 +910,24 @@
                     &#x27f9; TWO
                 </span>
             </li></ul>
+        </section><section>
+            <h3>Combinator Summary</h3>
+            <ul><li>
+                Booleans: &#x03bb;a.&#x03bb;b.a, &#x03bb;a.&#x03bb;b.b
+            </li><li>
+                Numbers: &#x03bb;f a.a, &#x03bb;n f a.f (n f a)
+            </li><li>
+                Arithmetic: &#x03bb;m n.n (&#x03bb;n f a.f (n f a)) m
+            </li><li>
+                Data Structures: &#x03bb;a b f.f a b
+            </li><li>
+                Recursion: &#x03bb;f.(&#x03bb;a.f (a a))
+                &#x03bb;a.f (a a)
+            </li></ul><p>
+                Lambda calculus simple, compact and universal.
+            </p>            
         </section>
+    </section><section>
         <section>
             <h3>Combinator Basis: S and K</h3>
             <p>
