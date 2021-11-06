@@ -47,6 +47,7 @@
 
     Reveal.addEventListener('slidechanged', function(event) {
         triggy.update('canvas.triggy', event.currentSlide);
+        //solvo.lambda.updateDOM("div.lambda", event.currentSlide);
     });
 
     logic.go();
