@@ -22,8 +22,8 @@
                 <a href="https://en.wikipedia.org/wiki/Alonzo_Church">Alonso
                     Church</a> in 1936 CE, it slightly predates
                 <a href="https://en.wikipedia.org/wiki/Turing_machine">Turing
-                    Machines</a>.  Both can compute any generally recursive
-                function.
+                    Machines</a>.  Both can compute any generally
+                recursive function.
             </p>
         </section>
         <section>
@@ -43,9 +43,9 @@
             </td><td class="fragment">
                 <p>Semantics</p><ul><li class="fragment">
                     Equivalence:
-                    b&#x2209;FV[<span class="expression">E</span>] &#x27f9;
-                    <br /> &#x03bb;a.<span class="expression">E</span>
-                    &#x2251;
+                    b&#x2209;FV[<span class="expression">E</span>]
+                    &#x27f9; <br />
+                    &#x03bb;a.<span class="expression">E</span> &#x2251;
                     &#x03bb;b.(<span class="expression">E</span> [a := b])
                 </li><li class="fragment">
                     Reduction: <br />
@@ -506,17 +506,17 @@
             </li><li class="fragment">
                 Kite (False/Zero): &#x03bb;a b.b
             </li><li class="fragment">
-                Cardinal (Flip/Not): &#x03bb;f a b.f b a
+                Cardinal (Flip/Not): &#x03bb;a b c.a c b
             </li><li class="fragment">
                 Bluebird (Compose):
-                &#x03bb;f g a.f (g a)
+                &#x03bb;a b c.a (b c)
             </li><li class="fragment">
-                Thrush (Power): &#x03bb;a f.f a
+                Thrush (Power): &#x03bb;a b.b a
             </li><li class="fragment">
-                Vireo (Pair): &#x03bb;a b f.f a b
+                Vireo (Pair): &#x03bb;a b c.c a b
             </li><li class="fragment">
                 Blackbird:
-                &#x03bb;f g a b.f (g a b)
+                &#x03bb;a b c d.a (b c d)
             </li><li class="fragment">
                 Starling: &#x03bb;a b c.a c (b c)
             </li></ul>
@@ -532,8 +532,12 @@
             </li><li class="fragment">
                 <span class="false">FALSE</span>: &#x03bb;a b.b [Kite]
             </li></ul><p class="fragment">
-                Consider: &#x03bb;p.p (&#x03bb;a.a)
-                ((&#x03bb;a.a a) &#x03bb;a.a a)
+                IF p THEN ELSE
+                <span class="fragment">
+                    &#x25b7; (&#x03bb;p a b.p a b) p THEN ELSE
+                </span><span class="fragment">
+                    <br /> &#x25b7; p THEN ELSE
+                </span>
             </p>
         </section><section>
             <h3>Combinator NOT</h3>
