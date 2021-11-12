@@ -25,10 +25,6 @@ Steps: <input id="steps" type="text" disabled="disabled" />
 Size: <input id="size" type="text" disabled="disabled" />
 Max Size: <input id="maxsize" type="text" disabled="disabled" />
 <br />
-<button id="clear">Clear</button>
-<button id="restore">Restore</button>
-<input id="previous" type="text" disabled="disabled" />
-<br />
 <button id="library">Library</button>
 <button id="discover">Discover</button>
 <select id="library-expressions">
@@ -36,6 +32,10 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
 </select>
 <button id="canonical">Canonical</button>
 <button id="variables">Variables</button>
+<br />
+<button id="clear">Clear</button>
+<button id="restore">Restore</button>
+<input id="previous" type="text" disabled="disabled" />
 <input id="vdisplay" type="text" disabled="disabled" />
 
 <p>
@@ -412,7 +412,7 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
  var repeating = false;
 
  // Populate library drop down box
- lambda.forEachLibrary(function(expression, name) {
+ lambda.eachLibrary(function(expression, name) {
      var option = document.createElement("option");
      option.setAttribute("value", expression.toString({showColor: true}));
      option.innerHTML = name;
