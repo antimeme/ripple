@@ -391,7 +391,7 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
 </p>
 
 <script src="ripple/ripple.js"></script>
-<script src="ripple/solvo.js"></script>
+<script src="ripple/lambda.js"></script>
 <script>//<![CDATA[
  var expression = document.getElementById("expression");
  var reduce     = document.getElementById("reduce");
@@ -412,7 +412,7 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
  var repeating = false;
 
  // Populate library drop down box
- solvo.forEachLambda(function(expression, name) {
+ lambda.forEachLibrary(function(expression, name) {
      var option = document.createElement("option");
      option.setAttribute("value", expression.toString({showColor: true}));
      option.innerHTML = name;
@@ -422,7 +422,7 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
  var getExpression = function() {
      var result;
      try {
-         result = solvo.lambda(expression.value);
+         result = lambda.create(expression.value);
      } catch(ex) { alert(ex); }
      return result;
  };
