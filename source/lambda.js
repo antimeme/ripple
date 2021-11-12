@@ -25,6 +25,30 @@
 (function() {
     "use strict";
 
+    var getFreeVariables = function(expression, includeBound) {
+        // Collect all variables that are free in the expression.
+        // When includeBound is truthy any variables bound by
+        // this expression itself will be included if they occur
+        // free in the expression.  Otherwise they are excluded.
+        var result = {};
+        if (lambda.isPrototypeOf(expression)) {
+            expression.values.forEach(function(value) {
+                var processVariable = function(variable) {
+                    if (includeBound || !expression.variables.some(
+                        function(v) { return v === variable; }))
+                        result[variable] = true;
+                }
+
+                if (lambda.isPrototypeOf(value))
+                    Object.keys(getFreeVariables(value))
+                          .forEach(processVariable);
+                else processVariable(value);
+            }, this);
+        } else if (typeof(expression) === "string")
+            result[expression] = true;
+        return result;
+    };
+
     var lambda = {
         create: function(value) {
             // Parse or copy an expression.  When given an expression
@@ -52,7 +76,7 @@
                 result.values    = [];
                 result.normal    = false;
             }
-            result.__free = result.__getFreeVariables();
+            result.__free = getFreeVariables(result);
             result.__canonical = false;
             return result;
         },
@@ -153,26 +177,6 @@
             return result;
         },
 
-        __getFreeVariables: function(includeBound) {
-            // Collect all variables that are free in the expression.
-            // When includeBound is truthy any variables bound by
-            // this expression itself will be included if they occur
-            // free in the expression.  Otherwise they are excluded.
-            var result = {};
-            this.values.forEach(function(value) {
-                var processVariable = function(variable) {
-                    if (includeBound || !this.variables.some(
-                        function(v) { return v === variable; }))
-                        result[variable] = true;
-                }
-                if (lambda.isPrototypeOf(value))
-                    Object.keys(value.__getFreeVariables())
-                          .forEach(processVariable, this);
-                else processVariable.call(this, value);
-            }, this);
-            return result;
-        },
-
         __canonicalize: function(index, variables) {
             // Replace all bound variables in the expression with
             // enumerated values.  This should make it possible to
@@ -201,25 +205,6 @@
             }, this);
             result.__canonical = true;
             return result;
-        },
-
-        equals: function(other) {
-            // Return true if and only if this expression and the other
-            // are the same from the perspective of lambda calculus.
-            // For this purpose the names of bound variables don't
-            // matter so "lambda a.a b" and "lambda c.c b" are equal.
-            if (!lambda.isPrototypeOf(other))
-                return false;
-            var aa = this.__canonicalize();
-            var bb = other.__canonicalize();
-            return (aa.variables.length == bb.variables.length) &&
-                   (aa.values.length === bb.values.length) &&
-                   aa.variables.every(function(variable, index) {
-                       return (variable === bb.variables[index]); }) &&
-                   aa.values.every(function(value, index) {
-                       return lambda.isPrototypeOf(value) ?
-                              value.equals(bb.values[index]) :
-                              (value === bb.values[index]); });
         },
 
         __pickCandidates: undefined, // Cached data for __pickUnique
@@ -275,7 +260,7 @@
             this.variables.forEach(function(current) {
                 extra[current] = true; });
             exclude = Object.assign(exclude, extra);
-            exclude = Object.assign(exclude, this.__getFreeVariables());
+            exclude = Object.assign(exclude, getFreeVariables(this));
             replacement = lambda.__pickUnique(exclude);
 
             var replace = function(expression) {
@@ -301,7 +286,7 @@
             var result   = this;
             var replaced = false;
             var values   = [];
-            var free = this.__getFreeVariables(replacement);
+            var free = getFreeVariables(replacement);
 
             // Free variables in the replacment must not match
             // bound variables or the results may be wrong
@@ -375,12 +360,30 @@
             return result;
         },
 
+        eachLibrary: function(fn, library, self) {
+            var result = fn ? self : [];
+            library = library ? library : this.defaultLibrary;
+            Object.keys(library).forEach(function(name) {
+                var entry = this.defaultLibrary[name];
+                if (!entry.expression) {
+                    entry.expression = lambda.create(entry.value);
+                    entry.expression.color = entry.color;
+                }
+                if (fn)
+                    fn.call(self, entry.expression, name, entry);
+                else result.push({
+                    expression: entry.expression,
+                    name: name,
+                });
+            }, this);
+            return result;
+        },
+
         reverseLibrary: function(library) {
             var result   = this;
             var replaced = false;
             var values   = [];
-
-            library = library ? library : lambda.defaultLibrary;
+            library = library ? library : this.defaultLibrary;
 
             this.values.forEach(function(value) {
                 if (lambda.isPrototypeOf(value)) {
@@ -394,15 +397,21 @@
                 result = lambda.create(this);
                 result.values = values;
             }
-            replaced = result.__canonicalize();
-            Object.keys(library).forEach(function(name) {
-                var entry = library[name];
-                if (!entry.expression)
-                    entry.expression =
-                        lambda.create(entry.value);
-                if (entry.expression.equals(result))
-                    result = name;
+
+            var selection = undefined;
+            var priority  = undefined;
+            this.eachLibrary(function(expression, name, entry) {
+                if (!entry.expression.equals(result))
+                    return;
+                if (!isNaN(priority) &&
+                    (isNaN(entry.priority) ||
+                     (entry.priority < priority)))
+                    return;
+                selection = name;
+                priority  = entry.priority;
             });
+            if (selection)
+                result = selection;
             return result;
         },
 
@@ -479,6 +488,25 @@
             return result;
         },
 
+        equals: function(other) {
+            // Return true if and only if this expression and the other
+            // are the same from the perspective of lambda calculus.
+            // For this purpose the names of bound variables don't
+            // matter so "lambda a.a b" and "lambda c.c b" are equal.
+            if (!lambda.isPrototypeOf(other))
+                return false;
+            var aa = this.__canonicalize();
+            var bb = other.__canonicalize();
+            return (aa.variables.length == bb.variables.length) &&
+                   (aa.values.length === bb.values.length) &&
+                   aa.variables.every(function(variable, index) {
+                       return (variable === bb.variables[index]); }) &&
+                   aa.values.every(function(value, index) {
+                       return lambda.isPrototypeOf(value) ?
+                              value.equals(bb.values[index]) :
+                              (value === bb.values[index]); });
+        },
+
         toStarlingKestral: function() {
             var result = this;
             var changed = false;
@@ -498,7 +526,7 @@
                        (result.variables[0] === result.values[0])) {
                 result = lambda.create(["I"]); // T[\x.x] => I
             } else if (!(result.variables[0] in
-                result.__getFreeVariables(true))) {
+                getFreeVariables(result, true))) {
                 // T[\x.E] => (K T[E]) (x not free in E)
                 result = lambda.create(result);
                 result.variables.shift();
@@ -538,6 +566,9 @@
         },
 
         updateDOM: function(selector, element) {
+            // Not yet implemented.  This is intended to create a
+            // web form in which lambda expressions can be reduced
+            // and otherwise manipulated.
             if (!element)
                 element = document;
             Array.prototype.forEach.call(
@@ -581,31 +612,9 @@
                     console.error("ERROR: expected",
                                   expected.toString());
                 else console.log("Success:",
-                                 expression.__getFreeVariables());
+                                 getFreeVariables(expression));
                 console.log();
             });
-        },
-
-        combinators: {
-            I: { name: "Identity",
-                 value: "lambda a.a" },
-            M: { name: "Mockingbird",
-                 value: "lambda a.a a" },
-            S: { name: "Starling",
-                 value: "lambda a b c.a c (b c)" },
-            K: { name: "Kestral",
-                 value: "lambda a b.a" },
-            KI: { name: "Kite", value: "lambda a b.b" },
-            C: { name: "Cardinal", value: "lambda a b c.a c b" },
-            B: { name: "Bluebird", value: "lambda a b c.a (b c)" },
-            T: { name: "Thrush", value: "lambda a b.b a" },
-            V: { name: "Virio", value: "lambda a b f.f a b" },
-            Y: { name: "Fixed-Point",
-                 value: "lambda f.(lambda a.f (a a)) " +
-                        "(lambda a.f (a a))" },
-            i: { name: "Iota",
-                 value: "lambda f.f (lambda a b c.a c (b c)) " +
-                        "lambda d e.d" }
         },
 
         tests: [
@@ -633,65 +642,71 @@
                  "either cause an exception or dynamic renaming of ",
                  "the bound variable."]} ],
 
-        forEachLibrary: function(fn, self) {
-            var result = fn ? self : [];
-            Object.keys(this.defaultLibrary).forEach(function(name) {
-                var entry = this.defaultLibrary[name];
-                if (!entry.expression) {
-                    entry.expression = lambda.create(entry.value);
-                    entry.expression.color = entry.color;
-                }
-                if (fn)
-                    fn.call(self, entry.expression, name);
-                else result.push({
-                    name: name, expression: entry.expression});
-            }, this);
-            return result;
-        }
+        combinators: {
+            I: { name: "Identity",
+                 value: "lambda a.a" },
+            M: { name: "Mockingbird",
+                 value: "lambda a.a a" },
+            S: { name: "Starling",
+                 value: "lambda a b c.a c (b c)" },
+            K: { name: "Kestral",
+                 value: "lambda a b.a" },
+            KI: { name: "Kite", value: "lambda a b.b" },
+            C: { name: "Cardinal", value: "lambda a b c.a c b" },
+            B: { name: "Bluebird", value: "lambda a b c.a (b c)" },
+            T: { name: "Thrush", value: "lambda a b.b a" },
+            V: { name: "Virio", value: "lambda a b f.f a b" },
+            Y: { name: "Fixed-Point",
+                 value: "lambda f.(lambda a.f (a a)) " +
+                        "(lambda a.f (a a))" },
+            i: { name: "Iota",
+                 value: "lambda f.f (lambda a b c.a c (b c)) " +
+                        "lambda d e.d" }
+        },
     };
 
     lambda.defaultLibrary = {
-        TRUE: { name: "Logical TRUE",
+        TRUE: { description: "Logical TRUE", priority: 2,
                 value: lambda.combinators.K.value },
-        FALSE: { name: "Logical FALSE",
+        FALSE: { description: "Logical FALSE", priority: 2,
                  value: lambda.combinators.KI.value },
-        NOT: { name: "Logical NOT",
+        NOT: { description: "Logical NOT",
                value: lambda.combinators.C.value },
-        AND: { name: "Logical AND",
+        AND: { description: "Logical AND",
                value: "lambda p q.p q p" },
-        OR: { name: "Logical OR",
+        OR: { description: "Logical OR",
               value: "lambda p q.p p q" },
-        "BOOLEQ?": { name: "Boolean Equality",
+        "BOOLEQ?": { description: "Boolean Equality",
                      value: "lambda p q.p q (NOT q)" },
         PAIR: { value: lambda.combinators.V.value },
         HEAD: { value: "lambda p.p TRUE" },
         TAIL: { value: "lambda p.p FALSE" },
         ISNIL: { value: "lambda p.p (lambda a b.FALSE)" },
         NIL: { value: "lambda a.TRUE" },
-        SUCCESSOR: { name: "Successor",
+        SUCCESSOR: { description: "Successor",
                      value: "lambda n f a.f (n f a)" },
-        ZERO: { name: "Church Numeral ZERO",
+        ZERO: { description: "Church Numeral ZERO",
                 value: lambda.combinators.KI.value },
-        ADD: { name: "Church Numeral Addition",
+        ADD: { description: "Church Numeral Addition",
                value: "lambda m n f a.m f (n f a)" },
-        MULTIPLY: { name: "Church Numeral Multiplication",
+        MULTIPLY: { description: "Church Numeral Multiplication",
                     value: lambda.combinators.B.value },
-        POWER: { name: "Church Numeral Exponentiation",
+        POWER: { description: "Church Numeral Exponentiation",
                  value: "lambda m n f a.(n m) f a" },
-        "IS-ZERO?": { name: "Church Numeral Zero Check",
+        "IS-ZERO?": { description: "Church Numeral Zero Check",
                       value: "lambda n.n (lambda a.FALSE) TRUE" },
-        "IS-EVEN?": { name: "Church Numeral EvenCheck",
+        "IS-EVEN?": { description: "Church Numeral EvenCheck",
                       value: "lambda n.n (lambda a.NOT a) TRUE" },
-        "IS-ODD?": { name: "Church Numeral Odd Check",
+        "IS-ODD?": { description: "Church Numeral Odd Check",
                      value: "lambda n.n (lambda a.NOT a) FALSE" },
-        PREDECESSOR: { name: "Church Numeral Decrement",
+        PREDECESSOR: { description: "Church Numeral Decrement",
                        value: "lambda n f a.n (lambda g h.h (g f)) " +
-                              "(lambda c.a) (lambda b.b)" },
-        SUBTRACT: { name: "Church Numeral Subtraction",
+                              "(lambda c.a) IDENTITY" },
+        SUBTRACT: { description: "Church Numeral Subtraction",
                     value: "lambda m n.n PREDECESSOR m" },
-        MINUS: { name: "Church Numeral Subtraction",
+        MINUS: { description: "Church Numeral Subtraction",
                  value: "lambda m n.n PREDECESSOR m" },
-        DIVIDE: { name: "Church Numeral Division",
+        DIVIDE: { description: "Church Numeral Division",
                   value: "lambda n.((lambda f.(lambda x.x x) " +
                          "(lambda x.f (x x))) (lambda c.lambda " +
                          "n.lambda m.lambda f.lambda x.(lambda " +
@@ -703,46 +718,54 @@
                          "g.lambda h.h (g f)) (lambda u.x) " +
                          "(lambda u.u)) m) n m))) ((lambda " +
                          "n.lambda f.lambda x. f (n f x)) n)"},
-        "LESSEQ?": { name: "Church Numeral Less Than or Equal",
+        "LESSEQ?": { description: "Church Numeral Less Than or Equal",
                      value: "lambda m n.IS-ZERO? (SUBTRACT m n)" },
-        "GREATEREQ?": { name: "Church Numeral Greater Than or Equal",
-                        value: "lambda m n.IS-ZERO? (SUBTRACT n m)" },
-        "LESS?": { name: "Church Numeral Less Than",
+        "GREATEREQ?": {
+            description: "Church Numeral Greater Than or Equal",
+            value: "lambda m n.IS-ZERO? (SUBTRACT n m)" },
+        "LESS?": { description: "Church Numeral Less Than",
                    value: "lambda m n.NOT (GREATEREQ? m n)" },
-        "GREATER?": { name: "Church Numeral Greater Than",
+        "GREATER?": { description: "Church Numeral Greater Than",
                       value: "lambda m n.NOT (LESSEQ? m n)" },
-        "EQUAL?": { name: "Church Numeral Equality",
+        "EQUAL?": { description: "Church Numeral Equality",
                     value: "lambda m n.AND (LESSEQ? m n) " +
                            "(LESSEQ? n m)" },
-        FIX: { name: "Fix-point Combinator",
+        FIX: { description: "Fixed-point Combinator",
                value: lambda.combinators.Y.value },
-        FACTORIAL: { name: "Church Numeral FACTORIAL",
+        FACTORIAL: { description: "Church Numeral FACTORIAL",
                      value: "FIX (lambda f n.(IS-ZERO? n) ONE " +
                             "(MULTIPLY n (f (PREDECESSOR n))))" },
-        STARLING: { name: "Starling",
+        STARLING: { description: "Starling",
                     value: lambda.combinators.S.value },
-        KESTRAL: { name: "Kestral",
+        KESTRAL: { description: "Kestral",
                    value: lambda.combinators.K.value },
-        IOTA: { name: "Iota", value: lambda.combinators.i.value },
-        DEBUG: { name: "Debug",
-                 value: "FIX (lambda f n.(IS-ZERO? n) n " +
-                        "(f (PREDECESSOR n)))"},
+        IDENTITY: { description: "Identity",
+                    value: lambda.combinators.I.value },
+        IOTA: { description: "Iota",
+                value: lambda.combinators.i.value },
     };
     (function(library) {
-        var numbers = ["ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX",
-                       "SEVEN", "EIGHT", "NINE", "TEN", "ELEVEN",
+        var numbers = ["ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE",
+                       "SIX", "SEVEN", "EIGHT", "NINE", "TEN", "ELEVEN",
                        "TWELVE", "THIRTEEN", "FOURTEEN", "FIFTEEN",
-                       "SIXTEEN", "SEVENTEEN", "EIGHTEEN", "NINETEEN",
-                       "TWENTY", "TWENTYONE"];
-        for (var ii = 1; ii <= 20; ++ii) {
-            var entry = { name: "Church Numeral " + numbers[ii - 1],
-                          value: null };
-            var expression = "f a";
+                       "SIXTEEN", "SEVENTEEN", "EIGHTEEN", "NINETEEN"];
+        ["TWENTY", "THIRTY", "FORTY", "FIFTY", "SIXTY",
+         "SEVENTY", "EIGHTY", "NINETY"].forEach(function(current) {
+             numbers.push(current);
+             for (var ii = 1; ii < 10; ++ii)
+                 numbers.push(current + numbers[ii]); });
+
+        for (var ii = 0; ii <= numbers.length; ++ii) {
+            var expression = (ii > 0) ? "f a" : "a";
             for (var jj = 2; jj <= ii; ++jj)
                 expression = "f (" + expression + ")";
-            entry.value = "lambda f a." + expression;
-            library[numbers[ii - 1]] = entry;
-            library[ii] = entry;
+            expression = "lambda f a." + expression;
+            library[numbers[ii]] = {
+                description: "Church Numeral " + numbers[ii],
+                value: expression };
+            library[ii] = {
+                description: "Church Numeral " + ii,
+                priority: 1, value: expression };
         }
 
         library["+"] = library["PLUS"]  = library["ADD"];
@@ -750,8 +773,6 @@
         library["="] = library["EQUAL?"];
     })(lambda.defaultLibrary);
 
-    // This library exports only one function so the name of the
-    // library itself is used.
     if (typeof(module) !== "undefined") {
         module.exports = lambda;
     } else if (typeof(exports) !== "undefined") {
@@ -760,7 +781,8 @@
 }).call(this);
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
-    var lambda = exports;
+    var lambda = (typeof(module) !== "undefined") ?
+                 module.exports : exports;
     var tests = [];
     var allowOptions = true;
 
