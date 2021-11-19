@@ -5,6 +5,7 @@ canvas.triggy { width: 100%; height: 100%; }
 .false { color: red; }
 .qed { background-color: #99ee99; } /* Proof results */
 .expression { color: #7777dd; }
+.variable { color: #dd7777; }
 del { color: darkred; }
 em { color: #448899; }
 ul.symbolic { list-style-type: none; }
