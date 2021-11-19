@@ -40,16 +40,16 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
 
 <p>
     Lambda Calculus is an abstract model of computation.  Other models,
-    such as the Turing Machine, are equivalent (this is the
+    such as the Turing Machine, are equivalent (this is part of the
     <a href="https://en.wikipedia.org/wiki/Church%E2%80%93Turing_thesis"
-    >Church-Turing Thesis</a>).
-    This program implements lambda expressions, normal order reduction
-    and a library of useful functions.  The lambda calculus itself
-    contains only variables, grouping, abstractions and applications.
-    Notice that this does not include boolean logic, data structures,
-    recursion or numbers.  And yet the library included here contains
-    all of these things because lambda calculus provides a universal
-    foundation on which any computation can be built.
+    >Church-Turing Thesis</a>).  This program implements lambda
+    expressions, normal order reduction and a library of useful
+    functions.  The lambda calculus itself contains only variables,
+    grouping, abstractions and applications.  Notice that this does
+    not include boolean logic, data structures, recursion or numbers.
+    And yet the library included here contains all of these things
+    because lambda calculus provides a universal foundation on which
+    any computation can be built.
 </p>
 <h2>Contents</h2>
 <ol><li>
@@ -324,7 +324,7 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
 </p><blockquote><pre>
       EQUAL? SEVEN λf a.f (f (f (f (f a))))
 </pre></blockquote><p>
-    Now after 148 steps this reduces to <code>FALSE</code>.  That makes
+    Now after 146 steps this reduces to <code>FALSE</code>.  That makes
     sense, doesn't it?  Seven is not equal to five.
 </p><p>
     Another way we could have checked is to select <code>FIVE</code>
@@ -336,7 +336,7 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
 </p><blockquote><pre>
       EQUAL? FIVE (ADD TWO THREE)
 </pre></blockquote><p>
-    After 148 steps this reduces to <code>TRUE</code>.  Replace five
+    After 146 steps this reduces to <code>TRUE</code>.  Replace five
     with some other number to get <code>FALSE</code>.  Try other numbers
     in expressions like this to confirm that correct equations reduce
     to <code>TRUE</code> and incorrect equations reduce to
@@ -349,7 +349,7 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
 </p><blockquote><pre>
       GREATER? (SUBTRACT FIVE TWO) TWO
 </pre></blockquote><p>
-    This should reduce to <code>TRUE</code> in 66 steps.
+    This should reduce to <code>TRUE</code> in 63 steps.
 </p>
 <h2><a name="recusion">Recursion</a></h2>
 <p>
