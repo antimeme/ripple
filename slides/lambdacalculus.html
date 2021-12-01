@@ -72,7 +72,7 @@
                 <span class="">c</span>,
                 <span class="">MULTIPLY</span>,
                 <span class="">172</span>,
-                <span class="">ISNIL?</span>,
+                <span class="">IS-NIL?</span>,
                 <span class="">@!</span>, ...
             </p>
         </section><section>
@@ -295,7 +295,7 @@
             </li><li class="fragment">
                 &#x03bb;a.a <span class="fragment">&#10003;</span>
             </li><li class="fragment">
-                a &#x03bb;b.b <span class="fragment">&#10003;</span>
+                a (&#x03bb;b.b) c <span class="fragment">&#10003;</span>
             </li><li class="fragment">
                 (&#x03bb;a.a) &#x03bb;b.&#x03bb;c.b
                 <span class="fragment">
@@ -1076,18 +1076,18 @@
             <p>
                 FACTORIAL ONE
                 <span class="fragment"> &#x225d; Y FSTEP ONE</span>
-            </li><li class="fragment">
-                Y FSTEP ONE &#x25b7; FSTEP (Y FSTEP) ONE
-            </li><li class="fragment">
-                (IS-ZERO? ONE) ONE <br />
-                (MULTIPLY ONE (Y FSTEP (PREDECESSOR ONE)))
-            </li><li class="fragment">
-                MULTIPLY ONE (Y FSTEP (PREDECESSOR ONE))
-            </li><li class="fragment">
-                MULTIPLY ONE (FSTEP (Y FSTEP) ZERO)
-            </li><li class="fragment">
-                MULTIPLY ONE ONE &#x25b7; ONE
-            </li></ul>
+    </li><li class="fragment">
+        Y FSTEP ONE &#x25b7; FSTEP (Y FSTEP) ONE
+    </li><li class="fragment">
+        (IS-ZERO? ONE) ONE <br />
+        (MULTIPLY ONE (Y FSTEP (PREDECESSOR ONE)))
+    </li><li class="fragment">
+        MULTIPLY ONE (Y FSTEP (PREDECESSOR ONE))
+    </li><li class="fragment">
+        MULTIPLY ONE (FSTEP (Y FSTEP) ZERO)
+    </li><li class="fragment">
+        MULTIPLY ONE ONE &#x25b7; ONE
+    </li></ul>
         </section><section>
             <h3>Combinator Ordered Pairs</h3>
             <p>
@@ -1140,14 +1140,14 @@
                 Chaining ordered pairs together to make lists requires
                 a way to find the end.
             </p><ul><li class="fragment">
-                ISNIL?: &#x03bb;p.p &#x03bb;a b.FALSE
+                IS-NIL?: &#x03bb;p.p &#x03bb;a b.FALSE
             </li><li class="fragment">
                 NIL: &#x03bb;f.TRUE
             </li></ul>
         </section><section>
             <h3>Combinator Lists</h3>
             <p>
-                ISNIL? NIL
+                IS-NIL? NIL
             </p><ul><li class="fragment">
                 (&#x03bb;p.p &#x03bb;a b.FALSE) &#x03bb;f.TRUE
             </li><li class="fragment">
@@ -1157,7 +1157,7 @@
         </section><section>
             <h3>Combinator Lists</h3>
             <p>
-                ISNIL? (PAIR FIRST LAST)
+                IS-NIL? (PAIR FIRST LAST)
             </p><ul><li class="fragment">
                 (&#x03bb;p.p &#x03bb;a b.FALSE) (PAIR FIRST LAST)
             </li><li class="fragment">
@@ -1184,13 +1184,36 @@
                 So how do we work with these?
             </p>
         </section><section>
+            <h3>Combinator Select</h3>
+            <p>
+                We can traverse a list using Church numerals.
+            </p><p>
+                NTH: &#x03bb;n l.n (&#x03bb; l.(IS-NIL? l)
+                NIL (TAIL l)) l
+            </p><ul><li class="fragment">
+                NTH 1 (PAIR FIRST (PAIR SECOND (PAIR THIRD)))
+            </li><li class="fragment">
+                &#x25b7; ONE (&#x03bb; l.(IS-NIL? l)
+                NIL (TAIL l)) (PAIR ...)
+            </li><li class="fragment">
+                &#x25b7; (&#x03bb; l.(IS-NIL? l)
+                NIL (TAIL l)) (PAIR ...)
+            </li><li class="fragment">
+                &#x25b7; (IS-NIL? (PAIR ...))
+                NIL (TAIL (PAIR ...))
+            </li><li class="fragment">
+                &#x25b7; TAIL (PAIR ...)
+            </li></ul><p class="fragment">
+                An index beyond the end of the list will give NIL
+            </p>
+        </section><section>
             <h3>Combinator Sums</h3>
             <p>
                 Let's add up a list of numbers.
             </p><ul><li class="fragment">
                 SUM (PAIR ONE (PAIR TWO (PAIR THREE NIL)))
             </li><li class="fragment">
-                SUM = Y (&#x03bb;f l.(ISNIL? l) ZERO <br />
+                SUM = Y (&#x03bb;f l.(IS-NIL? l) ZERO <br />
                 (ADD (HEAD l) (f (TAIL l))))
             </li><li class="fragment">
                 ADD ONE (ADD TWO (ADD THREE ZERO))
@@ -1203,7 +1226,7 @@
             <p>
                 We can apply a function to every member of a list
             </p><ul><li class="fragment">
-                MAP = Y (&#x03bb;f g l.(ISNIL? l) NIL <br />
+                MAP = Y (&#x03bb;f g l.(IS-NIL? l) NIL <br />
                 (PAIR (g (HEAD l)) (f g (TAIL l))))
             </li><li class="fragment">
                 MAP (&#x03bb;n.ADD n n) <br />
@@ -1222,16 +1245,24 @@
             </li><li>
                 NIL: &#x03bb;f.TRUE
             </li><li>
-                ISNIL?: &#x03bb;p.p &#x03bb;a b.FALSE
+                IS-NIL?: &#x03bb;p.p &#x03bb;a b.FALSE
             </li></ul>
         </section><section>
             <h3>Combinator Integers</h3>
             <p>
-                An integer is a pair of natural numbers.  The
-                difference between them is the integer value.
+                How can we construct an integer?  Consider a pair of
+                Church numerals.  If we interpret them as a subtraction
+                we can represent any integer value.
+            </p><p class="fragment">
+                INT-CREATE: PAIR n m
+            </p><p class="fragment">
+                This represents the integer <em>n - m</em>
+            </p>
+        </section><section>
+            <h3>Combinator Integers</h3>
+            <p>
+                Here are some simple tools for integers.
             </p><ul><li class="fragment">
-                INT-CREATE: PAIR <em>(n - m)</em>
-            </li><li class="fragment">
                 INT-IS-ZERO?: &#x03bb;n.EQUAL? (HEAD n) (TAIL n)
             </li><li class="fragment">
                 INT-EQUAL?: &#x03bb;n m.EQUAL? <br />
@@ -1243,7 +1274,7 @@
         </section><section>
             <h3>Combinator Integers</h3>
             <p>
-                Integer arithmetic is complicated but it works.
+                Integer arithmetic is messy but straightforward.
             </p><ul><li class="fragment">
                 INT-ADD: &#x03bb;n m.PAIR (ADD (HEAD n) (HEAD m))
                 <br />(ADD (TAIL n) (TAIL m))
@@ -1257,26 +1288,29 @@
         </section><section>
             <h3>Combinator Rationals</h3>
             <p>
-                An rational number is a pair of integers.  The
-                ratio between them is the value.
-            </p><ul><li class="fragment">
-                RATIONAL-CREATE: PAIR <em>(n / m)</em>
-            </li><li class="fragment">
-                RATIONAL-IS-ZERO?: &#x03bb;n.INT-IS-ZERO? (HEAD n)
-            </li><li class="fragment">
-                RATIONAL-EQUAL?: &#x03bb;n m.EQUAL? <br />
-                (INT-MULTIPLY (HEAD n) (TAIL m)) <br />
-                (INT-MULTIPLY (HEAD m) (TAIL n))
-            </li></ul>
+                How can we represent rational numbers?  Consider
+                an pair of integers.  If we interpret this as a
+                division we can represent any rational number.
+            </p><p class="fragment">
+                RATIONAL-CREATE: PAIR a b
+            </p><p class="fragment">
+                This represents the rational number <em>a / b</em>
+            </p>
         </section><section>
             <h3>Combinator Rationals</h3>
             <p>
-                Rationals have additive and multiplicative inverses.
+                Here are some simple tools for rational numbers.
             </p><ul><li class="fragment">
-                RATIONAL-NEGATE: &#x03bb;n.PAIR <br />
-                (INT-NEGATE (HEAD n)) (TAIL n)
+                RATIONAL-IS-ZERO?: &#x03bb;a.INT-IS-ZERO? (HEAD a)
             </li><li class="fragment">
-                RATIONAL-INVERSE: &#x03bb;n.PAIR (TAIL n) (HEAD n)
+                RATIONAL-EQUAL?: &#x03bb;a b.EQUAL? <br />
+                (INT-MULTIPLY (HEAD a) (TAIL b)) <br />
+                (INT-MULTIPLY (HEAD b) (TAIL a))
+            </li><li class="fragment">
+                RATIONAL-NEGATE: &#x03bb;a.PAIR <br />
+                (INT-NEGATE (HEAD a)) (TAIL a)
+            </li><li class="fragment">
+                RATIONAL-INVERSE: &#x03bb;a.PAIR (TAIL a) (HEAD a)
             </li></ul>
         </section><section>
             <h3>Combinator Rationals</h3>
