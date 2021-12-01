@@ -681,8 +681,10 @@
         PAIR: { value: lambda.combinators.V.value },
         HEAD: { value: "lambda p.p TRUE" },
         TAIL: { value: "lambda p.p FALSE" },
-        ISNIL: { value: "lambda p.p (lambda a b.FALSE)" },
+        "IS-NIL?": { value: "lambda p.p (lambda a b.FALSE)" },
         NIL: { value: "lambda a.TRUE" },
+        NTH: { value: "lambda n l.n (lambda l.(IS-NIL? l) NIL " +
+                      "(TAIL l)) l"},
         SUCCESSOR: { description: "Successor",
                      value: "lambda n f a.f (n f a)" },
         ZERO: { description: "Church Numeral ZERO",
@@ -719,10 +721,10 @@
                          "(lambda u.u)) m) n m))) ((lambda " +
                          "n.lambda f.lambda x. f (n f x)) n)"},
         "LESSEQ?": { description: "Church Numeral Less Than or Equal",
-                     value: "lambda m n.IS-ZERO? (SUBTRACT m n)" },
+                     value: "lambda m n.IS-ZERO? (MINUS m n)" },
         "GREATEREQ?": {
             description: "Church Numeral Greater Than or Equal",
-            value: "lambda m n.IS-ZERO? (SUBTRACT n m)" },
+            value: "lambda m n.IS-ZERO? (MINUS n m)" },
         "LESS?": { description: "Church Numeral Less Than",
                    value: "lambda m n.NOT (GREATEREQ? m n)" },
         "GREATER?": { description: "Church Numeral Greater Than",
