@@ -736,8 +736,11 @@
         </section><section>
             <h3>Combinator Numbers</h3>
             <p>
-                Church Numerals represent numbers by repeatedly
-                applying a first argument a second.
+                Church Numerals represent numbers with repeated
+                application.  Conceptually:
+                <span class="intro">
+                    n = &#x03bb;f a.f<sup>n</sup> a
+                </span>
             </p><ul><li class="fragment">
                 ONE: &#x03bb;f a.f a
             </li><li class="fragment">
@@ -764,11 +767,15 @@
             </li><li class="fragment">
                 &#x03bb;f a.f (ZERO f a)
             </li><li class="fragment">
+                &#x03bb;f a.f ((&#x03bb;f a.a) f a)
+            </li><li class="fragment">
                 &#x03bb;f a.f a <span class="fragment">[ONE]</span>
             </li></ul></td><td><ul><li class="fragment">
                 SUCCESSOR ONE
             </li><li class="fragment">
                 &#x03bb;f a.f (ONE f a)
+            </li><li class="fragment">
+                &#x03bb;f a.f ((&#x03bb;f a.f a) f a)
             </li><li class="fragment">
                 &#x03bb;f a.f (f a) <span class="fragment">[TWO]</span>
             </li></ul></td></tr></table><p class="fragment">
@@ -1023,12 +1030,6 @@
             </li><li class="fragment">
                 GREATER?: &#x03bb;n m.NOT (LESSEQ? n m)
             </li></ul>
-        </section><section id="loops">
-            <h3>Combinator Loops</h3>
-            <p>See <a href="#recursion">recursion</a>.</p>
-        </section><section id="recursion">
-            <h3>Combinator Recursion</h3>
-            <p>See <a href="#loops">loops</a>.</p>
         </section><section>
             <h3>Combinator Flow</h3>
             <p>
@@ -1037,11 +1038,18 @@
                 computation until some condition is met.  That's an
                 important gap in our programming ability.
             </p>
+        </section><section id="loops">
+            <h3>Combinator Loops</h3>
+            <p>See <a href="#recursion">recursion</a>.</p>
+        </section><section id="recursion">
+            <h3>Combinator Recursion</h3>
+            <p>See <a href="#loops">loops</a>.</p>
         </section><section>
             <h3>Combinator Recursion</h3>
             <p>
                 Functions have no names in lambda calculus but
-                we can still implement recursion using a combinator:
+                we can still implement recursion using the
+                famous Y combinator:
             </p><ul><li class="fragment">
                 Y &#x225d; &#x03bb;f.(&#x03bb;a.f (a a))
                 &#x03bb;a.f (a a)
@@ -1188,10 +1196,10 @@
             <p>
                 We can traverse a list using Church numerals.
             </p><p>
-                NTH: &#x03bb;n l.n (&#x03bb; l.(IS-NIL? l)
+                NTH: &#x03bb;n l.n (&#x03bb;l.(IS-NIL? l)
                 NIL (TAIL l)) l
             </p><ul><li class="fragment">
-                NTH 1 (PAIR FIRST (PAIR SECOND (PAIR THIRD)))
+                NTH 1 (PAIR a (PAIR b (PAIR c NIL)))
             </li><li class="fragment">
                 &#x25b7; ONE (&#x03bb; l.(IS-NIL? l)
                 NIL (TAIL l)) (PAIR ...)
@@ -1202,7 +1210,7 @@
                 &#x25b7; (IS-NIL? (PAIR ...))
                 NIL (TAIL (PAIR ...))
             </li><li class="fragment">
-                &#x25b7; TAIL (PAIR ...)
+                &#x25b7; TAIL (PAIR b (PAIR c NIL))
             </li></ul><p class="fragment">
                 An index beyond the end of the list will give NIL
             </p>
@@ -1359,7 +1367,7 @@
         </section><section>
             <h3>Simplification: Identity</h3>
             <p>
-                We can simplify some Starling and Kestral combinations.
+                The identity has many Starling and Kestral forms:
             </p><ul><li class="fragment">
                 S K X
             </li><li class="fragment">
@@ -1387,7 +1395,7 @@
         </section><section>
             <h3>Simplification: Kestral</h3>
             <p>
-                We can simplify some Starling and Kestral combinations.
+                A common pattern reduces to the Kestral:
             </p><p class="fragment">
                 S (K K) I <span class="fragment">= K</span>
             </p><ul><li class="fragment">
@@ -1474,7 +1482,35 @@
                 S (K (S I)) K
             </li></ul>
         </section><section>
-            <h3>Other Combinators</h3>
+            <h3>Conversion: Kite</h3>
+            <p>
+                The Kite is the Kestral followed by Identity:
+            </p><p>
+                Ki = K I
+            </p><ul><li class="fragment">
+                (&#x03bb;a b.a) &#x03bb;a.a
+            </li><li class="fragment">
+                &#x03bb;b.&#x03bb;a.a
+            </li><li class="fragment">
+                &#x03bb;b a.a
+            </li><li class="fragment">
+                &#x03bb;a b.b
+            </li></ul>
+        </section><section>
+            <h3>Conversion: Mockingbird</h3>
+            <p>
+                Mockingbird is easy to make with Starling and Ibis
+            </p><p>
+                M = S I I
+            </p><ul><li class="fragment">
+                (&#x03bb;a b c.a c (b c)) (&#x03bb;a.a) (&#x03bb;a.a)
+            </li><li class="fragment">
+                &#x03bb;c.(&#x03bb;a.a) c ((&#x03bb;a.a) c)
+            </li><li class="fragment">
+                &#x03bb;c.c c
+            </li></ul>
+        </section><section>
+            <h3>S K Combinators</h3>
             <ul><li class="fragment">
                 Ibis: I = S K K = S K S
             </li><li class="fragment">
