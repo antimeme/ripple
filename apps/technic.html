@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="X-UA-Compatible" content="chrome=1">
+<title>Technic</title>
+<style>
+    html, body
+    { padding: 0; margin: 0; overflow: hidden; position: relative; }
+    canvas { background: white; color: #336; }
+</style>
+
+<button id="generate">Generate</button>
+<div id="list"></div>
+
+<script src="ripple/polyfill.js"></script>
+<script src="ripple/ripple.js"></script>
+<script src="ripple/technic.js"></script>
+<script>//<![CDATA[
+ ripple.ready(function() {
+     var list = document.getElementById('list');
+     var generate = document.getElementById('generate');
+
+     var create = function() {
+         for (var ii = 0; ii < 10; ++ii)
+             list.insertBefore(
+                 ripple.createElement(
+                     'p', null, technic.generateTechnicalName()),
+                 list.childNodes[0]);
+      };
+
+     generate.addEventListener('click', function(event) { create(); });
+     create();
+     
+ }); //]]></script>

@@ -123,15 +123,6 @@
         return result;
     };
 
-    technic.create = function(config) { return base(config); };
-}(typeof exports === 'undefined' ? this['technic'] = {} : exports));
-
-if ((typeof require !== 'undefined') && (require.main === module)) {
-    var technic = exports;
-    var multivec = require('./multivec.js');
-    var fs = require('fs');
-    var mode = null;
-
     var shuffle = function(elements, rand) {
         var ii, jj, swap;
 
@@ -146,7 +137,7 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
         return elements;
     }
 
-    var generateTechnicalName = function() {
+    technic.generateTechnicalName = function() {
         var first = ["phasic", "analog", "digital", "optical",
                      "transcoding", "baseband", "rapid", "variable",
                      "photonic", "linear", "continuous", "discrete",
@@ -194,6 +185,15 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
         }
     }();
 
+    technic.create = function(config) { return base(config); };
+}(typeof exports === 'undefined' ? this['technic'] = {} : exports));
+
+if ((typeof require !== 'undefined') && (require.main === module)) {
+    var technic = exports;
+    var multivec = require('./multivec.js');
+    var fs = require('fs');
+    var mode = null;
+
     var rules = {
         multivec: multivec,
         dimensions: {
@@ -211,7 +211,7 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
                 comment: "Force exerted"},
             "Stability": {base: .80, vary: +.08}
         },
-        components: generateTechnicalName,
+        components: technic.generateTechnicalName,
         costs: { base: 100, vary: 20 }
     };
 
