@@ -106,9 +106,6 @@
             </li><li>
                 <a href="https://en.wikipedia.org/wiki/John_von_Neumann"
                 >John von Neumann</a>: 1903 - 1957 CE
-            </li><li>
-                <a href="https://web.maths.unsw.edu.au/~norman/"
-                >Norman Wildberger</a>
             </li></ul>
         </section>
         <section>
@@ -134,6 +131,9 @@
                 Dorst, Fontijne and Mann<br />
                 <a href="http://www.geometricalgebra.net"
                 >http://www.geometricalgebra.net</a>
+            </li><li>
+                <a href="https://web.maths.unsw.edu.au/~norman/"
+                >Norman Wildberger</a>
             </li></ul>
         </section>
     </section>
@@ -1615,15 +1615,19 @@
                     <span class="intro">Idempotent</span>:
                     &#x2200;a (a &cup; a) = &cup;{ a, a } = a
                 </li><li class="fragment">
-                    <span class="intro">Communtative</span>:
+                    <span class="intro">Commutative</span>:
                     &#x2200;a,b (a &cup; b = b &cup; a)
-                    &#x27fa;<br /> (&cup;{a, b} = &cup;{b, a})
+                    <span class="fragment">
+                        &#x27fa;<br /> (&cup;{a, b} = &cup;{b, a})
+                    </span>
                 </li><li class="fragment">
                     <span class="intro">Associative</span>:
                     &#x2200;a,b,c ((a &cup; b) &cup; c =
-                    a &cup; (b &cup; c)) &#x27fa;<br />
-                    (&cup;{ &cup;{ a, b }, c } =
-                    &cup;{ a, &cup;{ b, c } })
+                    a &cup; (b &cup; c))
+                    <span class="fragment">
+                        &#x27fa;<br /> (&cup;{ &cup;{ a, b }, c } =
+                        &cup;{ a, &cup;{ b, c } })
+                    </span>
                 </li>
             </ul>
         </section>
@@ -1635,7 +1639,7 @@
             </p><p>
                 One set is a subset of another if the union operator
                 leaves the other set unchanged.
-            </p><p>
+            </p><p class="fragment">
                 &#x2200;a,b (a <span class="intro">&#x2286;</span> b)
                 &#x27f9; &#x2200;c (c&#x2208;a &#x27f9; c&#x2208;b)
             </p>
@@ -1699,27 +1703,31 @@
             <p class="fragment">
                 <span class="intro">&#x2118;</span>{&spades;,
                 <span class="redsuit">&hearts;</span>, &clubs;,
-                <span class="redsuit">&diams;</span>} =
-                {{}, {&spades;},
-                {<span class="redsuit">&hearts;</span>},
-                {&clubs;}, {<span class="redsuit">&diams;</span>},<br />
-                {&spades;, <span class="redsuit">&hearts;</span>},
-                {&spades;, &clubs;},
-                {&spades;, <span class="redsuit">&diams;</span>},
-                {<span class="redsuit">&hearts;</span>, &clubs;},
-                {<span class="redsuit">&hearts;</span>,
-                <span class="redsuit">&diams;</span>},
-                {&clubs;, <span class="redsuit">&diams;</span>},<br />
-                {<span class="redsuit">&hearts;</span>, &clubs;,
-                <span class="redsuit">&diams;</span>},
-                {&spades;, &clubs;,
-                <span class="redsuit">&diams;</span>},
-                {&spades;, <span class="redsuit">&hearts;</span>,
-                &clubs;}, {&spades;,
-                <span class="redsuit">&hearts;</span>,
-                <span class="redsuit">&diams;</span>},<br />
-                {&spades;, <span class="redsuit">&hearts;</span>,
-                &clubs;, <span class="redsuit">&diams;</span>}}
+                <span class="redsuit">&diams;</span>}
+                <span class="fragment">
+                    = {{}, {&spades;},
+                    {<span class="redsuit">&hearts;</span>},
+                    {&clubs;}, {<span class="redsuit">&diams;</span>},
+                    <br />
+                    {&spades;, <span class="redsuit">&hearts;</span>},
+                    {&spades;, &clubs;},
+                    {&spades;, <span class="redsuit">&diams;</span>},
+                    {<span class="redsuit">&hearts;</span>, &clubs;},
+                    {<span class="redsuit">&hearts;</span>,
+                    <span class="redsuit">&diams;</span>},
+                    {&clubs;, <span class="redsuit">&diams;</span>},
+                    <br />
+                    {<span class="redsuit">&hearts;</span>, &clubs;,
+                    <span class="redsuit">&diams;</span>},
+                    {&spades;, &clubs;,
+                    <span class="redsuit">&diams;</span>},
+                    {&spades;, <span class="redsuit">&hearts;</span>,
+                    &clubs;}, {&spades;,
+                    <span class="redsuit">&hearts;</span>,
+                    <span class="redsuit">&diams;</span>},<br />
+                    {&spades;, <span class="redsuit">&hearts;</span>,
+                    &clubs;, <span class="redsuit">&diams;</span>}}
+                </span>
             </p>
             <aside class="notes">
                 Every set has a power set, which is the set of all
