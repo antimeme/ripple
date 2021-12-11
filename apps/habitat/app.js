@@ -7,11 +7,13 @@
 (function(app) {
     "use strict";
     if (typeof require === 'function') {
-        this.ripple   = require("./ripple/ripple.js");
-        this.fascia   = require("./ripple/fascia.js");
-        this.multivec = require("./ripple/multivec.js");
-        this.grille   = require("./ripple/grille.js");
-        this.pathf    = require("./ripple/pathf.js");
+        this.ripple   = require("../ripple/ripple.js");
+        this.fascia   = require("../ripple/fascia.js");
+        this.multivec = require("../ripple/multivec.js");
+        this.grille   = require("../ripple/grille.js");
+        this.pathf    = require("../ripple/pathf.js");
+        this.editorMode  = require("./editorMode.js");
+        //this.stationMode = require("./stationMode.js");
     }
     var rules = undefined;
     var station;
@@ -555,12 +557,13 @@
         return {
             modes: {
                 station:  stationMode,
+                editor:   editorMode,
                 building: buildingMode},
-            mode: "station"
+            mode: ripple.param("mode", {default: "station"})
         };
     };
 
-}).call(this, typeof exports === 'undefined'?
+}).call(this, (typeof exports === 'undefined') ?
         (this.app = {}) : ((typeof module !== undefined) ?
                            (module.exports = exports) : exports));
 
