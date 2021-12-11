@@ -1001,6 +1001,14 @@
         ctx.translate(-this.x, -this.y);
     };
 
+    ripple.export = function(name, object) {
+        if (typeof(module) !== "undefined") {
+            module.exports = object;
+        } else if (typeof(exports) !== "undefined") {
+            exports = object;
+        } else window[name] = object;
+    };
+
 })(typeof exports === 'undefined' ? window['ripple'] = {} : exports);
 
 // Library routines that apply only to Node.js applications
