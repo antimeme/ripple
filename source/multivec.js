@@ -1085,20 +1085,19 @@
         return result;
     };
 
-    // This library exports only one function so the name of the
-    // library itself is used.
+    // Export multivec directly
     if (typeof(module) !== "undefined") {
         module.exports = multivec;
     } else if (typeof(exports) !== "undefined") {
         exports = multivec;
-    } else window['multivec'] = multivec;
+    } else window["multivec"] = multivec;
 }).call(this);
 
 // Aumotated testing framework
 if ((typeof require !== 'undefined') && (require.main === module)) {
-    var multivec = exports;
+    var multivec = require("./multivec.js");
     var tests = {
-        indivdual: {
+        individual: {
             vectors: [
                 [0], [7], [[2, 2, 2]], [' 2o1o2 +  3.14159 - 3o1o2'],
                 [{'': 3, 'o1o2': -2}]] },
