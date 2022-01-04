@@ -17,8 +17,11 @@
         <section>
             <h2>Lambda Calculus</h2>
             <p>
-                Lambda calculus is a simple, compact and universal
-                model of computation.  Published by
+                Lambda calculus is a
+                <span class="intro">formal system</span> that creates a
+                <span class="intro">simple</span> and
+                <span class="intro">universal</span> model of
+                computation.  Published by
                 <a href="https://en.wikipedia.org/wiki/Alonzo_Church">Alonso
                     Church</a> in 1936 CE, it slightly predates
                 <a href="https://en.wikipedia.org/wiki/Turing_machine">Turing
@@ -1045,28 +1048,27 @@
             <h3>Combinator Recursion</h3>
             <p>See <a href="#loops">loops</a>.</p>
         </section><section>
-            <h3>Combinator Recursion</h3>
+            <h3>Combinator Fixed Points</h3>
             <p>
-                Functions have no names in lambda calculus but
-                we can still implement recursion using the
-                famous Y combinator:
+                Introducing the fixed point combinator, better
+                known as the famous Y combinator:
             </p><ul><li class="fragment">
-                Y &#x225d; &#x03bb;f.(&#x03bb;a.f (a a))
+                FIX &#x225d; &#x03bb;f.(&#x03bb;a.f (a a))
                 &#x03bb;a.f (a a)
             </li><li class="fragment">
-                Y g
+                FIX g
                 <span class="fragment">
                     = (&#x03bb;a.g (a a))
                     &#x03bb;a.g (a a)
                 </span>
             </li><li class="fragment">
-                Y g = g ((&#x03bb;a.g (a a)) &#x03bb;a.g (a a))
-            </li><li class="fragment">
-                Y g = g (Y g)
+                FIX g = g ((&#x03bb;a.g (a a)) &#x03bb;a.g (a a))
                 <span class="fragment">
-                    = g (g (Y g))
+                    = g (FIX g)
+                <span class="fragment">
+                    = <br /> g (g (FIX g))
                 </span><span class="fragment">
-                    = g (g (g (Y g)))
+                    = g (g (g (FIX g)))
                 </span><span class="fragment">
                     = ...
                 </span>
@@ -1077,25 +1079,26 @@
                 FSTEP: (&#x03bb;f n.(IS-ZERO? n) ONE <br />
                 (MULTIPLY n (f (PREDECESSOR n))))
             </p><p class="fragment">
-                FACTORIAL &#x225d; Y FSTEP
+                FACTORIAL &#x225d; FIX FSTEP
             </p>
         </section><section>
             <h3>Factorial</h3>
             <p>
                 FACTORIAL ONE
-                <span class="fragment"> &#x225d; Y FSTEP ONE</span>
-    </li><li class="fragment">
-        Y FSTEP ONE &#x25b7; FSTEP (Y FSTEP) ONE
-    </li><li class="fragment">
-        (IS-ZERO? ONE) ONE <br />
-        (MULTIPLY ONE (Y FSTEP (PREDECESSOR ONE)))
-    </li><li class="fragment">
-        MULTIPLY ONE (Y FSTEP (PREDECESSOR ONE))
-    </li><li class="fragment">
-        MULTIPLY ONE (FSTEP (Y FSTEP) ZERO)
-    </li><li class="fragment">
-        MULTIPLY ONE ONE &#x25b7; ONE
-    </li></ul>
+                <span class="fragment"> &#x225d; FIX FSTEP ONE</span>
+            </p>
+            <ul><li class="fragment">
+                FIX FSTEP ONE &#x25b7; FSTEP (FIX FSTEP) ONE
+            </li><li class="fragment">
+                (IS-ZERO? ONE) ONE <br />
+                (MULTIPLY ONE (FIX FSTEP (PREDECESSOR ONE)))
+            </li><li class="fragment">
+                MULTIPLY ONE (FIX FSTEP (PREDECESSOR ONE))
+            </li><li class="fragment">
+                MULTIPLY ONE (FSTEP ( FSTEP) ZERO)
+            </li><li class="fragment">
+                MULTIPLY ONE ONE &#x25b7; ONE
+            </li></ul>
         </section><section>
             <h3>Combinator Ordered Pairs</h3>
             <p>
@@ -1199,7 +1202,7 @@
                 NTH: &#x03bb;n l.n (&#x03bb;l.(IS-NIL? l)
                 NIL (TAIL l)) l
             </p><ul><li class="fragment">
-                NTH 1 (PAIR a (PAIR b (PAIR c NIL)))
+                NTH ONE (PAIR a (PAIR b (PAIR c NIL)))
             </li><li class="fragment">
                 &#x25b7; ONE (&#x03bb; l.(IS-NIL? l)
                 NIL (TAIL l)) (PAIR ...)
@@ -1210,7 +1213,9 @@
                 &#x25b7; (IS-NIL? (PAIR ...))
                 NIL (TAIL (PAIR ...))
             </li><li class="fragment">
-                &#x25b7; TAIL (PAIR b (PAIR c NIL))
+                &#x25b7; TAIL (PAIR a (PAIR b (PAIR c NIL)))
+            </li><li class="fragment">
+                    &#x25b7; (PAIR b (PAIR c NIL))
             </li></ul><p class="fragment">
                 An index beyond the end of the list will give NIL
             </p>
@@ -1221,7 +1226,7 @@
             </p><ul><li class="fragment">
                 SUM (PAIR ONE (PAIR TWO (PAIR THREE NIL)))
             </li><li class="fragment">
-                SUM = Y (&#x03bb;f l.(IS-NIL? l) ZERO <br />
+                SUM = FIX (&#x03bb;f l.(IS-NIL? l) ZERO <br />
                 (ADD (HEAD l) (f (TAIL l))))
             </li><li class="fragment">
                 ADD ONE (ADD TWO (ADD THREE ZERO))
@@ -1234,7 +1239,7 @@
             <p>
                 We can apply a function to every member of a list
             </p><ul><li class="fragment">
-                MAP = Y (&#x03bb;f g l.(IS-NIL? l) NIL <br />
+                MAP = FIX (&#x03bb;f g l.(IS-NIL? l) NIL <br />
                 (PAIR (g (HEAD l)) (f g (TAIL l))))
             </li><li class="fragment">
                 MAP (&#x03bb;n.ADD n n) <br />
@@ -1529,7 +1534,7 @@
             </li><li class="fragment">
                 Blackbird: Bl = S (K (S (K S) K)) (S (K S) K)
             </li><li class="fragment">
-                Y = S (K (S I I)) (S (S (K S) K) (K (S I I)))
+                FIX = S (K (S I I)) (S (S (K S) K) (K (S I I)))
             </li></ul>
         </section><section>
             <h3>There Can Be Only One</h3>
@@ -1609,12 +1614,15 @@
             <ul><li class="fragment">
                 Expressions alone are universal
             </li><li class="fragment">
+                Expressions are stateless
+            </li><li class="fragment">
                 Expressions can be parallelized
             </li><li class="fragment">
                 Expressions submit to mathematical tools
             </li></ul><p class="fragment">
-                Hopefully all this helps to appreciate how the power
-                of computation can bloom from simple seeds.
+                But more important than all of that, this may help us
+                to appreciate how the power of computation can bloom
+                from simple seeds.
             </p>
         </section>
     </section></div></div>
