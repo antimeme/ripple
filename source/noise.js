@@ -19,34 +19,13 @@
 (function(noise) {
     'use strict';
 
-    // Randomize the order of an array in place, using an optional
-    // random number generator
-    var shuffle = function(elements, rand) {
-        var ii, jj, swap;
-
-        if (!rand || !rand.random)
-            rand = Math;
-        for (ii = elements.length; ii; --ii) { // swap at random
-            jj = Math.floor(rand.random() * ii);
-            swap = elements[ii - 1];
-            elements[ii - 1] = elements[jj];
-            elements[jj] = swap;
-        }
-        return elements;
-    }
-
     noise.simplex = function() {
         // An implementation of Ken Perlin's Simplex Noise.
         //   https://mrl.cs.nyu.edu/~perlin/paper445.pdf
         // Call with coordinates of point in order.  For example,
         // call noiseSimplex(x, y) for two dimensional noise.
-        var result = 0;
         var config, ii, jj, kk, start = 0;
-        var finalFactor;
         var point = []; // Position for which to calculate noise
-        var skews    = []; // Point skewed for simplex determination
-        var center   = []; // Center of unskewed simplex
-        var vertices = []; // Hypercube vertices in simplex
 
         // All arguments are expected to be numeric coordinates
         if ((typeof(arguments[0]) == "object") && arguments[0]) {
@@ -61,20 +40,51 @@
                     "noiseSimplex: argument " + ii + " (\"" +
                     arguments[ii] + "\") is not a number");
         var n = point.length;
-        var radius = (config && config.radius) ? config.radius : 0.5;
+        var radius = (config && config.radius) ? config.radius : 0.6;
 
-        // Compute the skew factor for each dimension only once and
-        // cache the result for future calls.
+        // Precomputed properties are required for each dimension.
+        // These are created the first time they are needed and
+        // cached for future use.
         if (!this.__cache)
             this.__cache = {
-                skew: {}, unskew: {},
+                skewFactors: {}, unskewFactors: {},
                 G: {}, P: {},
-                getGradient: function(n, vertex, skews) {
+                getSkewed: function(point) {
+                    var ii, factor = 0, n = point.length;
+
+                    for (ii = 0; ii < n; ++ii)
+                        factor += point[ii];
+                    if (isNaN(this.skewFactors[n]))
+                        this.skewFactors[n] = (
+                            (Math.sqrt(n + 1) - 1) / n);
+                    factor *= this.skewFactors[n];
+
+                    var result = [];
+                    for (ii = 0; ii < n; ++ii)
+                        result.push(point[ii] + factor);
+                    return result;
+                },
+                getUnskewed: function(point) {
+                    var ii, factor = 0, n = point.length;
+
+                    for (ii = 0; ii < n; ++ii)
+                        factor += point[ii];
+                    if (isNaN(this.unskewFactors[n]))
+                        this.unskewFactors[n] = (
+                            (1 - 1 / Math.sqrt(n + 1)) / n);
+                    factor *= this.unskewFactors[n];
+
+                    var result = [];
+                    for (ii = 0; ii < n; ++ii)
+                        result.push(point[ii] - factor);
+                    return result;
+                },
+                getGradient: function(n, vertex) {
                     var modulo = this.P[n].length;
                     var index = 0, ii;
                     for (ii = 0; ii < vertex.length; ++ii) {
-                        index = (index + Math.floor(skews[ii]) +
-                                 vertex[ii]) % modulo;
+                        index = (index + Math.floor(
+                            vertex[ii])) % modulo;
                         if (index < 0)
                             index += modulo;
                         index = this.P[n][index];
@@ -82,11 +92,6 @@
                     return this.G[n][index % this.G[n].length];
                 }
             };
-        if (isNaN(this.__cache.skew[n]))
-            this.__cache.skew[n] = ((Math.sqrt(n + 1) - 1) / n);
-        if (isNaN(this.__cache.unskew[point.lengh]))
-            this.__cache.unskew[n] = (
-                (1 - 1 / (Math.sqrt(n + 1) + 1)) / n);
 
         // Create a vector pointing to each edge of a hypercube, since
         // these are the directions that produce the least distortion
@@ -124,12 +129,16 @@
         }
 
         if (!this.__cache.P[n]) {
+            var swap;
             this.__cache.P[n] = [];
-            for (ii = 0; ii < 5 * this.__cache.G
-                [n].length; ++ii) {
+            for (ii = 0; ii < this.__cache.G[n].length; ++ii)
                 this.__cache.P[n].push(ii);
+            for (ii = this.__cache.P[n].length; ii; --ii) {
+                jj = Math.floor(Math.random() * ii);
+                swap = this.__cache.P[n][ii - 1];
+                this.__cache.P[n][ii - 1] = this.__cache.P[n][jj];
+                this.__cache.P[n][jj] = swap;
             }
-            shuffle(this.__cache.P[n]);
             // TODO: pseudo-random this using config
         }
 
@@ -138,25 +147,21 @@
         // where the verticex lie on the corners of a hypercube.  This
         // makes it easier to determine which of the n-factorial
         // simplexes contains the point.
-        var skewFactor = 0;
-        var internals  = []; // Position within skewed simplex
+        var skewed    = this.__cache.getSkewed(point);
+        var internals = []; // Position within skewed simplex
         for (ii = 0; ii < n; ++ii)
-            skewFactor += point[ii];
-        skewFactor *= this.__cache.skew[n];
-        for (ii = 0; ii < n; ++ii) {
-            skews[ii] = point[ii] + skewFactor;
-            internals[ii] = skews[ii] - Math.floor(skews[ii]);
-        }
+            internals.push(skewed[ii] - Math.floor(skewed[ii]));
 
         // ## Simplical Subdivision
         // Select the simplex in a hypercube which contains the input
         // point.  This should run in n^2 time (where n is the number
         // of dimensions the point is in).
+        var simplex = []; // Hypercube vertices in simplex
         var vertex = [];
         var index;
         for (ii = 0; ii < n; ++ii)
             vertex.push(0);
-        vertices.push(vertex.slice());
+        simplex.push(vertex.slice());
         for (jj = 0; jj < n; ++jj) {
             index = undefined;
             for (ii = 0; ii < n; ++ii) {
@@ -167,65 +172,180 @@
             }
             if (!isNaN(index))
                 vertex[index] = 1;
-            vertices.push(vertex.slice());
+            simplex.push(vertex.slice());
         }
 
-        // An easing function which has zero derivative and second
-        // derivative at both t=0 and t=1: 6t^5 - 15t^4 + 10t
-        var fade = function(t) {
-            return ((6 * t - 15) * t + 10) * t * t * t;
-        };
-
-        var lerp = function(a, b, t) {
-            return a + (b - a) * t;
-        };
-
+        // Convert the abstract simplex into unskewed coordinates
+        // so that we can interpolate based on displacement in
+        // the steps that follow
+        for (ii = 0; ii < simplex.length; ++ii) {
+            for (jj = 0; jj < simplex[ii].length; ++jj)
+                simplex[ii][jj] += Math.floor(skewed[jj]);
+            simplex[ii] = this.__cache.getUnskewed(simplex[ii]);
+        }
+        
         // ## Gradient Selection
-        var gradient = []; // Pseudo random gradient
-        var current;
-        for (ii = 0; ii < n; ++ii)
-            gradient.push(0);
-        for (jj = 0; jj < vertices.length; ++jj) {
-            current = this.__cache.getGradient(
-                n, vertices[jj], skews);
-            for (ii = 0; ii < n; ++ii) {
-                gradient[ii] += fade(Math.abs(internals[ii])) * current[ii];
-            }
-            // TODO fix this -- use lerp!
-        }
+        var gradients = []; // Pseudo random gradients per vertex
+        for (ii = 0; ii < simplex.length; ++ii)
+            gradients.push(this.__cache.getGradient(n, simplex[ii]));
 
         // ## Kernel Summation
-        var displacement; // Difference between point and center
-        var dsquared = 0;
-        var unskewFactor = 0;
-        for (ii = 0; ii < n; ++ii)
-            unskewFactor += skews[ii];
-        unskewFactor *= this.__cache.unskew[n];
-        for (ii = 0; ii < n; ++ii) {
-            center.push(skews[ii] * unskewFactor);
-            displacement = point[ii] - center[ii];
-            dsquared += displacement * displacement;
-            result += displacement * gradient[ii];
+        var result = 0;
+        var displacement, dsquared, contribution, gdot;
+        result = 0;
+        for (ii = 0; ii < simplex.length; ++ii) {
+            dsquared = 0;
+            displacement = [];
+            for (jj = 0; jj < n; ++jj) {
+                displacement[jj] = point[jj] - simplex[ii][jj];
+                dsquared += displacement[jj] * displacement[jj];
+            }
+            //console.log("DEBUG-simplex", simplex[ii]);
+            //console.log("DEBUG-displace", displacement);
+            //console.log("DEBUG-dsquared", dsquared);
+
+            contribution = radius - dsquared;
+            gdot = 0;
+            for (jj = 0; jj < displacement.length; ++jj)
+                gdot += gradients[ii][jj] * displacement[jj];
+            contribution *= contribution;
+            contribution *= contribution;
+            result += 12 * (1 << n) * contribution * gdot;
         }
-        //finalFactor = Math.max(0, radius * radius - dsquared);
-        //finalFactor *= finalFactor;
-        //finalFactor *= finalFactor;
-        //result *= finalFactor;
+        //console.log("DEBUG-point", point, result);
         return result;
     };
+
+    noise.perlinSimplex3 = function(x, y, z) {
+        // Adapted from chapter 2 of Ken Perlin's 2001 SIGGRAPH
+        // Course Notes.  This is used as a referene to compare
+        // against the less inscrutible version above.
+        var A = [];
+        var T = [0x15,0x38,0x32,0x2c,0x0d,0x13,0x07,0x2a];
+        var bi = function(N, B) { return N>>B & 1; };
+        var b = function(i, j, k, B) {
+            return T[bi(i,B)<<2 | bi(j,B)<<1 | bi(k,B)];
+        };
+        var shuffle = function(i, j, k) {
+            return b(i,j,k,0) + b(j,k,i,1) + b(k,i,j,2) + b(i,j,k,3) +
+                   b(j,k,i,4) + b(k,i,j,5) + b(i,j,k,6) + b(j,k,i,7) ;
+        }
+
+        var K = function(a) {
+            var s = (A[0]+A[1]+A[2])/6.;
+            var x = u - A[0] + s,
+                y = v - A[1] + s,
+                z = w - A[2] + s,
+                t = .6 - x * x - y * y - z * z;
+            var h = shuffle(i + A[0], j + A[1], k + A[2]);
+            A[a]++;
+            if (t < 0)
+                return 0;
+            var b5 = h>>5 & 1,
+                b4 = h>>4 & 1,
+                b3 = h>>3 & 1,
+                b2 = h>>2 & 1,
+                b = h & 3;
+            var p = b==1 ? x : b==2 ? y : z,
+                q = b==1 ? y : b==2 ? z : x,
+                r = b==1 ? z : b==2 ? x : y;
+            p = (b5==b3 ? -p : p);
+            q = (b5==b4 ? -q : q);
+            r = (b5!=(b4^b3) ? -r : r);
+            t *= t;
+            return 8 * t * t * (p + (b==0 ? q+r : b2==0 ? q : r));
+        }
+
+        var i, j, k;
+        var u, v, w;
+        var s = (x + y + z)/3;
+
+        i = Math.floor(x + s);
+        j = Math.floor(y + s);
+        k = Math.floor(z + s);
+        s = (i + j + k)/6.;
+        u = x - i + s;
+        v = y - j + s;
+        w = z - k + s;
+
+        A[0]=A[1]=A[2]=0;
+        var hi = u>=w ? u>=v ? 0 : 1 : v>=w ? 1 : 2;
+        var lo = u< w ? u< v ? 0 : 1 : v< w ? 1 : 2;
+        return K(hi) + K(3-hi-lo) + K(lo) + K(0);
+    }
 
 })(typeof exports === 'undefined' ? window['noise'] = {} : exports);
 
 if ((typeof require !== 'undefined') && (require.main === module)) {
     var noise = exports;
-    var ii, jj, row;
+    var createGrayNoisePPM = function(fn, width, height) {
+        var ii, jj, min, max, now, last = Date.now();
+        console.log("P3");
+        console.log(width, " ", height);
+        console.log("255");
+        for (var jj = height; jj >= 0; --jj) {
+            now = Date.now();
+            if ((jj === height) || (now - last > 125)) {
+                console.error("Scanlines remaining:", jj);
+                last = now;
+            }
+            for (var ii = 0; ii < width; ++ii) {
+                var value = fn(ii, jj)
+                if (isNaN(min) || (value < min))
+                    min = value;
+                if (isNaN(max) || (value > max))
+                    max = value;
+                value = Math.min(1, Math.max(0, value));
+                console.log(Math.floor(255.999 * value),
+                            Math.floor(255.999 * value),
+                            Math.floor(255.999 * value));
+            }
+        }
+        console.error("Done:", min, max, (max - min));
+    };
 
-    for (ii = 0; ii < 5; ++ii) {
-        row = [];
-        for (jj = 0; jj < 5; ++jj)
-            row.push(noise.simplex(ii, jj).toFixed(5));
-        console.log(row.join(" "));
-    }
-            
-    console.log("Noise:", noise.simplex(2, 2, 1.5));
+    var allowOptions = true;
+    var actions = [];
+    var freq = 0.01;
+    var width = 400;
+    var height = 225;
+    var noisefn = function(x, y) {
+        return noise.simplex(x, y, 1);
+    };
+    var noisefns = {
+        perlin: function(x, y) {
+            return (3.9 * noise.perlinSimplex3(
+                x * freq, y * freq, 1) + 1.1) / 2;
+        }
+    };
+    process.argv.slice(2).forEach(function(argument) {
+        if (allowOptions && (argument === "--")) {
+            allowOptions = false;
+        } else if (allowOptions && argument.startsWith("--")) {
+            if (argument.startsWith("--width=")) {
+                width = parseInt(argument.slice("--width=".length), 10);
+                if (isNaN(width) || (width < 0))
+                    throw new Error("Invalid width: " +
+                                    argument.slice("--width=".length));
+            } else if (argument.startsWith("--height=")) {
+                height = parseInt(
+                    argument.slice("--height=".length), 10);
+                if (isNaN(height) || (height < 0))
+                    throw new Error("Invalid height: " +
+                                    argument.slice("--height=".length));
+            } else if (argument === "--perlin")
+                noisefn = noisefns["perlin"];
+            else if (argument.startsWith("--noise=")) {
+                var fn_name = argument.slice("--noise=".length);
+                if (fn_name in noisefns)
+                    noisefn = noisefns[fn_name];
+                else throw new Error(
+                    "Unknown noise function: " + fn_name);
+            } else throw new Error(
+                "Unknown option: " + argument);
+        } else actions.push(argument);
+    });
+
+    createGrayNoisePPM(noisefn, width, height);
+
 }
