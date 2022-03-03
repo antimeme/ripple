@@ -19,203 +19,53 @@
 (function(noise) {
     'use strict';
 
-    noise.simplex = function() {
-        // An implementation of Ken Perlin's Simplex Noise.
-        //   https://mrl.cs.nyu.edu/~perlin/paper445.pdf
-        // Call with coordinates of point in order.  For example,
-        // call noiseSimplex(x, y) for two dimensional noise.
-        var config, ii, jj, kk, start = 0;
-        var point = []; // Position for which to calculate noise
+    noise.SquirrelNoise5 = function(seed, px, py, pz, pt) {
+        // Squirrel Eiserloh's raw noise function
+        // https://twitter.com/SquirrelTweets/status/1421251894274625536
+        //
+        // This code is made available under the Creative Commons
+        // attribution 3.0 license (CC-BY-3.0 US):
+        // Attribution in source code comments (even
+        // closed-source/commercial code) is sufficient.
+        // License summary and text available at:
+        // https://creativecommons.org/licenses/by/3.0/us/
+        if (isNaN(seed))
+            throw new Error("Seed must be numeric: " + seed);
+        if (isNaN(px))
+            throw new Error("Position x must be numeric: " + px);
 
-        // All arguments are expected to be numeric coordinates
-        if ((typeof(arguments[0]) == "object") && arguments[0]) {
-            config = arguments[0];
-            start = 1;
-        }
-        if (!config || !config.point)
-            for (ii = start; ii < arguments.length; ++ii)
-                if (!isNaN(arguments[ii])) {
-                    point.push(arguments[ii]);
-                } else throw new Error(
-                    "noiseSimplex: argument " + ii + " (\"" +
-                    arguments[ii] + "\") is not a number");
-        var n = point.length;
-        var radius = (config && config.radius) ? config.radius : 0.6;
+	var mangledBits = Math.floor(px);
+        if (!isNaN(py))
+            mangledBits += 198491317 * Math.floor(py);
+        if (!isNaN(pz))
+            mangledBits += 6542989 * Math.floor(pz);
+        if (!isNaN(pt))
+            mangledBits += 357239 * Math.floor(pt);
 
-        // Precomputed properties are required for each dimension.
-        // These are created the first time they are needed and
-        // cached for future use.
-        if (!this.__cache)
-            this.__cache = {
-                skewFactors: {}, unskewFactors: {},
-                G: {}, P: {},
-                getSkewed: function(point) {
-                    var ii, factor = 0, n = point.length;
-
-                    for (ii = 0; ii < n; ++ii)
-                        factor += point[ii];
-                    if (isNaN(this.skewFactors[n]))
-                        this.skewFactors[n] = (
-                            (Math.sqrt(n + 1) - 1) / n);
-                    factor *= this.skewFactors[n];
-
-                    var result = [];
-                    for (ii = 0; ii < n; ++ii)
-                        result.push(point[ii] + factor);
-                    return result;
-                },
-                getUnskewed: function(point) {
-                    var ii, factor = 0, n = point.length;
-
-                    for (ii = 0; ii < n; ++ii)
-                        factor += point[ii];
-                    if (isNaN(this.unskewFactors[n]))
-                        this.unskewFactors[n] = (
-                            (1 - 1 / Math.sqrt(n + 1)) / n);
-                    factor *= this.unskewFactors[n];
-
-                    var result = [];
-                    for (ii = 0; ii < n; ++ii)
-                        result.push(point[ii] - factor);
-                    return result;
-                },
-                getGradient: function(n, vertex) {
-                    var modulo = this.P[n].length;
-                    var index = 0, ii;
-                    for (ii = 0; ii < vertex.length; ++ii) {
-                        index = (index + Math.floor(
-                            vertex[ii])) % modulo;
-                        if (index < 0)
-                            index += modulo;
-                        index = this.P[n][index];
-                    }
-                    return this.G[n][index % this.G[n].length];
-                }
-            };
-
-        // Create a vector pointing to each edge of a hypercube, since
-        // these are the directions that produce the least distortion
-        // in noise.  A hypercube has n * 2^(n-1) edges, so it's
-        // important that we're caching the results.
-        if (!this.__cache.G[n]) {
-            var enumerateEdges = function(n) {
-                var result = [];
-                var entry, ii, jj, kk, overflow;
-
-                for (ii = 0; ii < n; ++ii) {
-                    entry = [];
-                    for (jj = 0; jj < n; ++jj)
-                        entry.push((ii === jj) ? 0 : 1);
-
-                    var overflow = false;
-                    while (!overflow) {
-                        result.push(entry.slice());
-
-                        overflow = true;
-                        for (jj = 0; overflow && (jj < n); ++jj) {
-                            if (!entry[jj])
-                                continue;
-                            if (entry[jj] > 0) {
-                                entry[jj] = -1;
-                                overflow = false;
-                            } else entry[jj] = 1;
-                        }
-                    }
-                }
-                return result;
-
-            };
-            this.__cache.G[n] = enumerateEdges(n);
-        }
-
-        if (!this.__cache.P[n]) {
-            var swap;
-            this.__cache.P[n] = [];
-            for (ii = 0; ii < this.__cache.G[n].length; ++ii)
-                this.__cache.P[n].push(ii);
-            for (ii = this.__cache.P[n].length; ii; --ii) {
-                jj = Math.floor(Math.random() * ii);
-                swap = this.__cache.P[n][ii - 1];
-                this.__cache.P[n][ii - 1] = this.__cache.P[n][jj];
-                this.__cache.P[n][jj] = swap;
-            }
-            // TODO: pseudo-random this using config
-        }
-
-        // ## Coordinate Skewing
-        // Converts points in a regular simplex grid to a skewed grid
-        // where the verticex lie on the corners of a hypercube.  This
-        // makes it easier to determine which of the n-factorial
-        // simplexes contains the point.
-        var skewed    = this.__cache.getSkewed(point);
-        var internals = []; // Position within skewed simplex
-        for (ii = 0; ii < n; ++ii)
-            internals.push(skewed[ii] - Math.floor(skewed[ii]));
-
-        // ## Simplical Subdivision
-        // Select the simplex in a hypercube which contains the input
-        // point.  This should run in n^2 time (where n is the number
-        // of dimensions the point is in).
-        var simplex = []; // Hypercube vertices in simplex
-        var vertex = [];
-        var index;
-        for (ii = 0; ii < n; ++ii)
-            vertex.push(0);
-        simplex.push(vertex.slice());
-        for (jj = 0; jj < n; ++jj) {
-            index = undefined;
-            for (ii = 0; ii < n; ++ii) {
-                if (vertex[ii])
-                    continue;
-                if (isNaN(index) || (internals[ii] > internals[index]))
-                    index = ii;
-            }
-            if (!isNaN(index))
-                vertex[index] = 1;
-            simplex.push(vertex.slice());
-        }
-
-        // Convert the abstract simplex into unskewed coordinates
-        // so that we can interpolate based on displacement in
-        // the steps that follow
-        for (ii = 0; ii < simplex.length; ++ii) {
-            for (jj = 0; jj < simplex[ii].length; ++jj)
-                simplex[ii][jj] += Math.floor(skewed[jj]);
-            simplex[ii] = this.__cache.getUnskewed(simplex[ii]);
-        }
-        
-        // ## Gradient Selection
-        var gradients = []; // Pseudo random gradients per vertex
-        for (ii = 0; ii < simplex.length; ++ii)
-            gradients.push(this.__cache.getGradient(n, simplex[ii]));
-
-        // ## Kernel Summation
-        var result = 0;
-        var displacement, dsquared, contribution, gdot;
-        result = 0;
-        for (ii = 0; ii < simplex.length; ++ii) {
-            dsquared = 0;
-            displacement = [];
-            for (jj = 0; jj < n; ++jj) {
-                displacement[jj] = point[jj] - simplex[ii][jj];
-                dsquared += displacement[jj] * displacement[jj];
-            }
-            //console.log("DEBUG-simplex", simplex[ii]);
-            //console.log("DEBUG-displace", displacement);
-            //console.log("DEBUG-dsquared", dsquared);
-
-            contribution = radius - dsquared;
-            gdot = 0;
-            for (jj = 0; jj < displacement.length; ++jj)
-                gdot += gradients[ii][jj] * displacement[jj];
-            contribution *= contribution;
-            contribution *= contribution;
-            result += 12 * (1 << n) * contribution * gdot;
-        }
-        //console.log("DEBUG-point", point, result);
-        return result;
+	const SQ5_BIT_NOISE1 = 0xd2a80a3f;
+	// 11010010101010000000101000111111
+	const SQ5_BIT_NOISE2 = 0xa884f197;
+	// 10101000100001001111000110010111
+	const SQ5_BIT_NOISE3 = 0x6C736F4B;
+        // 01101100011100110110111101001011
+	const SQ5_BIT_NOISE4 = 0xB79F3ABB;
+	// 10110111100111110011101010111011
+	const SQ5_BIT_NOISE5 = 0x1b56c4f5;
+	// 00011011010101101100010011110101
+        mangledBits *= SQ5_BIT_NOISE1;
+	mangledBits += Math.floor(seed);
+	mangledBits ^= (mangledBits >> 9);
+	mangledBits += SQ5_BIT_NOISE2;
+	mangledBits ^= (mangledBits >> 11);
+	mangledBits *= SQ5_BIT_NOISE3;
+	mangledBits ^= (mangledBits >> 13);
+	mangledBits += SQ5_BIT_NOISE4;
+	mangledBits ^= (mangledBits >> 15);
+	mangledBits *= SQ5_BIT_NOISE5;
+	mangledBits ^= (mangledBits >> 17);
+	return mangledBits;
     };
-
+    
     noise.perlinSimplex3 = function(x, y, z) {
         // Adapted from chapter 2 of Ken Perlin's 2001 SIGGRAPH
         // Course Notes.  This is used as a referene to compare
@@ -272,7 +122,193 @@
         var hi = u>=w ? u>=v ? 0 : 1 : v>=w ? 1 : 2;
         var lo = u< w ? u< v ? 0 : 1 : v< w ? 1 : 2;
         return K(hi) + K(3-hi-lo) + K(lo) + K(0);
-    }
+    };
+
+    noise.simplex = function() {
+        // An implementation of Ken Perlin's Simplex Noise.
+        //   https://en.wikipedia.org/wiki/Simplex_noise
+        // Call with coordinates of point in order.  For example,
+        // call noise.simplex(x, y) for two dimensional noise.
+        var config, ii, jj, kk, start = 0;
+        var point = []; // Position for which to calculate noise
+
+        // All arguments are expected to be numeric coordinates
+        if ((typeof(arguments[0]) == "object") && arguments[0]) {
+            config = arguments[0];
+            start = 1;
+        }
+        if (!config || !config.point)
+            for (ii = start; ii < arguments.length; ++ii)
+                if (!isNaN(arguments[ii])) {
+                    point.push(arguments[ii]);
+                } else throw new Error(
+                    "noise.simplex: argument " + ii + " (\"" +
+                    arguments[ii] + "\") is not a number");
+        var n = point.length;
+        var radius = (config && config.radius) ? config.radius : 0.6;
+
+        // Precomputed properties are required for each dimension.
+        // These are created the first time they are needed and
+        // cached for future use.
+        if (!this.__cache)
+            this.__cache = {
+                skewFactors: {}, unskewFactors: {},
+                G: {}, P: {},
+
+                getSkewed: function(point) {
+                    // Convert a point in ordinary space to a
+                    // skewed space where simplex vertices match
+                    // the vertices of a hypercube.  In this
+                    // skewed space it's easier to identify which
+                    // hypercube and eventually which simplex any
+                    // given point belongs to.
+                    var ii, factor = 0, n = point.length;
+
+                    for (ii = 0; ii < n; ++ii)
+                        factor += point[ii];
+                    if (isNaN(this.skewFactors[n]))
+                        this.skewFactors[n] = (
+                            (Math.sqrt(n + 1) - 1) / n);
+                    factor *= this.skewFactors[n];
+
+                    var result = [];
+                    for (ii = 0; ii < n; ++ii)
+                        result.push(point[ii] + factor);
+                    return result;
+                },
+
+                getUnskewed: function(point) {
+                    // Convert a skewed point back to the original
+                    // space for use in additional calculations.
+                    var ii, factor = 0, n = point.length;
+
+                    for (ii = 0; ii < n; ++ii)
+                        factor += point[ii];
+                    if (isNaN(this.unskewFactors[n]))
+                        this.unskewFactors[n] = (
+                            (1 - 1 / Math.sqrt(n + 1)) / n);
+                    factor *= this.unskewFactors[n];
+
+                    var result = [];
+                    for (ii = 0; ii < n; ++ii)
+                        result.push(point[ii] - factor);
+                    return result;
+                },
+
+                getGradient: function(vertex) {
+                    // Select a gradient vector which points to a
+                    // hypercube edge -- and therefore does not
+                    // point directly at any simplex vertex.
+                    var ii, n = vertex.length;
+                    var index = 0;
+
+                    if (!this.P[n]) { // Populate cache if necessary
+                        var P = [], limit = n * (1 << (n - 1));
+                        var ii, jj, swap;
+
+                        for (ii = 0; ii < limit; ++ii)
+                            P.push(ii);
+                        for (ii = P.length; ii > 0; --ii) {
+                            // TODO: pseudo-random this
+                            jj = Math.floor(Math.random() * ii);
+                            swap = P[ii - 1];
+                            P[ii - 1] = P[jj];
+                            P[jj] = swap;
+                        }
+                        this.P[n] = P;
+                    }
+
+                    // Compute a pseudo-random index between
+                    // zero and (n * 2^(n - 1)) - 1.
+                    var modulo = this.P[n].length;
+                    for (ii = 0; ii < vertex.length; ++ii)
+                        index = this.P[n][(index + Math.floor(
+                            vertex[ii])) % modulo];
+                    if (index < 0)
+                        index += modulo;
+
+                    // Use index to select a hypercube edge
+                    var result = [];
+                    var usedbits = 0;
+                    for (ii = 0; ii < n; ++ii)
+                        result.push((ii !== Math.floor(
+                            index / (1 << (n - 1)))) ?
+                                    (((index % (1 << (n - 1))) &
+                                      (1 << usedbits++)) ? -1 : 1) : 0);
+                    return result;
+                }
+            };
+
+        // ## Coordinate Skewing
+        // Converts points in a regular simplex grid to a skewed grid
+        // where the verticex lie on the corners of a hypercube.  This
+        // makes it easier to determine which of the n-factorial
+        // simplexes contains the point.
+        var skewed = this.__cache.getSkewed(point);
+        var position = []; // Position within skewed simplex
+        for (ii = 0; ii < n; ++ii)
+            position.push(skewed[ii] - Math.floor(skewed[ii]));
+
+        // ## Simplical Subdivision
+        // Select the simplex in a hypercube which contains the input
+        // point.  This should run in n^2 time (where n is the number
+        // of dimensions the point is in).
+        var simplex = []; // Hypercube vertices in simplex
+        var vertex = [];
+        var index;
+        for (ii = 0; ii < n; ++ii)
+            vertex.push(0);
+        simplex.push(vertex.slice());
+        for (ii = 0; ii < n; ++ii) {
+            index = undefined;
+            for (jj = 0; jj < n; ++jj) {
+                if (vertex[jj])
+                    continue;
+                if (isNaN(index) || (position[jj] > position[index]))
+                    index = jj;
+            }
+            if (!isNaN(index))
+                vertex[index] = 1;
+            simplex.push(vertex.slice());
+        }
+
+        // Convert the abstract simplex into unskewed coordinates
+        // so that we can interpolate based on displacement in
+        // the steps that follow
+        for (ii = 0; ii < simplex.length; ++ii) {
+            for (jj = 0; jj < simplex[ii].length; ++jj)
+                simplex[ii][jj] += Math.floor(skewed[jj]);
+            simplex[ii] = this.__cache.getUnskewed(simplex[ii]);
+        }
+        
+        // ## Gradient Selection
+        var gradients = []; // Pseudo random gradients per vertex
+        for (ii = 0; ii < simplex.length; ++ii)
+            gradients.push(this.__cache.getGradient(simplex[ii]));
+        //console.error("DEBUG", gradients);
+
+        // ## Kernel Summation
+        var result = 0;
+        var displacement, dsquared, contribution, gdot;
+
+        for (ii = 0; ii < simplex.length; ++ii) {
+            dsquared = 0;
+            displacement = [];
+            for (jj = 0; jj < n; ++jj) {
+                displacement[jj] = point[jj] - simplex[ii][jj];
+                dsquared += displacement[jj] * displacement[jj];
+            }
+
+            contribution = radius - dsquared;
+            gdot = 0;
+            for (jj = 0; jj < displacement.length; ++jj)
+                gdot += gradients[ii][jj] * displacement[jj];
+            contribution *= contribution;
+            contribution *= contribution;
+            result += 12 * (1 << n) * contribution * gdot;
+        }
+        return result;
+    };
 
 })(typeof exports === 'undefined' ? window['noise'] = {} : exports);
 
@@ -285,7 +321,7 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
         console.log("255");
         for (var jj = height; jj >= 0; --jj) {
             now = Date.now();
-            if ((jj === height) || (now - last > 125)) {
+            if ((jj === height) || (now - last > 200 )) {
                 console.error("Scanlines remaining:", jj);
                 last = now;
             }
@@ -301,28 +337,36 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
                             Math.floor(255.999 * value));
             }
         }
-        console.error("Done:", min, max, (max - min));
+        console.error("Done: min=" + min.toFixed(3) +
+                      " max=" + max.toFixed(3) +
+                      " diff=" + (max - min).toFixed(3));
     };
 
     var allowOptions = true;
     var actions = [];
     var freq = 0.01;
-    var width = 400;
-    var height = 225;
+    var width = 640;
+    var height = 480;
     var noisefn = function(x, y) {
-        return noise.simplex(x, y, 1);
+        return (noise.simplex(
+            x * freq, y * freq) * 2 / 2.946 + 0.915) / 2;
     };
     var noisefns = {
         perlin: function(x, y) {
-            return (3.9 * noise.perlinSimplex3(
-                x * freq, y * freq, 1) + 1.1) / 2;
+            return (noise.perlinSimplex3(
+                x * freq, y * freq, 1) * (2/0.58) + 1) / 2;
         }
     };
     process.argv.slice(2).forEach(function(argument) {
         if (allowOptions && (argument === "--")) {
             allowOptions = false;
         } else if (allowOptions && argument.startsWith("--")) {
-            if (argument.startsWith("--width=")) {
+            if (argument.startsWith("--freq=")) {
+                freq = parseFloat(argument.slice("--freq=".length), 10);
+                if (isNaN(freq) || (freq < 0))
+                    throw new Error("Invalid width: " +
+                                    argument.slice("--width=".length));
+            } else if (argument.startsWith("--width=")) {
                 width = parseInt(argument.slice("--width=".length), 10);
                 if (isNaN(width) || (width < 0))
                     throw new Error("Invalid width: " +
@@ -346,6 +390,7 @@ if ((typeof require !== 'undefined') && (require.main === module)) {
         } else actions.push(argument);
     });
 
-    createGrayNoisePPM(noisefn, width, height);
-
+    //createGrayNoisePPM(noisefn, width, height);
+    for (var ii = 0; ii < 5; ++ii)
+        console.error("ii=" + ii, noise.SquirrelNoise5(0, ii));
 }
