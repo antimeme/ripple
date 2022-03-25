@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <title>Math From Scratch</title>
-    <!-- Copyright (C) 2018-2021 by Jeff Gold.  All rights reserved. -->
+    <!-- Copyright (C) 2018-2022 by Jeff Gold.  All rights reserved. -->
     <meta charset="utf-8" />
     <link rel="shortcut icon" href="mathfromscratch.svg" />
     <link rel="stylesheet" href="lib/reveal/reveal.css" />
@@ -91,8 +91,7 @@
                 <a href="https://en.wikipedia.org/wiki/David_Hestenes"
                 >David Hestenes</a>: 1933 CE - present
             </li></ul>
-        </section>
-        <section>
+        </section><section>
             <h2>Acknowledgements</h2>
             <ul><li>
                 <a href="https://en.wikipedia.org/wiki/Gottfried_Wilhelm_Leibniz"
@@ -107,10 +106,16 @@
                 <a href="https://en.wikipedia.org/wiki/John_von_Neumann"
                 >John von Neumann</a>: 1903 - 1957 CE
             </li></ul>
-        </section>
-        <section>
+        </section><section>
             <h2>Acknowledgements</h2>
             <ul><li>
+                <a href="https://web.maths.unsw.edu.au/~norman/"
+                >Norman Wildberger</a>
+            </li><li>
+                Dorst, Fontijne and Mann<br />
+                <a href="http://www.geometricalgebra.net"
+                >http://www.geometricalgebra.net</a>
+            </li><li>
                 ...
             </li><li>
                 A practically infinite series of mathematical
@@ -128,12 +133,9 @@
                 <a href="http://us.metamath.org/index.html"
                 >http://us.metamath.org/index.html</a>
             </li><li>
-                Dorst, Fontijne and Mann<br />
-                <a href="http://www.geometricalgebra.net"
-                >http://www.geometricalgebra.net</a>
-            </li><li>
-                <a href="https://web.maths.unsw.edu.au/~norman/"
-                >Norman Wildberger</a>
+                Proof Wiki<br />
+                <a href="https://proofwiki.org/wiki/Main_Page"
+                >https://proofwiki.org/wiki/Main_Page</a>
             </li></ul>
         </section>
     </section>
@@ -2299,26 +2301,26 @@
             </aside>
         </section>
         <section>
-            <h3>Partial Order</h3>
+            <h3>Ordering</h3>
             <p>
-                A partial order has the following properties:
+                An ordering of a set has the following properties:
             </p>
             <ul><li class="fragment">
                 Reflexive: &#x2200;a &#x2208;
-                &cup;&cup;<span class="intro">&#x22d6;</span> (a
-                <span class="intro">&#x22d6;</span> a)
+                &cup;&cup;<span class="intro">&#x227c;</span> (a
+                <span class="intro">&#x227c;</span> a)
             </li><li class="fragment">
                 Antisymmetric: &#x2200;a,b &#x2208;
-                &cup;&cup;<span class="intro">&#x22d6;</span><br />
-                (a <span class="intro">&#x22d6;</span> b) &and; (b
-                <span class="intro">&#x22d6;</span> a) &#x27f9;
+                &cup;&cup;<span class="intro">&#x227c;</span><br />
+                (a <span class="intro">&#x227c;</span> b) &and; (b
+                <span class="intro">&#x227c;</span> a) &#x27f9;
                 (a &#x2251; b)
             </li><li class="fragment">
                 Transitive: &#x2200;a,b,c &#x2208;
-                &cup;&cup;<span class="intro">&#x22d6;</span><br />
-                (a <span class="intro">&#x22d6;</span> b) &and;
-                (b <span class="intro">&#x22d6;</span> c) &#x27f9;
-                (a <span class="intro">&#x22d6;</span> c)
+                &cup;&cup;<span class="intro">&#x227c;</span><br />
+                (a <span class="intro">&#x227c;</span> b) &and;
+                (b <span class="intro">&#x227c;</span> c) &#x27f9;
+                (a <span class="intro">&#x227c;</span> c)
             </li></ul>
             <aside class="notes">
                 A partial order is a relation on a set that
@@ -2337,9 +2339,9 @@
                 Reflexive, Antisymmetric and Transitive
             </li><li class="fragment">
                 Connex: &#x2200;a,b &#x2208;
-                &cup;&cup;<span class="intro">&#x22d6;</span>
-                (a <span class="intro">&#x22d6;</span> b) &or;
-                (b <span class="intro">&#x22d6;</span> a)
+                &cup;&cup;<span class="intro">&#x227c;</span>
+                (a <span class="intro">&#x227c;</span> b) &or;
+                (b <span class="intro">&#x227c;</span> a)
             </li></ul>
             <p class="fragment">
                 This organizes a set into concentric rings.
@@ -2349,45 +2351,7 @@
                 property, which means that every pair of elements
                 is related in one direction or the other.
             </aside>
-        </section>
-        <section>
-            <h3>Equality: Reflexive</h3>
-            <p>&#x2200;a a = a</p>
-            <p class="fragment">
-                Any set contains all the members in itself
-                <span class="fragment"> and vice versa.</span>
-            </p>
-        </section>
-        <section>
-            <h3>Equality: Symmetric</h3>
-            <p>&#x2200;a,b (a = b) &#x27fa; (b = a)</p>
-            <ul><li class="fragment">
-                (a = b) &#x27f9; (P(a) &#x27fa; P(b))
-                :: Leibniz's Law
-            </li><li class="fragment">
-                (a = b) &#x27f9; (P(b) &#x27fa; P(a))
-                :: Symmetric Biconditional
-            </li><li class="fragment">
-                (a = b) &#x27f9; (b = a) :: Leibniz's Law
-            </li></ul>
-        </section>
-        <section>
-            <h3>Equality: Transitive</h3>
-            <p>
-                &#x2200;a,b,c (a = b) &and; (b = c) &#x27f9; (a = c)
-            </p>
-            <ul><li class="fragment">
-                (a = b) &and; (b = c) &#x27f9; (P(a) &#x27fa; P(b))
-                &and; (P(b) &#x27fa; P(c)) :: Leibniz's Law
-            </li><li class="fragment">
-                (a = b) &and; (b = c) &#x27f9; (P(a) &#x27fa; P(c))
-                :: Transitive Biconditional
-            </li><li class="fragment">
-                (a = b) &and; (b = c) &#x27f9; (a = c)
-                :: Leibniz's Law
-            </li></ul>
-        </section>
-        <section>
+        </section><section>
             <h3>Equality: Equivalence</h3>
             <p>
                 &#x2200;a &#x2203;<span class="intro">{ &#x27e8;b,
@@ -2402,10 +2366,65 @@
                 This is not the only way create an equivalence
                 relation but we can always do it.
             </aside>
+        </section><section>
+            <h3>Equality: Reflexive</h3>
+            <p>&#x2200;a (a = a)</p>
+            <p class="fragment">
+                Any set contains all the members in itself
+                <span class="fragment"> and vice versa.</span>
+            </p>
+        </section><section>
+            <h3>Equality: Symmetric</h3>
+            <p>&#x2200;a,b (a = b) &#x27fa; (b = a)</p>
+            <ul><li class="fragment">
+                (a = b) &#x27f9; (P(a) &#x27fa; P(b))
+                :: Leibniz's Law
+            </li><li class="fragment">
+                (a = b) &#x27f9; (P(b) &#x27fa; P(a))
+                :: Symmetric Biconditional
+            </li><li class="fragment qed">
+                (a = b) &#x27f9; (b = a) :: Leibniz's Law
+            </li></ul>
+        </section>
+        <section>
+            <h3>Equality: Transitive</h3>
+            <p>
+                &#x2200;a,b,c (a = b) &and; (b = c) &#x27f9; (a = c)
+            </p>
+            <ul><li class="fragment">
+                (a = b) &and; (b = c) &#x27f9; (P(a) &#x27fa; P(b))
+                &and; (P(b) &#x27fa; P(c)) :: Leibniz's Law
+            </li><li class="fragment">
+                (a = b) &and; (b = c) &#x27f9; (P(a) &#x27fa; P(c))
+                :: Transitive Biconditional
+            </li><li class="fragment qed">
+                (a = b) &and; (b = c) &#x27f9; (a = c)
+                :: Leibniz's Law
+            </li></ul>
+        </section>
+        <section>
+            <h3>Subsets: Ordering</h3>
+            <p>
+                &#x2200;a &#x2203;<span class="intro">{ &#x27e8;b,
+                c&#x27e9;&#x2208;a&#x229b;a : b &#x2286; c }</span>
+            </p><p>
+                Subset relationships can be used to construct an
+                ordering over any set.  This is always reflexive,
+                antisymmetric and transitive.
+            </p><p class="fragment">
+                Not always connex: {{&spades;,
+                <span class="redsuit">&hearts;</span>}, {&spades;},
+                {&spades;, <span class="redsuit">&diams;</span>}}
+            </p>
+            <aside class="notes">
+                This is not the only way create an order relation but
+                we can always do it.  Subsets are not always connex
+                so this doesn't always produce a total order.
+            </aside>
         </section>
         <section>
             <h3>Subset: Reflexive</h3>
-            <p>&#x2200;a a &#x2286; a</p>
+            <p>&#x2200;a (a &#x2286; a)</p>
             <ul><li class="fragment">
                 &#x2200;b (b &#x2286; a) &#x27fa; (b &cup; a) = a
                 :: Definition Subset
@@ -2421,7 +2440,7 @@
             </li><li class="fragment">
                 &#x2200;a (a &cup; a) = a :: Axiom of Extensionality
             </li><li class="fragment qed">
-                &#x2200;a a &#x2286; a :: Definition Subset
+                &#x2200;a (a &#x2286; a) :: Definition Subset
             </li></ul>
         </section>
         <section>
@@ -2464,26 +2483,6 @@
                 (a &#x2286; c) :: Subset/Union
             </li></ul>
         </section>
-        <section>
-            <h3>Subsets: Partial Order</h3>
-            <p>
-                &#x2200;a &#x2203;<span class="intro">{ &#x27e8;b,
-                c&#x27e9;&#x2208;a&#x229b;a : b &#x2286; c }</span>
-            </p><p>
-                Subset relationships can be used to construct a
-                partial order over any set.  This is always
-                reflexive, antisymmetric and transitive.
-            </p><p class="fragment">
-                Not always connex: {{&spades;,
-                <span class="redsuit">&hearts;</span>}, {&spades;},
-                {&spades;, <span class="redsuit">&diams;</span>}}
-            </p>
-            <aside class="notes">
-                This is not the only way create an order relation but
-                we can always do it.  Subsets are not always connex
-                so this doesn't always produce a total order.
-            </aside>
-        </section>
     </section>
 
     <section id="functions">
@@ -2500,8 +2499,7 @@
                 one ordered pair.  In other words, functions
                 always map every element in their domains.
             </aside>
-        </section>
-        <section>
+        </section><section>
             <h3>Functions</h3>
             <p>
                 (<span class="intro">f : D &#x27f6; R</span>)
@@ -2510,7 +2508,7 @@
                 (&#x2200;b,c&#x2208;R
                 (&#x27e8;a, b&#x27e9;&#x2208;f &and;
                 &#x27e8;a, c&#x27e9;&#x2208;f)
-                &#x27f9; b = c)
+                &#x27f9; b &#x2251; c)
             </p>
             <ul><li class="fragment">
                 Entire domain mapped:
@@ -2533,8 +2531,7 @@
                 relations.  Rather than saying <q>a relates b</q>
                 we say <q>f of a equals b</q>.
             </aside>
-        </section>
-        <section>
+        </section><section>
             <h3>Meet the Jections</h3>
             <p>
                 Given function f : D &#x27f6; R
@@ -2550,8 +2547,7 @@
                 one member of domain<br /> &#x2200;b&#x2208;R
                 &#x2203;a&#x2208;D f(a) = b
             </li></ul>
-        </section>
-        <section>
+        </section><section>
             <h3>Back It Up</h3>
             <p>
                 Given function f : D &#x27f6; R
@@ -2565,24 +2561,7 @@
                 &#x2200;a&#x2208;D,b&#x2208;R
                 (f(a) = b) &#x27fa; (f<sup>-1</sup>(b) = a)
             </li></ul>
-        </section>
-        <section>
-            <h3>Cardinality</h3>
-            <p>
-                <span class="intro">Cardinality</span> is a property
-                of every set: any pair of sets for which a bijection
-                exists have the same cardinality.
-            </p>
-            <aside class="notes">
-                Cardinality formalizes our intuitive notion of size.
-                For now we will define it indirectly: any pair of sets
-                for which some bijection exists have the same
-                cardinality.  We can prove that a pair of sets have
-                different cardinality if we show that no bijection can
-                exist between them.
-            </aside>
-        </section>
-        <section>
+        </section><section>
             <h3>Multivariable Functions</h3>
             <p>A function can have more than one argument.</p>
             <ul>
@@ -2609,8 +2588,7 @@
                 This is the same as having a domain consisting of
                 ordered pairs or tuples.
             </p>
-        </section>
-        <section>
+        </section><section>
             <h3>Multivariable Functions</h3>
             <p>Function can return ordered pairs or tuples.</p>
             <ul>
@@ -2638,6 +2616,21 @@
                 This is the same as having a range consisting of
                 ordered pairs or tuples.
             </p>
+        </section><section>
+            <h3>Cardinality</h3>
+            <p>
+                <span class="intro">Cardinality</span> is a property
+                of every set: any pair of sets for which a bijection
+                exists have the same cardinality.
+            </p>
+            <aside class="notes">
+                Cardinality formalizes our intuitive notion of size.
+                For now we will define it indirectly: any pair of sets
+                for which some bijection exists have the same
+                cardinality.  We can prove that a pair of sets have
+                different cardinality if we show that no bijection can
+                exist between them.
+            </aside>
         </section>
     </section>
 
@@ -3030,9 +3023,11 @@
                 &#x2203;a&#x2208;&#x2115;
                 0<sub>&#x2115;</sub> + a = a :: Assumption
             </li><li class="fragment">
-                0<sub>&#x2115;</sub> + a<sup>+</sup> =
-                (0<sub>&#x2115;</sub> + a)<sup>+</sup> :: Step +
-            </li><li class="fragment">
+                0<sub>&#x2115;</sub> + a<sup>+</sup>
+                <span class="fragment">
+                    = (0<sub>&#x2115;</sub> + a)<sup>+</sup> :: Step +
+                </span>
+            </li><li class="fragment qed">
                 0<sub>&#x2115;</sub> + a<sup>+</sup> =
                 a<sup>+</sup> :: Induction
             </li></ul>
@@ -3051,17 +3046,19 @@
                 &#x2200;a,b&#x2208;&#x2115; :
                 (a + b) + c = a + (b + c)
             </li><li class="fragment">
-                (a + b) + c<sup>+</sup> =
-                ((a + b) + c)<sup>+</sup> :: Step +
+                (a + b) + c<sup>+</sup>
+                <span class="fragment">
+                    = ((a + b) + c)<sup>+</sup> :: Step +
+                </span>
             </li><li class="fragment">
                 (a + b) + c<sup>+</sup> =
                 (a + (b + c))<sup>+</sup> :: Induction
             </li><li class="fragment">
                 (a + b) + c<sup>+</sup> =
-                a + (b + c)<sup>+</sup> :: Step +
+                a + (b + c)<sup>+</sup> :: Step + (Reverse)
             </li><li class="fragment qed">
                 (a + b) + c<sup>+</sup> =
-                a + (b + c<sup>+</sup>) :: Step +
+                a + (b + c<sup>+</sup>) :: Step + (Reverse)
             </li></ul>
         </section>
         <section>
@@ -3071,8 +3068,8 @@
                 a + b = b + a
             </p>
             <p class="fragment">
-                We will prove two simpler results and make use of
-                them to prove that addition is commutative
+                We will prove two simpler results (lemmas) and
+                use them to prove that addition is commutative
             </p>
             <ul>
                 <li class="fragment">
@@ -3117,10 +3114,12 @@
                 a + 1<sub>&#x2115;</sub> =
                 1<sub>&#x2115;</sub> + a :: Assumption
             </li><li class="fragment">
-                a<sup>+</sup> + 1<sub>&#x2115;</sub> =
-                a<sup>+</sup> +
-                0<sub>&#x2115;</sub><sup>+</sup>
-                :: Definition 1<sub>&#x2115;</sub>
+                a<sup>+</sup> + 1<sub>&#x2115;</sub>
+                <span class="fragment">
+                    = a<sup>+</sup> +
+                    0<sub>&#x2115;</sub><sup>+</sup>
+                    :: Definition 1<sub>&#x2115;</sub>
+                </span>
             </li><li class="fragment">
                 a<sup>+</sup> + 1<sub>&#x2115;</sub> =
                 (a<sup>+</sup> + 0<sub>&#x2115;</sub>)<sup>+</sup>
@@ -3150,8 +3149,10 @@
                 &#x2200;a&#x2208;&#x2115; :
                 a + b = b + a :: Assumption
             </li><li class="fragment">
-                a + b<sup>+</sup> = a + (b + 1<sub>&#x2115;</sub>)
-                :: Successor + 1
+                a + b<sup>+</sup>
+                <span class="fragment">
+                    = a + (b + 1<sub>&#x2115;</sub>) :: Successor + 1
+                </span>
             </li><li class="fragment">
                 a + b<sup>+</sup> = (a + b) + 1<sub>&#x2115;</sub>
                 :: Associativity
@@ -3245,7 +3246,7 @@
                 3<sub>&#x2115;</sub> &times; 2<sub>&#x2115;</sub> =
                 3<sub>&#x2115;</sub> + 3<sub>&#x2115;</sub>
                 :: Addition
-            </li><li class="fragment">
+            </li><li class="fragment qed">
                 3<sub>&#x2115;</sub> &times; 2<sub>&#x2115;</sub> =
                 6<sub>&#x2115;</sub> :: Addition
             </li></ul>
@@ -3376,7 +3377,7 @@
             </li></ul>
         </section>
         <section>
-            <h3>Multiplication &#x2115;: Distribute</h3>
+            <h3>Multiplication &#x2115;: Distributive</h3>
             <ul><li>
                 (a + b) &times; 0<sub>&#x2115;</sub> =
                 (a &times; 0<sub>&#x2115;</sub>) + (b &times;
@@ -3386,23 +3387,24 @@
                 <br /> ((a + b) &times; c =
                 (a &times; c) + (b &times; c)) :: Assumption
             </li><li class="fragment">
-                ((a + b) &times; c<sup>+</sup> =
-                (a + b) + ((a + b) &times; c) :: Step &times;
+                (a + b) &times; c<sup>+</sup>
+                <span class="fragment">
+                    = (a + b) + ((a + b) &times; c) :: Step &times;
+                </span>
             </li><li class="fragment">
-                ((a + b) &times; c<sup>+</sup> =
+                (a + b) &times; c<sup>+</sup> =
                 (a + b) + ((a &times; c) + (b &times; c))
                 :: Induction
             </li><li class="fragment">
-                ((a + b) &times; c<sup>+</sup> =
+                (a + b) &times; c<sup>+</sup> =
                 (a + (a &times; c)) + (b + (b &times; c))
-                :: Add'n &#x2115;
+                :: &#x2115; +
             </li><li class="fragment qed">
-                ((a + b) &times; c<sup>+</sup> =
+                (a + b) &times; c<sup>+</sup> =
                 (a &times; c<sup>+</sup>) + (b &times; c<sup>+</sup>)
-                :: Step &times;
+                :: Step &times; (Reverse)
             </li></ul>
-        </section>
-        <section>
+        </section><section>
             <h3>Multiplication &#x2115;: Distributive</h3>
             <p>
                 &#x2200;a,b,c&#x2208;&#x2115;
@@ -3413,8 +3415,10 @@
                 (c &times; a) + (c &times; 0<sub>&#x2115;</sub>)
             </p>
             <ul><li class="fragment">
-                c &times; (a + 0<sub>&#x2115;</sub>) =
-                c &times; a :: Addition &#x2115;
+                c &times; (a + 0<sub>&#x2115;</sub>)
+                <span class="fragment">
+                    = c &times; a :: Addition &#x2115;
+                </span>
             </li><li class="fragment">
                 c &times; (a + 0<sub>&#x2115;</sub>) =
                 (c &times; a) + 0<sub>&#x2115;</sub>
@@ -3424,8 +3428,7 @@
                 (c &times; a) + (c &times; 0<sub>&#x2115;</sub>)
                 :: Base &times;
             </li></ul>
-        </section>
-        <section>
+        </section><section>
             <h3>Multiplication &#x2115;: Distributive</h3>
             <ul><li>
                 c &times; (a + 0<sub>&#x2115;</sub>) =
@@ -3436,8 +3439,10 @@
                 <br /> c &times; (a + b) = (c &times; a) +
                 (c &times; b) :: Assumption
             </li><li class="fragment">
-                c &times; (a + b<sup>+</sup>) =
-                c &times; (a + b)<sup>+</sup> :: Addition &#x2115;
+                c &times; (a + b<sup>+</sup>)
+                <span class="fragment">
+                    = c &times; (a + b)<sup>+</sup> :: Addition &#x2115;
+                </span>
             </li><li class="fragment">
                 c &times; (a + b<sup>+</sup>) =
                 c + (c &times; (a + b)) :: Step &times;
@@ -3454,8 +3459,7 @@
                 (c &times; a) + (c &times; b<sup>+</sup>) ::
                 Step &times;
             </li></ul>
-        </section>
-        <section>
+        </section><section>
             <h3>Multiplication &#x2115;: Associative</h3>
             <p>
                 &#x2200;a,b,c&#x2208;&#x2115;
@@ -3477,9 +3481,7 @@
                 a &times; (b &times; 0<sub>&#x2115;</sub>)
                 :: Base &times;
             </li></ul>
-        </section>
-
-        <section>
+        </section><section>
             <h3>Multiplication &#x2115;: Associative</h3>
             <ul><li>
                 (a &times; b) &times; 0<sub>&#x2115;</sub> =
@@ -3490,9 +3492,11 @@
                 (a &times; b) &times; c =
                 a &times; (b &times; c) :: Assumption
             </li><li class="fragment">
-                (a &times; b) &times; c<sup>+</sup> =
-                (a &times; b) + ((a &times; b) &times; c)
-                :: Step &times;
+                (a &times; b) &times; c<sup>+</sup>
+                <span class="fragment">
+                    = (a &times; b) + ((a &times; b) &times; c)
+                    :: Step &times;
+                </span>
             </li><li class="fragment">
                 (a &times; b) &times; c<sup>+</sup> =
                 (a &times; b) + (a &times; (b &times; c))
@@ -3500,7 +3504,7 @@
             </li><li class="fragment">
                 (a &times; b) &times; c<sup>+</sup> =
                 a &times; (b + (b &times; c))
-                :: Distributive &times;
+                :: Distributive &times; (R)
             </li><li class="fragment qed">
                 (a &times; b) &times; c<sup>+</sup> =
                 a &times; (b &times; c<sup>+</sup>)
@@ -3526,9 +3530,11 @@
                 0<sub>&#x2115;</sub> &times; a = a &times;
                 0<sub>&#x2115;</sub> :: Assumption
             </li><li class="fragment">
-                0<sub>&#x2115;</sub> &times; a<sup>+</sup> =
-                0<sub>&#x2115;</sub> + (0<sub>&#x2115;</sub>
-                &times; a) :: Step &times;
+                0<sub>&#x2115;</sub> &times; a<sup>+</sup>
+                <span class="fragment">
+                    = 0<sub>&#x2115;</sub> + (0<sub>&#x2115;</sub>
+                    &times; a) :: Step &times;
+                </span>
             </li><li class="fragment">
                 0<sub>&#x2115;</sub> &times; a<sup>+</sup> =
                 0<sub>&#x2115;</sub> + (a &times;
@@ -3552,8 +3558,10 @@
                 &#x2200;a&#x2208;&#x2115; :
                 a &times; b = b &times; a :: Assumption
             </li><li class="fragment">
-                a &times; b<sup>+</sup> = a + (a &times; b) ::
-                Step &times;
+                a &times; b<sup>+</sup>
+                <span class="fragment">
+                    = a + (a &times; b) :: Step &times;
+                </span>
             </li><li class="fragment">
                 a &times; b<sup>+</sup> =
                 a + (b &times; a) :: Induction
@@ -7966,9 +7974,9 @@
         <section>
             <h3>Lines</h3>
             <p>
-                &#x2200;&#x1d4c1; IS-LINE(&#x1d4c1;) &#x225d;
+                &#x2200;&#x1d4c1;&#x2208;&#x2118;&#x2119;
+                IS-LINE(&#x1d4c1;) &#x225d;
             </p><ul><li class="fragment">
-                &#x1d4c1;&#x2286;&#x2119; &and;
                 &#x2203;A,B&#x2208;&#x1d4c1; d(A, B) &gt; 0
             </li><li class="fragment">
                 &#x2200;A,B,C&#x2208;&#x1d4c1; A &#x29f3; (B, C) &or;
