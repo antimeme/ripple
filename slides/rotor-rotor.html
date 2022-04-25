@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+    <title>Rotor, Rotor on the Wall</title>
+    <!-- Copyright (C) 2022 by Jeff Gold.  All rights reserved. -->
+    <meta charset="utf-8" />
+    <link rel="shortcut icon" href="rotor-rotor.svg" />
+    <link rel="stylesheet" href="lib/reveal/reveal.css" />
+    <link rel="stylesheet" href="lib/reveal/sky.css" />
+    <link rel="stylesheet" href="lib/slides.css" />
+    <div class="reveal"><div class="slides"><section id="rotor-rotor">
+        <section>
+            <img src="rotor-rotor.svg" style="max-width: 50%;" />
+            <aside class="notes">
+            </aside>
+        </section><section>
+            <h2>What is a Rotor?</h2>
+            <p>
+                A rotor is a concept from Geometric Algebra that can
+                serve as a rotation, a complex number, a quaternion, a
+                translation (projective geometry) and
+                even a Lorentz transformation (relativity).
+            </p>
+        </section><section>
+            <h2>But first...</h2>
+            <p>Let's meet some friendly math</p>
+        </section><section>
+            <h2>Vectors</h2>
+            <ul><li class="fragment">
+                Orthonormal Basis: <strong>x</strong>, <strong>y</strong>,
+                <strong>z</strong>
+                <ul><li class="fragment">
+                    Ortho: orthogonal -- right angle / quarter turn
+                </li><li class="fragment">
+                    Normal: |<strong>x</strong>| =
+                    |<strong>y</strong>| = |<strong>z</strong>| = 1
+                </li><li class="fragment">
+                    Basis: <strong>v</strong> =
+                    v<sub>x</sub><strong>x</strong> +
+                    v<sub>y</sub><strong>y</strong> +
+                    v<sub>z</sub><strong>z</strong>
+                    (v<sub>x</sub>, v<sub>y</sub>,
+                    v<sub>z</sub>&#x2208;&#x211d;)
+                </li></ul>
+            </li><li class="fragment">
+                &#x2200;a&#x2208;&#x211d; :
+                a <strong>v</strong> = <strong>v</strong> a =
+                a v<sub>x</sub><strong>x</strong> +
+                a v<sub>y</sub><strong>y</strong> +
+                a v<sub>z</sub><strong>z</strong>
+            </li><li class="fragment">
+                <strong>v</strong> + <strong>u</strong> =
+                (v<sub>x</sub> + u<sub>x</sub>)<strong>x</strong> +
+                (v<sub>y</sub> + u<sub>y</sub>)<strong>y</strong> +
+                (v<sub>z</sub> + u<sub>z</sub>)<strong>z</strong>
+            </li></ul>
+        </section><section>
+            <h2>Geometric Algebra</h2>
+            <p>
+                Axiom: &#x2200;<strong>v</strong>&#x2208;&#x1d54d;
+                : <strong>v</strong>
+                <strong>v</strong><sup>&#x2020;</sup> =
+                |<strong>v</strong>|<sup>2</sup> &#x2208;&#x211d;
+            </p>
+            <p>
+                We'll explain the meaning of the
+                conjugate<sup>&#x2020;</sup> operation later, but
+                for now it's enough to know that all vectors are
+                the same as their conjugates.
+            </p>               
+        </section><section>
+            <h2>Geometric Product</h2>
+            <ul><li class="fragment">
+                <strong>v</strong> =
+                v<sub>x</sub><strong>x</strong> +
+                v<sub>y</sub><strong>y</strong>
+            </li><li class="fragment">
+                <strong>u</strong> =
+                u<sub>x</sub><strong>x</strong> +
+                u<sub>y</sub><strong>y</strong>
+            </li><li class="fragment">
+                <strong>v</strong> <strong>u</strong>
+                <span class="fragment">
+                    = v<sub>x</sub> u<sub>x</sub>
+                    <strong>x</strong> <strong>x</strong> +
+                    v<sub>x</sub> u<sub>y</sub>
+                    <strong>x</strong> <strong>y</strong> +
+                    v<sub>y</sub> u<sub>x</sub>
+                    <strong>y</strong> <strong>x</strong> +
+                    v<sub>y</sub> u<sub>y</sub>
+                    <strong>y</strong> <strong>y</strong>
+                </span>
+            </li></ul><p class="fragment">
+                Don't panic!  It's just multiplication
+            </p>
+        </section><section>
+            <h2>Basis Squares</h2>
+            <p>
+                Our axiom requires basis vectors to square to one.
+            </p><ul><li class="fragment">
+                <strong>x x</strong><sup>&#x2020;</sup> =
+                <strong>x x</strong> =
+                |<strong>x</strong>|<sup>2</sup> = 1
+            </li><li class="fragment">
+                <strong>y y</strong><sup>&#x2020;</sup> =
+                <strong>y y</strong> =
+                |<strong>y</strong>|<sup>2</sup> = 1
+            </li><li class="fragment">
+                <strong>z z</strong><sup>&#x2020;</sup> =
+                <strong>z z</strong> =
+                |<strong>z</strong>|<sup>2</sup> = 1
+            </li>
+        </section><section>
+            <h2>Anti-Commute Basis</h2>
+            <p>
+                Consider: <strong>v v</strong><sup>&#x2020;</sup>
+                &#x2208;&#x211d;
+            </p>
+            <ul><li class="fragment">
+                <strong>v</strong> <strong>v</strong><sup>&#x2020;</sup>
+                = v<sub>x</sub> v<sub>x</sub>
+                <strong>x x</strong> + v<sub>x</sub> v<sub>y</sub>
+                <strong>x y</strong> + v<sub>y</sub> v<sub>x</sub>
+                <strong>y x</strong> + v<sub>y</sub> v<sub>y</sub>
+                <strong>y y</strong>
+            </li><li class="fragment">
+                <strong>v</strong>
+                <strong>v</strong><del><sup>&#x2020;</sup></del>
+                = v<sub>x</sub> v<sub>x</sub>
+                <del><strong>x</strong> <strong>x</strong></del> +
+                <span class="intro">v<sub>x</sub> v<sub>y</sub></span>
+                <strong>x</strong> <strong>y</strong> +
+                <span class="intro">v<sub>y</sub>
+                    v<sub>x</sub></span>
+                <strong>y</strong> <strong>x</strong> +
+                v<sub>y</sub> v<sub>y</sub>
+                <del><strong>y</strong> <strong>y</strong></del>
+            </li><li class="fragment">
+                <strong>v</strong> <strong>v</strong>
+                = v<sub>x</sub> v<sub>x</sub> +
+                v<sub>y</sub> v<sub>y</sub> +
+                v<sub>x</sub> v<sub>y</sub>
+                (<strong>x</strong> <strong>y</strong> +
+                <strong>y</strong> <strong>x</strong>)
+                <span class="fragment">&#x2208;&#x211d;</span>
+            </li><li class="fragment">
+                <strong>x</strong> <strong>y</strong> +
+                <strong>y</strong> <strong>x</strong> = 0
+                <span class="fragment">
+                    &#x27f9;
+                    <strong>x</strong> <strong>y</strong> =
+                    - <strong>y</strong> <strong>x</strong>
+                </span>
+            </li></ul>
+        </section><section>
+            <h2>Bivectors</h2>
+            <p>
+                Bivectors have two basis vectors in each term.
+                In three dimensions <strong>x y</strong>,
+                <strong>y z</strong> and <strong>x z</strong> serve as
+                a basis for bivectors in
+                the same way that <strong>x</strong>, <strong>y</strong>
+                and <strong>z</strong> serve as a basis for vectors.
+            </p><p class="fragment">
+                <strong>B</strong> =
+                B<sub>x y</sub><strong>x y</strong> +
+                B<sub>y z</sub><strong>y z</strong> +
+                B<sub>x z</sub><strong>x z</strong>
+                (B<sub>x y</sub>, B<sub>x y</sub>,
+                B<sub>x y</sub>&#x2208;&#x211d;)
+            </p>
+        </section><section>
+            <h2>Trivectors</h2>
+            <p>
+                Trivectors have three basis vectors in each term.
+                Only one basis trivectors is possible in three
+                dimensions so they are pseudo-scalars.
+            </p><p class="fragment">
+                <strong>T</strong> =
+                T<sub>x y z</sub><strong>x y z</strong>
+            </p>
+        </section><section>
+            <h2>And Beyond</h2>
+            <p>
+                With more dimensions come higher order multi-vectors
+                (quadvectors, 5-vectors and so on)...
+            </p><table class="xlarge"><tr>
+                <th>Dimensions</th><th>Scalars</th><th>Vectors</th>
+                <th>Bivectors</th><th>Trivectors</th><th>...</th>
+            </tr><tr>
+                <td>0</td><td>1</td>
+            </tr><tr>
+                <td>1</td><td>1</td><td>1</td>
+            </tr><tr>
+                <td>2</td><td>1</td><td>2</td><td>1</td>
+            </tr><tr>
+                <td>3</td><td>1</td><td>3</td><td>3</td><td>1</td>
+            </tr><tr>
+                <td>...</td><td>...</td><td>...</td>
+                <td>...</td><td>...</td>
+            </tr></table><p>
+                Pascal's Triangle:
+                N[r][c] = N[r - 1][c] + N[r - 1][r - 1]
+            </p>
+        </section><section>
+            <h2>Conjugate</h2>
+            <p>
+                The conjugate reverses the vectors in each term
+            </p><ul><li class="fragment">
+                &#x2200;a&#x2208;&#x211d; a<sup>&#x2020;</sup> = a
+            </li><li class="fragment">
+                &#x2200;<strong>v</strong>&#x2208;&#x1d54d;
+                <strong>v</strong><sup>&#x2020;</sup> =
+                <strong>v</strong>
+            </li><li class="fragment">
+                (<strong>x y</strong>)<sup>&#x2020;</sup> =
+                <strong>y x</strong>
+                <span class="fragment">= -<strong>x y</strong></span>
+            </li><li class="fragment">
+                (<strong>x y z</strong>)<sup>&#x2020;</sup> =
+                <strong>z y x</strong>
+                <span class="fragment">
+                    =
+                    -<strong>z <span class="intro">x y</span></strong> =
+                    <strong><span class="intro">x z</span> y</strong> =
+                    -<strong>x <span class="intro">y z</span></strong>
+                </span>
+            </li><li class="fragment">
+                (<strong>x y z t</strong>)<sup>&#x2020;</sup> =
+                <strong>t z y x</strong> =
+                -<strong>t <span class="intro">x y z</span></strong>
+                = <strong>x y z t</strong>
+            </li><li class="fragment">
+                (3 + 2 <strong>x y</strong>)<sup>&#x2020;</sup> =
+                3 - 2 <strong>x y</strong>
+            </li></ul>
+        </section><section>
+            <h2>Geometric Product</h2>
+            <p>
+                <strong>v</strong> <strong>u</strong>
+                = (v<sub>x</sub><strong>x</strong> +
+                v<sub>y</sub><strong>y</strong>)
+                (u<sub>x</sub><strong>x</strong> +
+                u<sub>y</sub><strong>y</strong>)
+            </p><ul><li class="fragment">
+                <strong>v</strong> <strong>u</strong>
+                = v<sub>x</sub> u<sub>x</sub> <strong>x x</strong> +
+                v<sub>x</sub> u<sub>y</sub> <strong>x y</strong> +
+                v<sub>y</sub> u<sub>x</sub> <strong>y x</strong> +
+                v<sub>y</sub> u<sub>y</sub> <strong>y y</strong>
+            </li><li class="fragment">
+                <strong>v</strong> <strong>u</strong>
+                = v<sub>x</sub> u<sub>x</sub>
+                <del><strong>x x</strong></del> +
+                v<sub>x</sub> u<sub>y</sub> <strong>x y</strong> -
+                v<sub>y</sub> u<sub>x</sub>
+                <strong class="intro">x y</strong> +
+                v<sub>y</sub> u<sub>y</sub>
+                <del><strong>y y</strong></del>
+            </li><li class="fragment">
+                <strong>v</strong> <strong>u</strong>
+                = v<sub>x</sub> u<sub>x</sub> +
+                v<sub>y</sub> u<sub>y</sub> +
+                (v<sub>x</sub> u<sub>y</sub> -
+                v<sub>y</sub> u<sub>x</sub>)
+                <strong>x y</strong>
+            </li></ul>
+        </section><section>
+            <h2>Geometric Product</h2>
+            <p>
+                <strong>v</strong> <strong>u</strong>
+                = (v<sub>x</sub><strong>x</strong> +
+                v<sub>y</sub><strong>y</strong> +
+                v<sub>z</sub><strong>z</strong>)
+                (u<sub>x</sub><strong>x</strong> +
+                u<sub>y</sub><strong>y</strong> +
+                u<sub>z</sub><strong>z</strong>)
+            </p><ul><li class="fragment">
+                <strong>v</strong> <strong>u</strong>
+                = v<sub>x</sub>u<sub>x</sub> <strong>x x</strong> +
+                v<sub>x</sub>u<sub>y</sub> <strong>x y</strong> +
+                v<sub>x</sub>u<sub>z</sub> <strong>x z</strong> +
+                v<sub>y</sub>u<sub>x</sub> <strong>y x</strong> +
+                <br />
+                v<sub>y</sub>u<sub>y</sub> <strong>y y</strong> +
+                v<sub>y</sub>u<sub>z</sub> <strong>y y</strong> +
+                v<sub>z</sub>u<sub>x</sub> <strong>z x</strong> +
+                v<sub>z</sub>u<sub>y</sub> <strong>z y</strong> +
+                v<sub>z</sub>u<sub>z</sub> <strong>z z</strong>
+            </li><li class="fragment">
+                <strong>v</strong> <strong>u</strong>
+                = v<sub>x</sub>u<sub>x</sub>
+                <del><strong>x x</strong></del> +
+                v<sub>y</sub>u<sub>y</sub>
+                <del><strong>y y</strong></del> +
+                v<sub>z</sub>u<sub>z</sub>
+                <del><strong>z z</strong></del> +
+                v<sub>x</sub>u<sub>y</sub> <strong>x y</strong> -
+                <br /> v<sub>y</sub>u<sub>x</sub>
+                <strong class="intro">x y</strong> +
+                v<sub>y</sub>u<sub>z</sub> <strong>y z</strong> -
+                v<sub>z</sub>u<sub>y</sub>
+                <strong class="intro">y z</strong> +
+                v<sub>x</sub>u<sub>z</sub> <strong>x z</strong> -
+                v<sub>z</sub>u<sub>x</sub>
+                <strong class="intro">x z</strong>
+            </li><li class="fragment">
+                <strong>v</strong> <strong>u</strong>
+                = v<sub>x</sub>u<sub>x</sub> +
+                v<sub>y</sub>u<sub>y</sub> +
+                v<sub>z</sub>u<sub>z</sub> +
+                (v<sub>x</sub>u<sub>y</sub> -
+                v<sub>y</sub>u<sub>x</sub>) <strong>x y</strong> +
+                <br /> (v<sub>y</sub>u<sub>z</sub> -
+                v<sub>z</sub>u<sub>y</sub>) <strong>y z</strong> +
+                (v<sub>x</sub>u<sub>z</sub> -
+                v<sub>z</sub>u<sub>x</sub>) <strong>x z</strong>
+            </li></ul>
+        </section><section>
+            <h2>Dot Product</h2>
+            <p>
+                <strong>v</strong> &middot; <strong>u</strong> &#x225d;
+                (<strong>v</strong> <strong>u</strong> +
+                <strong>u</strong> <strong>v</strong>) / 2
+            </p><ul><li class="fragment">
+                <strong>v</strong> &middot; <strong>u</strong> =
+                (v<sub>x</sub> u<sub>x</sub> +
+                v<sub>y</sub> u<sub>y</sub> +
+                <del>
+                    (v<sub>x</sub> u<sub>y</sub> -
+                    v<sub>y</sub> u<sub>x</sub>)
+                    <strong>x y</strong>
+                </del> + <br />
+                u<sub>x</sub> v<sub>x</sub> +
+                u<sub>y</sub> v<sub>y</sub> +
+                <del>
+                    (u<sub>x</sub> v<sub>y</sub> -
+                    u<sub>y</sub> v<sub>x</sub>)
+                    <strong>x y</strong>
+                </del>) / 2
+                <span class="fragment">
+                    = <br /> (v<sub>x</sub> u<sub>x</sub> +
+                    v<sub>y</sub> u<sub>y</sub> +
+                    <span class="intro">
+                        v<sub>x</sub> u<sub>x</sub>
+                    </span> + <span class="intro">
+                        v<sub>y</sub> u<sub>y</sub>
+                    </span>) / 2
+                </span><span class="fragment">
+                    = v<sub>x</sub> u<sub>x</sub> +
+                    v<sub>y</sub> u<sub>y</sub>
+                </span>
+            </li><li class="fragment">
+                <strong>v</strong> &middot; <strong>u</strong> =
+                (v<sub>x</sub>u<sub>x</sub> +
+                v<sub>y</sub>u<sub>y</sub> +
+                v<sub>z</sub>u<sub>z</sub> +
+                u<sub>x</sub>v<sub>x</sub> +
+                u<sub>y</sub>v<sub>y</sub> +
+                u<sub>z</sub>v<sub>z</sub>) / 2
+                <span class="fragment">
+                    = <br /> (v<sub>x</sub>u<sub>x</sub> +
+                    v<sub>y</sub>u<sub>y</sub> +
+                    v<sub>z</sub>u<sub>z</sub> +
+                    <span class="intro">
+                        v<sub>x</sub>u<sub>x</sub>
+                    </span> + <span class="intro">
+                        v<sub>y</sub>u<sub>y</sub>
+                    </span> + <span class="intro">
+                        v<sub>z</sub>u<sub>z</sub>
+                    </span>) / 2
+                </span><span class="fragment">
+                    = <br /> v<sub>x</sub>u<sub>x</sub> +
+                    v<sub>y</sub>u<sub>y</sub> +
+                    v<sub>z</sub>u<sub>z</sub>
+                </span>
+            </li></ul>                
+        </section><section>
+            <h2>Wedge Product</h2>
+            <p>
+                <strong>v</strong> ^ <strong>u</strong> &#x225d;
+                (<strong>v</strong> <strong>u</strong> -
+                <strong>u</strong> <strong>v</strong>) / 2
+            </p><ul><li class="fragment">
+                <strong>v</strong> ^ <strong>u</strong> =
+                (<del>v<sub>x</sub> u<sub>x</sub></del> +
+                <del>v<sub>y</sub> u<sub>y</sub></del> +
+                (v<sub>x</sub> u<sub>y</sub> -
+                v<sub>y</sub> u<sub>x</sub>)
+                <strong>x y</strong> - <br />
+                <del>u<sub>x</sub> v<sub>x</sub></del> -
+                <del>u<sub>y</sub> v<sub>y</sub></del> -
+                (u<sub>x</sub> v<sub>y</sub> -
+                u<sub>y</sub> v<sub>x</sub>)
+                <strong>x y</strong>) / 2
+                <span class="fragment">
+                    = <br /> (v<sub>x</sub> u<sub>y</sub> -
+                    v<sub>y</sub> u<sub>x</sub>
+                    + <span class="intro">
+                    v<sub>x</sub> u<sub>y</sub>
+                    </span> - <span class="intro">
+                        v<sub>y</sub> u<sub>x</sub>
+                    </span>) / 2 <strong>x y</strong>
+                </span><span class="fragment">
+                    = (v<sub>x</sub> u<sub>y</sub> -
+                    v<sub>y</sub> u<sub>x</sub>) <strong>x y</strong>
+                </span>
+            </li><li class="fragment">
+                <strong>v</strong> ^ <strong>u</strong> =
+                (v<sub>x</sub> u<sub>y</sub> -
+                v<sub>y</sub> u<sub>x</sub>) <strong>x y</strong> +
+                (v<sub>y</sub> u<sub>z</sub> -
+                v<sub>z</sub> u<sub>y</sub>) <strong>y z</strong> +
+                <br /> (v<sub>x</sub> u<sub>z</sub> -
+                v<sub>z</sub> u<sub>x</sub>) <strong>x z</strong>
+            </li></ul>                
+        </section><section>
+            <h2>Cross Product</h2>
+            <p>
+                <strong>v</strong> &times; <strong>u</strong>
+                <span class="fragment">
+                    &#x225d; (<strong>v</strong> ^ <strong>u</strong>)
+                    <strong>z y x</strong>
+                </span>
+            </p><ul><li class="fragment">
+                <strong>v</strong> &times; <strong>u</strong> =
+                ((v<sub>x</sub><strong>x</strong> +
+                v<sub>y</sub><strong>y</strong> +
+                v<sub>z</sub><strong>z</strong>) ^
+                (u<sub>x</sub><strong>x</strong> +
+                u<sub>y</sub><strong>y</strong> +
+                u<sub>z</sub><strong>z</strong>))
+                <strong>z y x</strong>
+            </li><li class="fragment">
+                <strong>v</strong> &times; <strong>u</strong> =
+                (v<sub>x</sub> u<sub>y</sub> -
+                v<sub>y</sub> u<sub>x</sub>)
+                <strong><del>x y</del>
+                    <span class="intro">z</span>
+                    <del>y x</del></strong> +
+                <br /> (v<sub>y</sub> u<sub>z</sub> -
+                v<sub>z</sub> u<sub>y</sub>)
+                <strong><del>y z z y</del> x</strong> +
+                (v<sub>x</sub> u<sub>z</sub> -
+                v<sub>z</sub> u<sub>x</sub>)
+                <strong>x <del>z z</del>
+                    <span class="intro">y</span> x</strong>
+            </li><li class="fragment">
+                <strong>v</strong> &times; <strong>u</strong> =
+                (v<sub>y</sub> u<sub>z</sub> -
+                v<sub>z</sub> u<sub>y</sub>)<strong>x</strong> -
+                (v<sub>x</sub> u<sub>z</sub> -
+                v<sub>z</sub> u<sub>x</sub>)<strong>y</strong> +
+                (v<sub>x</sub> u<sub>y</sub> -
+                v<sub>y</sub> u<sub>x</sub>)<strong>z</strong>
+            </li></ul><p class="fragment">
+                The wedge product is far more general and useful
+            </p>
+        </section><section>
+            <h2>Bivectors</h2>
+            <p>
+                Bivectors <strong>x y</strong>, <strong>y z</strong> and
+                <strong>x z</strong> serve as a basis for bivectors in
+                the same way that <strong>x</strong>, <strong>y</strong>
+                and <strong>z</strong> serve as a basis for vectors.
+            </p><p class="fragment">
+                <strong>B</strong> =
+                B<sub>x y</sub><strong>x y</strong> +
+                B<sub>y z</sub><strong>y z</strong> +
+                B<sub>x z</sub><strong>x z</strong>
+            </p><p class="fragment">
+                <strong>B B</strong><sup>&#x2020;</sup> =
+                |<strong>B</strong>|<sup>2</sup> =
+                -<strong>B</strong><sup>2</sup>
+                <span class="fragment">
+                    = B<sub>x y</sub><sup>2</sup> +
+                    B<sub>y z</sub><sup>2</sup> +
+                    B<sub>x z</sub><sup>2</sup> + <br />
+                    <del>
+                        (B<sub>x y</sub> B<sub>y z</sub> -
+                        B<sub>y z</sub> B<sub>x y</sub>)
+                        <strong>x y z y</strong>
+                    </del> + <del>
+                        (B<sub>x y</sub> B<sub>x z</sub> -
+                        B<sub>x z</sub> B<sub>x y</sub>)
+                        <strong>x y z x</strong>
+                    </del> + <del>
+                        (B<sub>y z</sub> B<sub>x z</sub> -
+                        B<sub>x z</sub> B<sub>y z</sub>)
+                        <strong>y z z x</strong>
+                    </del>
+                </span>
+            </p>
+        </section><section>
+            <h2>Unit Vectors</h2>
+            <p>
+                A unit vector has a norm of one.
+            </p><p>
+                <strong>u</strong> =
+                u<sub>x</sub><strong>x</strong> +
+                u<sub>y</sub><strong>y</strong> +
+                u<sub>z</sub><strong>z</strong>
+            </p><p class="fragment">
+                <strong>u u</strong><sup>&#x2020;</sup> =
+                <strong>u</strong><sup>2</sup> =
+                u<sub>x</sub><sup>2</sup> +
+                u<sub>y</sub><sup>2</sup> +
+                u<sub>z</sub><sup>2</sup> = 1
+            </p><p class="fragment">
+                |<strong>x</strong>|<sup>2</sup> =
+                |<strong>y</strong>|<sup>2</sup> =
+                |<strong>z</strong>|<sup>2</sup> = 1
+            </p><p class="fragment">
+                A unit vector describes a line through
+                the origin
+            </p>
+        </section><section>
+            <h2>Unit Bivectors</h2>
+            <p>
+                A unit bivector has a norm of one.
+            </p><p>
+                <strong>U</strong> =
+                U<sub>x y</sub><strong>x y</strong> +
+                U<sub>y z</sub><strong>y z</strong> +
+                U<sub>x z</sub><strong>x z</strong>
+            </p><p class="fragment">
+                <strong>U U</strong><sup>&#x2020;</sup> =
+                U<sub>x y</sub><sup>2</sup> +
+                U<sub>y z</sub><sup>2</sup> +
+                U<sub>x z</sub><sup>2</sup> = 1
+                <span class="fragment">
+                    = -<strong>U</strong><sup>2</sup>
+                </span>
+            </p><p class="fragment">
+                |<strong>x y</strong>|<sup>2</sup> =
+                |<strong>y z</strong>|<sup>2</sup> =
+                |<strong>x z</strong>|<sup>2</sup> = 1
+            </p><p class="fragment">
+                A unit bivector describes a plane through
+                the origin
+            </p>
+        </section><section>
+            <h2>Imagine That</h2>
+            <p>
+                Consider: (<strong>x</strong>
+                <strong>y</strong>)<sup>2</sup>
+            </p>
+            <ul><li class="fragment">
+                (<strong>x</strong>
+                <strong>y</strong>)<sup>2</sup> =
+                (<strong>x</strong> <strong>y</strong>)
+                (<strong>x</strong> <strong>y</strong>)
+            </li><li class="fragment">
+                (<strong>x</strong>
+                <strong>y</strong>)<sup>2</sup> =
+                (<strong>x</strong> <strong>y</strong>)
+                -(<span class="intro"><strong>y x</strong></span>)
+            </li><li class="fragment">
+                (<strong>x</strong>
+                <strong>y</strong>)<sup>2</sup> =
+                -(<strong>x</strong> <del><strong>y y</strong></del>
+                <strong>x</strong>)
+                <span class="fragment">
+                    = -(<del><strong>x x</strong></del>)
+                </span><span class="fragment">
+                    = -1
+                </span>
+            </li><li class="fragment">
+                i<sup>2</sup> = -1
+            </li><li class="fragment">
+                i<sup>&#x2020;</sup> = -i
+                <span class="fragment">
+                    = -<strong>x y</strong>
+                </span><span class="fragment">
+                    = <strong>y x</strong>
+                </span><span class="fragment">
+                    = (<strong>x y</strong>)<sup>&#x2020;</sup>
+                </span>
+            </li></ul>
+            <p class="fragment">
+                Not so imaginary after all!
+            </p>
+        </section><section>
+            <h2>In 3D</h2>
+            <p>
+                All the same properties apply to other
+                bivectors
+            </p>
+            <ul><li class="fragment">
+                (<strong>x</strong>
+                <strong>y</strong>)<sup>2</sup> =
+                (-<strong>y</strong>
+                <strong>x</strong>)<sup>2</sup> = -1 = i<sup>2</sup>
+                (i<sup>&#x2020;</sup> = -i)
+            </li><li class="fragment">
+                (<strong>y</strong>
+                <strong>z</strong>)<sup>2</sup> =
+                (-<strong>z</strong>
+                <strong>y</strong>)<sup>2</sup> = -1 = j<sup>2</sup>
+                (j<sup>&#x2020;</sup> = -j)
+            </li><li class="fragment">
+                (<strong>x</strong>
+                <strong>z</strong>)<sup>2</sup> =
+                (-<strong>z</strong>
+                <strong>x</strong>)<sup>2</sup> = -1 = k<sup>2</sup>
+                (k<sup>&#x2020;</sup> = -k)
+            </li><li class="fragment">
+                i j = (<strong>x</strong>
+                <strong>y</strong>) (<strong>y</strong>
+                <strong>z</strong>) = (<strong>x</strong>
+                <strong>z</strong>) = k
+            </li><li class="fragment">
+                j i = (<strong>y z</strong>) (<strong>x y</strong>) =
+                -(<strong><span class="intro">z y</span> x y</strong>) =
+                (<strong>z <del>y y</del> x</strong>) =
+                <strong>z x</strong> = -k                
+            </li></ul>
+            <p class="fragment">
+                Quaternion rules suddenly seem inevitable
+            </p>
+        </section><section>
+            <h2>Inverses</h2>
+            <p>
+                <strong>v</strong><sup>-1</sup> =
+                <strong>v</strong><sup>&#x2020;</sup> /
+                (<strong>v</strong>
+                <strong>v</strong><sup>&#x2020;</sup>)
+            </p><ul><li class="fragment">
+                <strong>v</strong> <strong>v</strong><sup>-1</sup>
+                <span class="fragment">
+                    = <strong>v</strong>
+                    <strong>v</strong><sup>&#x2020;</sup> /
+                    (<strong>v</strong>
+                    <strong>v</strong><sup>&#x2020;</sup>)
+                </span><span class="fragment">
+                    = <strong>v</strong> <strong>v</strong> /
+                    (<strong>v</strong> <strong>v</strong>)
+                </span><span class="fragment">
+                    = 1
+                </span>
+            </li><li class="fragment">
+                a a<sup>-1</sup>
+                <span class="fragment">
+                    = a a<sup>&#x2020;</sup> /
+                    (a a<sup>&#x2020;</sup>)
+                </span><span class="fragment">
+                    = (a a) / (a a)
+                </span><span class="fragment">
+                    = 1
+                </span>
+            </li><li class="fragment">
+                (<strong>x</strong> <strong>y</strong>)
+                (<strong>x</strong> <strong>y</strong>)<sup>-1</sup>
+                <span class="fragment">
+                    = (<strong>x</strong> <strong>y</strong>)
+                    (<strong>x</strong>
+                    <strong>y</strong>)<sup>&#x2020;</sup> /
+                    ((<strong>x</strong> <strong>y</strong>)
+                    (<strong>x</strong>
+                    <strong>y</strong>)<sup>&#x2020;</sup>)
+                </span><span class="fragment">
+                    = <br /> (<strong>x</strong>
+                    <del><strong>y</strong> <strong>y</strong></del>
+                    <strong>x</strong>) / (<strong>x</strong>
+                    <del><strong>y</strong> <strong>y</strong></del>
+                    <strong>x</strong>)
+                </span><span class="fragment">
+                    = (<del><strong>x</strong>
+                    <strong>x</strong></del>) /
+                    (<del><strong>x</strong> <strong>x</strong></del>)
+                </span><span class="fragment">
+                    = 1 / 1
+                </span><span class="fragment">
+                    = 1
+                </span>
+            </li></ul><p class="fragment">
+                An inverse exists when product with conjugate is any
+                non-zero scalar.
+            </p>
+        </section><section>
+            <h2>Uninvertable</h2>
+            <p>Consider: <strong>M</strong> = <strong>x</strong> + 1</p>
+            <ul><li class="fragment">
+                <strong>M M</strong><sup>&#x2020;</sup>
+                <span class="fragment">
+                    = (1 + <strong>x</strong>)
+                    (1 + <strong>x</strong>)<sup>&#x2020;</sup>
+                </span><span class="fragment">
+                    = (1 + <strong>x</strong>)
+                    (1 + <strong>x</strong>)
+                </span><span class="fragment">
+                    = <br /> 1 + <strong>x</strong> +
+                    <strong>x</strong> + 1
+                </span><span class="fragment">
+                    = 2 + 2<strong>x</strong>
+                    <em>Not a scalar!</em>
+                </span>
+            </li><li class="fragment">
+                <strong>M</strong><sup>-1</sup> does not exist!
+            </li></ul>
+        </section><section>
+            <h2>Measure Twice</h2>
+            <p>
+                A metric space consists of a set of points and a
+                distance function: &#x27e8;&#x2119;, d: &#x2119;
+                &#x229b; &#x2119; &#x27f6; &#x211d;&#x27e9;
+            </p>
+            <ul><li class="fragment">
+                Distinct: &#x2200;A,B&#x2208;&#x2119;
+                d(A, B) = 0<sub>&#x211d;</sub> &#x27fa;
+                A = B
+            </li><li class="fragment">
+                Symmetric: &#x2200;A,B&#x2208;&#x2119; d(A, B) = d(B, A)
+            </li><li class="fragment">
+                Triangle: &#x2200;A,B,C&#x2208;&#x2119;
+                d(A, C) &le; d(A, B) + d(B, C)
+            </li><li class="fragment">
+                <del>Non-negative: &#x2200;A,B&#x2208;&#x2119;
+                    d(A, B) &ge; 0<sub>&#x211d;</sub></del>
+            </li></ul>
+        </section><section>
+            <h2>Second That Motion</h2>
+            <p>
+                An isometry is a mapping (bijection) between one
+                metric space and another that preserves distances.
+            </p><p>
+                &#x2200;A,B&#x2208;&#x2119; d(f(A), f(B)) = d(A, B)
+            </p><p>
+                A motion is just an isometry from some metric space
+                to itself.
+            </p>
+        </section><section>
+            <h2>Mirror</h2>
+            <p>
+                All motions can be constructed using one or more
+                mirrors.
+            </p><p>
+                <strong>v</strong>' = -<strong>u</strong>
+                <strong>v</strong> <strong>u</strong><sup>-1</sup>
+            </p><p>
+                This creates a mirror through the origin in the
+                direction of non-zero vector <strong>u</strong>.
+            </p>
+        </section><section>
+            <h2>Double Mirror</h2>
+            <p>
+                When two mirrors intersect we rotate
+            </p>
+            <img src="double-mirror.jpg" style="max-width: 40%;" />
+            <p>
+                This is a rotor:
+                <strong>v</strong>' = (<strong>u</strong>
+                <strong>w</strong>)
+                <strong>v</strong> (<strong>u</strong>
+                <strong>w</strong>)<sup>-1</sup>
+            </p>
+        </section><section>
+            <h2>Rotors</h2>
+            <p>
+                A product of two vectors is a rotor
+            </p><p>
+                <strong>v</strong> <strong>u</strong> =
+                <strong>R</strong> = R<sub>c</sub> + R<sub>s</sub>
+                <strong>U</strong>
+            </p><ul><li class="fragment">
+                <strong>R</strong><sup>&#x2020;</sup> =
+                R<sub>c</sub> + R<sub>s</sub>
+                <strong>U</strong><sup>&#x2020;</sup>
+                <span class="fragment">
+                    = R<sub>c</sub> - R<sub>s</sub> <strong>U</strong>
+                </span>
+            </li><li class="fragment">
+                |<strong>R</strong>|<sup>2</sup> =
+                <strong>R</strong> <strong>R</strong><sup>&#x2020;</sup>
+                <span class="fragment">
+                    = R<sub>c</sub><sup>2</sup> +
+                    R<sub>s</sub><sup>2</sup>
+                    <strong>U U</strong><sup>&#x2020;</sup> +
+                    R<sub>c</sub> R<sub>s</sub>
+                    <strong>U</strong><sup>&#x2020;</sup> +
+                    R<sub>s</sub> R<sub>c</sub>
+                    <strong>U</strong>
+                </span><span class="fragment">
+                    = <br /> R<sub>c</sub><sup>2</sup> +
+                    R<sub>s</sub><sup>2</sup>
+                    <del><strong>U U</strong><sup>&#x2020;</sup></del> +
+                    <del>R<sub>c</sub> R<sub>s</sub>
+                        <strong>U</strong> -
+                        R<sub>c</sub> R<sub>s</sub>
+                        <strong>U</strong></del>
+                </span><span class="fragment">
+                    = R<sub>c</sub><sup>2</sup> +
+                    R<sub>s</sub><sup>2</sup>
+                </span>
+            </li></ul><p class="fragment">
+                This is the equation for a circle in the plane
+                decribed by bivector <strong>U</strong>
+            </p>
+        </section><section>
+            <h2>Unit Rotors</h2>
+            <p>
+                A unit rotor has a norm of one.
+            </p><p>
+                |<strong>R</strong>|<sup>2</sup> =
+                R<sub>c</sub><sup>2</sup> +
+                R<sub>s</sub><sup>2</sup> = 1
+            </p><p class="fragment">
+                Is this starting to look familiar?
+            </p><p class="fragment">
+                cos(&theta;)<sup>2</sup> + sin(&theta;)<sup>2</sup> = 1
+            </p>
+        </section><section>
+            <h2>Euler's Formula</h2>
+            <p>
+                Consider: <strong>U</strong>
+                <strong>U</strong><sup>&#x2020;</sup> = 1 &and;
+                <strong>U</strong><sup>2</sup> = -1
+            </p><ul><li class="fragment">
+                e<sup>x</sup> = 1 + x + x<sup>2</sup>/2 +
+                x<sup>3</sup>/6 + ...
+                <span class="fragment">
+                    + x<sup>n</sup>/n! + ...
+                </span>
+            </li><li class="fragment">
+                e<sup>&theta;<strong>U</strong></sup> =
+                1 + &theta;<strong>U</strong> +
+                (&theta;<strong>U</strong>)<sup>2</sup>/2 +
+                (&theta;<strong>U</strong>)<sup>3</sup>/6 + ...
+            </li><li class="fragment">
+                e<sup>&theta;<strong>U</strong></sup> =
+                1 + &theta;<strong>U</strong> -
+                &theta;<sup>2</sup>/2 -
+                &theta;<sup>3</sup>/6 <strong>U</strong> + ...
+            </li><li class="fragment">
+                e<sup>&theta; <strong>U</strong></sup> =
+                (1 - &theta;<sup>2</sup>/2 + ...) +
+                (&theta; - &theta;<sup>3</sup>/6 +
+                ...)<strong>U</strong>
+            </li><li class="fragment">
+                e<sup>&theta;<strong>U</strong></sup> =
+                cos(&theta;) + sin(&theta;)<strong>U</strong>
+            </li>
+        </section><section>
+            <h2>Euler's Rotor</h2>
+            <p>
+                <strong>R</strong> =
+                |<strong>R</strong>|
+                e<sup>&theta;<strong>U</strong></sup> =
+                |<strong>R</strong>| (cos(&theta;) +
+                sin(&theta;)<strong>U</strong>)
+            </p><ul><li class="fragment">
+                <strong>R</strong><sup>&#x2020;</sup>
+                <span class="fragment">
+                    = |<strong>R</strong>| (cos(&theta;) +
+                    sin(&theta;)<strong>U</strong><sup>&#x2020;</sup>)
+                </span><span class="fragment">
+                    = <br /> |<strong>R</strong>|
+                    (cos(&theta;) - sin(&theta;)<strong>U</strong>)
+                </span><span class="fragment">
+                    = <br /> |<strong>R</strong>|
+                    (cos(-&theta;) + sin(-&theta;)<strong>U</strong>)
+                </span><span class="fragment">
+                    = |<strong>R</strong>|
+                    e<sup>-&theta;<strong>U</strong></sup>
+                </span>
+            </li><li class="fragment">
+                <strong>R v R</strong><sup>-1</sup>
+                <span class="fragment">
+                    = (|<strong>R</strong>|
+                    e<sup>&theta;<strong>U</strong></sup>)
+                    <strong>v</strong>
+                    (|<strong>R</strong>|
+                    e<sup>-&theta;<strong>U</strong></sup> /
+                    |<strong>R</strong>|<sup>2</sup>)
+                </span><span class="fragment">
+                    = <br /> <del>|<strong>R</strong>|<sup>2</sup></del>
+                    e<sup>&theta;<strong>U</strong></sup>
+                    <strong>v</strong>
+                    e<sup>-&theta;<strong>U</strong></sup> /
+                    <del>|<strong>R</strong>|<sup>2</sup></del>
+                </span><span class="fragment">
+                    = e<sup>&theta;<strong>U</strong></sup>
+                    <strong>v</strong>
+                    e<sup>-&theta;<strong>U</strong></sup>
+                </span>
+            </li><p class="fragment">
+                Rotor angles are all that matters in sandwich
+            </p>            
+        </section><section>
+            <h2>Projective Geometry</h2>
+            <p>
+                Rotors always rotate around the origin.  Projecting
+                down from one extra dimension allows rotors to do
+                this.  This is a rotation around the point at
+                infinity.
+            </p>
+        </section><section>
+            <h2>Minkowski Space</h2>
+            <p>
+                Until now all our basis vectors squared to one.
+                When we introduce some basis vectors that square
+                to negative one we get a mixed signature space.
+            </p><p>
+                <strong>x</strong><sup>2</sup> =
+                <strong>y</strong><sup>2</sup> =
+                <strong>z</strong><sup>2</sup> = 1
+                <span class="fragment">
+                    = -<strong>t</strong><sup>2</sup>
+                </span>
+            </p><p class="fragment">
+                <strong>t</strong><sup>2</sup> = -1
+            </p>
+        </section><section>
+            <h2>Spacetime</h2>
+            <p>
+                We measure time (<strong>t</strong>) in meters
+                (c &#x22CD; 3&times;10<sup>8</sup> m/s)
+            </p><p>
+                <strong>v</strong> = v<sub>x</sub> <strong>x</strong> +
+                v<sub>y</sub> <strong>y</strong> +
+                v<sub>z</sub> <strong>z</strong> +
+                v<sub>t</sub> c <strong>t</strong>
+            </p><p class="fragment">
+                <strong>v</strong>
+                <strong>v</strong><sup>&#x2020;</sup>
+                <span class="fragment">
+                    = v<sub>x</sub> v<sub>x</sub>
+                    <strong>x</strong> <strong>x</strong> + ... +
+                    v<sub>t</sub> c v<sub>t</sub> c
+                    <strong>t</strong> <strong>t</strong>
+                </span><span class="fragment">
+                    = v<sub>x</sub><sup>2</sup> + ... -
+                    (c v<sub>t</sub>)<sup>2</sup>
+                </span>
+            </p><p class="fragment">
+                This is the spaceteime interval (mostly plus)
+            </p>
+        </section><section>
+            <h2>Spacetime Vectors</h2>
+            <p>
+                We can characterize spacetime vectors by their
+                squared norm
+            </p><ul><li class="fragment">
+                Spacelike: <strong>v</strong>
+                <strong>v</strong><sup>&#x2020;</sup> &gt; 0
+                <span class="fragment">
+                    [v<sub>x</sub><sup>2</sup> + ... &gt;
+                    (c v<sub>t</sub>)<sup>2</sup>]
+                </span>
+            </li><li class="fragment">
+                Timelike: <strong>v</strong>
+                <strong>v</strong><sup>&#x2020;</sup> &lt; 0
+                <span class="fragment">
+                    [v<sub>x</sub><sup>2</sup> + ... &lt;
+                    (c v<sub>t</sub>)<sup>2</sup>]
+                </span>
+            </li><li class="fragment">
+                Lightlike: <strong>v</strong>
+                <strong>v</strong><sup>&#x2020;</sup> = 0
+                <span class="fragment">
+                    [v<sub>x</sub><sup>2</sup> + ... =
+                    (c v<sub>t</sub>)<sup>2</sup>]
+                </span>
+            </li></ul>
+        </section><section>
+            <h2>Minkowski Rotors</h2>
+            <p>
+                A product of two Minkowsky vectors is a rotor
+            </p><p>
+                <strong>v u</strong> =
+                (v<sub>x</sub> <strong>x</strong> +
+                c v<sub>t</sub> <strong>t</strong>)
+                (u<sub>x</sub> <strong>x</strong> +
+                c u<sub>t</sub> <strong>t</strong>)
+                <span class="fragment">
+                    = <br /> v<sub>x</sub> u<sub>x</sub>
+                    <del><strong>x x</strong></sub></del> +
+                    c v<sub>x</sub> u<sub>t</sub>
+                    <strong>x t</strong></sub> +
+                    c v<sub>t</sub> u<sub>x</sub>
+                    <span class="intro"><strong>t
+                        x</strong></sub></span> +
+                    c<sup>2</sup> v<sub>t</sub> u<sub>t</sub>
+                    <span class="intro"><strong>t
+                        t</strong></span></sub>
+                </span><span class="fragment">
+                    = <br /> v<sub>x</sub> u<sub>x</sub> -
+                    c<sup>2</sup> v<sub>t</sub> u<sub>t</sub> +
+                    c (v<sub>x</sub> u<sub>t</sub> -
+                    v<sub>t</sub> u<sub>x</sub>)
+                    <strong>x t</strong></sub>
+                </span>
+            </p><p class="fragment">
+                <strong>v u</strong> = <strong>M</strong> =
+                M<sub>c</sub> + M<sub>s</sub> <strong>x t</strong>
+            </p>
+        </section><section>
+            <h2>Minkowski Bivectors</h2>
+            <p>
+                Minkowski bivector are anti-commutative but do
+                something interesting when squared:
+            </p><ul><li class="fragment">
+                (<strong>x</strong> <strong>t</strong>)<sup>2</sup>
+                <span class="fragment">
+                    = <strong><span class="intro">x t</span>
+                    x t</strong>
+                </span><span class="fragment">
+                    = -<strong>t <del>x x</del> t</strong>
+                </span><span class="fragment">
+                    = -<strong class="intro">t t</strong>
+                </span><span class="fragment">
+                    = -(-1)
+                </span><span class="fragment">
+                    = 1
+                </span>
+            </li><li class="fragment">
+                <strong>M M</strong><sup>&#x2020;</sup>
+                <span class="fragment">
+                    = (M<sub>c</sub> + M<sub>s</sub>
+                    <strong>x t</strong>) (M<sub>c</sub> - M<sub>s</sub>
+                    <strong>x t</strong>)
+                </span><span class="fragment">
+                    = <br /> M<sub>c</sub><sup>2</sup> +
+                    <del>
+                        M<sub>c</sub> M<sub>s</sub>
+                        <strong>x t</strong> -
+                        M<sub>c</sub> M<sub>s</sub>
+                        <strong>x t</strong>
+                    </del> -
+                    M<sub>s</sub><sup>2</sup>
+                    <del><strong>x t x t</strong></span>
+                </span><span class="fragment">
+                    = M<sub>c</sub><sup>2</sup> -
+                    M<sub>s</sub><sup>2</sup>
+                </span>
+            </li></ul>
+        </section><section>
+            <h2>Unit Minkowski Rotor</h2>
+            <p>
+                A unit Minkowski rotor has a norm of one
+            </p><p>
+                |<strong>M</strong>|<sup>2</sup> =
+                <strong>M M</strong><sup>&#x2020;</sup> =
+                M<sub>c</sub><sup>2</sup> - M<sub>s</sub><sup>2</sup> = 1
+            </p><p class="fragment">
+                This is the equation of a hyperbola
+            </p><p class="fragment">
+                cosh(&phi;)<sup>2</sup> - sinh(&phi;)<sup>2</sup> = 1
+            </p>
+        </section><section>
+            <h2>Lorentz Rotor</h2>
+            <p>
+                Consider: <strong>x t</strong>
+                (<strong>x t</strong>)<sup>&#x2020;</sup> =
+                (<strong>x t</strong>)<sup>2</sup> = 1
+            </p><ul><li class="fragment">
+                e<sup>&phi; <strong>x</strong>
+                <strong>t</strong></sup> =
+                1 + &phi; <strong>x</strong> <strong>t</strong> +
+                (&phi; <strong>x</strong>
+                <strong>t</strong>)<sup>2</sup>/2 +
+                (&phi; <strong>x</strong>
+                <strong>t</strong>)<sup>3</sup>/6 + ...
+            </li><li class="fragment">
+                e<sup>&phi; <strong>x</strong>
+                <strong>t</strong></sup> =
+                1 + &phi; <strong>x</strong> <strong>t</strong> +
+                &phi;<sup>2</sup>/2 +
+                &phi;<sup>3</sup>/6
+                <strong>x</strong> <strong>t</strong> + ...
+            </li><li class="fragment">
+                e<sup>&phi; <strong>x</strong>
+                <strong>t</strong></sup> =
+                (1 + &phi;<sup>2</sup>/2 + ...) +
+                (&phi; + &phi;<sup>3</sup>/6 + ...)
+                <strong>x</strong> <strong>t</strong>
+            </li><li class="fragment">
+                e<sup>&phi; <strong>x</strong>
+                <strong>t</strong></sup> =
+                cosh(&phi;) + sinh(&phi;)
+                <strong>x</strong> <strong>t</strong>
+            </li></ul>
+        </section><section>
+            <h2>Lorentz Transform</h2>
+            <p>
+                <strong>L</strong> =
+                L<sub>x t</sub><strong>x t</strong> +
+                L<sub>y t</sub><strong>y t</strong> +
+                L<sub>z t</sub><strong>z t</strong> &and;
+                (L<sub>x t</sub><sup>2</sup> +
+                L<sub>y t</sub><sup>2</sup> +
+                L<sub>z t</sub><sup>2</sup>) = 1
+            </p><p>
+                <strong>M</strong> =
+                |<strong>M</strong>|
+                e<sup>&phi;<strong>L</strong></sup> =
+                |<strong>M</strong>| (cosh(&phi;) +
+                sinh(&phi;)<strong>L</strong>)
+            </p><ul><li class="fragment">
+                <strong>M</strong><sup>&#x2020;</sup>
+                <span class="fragment">
+                    = |<strong>M</strong>| (cosh(&phi;) +
+                    sinh(&phi;)<strong>L</strong><sup>&#x2020;</sup>)
+                </span><span class="fragment">
+                    = <br /> |<strong>M</strong>|
+                    (cosh(&phi;) - sinh(&phi;)<strong>L</strong>)
+                </span><span class="fragment">
+                    = <br /> |<strong>M</strong>|
+                    (cosh(-&phi;) + sinh(-&phi;)<strong>L</strong>)
+                </span><span class="fragment">
+                    = |<strong>M</strong>|
+                    e<sup>-&phi;<strong>L</strong></sup>
+                </span>
+            </li><li class="fragment">
+                <strong>M v M</strong><sup>-1</sup>
+                <span class="fragment">
+                    = (|<strong>M</strong>|
+                    e<sup>&phi;<strong>L</strong></sup>)
+                    <strong>v</strong>
+                    (|<strong>M</strong>|
+                    e<sup>-&phi;<strong>L</strong></sup> /
+                    |<strong>M</strong>|<sup>2</sup>)
+                </span><span class="fragment">
+                    = <br /> <del>|<strong>M</strong>|<sup>2</sup></del>
+                    e<sup>&phi;<strong>L</strong></sup>
+                    <strong>v</strong>
+                    e<sup>-&phi;<strong>L</strong></sup> /
+                    <del>|<strong>M</strong>|<sup>2</sup></del>
+                </span><span class="fragment">
+                    = e<sup>&phi;<strong>L</strong></sup>
+                    <strong>v</strong>
+                    e<sup>-&phi;<strong>L</strong></sup>
+                </span>
+            </li><p class="fragment">
+                Hyperbolic angles are all that matter
+            </p>            
+        </section>
+    </section></div></div>
+    <script src="lib/reveal/head.min.js"></script>
+    <script src="lib/reveal/reveal.js"></script>
+    <script src="ripple/polyfill.js"></script>
+    <script src="ripple/ripple.js"></script>
+    <script src="ripple/logic.js"></script>
+    <script src="ripple/multivec.js"></script>
+    <script src="ripple/triggy.js"></script>
+    <script src="lib/slides.js"></script>
+</html>
