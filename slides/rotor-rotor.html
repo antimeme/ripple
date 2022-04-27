@@ -23,6 +23,10 @@
         </section><section>
             <h2>But first...</h2>
             <p>Let's meet some friendly math</p>
+            <p class="fragment">
+                No seriously, there's nothing more complicated
+                than multiplying in here.
+            </p>
         </section><section>
             <h2>Vectors</h2>
             <ul><li class="fragment">
@@ -456,55 +460,57 @@
                 The wedge product is far more general and useful
             </p>
         </section><section>
-            <h2>Bivectors</h2>
+            <h2>Bivectors Norms</h2>
             <p>
-                Bivectors <strong>x y</strong>, <strong>y z</strong> and
-                <strong>x z</strong> serve as a basis for bivectors in
-                the same way that <strong>x</strong>, <strong>y</strong>
-                and <strong>z</strong> serve as a basis for vectors.
-            </p><p class="fragment">
                 <strong>B</strong> =
                 B<sub>x y</sub><strong>x y</strong> +
                 B<sub>y z</sub><strong>y z</strong> +
                 B<sub>x z</sub><strong>x z</strong>
             </p><p class="fragment">
-                <strong>B B</strong><sup>&#x2020;</sup> =
-                |<strong>B</strong>|<sup>2</sup> =
-                -<strong>B</strong><sup>2</sup>
+                <strong>B B</strong><sup>&#x2020;</sup>
                 <span class="fragment">
-                    = B<sub>x y</sub><sup>2</sup> +
-                    B<sub>y z</sub><sup>2</sup> +
-                    B<sub>x z</sub><sup>2</sup> + <br />
+                    = B<sub>x y</sub><sup>2</sup>
+                    <del><strong>x y y x</strong></del> +
+                    B<sub>y z</sub><sup>2</sup>
+                    <del><strong>y z z y</strong></del> +
+                    B<sub>x z</sub><sup>2</sup>
+                    <del><strong>x z z x</strong></del> + <br />
                     <del>
                         (B<sub>x y</sub> B<sub>y z</sub> -
                         B<sub>y z</sub> B<sub>x y</sub>)
-                        <strong>x y z y</strong>
-                    </del> + <del>
+                    </del><strong>x y z y</strong> + <del>
                         (B<sub>x y</sub> B<sub>x z</sub> -
                         B<sub>x z</sub> B<sub>x y</sub>)
-                        <strong>x y z x</strong>
-                    </del> + <del>
+                    </del><strong>x y z x</strong> + <br /> <del>
                         (B<sub>y z</sub> B<sub>x z</sub> -
                         B<sub>x z</sub> B<sub>y z</sub>)
-                        <strong>y z z x</strong>
-                    </del>
+                    </del><strong>y z z x</strong>
+                </span><span class="fragment">
+                    = B<sub>x y</sub><sup>2</sup> +
+                    B<sub>y z</sub><sup>2</sup> +
+                    B<sub>x z</sub><sup>2</sup>
                 </span>
+            </p><p class="fragment">
+                <strong>B B</strong> = <strong>B</strong><sup>2</sup>
+                = -(B<sub>x y</sub><sup>2</sup> +
+                B<sub>y z</sub><sup>2</sup> +
+                B<sub>x z</sub><sup>2</sup>)
             </p>
         </section><section>
             <h2>Unit Vectors</h2>
             <p>
                 A unit vector has a norm of one.
             </p><p>
-                <strong>u</strong> =
-                u<sub>x</sub><strong>x</strong> +
-                u<sub>y</sub><strong>y</strong> +
-                u<sub>z</sub><strong>z</strong>
+                <strong>&#x00fb;</strong> =
+                &#x00fb;<sub>x</sub><strong>x</strong> +
+                &#x00fb;<sub>y</sub><strong>y</strong> +
+                &#x00fb;<sub>z</sub><strong>z</strong>
             </p><p class="fragment">
-                <strong>u u</strong><sup>&#x2020;</sup> =
-                <strong>u</strong><sup>2</sup> =
-                u<sub>x</sub><sup>2</sup> +
-                u<sub>y</sub><sup>2</sup> +
-                u<sub>z</sub><sup>2</sup> = 1
+                <strong>&#x00fb; &#x00fb;</strong><sup>&#x2020;</sup> =
+                <strong>&#x00fb;</strong><sup>2</sup> =
+                &#x00fb;<sub>x</sub><sup>2</sup> +
+                &#x00fb;<sub>y</sub><sup>2</sup> +
+                &#x00fb;<sub>z</sub><sup>2</sup> = 1
             </p><p class="fragment">
                 |<strong>x</strong>|<sup>2</sup> =
                 |<strong>y</strong>|<sup>2</sup> =
@@ -632,8 +638,8 @@
                     (<strong>v</strong>
                     <strong>v</strong><sup>&#x2020;</sup>)
                 </span><span class="fragment">
-                    = <strong>v</strong> <strong>v</strong> /
-                    (<strong>v</strong> <strong>v</strong>)
+                    = |<strong>v</strong>|<sup>2</sup> /
+                    |<strong>v</strong>|<sup>2</sup>
                 </span><span class="fragment">
                     = 1
                 </span>
@@ -668,8 +674,6 @@
                     <strong>x</strong></del>) /
                     (<del><strong>x</strong> <strong>x</strong></del>)
                 </span><span class="fragment">
-                    = 1 / 1
-                </span><span class="fragment">
                     = 1
                 </span>
             </li></ul><p class="fragment">
@@ -696,7 +700,10 @@
                 </span>
             </li><li class="fragment">
                 <strong>M</strong><sup>-1</sup> does not exist!
-            </li></ul>
+            </li></ul><p class="fragment">
+                Also no inverse when
+                <strong>M M</strong><sup>&#x2020;</sup> = 0
+            </p>
         </section><section>
             <h2>Measure Twice</h2>
             <p>
@@ -910,61 +917,100 @@
                 <strong>t</strong><sup>2</sup> = -1
             </p>
         </section><section>
+            <h2>Anti-Commute Basis</h2>
+            <p>
+                Our axiom request basis vectors to anti-commute.
+            </p><ul><li class="fragment">
+                (<strong>x y</strong> = -<strong>y x</strong>) &and;
+                (<strong>y z</strong> = -<strong>z y</strong>) &and;
+                (<strong>x z</strong> = -<strong>z x</strong>)
+            </li><li class="fragment">
+                (<strong>x t</strong> = -<strong>t x</strong>) &and;
+                (<strong>y t</strong> = -<strong>t y</strong>) &and;
+                (<strong>z t</strong> = -<strong>t z</strong>)
+            </li></ul><p class="fragment">
+                Nothing about this changes in Minkowski space.
+            </p>
+        </section><section>
             <h2>Spacetime</h2>
             <p>
-                We measure time (<strong>t</strong>) in meters
-                (c &#x22CD; 3&times;10<sup>8</sup> m/s)
+                Convert time to distance using the speed of light
+                (For example: c &#x22CD; 3&times;10<sup>8</sup> m/s)
             </p><p>
                 <strong>v</strong> = v<sub>x</sub> <strong>x</strong> +
                 v<sub>y</sub> <strong>y</strong> +
                 v<sub>z</sub> <strong>z</strong> +
                 v<sub>t</sub> c <strong>t</strong>
-            </p><p class="fragment">
-                <strong>v</strong>
-                <strong>v</strong><sup>&#x2020;</sup>
+            </p><ul><li class="fragment">
+                <strong>v</strong> <strong>v</strong><sup>&#x2020;</sup>
                 <span class="fragment">
                     = v<sub>x</sub> v<sub>x</sub>
-                    <strong>x</strong> <strong>x</strong> + ... +
+                    <strong>x x</strong> +
+                    v<sub>y</sub> v<sub>y</sub>
+                    <strong>y y</strong> +
+                    v<sub>z</sub> v<sub>z</sub>
+                    <strong>z z</strong> +
                     v<sub>t</sub> c v<sub>t</sub> c
-                    <strong>t</strong> <strong>t</strong>
-                </span><span class="fragment">
-                    = v<sub>x</sub><sup>2</sup> + ... -
-                    (c v<sub>t</sub>)<sup>2</sup>
+                    <strong>t t</strong> + ...
                 </span>
-            </p><p class="fragment">
-                This is the spaceteime interval (mostly plus)
+            </li><li class="fragment">
+                <strong>v</strong> <strong>v</strong><sup>&#x2020;</sup>
+                = v<sub>x</sub> v<sub>x</sub>
+                <del><strong>x x</strong></del> +
+                v<sub>y</sub> v<sub>y</sub>
+                <del><strong>y y</strong></del> +
+                v<sub>z</sub> v<sub>z</sub>
+                <del><strong>z z</strong></del> +
+                v<sub>t</sub> c v<sub>t</sub> c
+                <strong class="intro">t t</strong>
+            </li><li class="fragment">
+                <strong>v</strong> <strong>v</strong><sup>&#x2020;</sup>
+                = v<sub>x</sub><sup>2</sup> +
+                v<sub>y</sub><sup>2</sup> +
+                v<sub>z</sub><sup>2</sup> -
+                (v<sub>t</sub> c)<sup>2</sup>
+            </li></ul><p class="fragment">
+                This is the spacetime interval (mostly plus)
             </p>
         </section><section>
             <h2>Spacetime Vectors</h2>
             <p>
-                We can characterize spacetime vectors by their
+                Vectors in spacetime can be characterized by their
                 squared norm
             </p><ul><li class="fragment">
                 Spacelike: <strong>v</strong>
                 <strong>v</strong><sup>&#x2020;</sup> &gt; 0
                 <span class="fragment">
-                    [v<sub>x</sub><sup>2</sup> + ... &gt;
-                    (c v<sub>t</sub>)<sup>2</sup>]
+                    &#x27f9; v<sub>x</sub><sup>2</sup> +
+                    v<sub>y</sub><sup>2</sup> +
+                    v<sub>z</sub><sup>2</sup> &gt;
+                    (c v<sub>t</sub>)<sup>2</sup>
                 </span>
             </li><li class="fragment">
                 Timelike: <strong>v</strong>
                 <strong>v</strong><sup>&#x2020;</sup> &lt; 0
                 <span class="fragment">
-                    [v<sub>x</sub><sup>2</sup> + ... &lt;
-                    (c v<sub>t</sub>)<sup>2</sup>]
+                    &#x27f9; v<sub>x</sub><sup>2</sup> +
+                    v<sub>y</sub><sup>2</sup> +
+                    v<sub>z</sub><sup>2</sup> &lt;
+                    (c v<sub>t</sub>)<sup>2</sup>
                 </span>
             </li><li class="fragment">
                 Lightlike: <strong>v</strong>
                 <strong>v</strong><sup>&#x2020;</sup> = 0
                 <span class="fragment">
-                    [v<sub>x</sub><sup>2</sup> + ... =
-                    (c v<sub>t</sub>)<sup>2</sup>]
+                    &#x27f9; v<sub>x</sub><sup>2</sup> +
+                    v<sub>y</sub><sup>2</sup> +
+                    v<sub>z</sub><sup>2</sup> =
+                    (c v<sub>t</sub>)<sup>2</sup>
                 </span>
             </li></ul>
         </section><section>
             <h2>Minkowski Rotors</h2>
             <p>
                 A product of two Minkowsky vectors is a rotor
+                (we'll assume v<sub>y</sub> = v<sub>z</sub> = 0
+                to keep things simple)
             </p><p>
                 <strong>v u</strong> =
                 (v<sub>x</sub> <strong>x</strong> +
@@ -1051,6 +1097,7 @@
             <p>
                 Consider: <strong>x t</strong>
                 (<strong>x t</strong>)<sup>&#x2020;</sup> =
+                -1 &and;
                 (<strong>x t</strong>)<sup>2</sup> = 1
             </p><ul><li class="fragment">
                 e<sup>&phi; <strong>x</strong>
