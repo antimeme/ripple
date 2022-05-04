@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<style>
+ html, body
+ { position: absolute; padding: 0; margin: 0; overflow: hidden;  }
+</style>
+<title>Collapse</title>
+<script src="ripple/polyfill.js"></script>
+<script src="ripple/ripple.js"></script>
+<script src="ripple/fascia.js"></script>
+<script src="ripple/multivec.js"></script>
+<script src="ripple/grille.js"></script>
+<script src="ripple/pathf.js"></script>
+<script>//<![CDATA[
+ fascia.ready(function(preloads) {
+     "use strict";
+
+     var Cell = {
+         create: function(config) {
+             var result = Object.create(this);
+             result.init();
+             return result;
+         },
+         init: function(config) {
+             this.__notifyList = [];
+         },
+         subclass: function(subclass) {
+             var result = Object.create(this);
+             Object.keys(subclass).forEach(function(key) {
+                 result[key] = subclass[key];
+             });
+             return result;
+         },
+         obstructed: false,
+         notify: function() {
+             this.__notifyList.forEach(
+                 function(notify) { notify(this); }, this);
+         },
+         draw: function(ctx, node, grid) {
+             ctx.beginPath();
+             grid.draw(ctx, node);
+             ctx.fillStyle = "lightslategray";
+             ctx.fill();
+
+             ctx.beginPath();
+             ctx.arc(node.x, node.y, grid.getRadius() / 2,
+                     0, 2 * Math.PI);
+             ctx.fillStyle = "midnightblue";
+             ctx.fill();
+         }
+     };
+
+     var Superposition = Cell.subclass({});
+
+     var Hull = Cell.subclass({
+         draw: function(ctx, node, grid) {
+             ctx.beginPath();
+             grid.draw(ctx, node);
+             ctx.fillStyle = "green";
+             ctx.fill();
+         }
+     });
+
+     var cellTypes = {
+         bulkhead: Cell.subclass({
+             draw: function(ctx, node, grid) {
+                 ctx.beginPath();
+                 grid.draw(ctx, node);
+                 ctx.fillStyle = "cyan";
+                 ctx.fill();
+             }
+         }),
+         door: Cell.subclass({
+             draw: function(ctx, node, grid) {
+                 var radius = grid.getRadius() / 2;
+                 ctx.beginPath();
+                 ctx.moveTo(node.x - radius, node.y - radius);
+                 ctx.lineTo(node.x + radius, node.y - radius);
+                 ctx.lineTo(node.x + radius, node.y + radius);
+                 ctx.lineTo(node.x - radius, node.y + radius);
+                 ctx.lineTo(node.x - radius, node.y - radius);
+                 ctx.fillStyle = "red";
+                 ctx.fill();
+             }
+         }),
+         bedHead: Cell.subclass({
+             draw: function(ctx, node, grid) {
+                 var radius = grid.getRadius() / 2;
+                 ctx.beginPath();
+                 ctx.moveTo(node.x - radius, node.y - radius);
+                 ctx.lineTo(node.x + radius, node.y - radius);
+                 ctx.lineTo(node.x + radius, node.y + radius);
+                 ctx.lineTo(node.x - radius, node.y + radius);
+                 ctx.fillStyle = "red";
+                 ctx.fill();
+             }
+         }),
+         bedFoot: Cell.subclass({
+             draw: function(ctx, node, grid) {
+                 var radius = grid.getRadius() / 2;
+                 ctx.beginPath();
+                 ctx.moveTo(node.x - radius, node.y - radius);
+                 ctx.lineTo(node.x + radius, node.y + radius);
+                 ctx.lineTo(node.x - radius, node.y + radius);
+                 ctx.lineTo(node.x - radius, node.y - radius);
+                 ctx.fillStyle = "red";
+                 ctx.fill();
+             }
+         }),
+         dresser: Cell.subclass({
+             draw: function(ctx, node, grid) {
+                 var radius = grid.getRadius() / 2;
+                 ctx.beginPath();
+                 ctx.moveTo(node.x - radius, node.y - radius);
+                 ctx.lineTo(node.x + radius, node.y - radius);
+                 ctx.lineTo(node.x + radius, node.y + radius);
+                 ctx.lineTo(node.x - radius, node.y + radius);
+                 ctx.lineTo(node.x - radius, node.y - radius);
+                 ctx.fillStyle = "green";
+                 ctx.fill();
+             }
+         }),
+         desk: Cell.subclass({
+             draw: function(ctx, node, grid) {
+                 var radius = grid.getRadius() / 2;
+                 ctx.beginPath();
+                 ctx.moveTo(node.x - radius, node.y - radius);
+                 ctx.lineTo(node.x + radius, node.y - radius);
+                 ctx.lineTo(node.x + radius, node.y + radius);
+                 ctx.lineTo(node.x - radius, node.y + radius);
+                 ctx.lineTo(node.x - radius, node.y - radius);
+                 ctx.fillStyle = "purple";
+                 ctx.fill();
+             }
+         }),
+         floor: Cell.subclass({
+             draw: function(ctx, node, grid) {
+             }
+         }),
+     };
+
+     var Structure = {
+         create: function(config) {
+             var result = Object.create(this);
+             var gridConfig = undefined;
+             var cellData = {};
+             if (config) {
+             } else {
+                 gridConfig = {type: "square", edge: 1};
+             }
+
+             result.__grid = grille.createGrid(gridConfig);
+             result.__cellData = cellData;
+             result.__defaultLevel = 0;
+             return result;
+         },
+
+         getCell: function(row, col, level) {
+             if (isNaN(row) || isNaN(col))
+                 throw new Error("row and column must be numeric");
+             level = isNaN(level) ? this.__defaultLevel : level;
+             return (level in this.__cellData) ?
+                    this.__cellData[level][
+                        ripple.pair(row, col)] : undefined;
+         },
+         setCell: function(value, row, col, level) {
+             if (isNaN(row) || isNaN(col))
+                 throw new Error("row and column must be numeric");
+             var index = ripple.pair(row, col);
+
+             level = isNaN(level) ? this.__defaultLevel : level;
+             if (!(level in this.__cellData))
+                 this.__cellData[level] = {};
+
+             if (typeof(value) === "undefined")
+                 delete this.__cellData[level][index];
+             else this.__cellData[level][index] = value;
+
+             return this;
+         },
+         eachCell: function(fn, context) {
+             var level = this.__defaultLevel;
+
+             if (level in this.__cellData)
+                 Object.keys(this.__cellData[
+                     this.__defaultLevel]).forEach(function(key) {
+                         var node = ripple.unpair(key);
+                         node.row = node.x;
+                         node.col = node.y;
+                         fn.call(context, this.__cellData[level][key],
+                                 this.__grid.markCenter(node),
+                                 this.__grid);
+                     }, this);
+         },
+         setLevel: function(level) {
+             this.__defaultLevel = level;
+             return this;
+         },
+
+         draw: function(ctx, camera) {
+             this.__grid.mapRectangle(
+                 camera.toWorldFromScreen({x: 0, y: 0}),
+                 camera.toWorldFromScreen(
+                     {x: camera.width, y: camera.height}),
+                 function(node, index, grid) {
+                     var cell = this.getCell(node.row, node.col);
+                     if (cell)
+                         cell.draw(ctx, node, grid);
+                 }, this);
+         },
+
+         toJSON: function() {
+             return {};
+         },
+     };
+
+     var ii, jj, structure = Structure.create();
+     for (ii = -10; ii <= 10; ++ii)
+         for (jj = -10; jj <= 10; ++jj)
+             structure.setCell(Superposition.create(), ii, jj);
+     for (ii = -5; ii <= 5; ++ii)
+         for (jj = 10; jj <= 15; ++jj)
+             structure.setCell(Superposition.create(), ii, jj);
+
+     structure.eachCell(function(cell, node, grid) {
+         if (Superposition.isPrototypeOf(cell)) {
+             var isHull = false;
+             grid.eachNeighbor(node, function(neighbor) {
+                 var cell = structure.getCell(
+                     neighbor.row, neighbor.col);
+                 if (typeof(cell) == "undefined")
+                     isHull = true;
+             });
+             if (isHull)
+                 return structure.setCell(
+                     Hull.create(), node.row, node.col)
+
+             var choice = ripple.shuffle(Object.keys(cellTypes))[0];
+             structure.setCell(cellTypes[choice].create(),
+                               node.row, node.col);
+         }
+     });
+
+     return {
+         init: function(camera, canvas, container, fasciaRedraw) {
+             this.grid = grille.createGrid({edge: 1});
+             camera.setScale(Math.min(
+                 camera.width, camera.height) / 22);
+             canvas.style.background = "darkslategray";
+         },
+         resize: function(camera) {
+             var size = Math.min(camera.width, camera.height);
+             camera.setMinZoom(size / 22);
+             camera.setMaxZoom(size);
+         },
+         wheel: function(event, camera) { camera.wheel(event); },
+         drag:  function(event, camera) { camera.drag(event);  },
+         tap:   function(event, camera) {
+             camera.toWorldFromScreen(event.point);
+         },
+         draw(ctx, camera, now, last) { structure.draw(ctx, camera); }
+     };
+ });
+ //]]></script>
