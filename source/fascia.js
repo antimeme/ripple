@@ -104,7 +104,7 @@
             'canvas', {'class': 'fascia-canvas'});
         container.insertBefore(canvas, container.firstChild);
 
-        var camera = ripple.camera();
+        var camera = ripple.camera.create();
 
         // Selects a function from the application configuration.
         // When the app has a mode active this will prefer the

@@ -439,16 +439,16 @@
     };
 
     ripple.pair = function(x, y, method) {
-        var method = (method && method in pairFunctions) ?
-                     pairFunctions[method] : pairFunctions.szudzik;
+        var m = (method && method in pairFunctions) ?
+                 pairFunctions[method] : pairFunctions.szudzik;
         var nx = (x >= 0) ? (2 * x) : (-2 * x - 1);
         var ny = (y >= 0) ? (2 * y) : (-2 * y - 1);
-        return method.pair(nx, ny);
+        return m.pair(nx, ny);
     };
-    ripple.unpair = function(z, pair) {
-        var method = (method && method in pairFunctions) ?
-                     pairFunctions[method] : pairFunctions.szudzik;
-        var result = method.unpair(z);
+    ripple.unpair = function(z, pair, method) {
+        var m = (method && method in pairFunctions) ?
+                 pairFunctions[method] : pairFunctions.szudzik;
+        var result = m.unpair(z);
         if (result.x % 2)
             result.x = -(result.x + 1);
         if (result.y % 2)
@@ -907,98 +907,97 @@
     /**
      * Represents a screen which can be resized, panned, scaled
      * and so on. */
-    ripple.camera = function(width, height) {
-        if (!(this instanceof ripple.camera))
-            return new ripple.camera(width, height);
-        this.resize(width, height);
-        this.reset();
-    };
+    ripple.camera = {
+        create: function(width, height) {
+            var result = Object.create(this);
+            result.resize(width, height);
+            result.reset();
+            return result;
+        },
+        reset: function() {
+            this.scale = 1;
+            this.x = 0;
+            this.y = 0;
+            this.radians = 0;
+            this.extents = null;
+            return this;
+        },
+        resize: function(width, height) {
+            this.width  = width;
+            this.height = height;
+            return this;
+        },
 
-    ripple.camera.prototype.reset = function() {
-        this.scale = 1;
-        this.x = 0;
-        this.y = 0;
-        this.radians = 0;
-        this.extents = null;
-        return this;
-    };
+        pan: function(vector) {
+            this.x += vector.x;
+            this.y += vector.y;
+            return this;
+        },
+        position: function(point) {
+            this.x = point.x;
+            this.y = point.y;
+            return this;
+        },
+        drag: function(event) {
+            return this.pan({
+                x: (event.last.x - event.current.x) / this.scale,
+                y: (event.last.y - event.current.y) / this.scale });
+        },
 
-    ripple.camera.prototype.resize = function(width, height) {
-        this.width  = width;
-        this.height = height;
-        return this;
-    };
+        rotate: function(radians) {
+            return this.setAngle(this.radians + radians);
+        },
+        setAngle: function(radians) {
+            this.radians = radians;
+            return this;
+        },
 
-    ripple.camera.prototype.pan = function(vector) {
-        this.x += vector.x;
-        this.y += vector.y;
-        return this;
-    };
+        setScale: function(factor, min, max) {
+            if (!isNaN(factor)) {
+                if (!isNaN(max) && (factor > max))
+                    factor = max;
+                if (!isNaN(min) && (factor < min))
+                    factor = min;
+                this.scale = factor;
+            }
+            return this;
+        },
+        zoom: function(factor, min, max) {
+            return this.setScale(this.scale * factor, min, max);
+        },
+        setMaxZoom: function(max) { this.__zoomMax = max; },
+        setMinZoom: function(max) { this.__zoomMin = max; },
+        wheel: function(event) {
+            return this.zoom(1 + 0.1 * event.y,
+                             this.__zoomMin || 1,
+                             this.__zoomMax || 10);
+        },
 
-    ripple.camera.prototype.position = function(vector) {
-        this.x = vector.x;
-        this.y = vector.y;
-        return this;
-    };
-
-    ripple.camera.prototype.rotate = function(radians) {
-        return this.setAngle(this.radians + radians);
-    };
-
-    ripple.camera.prototype.setAngle = function(radians) {
-        this.radians = radians;
-        return this;
-    };
-
-    ripple.camera.prototype.zoom = function(factor, min, max) {
-        return this.setScale(this.scale * factor, min, max);
-    };
-
-    ripple.camera.prototype.setScale = function(factor, min, max) {
-        if (this.extents) {
+        toScreenFromWorld: function(point) {
+            var place = { x: point.x, y: point.y };
+            place.x -= this.x;
+            place.y -= this.y;
+            // TODO reverse rotate
+            place.x = place.x * this.scale + this.width / 2;
+            place.y = place.y * this.scale + this.height / 2;
+            return place;
+        },
+        toWorldFromScreen: function(place) {
+            var point = { x: place.x, y: place.y };
+            point.x = (point.x - this.width / 2) / this.scale;
+            point.y = (point.y - this.height / 2) / this.scale;
+            // TODO rotate!
+            point.x += this.x;
+            point.y += this.y;
+            return point;
+        },
+        setupContext: function(ctx) {
+            ctx.translate(this.width / 2, this.height / 2);
+            ctx.scale(this.scale, this.scale);
+            ctx.rotate(this.angle);
+            ctx.translate(-this.x, -this.y);
+            return this;
         }
-
-        if (!isNaN(factor)) {
-            if (!isNaN(max) && (factor > max))
-                factor = max;
-            if (!isNaN(min) && (factor < min))
-                factor = min;
-            this.scale = factor;
-        }
-        return this;
-    };
-
-    ripple.camera.prototype.setExtents = function(
-        startX, startY, endX, endY) {
-        this.extents = {sx: startX, sy: startY, ex: endX, ey: endY};
-        return this;
-    }
-
-    ripple.camera.prototype.toScreenFromWorld = function(point) {
-        var place = { x: point.x, y: point.y };
-        place.x -= this.x;
-        place.y -= this.y;
-        // TODO reverse rotate
-        place.x = place.x * this.scale + this.width / 2;
-        place.y = place.y * this.scale + this.height / 2;
-        return place;
-    };
-
-    ripple.camera.prototype.toWorldFromScreen = function(place) {
-        var point = { x: place.x, y: place.y };
-        point.x = (point.x - this.width / 2) / this.scale;
-        point.y = (point.y - this.height / 2) / this.scale;
-        // TODO rotate!
-        point.x += this.x;
-        point.y += this.y;
-        return point;
-    };
-
-    ripple.camera.prototype.setupContext = function(ctx) {
-        ctx.translate(this.width / 2, this.height / 2);
-        ctx.scale(this.scale, this.scale);
-        ctx.rotate(this.angle);
-        ctx.translate(-this.x, -this.y);
     };
 
     ripple.export = function(name, object) {
