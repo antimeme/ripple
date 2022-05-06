@@ -15,11 +15,11 @@
      position: absolute; padding: 0.5em;
      top: 10px; left: 25px;
      background: #333; color: white;
-     border: 2px solid white; border-radius: 5px;
+     border: 2px solid white; border-radius: 10px;
      list-style-type: none; list-style-position: outside;
  }
  .menu a { text-decoration: none; color: white; }
- .menu li { padding: 0.5em; border-radius: 5px; }
+ .menu li { padding: 0.5em; border-radius: 10px; }
  .menu li:hover { background: #55e; }
 </style>
 
@@ -27,15 +27,17 @@
 <script src="ripple/ripple.js"></script>
 <script src="ripple/grille.js"></script>
 <script>//<![CDATA[
- var o_gridType   = ripple.param("gtype");
- var o_numbers    = ripple.paramBoolean("numbers");
- var o_combined   = ripple.paramBoolean("combined");
- var o_edgeSelect = ripple.paramBoolean("edge-select");
- var o_segment    = ripple.paramBoolean("segment");
+ var o_gridType    = ripple.param("gtype");
+ var o_numbers     = ripple.paramBoolean("numbers");
+ var o_combined    = ripple.paramBoolean("combined");
+ var o_edgeSelect  = ripple.paramBoolean("edge-select");
+ var o_segment     = ripple.paramBoolean("segment");
+ var o_isometric   = ripple.paramBoolean("isometric");
+ var o_perspective = ripple.paramBoolean("perspective");
 
  ripple.ready(function() {
      var instance;
-     var camera = ripple.camera(320, 240);
+     var camera = ripple.camera.create(320, 240);
      var self = document.createElement("canvas");
      document.body.appendChild(self);
 
@@ -69,11 +71,7 @@
          var neighbors, vector, radius;
 
          if (!instance) {
-             var gconfig = o_gridType ? {type: o_gridType} :
-                           JSON.parse(JSON.stringify(
-                               grille.canonical[0]));
-             gconfig.radius = 50;
-             instance = grille.createGrid(gconfig);
+             setGrid();
              lineWidth = instance.getRadius() / lineFactor;
          }
 
@@ -266,8 +264,6 @@
 
      // Populate menu with available grid types
      var menuSelectGrid = ripple.createElement("select");
-     var menuCheckIsometric = ripple.createElement(
-         "input", {type: "checkbox", value: "isometric"});
      grille.canonical.forEach(function(entry) {
          var selected = o_gridType && (o_gridType === entry.type);
          menuSelectGrid.appendChild(ripple.createElement(
@@ -276,6 +272,12 @@
                  selected: selected || undefined},
              entry.name));
      });
+     var menuCheckIsometric = ripple.createElement(
+         "input", {type: "checkbox", value: "isometric",
+                   checked: o_isometric || undefined});
+     var menuCheckPerspective = ripple.createElement(
+         "input", {type: "checkbox", value: "perspective",
+                   checked: o_perspective || undefined});
      var menuSliderRotate = ripple.createElement(
          "input", {type: "range", value: 0, step: Math.PI / 60,
                    min: -Math.PI, max: Math.PI});
@@ -285,7 +287,8 @@
              menuSelectGrid.value));
          if (!options)
              options = {type: gridType};
-         options.isometric = menuCheckIsometric.checked;
+         options.isometric   = menuCheckIsometric.checked;
+         options.perspective = menuCheckPerspective.checked;
          options.radius = 50;
          if (!isNaN(menuSliderRotate.value))
              options.rotate = menuSliderRotate.value;
@@ -303,6 +306,7 @@
 
      menuSelectGrid.addEventListener("change", setGridClose);
      menuCheckIsometric.addEventListener("change", setGridClose);
+     menuCheckPerspective.addEventListener("change", setGridClose);
      menuSliderRotate.addEventListener("change", setGrid);
 
      var menu = ripple.hide(ripple.createElement(
@@ -313,6 +317,9 @@
      menu.appendChild(document.createElement("br"));
      menu.appendChild(ripple.createElement(
          "label", null, menuCheckIsometric, "Isometric"));
+     menu.appendChild(document.createElement("br"));
+     //menu.appendChild(ripple.createElement(
+     //    "label", null, menuCheckPerspective, "Perspective"));
      menu.appendChild(document.createElement("br"));
      menu.appendChild(menuSliderRotate);
      menu.appendChild(document.createElement("hr"));

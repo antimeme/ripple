@@ -20,7 +20,7 @@
 //
 // Create a grid by calling the grille.createGrid method:
 //
-//     var g = grile.createGrid({type: "square", edge: 20});
+//     var g = grille.createGrid({type: "square", edge: 20});
 //
 // This creates a square grid with an edge length of twenty units.
 // Instead, you could specify a radius.  This should give a more
@@ -71,9 +71,10 @@
 // Another option is to map over a rectangual area of cells.  The
 // mapRectangle() method does this:
 //
-//     g.map({start: {x: 22, y: -144}, end: {x: 405, y: 255}},
-//           function(cell) {
-//               console.log("row:", cell.row, "col:", cell.col ); });
+//     g.mapRectangle(
+//         {x: 22, y: -144}, {x: 405, y: 255},
+//         function(cell) {
+//             console.log("row:", cell.row, "col:", cell.col ); });
 //
 // Note that the grid does not support offsets.  You will need to use
 // some other method of transforming coordinates as necessary.
@@ -197,7 +198,7 @@
         // with the same row and col but with x and y set to the
         // coordinates of the center of the node.
         getCell: function(node)
-        { return this.markCell({x: node.x, y: node.y}); },
+        { return this.markCell({x: node.x, y: node.y, z: node.z}); },
 
         // Returns a set of points that make up a grid cell
         getPoints: function(node) {
@@ -402,7 +403,7 @@
         _getEdgeSelection: function(node) {
             var self = this;
             var best = null;
-            var shortest  = null;
+            var shortest = null;
             this._markCell(node);
             this._eachNeighbor(node, function(neigh) {
                 self._markCenter(neigh);
@@ -443,20 +444,20 @@
             // Neighbors are provided clockwise from the top
             fn({row: node.row - 1, col: node.col});
             if (this.diagonal)
-                fn({row: node.row - 1,
-                    col: node.col + 1, cost: sqrt2});
+                fn({row: node.row - 1, col: node.col + 1,
+                    cost: sqrt2, diagonal: true});
             fn({row: node.row, col: node.col + 1});
             if (this.diagonal)
-                fn({row: node.row + 1,
-                    col: node.col + 1, cost: sqrt2});
+                fn({row: node.row + 1, col: node.col + 1,
+                    cost: sqrt2, diagonal: true});
             fn({row: node.row + 1, col: node.col});
             if (this.diagonal)
-                fn({row: node.row + 1,
-                    col: node.col - 1, cost: sqrt2});
+                fn({row: node.row + 1, col: node.col - 1,
+                    cost: sqrt2, diagonal: true});
             fn({row: node.row, col: node.col - 1});
             if (this.diagonal)
-                fn({row: node.row - 1,
-                    col: node.col - 1, cost: sqrt2});
+                fn({row: node.row - 1, col: node.col - 1,
+                    cost: sqrt2, diagonal: true});
         };
 
         result._getPoints = function(node) {
@@ -627,7 +628,7 @@
             var yfrac = (node.y + this._radius) / this._rowh;
             if ((row + col) % 2) {
                 if ((yfrac - Math.ceil(yfrac)) +
-                         (xfrac - Math.floor(xfrac)) > 0)
+                           (xfrac - Math.floor(xfrac)) > 0)
                     col += 1;
             } else if ((yfrac - Math.floor(yfrac)) -
                        (xfrac - Math.floor(xfrac)) < 0)
@@ -741,7 +742,7 @@
                 var points = this._getPoints(nodeA);
                 result = [points[0], ((nodeA.row !== nodeB.row) ===
                     (nodeA.col % 2 ? !sign : sign)) ?
-                        points[1] : points[2]];
+                          points[1] : points[2]];
             } else {
                 var midpoint = {x: (nodeB.x - nodeA.x) / 2,
                                 y: (nodeB.y - nodeA.y) / 2};
@@ -765,6 +766,8 @@
     var createAdapterGrid = function(underlying, toWorld, fromWorld) {
         var result = Object.create(underlying);
 
+        result.toWorld   = toWorld;
+        result.fromWorld = fromWorld;
         result._getUnderlyingGrid = function() { return underlying; };
 
         result._markCenter = function(node) {
@@ -829,6 +832,61 @@
         return createAdapterGrid(underlying, toWorld, fromWorld);
     };
 
+    var adaptGridPerspective = function(underlying, focalLength,
+                                        distance) {
+        var counter = 0;
+        var position = {x: 0, y: 0, z: -10};
+        var cx = {x: 1, y:    0, z:   0};
+        var cy = {x: 0, y:  3/5, z: 4/5};
+        var cz = {x: 0, y: -4/5, z: 3/5};
+
+        var dot = function(a, b) {
+            return a.x * b.x + a.y * b.y + a.z * b.z;
+        };
+        var add = function(a, b) {
+            var result = {x: 0, y: 0, z: 0};
+            for (var ii = 0; ii < arguments.length; ++ii) {
+                result.x += arguments[ii].x;
+                result.y += arguments[ii].y;
+                result.z += arguments[ii].z;
+            }
+            return result;
+        };
+        var scale = function(a, v) {
+            var result = {x: v.x, y: v.y, z: v.z};
+            result.x *= a;
+            result.y *= a;
+            result.z *= a;
+            return result;
+        };
+
+        var toWorld = function(node) {
+            var d = add(position, cz,
+                        scale(node.x, cx),
+                        scale(node.y, cy))
+            if (zeroish(d.z))
+                throw new Error("Camera orientation is screwy");
+            var factor = position.z / d.z;
+            if ((++counter % 1000) === 0)
+                console.log("DEBUG", node.x, node.y, "->",
+                            position.x - factor * d.x,
+                            position.y - factor * d.y);
+            node.x = position.x - factor * d.x;
+            node.y = position.y - factor * d.y;
+        };
+
+        var fromWorld = function(node) {
+            var q = {x: node.x, y: node.y, z: 0};
+            var denominator = dot(q, cz);
+            if (zeroish(denominator))
+                throw new Error("Camera orientation is screwy");
+            node.x = dot(q, cx) / denominator;
+            node.y = dot(q, cy) / denominator;
+        };
+
+        return createAdapterGrid(underlying, toWorld, fromWorld);
+    };
+
     var adaptGridRotate = function(underlying, radians) {
         var cosFactor = Math.cos(radians);
         var sinFactor = Math.sin(radians);
@@ -877,10 +935,12 @@
             result = adaptGridRotate(result, config.rotate);
         if (config && config.isometric)
             result = adaptGridIsometric(result);
+        if (config && config.perspective)
+            result = adaptGridPerspective(result, 2, 5);
         return result;
     };
 
-}).call(this, typeof exports === 'undefined' ?
+}).call(this, typeof exports === "undefined" ?
         (this.grille = {}) :
         ((typeof module !== undefined) ?
          (module.exports = exports) : exports));
