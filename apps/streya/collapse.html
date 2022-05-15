@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<style>
+ html, body
+ { position: absolute; padding: 0; margin: 0; overflow: hidden;  }
+</style>
+<title>Collapse</title>
+<script src="../ripple/polyfill.js"></script>
+<script src="../ripple/ripple.js"></script>
+<script src="../ripple/fascia.js"></script>
+<script src="../ripple/multivec.js"></script>
+<script src="../ripple/grille.js"></script>
+<script src="../ripple/pathf.js"></script>
+<script src="structure.js"></script>
+<script>//<![CDATA[
+ fascia.ready(function(preloads) {
+     "use strict";
+     var skipWalls = ripple.paramBoolean("skipwalls");
+
+     var ship = structure.Structure.create();
+     var ii, jj;
+     for (ii = -10; ii <= 10; ++ii)
+         for (jj = -10; jj <= 10; ++jj)
+             ship.setCellUnresolved(ii, jj);
+     for (ii = -5; ii <= 5; ++ii)
+         for (jj = 10; jj <= 15; ++jj)
+             ship.setCellUnresolved(ii, jj);
+     ship.resolve();
+
+     // Provide Fascia framework with event call backs
+     return {
+         init: function(camera, canvas, container, fasciaRedraw) {
+             camera.setScale(Math.min(
+                 camera.width, camera.height) / 22);
+             canvas.style.background = "darkslategray";
+         },
+         resize: function(camera) {
+             var size = Math.min(camera.width, camera.height);
+             camera.setMinZoom(size / 22);
+             camera.setMaxZoom(size);
+         },
+         wheel: function(event, camera) { camera.wheel(event); },
+         drag:  function(event, camera) { camera.drag(event);  },
+         pinchStart: function(event, camera)
+         { this._pinchScale = camera.scale; },
+         pinchMove: function(event, camera) {
+             var size = Math.min(camera.width, camera.height);
+             camera.setScale(
+                 this._pinchScale * event.length, size / 22, size);
+         },
+         tap: function(event, camera) {
+             var point = camera.toWorldFromScreen(event.point);
+             ship.eachRoom(function(room) {
+                 if (room.containsCell(
+                     Math.floor(point.y + 0.5),
+                     Math.floor(point.x + 0.5)))
+                     room.setSelected();
+             });
+         },
+         draw(ctx, camera, now, last) { ship.draw(ctx, camera); },
+         drawAfter(ctx, camera, now, last) {
+             ctx.font = (
+                 Math.min(camera.width, camera.height) /
+                 20) + "px sans";
+             ctx.textAlign = "center";
+             ctx.fillStyle = "black";
+             ctx.fillText("Rooms: " + ship.getRoomCount() +
+                          " Cells: " + 0 + "/" + 0,
+                          camera.width / 2,
+                          camera.height * 19 / 20);
+         }
+     };
+ });
+ //]]></script>
