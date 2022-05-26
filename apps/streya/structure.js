@@ -322,6 +322,8 @@
                         resolved[index] = true;
                         this.__grid.eachNeighbor(
                             current, function(neighbor) {
+                                if (neighbor.diagonal)
+                                    return;
                                 candidates.push(neighbor); });
                     }
                 }

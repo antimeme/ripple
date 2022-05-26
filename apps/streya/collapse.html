@@ -22,6 +22,8 @@
      var skipWalls = ripple.paramBoolean("skipwalls");
 
      var ship = structure.Structure.create();
+     var nCells = 0;
+     var nFree  = 0;
      var ii, jj;
      for (ii = -10; ii <= 10; ++ii)
          for (jj = -10; jj <= 10; ++jj)
@@ -30,6 +32,10 @@
          for (jj = 10; jj <= 15; ++jj)
              ship.setCellUnresolved(ii, jj);
      ship.resolve();
+     ship.eachCell(function(cell, node) { ++nCells; });
+     ship.eachRoom(function(room) { room.eachCell(function(cell) {
+         ++nFree;
+     }); });
 
      // Provide Fascia framework with event call backs
      return {
@@ -69,7 +75,7 @@
              ctx.textAlign = "center";
              ctx.fillStyle = "black";
              ctx.fillText("Rooms: " + ship.getRoomCount() +
-                          " Cells: " + 0 + "/" + 0,
+                          " Cells: " + nFree + "/" + nCells,
                           camera.width / 2,
                           camera.height * 19 / 20);
          }
