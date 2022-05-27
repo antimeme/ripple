@@ -54,9 +54,10 @@
         var result = ripple.param(name, config);
         if (typeof(result) === "string")
             result = result.toLowerCase();
-        return (["true", "t", "yes", "y",
-                 "on", "enable", "enabled", 0].some
-            (function(value) { return value === result; }));
+        return ((!isNaN(value) && value) || [
+            true, "true", "t", "yes", "y",
+            "on", "enable", "enabled"].some(
+                function(value) { return value === result; }));
     };
 
     ripple.paramInteger = function(name, config) {
