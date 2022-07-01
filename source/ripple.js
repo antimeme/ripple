@@ -463,7 +463,8 @@
 
 
     // Randomize the order of an array in place, using an optional
-    // random number generator
+    // random number generator.
+    // https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
     ripple.shuffle = function(elements, rand) {
         var ii, jj, swap;
 
