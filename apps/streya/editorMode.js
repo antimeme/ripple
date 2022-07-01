@@ -1,5 +1,5 @@
 // Sterya Editor
-// Copyright (C) 2021 by Jeff Gold.  All rights reserved.
+// Copyright (C) 2021-2022 by Jeff Gold.  All rights reserved.
 // A user interface for editing ships, buildings and other structures.
 (function() {
     "use strict";
@@ -10,17 +10,31 @@
         this.grille   = require("../ripple/grille.js");
         this.pathf    = require("../ripple/pathf.js");
 
-        //this.Structure = require("./structure.js");
+        this.structure = require("./structure.js");
     }
 
-    var Structure = {
-        create: function() {},
-        draw: function(ctx, camera) {},
-        toJSON: function() {},
-    };
+    var menu = document.createElement('ul');
+    var menuframe = ripple.createElement(
+        'fieldset', {'class': 'editor-menu', style: {}},
+        ripple.createElement(
+            'legend', null, 'Streya Editor'), menu);
+    menuframe.addEventListener('click', function(event) {
+        if (event.target.tagName.toLowerCase() === 'legend')
+            ripple.toggleVisible(menu);
+    });
+    menu.appendChild(ripple.createElement(
+        "li", {"data-action": "one"}, "One"));
+    menu.appendChild(ripple.createElement(
+        "li", {"data-action": "two"}, "Two"));
 
-    var mode = {
-        structure: Structure.create(),
+    ripple.export("editorMode", {
+        init: function(camera, canvas, container, redraw) {
+            console.log("DEBUG init");
+            container.appendChild(menuframe);
+            ripple.show(menuframe);
+            console.log("DEBUG shown", canvas.style["z-index"]);
+        },
+
         zoomMin: function(camera) {
             return Math.min(camera.width, camera.height) / 300;
         },
@@ -47,14 +61,7 @@
 
             console.log("DEBUG-tap", point); },
         draw: function(ctx, camera, now) {}
-    };
-
-    // This library exports only one object.
-    if (typeof(module) !== "undefined") {
-        module.exports = mode;
-    } else if (typeof(exports) !== "undefined") {
-        exports = mode;
-    } else window['editorMode'] = mode;
+    });
 }).call(this);
 
 if ((typeof require !== 'undefined') && (require.main === module)) {}

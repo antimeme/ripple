@@ -152,36 +152,6 @@
                 "Produced by living things.  Can be recycled."],
             "forms": ["liquid"]
         },
-        "common-ore": {
-            "comments": [
-                "Mined from asteroids.  Can be refined."],
-            "forms": ["solid"]
-        },
-        "advanced-ore": {
-            "comments": [
-                "Mined from asteroids.  Can be refined."],
-            "forms": ["solid"]
-        },
-        "rare-ore": {
-            "comments": [
-                "Mined from asteroids.  Can be refined."],
-            "forms": ["solid"]
-        },
-        "common-alloys": {
-            "comments": [
-                "Used to create other things."],
-            "forms": ["solid"]
-        },
-        "advanced-alloys": {
-            "comments": [
-                "Used to create other things."],
-            "forms": ["solid"]
-        },
-        "rare-alloys": {
-            "comments": [
-                "Used to create other things."],
-            "forms": ["solid"]
-        },
         "organic-waste": {
             "comments": [
                 "Created by living things.  Can be recycled."],
@@ -210,6 +180,36 @@
         "soft-goods": {
             "comments": [
                 "Required by people.  Made from fibers"],
+            "forms": ["solid"]
+        },
+        "common-ore": {
+            "comments": [
+                "Mined from asteroids.  Can be refined."],
+            "forms": ["solid"]
+        },
+        "advanced-ore": {
+            "comments": [
+                "Mined from asteroids.  Can be refined."],
+            "forms": ["solid"]
+        },
+        "rare-ore": {
+            "comments": [
+                "Mined from asteroids.  Can be refined."],
+            "forms": ["solid"]
+        },
+        "common-alloys": {
+            "comments": [
+                "Used to create other things."],
+            "forms": ["solid"]
+        },
+        "advanced-alloys": {
+            "comments": [
+                "Used to create other things."],
+            "forms": ["solid"]
+        },
+        "rare-alloys": {
+            "comments": [
+                "Used to create other things."],
             "forms": ["solid"]
         },
         "tools": {

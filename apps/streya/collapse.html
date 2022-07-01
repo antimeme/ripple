@@ -37,8 +37,7 @@
          ++nFree;
      }); });
 
-     // Provide Fascia framework with event call backs
-     return {
+     return { // Fascia framework callbacks
          init: function(camera, canvas, container, fasciaRedraw) {
              camera.setScale(Math.min(
                  camera.width, camera.height) / 22);

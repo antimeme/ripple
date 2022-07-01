@@ -17,7 +17,7 @@
 //
 // ---------------------------------------------------------------------
 // Classes for managing structures that characters might inhabit.
-// This is primarily buildings (within space stations) and ships.
+// This is primarily buildings within space stations and ships.
 //
 // One unit is one meter in this design.
 (function() {
@@ -69,6 +69,8 @@
         }
     };
 
+    // A superposition is a cell with contents that have not yet
+    // been decided.  It's a place holder.
     var Superposition = Cell.subclass({
         init: function(config) {
             this.row = config && config.row || 0;
@@ -200,27 +202,27 @@
     var Structure = {
         create: function(config) {
             var result = Object.create(this);
-            var gridConfig = undefined;
-            var cellData = {};
-            if (config) {
-            } else gridConfig = {
-                type: "square", diagonal: true, edge: 1};
+            var gridConfig = {
+                type: "square", diagonal: true, edge: 1
+            };
 
             result.__grid = grille.createGrid(gridConfig);
-            result.__cellData = cellData;
+            result.__cellData = {};
+            result.__walls = {};
             result.__defaultLevel = 0;
             result.__rooms = [];
             result.__selectedRoom = undefined;
             return result;
         },
 
-        getCell: function(row, col, level) {
-            if (isNaN(row) || isNaN(col))
-                throw new Error("row and column must be numeric");
+        getCell: function(node, level) {
+            if (!node || isNaN(node.row) || isNaN(node.col))
+                throw new Error("first argument must have numeric " +
+                                "row and col fields");
             level = isNaN(level) ? this.__defaultLevel : level;
             return (level in this.__cellData) ?
                    this.__cellData[level][
-                       ripple.pair(row, col)] : undefined;
+                       ripple.pair(node.row, node.col)] : undefined;
         },
 
         setCell: function(value, row, col, level) {
@@ -285,75 +287,45 @@
         /* Convert all unresolved cells to some ship component.
          * This method does its best to create a workable ship. */
         resolve: function() {
-            // Convert tiles that border the void to hull
+            // Compute the distance of each tile to the outside
+            this.__distances = {};
             var unresolved = [];
-            this.eachCell(function(cell, node, grid) {
-                if (Superposition.isPrototypeOf(cell)) {
-                    var isHull = false;
-                    grid.eachNeighbor(node, function(neighbor) {
-                        var cell = this.getCell(
-                            neighbor.row, neighbor.col);
-                        if (typeof(cell) == "undefined")
-                            isHull = true;
-                    }, this);
-                    if (!isHull)
-                        unresolved.push(cell);
-                    else return this.setCell(
-                        Hull.create(), node.row, node.col);
-                }
-            }, this);
-            ripple.shuffle(unresolved);
-
-            var roomDesired = 36;
-            var resolved = {};
-            while (unresolved.length > 0) {
-                var room = Room.create(this);
-                var candidates = [unresolved.pop()];
-                while ((candidates.length > 0) &&
-                       (room.getCellCount() < roomDesired)) {
-                    var current = candidates.shift();
-                    var index = ripple.pair(current.row, current.col);
-                    if (resolved[index])
-                        continue;
-
-                    var cell = this.getCell(current.row, current.col);
-                    if (cell && Superposition.isPrototypeOf(cell)) {
-                        room.addCell(current.row, current.col);
-                        resolved[index] = true;
-                        this.__grid.eachNeighbor(
-                            current, function(neighbor) {
-                                if (neighbor.diagonal)
-                                    return;
-                                candidates.push(neighbor); });
+            var computeDistance = function(node) {
+                var distance = this.__distances[ripple.pair(
+                    node.row, node.col)];;
+                this.__grid.eachNeighbor(node, function(neighbor) {
+                    if (this.getCell(neighbor)) {
+                        var peer = this.__distances[ripple.pair(
+                            neighbor.row, neighbor.col)];
+                        if (peer && !isNaN(peer) &&
+                            (!distance || isNaN(distance) ||
+                             (distance > peer)))
+                            distance = peer + 1;
+                    } else distance = 1;
+                }, this);
+                this.__grid.eachNeighbor(node, function(neighbor) {
+                    var peer = this.__distances[ripple.pair(
+                        neighbor.row, neighbor.col)];
+                    if (this.getCell(neighbor) &&
+                        peer && !isNaN(peer) &&
+                        (peer > distance + 1)) {
+                        this.__distances[ripple.pair(
+                            neighbor.row, neighbor.col)] = undefined;
+                        unresolved.push(neighbor);
                     }
-                }
+                }, this);
 
-                if (room.getCellCount() > 0) {
-                    this.__rooms.push(room);
+                if (distance)
+                    this.__distances[ripple.pair(
+                        node.row, node.col)] = distance;
+                else unresolved.push(node);
+            };
 
-                    room.eachCell(function(cell, node) {
-                        this.__grid.eachNeighbor(
-                            node, function(neighbor) {
-                                var index = ripple.pair(
-                                    neighbor.row, neighbor.col);
-                                if (room.containsCell(
-                                    neighbor.row, neighbor.col) ||
-                                    resolved[index])
-                                    return;
+            this.eachCell(function(contents, node, grid) {
+                computeDistance.call(this, node); }, this);
 
-                                var cell = this.getCell(
-                                    neighbor.row, neighbor.col);
-                                if (cell &&
-                                    Superposition.isPrototypeOf(cell)) {
-                                    resolved[index] = true;
-                                    this.setCell(
-                                        cellTypes["bulkhead"],
-                                        neighbor.row, neighbor.col);
-                                }
-                            }, this);
-                    }, this);
-                }
-            }
+            while (unresolved.length)
+                computeDistance.call(this, unresolved.shift());
         },
 
         draw: function(ctx, camera) {
@@ -362,9 +334,21 @@
                 camera.toWorldFromScreen(
                     {x: camera.width, y: camera.height}),
                 function(node, index, grid) {
-                    var cell = this.getCell(node.row, node.col);
+                    var cell = this.getCell(node);
                     if (cell)
                         cell.draw(ctx, node, grid, this);
+
+                    if (this.__distances) {
+                        var distance = this.__distances[
+                            ripple.pair(node.row, node.col)];
+                        grid.markCenter(node);
+                        if (distance && !isNaN(distance)) {
+                            ctx.font = "0.5px sans";
+                            ctx.fillStyle = "white";
+                            ctx.fillText(distance.toString(),
+                                         node.x, node.y);
+                        }
+                    }
                 }, this);
         },
 

@@ -2,3 +2,33 @@ html, body
 { position: absolute; padding: 0; margin: 0; overflow: hidden; }
 
 canvas { background-color: #222; }
+
+.editor-menu {
+    position: fixed; top: 10px; left: 10px;
+    background: #333; color: white; border: 2px solid white;
+}
+.editor-menu legend {
+    background: #333;
+    border: 2px solid white;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    /* user-select: none; */
+}
+.editor-menu ul {
+    list-style-type: none;
+    list-style-position: outside;
+    padding: 0; margin: 0;
+}
+.editor-menu li {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    /* user-select: none; */
+    padding-top: 0.5em;
+}
+.editor-menu li:hover { background: #55e; }
