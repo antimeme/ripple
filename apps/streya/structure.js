@@ -61,8 +61,7 @@
             ctx.arc(node.x, node.y, grid.getRadius() / 2,
                     0, 2 * Math.PI);
             if (structure.__selectedRoom &&
-                structure.__selectedRoom.containsCell(
-                    node.row, node.col))
+                structure.__selectedRoom.containsCell(node))
                 ctx.fillStyle = "maroon";
             else ctx.fillStyle = "midnightblue";
             ctx.fill();
@@ -176,22 +175,26 @@
         getCellCount: function() {
             return Object.keys(this.__cells).length;
         },
-        addCell: function(row, col, level) {
-            var index = ripple.pair(row, col);
+        addCell: function(node, level) {
+            var index = ripple.pair(node.row, node.col);
             this.__cells[index] = true;
         },
-        containsCell: function(row, col, level) {
-            var index = ripple.pair(row, col);
-            return this.__cells[index];
+        containsCell: function(node, level) {
+            var index = ripple.pair(node.row, node.col);
+            return this.__cells[index] || false;
+        },
+        containsPoint: function(point, level) {
+            this.__structure.__grid.markCell(point);
+            var index = ripple.pair(point.row, point.col);
+            return this.__cells[index] || false;
         },
         eachCell: function(fn, context) {
             Object.keys(this.__cells).forEach(function(index) {
                 var node = ripple.unpair(index);
                 node.row = node.x;
                 node.col = node.y;
-                var cell = this.__structure.getCell(
-                    node.row, node.col);
-                fn.call(context, cell, node, this);
+                fn.call(context, this.__structure.getCell(node),
+                        node, this);
             }, this);
         },
         setSelected: function() {
@@ -199,6 +202,11 @@
         }
     };
 
+    // A structure is a building or a space ship.  It's a self
+    // contained unit with some kind of functional purpose.
+    // Structures exist within a grid of cells on one or more
+    // levels, which can be traversed using special cell
+    // entries like stairs or elevators.
     var Structure = {
         create: function(config) {
             var result = Object.create(this);
@@ -225,10 +233,10 @@
                        ripple.pair(node.row, node.col)] : undefined;
         },
 
-        setCell: function(value, row, col, level) {
-            if (isNaN(row) || isNaN(col))
+        setCell: function(value, node, level) {
+            if (!node || isNaN(node.row) || isNaN(node.col))
                 throw new Error("row and column must be numeric");
-            var index = ripple.pair(row, col);
+            var index = ripple.pair(node.row, node.col);
 
             level = isNaN(level) ? this.__defaultLevel : level;
             if (!(level in this.__cellData))
@@ -270,8 +278,7 @@
 
         eachRoom: function(fn, context) {
             this.__rooms.forEach(function(room) {
-                fn.call(context, room, this);
-            });
+                fn.call(context, room, this); });
         },
 
         /**
@@ -279,53 +286,129 @@
          * resolving the contents of that cell.  Call
          * the resolve method once all unresolved cells
          * have been marked. */
-        setCellUnresolved: function(row, col, level) {
-            this.setCell(Superposition.create({
-                row: row, col: col}), row, col, level);
+        setCellUnresolved: function(node, level) {
+            this.setCell(Superposition.create(node), node, level);
         },
 
-        /* Convert all unresolved cells to some ship component.
-         * This method does its best to create a workable ship. */
-        resolve: function() {
+        /* Convert all unresolved cells to some component.
+         * This method does its best to create a workable structure
+         * according to given rules. */
+        resolve: function(level) {
+            if (!isNaN(level))
+                return this.eachLevel(function(level) {
+                    this.resolve(level); }, this);
+
             // Compute the distance of each tile to the outside
-            this.__distances = {};
-            var unresolved = [];
-            var computeDistance = function(node) {
-                var distance = this.__distances[ripple.pair(
-                    node.row, node.col)];;
-                this.__grid.eachNeighbor(node, function(neighbor) {
-                    if (this.getCell(neighbor)) {
-                        var peer = this.__distances[ripple.pair(
-                            neighbor.row, neighbor.col)];
-                        if (peer && !isNaN(peer) &&
-                            (!distance || isNaN(distance) ||
-                             (distance > peer)))
-                            distance = peer + 1;
-                    } else distance = 1;
-                }, this);
-                this.__grid.eachNeighbor(node, function(neighbor) {
-                    var peer = this.__distances[ripple.pair(
-                        neighbor.row, neighbor.col)];
-                    if (this.getCell(neighbor) &&
-                        peer && !isNaN(peer) &&
-                        (peer > distance + 1)) {
-                        this.__distances[ripple.pair(
-                            neighbor.row, neighbor.col)] = undefined;
-                        unresolved.push(neighbor);
-                    }
-                }, this);
+            var CellMeasure = {
+                distances: {},
+                unresolved: [],
+                __getIndex: function(node) {
+                    return ripple.pair(node.row, node.col); },
+                getDistance: function(node) {
+                    return this.distances[this.__getIndex(node)]; },
+                setDistance: function(node, value) {
+                    this.distances[this.__getIndex(node)] = value; },
+                computeDistance: function(node, grid, structure) {
+                    var distance = this.getDistance(node);
+                    grid.eachNeighbor(node, function(neighbor) {
+                        if (structure.getCell(neighbor)) {
+                            var peer = this.getDistance(neighbor);
+                            if (peer && !isNaN(peer) &&
+                                (!distance || isNaN(distance) ||
+                                 (distance > peer)))
+                                distance = peer + 1;
+                        } else distance = 1;
+                    }, this);
+                    grid.eachNeighbor(node, function(neighbor) {
+                        var peer = this.getDistance(neighbor);
+                        if (structure.getCell(neighbor) &&
+                            peer && !isNaN(peer) &&
+                            (peer > distance + 1)) {
+                            this.setDistance(neighbor, undefined);
+                            this.unresolved.push(neighbor);
+                        }
+                    }, this);
 
-                if (distance)
-                    this.__distances[ripple.pair(
-                        node.row, node.col)] = distance;
-                else unresolved.push(node);
+                    if (distance)
+                        this.setDistance(node, distance);
+                    else this.unresolved.push(node);
+                },
+                resolve: function(grid, structure) {
+                    structure.eachCell(function(contents, node, grid) {
+                        this.computeDistance(node, grid, structure);
+                    }, this);
+                    while (this.unresolved.length)
+                        this.computeDistance(this.unresolved.shift(),
+                                             grid, structure);
+
+                }
             };
+            CellMeasure.resolve(this.__grid, this);
 
+            // Create an exterior hull and sort interior nodes
+            // by their distance to a hull tile.
+            var cells = [];
             this.eachCell(function(contents, node, grid) {
-                computeDistance.call(this, node); }, this);
+                if (!Superposition.isPrototypeOf(contents))
+                    return;
+                node.distance = CellMeasure.getDistance(node);
+                if (node.distance <= 1)
+                    this.setCell(Hull, node);
+                else cells.push(node);
+            }, this);
+            cells.sort(function(a, b) {
+                var order = a.distance - b.distance;
+                return order ? order : ((Math.random() > 0.5) ?
+                                        1 : -1); });
 
-            while (unresolved.length)
-                computeDistance.call(this, unresolved.shift());
+            // Divide the structure up into rooms
+            var rooms = this.__rooms = [];
+            var occupied = {};
+
+            while (cells.length > 0) {
+                var cell = cells.shift();
+                if (occupied[ripple.pair(cell.row, cell.col)])
+                    continue; // Cell is part of some previous room
+
+                var desiredCells = Math.floor(25 + 26 * Math.random());
+                var room = Room.create(this);
+
+                while ((room.getCellCount() < desiredCells)) {
+                    // Consume the current cell
+                    room.addCell(cell);
+                    occupied[ripple.pair(cell.row, cell.col)] = true;
+
+                    // Find all neighbors
+                    var candidates = [];
+                    room.eachCell(function(cell, node) {
+                        this.__grid.eachNeighbor(node, function(
+                            neighbor) {
+                            if (!neighbor.diagonal &&
+                                !occupied[ripple.pair(
+                                neighbor.row, neighbor.col)] &&
+                                !room.containsCell(neighbor) &&
+                                Superposition.isPrototypeOf(
+                                    this.getCell(neighbor)))
+                                candidates.push(neighbor); }, this);
+                    }, this);
+
+                    if (!candidates.length)
+                        break;
+
+                    candidates.forEach(function(candidate) {
+                        var connections = 0;
+                        this.__grid.eachNeighbor(candidate, function(
+                            neighbor) {
+                            if (!neighbor.diagonal &&
+                                room.containsCell(neighbor))
+                                connections += 1; });
+                        candidate.connections = connections; }, this);
+                    candidates.sort(function(a, b) {
+                        return b.connections - a.connections; });
+                    cell = candidates.shift();
+                }
+                rooms.push(room);
+            }
         },
 
         draw: function(ctx, camera) {
@@ -337,18 +420,35 @@
                     var cell = this.getCell(node);
                     if (cell)
                         cell.draw(ctx, node, grid, this);
+                }, this);
+            this.__grid.mapRectangle(
+                camera.toWorldFromScreen({x: 0, y: 0}),
+                camera.toWorldFromScreen(
+                    {x: camera.width, y: camera.height}),
+                function(node, index, grid) {
+                    var currentRoom = undefined;
+                    this.eachRoom(function(room) {
+                        if (room.containsCell(node))
+                            currentRoom = room; });
 
-                    if (this.__distances) {
-                        var distance = this.__distances[
-                            ripple.pair(node.row, node.col)];
-                        grid.markCenter(node);
-                        if (distance && !isNaN(distance)) {
-                            ctx.font = "0.5px sans";
-                            ctx.fillStyle = "white";
-                            ctx.fillText(distance.toString(),
-                                         node.x, node.y);
+                    grid.eachNeighbor(node, function(neighbor) {
+                        if (!Hull.isPrototypeOf(
+                            this.getCell(neighbor)) &&
+                            currentRoom &&
+                            !currentRoom.containsCell(neighbor)) {
+                            var points = grid.getPairPoints(
+                                node, neighbor);
+                            if (points.length < 2)
+                                return;
+                            ctx.beginPath();
+                            ctx.moveTo(points[0].x, points[0].y);
+                            ctx.lineTo(points[1].x, points[1].y);
+                            ctx.lineCap = "round";
+                            ctx.lineWidth = 0.2;
+                            ctx.strokeStyle = "dimgray";
+                            ctx.stroke();
                         }
-                    }
+                    }, this);
                 }, this);
         },
 

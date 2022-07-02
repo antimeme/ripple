@@ -24,13 +24,13 @@
      var ship = structure.Structure.create();
      var nCells = 0;
      var nFree  = 0;
-     var ii, jj;
-     for (ii = -10; ii <= 10; ++ii)
-         for (jj = -10; jj <= 10; ++jj)
-             ship.setCellUnresolved(ii, jj);
-     for (ii = -5; ii <= 5; ++ii)
-         for (jj = 10; jj <= 15; ++jj)
-             ship.setCellUnresolved(ii, jj);
+     var row, col;
+     for (row = -10; row <= 10; ++row)
+         for (col = -10; col <= 10; ++col)
+             ship.setCellUnresolved({row: row, col: col});
+     for (row = -5; row <= 5; ++row)
+         for (col = 10; col <= 15; ++col)
+             ship.setCellUnresolved({row: row, col: col});
      ship.resolve();
      ship.eachCell(function(cell, node) { ++nCells; });
      ship.eachRoom(function(room) { room.eachCell(function(cell) {
@@ -60,9 +60,7 @@
          tap: function(event, camera) {
              var point = camera.toWorldFromScreen(event.point);
              ship.eachRoom(function(room) {
-                 if (room.containsCell(
-                     Math.floor(point.y + 0.5),
-                     Math.floor(point.x + 0.5)))
+                 if (room.containsPoint(point))
                      room.setSelected();
              });
          },
