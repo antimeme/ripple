@@ -59,10 +59,9 @@
          },
          tap: function(event, camera) {
              var point = camera.toWorldFromScreen(event.point);
-             ship.eachRoom(function(room) {
-                 if (room.containsPoint(point))
-                     room.setSelected();
-             });
+             var room = ship.getRoom(point);
+             if (room)
+                 room.setSelected();
          },
          draw(ctx, camera, now, last) { ship.draw(ctx, camera); },
          drawAfter(ctx, camera, now, last) {

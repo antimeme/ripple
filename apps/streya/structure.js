@@ -29,23 +29,21 @@
         this.pathf    = require("../ripple/pathf.js");
     }
 
+    var getIndex = function(node)
+    { return ripple.pair(node.col, node.row); };
+
+    var getNode = function(index)
+    {
+        var pair = ripple.unpair(index);
+        return {row: pair.y, col: pair.x};
+    };
+
     // Base class for the contents of a cell in a ship or building.
     // A cell knows whether it is obstructed.
     var Cell = {
-        create: function(config) {
-            var result = Object.create(this);
-            result.init(config);
-            return result;
-        },
-        init: function(config) {
-            this.__notifyList = [];
-        },
-        subclass: function(subclass) {
-            var result = Object.create(this);
-            Object.keys(subclass).forEach(function(key)
-                { result[key] = subclass[key]; });
-            return result;
-        },
+        create: function(config)
+        { return Object.create(this).init(config); },
+        init: function(config) { return this.__notifyList = []; },
         isObstructed: function() { return false; },
         notify: function() {
             this.__notifyList.forEach(
@@ -70,14 +68,15 @@
 
     // A superposition is a cell with contents that have not yet
     // been decided.  It's a place holder.
-    var Superposition = Cell.subclass({
+    var Superposition = Object.assign(Object.create(Cell), {
         init: function(config) {
             this.row = config && config.row || 0;
             this.col = config && config.col || 0;
+            return this;
         },
     });
 
-    var Hull = Cell.subclass({
+    var Hull = Object.assign(Object.create(Cell), {
         isObstructed: function() { return true; },
         draw: function(ctx, node, grid) {
             ctx.beginPath();
@@ -88,7 +87,7 @@
     });
 
     var cellTypes = {
-        bulkhead: Cell.subclass({
+        bulkhead: Object.assign(Object.create(Cell), {
             draw: function(ctx, node, grid) {
                 ctx.beginPath();
                 grid.draw(ctx, node);
@@ -96,7 +95,7 @@
                 ctx.fill();
             }
         }),
-        door: Cell.subclass({
+        door: Object.assign(Object.create(Cell), {
             draw: function(ctx, node, grid) {
                 var radius = grid.getRadius() / 2;
                 ctx.beginPath();
@@ -109,7 +108,7 @@
                 ctx.fill();
             }
         }),
-        bedHead: Cell.subclass({
+        bedHead: Object.assign(Object.create(Cell), {
             draw: function(ctx, node, grid) {
                 var radius = grid.getRadius() / 2;
                 ctx.beginPath();
@@ -121,7 +120,7 @@
                 ctx.fill();
             }
         }),
-        bedFoot: Cell.subclass({
+        bedFoot: Object.assign(Object.create(Cell), {
             draw: function(ctx, node, grid) {
                 var radius = grid.getRadius() / 2;
                 ctx.beginPath();
@@ -133,7 +132,7 @@
                 ctx.fill();
             }
         }),
-        dresser: Cell.subclass({
+        dresser: Object.assign(Object.create(Cell), {
             draw: function(ctx, node, grid) {
                 var radius = grid.getRadius() / 2;
                 ctx.beginPath();
@@ -146,7 +145,7 @@
                 ctx.fill();
             }
         }),
-        desk: Cell.subclass({
+        desk: Object.assign(Object.create(Cell), {
             draw: function(ctx, node, grid) {
                 var radius = grid.getRadius() / 2;
                 ctx.beginPath();
@@ -159,40 +158,37 @@
                 ctx.fill();
             }
         }),
-        floor: Cell.subclass({
+        floor: Object.assign(Object.create(Cell), {
             draw: function(ctx, node, grid) {
             }
         }),
     };
 
     var Room = {
+        __index: 0,
         create: function(structure) {
             var result = Object.create(this);
             result.__structure = structure;
             result.__cells = {};
+            result.__index = ++this.__index;
             return result;
         },
         getCellCount: function() {
             return Object.keys(this.__cells).length;
         },
         addCell: function(node, level) {
-            var index = ripple.pair(node.row, node.col);
-            this.__cells[index] = true;
+            this.__cells[getIndex(node)] = true;
         },
         containsCell: function(node, level) {
-            var index = ripple.pair(node.row, node.col);
-            return this.__cells[index] || false;
+            return this.__cells[getIndex(node)] || false;
         },
         containsPoint: function(point, level) {
             this.__structure.__grid.markCell(point);
-            var index = ripple.pair(point.row, point.col);
-            return this.__cells[index] || false;
+            return this.__cells[getIndex(point)] || false;
         },
         eachCell: function(fn, context) {
             Object.keys(this.__cells).forEach(function(index) {
-                var node = ripple.unpair(index);
-                node.row = node.x;
-                node.col = node.y;
+                var node = getNode(index);
                 fn.call(context, this.__structure.getCell(node),
                         node, this);
             }, this);
@@ -207,38 +203,47 @@
     // Structures exist within a grid of cells on one or more
     // levels, which can be traversed using special cell
     // entries like stairs or elevators.
+    //
+    // Accessing data in a structure requires nodes.  A node
+    // must have integer row and col fields and may optionally
+    // have a level field as well.
     var Structure = {
-        create: function(config) {
-            var result = Object.create(this);
-            var gridConfig = {
-                type: "square", diagonal: true, edge: 1
-            };
+        create: function(config)
+        { return Object.create(this).init(config); },
 
-            result.__grid = grille.createGrid(gridConfig);
-            result.__cellData = {};
-            result.__walls = {};
-            result.__defaultLevel = 0;
-            result.__rooms = [];
-            result.__selectedRoom = undefined;
-            return result;
+        init: function(config) {
+            this.__grid = grille.createGrid({
+                type: "square", diagonal: true, edge: 1 });
+            this.__cellData = {};
+            this.__walls = {};
+            this.__defaultLevel = 0;
+            this.__rooms = [];
+            this.__roomMap = {};
+            this.__selectedRoom = undefined;
+            return this;
         },
 
-        getCell: function(node, level) {
+        getCell: function(node) {
+            if (node && !isNaN(node.x) && !isNaN(node.y))
+                this.__grid.markCell(node);
             if (!node || isNaN(node.row) || isNaN(node.col))
                 throw new Error("first argument must have numeric " +
                                 "row and col fields");
-            level = isNaN(level) ? this.__defaultLevel : level;
+            var level = isNaN(node.level) ?
+                        this.__defaultLevel : node.level;
             return (level in this.__cellData) ?
-                   this.__cellData[level][
-                       ripple.pair(node.row, node.col)] : undefined;
+                   this.__cellData[level][getIndex(node)] : undefined;
         },
 
-        setCell: function(value, node, level) {
+        setCell: function(node, value) {
+            if (node && !isNaN(node.x) && !isNaN(node.y))
+                this.__grid.markCell(node);
             if (!node || isNaN(node.row) || isNaN(node.col))
-                throw new Error("row and column must be numeric");
-            var index = ripple.pair(node.row, node.col);
+                throw new Error("row and col must be numeric");
+            var index = getIndex(node);
 
-            level = isNaN(level) ? this.__defaultLevel : level;
+            var level = isNaN(node.level) ?
+                        this.__defaultLevel : level;
             if (!(level in this.__cellData))
                 this.__cellData[level] = {};
 
@@ -255,9 +260,7 @@
             if (level in this.__cellData)
                 Object.keys(this.__cellData[
                     this.__defaultLevel]).forEach(function(key) {
-                        var node = ripple.unpair(key);
-                        node.row = node.x;
-                        node.col = node.y;
+                        var node = getNode(key);
                         fn.call(context, this.__cellData[level][key],
                                 this.__grid.markCenter(node),
                                 this.__grid);
@@ -276,6 +279,14 @@
 
         getRoomCount: function() { return this.__rooms.length; },
 
+        getRoom: function(node) {
+            if (node && !isNaN(node.x) && !isNaN(node.y))
+                this.__grid.markCell(node);
+            if (!node || isNaN(node.row) || isNaN(node.col))
+                throw new Error("row and column must be numeric");
+            return this.__roomMap[getIndex(node)];
+        },
+
         eachRoom: function(fn, context) {
             this.__rooms.forEach(function(room) {
                 fn.call(context, room, this); });
@@ -286,14 +297,17 @@
          * resolving the contents of that cell.  Call
          * the resolve method once all unresolved cells
          * have been marked. */
-        setCellUnresolved: function(node, level) {
-            this.setCell(Superposition.create(node), node, level);
+        setCellUnresolved: function(node) {
+            this.setCell(node, Superposition.create(node));
         },
 
         /* Convert all unresolved cells to some component.
          * This method does its best to create a workable structure
          * according to given rules. */
         resolve: function(level) {
+            // Goals (TODO)
+            // - Create doors between rooms
+            // - Populate rooms based on rules (e.g.: one bed per room)
             if (!isNaN(level))
                 return this.eachLevel(function(level) {
                     this.resolve(level); }, this);
@@ -302,12 +316,10 @@
             var CellMeasure = {
                 distances: {},
                 unresolved: [],
-                __getIndex: function(node) {
-                    return ripple.pair(node.row, node.col); },
                 getDistance: function(node) {
-                    return this.distances[this.__getIndex(node)]; },
+                    return this.distances[getIndex(node)]; },
                 setDistance: function(node, value) {
-                    this.distances[this.__getIndex(node)] = value; },
+                    this.distances[getIndex(node)] = value; },
                 computeDistance: function(node, grid, structure) {
                     var distance = this.getDistance(node);
                     grid.eachNeighbor(node, function(neighbor) {
@@ -353,7 +365,7 @@
                     return;
                 node.distance = CellMeasure.getDistance(node);
                 if (node.distance <= 1)
-                    this.setCell(Hull, node);
+                    this.setCell(node, Hull);
                 else cells.push(node);
             }, this);
             cells.sort(function(a, b) {
@@ -362,12 +374,12 @@
                                         1 : -1); });
 
             // Divide the structure up into rooms
+            var roomMap = this.__roomMap;
             var rooms = this.__rooms = [];
-            var occupied = {};
 
             while (cells.length > 0) {
                 var cell = cells.shift();
-                if (occupied[ripple.pair(cell.row, cell.col)])
+                if (roomMap[getIndex(cell)])
                     continue; // Cell is part of some previous room
 
                 var desiredCells = Math.floor(25 + 26 * Math.random());
@@ -376,7 +388,7 @@
                 while ((room.getCellCount() < desiredCells)) {
                     // Consume the current cell
                     room.addCell(cell);
-                    occupied[ripple.pair(cell.row, cell.col)] = true;
+                    roomMap[getIndex(cell)] = room;
 
                     // Find all neighbors
                     var candidates = [];
@@ -384,8 +396,7 @@
                         this.__grid.eachNeighbor(node, function(
                             neighbor) {
                             if (!neighbor.diagonal &&
-                                !occupied[ripple.pair(
-                                neighbor.row, neighbor.col)] &&
+                                !roomMap[getIndex(neighbor)] &&
                                 !room.containsCell(neighbor) &&
                                 Superposition.isPrototypeOf(
                                     this.getCell(neighbor)))
@@ -426,10 +437,7 @@
                 camera.toWorldFromScreen(
                     {x: camera.width, y: camera.height}),
                 function(node, index, grid) {
-                    var currentRoom = undefined;
-                    this.eachRoom(function(room) {
-                        if (room.containsCell(node))
-                            currentRoom = room; });
+                    var currentRoom = this.getRoom(node);
 
                     grid.eachNeighbor(node, function(neighbor) {
                         if (!Hull.isPrototypeOf(
@@ -459,59 +467,58 @@
     };
 
     // A building is a single structure inside a habitat.
-    var Building = {
-        create: function(config) {
-            var result = Object.create(this);
+    var Building = Object.assign(Object.create(Structure), {
+        create: function(config)
+        { return Object.create(this).init(config); },
+
+        init: function(config) {
+            Structure.init.call(this, config);
             var rand = (config && config.rand) ? config.rand : Math;
             var lot = (config && config.lot) ? config.lot :
                       {start: {row: -10, col: -10},
                        end:   {row: 10, col: 10}};
-            result.district = (config && config.district) ?
-                              config.district : null;
-            result.start = {
+            this.district = (config && config.district) ?
+                            config.district : null;
+            this.start = {
                 row: Math.min(lot.start.row, lot.end.row),
                 col: Math.min(lot.start.col, lot.end.col) };
-            result.end = {
+            this.end = {
                 row: Math.max(lot.start.row, lot.end.row),
                 col: Math.max(lot.start.col, lot.end.col) };
-            if (Math.abs(result.start.row - result.end.row) > 10) {
-                result.start.row += 1 + Math.floor(rand.random() * 3);
-                result.end.row -= 1 + Math.floor(rand.random() * 3);
+            if (Math.abs(this.start.row - this.end.row) > 10) {
+                this.start.row += 1 + Math.floor(rand.random() * 3);
+                this.end.row -= 1 + Math.floor(rand.random() * 3);
             }
-            if (Math.abs(result.start.col - result.end.col) > 10) {
-                result.start.col += 1 + Math.floor(rand.random() * 3);
-                result.end.col -= 1 + Math.floor(rand.random() * 3);
+            if (Math.abs(this.start.col - this.end.col) > 10) {
+                this.start.col += 1 + Math.floor(rand.random() * 3);
+                this.end.col -= 1 + Math.floor(rand.random() * 3);
             }
 
-            result.__cellEmpty = {
+            var district = this.district;
+
+            this.__cellEmpty = {
                 draw: function(ctx, cellGrid, node) {
                     ctx.beginPath();
                     cellGrid.draw(ctx, node);
-                    ctx.fillStyle = result.district.type.buildingColor;
+                    ctx.fillStyle = district.type.buildingColor;
                     ctx.fill();
                 }
             };
 
-            result.__cellWall = {
+            this.__cellWall = {
                 draw: function(ctx, cellGrid, node) {
                     ctx.beginPath();
                     cellGrid.draw(ctx, node);
-                    ctx.fillStyle = result.district.type.wallColor;
+                    ctx.fillStyle = district.type.wallColor;
                     ctx.fill();
                 }
             };
 
-            result.__contents = {};
+            this.__contents = {};
             if (config && config.randomize)
-                result.__createRandomLayout();
+                this.__createRandomLayout();
 
-            return result;
-        },
-
-        __setCell: function(row, col, value) {
-            this.__contents[ripple.pair(row, col)] =
-                this.__cellWall;
-            return value;
+            return this;
         },
 
         __createRandomLayout: function() {
@@ -530,17 +537,17 @@
             var ii, jj, row, col;
             for (row = this.start.row; row <= this.end.row; ++row) {
                 col = this.start.col;
-                this.__setCell(row, col, this.__cellWall);
+                this.setCell({row: row, col: col}, this.__cellWall);
 
                 col = this.end.col;
-                this.__setCell(row, col, this.__cellWall);
+                this.setCell({row: row, col: col}, this.__cellWall);
             }
             for (col = this.start.col; col <= this.end.col; ++col) {
                 row = this.start.row;
-                this.__setCell(row, col, this.__cellWall);
+                this.setCell({row: row, col: col}, this.__cellWall);
 
                 row = this.end.row;
-                this.__setCell(row, col, this.__cellWall);
+                this.setCell({row: row, col: col}, this.__cellWall);
             }
 
             for (ii = 0; ii < rowRooms - 1; ++ii) {
@@ -549,10 +556,10 @@
                     col = this.start.col + jj;
 
                     row += roomSize + 1;
-                    this.__setCell(row, col, this.__cellWall);
+                    this.setCell({row: row, col: col}, this.__cellWall);
 
                     row += hallwaySize - 1;
-                    this.__setCell(row, col, this.__cellWall);
+                    this.setCell({row: row, col: col}, this.__cellWall);
                 }
             }
             for (jj = 0; jj < colRooms - 1; ++jj) {
@@ -561,43 +568,15 @@
                     col = this.start.col + jj * (roomSize + hallwaySize);
 
                     col += roomSize + 1;
-                    this.__setCell(row, col, this.__cellWall);
+                    this.setCell({row: row, col: col}, this.__cellWall);
 
                     col += hallwaySize - 1;
-                    this.__setCell(row, col, this.__cellWall);
+                    this.setCell({row: row, col: col}, this.__cellWall);
                 }
             }
         },
 
-        eachCell: function(fn, context) {
-            var result = fn ? this : [];
-            var row, col;
-            for (row = this.start.row; row <= this.end.row; ++row) {
-                for (col = this.start.col; col <= this.end.col; ++col) {
-                    var node = {row: row, col: col};
-                    if (fn)
-                        fn.call(context, node);
-                    else result.push(node);
-                }
-            }
-            return result;
-        },
-
-        getContents: function(node) {
-            var result = null;
-            if ((node.row >= this.start.row) ||
-                (node.row <= this.end.row) ||
-                (node.col >= this.start.col) ||
-                (node.col <= this.end.col)) {
-                var index = ripple.pair(node.row, node.col);
-                if (index in this.__contents)
-                    result = this.__contents[index];
-                else result = this.__cellEmpty;
-            }
-            return result;
-        },
-
-        draw: function(ctx, grid, node) {
+        drawOverview: function(ctx, grid, node) {
             ctx.beginPath();
             ctx.moveTo(node.x - this.start.col,
                        node.y - this.start.row);
@@ -620,7 +599,7 @@
                               "rgb(192, 192, 240)";
             ctx.stroke();
         },
-    };
+    });
 
     // A district is a substantial section of a space station.
     // Districts contain buildings and other structures that have an
@@ -663,9 +642,9 @@
         },
 
         addBuilding: function(building) {
-            building.eachCell(function(cell) {
-                this.__cellMap[ripple.pair(
-                    cell.row, cell.col)] = building.getContents(cell);
+            building.eachCell(function(cell, node) {
+                this.__cellMap[getIndex(node)] =
+                    building.getCell(node);
             }, this);
             this.__buildings.push(building);
         },
@@ -776,7 +755,7 @@
 
         drawOverview: function(ctx, districtGrid, node) {
             this.eachBuilding(function(building) {
-                building.draw(ctx, districtGrid, node); });
+                building.drawOverview(ctx, districtGrid, node); });
         },
 
         // Draw the icon for this district.  Each district type has an
@@ -833,8 +812,7 @@
                         (Math.abs(relative.col) > range))
                         return; // Only draw if in our district
 
-                    var contents = this.__cellMap[ripple.pair(
-                        relative.row, relative.col)];
+                    var contents = this.__cellMap[getIndex(relative)];
                     if (!contents) {
                         ctx.beginPath();
                         cellGrid.draw(ctx, node);
@@ -940,7 +918,6 @@
     ripple.export("structure", {
         Cell:          Cell,
         Structure:     Structure,
-        Superposition: Superposition,
 
         Building: Building,
         District: District,
