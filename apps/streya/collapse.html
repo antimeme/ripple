@@ -33,7 +33,7 @@
              ship.setCellUnresolved({row: row, col: col});
      ship.resolve();
      ship.eachCell(function(cell, node) { ++nCells; });
-     ship.eachRoom(function(room) { room.eachCell(function(cell) {
+     ship.eachRoom(function(room) { room.eachNode(function(node) {
          ++nFree;
      }); });
 

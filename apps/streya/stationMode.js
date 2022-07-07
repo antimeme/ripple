@@ -44,9 +44,7 @@
         drag: function(event, camera) { camera.drag(event); },
         tap: function(event, camera, now) {
             var point = this.station.cellGrid.markCell(
-                camera.toWorldFromScreen(event.point));
-
-            console.log("DEBUG-tap", point); },
+                camera.toWorldFromScreen(event.point)); },
         draw: function(ctx, camera, now) {
             this.station.draw(ctx, camera, now); }
     });
