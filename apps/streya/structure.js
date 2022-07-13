@@ -29,8 +29,49 @@
         this.pathf    = require("../ripple/pathf.js");
     }
 
+    // Convert a node to a numeric index suitable for integer lookup
     var getIndex = function(node)
     { return ripple.pair(node.col, node.row); };
+
+    // Compute the distance of each tile to outside the structure
+    var computeDistances = function(structure, grid) {
+        var distances = {};
+        var unresolved = [];
+
+        var computeDistance = function(node, grid, structure) {
+            var distance = distances[getIndex(node)];
+            grid.eachNeighbor(node, function(neighbor) {
+                if (structure.getCell(neighbor)) {
+                    var peer = distances[getIndex(neighbor)];
+                    if (peer && !isNaN(peer) &&
+                        (!distance || isNaN(distance) ||
+                         (distance > peer)))
+                        distance = peer + 1;
+                } else distance = 1;
+            }, this);
+            grid.eachNeighbor(node, function(neighbor) {
+                var peer = distances[getIndex(neighbor)];
+                if (structure.getCell(neighbor) &&
+                    peer && !isNaN(peer) &&
+                    (peer > distance + 1)) {
+                    distances[getIndex(neighbor)] = undefined;
+                    unresolved.push(neighbor);
+                }
+            }, this);
+
+            if (distance)
+                distances[getIndex(node)] = distance;
+            else unresolved.push(node);
+        };
+
+        structure.eachCell(function(
+            contents, node, grid, structure) {
+            computeDistance(node, grid, structure);
+        }, this);
+        while (unresolved.length)
+            computeDistance(unresolved.shift(), grid, structure);
+        return distances;
+    };
 
     // Base class for the contents of a cell in a ship or building.
     // A cell knows whether it is obstructed.
@@ -44,16 +85,10 @@
         draw: function(ctx, node, grid, structure) {
             ctx.beginPath();
             grid.draw(ctx, node);
-            ctx.fillStyle = "lightslategray";
-            ctx.fill();
-
-            ctx.beginPath();
-            ctx.arc(node.x, node.y, grid.getRadius() / 2,
-                    0, 2 * Math.PI);
             if (structure.__selectedRoom &&
                 structure.__selectedRoom.containsNode(node))
-                ctx.fillStyle = "maroon";
-            else ctx.fillStyle = "midnightblue";
+                ctx.fillStyle = "teal";
+            else ctx.fillStyle = "lightslategray";
             ctx.fill();
         }
     };
@@ -409,51 +444,7 @@
                 return this.eachLevel(function(level) {
                     this.resolve(level); }, this);
 
-            // Compute the distance of each tile to the outside
-            var measure = {
-                distances: {},
-                unresolved: [],
-                getDistance: function(node) {
-                    return this.distances[getIndex(node)]; },
-                setDistance: function(node, value) {
-                    this.distances[getIndex(node)] = value; },
-                computeDistance: function(node, grid, structure) {
-                    var distance = this.getDistance(node);
-                    grid.eachNeighbor(node, function(neighbor) {
-                        if (structure.getCell(neighbor)) {
-                            var peer = this.getDistance(neighbor);
-                            if (peer && !isNaN(peer) &&
-                                (!distance || isNaN(distance) ||
-                                 (distance > peer)))
-                                distance = peer + 1;
-                        } else distance = 1;
-                    }, this);
-                    grid.eachNeighbor(node, function(neighbor) {
-                        var peer = this.getDistance(neighbor);
-                        if (structure.getCell(neighbor) &&
-                            peer && !isNaN(peer) &&
-                            (peer > distance + 1)) {
-                            this.setDistance(neighbor, undefined);
-                            this.unresolved.push(neighbor);
-                        }
-                    }, this);
-
-                    if (distance)
-                        this.setDistance(node, distance);
-                    else this.unresolved.push(node);
-                },
-                resolve: function(grid, structure) {
-                    structure.eachCell(function(
-                        contents, node, grid, structure) {
-                        this.computeDistance(node, grid, structure);
-                    }, this);
-                    while (this.unresolved.length)
-                        this.computeDistance(this.unresolved.shift(),
-                                             grid, structure);
-
-                }
-            };
-            measure.resolve(this.__grid, this);
+            var distances = computeDistances(this, this.__grid);
 
             // Create an exterior hull and sort interior nodes
             // by their distance to a hull tile.
@@ -461,7 +452,7 @@
             this.eachCell(function(contents, node, grid) {
                 if (!Superposition.isPrototypeOf(contents))
                     return;
-                node.distance = measure.getDistance(node);
+                node.distance = distances[getIndex(node)];
                 if (node.distance <= 1)
                     this.setCell(node, Hull.create());
                 else nodes.push(node);
@@ -499,8 +490,7 @@
                                     Superposition.isPrototypeOf(
                                         this.getCell(neighbor))) {
                                     neighbor.distance =
-                                        measure.getDistance(
-                                            neighbor);
+                                        distances[getIndex(neighbor)];
                                     candidates.push(neighbor);
                                 }
                             }, this);
@@ -601,47 +591,45 @@
                             var p1 = wall.points[1];
 
                             ctx.beginPath();
+                            ctx.lineCap = "round";
+                            ctx.lineWidth = 3/20;
                             if (wall.door) {
                                 var perp = {
                                     x: (p1.y - p0.y) / 20,
                                     y: (p0.x - p1.x) / 20 };
                                 var p01 = {
-                                    x: p0.x + (p1.x - p0.x) / 3,
-                                    y: p0.y + (p1.y - p0.y) / 3};
+                                    x: p0.x + (p1.x - p0.x) / 5,
+                                    y: p0.y + (p1.y - p0.y) / 5};
                                 var p10 = {
-                                    x: p0.x + 2 * (p1.x - p0.x) / 3,
-                                    y: p0.y + 2 * (p1.y - p0.y) / 3};
-                                var p0p = {
-                                    x: p01.x + perp.x,
-                                    y: p01.y + perp.y};
-                                var p0m = {
-                                    x: p01.x - perp.x,
-                                    y: p01.y - perp.y };
-                                var p1p = {
-                                    x: p10.x + perp.x,
-                                    y: p10.y + perp.y};
-                                var p1m = {
-                                    x: p10.x - perp.x,
-                                    y: p10.y - perp.y };
+                                    x: p0.x + 4 * (p1.x - p0.x) / 5,
+                                    y: p0.y + 4 * (p1.y - p0.y) / 5};
                                 ctx.moveTo(p0.x, p0.y);
                                 ctx.lineTo(p01.x, p01.y);
-                                ctx.lineTo(p0p.x, p0p.y);
-                                ctx.lineTo(p1p.x, p1p.y);
+                                ctx.moveTo(p1.x, p1.y);
                                 ctx.lineTo(p10.x, p10.y);
-                                ctx.lineTo(p1.x, p1.y);
+                                ctx.strokeStyle = "dimgray";
+                                ctx.stroke();
+
+                                ctx.beginPath();
                                 ctx.moveTo(p01.x, p01.y);
-                                ctx.lineTo(p0m.x, p0m.y);
-                                ctx.lineTo(p1m.x, p1m.y);
-                                ctx.lineTo(p10.x, p10.y);
+                                ctx.lineTo(p01.x + perp.x,
+                                           p01.y + perp.y);
+                                ctx.lineTo(p10.x + perp.x,
+                                           p10.y + perp.y);
+                                ctx.lineTo(p10.x - perp.x,
+                                           p10.y - perp.y);
+                                ctx.lineTo(p01.x - perp.x,
+                                           p01.y - perp.y);
+                                ctx.lineTo(p01.x, p01.y);
+                                ctx.lineWidth = 2/20;
+                                ctx.strokeStyle = "#333";
+                                ctx.stroke();
                             } else {
                                 ctx.moveTo(p0.x, p0.y);
                                 ctx.lineTo(p1.x, p1.y);
-                                ctx.lineCap = "round";
+                                ctx.strokeStyle = "dimgray";
+                                ctx.stroke();
                             }
-                            ctx.lineCap = "round";
-                            ctx.lineWidth = 0.15;
-                            ctx.strokeStyle = "dimgray";
-                            ctx.stroke();
                         }
                     }, this);
                 }, this);
