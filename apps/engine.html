@@ -3,44 +3,70 @@
 <link rel="shortcut icon" href="engine.svg" />
 <style>
  .fail { background-color: #eeaaaa; }
+ .velocities { float: right; }
 </style>
 
-<form><table><tr><td>
-    Payload
-</td><td>
-    <input id="payload" type="text" size="5" value="50" /> tonnes
-</td></tr><tr><td>
-    Engine
-</td><td>
-    <input id="engine" type="text" size="5" value="10" /> tonnes
-</td></tr><tr><td>
-    Fuel <select id="ftype"></select>
-</td><td>
-    <input id="fuel" type="text" size="5" value="20" /> tonnes
-</td></tr><tr><td>
-    Engine Efficiency
-</td><td>
-    <input id="eeff" type="text" size="5" value="22" /> %
-</td></tr><tr><td>
-    Exhaust Velocity
-</td><td>
-    <input id="exhaust" type="text" size="5" value="12,157" /> km/s
-</td></tr><tr><td>
-    Acceleration
-</td><td>
-    <input id="acceleration" type="text" size="5" value="9.8" />
-    m/s<sup>2</sup>
-</td></tr><tr><td>
-    Life Support
-</td><td>
-    <input id="crisis" type="text" size="5" value="240" />
-    hours
-</td></tr><!-- tr><td>
-               Reactor Efficiency
-               </td><td>
-               <input id="reff" type="text" size="5" value="10" /> %
-               </td></tr--></table></form>
+<fieldset class="velocities">
+    <legend>Critical Velocities</legend>
+    <form><table><tr><td>
+        Body:
+    </td><td>
+        <select id="body"></select>
+    </td></tr><tr><td>
+        Altitude:
+    </td><td>
+        <input id="altitude" type="text" size="8" value="10" /> km
+    </td></tr><tr><td>
+        Escape:
+    </td><td>
+        <input id="escape" type="text" size="8" disabled="true" />
+        <span id="escapetag">km/s</span>
+    </td></tr><tr><td>
+        Orbit:
+    </td><td>
+        <input id="orbit" type="text" size="8" disabled="true" />
+        <span id="orbittag">km/s</span>
+    </td></tr></table></form>    
+</fieldset>
 
+<fieldset class="calculator">
+    <legend>Calculator</legend>
+    <form><table><tr><td>
+        Payload
+    </td><td>
+        <input id="payload" type="text" size="5" value="50" /> tonnes
+    </td></tr><tr><td>
+        Engine
+    </td><td>
+        <input id="engine" type="text" size="5" value="10" /> tonnes
+    </td></tr><tr><td>
+        Fuel <select id="ftype"></select>
+    </td><td>
+        <input id="fuel" type="text" size="5" value="20" /> tonnes
+    </td></tr><tr><td>
+        Engine Efficiency
+    </td><td>
+        <input id="eeff" type="text" size="5" value="22" /> %
+    </td></tr><tr><td>
+        Exhaust Velocity
+    </td><td>
+        <input id="exhaust" type="text" size="5" value="12,157" /> km/s
+    </td></tr><tr><td>
+        Acceleration
+    </td><td>
+        <input id="acceleration" type="text" size="5" value="9.8" />
+        m/s<sup>2</sup>
+    </td></tr><tr><td>
+        Life Support
+    </td><td>
+        <input id="crisis" type="text" size="5" value="240" />
+        hours
+    </td></tr><!-- tr><td>
+                   Reactor Efficiency
+                   </td><td>
+                   <input id="reff" type="text" size="5" value="10" /> %
+                   </td></tr--></table></form>
+</fieldset>
 <hr />
 
 <table><tr><td>
@@ -136,6 +162,85 @@
      //},
  };
 
+ // Data comes from https://en.wikipedia.org/wiki/Solar_System
+ // All masses are in kilograms.  All radii are in kilometers.
+ var bodies = {
+     sol: { label: "Sol", mass: 1.9885e30, radius: 695700 },
+     mercury: { label: "Mercury", orbits: "sol",
+                mass: 3.3011e23, radius: 2439.7 },
+     venus: { label: "Venus", orbits: "sol",
+              mass: 4.8675e24, radius: 6051.8 },
+     terra: { label: "Terra", orbits: "sol", selected: true,
+              mass: 5.97237e24, radius: 6371 },
+     luna: { label: "Luna", orbits: "terra",
+             mass: 7.342e22, radius: 1737.4 },
+     mars: { label: "Mars", orbits: "sol",
+             mass: 6.4171e23, radius: 3389.5 },
+
+     ceres: { label: "Ceres", orbits: "sol",
+              mass: 9.3835e20, radius: 469.73 },
+     vesta: { label: "Vesta", orbits: "sol",
+              mass: 2.59076e20, radius: 262.7 },
+     pallas: { label: "Pallas", orbits: "sol",
+               mass: 2.04e20, radius: 255.5 },
+     hygiea: { label: "Hygiea", orbits: "sol",
+               mass: 87.4e18, radius: 216.5 },
+
+     jupiter: { label: "Jupiter", orbits: "sol",
+                mass: 1.8982e27, radius: 69911 },
+     io: { label: "Io", orbits: "jupiter",
+           mass: 8.931938e22, radius: 1821.6 },
+     europa: { label: "Europa", orbits: "jupiter",
+               mass: 4.799844e22, radius: 1560.8 },
+     ganymede: { label: "Ganymede", orbits: "jupiter",
+                 mass: 1.4819e23, radius: 2634.1 },
+     callisto: { label: "Callisto", orbits: "jupiter",
+                 mass: 1.075938e23, radius: 2410.3 },
+
+     saturn: { label: "Saturn", orbits: "sol",
+               mass: 5.6834e26, radius: 58232 },
+     mimas: { label: "Mimas", orbits: "saturn",
+              mass: 3.7493e19, radius: 198.2 },
+     enceladus: { label: "Enceladus", orbits: "saturn",
+                  mass: 1.08022e20, radius: 252.1 },
+     tethys: { label: "Tethys", orbits: "saturn",
+               mass: 6.17449e20, radius: 531.1 },
+     dione: { label: "Dione", orbits: "saturn",
+              mass: 1.095452e21, radius: 561.4 },
+     rhea: { label: "Rhea", orbits: "saturn",
+             mass: 2.306518e21, radius: 763.8 },
+     titan: { label: "Titan", orbits: "saturn",
+              mass: 1.3452e23, radius: 2574.73 },
+     iapetus: { label: "Iapetus", orbits: "saturn",
+                mass: 1.805635e21, radius: 734.5 },
+
+     uranus: { label: "Uranus", orbits: "sol",
+               mass: 8.6810e25, radius: 25362 },
+     miranda: { label: "Miranda", orbits: "uranus",
+                mass: 6.4e19, radius: 235.8 },
+     ariel: { label: "Ariel", orbits: "uranus",
+              mass: 1.251e21, radius: 578.9 },
+     umbriel: { label: "Umbriel", orbits: "uranus",
+                mass: 1.275e21, radius: 584.7 },
+     titiana: { label: "Titiana", orbits: "uranus",
+                mass: 3.4e21, radius: 788.4 },
+     oberon: { label: "Oberon", orbits: "uranus",
+               mass: 3.076e21, radius: 761.4 },
+
+     neptune: { label: "Neptune", orbits: "sol",
+                mass: 1.02413e26, radius: 24622 },
+     triton: { label: "Triton", orbits: "neptune",
+               mass: 2.1390e22, radius: 1353.4 },
+     proteus: { label: "Triton", orbits: "neptune",
+                mass: 4.4e19, radius: 210 },
+
+     pluto: { label: "Pluto", orbits: "sol",
+              mass: 1.303e22, radius: 1188.3 },
+     charon: { label: "Charon", orbits: "sol",
+               mass: 1.586e21, radius: 606 },
+ };
+ var body;
+
  var getValue = function(element) {
      return parseFloat(element.value.replace(',', ''));
  };
@@ -200,7 +305,7 @@
      element.value = value.toLocaleString('en-US');
  };
 
- var compute = function() {
+ var computeEngine = function() {
      var drymass = getValue(payload) + getValue(engine);
      var ve = getValue(exhaust);
      var fu = getValue(fuel);
@@ -213,8 +318,7 @@
      var bt = 1000 * dv / acc;
      var rg = (ct < bt) ?
               (acc * (ct / 2) * (ct / 2)) :
-              (acc * (bt / 2) * (bt / 2) +
-               (ct - bt) * (acc * bt));
+              (acc * (bt / 2) * (bt / 2) + (ct - bt) * (acc * bt));
 
      setMetric(deltav, deltavtag, 'm/s', 1000 * dv);
      setSeconds(burn, burntag, bt);
@@ -257,7 +361,40 @@
 
      [payload, ftype, fuel, eeff, exhaust, acceleration, crisis]
          .forEach(function(thing) {
-             thing.addEventListener("change", compute); });
-     compute();
+             thing.addEventListener("change", computeEngine); });
+     computeEngine();
+
+     body = document.getElementById("body");
+     Object.keys(bodies).forEach(function(key) {
+         var entry = bodies[key];
+         var result = document.createElement("option");
+         result.setAttribute("value", key);
+         result.innerHTML = entry.label;
+         if (entry.selected)
+             result.setAttribute("selected", "selected");
+         body.appendChild(result);
+     });
+     var computeVelocities = function(event) {
+         var gravitation = 6.674e-11;
+         var entry = bodies[body.value];
+         var altitude = document.getElementById("altitude");
+         var orbitRadius = entry.radius;
+         if (!isNaN(altitude.value))
+             orbitRadius += parseInt(altitude.value, 10);
+
+         var escape = document.getElementById("escape");
+         var escapetag = document.getElementById("escapetag");
+         setMetric(escape, escapetag, 'm/s',
+                   Math.sqrt(2 * gravitation * entry.mass /
+                       (entry.radius * 1000)));
+         var orbit = document.getElementById("orbit");
+         var orbittag = document.getElementById("orbittag");
+         setMetric(orbit, orbittag, 'm/s',
+                   Math.sqrt(gravitation * entry.mass /
+                       (orbitRadius * 1000)));
+     };
+     body.addEventListener("change", computeVelocities);
+     altitude.addEventListener("change", computeVelocities);
+     computeVelocities();
  });
  //]]></script>
