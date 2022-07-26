@@ -13,14 +13,19 @@
     </td><td>
         <select id="body"></select>
     </td></tr><tr><td>
-        Altitude:
+        Gravity:
     </td><td>
-        <input id="altitude" type="text" size="8" value="10" /> km
+        <input id="gravity" type="text" size="8" disabled="true" />
+        <span id="gravitytag">m/s<sup>2</sup></span>
     </td></tr><tr><td>
         Escape:
     </td><td>
         <input id="escape" type="text" size="8" disabled="true" />
         <span id="escapetag">km/s</span>
+    </td></tr><tr><td>
+        Altitude:
+    </td><td>
+        <input id="altitude" type="text" size="8" value="10" /> km
     </td></tr><tr><td>
         Orbit:
     </td><td>
@@ -255,6 +260,11 @@
              value /= 1000;
              tag.innerHTML = 'km/s';
          } else tag.innerHTML = unit;
+     } else if (unit === "m/s2") {
+         if (value > 1000) {
+             value /= 1000;
+             tag.innerHTML = "km/s<sup>2</sup>";
+         } else tag.innerHTML = "m/s<sup>2</sup>";
      } else if (unit === 'g') {
          if (value > 1000000000000) {
              value /= 1000000000000;
@@ -379,7 +389,7 @@
          var entry = bodies[body.value];
          var altitude = document.getElementById("altitude");
          var orbitRadius = entry.radius;
-         if (!isNaN(altitude.value))
+         if (altitude && altitude.value && !isNaN(altitude.value))
              orbitRadius += parseInt(altitude.value, 10);
 
          var escape = document.getElementById("escape");
@@ -392,6 +402,12 @@
          setMetric(orbit, orbittag, 'm/s',
                    Math.sqrt(gravitation * entry.mass /
                        (orbitRadius * 1000)));
+
+         var gravity = document.getElementById("gravity");
+         var gravitytag = document.getElementById("gravitytag");
+         setMetric(gravity, gravitytag, "m/s2",
+                   gravitation * entry.mass /
+             (entry.radius * entry.radius * 1000000));
      };
      body.addEventListener("change", computeVelocities);
      altitude.addEventListener("change", computeVelocities);
