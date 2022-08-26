@@ -1,5 +1,5 @@
 // fascia.js
-// Copyright (C) 2018-2020 by Jeff Gold.
+// Copyright (C) 2018-2022 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -210,11 +210,11 @@
                 app.resize(camera, container);
             redraw();
         });
-        viewport.dispatchEvent(new Event('resize'));
 
-        // Note that apps are initialized before being resized.
-        // This means apps should not assume sizes are sensible
-        // until after the first resize call.
+        // Apps are resized first before being initialized so that
+        // camera.width and camera.height are meaningful during the
+        // initialization stage.
+        viewport.dispatchEvent(new Event('resize'));
         getAppFn(app, "init").call(
             app, camera, canvas, container, redraw);
         redraw();

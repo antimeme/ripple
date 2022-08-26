@@ -1,5 +1,5 @@
 // quanta.js
-// Copyright (C) 2015-2020 by Jeff Gold.
+// Copyright (C) 2015-2022 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-// A particle physics simulation.
+// A particle physics playground.
 //
 // Note that particles always have an exact position and momentum,
 // which would violate the Heisenburg Uncertainty Principle in
@@ -31,6 +31,7 @@
 
     quanta.Laboratory = {
         particles: undefined,
+
         create: function(width, height) {
             var result = Object.create(this);
             result.particles = [];
@@ -42,7 +43,7 @@
             var index;
             this.width = width;
             this.height = height;
-            this.scale = (width > height ? height : width);
+            this.scale = Math.min(width, height);
             for (index = 0; index < this.particles.length; ++index)
                 this.particles[index].scale = (
                     this.particles[index].scaleFactor * this.scale);
@@ -919,66 +920,50 @@
         var center = ripple.param('center') || 'center';
         c = Math.max(0.01, parseFloat(ripple.param('customc') || 1.0));
 
-        // Settings
-        var index, lab = null;
-        var canvas = $('<canvas class="' + center +
-                       '"></canvas>').appendTo(container);
-        var context = canvas.get(0).getContext('2d');
-        var last = new Date().getTime();
-        var update = function() {
-            var now = new Date().getTime();
-            lab.update(Math.min(5000, now - last));
-            last = now;
+        var lab;
 
-            context.clearRect(0, 0, canvas.attr('width'),
-                              canvas.attr('height'));
-            lab.resize(canvas.attr('width'), canvas.attr('height'));
-            lab.draw(context);
-            if (lab.active())
-                requestAnimationFrame(update);
+        return {
+            init: function(camera, canvas, container, fasciaRedraw) {
+                lab = quanta.Laboratory.create(
+                    camera.width, camera.height);
+                var index;
+
+                for (index = 0; index < nphotons; ++index)
+                    lab.make(quanta.Photon);
+                for (index = 0; index < ngluons; ++index)
+                    lab.make(quanta.Gluon);
+                lab.make(quanta.Photon, {freq: 10000});
+                lab.make(quanta.Photon, {freq: Math.pow(10, 18)});
+
+                lab.make(quanta.HiggsBoson);
+                lab.make(quanta.ZBoson);
+                lab.make(quanta.WPlusBoson);
+                lab.make(quanta.WMinusBoson);
+                lab.make(quanta.Electron);
+                lab.make(quanta.Muon);
+                lab.make(quanta.Tau);  
+                lab.make(quanta.Neutrino);
+                lab.make(quanta.MuonNeutrino);
+                lab.make(quanta.TauNeutrino);
+                lab.make(quanta.UpQuark);
+                lab.make(quanta.DownQuark);
+                lab.make(quanta.CharmQuark);
+                lab.make(quanta.StrangeQuark);
+                lab.make(quanta.TopQuark);
+                lab.make(quanta.BottomQuark);
+            },
+
+            draw: function(ctx, camera, now, last) {
+                camera.position({x: camera.width / 2,
+                                 y: camera.height / 2});
+                lab.draw(ctx);
+            },
+            resize: function(camera, container)
+            { if (lab) lab.resize(camera.width, camera.height); },
+            update: function(camera, elapsed, now)
+            { lab.update(elapsed); },
+            isActive: function() { return lab.active(); },
         };
-        var resize = function() {
-            var width = viewport.innerWidth();
-            var height = viewport.innerHeight();
-            if (width > height)
-                width = height;
-            else if (height > width)
-                height = width;
-            canvas.attr('width', width);
-            canvas.attr('height', height);
-            requestAnimationFrame(update);
-        };
-        resize();
-        viewport.resize(resize);
-        canvas.on('click', function(event) {
-            console.log(lab.active());
-        });
-
-        lab = quanta.Laboratory.create(
-            canvas.attr('width'), canvas.attr('height'));
-        for (index = 0; index < nphotons; ++index)
-            lab.make(quanta.Photon);
-        for (index = 0; index < ngluons; ++index)
-            lab.make(quanta.Gluon);
-        lab.make(quanta.Photon, {freq: 10000});
-        lab.make(quanta.Photon, {freq: Math.pow(10, 18)});
-
-        lab.make(quanta.HiggsBoson);
-        lab.make(quanta.ZBoson);
-        lab.make(quanta.WPlusBoson);
-        lab.make(quanta.WMinusBoson);
-        lab.make(quanta.Electron);
-        lab.make(quanta.Muon);
-        lab.make(quanta.Tau);  
-        lab.make(quanta.Neutrino);
-        lab.make(quanta.MuonNeutrino);
-        lab.make(quanta.TauNeutrino);
-        lab.make(quanta.UpQuark);
-        lab.make(quanta.DownQuark);
-        lab.make(quanta.CharmQuark);
-        lab.make(quanta.StrangeQuark);
-        lab.make(quanta.TopQuark);
-        lab.make(quanta.BottomQuark);
     };
 
 })(typeof exports === 'undefined'? this['quanta'] = {}: exports);
