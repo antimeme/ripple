@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+                     "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="128" height="128">
+  <circle cx="64" cy="64" r="60"
+          stroke="#eee" stroke-width="8" fill="#444" />
+  <line x1="35" y1="56" x2="93" y2="72"
+        stroke="#eee" stroke-width="8" />
+</svg>

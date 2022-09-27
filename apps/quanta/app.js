@@ -1,4 +1,4 @@
-// quanta.js
+// quanta/app.js
 // Copyright (C) 2015-2022 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
