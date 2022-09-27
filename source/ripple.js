@@ -910,12 +910,22 @@
      * Represents a screen which can be resized, panned, scaled
      * and so on. */
     ripple.camera = {
-        create: function(width, height) {
+        create: function(config) {
             var result = Object.create(this);
-            result.resize(width, height);
+            if (config && typeof(config) === "object") {
+                if (!isNaN(config.width) && !isNaN(config.height))
+                    result.resize(config.width, config.height);
+                result.center = config.center;
+            } else if (arguments.length >= 2) {
+                result.resize(arguments[0], arguments[1]);
+                result.center = true;
+            }
             result.reset();
             return result;
         },
+
+        center: true,
+
         reset: function() {
             this.scale = 1;
             this.x = 0;
@@ -924,7 +934,12 @@
             this.extents = null;
             return this;
         },
+
         resize: function(width, height) {
+            if (isNaN(width) || isNaN(height))
+                throw new Error("camera.resize requires numeric " +
+                                "width and height: \"" +
+                                width + "\", \"" + height + "\"");
             this.width  = width;
             this.height = height;
             return this;
@@ -935,11 +950,13 @@
             this.y += vector.y;
             return this;
         },
+
         position: function(point) {
             this.x = point.x;
             this.y = point.y;
             return this;
         },
+
         drag: function(event) {
             return this.pan({
                 x: (event.last.x - event.current.x) / this.scale,
@@ -984,6 +1001,7 @@
             place.y = place.y * this.scale + this.height / 2;
             return place;
         },
+
         toWorldFromScreen: function(place) {
             var point = { x: place.x, y: place.y };
             point.x = (point.x - this.width / 2) / this.scale;
@@ -993,8 +1011,10 @@
             point.y += this.y;
             return point;
         },
+
         setupContext: function(ctx) {
-            ctx.translate(this.width / 2, this.height / 2);
+            if (this.center)
+                ctx.translate(this.width / 2, this.height / 2);
             ctx.scale(this.scale, this.scale);
             ctx.rotate(this.angle);
             ctx.translate(-this.x, -this.y);
