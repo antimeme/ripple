@@ -19,9 +19,9 @@
 // A library of tools for creating a video game user interface.
 (function(fascia) {
     "use strict";
-    if (typeof require !== 'undefined') {
-        this.ripple   = require('./ripple.js');
-        this.multivec = require('./multivec.js');
+    if (typeof require !== "undefined") {
+        this.ripple   = require("./ripple.js");
+        this.multivec = require("./multivec.js");
     }
 
     // Fascia App is a framework for canvas applications that
@@ -33,17 +33,17 @@
     //     taps = [];
     //     return {
     //         init: function(camera, canvas, container, redraw) {
-    //             canvas.style.background = 'rgb(192, 192, 192)';
+    //             canvas.style.background = "#ccc";
     //         },
     //         resize: function(camera) {},
     //         draw: function(ctx, camera, now, last) {
-    //             ctx.lineCap = 'round';
+    //             ctx.lineCap = "round";
     //             ctx.lineWidth = 2;
     //
     //             ctx.beginPath();
     //             ctx.moveTo(-camera.width/2, -camera.height/2);
     //             ctx.lineTo(camera.width/2, camera.height/2);
-    //             ctx.strokeStyle = 'rgb(192, 32, 32)';
+    //             ctx.strokeStyle = "#c22";
     //             ctx.stroke();
     //
     //             ctx.beginPath();
@@ -51,9 +51,9 @@
     //                 ctx.moveTo(tap.x + 9, tap.y);
     //                 ctx.arc(tap.x, tap.y, 9, 0, Math.PI * 2);
     //             });
-    //             ctx.fillStyle = 'rgb(32, 192, 32)';
+    //             ctx.fillStyle = "#2c2";
     //             ctx.fill();
-    //             ctx.strokeStyle = 'rgb(32, 32, 192)';
+    //             ctx.strokeStyle = "#22c";
     //             ctx.stroke();
     //         },
     //         update: function(ms, camera) {},
@@ -163,7 +163,7 @@
                     app, camera, now - lastUpdate, now);
 
             camera.resize(canvas.clientWidth, canvas.clientHeight);
-            ctx = canvas.getContext('2d');
+            ctx = canvas.getContext("2d");
             cstyle = getComputedStyle(canvas);
             ctx.strokeStyle = cstyle.color;
             ctx.fillStyle   = cstyle.color;
@@ -172,19 +172,21 @@
             ctx.clearRect(0, 0, camera.width, camera.height);
             getAppFn(app, "drawBefore").call(
                 app, ctx, camera, now, lastUpdate);
+
+            ctx.save();
             camera.setupContext(ctx);
             getAppFn(app, "draw").call(
                 app, ctx, camera, now, lastUpdate);
             ctx.restore();
+
             getAppFn(app, "drawAfter").call(
                 app, ctx, camera, now, lastUpdate);
+            ctx.restore();
 
             // Active apps need to be redrawn while inactive apps
             // do not.  We let the app itself tell us which it is.
-            if (((typeof(app.isActive) === "boolean") &&
-                 app.isActive) ||
-                ((typeof(app.isActive) === "function") &&
-                 app.isActive()))
+            if (((typeof(app.isActive) === "function") &&
+                 app.isActive()) || app.isActive)
                 redraw();
             lastUpdate = now;
         };
@@ -206,8 +208,7 @@
             canvas.height = height;
             canvas.style.width  = (width || 0) + "px";
             canvas.style.height = (height || 0) + "px";
-            if (app.resize)
-                app.resize(camera, container);
+            getAppFn(app, "resize").call(app, camera, container);
             redraw();
         });
 
