@@ -131,13 +131,15 @@
             });
         },
 
-        update: function(delta) {
-            var index, current = 0, processed = 0, event;
-            var particle;
+        update: function(elapsed) {
+            var index;
+            var current = 0;
+            var processed = 0;
+            var event;
 
-            while (processed < delta) {
-                event = this._nextBounce(delta - processed);
-                current = event ? event.time : (delta - processed);
+            while (processed < elapsed) {
+                event = this._nextBounce(elapsed - processed);
+                current = event ? event.time : (elapsed - processed);
                 this._move(current);
                 if (event)
                     event.action.call(event.particle, this);
@@ -145,8 +147,11 @@
                 processed = current;
             }
 
+            var particles = [];
             for (index = 0; index < this.particles.length; ++index)
-                this.particles[index].update(delta, this);
+                if (!this.particles[index].update(elapsed, this))
+                    particles.push(this.particles[index]);
+            this.particles = particles;
         },
 
         draw: function(context) {
@@ -225,7 +230,7 @@
                 this.add(quanta.HiggsBoson.create(this, {
                     label: true, position: {
                         x: 3/cols, y: ++row/rows}}));
-            } else if (mode === "proton") {
+            } else if (mode === "oldproton") {
                 var index;
                 var colors = [0, 1, 2];
                 var quarks = [quanta.UpQuark, quanta.UpQuark,
@@ -240,6 +245,9 @@
                     cCharge: colors[1], position: {x: 1/3, y: 2/3}}));
                 this.add(quarks[2].create(this, {
                     cCharge: colors[2], position: {x: 2/3, y: 2/3}}));
+            } else if (mode === "proton") {
+                this.add(quanta.Proton.create(this));
+                this.add(quanta.Neutron.create(this));
             } else {
                 var index;
                 var nphotons = (config && !isNaN(config.nphotons)) ?
@@ -321,13 +329,13 @@
             return result;
         },
 
-        _update: function(delta, lab) {
-            if (!isNaN(this._rotate))
-                this.phase += delta * this._rotate;
-        },
+        _update: function(elapsed, lab) {},
 
-        update: function(delta, lab)
-        { return this._update(delta, lab); },
+        update: function(elapsed, lab) {
+            if (!isNaN(this._rotate))
+                this.phase += elapsed * this._rotate;
+            return this._update(elapsed, lab);
+        },
 
         _draw: function(context) {},
 
@@ -864,21 +872,22 @@
             context.save();
             context.translate(this.position.x, this.position.y);
             context.rotate(this.phase);
-            context.lineWidth = this.size / 25;
+            context.scale(this.size, this.size);
+            context.lineWidth = 1 / 25;
             context.lineCap = 'round';
 
             context.beginPath();
-            context.moveTo(0, -this.size / 2);
+            context.moveTo(0, -1 / 2);
             context.bezierCurveTo(
-                -this.size / 2, this.size / 5,
-                this.size / 2, -this.size / 5,
-                0, this.size / 2);
+                -1 / 2, 1 / 5,
+                1 / 2, -1 / 5,
+                0, 1 / 2);
             context.strokeStyle = "#eee";
             context.stroke();
 
             context.beginPath();
-            context.moveTo(this.size / 2, 0);
-            context.arc(0, 0, this.size / 2, 0, 2 * Math.PI);
+            context.moveTo(1 / 2, 0);
+            context.arc(0, 0, 1 / 2, 0, 2 * Math.PI);
             context.strokeStyle = this._color;
             context.stroke();
             context.restore();
@@ -1089,6 +1098,99 @@
             context.stroke();
             context.restore();
         },
+    });
+
+    quanta.Hadron = Object.assign(Object.create(Particle), {
+        mass: 938.27208816e6,
+        spin: 1,
+        eCharge: -1,
+        scaleFactor: 0.5,
+        _name: "Hadron",
+        _color: "rgba(96, 96, 32, 0.25)",
+        _rotate: 0.001,
+        _quarks: null,
+        _flavors: [quanta.UpQuark, quanta.UpQuark, quanta.DownQuark],
+
+        _positionQuark: function(quark) {
+            var position = {
+                x: (Math.cos(quark.start) +
+                    quark.progress * (Math.cos(quark.end) -
+                                      Math.cos(quark.start))),
+                y: (Math.sin(quark.start) +
+                    quark.progress * (Math.sin(quark.end) -
+                                      Math.sin(quark.start))) };
+            position.x *= this.size * 9 / 25;
+            position.x += this.position.x;
+            position.y *= this.size * 11 / 25;
+            position.y += this.position.y;
+            quark.particle.position = position;
+            return quark;
+        },
+
+        _setupQuark: function(lab, color, flavor) {
+            return this._positionQuark({
+                start: Math.random() * 2 * Math.PI,
+                end: Math.random() * 2 * Math.PI,
+                progress: Math.random(),
+                particle: flavor.create(lab, {cCharge: color}) });
+        },
+
+        _init: function(lab, config) {
+            var colors = [0, 1, 2];
+            var quarks = this._flavors.slice();
+            ripple.shuffle(colors);
+            ripple.shuffle(quarks);
+
+            this._quarks = [];
+
+            var ii;
+            for (ii = 0; ii < 3; ++ii)
+                this._quarks.push(this._setupQuark(
+                    lab, colors[ii], quarks[ii]));
+        },
+
+        _update: function(elapsed, lab) {
+            this._quarks.forEach(function(quark) {
+                quark.particle.update(elapsed, lab);
+                quark.progress += elapsed / 1000;
+                if (quark.progress > 1) {
+                    quark.progress -= Math.floor(quark.progress);
+                    quark.start = quark.end;
+                    quark.end = Math.random() * 2 * Math.PI;
+                }
+                this._positionQuark(quark);
+            }, this);
+        },
+
+        _draw: function(context, lab) {
+            context.save();
+            context.translate(this.position.x, this.position.y);
+            context.rotate(this.phase);
+            context.scale(this.size, this.size);
+
+            context.beginPath();
+            context.moveTo(1 / 2, 0);
+            context.arc(0, 0, 1 / 2, 0, 2 * Math.PI);
+
+            context.fillStyle = this._color;
+            context.fill();
+            context.restore();
+
+            this._quarks.forEach(function(quark) {
+                quark.particle.draw(context, lab); });
+        },
+    });
+
+    quanta.Proton = Object.assign(Object.create(quanta.Hadron), {
+        _name: "Proton",
+        _color: "rgba(96, 96, 32, 0.25)",
+        _flavors: [quanta.UpQuark, quanta.UpQuark, quanta.DownQuark],
+    });
+
+    quanta.Neutron = Object.assign(Object.create(quanta.Hadron), {
+        _name: "Neutron",
+        _color: "rgba(64, 64, 96, 0.25)",
+        _flavors: [quanta.UpQuark, quanta.DownQuark, quanta.DownQuark],
     });
 
     quanta.go = function() {
