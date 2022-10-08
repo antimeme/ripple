@@ -1119,7 +1119,7 @@
                 y: (Math.sin(quark.start) +
                     quark.progress * (Math.sin(quark.end) -
                                       Math.sin(quark.start))) };
-            position.x *= this.size * 9 / 25;
+            position.x *= this.size * 11 / 25;
             position.x += this.position.x;
             position.y *= this.size * 11 / 25;
             position.y += this.position.y;
