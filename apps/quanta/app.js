@@ -1109,7 +1109,7 @@
         _color: "rgba(96, 96, 32, 0.25)",
         _rotate: 0.001,
         _quarks: null,
-        _flavors: [quanta.UpQuark, quanta.UpQuark, quanta.DownQuark],
+        _flavors: [quanta.UpQuark],
 
         _positionQuark: function(quark) {
             var position = {
@@ -1143,10 +1143,9 @@
 
             this._quarks = [];
 
-            var ii;
-            for (ii = 0; ii < 3; ++ii)
+            for (var ii = 0; ii < this._flavors.length; ++ii)
                 this._quarks.push(this._setupQuark(
-                    lab, colors[ii], quarks[ii]));
+                    lab, colors[ii % colors.length], quarks[ii]));
         },
 
         _update: function(elapsed, lab) {
@@ -1156,7 +1155,10 @@
                 if (quark.progress > 1) {
                     quark.progress -= Math.floor(quark.progress);
                     quark.start = quark.end;
-                    quark.end = Math.random() * 2 * Math.PI;
+
+                    quark.end += (Math.PI / 3 +
+                                  Math.random() * 4 * Math.PI / 3);
+                    quark.end %= 2 * Math.PI;
                 }
                 this._positionQuark(quark);
             }, this);
