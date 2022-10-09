@@ -161,7 +161,44 @@
         },
 
         setup: function(mode, config) {
-            if (mode === "key") {
+            if (mode === "soup") {
+                var index;
+                var nphotons = (config && !isNaN(config.nphotons)) ?
+                               config.nphotons : 0;
+                var ngluons = (config && !isNaN(config.nphotons)) ?
+                              config.nphotons : 0;
+
+                for (index = 0; index < nphotons; ++index)
+                    this.add(quanta.Photon.create(this));
+                for (index = 0; index < ngluons; ++index)
+                    this.add(quanta.Gluon.create(this));
+                this.add(quanta.Photon.create(this, {freq: 10000}));
+                this.add(quanta.Photon.create(
+                    this, {freq: Math.pow(10, 18)}));
+
+                this.add(quanta.Electron.create(this));
+                this.add(quanta.Neutrino.create(this));
+                this.add(quanta.UpQuark.create(this));
+                this.add(quanta.DownQuark.create(this));
+            } else if (mode === "oldproton") {
+                var index;
+                var colors = [0, 1, 2];
+                var quarks = [quanta.UpQuark, quanta.UpQuark,
+                              quanta.DownQuark];
+
+                ripple.shuffle(colors);
+                ripple.shuffle(quarks);
+
+                this.add(quarks[0].create(this, {
+                    cCharge: colors[0], position: {x: 1/2, y: 1/3}}));
+                this.add(quarks[1].create(this, {
+                    cCharge: colors[1], position: {x: 1/3, y: 2/3}}));
+                this.add(quarks[2].create(this, {
+                    cCharge: colors[2], position: {x: 2/3, y: 2/3}}));
+            } else if (mode === "proton") {
+                this.add(quanta.Proton.create(this));
+                this.add(quanta.Neutron.create(this));
+            } else {
                 var anti = config && config.anti;
                 var rows = 7;
                 var cols = 4;
@@ -230,43 +267,6 @@
                 this.add(quanta.HiggsBoson.create(this, {
                     label: true, position: {
                         x: 3/cols, y: ++row/rows}}));
-            } else if (mode === "oldproton") {
-                var index;
-                var colors = [0, 1, 2];
-                var quarks = [quanta.UpQuark, quanta.UpQuark,
-                              quanta.DownQuark];
-
-                ripple.shuffle(colors);
-                ripple.shuffle(quarks);
-
-                this.add(quarks[0].create(this, {
-                    cCharge: colors[0], position: {x: 1/2, y: 1/3}}));
-                this.add(quarks[1].create(this, {
-                    cCharge: colors[1], position: {x: 1/3, y: 2/3}}));
-                this.add(quarks[2].create(this, {
-                    cCharge: colors[2], position: {x: 2/3, y: 2/3}}));
-            } else if (mode === "proton") {
-                this.add(quanta.Proton.create(this));
-                this.add(quanta.Neutron.create(this));
-            } else {
-                var index;
-                var nphotons = (config && !isNaN(config.nphotons)) ?
-                               config.nphotons : 0;
-                var ngluons = (config && !isNaN(config.nphotons)) ?
-                              config.nphotons : 0;
-
-                for (index = 0; index < nphotons; ++index)
-                    this.add(quanta.Photon.create(this));
-                for (index = 0; index < ngluons; ++index)
-                    this.add(quanta.Gluon.create(this));
-                this.add(quanta.Photon.create(this, {freq: 10000}));
-                this.add(quanta.Photon.create(
-                    this, {freq: Math.pow(10, 18)}));
-
-                this.add(quanta.Electron.create(this));
-                this.add(quanta.Neutrino.create(this));
-                this.add(quanta.UpQuark.create(this));
-                this.add(quanta.DownQuark.create(this));
             }
         },
     };
