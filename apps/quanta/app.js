@@ -45,11 +45,13 @@
             this.height = height;
             this.size = Math.min(width, height);
             for (index = 0; index < this.particles.length; ++index)
-                this.particles[index].size = (
-                    this.particles[index].scaleFactor * this.size);
+                this.particles[index].resize(width, height);
         },
 
-        add: function(particle) { this.particles.push(particle); },
+        add: function(particle, config) {
+            this.particles.push(particle.create(Object.assign(
+                {width: this.width, height: this.height}, config)));
+        },
 
         _move: function(delta) {
             var index, particle, velocity;
@@ -169,36 +171,27 @@
                               config.nphotons : 0;
 
                 for (index = 0; index < nphotons; ++index)
-                    this.add(quanta.Photon.create(this));
+                    this.add(quanta.Photon);
                 for (index = 0; index < ngluons; ++index)
-                    this.add(quanta.Gluon.create(this));
-                this.add(quanta.Photon.create(this, {freq: 10000}));
-                this.add(quanta.Photon.create(
-                    this, {freq: Math.pow(10, 18)}));
+                    this.add(quanta.Gluon);
+                this.add(quanta.Photon, {freq: 10000});
+                this.add(quanta.Photon, {freq: Math.pow(10, 18)});
 
-                this.add(quanta.Electron.create(this));
-                this.add(quanta.Neutrino.create(this));
-                this.add(quanta.UpQuark.create(this));
-                this.add(quanta.DownQuark.create(this));
-            } else if (mode === "oldproton") {
-                var index;
-                var colors = [0, 1, 2];
-                var quarks = [quanta.UpQuark, quanta.UpQuark,
-                              quanta.DownQuark];
-
-                ripple.shuffle(colors);
-                ripple.shuffle(quarks);
-
-                this.add(quarks[0].create(this, {
-                    cCharge: colors[0], position: {x: 1/2, y: 1/3}}));
-                this.add(quarks[1].create(this, {
-                    cCharge: colors[1], position: {x: 1/3, y: 2/3}}));
-                this.add(quarks[2].create(this, {
-                    cCharge: colors[2], position: {x: 2/3, y: 2/3}}));
+                this.add(quanta.Electron);
+                this.add(quanta.Neutrino);
+                this.add(quanta.UpQuark);
+                this.add(quanta.DownQuark);
             } else if (mode === "proton") {
-                this.add(quanta.Proton.create(this));
-                this.add(quanta.Neutron.create(this));
+                this.add(quanta.Proton);
+            } else if (mode === "hydrogen") {
+                this.add(quanta.Proton);
+                this.add(quanta.Electron, {speed: 0.8});
+            } else if (mode === "deuterium") {
+                this.add(quanta.Proton);
+                this.add(quanta.Neutron);
+                this.add(quanta.Electron, {speed: 0.8});
             } else {
+                var size = Math.min(this.width, this.height);
                 var anti = config && config.anti;
                 var rows = 7;
                 var cols = 4;
@@ -206,67 +199,73 @@
                 var cChargeOffset = Math.floor(Math.random() * 3);
 
                 row = col = 0;
-                this.add(quanta.Electron.create(this, {
+                this.add(quanta.Electron, {
                     label: true, anti: anti, position: {
-                        x: 1/cols, y: ++row/rows}}));
-                this.add(quanta.Muon.create(this, {
+                        x: size/cols, y: size * ++row/rows}});
+                this.add(quanta.Muon, {
                     label: true, anti: anti, position: {
-                        x: 1/cols, y: ++row/rows}}));
-                this.add(quanta.Tau.create(this, {
+                        x: size/cols, y: size * ++row/rows}});
+                this.add(quanta.Tau, {
                     label: true, anti: anti, position: {
-                        x: 1/cols, y: ++row/rows}}));
-                this.add(quanta.Neutrino.create(this, {
+                        x: size/cols, y: size * ++row/rows}});
+                this.add(quanta.Neutrino, {
                     label: true, anti: anti, position: {
-                        x: 1/cols, y: ++row/rows}}));
-                this.add(quanta.MuonNeutrino.create(this, {
+                        x: size/cols, y: size * ++row/rows}});
+                this.add(quanta.MuonNeutrino, {
                     label: true, anti: anti, position: {
-                        x: 1/cols, y: ++row/rows}}));
-                this.add(quanta.TauNeutrino.create(this, {
+                        x: size/cols, y: size * ++row/rows}});
+                this.add(quanta.TauNeutrino, {
                     label: true, anti: anti, position: {
-                        x: 1/cols, y: ++row/rows}}));
+                        x: size/cols, y: size * ++row/rows}});
 
                 row = 0;
-                this.add(quanta.UpQuark.create(this, {
+                this.add(quanta.UpQuark, {
                     label: true, anti: anti, cCharge: 0,
-                    position: {x: 2/cols, y: ++row/rows}}));
-                this.add(quanta.CharmQuark.create(this, {
+                    position: {x: size * 2/cols,
+                               y: size * ++row/rows}});
+                this.add(quanta.CharmQuark, {
                     label: true, anti: anti, cCharge: 1,
-                    position: {x: 2/cols, y: ++row/rows}}));
-                this.add(quanta.TopQuark.create(this, {
+                    position: {x: size * 2/cols,
+                               y: size * ++row/rows}});
+                this.add(quanta.TopQuark, {
                     label: true, anti: anti, cCharge: 2,
-                    position: {x: 2/cols, y: ++row/rows}}));
-                this.add(quanta.DownQuark.create(this, {
+                    position: {x: size * 2/cols,
+                               y: size * ++row/rows}});
+                this.add(quanta.DownQuark, {
                     label: true, anti: anti,
                     cCharge: (cChargeOffset + 0) % 3,
-                    position: {x: 2/cols, y: ++row/rows}}));
-                this.add(quanta.StrangeQuark.create(this, {
+                    position: {x: size * 2/cols,
+                               y: size * ++row/rows}});
+                this.add(quanta.StrangeQuark, {
                     label: true, anti: anti,
                     cCharge: (cChargeOffset + 1) % 3,
-                    position: {x: 2/cols, y: ++row/rows}}));
-                this.add(quanta.BottomQuark.create(this, {
+                    position: {x: size * 2/cols,
+                               y: size * ++row/rows}});
+                this.add(quanta.BottomQuark, {
                     label: true, anti: anti,
                     cCharge: (cChargeOffset + 2) % 3,
-                    position: {x: 2/cols, y: ++row/rows}}));
+                    position: {x: size * 2/cols,
+                               y: size * ++row/rows}});
 
                 row = 0;
-                this.add(quanta.Photon.create(this, {
+                this.add(quanta.Photon, {
                     label: true, position: {
-                        x: 3/cols, y: ++row/rows}}));
-                this.add(quanta.Gluon.create(this, {
+                        x: size * 3/cols, y: size * ++row/rows}});
+                this.add(quanta.Gluon, {
                     label: true, position: {
-                        x: 3/cols, y: ++row/rows}}));
-                this.add(quanta.ZBoson.create(this, {
+                        x: size * 3/cols, y: size * ++row/rows}});
+                this.add(quanta.ZBoson, {
                     label: true, position: {
-                        x: 3/cols, y: ++row/rows}}));
-                this.add(quanta.WPlusBoson.create(this, {
+                        x: size * 3/cols, y: size * ++row/rows}});
+                this.add(quanta.WPlusBoson, {
                     label: true, position: {
-                        x: 3/cols, y: ++row/rows}}));
-                this.add(quanta.WMinusBoson.create(this, {
+                        x: size * 3/cols, y: size * ++row/rows}});
+                this.add(quanta.WMinusBoson, {
                     label: true, position: {
-                        x: 3/cols, y: ++row/rows}}));
-                this.add(quanta.HiggsBoson.create(this, {
+                        x: size * 3/cols, y: size * ++row/rows}});
+                this.add(quanta.HiggsBoson, {
                     label: true, position: {
-                        x: 3/cols, y: ++row/rows}}));
+                        x: size * 3/cols, y: size * ++row/rows}});
             }
         },
     };
@@ -293,48 +292,67 @@
         _name: "Particle",
         _label: undefined,
         _rotate: 0,
-        _init: function(lab, config) {},
+        _init: function(config) {},
 
-        create: function(lab, config) {
+        create: function(config) {
             var result = Object.create(this);
-            result.size = (config && config.size) ?
-                          config.size :
-                          lab.size * result.scaleFactor;
+
+            if (config && config.position)
+                result.position = multivec(config.position);
+
+            if (config &&
+                !isNaN(config.width) && !isNaN(config.height) &&
+                (config.width > 0) && (config.height > 0)) {
+                result.resize(config.width, config.height);
+
+                if (!result.position)
+                    result.position = multivec([
+                        Math.random() * (config.width - result.size) +
+                        result.size / 2,
+                        Math.random() * (config.height - result.size) +
+                        result.size / 2]);
+            } else if (config && !isNaN(config.size))
+                result.size = this.scaleFactor * config.size;
+            else result.size = this.scaleFactor * 500;
+
+            if (!result.position)
+                result.position = multivec([0, 0]);
 
             if (config && config.label)
                 result._label = true;
             if (config && config.anti)
                 result.anti = true;
 
-            if (config && config.position) {
-                result.position = multivec(
-                    config.position).times(lab.size);
-            } else result.position = multivec([
-                Math.random() * (lab.width - result.size) +
-                result.size / 2,
-                Math.random() * (lab.height - result.size) +
-                result.size / 2]);
-
             result.direction = (config && config.direction) ?
                                config.direction.normalize() :
                                multivec({theta: Math.random() *
                                    2 * Math.PI});
-            result.phase = (config && config.phase) ?
-                           config.phase : Math.random() * 2 * Math.PI;
-            if (!result._label && result.mass === 0)
+            if (config && !isNaN(config.speed))
+                result.speed = config.speed;
+            else if (!result._label && result.mass === 0)
                 result.speed = 1;
             else result.speed = 0;
 
-            result._init(lab, config);
+            result.phase = (config && config.phase) ?
+                           config.phase : Math.random() * 2 * Math.PI;
+
+            result._init(config);
             return result;
         },
 
-        _update: function(elapsed, lab) {},
+        _update: function(elapsed) {},
 
-        update: function(elapsed, lab) {
+        update: function(elapsed) {
             if (!isNaN(this._rotate))
                 this.phase += elapsed * this._rotate;
-            return this._update(elapsed, lab);
+            return this._update(elapsed);
+        },
+
+        _resize: function(width, height) {},
+
+        resize: function(width, height) {
+            this.size = this.scaleFactor * Math.min(width, height);
+            this._resize(width, height);
         },
 
         _draw: function(context) {},
@@ -590,7 +608,7 @@
         _name: "Up Quark",
         _rotate: 0.001,
         _background: "#eee",
-        _init: function(lab, config) {
+        _init: function(config) {
             if (config && !isNaN(config.cCharge) &&
                 (config.cCharge >= 0) &&
                 (config.cCharge < this.cCharges.length))
@@ -708,7 +726,7 @@
         _name: "Down Quark",
         _background: "#eee",
         _rotate: 0.001,
-        _init: function(lab, config) {
+        _init: function(config) {
             if (config && !isNaN(config.cCharge) &&
                 (config.cCharge >= 0) &&
                 (config.cCharge < this.cCharges.length))
@@ -861,14 +879,14 @@
             this._rotate = Math.log(freq) / (2000 * Math.log(10));
             this.freq = freq;
         },
-        _init: function(lab, config) {
+        _init: function(config) {
             this.setFreq(config && config.freq ? config.freq :
                          this.spectrum[0].freq + Math.random() *
                 (this.spectrum[
                     this.spectrum.length - 1].freq -
                  this.spectrum[0].freq));
         },
-        _draw: function(context, lab) {
+        _draw: function(context) {
             context.save();
             context.translate(this.position.x, this.position.y);
             context.rotate(this.phase);
@@ -903,7 +921,7 @@
         _colorMatter: undefined,
         _colorAnti  : undefined,
         _rotate: 0.005,
-        _draw: function(context, lab) {
+        _draw: function(context) {
             if (isNaN(this._colorMatter))
                 this._colorMatter = this.randomCCharge();
             if (isNaN(this._colorAnti))
@@ -958,7 +976,7 @@
         _name: "W+ Boson",
         _color: 'white',
         _rotate: 0.001,
-        _draw: function(context, lab) {
+        _draw: function(context) {
             context.save();
             context.translate(this.position.x, this.position.y);
             context.rotate(this.phase);
@@ -1001,7 +1019,7 @@
         _name: "W- Boson",
         _color: 'white',
         _rotate: 0.001,
-        _draw: function(context, lab) {
+        _draw: function(context) {
             context.save();
             context.translate(this.position.x, this.position.y);
             context.rotate(this.phase);
@@ -1040,7 +1058,7 @@
         _name: "Z Boson",
         _color: 'white',
         _rotate: 0.001,
-        _draw: function(context, lab) {
+        _draw: function(context) {
             context.save();
             context.translate(this.position.x, this.position.y);
             context.rotate(this.phase);
@@ -1072,7 +1090,7 @@
         _name: "Higgs Boson",
         _color: 'white',
         _rotate: 0.001,
-        _draw: function(context, lab) {
+        _draw: function(context) {
             context.save();
             context.translate(this.position.x, this.position.y);
             context.rotate(this.phase);
@@ -1127,15 +1145,15 @@
             return quark;
         },
 
-        _setupQuark: function(lab, color, flavor) {
+        _setupQuark: function(color, flavor) {
             return this._positionQuark({
                 start: Math.random() * 2 * Math.PI,
                 end: Math.random() * 2 * Math.PI,
                 progress: Math.random(),
-                particle: flavor.create(lab, {cCharge: color}) });
+                particle: flavor.create({cCharge: color}) });
         },
 
-        _init: function(lab, config) {
+        _init: function(config) {
             var colors = [0, 1, 2];
             var quarks = this._flavors.slice();
             ripple.shuffle(colors);
@@ -1145,13 +1163,13 @@
 
             for (var ii = 0; ii < this._flavors.length; ++ii)
                 this._quarks.push(this._setupQuark(
-                    lab, colors[ii % colors.length], quarks[ii]));
+                    colors[ii % colors.length], quarks[ii]));
         },
 
-        _update: function(elapsed, lab) {
+        _update: function(elapsed) {
             this._quarks.forEach(function(quark) {
-                quark.particle.update(elapsed, lab);
-                quark.progress += elapsed / 1000;
+                quark.particle.update(elapsed);
+                quark.progress += elapsed / 2000;
                 if (quark.progress > 1) {
                     quark.progress -= Math.floor(quark.progress);
                     quark.start = quark.end;
@@ -1164,7 +1182,13 @@
             }, this);
         },
 
-        _draw: function(context, lab) {
+        _resize: function(width, height) {
+            if (this._quarks)
+                this._quarks.forEach(function(quark) {
+                    quark.resize(width, height); });
+        },
+
+        _draw: function(context) {
             context.save();
             context.translate(this.position.x, this.position.y);
             context.rotate(this.phase);
@@ -1179,7 +1203,7 @@
             context.restore();
 
             this._quarks.forEach(function(quark) {
-                quark.particle.draw(context, lab); });
+                quark.particle.draw(context); });
         },
     });
 
