@@ -61,3 +61,7 @@ scripts/check-java.sh
 
 # JavaScript
 node_modules/
+
+# Rust
+Cargo.toml
+target/

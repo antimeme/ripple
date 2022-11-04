@@ -1,0 +1,14 @@
+[package]
+name = "ripple"
+version = "@VERSION@"
+edition = "2021"
+license = "GPL-3.0+"
+authors = ["Jeff Gold <jgold@esclat.net>"]
+# https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name = "server"
+path = "source/server.rs"
+
+[dependencies]
+rocket = { version = "0.5.0-rc.2", features = ["json"] }

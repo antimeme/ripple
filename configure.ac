@@ -77,6 +77,7 @@ fi
 
 AC_CONFIG_FILES([
     Makefile
+    Cargo.toml
     package.json
     source/__init__.py
     source/Ripple.java

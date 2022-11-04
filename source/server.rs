@@ -1,0 +1,137 @@
+#[macro_use] extern crate rocket;
+use std::path::{Path, PathBuf};
+use rocket::{Rocket, Build, Request, Data};
+use rocket::fs::{relative, NamedFile};
+use rocket::serde::{Deserialize, json::Json};
+use rocket::route::{Route, Handler, Outcome};
+use rocket::http::Method;
+use rocket::http::uri::Segments;
+use rocket::http::ext::IntoOwned;
+use rocket::response::Redirect;
+
+// #[derive(Deserialize)]
+// #[serde(crate = "rocket::serde")]
+// struct Expense<'r> {
+//     name: &'r str,
+//     amount: f32,
+//     tags: Vec<&'r str>
+// }
+
+#[derive(Deserialize)]
+#[serde(crate = "rocket::serde")]
+struct Task<'r> {
+    description: &'r str,
+    complete: bool
+}
+
+#[post("/", data = "<task>")]
+fn todo(task: Json<Task<'_>>) -> String {
+    format!("Task (complete = {}): {}", task.complete, task.description)
+}
+
+#[get("/<name>/<age>")]
+fn greeting(name: String, age: u8) -> String {
+    format!("Hello, {} year old named {}!", age, name)
+}
+
+
+/**
+ * A modified version of Rocket FileServer that accepts root URIs and
+ * attempts to append file extensions to find existing files. */
+#[derive(Debug, Clone)]
+pub struct FileExtServer {
+    root: PathBuf,
+    rank: isize,
+    single: bool,
+}
+
+impl FileExtServer {
+    const DEFAULT_RANK: isize = 10;
+
+    pub fn new<P: AsRef<Path>>(path: P) -> Self {
+        let path = path.as_ref();
+        FileExtServer {
+            root: path.into(), single: false,
+            rank: Self::DEFAULT_RANK }
+    }
+
+    pub fn single<P: AsRef<Path>>(path: P) -> Self {
+        let path = path.as_ref();
+        FileExtServer {
+            root: path.into(), single: true,
+            rank: Self::DEFAULT_RANK }
+    }
+
+    pub fn rank(mut self, rank: isize) -> Self {
+        self.rank = rank;
+        self
+    }
+}
+
+impl From<FileExtServer> for Vec<Route> {
+    fn from(server: FileExtServer) -> Self {
+        let mut route = Route::ranked(
+            server.rank, Method::Get, "/<path..>", server);
+        route.name = Some(format!("FileExtServer").into());
+        vec![route]
+    }
+}
+
+#[rocket::async_trait]
+impl Handler for FileExtServer {
+    async fn handle<'r>(&self, req: &'r Request<'_>,
+                        data: Data<'r>) -> Outcome<'r> {
+        let path = if self.single {
+            Some(self.root.to_owned())
+        } else {
+            req.segments::<Segments<
+                    '_, rocket::http::uri::fmt::Path>>(0..).ok()
+                .and_then(|segments| segments.to_path_buf(false).ok())
+                .map(|path| self.root.join(path))
+        };
+
+        match path {
+            Some(p) if p.is_dir() => {
+                if !req.uri().path().ends_with('/') {
+                    Outcome::from_or_forward(
+                        req, data, Redirect::permanent(
+                            req.uri().map_path(|p| format!("{}/", p))
+                                .expect("adding a trailing slash")
+                                .into_owned()))
+                } else {
+                    Outcome::from_or_forward(req, data, NamedFile::open(
+                        p.join("index.html")).await.ok())
+                }
+            },
+            Some(p) if !p.exists() && p.extension().is_none() => {
+                let mut p = p;
+                p.set_extension("html");
+                if p.exists() {
+                    Outcome::from_or_forward(
+                        req, data, NamedFile::open(p).await.ok())
+                } else { Outcome::forward(data) }
+            },
+            Some(p) => Outcome::from_or_forward(
+                req, data, NamedFile::open(p).await.ok()),
+            None => Outcome::forward(data),
+        }
+    }
+}
+
+fn create_server() -> Rocket<Build> {
+    rocket::custom(rocket::Config::figment()
+                   .merge(("address", "0.0.0.0"))
+                   .merge(("port", 7878)))
+        .mount("/index.html", FileExtServer::single(
+            relative!("index.html")).rank(1))
+        .mount("/favicon.ico", FileExtServer::single(
+            relative!("resources/images/ripple.png")).rank(1))
+        .mount("/apps", FileExtServer::new(relative!("apps")))
+        .mount("/slides", FileExtServer::new(relative!("slides")))
+        .mount("/greeting", routes![greeting])
+        .mount("/todo", routes![todo])
+}
+
+#[rocket::main]
+async fn main() -> Result<(), rocket::Error>
+{ let _rocket = create_server().launch().await?; Ok(()) }
