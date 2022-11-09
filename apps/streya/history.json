@@ -1,0 +1,53 @@
+{
+    "schema": {
+        "version": "0.1.0",
+        "types": {
+            "culture": {
+                "name": { "type": "string" },
+                "ethics": { "array": true, "type": "ethic" },
+                "namegen" {}
+            },
+            "ethic_type": {
+                "enum": {
+                    "values": [
+                        "beligerence",
+                        "openness" ]},
+            },
+            "ethic": {
+                "type" : { "type": "ethic_type" },
+                "value": { "type": "uint32" }
+            },
+            "loyalty": {
+                "entity" : { "type": "string" },
+                "value": { "type": "int32" }
+            },
+            "station": {
+                "name": { "type": "string" },
+                "capacity": { "type": "uint32" },
+                "defense": { "type": "uint32" },
+                "industry": { "type": "uint32" },
+                "population": { "array": true, "type": "population" },
+                "government": { "type": "party" }
+            },
+            "population": {
+                "culture": { "type": "culture" },
+                "ethics": { "array": true, "type": "ethic" },
+                "loyalties": { "array": true, "type": "loyalty" },
+                "size": { "type": "uint32" },
+                "education": { "type": "uint32" },
+                "health": { "type": "uint32" }
+            },
+            "party": {
+                "culture": { "type": "culture" },
+                "ethics": { "array": true, "type": "ethic" },
+                "loyalties": { "array": true, "type": "loyalty" }
+            },
+            "leader": {
+                "name": { "type": "string" }
+                "culture": { "type": "culture" },
+                "ethics": { "array": true, "type": "ethic" },
+                "loyalties": { "array": true, "type": "loyalty" },
+            }
+        }
+    }
+}
