@@ -37,12 +37,13 @@ fn greeting(name: String, age: u8) -> String {
 
 /**
  * A modified version of Rocket FileServer that accepts root URIs and
- * attempts to append file extensions to find existing files. */
+ * attempts to append file extensions to find existing files.  At the
+ * moment only the "html" extension is used, but others may be added
+ * in the future. */
 #[derive(Debug, Clone)]
 pub struct FileExtServer {
     root: PathBuf,
-    rank: isize,
-    single: bool,
+    rank: isize
 }
 
 impl FileExtServer {
@@ -51,14 +52,7 @@ impl FileExtServer {
     pub fn new<P: AsRef<Path>>(path: P) -> Self {
         let path = path.as_ref();
         FileExtServer {
-            root: path.into(), single: false,
-            rank: Self::DEFAULT_RANK }
-    }
-
-    pub fn single<P: AsRef<Path>>(path: P) -> Self {
-        let path = path.as_ref();
-        FileExtServer {
-            root: path.into(), single: true,
+            root: path.into(),
             rank: Self::DEFAULT_RANK }
     }
 
@@ -81,14 +75,21 @@ impl From<FileExtServer> for Vec<Route> {
 impl Handler for FileExtServer {
     async fn handle<'r>(&self, req: &'r Request<'_>,
                         data: Data<'r>) -> Outcome<'r> {
-        let path = if self.single {
-            Some(self.root.to_owned())
-        } else {
-            req.segments::<Segments<
-                    '_, rocket::http::uri::fmt::Path>>(0..).ok()
-                .and_then(|segments| segments.to_path_buf(false).ok())
-                .map(|path| self.root.join(path))
-        };
+        // Our root should either be a file or a directory.
+        // If it's a file then that is the only file this handler
+        // can serve up.  Otherwise we start from that directory
+        // and look for a matching path.
+        let possible = self.root.as_path();
+        let path: Option<PathBuf> =
+            if possible.exists() && !possible.is_dir() {
+                Some(self.root.clone())
+            } else {
+                req.segments::<Segments<
+                        '_, rocket::http::uri::fmt::Path>>(0..).ok()
+                    .and_then(|segments| segments
+                              .to_path_buf(false).ok())
+                    .map(|path| self.root.join(path))
+            };
 
         match path {
             Some(p) if p.is_dir() => {
@@ -122,9 +123,9 @@ fn create_server() -> Rocket<Build> {
     rocket::custom(rocket::Config::figment()
                    .merge(("address", "0.0.0.0"))
                    .merge(("port", 7878)))
-        .mount("/index.html", FileExtServer::single(
+        .mount("/index.html", FileExtServer::new(
             relative!("index.html")).rank(1))
-        .mount("/favicon.ico", FileExtServer::single(
+        .mount("/favicon.ico", FileExtServer::new(
             relative!("resources/images/ripple.png")).rank(1))
         .mount("/apps", FileExtServer::new(relative!("apps")))
         .mount("/slides", FileExtServer::new(relative!("slides")))
