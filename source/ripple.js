@@ -1,5 +1,5 @@
 // ripple.js
-// Copyright (C) 2014-2020 by Jeff Gold.
+// Copyright (C) 2014-2022 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -477,7 +477,53 @@
             elements[jj] = swap;
         }
         return elements;
-    }
+    };
+
+    ripple.eachPermutation = function(elements, fn, context) {
+        // Calls fn for each permutation of the elements array,
+        // providing a single permutation and a count of how many
+        // previous calls have been made.  The permutation provided is
+        // not valid after the function call, so copy it with
+        // Array.prototype.slice() if necessary.  A truthy return from
+        // the function will terminate the process.
+        //
+        // Providing no function will cause this function to return an
+        // array containing all possible permutations.  Note that
+        // there are n-factorial possible permutations for n elements
+        // so this will be impractical for inputs with more than about
+        // ten elements.
+        //
+        // This routine implements Heap's Algorithm:
+        //   https://en.wikipedia.org/wiki/Heap%27s_algorithm
+        if (!fn)
+            return ripple.eachPermutation(elements, function(p)
+                { this.push(p.slice()); }, []);
+        var current  = elements.slice();
+        var count = 0;
+        if (fn.call(context, current, count++))
+            return context;
+
+        var counters = new Array(elements.length).fill(0);
+        var swap, index, ii = 1;
+
+        while (ii < elements.length) {
+            if (counters[ii] < ii) {
+                index = (ii % 2) ? counters[ii] : 0;
+                swap = current[index];
+                current[index] = current[ii];
+                current[ii] = swap;
+
+                if (fn.call(context, current, count++))
+                    return context;
+                counters[ii] += 1;
+                ii = 1;
+            } else {
+                counters[ii] = 0;
+                ii += 1;
+            }
+        }
+        return context;
+    };
 
     // Given a set of objects, return an object which contains the
     // union of the keys found in each with preference given to values
