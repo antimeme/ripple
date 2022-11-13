@@ -2,20 +2,20 @@
     "schema": {
         "version": "0.1.0",
         "types": {
+            "ethics": {
+                "options": {
+                    "openness"  : {},
+                    "compassion": {},
+                    "fairness"  : {},
+                    "loyalty"   : {},
+                    "sanctity"  : {},
+                    "purity"    : {} }
+            },
+
             "culture": {
                 "name": { "type": "string" },
                 "ethics": { "array": true, "type": "ethic" },
-                "namegen" {}
-            },
-            "ethic_type": {
-                "enum": {
-                    "values": [
-                        "beligerence",
-                        "openness" ]},
-            },
-            "ethic": {
-                "type" : { "type": "ethic_type" },
-                "value": { "type": "uint32" }
+                "namegen": {}
             },
             "loyalty": {
                 "entity" : { "type": "string" },
@@ -43,10 +43,10 @@
                 "loyalties": { "array": true, "type": "loyalty" }
             },
             "leader": {
-                "name": { "type": "string" }
+                "name": { "type": "string" },
                 "culture": { "type": "culture" },
                 "ethics": { "array": true, "type": "ethic" },
-                "loyalties": { "array": true, "type": "loyalty" },
+                "loyalties": { "array": true, "type": "loyalty" }
             }
         }
     }
