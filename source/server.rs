@@ -1,5 +1,6 @@
-#[macro_use] extern crate rocket;
 use std::path::{Path, PathBuf};
+
+#[macro_use] extern crate rocket;
 use rocket::{Rocket, Build, Request, Data};
 use rocket::fs::{relative, NamedFile};
 use rocket::serde::{Deserialize, json::Json};
@@ -11,13 +12,11 @@ use rocket::response::Redirect;
 
 #[derive(Deserialize)]
 #[serde(crate = "rocket::serde")]
-struct Expense<'r> {
-    name: &'r str,
+struct Expense {
+    reason: String,
     amount: f32,
-    tags: Vec<&'r str>
+    tags: Vec<String>
 }
-
-//static expenses: Vec<Expense> = Vec::new();
 
 #[get("/")]
 fn expense_index() -> (ContentType, String) {
@@ -31,12 +30,22 @@ fn expense_index() -> (ContentType, String) {
 <fieldset>
   <legend>Add</legend>
   <form id="addForm" method="POST" action="/add">
-    <input id="addName" type="text" placeholder="Purpose"/>
-    <input id="addAmount" type="text"
-           placeholder="$10.00" pattern="\$?[0-9]*.?[0-9]*"
-           title="Monetary amount with optional dollar sign"/>
-    <span class="validity"></span>
-    <input id="addTags" type="text" placeholder="food groceries"/>
+    <label>
+        Reason:
+        <input id="addReason" type="text"
+               placeholder="Electric Bill"/>
+    </label>
+    <label>
+        Amount:
+        <input id="addAmount" type="text"
+               placeholder="$95.00" pattern="\$?[0-9]*.?[0-9]*"
+               title="Monetary amount with optional dollar sign"/>
+    </label>
+    <label>
+        Tags:
+        <input id="addTags" type="text"
+               placeholder="utility home"/>
+    </label>
     <button id="addSubmit" type="submit">Submit</button>
     <button id="addClear" type="button">Clear</button>
   </form>
@@ -46,13 +55,13 @@ fn expense_index() -> (ContentType, String) {
     var addForm   = document.getElementById("addForm");
     var addClear  = document.getElementById("addClear");
     var addSubmit = document.getElementById("addSubmit");
-    var addName   = document.getElementById("addName");
+    var addReason = document.getElementById("addReason");
     var addAmount = document.getElementById("addAmount");
     var addTags   = document.getElementById("addTags");
     addClear.addEventListener("click", function(event) {
-        addName.value = "";
-        addAmount.value = "$0.00";
-        addTags.value = "";
+        addReason.value   = "";
+        addAmount.value = "";
+        addTags.value   = "";
         event.preventDefault();
     });
     addForm.addEventListener("submit", function(event) {
@@ -65,7 +74,7 @@ fn expense_index() -> (ContentType, String) {
                                  "" : "/") + "add");
         xhr.setRequestHeader('content-type', 'application/json');
         xhr.send(JSON.stringify({
-            name: addName.value,
+            reason: addReason.value,
             amount: parseFloat(addAmount.value.replace("$", "") || 0.0),
             tags: addTags.value.split(/\s/).filter(function(w) {
                 return w.trim().length > 0; })}));
@@ -75,10 +84,9 @@ fn expense_index() -> (ContentType, String) {
 //]]></script>"#))
 }
 
-#[post("/add", data="<expense>")]
-fn expense_add(expense: Json<Expense<'_>>) -> (ContentType, String) {
-    // TODO: add expense to expenses
-    //expenses.push(expense.into_inner());
+#[post("/add", format="json", data="<expense>")]
+fn expense_add(expense: Json<Expense>) -> (ContentType, String)
+{
     (ContentType::JSON, String::from("{\"key\": \"value\"}"))
 }
 
