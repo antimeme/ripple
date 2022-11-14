@@ -9,7 +9,7 @@ use rocket::http::uri::Segments;
 use rocket::http::ext::IntoOwned;
 use rocket::response::Redirect;
 
-#[derive(Clone, Deserialize)]
+#[derive(Deserialize)]
 #[serde(crate = "rocket::serde")]
 struct Expense<'r> {
     name: &'r str,
@@ -42,36 +42,37 @@ fn expense_index() -> (ContentType, String) {
   </form>
 </fieldset>
 <textarea id="response" disabled></textarea>
-<script>
+<script>//<![CDATA[
     var addForm   = document.getElementById("addForm");
     var addClear  = document.getElementById("addClear");
     var addSubmit = document.getElementById("addSubmit");
     var addName   = document.getElementById("addName");
     var addAmount = document.getElementById("addAmount");
     var addTags   = document.getElementById("addTags");
-    addClear.addEventListener('click', function(event) {
+    addClear.addEventListener("click", function(event) {
         addName.value = "";
         addAmount.value = "$0.00";
         addTags.value = "";
         event.preventDefault();
     });
-    addForm.addEventListener('submit', function(event) {
+    addForm.addEventListener("submit", function(event) {
+        var base = window.location.href;
         var xhr = new XMLHttpRequest();
         xhr.addEventListener('load', function() {
             response.value = this.responseText;
         })
-        // TODO: make this work with /expense as well as /expense/
-        xhr.open('POST', "./add");
+        xhr.open("POST", base + (base.endsWith('/') ?
+                                 "" : "/") + "add");
         xhr.setRequestHeader('content-type', 'application/json');
         xhr.send(JSON.stringify({
             name: addName.value,
-            amount: parseFloat(addAmount.value.replace("$", "")),
+            amount: parseFloat(addAmount.value.replace("$", "") || 0.0),
             tags: addTags.value.split(/\s/).filter(function(w) {
                 return w.trim().length > 0; })}));
         response.value = "Waiting for response...";
         event.preventDefault();
     })
-</script>"#))
+//]]></script>"#))
 }
 
 #[post("/add", data="<expense>")]
