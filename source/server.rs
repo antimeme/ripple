@@ -9,6 +9,12 @@ use rocket::http::{Method, ContentType};
 use rocket::http::uri::Segments;
 use rocket::http::ext::IntoOwned;
 use rocket::response::Redirect;
+use rocket_db_pools::{Database, Connection};
+use rocket_db_pools::sqlx;
+
+#[derive(Database)]
+#[database("serverdb")]
+struct ServerDB(sqlx::SqlitePool);
 
 #[derive(Deserialize)]
 #[serde(crate = "rocket::serde")]
@@ -85,9 +91,17 @@ fn expense_index() -> (ContentType, String) {
 }
 
 #[post("/add", format="json", data="<expense>")]
-fn expense_add(expense: Json<Expense>) -> (ContentType, String)
-{
-    (ContentType::JSON, String::from("{\"key\": \"value\"}"))
+async fn expense_add(mut db: Connection<ServerDB>,
+                     expense: Json<Expense>) ->
+    Option<String>
+{    
+    match sqlx::query(
+        "INSERT INTO expenses (reason, amount) VALUES ($1, $2);")
+        .bind(&expense.reason)
+        .bind(expense.amount).execute(&mut *db).await {
+            Ok(_) => Some("Success".to_string()),
+            Err(err) => Some(err.to_string())
+        }
 }
 
 /**
@@ -177,7 +191,10 @@ impl Handler for FileExtServer {
 fn create_server() -> Rocket<Build> {
     rocket::custom(rocket::Config::figment()
                    .merge(("address", "0.0.0.0"))
-                   .merge(("port", 7878)))
+                   .merge(("port", 7878))
+                   .merge(("databases.serverdb.url",
+                           "./server.db")))
+        .attach(ServerDB::init())
         .mount("/index.html", FileExtServer::new(
             relative!("index.html")).rank(1))
         .mount("/favicon.ico", FileExtServer::new(

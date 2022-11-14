@@ -1,5 +1,5 @@
 [package]
-name = "ripple"
+name    = "@PACKAGE@"
 version = "@VERSION@"
 edition = "2021"
 license = "GPL-3.0+"
@@ -12,3 +12,4 @@ path = "source/server.rs"
 
 [dependencies]
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
+rocket_db_pools = { version = "0.1.0-rc.2", features = ["sqlx_sqlite"] }
