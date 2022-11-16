@@ -3,25 +3,55 @@ use std::path::{Path, PathBuf};
 #[macro_use] extern crate rocket;
 use rocket::{Rocket, Build, Request, Data};
 use rocket::fs::{relative, NamedFile};
-use rocket::serde::{Deserialize, json::Json};
+use rocket::serde::{Serialize, Deserialize, json::Json};
 use rocket::route::{Route, Handler, Outcome};
 use rocket::http::{Method, ContentType};
 use rocket::http::uri::Segments;
 use rocket::http::ext::IntoOwned;
 use rocket::response::Redirect;
-use rocket_db_pools::{Database, Connection};
-use rocket_db_pools::sqlx;
+use rocket_db_pools::{sqlx, Database, Connection};
 
 #[derive(Database)]
 #[database("serverdb")]
 struct ServerDB(sqlx::SqlitePool);
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
 struct Expense {
-    reason: String,
+    id: i32,
     amount: f32,
+    reason: String,
     tags: Vec<String>
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(crate = "rocket::serde")]
+struct ExpenseList {
+    expenses: Vec<Expense>
+}
+
+#[post("/list", format="json")]
+async fn expense_list(db: Connection<ServerDB>) ->
+    Result<Json<ExpenseList>, String>
+{
+    let list = ExpenseList { expenses: Vec::new() };
+    //let cursor = sqlx::query(
+    //    "SELECT id, amount, reason FROM expenses;");
+    Ok(Json(list))
+}
+
+#[post("/add", format="json", data="<expense>")]
+async fn expense_add(mut db: Connection<ServerDB>,
+                     expense: Json<Expense>) -> String
+{
+    match sqlx::query(
+        "INSERT INTO expenses (reason, amount) VALUES ($1, $2);")
+        .bind(&expense.reason)
+        .bind(expense.amount)
+        .execute(&mut *db).await {
+            Ok(_) => "Success".to_string(),
+            Err(err) => err.to_string()
+        }
 }
 
 #[get("/")]
@@ -88,20 +118,6 @@ fn expense_index() -> (ContentType, String) {
         event.preventDefault();
     })
 //]]></script>"#))
-}
-
-#[post("/add", format="json", data="<expense>")]
-async fn expense_add(mut db: Connection<ServerDB>,
-                     expense: Json<Expense>) ->
-    Option<String>
-{    
-    match sqlx::query(
-        "INSERT INTO expenses (reason, amount) VALUES ($1, $2);")
-        .bind(&expense.reason)
-        .bind(expense.amount).execute(&mut *db).await {
-            Ok(_) => Some("Success".to_string()),
-            Err(err) => Some(err.to_string())
-        }
 }
 
 /**
@@ -188,6 +204,17 @@ impl Handler for FileExtServer {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_works() {
+        let result = 2 + 2;
+        assert_eq!(result, 4);
+    }
+}
+
 fn create_server() -> Rocket<Build> {
     rocket::custom(rocket::Config::figment()
                    .merge(("address", "0.0.0.0"))
@@ -201,7 +228,9 @@ fn create_server() -> Rocket<Build> {
             relative!("resources/images/ripple.png")).rank(1))
         .mount("/apps", FileExtServer::new(relative!("apps")))
         .mount("/slides", FileExtServer::new(relative!("slides")))
-        .mount("/expense", routes![expense_index, expense_add])
+        .mount("/expense", routes![expense_index,
+                                   expense_add,
+                                   expense_list])
 }
 
 #[rocket::main]
