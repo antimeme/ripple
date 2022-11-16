@@ -149,8 +149,11 @@ impl FileExtServer {
 
 impl From<FileExtServer> for Vec<Route> {
     fn from(server: FileExtServer) -> Self {
+        let possible = server.root.as_path();
         let mut route = Route::ranked(
-            server.rank, Method::Get, "/<path..>", server);
+            server.rank, Method::Get,
+            if possible.is_dir()
+            { "/<path..>" } else { "/." }, server);
         route.name = Some(format!("FileExtServer").into());
         vec![route]
     }
