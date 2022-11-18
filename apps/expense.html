@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<meta charset=\"utf-8\" />
+<style>
+ fieldset { float: left; clear: both; }
+ label { display: block; }
+ input:invalid { border: red solid 3px; }
+ textarea { width: 60em; height: 6em; }
+</style>
+<title>Expenses</title>
+<h1>Expenses</h1>
+<fieldset>
+    <legend>Add</legend>
+    <form id="addForm" method="POST" action="/add">
+        <label>
+            Reason:
+            <input id="addReason" type="text"
+                   placeholder="Electric Bill"/>
+        </label>
+        <label>
+            Amount:
+            <input id="addAmount" type="text"
+                   placeholder="$95.00" pattern="\$?[0-9]*.?[0-9]*"
+                   title="Monetary amount with optional dollar sign"/>
+        </label>
+        <label>
+            Date:
+            <input id="addDate" type="datetime-local"
+                   title="When was the expense incurred"/>
+        </label>
+        <label>
+            Tags:
+            <input id="addTags" type="text"
+                   placeholder="utility home"/>
+        </label>
+        <button id="addSubmit" type="submit">Submit</button>
+        <button id="addClear" type="button">Clear</button>
+    </form>
+</fieldset>
+<fieldset><legend>List</legend><div id="list"></div></fieldset>
+<textarea id="response" disabled></textarea>
+<script>//<![CDATA[
+ var response  = document.getElementById("response");
+ var waiting = function(task, method) {
+     response.value = "Waiting for " + task + " " + method +
+                      " response..."; };
+
+ var list = document.getElementById("list");
+ var send = function(task, method, data, success, waiting) {
+     if (waiting)
+         waiting(task, method);
+
+     var base = window.location.href;
+     var xhr = new XMLHttpRequest();
+     xhr.addEventListener('load', success);
+     xhr.open(method || "GET", base + (
+         base.endsWith('/') ? "" : "/") + task);
+     xhr.setRequestHeader('content-type', 'application/json');
+     xhr.send(JSON.stringify(data));
+ };
+
+ var createTextNode = function(tag, text) {
+     var result = document.createElement(tag);
+     result.innerHTML = text;
+     return result;
+ };
+ var listPopulate = function() {
+     var rows = JSON.parse(this.responseText);
+     if (!rows || (typeof(rows) !== "object") ||
+         !rows.expenses || !Array.isArray(rows.expenses)) {
+         response.value = "Error: " + this.responseText;
+         return;
+     }
+     var formatter = new Intl.NumberFormat('en-US', {
+         style: 'currency',
+         currency: 'USD' });
+     var table = document.createElement("table");
+     var tr = document.createElement("tr");
+     tr.appendChild(createTextNode("th", "Reason"));
+     tr.appendChild(createTextNode("th", "Amount"));
+     tr.appendChild(createTextNode("th", "Date"));
+     table.appendChild(tr);
+     rows.expenses.forEach(function(row) {
+         tr = document.createElement("tr");
+         tr.appendChild(createTextNode("td", row["reason"]));
+         tr.appendChild(createTextNode(
+             "td", formatter.format(row["amount"])));
+         tr.appendChild(createTextNode(
+             "td", new Date(Date.parse(row["date"])).toLocaleString()));
+         table.appendChild(tr);
+     });
+     list.innerHTML = "";
+     list.appendChild(table);
+     response.value = this.responseText;
+ };
+ send("list", "GET", {}, listPopulate, waiting);
+
+ var addForm   = document.getElementById("addForm");
+ var addClear  = document.getElementById("addClear");
+ var addSubmit = document.getElementById("addSubmit");
+ var addReason = document.getElementById("addReason");
+ var addAmount = document.getElementById("addAmount");
+ var addDate   = document.getElementById("addDate");
+ var addTags   = document.getElementById("addTags");
+
+ addClear.addEventListener("click", function(event) {
+     event.preventDefault();
+     addReason.value   = "";
+     addAmount.value = "";
+     addTags.value   = "";
+     addDate.value   = Date.now();
+ });
+
+ addForm.addEventListener("submit", function(event) {
+     event.preventDefault();
+     send("add", "POST", {
+         id: 0, reason: addReason.value,
+         date: new Date(addDate.value &&
+                        Date.parse(addDate.value) ||
+                        Date.now()).toISOString(),
+         amount: parseFloat(addAmount.value.replace("$", "") || 0.0),
+         tags: addTags.value.split(/\s/).filter(function(w) {
+             return w.trim().length > 0; })
+     }, function() {
+         response.value = this.responseText;
+         send("list", "GET", {}, listPopulate, waiting);
+     }, waiting);
+ });
+
+ //]]></script>

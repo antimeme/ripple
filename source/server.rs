@@ -1,27 +1,29 @@
+// :TODO: SQL query to create expenses table at startup
+// :TODO: read location of server.db file from environment or config
+// :TODO: support TLS if certficates are available
+// :TODO: request optional TLS client certificates
 use std::path::{Path, PathBuf};
 
 #[macro_use] extern crate rocket;
-use rocket::{Rocket, Build, Request, Data};
-use rocket::fs::{relative, NamedFile};
+use rocket::{route, fs::relative};
 use rocket::serde::{Serialize, Deserialize, json::Json};
-use rocket::route::{Route, Handler, Outcome};
-use rocket::http::{Method, ContentType};
 use rocket::http::uri::Segments;
 use rocket::http::ext::IntoOwned;
 use rocket::response::Redirect;
-use rocket_db_pools::{sqlx, Database, Connection};
+use rocket_db_pools::{self, sqlx::{self, Row}, Database, Connection};
 
-#[derive(Database)]
+#[derive(rocket_db_pools::Database)]
 #[database("serverdb")]
 struct ServerDB(sqlx::SqlitePool);
 
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
 struct Expense {
-    id: i32,
+    id:     i32,
     amount: f32,
     reason: String,
-    tags: Vec<String>
+    date:   String,
+    tags:   Vec<String>
 }
 
 #[derive(Serialize, Deserialize)]
@@ -30,94 +32,47 @@ struct ExpenseList {
     expenses: Vec<Expense>
 }
 
-#[post("/list", format="json")]
-async fn expense_list(db: Connection<ServerDB>) ->
+#[get("/list", format="json")]
+async fn expense_list(mut db: Connection<ServerDB>) ->
     Result<Json<ExpenseList>, String>
 {
-    let list = ExpenseList { expenses: Vec::new() };
-    //let cursor = sqlx::query(
-    //    "SELECT id, amount, reason FROM expenses;");
-    Ok(Json(list))
+    let mut list = ExpenseList { expenses: Vec::new() };
+    match sqlx::query(concat!(
+        "SELECT id, amount, reason, date ",
+        "  FROM expenses",
+        " ORDER BY date;"))
+        .fetch_all(&mut *db).await {
+            Ok(cursor) => {
+                for row in cursor {
+                    list.expenses.push(Expense {
+                        id:     row.get(0),
+                        amount: row.get(1),
+                        reason: row.get(2),
+                        date:   row.get(3),
+                        tags:   Vec::new()
+                    });
+                }
+                Ok(Json(list))
+            },
+            Err(e) => { Err(e.to_string()) }
+        }
 }
 
 #[post("/add", format="json", data="<expense>")]
 async fn expense_add(mut db: Connection<ServerDB>,
                      expense: Json<Expense>) -> String
 {
-    match sqlx::query(
-        "INSERT INTO expenses (reason, amount) VALUES ($1, $2);")
+    println!("Date: {}", &expense.date);
+    match sqlx::query(concat!(
+        "INSERT INTO expenses (reason, amount, date) ",
+        "VALUES ($1, $2, $3);"))
         .bind(&expense.reason)
         .bind(expense.amount)
+        .bind(&expense.date)
         .execute(&mut *db).await {
             Ok(_) => "Success".to_string(),
             Err(err) => err.to_string()
         }
-}
-
-#[get("/")]
-fn expense_index() -> (ContentType, String) {
-    (ContentType::HTML, String::from(r#"<!DOCTYPE html>
-<meta charset=\"utf-8\" />
-<style>
-  input:invalid { border: red solid 3px; }
-</style>
-<title>Expenses</title>
-<h1>Expenses</h1>
-<fieldset>
-  <legend>Add</legend>
-  <form id="addForm" method="POST" action="/add">
-    <label>
-        Reason:
-        <input id="addReason" type="text"
-               placeholder="Electric Bill"/>
-    </label>
-    <label>
-        Amount:
-        <input id="addAmount" type="text"
-               placeholder="$95.00" pattern="\$?[0-9]*.?[0-9]*"
-               title="Monetary amount with optional dollar sign"/>
-    </label>
-    <label>
-        Tags:
-        <input id="addTags" type="text"
-               placeholder="utility home"/>
-    </label>
-    <button id="addSubmit" type="submit">Submit</button>
-    <button id="addClear" type="button">Clear</button>
-  </form>
-</fieldset>
-<textarea id="response" disabled></textarea>
-<script>//<![CDATA[
-    var addForm   = document.getElementById("addForm");
-    var addClear  = document.getElementById("addClear");
-    var addSubmit = document.getElementById("addSubmit");
-    var addReason = document.getElementById("addReason");
-    var addAmount = document.getElementById("addAmount");
-    var addTags   = document.getElementById("addTags");
-    addClear.addEventListener("click", function(event) {
-        addReason.value   = "";
-        addAmount.value = "";
-        addTags.value   = "";
-        event.preventDefault();
-    });
-    addForm.addEventListener("submit", function(event) {
-        var base = window.location.href;
-        var xhr = new XMLHttpRequest();
-        xhr.addEventListener('load', function() {
-            response.value = this.responseText;
-        })
-        xhr.open("POST", base + (base.endsWith('/') ?
-                                 "" : "/") + "add");
-        xhr.setRequestHeader('content-type', 'application/json');
-        xhr.send(JSON.stringify({
-            reason: addReason.value,
-            amount: parseFloat(addAmount.value.replace("$", "") || 0.0),
-            tags: addTags.value.split(/\s/).filter(function(w) {
-                return w.trim().length > 0; })}));
-        response.value = "Waiting for response...";
-        event.preventDefault();
-    })
-//]]></script>"#))
 }
 
 /**
@@ -135,34 +90,30 @@ impl FileExtServer {
     const DEFAULT_RANK: isize = 10;
 
     pub fn new<P: AsRef<Path>>(path: P) -> Self {
-        let path = path.as_ref();
         FileExtServer {
-            root: path.into(),
+            root: path.as_ref().into(),
             rank: Self::DEFAULT_RANK }
     }
 
-    pub fn rank(mut self, rank: isize) -> Self {
-        self.rank = rank;
-        self
-    }
+    pub fn rank(mut self, rank: isize) -> Self
+    { self.rank = rank; self }
 }
 
-impl From<FileExtServer> for Vec<Route> {
+impl From<FileExtServer> for Vec<route::Route> {
     fn from(server: FileExtServer) -> Self {
-        let possible = server.root.as_path();
-        let mut route = Route::ranked(
-            server.rank, Method::Get,
-            if possible.is_dir()
-            { "/<path..>" } else { "/." }, server);
+        let mut route = route::Route::ranked(
+            server.rank, rocket::http::Method::Get,
+            if server.root.as_path().is_dir()
+            { "/<path..>" } else { "/" }, server);
         route.name = Some(format!("FileExtServer").into());
         vec![route]
     }
 }
 
 #[rocket::async_trait]
-impl Handler for FileExtServer {
-    async fn handle<'r>(&self, req: &'r Request<'_>,
-                        data: Data<'r>) -> Outcome<'r> {
+impl route::Handler for FileExtServer {
+    async fn handle<'r>(&self, req: &'r rocket::Request<'_>,
+                        data: rocket::Data<'r>) -> route::Outcome<'r> {
         // Our root should either be a file or a directory.
         // If it's a file then that is the only file this handler
         // can serve up.  Otherwise we start from that directory
@@ -182,27 +133,29 @@ impl Handler for FileExtServer {
         match path {
             Some(p) if p.is_dir() => {
                 if !req.uri().path().ends_with('/') {
-                    Outcome::from_or_forward(
+                    route::Outcome::from_or_forward(
                         req, data, Redirect::permanent(
                             req.uri().map_path(|p| format!("{}/", p))
                                 .expect("adding a trailing slash")
                                 .into_owned()))
                 } else {
-                    Outcome::from_or_forward(req, data, NamedFile::open(
-                        p.join("index.html")).await.ok())
+                    route::Outcome::from_or_forward(
+                        req, data, rocket::fs::NamedFile::open(
+                            p.join("index.html")).await.ok())
                 }
             },
             Some(p) if !p.exists() && p.extension().is_none() => {
                 let mut p = p;
                 p.set_extension("html");
                 if p.exists() {
-                    Outcome::from_or_forward(
-                        req, data, NamedFile::open(p).await.ok())
-                } else { Outcome::forward(data) }
+                    route::Outcome::from_or_forward(
+                        req, data,
+                        rocket::fs::NamedFile::open(p).await.ok())
+                } else { route::Outcome::forward(data) }
             },
-            Some(p) => Outcome::from_or_forward(
-                req, data, NamedFile::open(p).await.ok()),
-            None => Outcome::forward(data),
+            Some(p) => route::Outcome::from_or_forward(
+                req, data, rocket::fs::NamedFile::open(p).await.ok()),
+            None => route::Outcome::forward(data),
         }
     }
 }
@@ -218,22 +171,21 @@ mod tests {
     }
 }
 
-fn create_server() -> Rocket<Build> {
+fn create_server() -> rocket::Rocket<rocket::Build> {
     rocket::custom(rocket::Config::figment()
                    .merge(("address", "0.0.0.0"))
                    .merge(("port", 7878))
                    .merge(("databases.serverdb.url",
                            "./server.db")))
         .attach(ServerDB::init())
-        .mount("/index.html", FileExtServer::new(
-            relative!("index.html")).rank(1))
+        .mount("/", FileExtServer::new(relative!("index.html")))
         .mount("/favicon.ico", FileExtServer::new(
             relative!("resources/images/ripple.png")).rank(1))
         .mount("/apps", FileExtServer::new(relative!("apps")))
         .mount("/slides", FileExtServer::new(relative!("slides")))
-        .mount("/expense", routes![expense_index,
-                                   expense_add,
-                                   expense_list])
+        .mount("/expense", FileExtServer::new(
+            relative!("apps/expense.html")))
+        .mount("/expense", routes![expense_add, expense_list])
 }
 
 #[rocket::main]
