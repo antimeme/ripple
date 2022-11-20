@@ -39,6 +39,11 @@ check-ripple
 check-ripple.exe
 .docker-build
 
+# Sqlite
+server.db
+server.db-shm
+server.db-wal
+
 # Python
 py-compile
 build/

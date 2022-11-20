@@ -1,3 +1,7 @@
+// :TODO: store tag values
+// :TODO: support deleting expense records
+// :TODO: calculate tag totals
+// :TODO: support filtering by month
 use rocket::fs::relative;
 use rocket::serde::{Serialize, Deserialize, json::Json};
 use rocket_db_pools::{self, sqlx::{self, Row}, Database, Connection};

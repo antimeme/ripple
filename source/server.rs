@@ -1,4 +1,3 @@
-// :TODO: store and filter by tags
 // :TODO: read location of server.db file from environment or config
 // :TODO: support TLS if certficates are available
 // :TODO: request optional TLS client certificates
@@ -19,11 +18,16 @@ mod tests {
 
 fn create_server() -> rocket::Rocket<rocket::Build> {
     ripple::expense::expense_server(
-        rocket::custom(rocket::Config::figment()
-                       .merge(("address", "0.0.0.0"))
-                       .merge(("port", 7878))
-                       .merge(("databases.serverdb.url",
-                           "./server.db"))))
+        rocket::custom(
+            rocket::Config::figment()
+                .merge(("address", "0.0.0.0"))
+                .merge(("port", 7878))
+                //.merge(("tls.key", server_key.as_bytes().to_vec()))
+                //.merge(("tls.certs", server_certs.as_bytes().to_vec()))
+                //.merge(("tls.mutual.ca_certs", ca_certs.as_bytes().to_vec()))
+                //.merge(("tls.mutual.mandatory", false))
+                .merge(("databases.serverdb.url",
+                        "./server.db"))))
         .mount("/", FileExtServer::new(relative!("index.html")))
         .mount("/favicon.ico", FileExtServer::new(
             relative!("resources/images/ripple.png")).rank(1))
