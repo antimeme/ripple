@@ -4,11 +4,10 @@
 use rocket::fs::relative;
 
 use ripple::rocketutil::FileExtServer;
+use ripple::rocketutil::BootstrapTLS;
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn it_works() {
         let result = 2 + 2;
@@ -20,14 +19,16 @@ fn create_server() -> rocket::Rocket<rocket::Build> {
     ripple::expense::expense_server(
         rocket::custom(
             rocket::Config::figment()
+                .merge(BootstrapTLS::new(true))
                 .merge(("address", "0.0.0.0"))
                 .merge(("port", 7878))
-                //.merge(("tls.key", server_key.as_bytes().to_vec()))
-                //.merge(("tls.certs", server_certs.as_bytes().to_vec()))
-                //.merge(("tls.mutual.ca_certs", ca_certs.as_bytes().to_vec()))
-                //.merge(("tls.mutual.mandatory", false))
                 .merge(("databases.serverdb.url",
-                        "./server.db"))))
+                        "./server.db"))
+            //.merge(("tls.key", server_key.as_bytes().to_vec()))
+            //.merge(("tls.certs", server_certs.as_bytes().to_vec()))
+            //.merge(("tls.mutual.ca_certs", ca_certs.as_bytes().to_vec()))
+            //.merge(("tls.mutual.mandatory", false))
+        ))
         .mount("/", FileExtServer::new(relative!("index.html")))
         .mount("/favicon.ico", FileExtServer::new(
             relative!("resources/images/ripple.png")).rank(1))
