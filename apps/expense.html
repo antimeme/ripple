@@ -20,30 +20,25 @@
             Amount:
             <input id="addAmount" type="text"
                    placeholder="$95.00" pattern="\$?[0-9]*.?[0-9]*"
-                   title="Monetary amount with optional dollar sign"/>
+                   title="Amount of expense"/>
         </label>
         <label>
             Date:
-            <input id="addDate" type="datetime-local"
-                   title="When was the expense incurred"/>
+            <input id="addDate" type="date"
+                   title="When expense was incurred"/>
         </label>
         <label>
             Tags:
             <input id="addTags" type="text"
-                   placeholder="utility home"/>
+                   placeholder="utility home"
+                   title="Categories that apply to expense" />
         </label>
         <button id="addSubmit" type="submit">Submit</button>
         <button id="addClear" type="button">Clear</button>
     </form>
 </fieldset>
 <fieldset><legend>List</legend><div id="list"></div></fieldset>
-<textarea id="response" disabled></textarea>
 <script>//<![CDATA[
- var response  = document.getElementById("response");
- var waiting = function(task, method) {
-     response.value = "Waiting for " + task + " " + method +
-                      " response..."; };
-
  var list = document.getElementById("list");
  var send = function(task, method, data, success, waiting) {
      if (waiting)
@@ -90,9 +85,8 @@
      });
      list.innerHTML = "";
      list.appendChild(table);
-     response.value = this.responseText;
  };
- send("list", "GET", {}, listPopulate, waiting);
+ send("list", "GET", {}, listPopulate);
 
  var addForm   = document.getElementById("addForm");
  var addClear  = document.getElementById("addClear");
@@ -121,9 +115,8 @@
          tags: addTags.value.split(/\s/).filter(function(w) {
              return w.trim().length > 0; })
      }, function() {
-         response.value = this.responseText;
-         send("list", "GET", {}, listPopulate, waiting);
-     }, waiting);
+         send("list", "GET", {}, listPopulate);
+     });
  });
 
  //]]></script>

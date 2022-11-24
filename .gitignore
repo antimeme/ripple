@@ -40,9 +40,9 @@ check-ripple.exe
 .docker-build
 
 # Sqlite
-server.db
-server.db-shm
-server.db-wal
+expense.db
+expense.db-shm
+expense.db-wal
 
 # Python
 py-compile

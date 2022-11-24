@@ -8,13 +8,13 @@ use rocket_db_pools::{self, sqlx::{self, Row}, Database, Connection};
 use crate::rocketutil::FileExtServer;
 
 #[derive(rocket_db_pools::Database)]
-#[database("serverdb")]
-struct ServerDB(sqlx::SqlitePool);
+#[database("expensedb")]
+struct ExpenseDB(sqlx::SqlitePool);
 
-async fn sql_init(
+async fn expense_db_init(
     rocket: rocket::Rocket<rocket::Build>
 ) -> rocket::fairing::Result {
-    match ServerDB::fetch(&rocket) {
+    match ExpenseDB::fetch(&rocket) {
         Some(pool) => {
             match pool.acquire().await {
                 Ok(mut db) =>
@@ -61,7 +61,7 @@ struct ExpenseList {
 
 #[get("/list", format="json")]
 async fn expense_list(
-    mut db: Connection<ServerDB>
+    mut db: Connection<ExpenseDB>
 ) -> Result<Json<ExpenseList>, String>
 {
     let mut list = ExpenseList { expenses: Vec::new() };
@@ -88,7 +88,7 @@ async fn expense_list(
 
 #[post("/add", format="json", data="<expense>")]
 async fn expense_add(
-    mut db: Connection<ServerDB>,
+    mut db: Connection<ExpenseDB>,
     expense: Json<Expense>
 ) -> String
 {
@@ -106,12 +106,12 @@ async fn expense_add(
 }
 
 pub fn expense_server(
-    rkt: rocket::Rocket<rocket::Build>
+    server: rocket::Rocket<rocket::Build>
 ) -> rocket::Rocket<rocket::Build> {
-    rkt
-        .attach(ServerDB::init())
+    server
+        .attach(ExpenseDB::init())
         .attach(rocket::fairing::AdHoc::try_on_ignite(
-            "SQL Initialization", sql_init))
+            "Expense SQL Initialization", expense_db_init))
         .mount("/expense", FileExtServer::new(
             relative!("apps/expense.html")))
         .mount("/expense", routes![expense_add, expense_list])

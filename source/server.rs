@@ -4,7 +4,7 @@
 use rocket::fs::relative;
 
 use ripple::rocketutil::FileExtServer;
-use ripple::rocketutil::BootstrapTLS;
+use ripple::rocketutil::bootstrap_tls;
 
 #[cfg(test)]
 mod tests {
@@ -16,19 +16,19 @@ mod tests {
 }
 
 fn create_server() -> rocket::Rocket<rocket::Build> {
-    ripple::expense::expense_server(
-        rocket::custom(
-            rocket::Config::figment()
-                .merge(BootstrapTLS::new(true))
-                .merge(("address", "0.0.0.0"))
-                .merge(("port", 7878))
-                .merge(("databases.serverdb.url",
-                        "./server.db"))
-            //.merge(("tls.key", server_key.as_bytes().to_vec()))
-            //.merge(("tls.certs", server_certs.as_bytes().to_vec()))
-            //.merge(("tls.mutual.ca_certs", ca_certs.as_bytes().to_vec()))
-            //.merge(("tls.mutual.mandatory", false))
-        ))
+    use figment::providers::{Format, Json};
+
+    let figment = rocket::Config::figment()
+        .merge(Json::file("./server.json"))
+        .join(("address", "0.0.0.0"))
+        .join(("port", 7878))
+        .join(("tls.key", "./server-key.pem"))
+        .join(("tls.certs", "./server-chain.pem"))
+        .join(("databases.expensedb.url", "./expense.db"));
+    bootstrap_tls(&figment);
+
+    let server = rocket::custom(figment);
+    ripple::expense::expense_server(server)
         .mount("/", FileExtServer::new(relative!("index.html")))
         .mount("/favicon.ico", FileExtServer::new(
             relative!("resources/images/ripple.png")).rank(1))

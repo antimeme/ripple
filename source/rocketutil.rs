@@ -1,53 +1,38 @@
 use std::path::{Path, PathBuf};
-use figment::{value::{Map, Dict, Value}};
-use figment::{Error, Profile, Provider, Metadata};
 use rocket::route;
 use rocket::http::uri::Segments;
 use rocket::http::ext::IntoOwned;
 use rocket::response::Redirect;
+use figment::Figment;
+use figment::value::Value;
 
 /**
- * BootstrapTLS is a configuration provider that automatically
- * generates a server key and certificate if one is not available.
- * This should make it reasonably certain that a server will
- * start even if it has never been configured. */
-pub struct BootstrapTLS {
-    key: String,
-    certs: String,
-    cacerts: Option<String>,
-    mandatory: bool,
-    secure: bool,
+ * Create a server key with a self-signed certificate */
+fn create_key(key: &str) -> Result<(), String> {
+    use rsa::RsaPrivateKey;
+    use rsa::pkcs8::{EncodePrivateKey, LineEnding};
+
+    let k = RsaPrivateKey::new(
+        &mut rand::thread_rng(), 2048)
+        .map_err(|err| err.to_string())?;
+    let zstr = k.to_pkcs8_pem(LineEnding::CRLF)
+        .map_err(|err| err.to_string())?;
+
+    use std::fs;
+    fs::write(key, zstr).map_err(|err| err.to_string())?;
+    Ok(())
 }
 
-impl BootstrapTLS {
-    pub fn new(secure: bool) -> Self {
-        let key   = "server-key.pem".to_string();
-        let certs = "server-chain.pem".to_string();
-
-        // :TODO: find or generate RSA key pair
-        // :TODO: find or generate X.509 certificate
-
-        Self {
-            key,
-            certs,
-            cacerts: None,
-            mandatory: false,
-            secure
+pub fn bootstrap_tls(fig: &Figment) {
+    if let Ok(key) = fig.find_value("tls.key") {
+        if let Value::String(_, keystr) = key {
+            if !Path::new(&keystr).exists() {
+                match create_key(&keystr) {
+                    Ok(_) => panic!("Critical success!"),
+                    Err(_) => panic!("Critical failure!")
+                }
+            }
         }
-    }
-}
-
-impl Provider for BootstrapTLS {
-    fn metadata(&self) -> Metadata { Metadata::named("BootstrapTLS") }
-
-    fn data(&self) -> Result<Map<Profile, Dict>, Error> {
-        let mut map: Map<Profile, Dict> = Map::new();
-        let mut dict: Dict = Dict::from([
-            ("key".to_string(), Value::from(self.key.to_string())),
-            ("certs".to_string(), Value::from(self.certs.to_string()))
-        ]);
-        map.insert(Profile::new("default"), dict);
-        Ok(map)
     }
 }
 
@@ -58,13 +43,6 @@ mod tests {
 
     #[test]
     fn bootstrap() {
-        let figment = Figment::new()
-            .merge(BootstrapTLS::new(true));
-
-        let key: String = figment.extract_inner("key").unwrap();
-        assert_eq!(key, "server-key.pem");
-        let certs: String = figment.extract_inner("certs").unwrap();
-        assert_eq!(certs, "server-chain.pem");
     }
 }
 
