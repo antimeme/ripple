@@ -9,6 +9,7 @@ authors = ["Jeff Gold <jgold@esclat.net>"]
 [dependencies]
 rand = { version = "0.8.5" }
 rsa = { version = "0.7.2", features = ["pem"] }
+sha2 = { version = "0.10.6" }
 figment = { version = "0.10.8", features = ["json"] }
 rocket = { version = "0.5.0-rc.2", features = ["json", "mtls"] }
 rocket_db_pools = { version = "0.1.0-rc.2", features = ["sqlx_sqlite"] }
