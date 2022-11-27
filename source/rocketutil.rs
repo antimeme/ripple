@@ -184,18 +184,19 @@ fn create_key(key_file: &str, certs_file: &str) -> Result<(), String> {
         .get_bytes();
 
     let mut certificate = String::new();
-    certificate.push_str("-----BEGIN CERTIFICATE-----\n");
+    certificate.push_str("-----BEGIN CERTIFICATE-----\r\n");
     for (ii, cc) in base64::encode(&certdata).chars().enumerate() {
         if (ii != 0) && ((ii % 64) == 0) {
             certificate.push_str("\n");
         }
         certificate.push(cc);
     }
-    match certificate.chars().last() {
-        Some(cc) if cc != '\n' => { certificate.push_str("\n") },
-        _ => { }
+    if let Some(cc) = certificate.chars().last() {
+        if cc != '\n' {
+            certificate.push_str("\r\n");
+        }
     }
-    certificate.push_str("-----END CERTIFICATE-----\n");
+    certificate.push_str("-----END CERTIFICATE-----\r\n");
 
     use std::fs;
     fs::write(key_file, &zstr).map_err(|err| err.to_string())?;
