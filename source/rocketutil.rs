@@ -182,7 +182,6 @@ fn create_key(key_file: &str, certs_file: &str) -> Result<(), String> {
         .add_bytes(0x30, &sigalg_rsapss)
         .add_bytes(0x03, &signature)
         .get_bytes();
-    println!("DEBUG: {}", hex::encode(&certdata));
 
     let mut certificate = String::new();
     certificate.push_str("-----BEGIN CERTIFICATE-----\n");
@@ -208,10 +207,11 @@ use figment::Figment;
 use figment::value::Value;
 
 pub fn bootstrap_tls(fig: &Figment) {
-    if let Ok(key) = fig.find_value("tls.key") {
-        if let Value::String(_, key_file) = key {
+    if let (Ok(key), Ok(certs)) = (
+        fig.find_value("tls.key"), fig.find_value("tls.certs")) {
+        if let (Value::String(_, key_file),
+                Value::String(_, certs_file)) = (key, certs) {
             if !Path::new(&key_file).exists() {
-                let certs_file = "server-chain.pem";
                 match create_key(&key_file, &certs_file) {
                     Ok(_) => {},
                     Err(estr) =>
