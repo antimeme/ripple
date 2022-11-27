@@ -206,6 +206,16 @@ fn create_key(key_file: &str, certs_file: &str) -> Result<(), String> {
 use figment::Figment;
 use figment::value::Value;
 
+/**
+ * Ensures that a server configured for TLS can start.  If the
+ * configured server key ("tls.key") does not exist, this function
+ * creates it along with a self signed certificate.  This won't
+ * provide any security the first time a client connects.  However,
+ * over time any trust earned by the service can be associaed with
+ * the server key, similar to the model used by SSH.  In addition,
+ * the connection will be reasonably confidential to anyone who
+ * didn't attack the service right away. */
+
 pub fn bootstrap_tls(fig: &Figment) {
     if let (Ok(key), Ok(certs)) = (
         fig.find_value("tls.key"), fig.find_value("tls.certs")) {
