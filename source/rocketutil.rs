@@ -1,112 +1,221 @@
 use std::path::{Path, PathBuf};
-use rocket::route;
-use rocket::http::uri::Segments;
-use rocket::http::ext::IntoOwned;
-use rocket::response::Redirect;
-use figment::Figment;
-use figment::value::Value;
 
-/**
- * ASN.1 Object Implementation
- * Because mutability is so strict in Rust, this implementation
- * is eager about encoding.  Each time an object is added to another
- * the complete encoding is calculated. */
-#[derive (Clone)]
-pub struct ASN1Object {
-    tag: u32,
-    contents: Vec<u8>,
-    bytes: Vec<u8>
+fn asn1_push_len(bytes: &mut Vec<u8>, len: usize) {
+    let slice = len.to_be_bytes();
+    if len < 0x1f {
+        bytes.push(slice[slice.len() - 1]);
+    } else if len < (1 << 8) {
+        bytes.push(0x81);
+        bytes.push(slice[slice.len() - 1]);
+    } else if len < (1 << 16) {
+        bytes.push(0x82);
+        bytes.push(slice[slice.len() - 2]);
+        bytes.push(slice[slice.len() - 1]);
+    } else if len < (1 << 24) {
+        bytes.push(0x83);
+        bytes.push(slice[slice.len() - 3]);
+        bytes.push(slice[slice.len() - 2]);
+        bytes.push(slice[slice.len() - 1]);
+    } else if len < (1 << 32) {
+        bytes.push(0x84);
+        bytes.push(slice[slice.len() - 4]);
+        bytes.push(slice[slice.len() - 3]);
+        bytes.push(slice[slice.len() - 2]);
+        bytes.push(slice[slice.len() - 1]);
+    } else { panic!("Too much stuff!"); }
 }
 
-impl ASN1Object {
-    /**
-     * Create a new ASN.1 object.  This is used to start an object
-     * which will have one or more other objects added to it later */
-    pub fn new(tag: u32) -> Self {
-        let contents = Vec::new();
-        let bytes = Self::make_bytes(tag, &contents);
-        Self { tag, contents, bytes  }
+trait ASN1Object {
+    fn get_len(&self) -> usize;
+    fn get_bytes(&self) -> Vec<u8>;
+}
+
+struct ASN1Primitive<'r> {
+    tag: u8,
+    contents: &'r [u8]
+}
+
+impl<'r> ASN1Primitive<'r> {
+    fn new(tag: u8, contents: &'r [u8]) -> Self
+    { Self { tag, contents } }
+}
+
+impl<'r> ASN1Object for ASN1Primitive<'r> {
+    fn get_len(&self) -> usize {
+        match self.tag {
+            0x03 => {
+                self.contents.len() + 1
+            },
+            _ => { self.contents.len() }
+        }
     }
-
-    /**
-     * Create an ASN.1 object from a byte array */
-    pub fn from_bytes(tag: u32, contents: &[u8]) -> Self {
-        let bytes = Self::make_bytes(tag, &contents);
-        Self { tag, contents: contents.to_vec(), bytes }        
-    }
-
-    pub fn add_object(mut self, child: &ASN1Object) -> Self {
-        self.contents.append(&mut Vec::from(child.bytes.as_slice()));
-        self.bytes = Self::make_bytes(self.tag, &self.contents);
-        self
-    }
-
-    pub fn add_bytes(mut self, tag: u32, contents: &[u8]) -> Self {
-        self.contents.append(
-            &mut ASN1Object::from_bytes(tag, contents).bytes);
-        self.bytes = Self::make_bytes(self.tag, &self.contents);
-        self
-    }
-
-    pub fn as_bytes(&self) -> &[u8] { &self.bytes }
-
-    fn make_bytes(tag: u32, contents: &[u8]) -> Vec<u8> {
+    fn get_bytes(&self) -> Vec<u8> {
         let mut result = Vec::new();
-        result.append(&mut Vec::from(tag.to_be_bytes()));
-        result.append(&mut Vec::from(contents.len().to_be_bytes()));
-        result.append(&mut Vec::from(contents));
+        result.push(self.tag);
+        asn1_push_len(&mut result, self.get_len());
+        if self.tag == 0x03 {
+            result.push(0x00);
+        }
+        result.append(&mut self.contents.to_owned());
         result
     }
+}
+
+struct ASN1Constructed {
+    tag: u8,
+    children: Vec<Vec<u8>>
+}
+
+impl ASN1Object for ASN1Constructed {
+    fn get_len(&self) -> usize
+    { self.children.iter().map(|child| child.len()).sum() }
+
+    fn get_bytes(&self) -> Vec<u8> {
+        let mut result = Vec::new();
+        result.push(self.tag);
+        asn1_push_len(&mut result, self.get_len());
+        for child in &self.children {
+            result.append(&mut child.clone());
+        }
+        result
+    }
+}
+
+impl ASN1Constructed {
+    fn new(tag: u8) -> Self
+    { Self { tag, children: Vec::new() } }
+
+    fn new_validity(weeks: u32) -> Self {
+        let start = chrono::Utc::now();
+        let expire = start + chrono::Duration::weeks(weeks.into());
+        Self::new(0x30)
+            .add_bytes(0x17, start.format("%y%m%d%H%M%SZ")
+                       .to_string().as_bytes())
+            .add_bytes(0x17, expire.format("%y%m%d%H%M%SZ")
+                       .to_string().as_bytes())
+    }
+
+    fn new_cn(name: &str) -> Self {
+        let names = Self::new(0x30)
+            .add_bytes(0x06, &[0x55, 0x04, 0x03])
+            .add_bytes(0x0c, &name.as_bytes());
+        let cn = Self::new(0x31).add_object(&names);
+        Self::new(0x30).add_object(&cn)
+    }
+
+    fn new_subject_key_rsa(key: &rsa::RsaPublicKey) -> Self {
+        use rsa::PublicKeyParts;
+        let inner_key = Self::new(0x30)
+            .add_bytes(0x02, &key.n().to_bytes_be())
+            .add_bytes(0x02, &key.e().to_bytes_be());
+        Self::new(0x30)
+            .add_bytes(0x30, &[
+                0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7,
+                0x0d, 0x01, 0x01, 0x01, 0x05, 0x00])
+            .add_bytes(0x03, &inner_key.get_bytes())
+    }
+
+    fn add_object<A: ASN1Object>(
+        mut self, object: &A
+    ) -> Self {
+        self.children.push(object.get_bytes());
+        self
+    }
+
+    fn add_bytes(mut self, tag: u8, contents: &[u8]) -> Self {
+        self.children.push(
+            ASN1Primitive::new(tag, contents).get_bytes());
+        self
+    }
+}
+
+fn create_x509_tbs(issuer: &str, subject: &str,
+                   duration: u32, pubkey: &rsa::RsaPublicKey,
+                   sigalg: &[u8]) -> ASN1Constructed {
+    use rand::RngCore;
+
+    let mut serial: [u8; 9] = [0; 9];
+    rand::thread_rng().fill_bytes(&mut serial);
+    if serial[0] == 0x00 {
+        // Leading zeros are not allowed in ASN.1 integers
+        serial[0] = 0x01;
+    }
+
+    ASN1Constructed::new(0x30)
+        .add_bytes(0xa0, &[0x02, 0x01, 0x02]) // version
+        .add_bytes(0x02, &serial)
+        .add_bytes(0x30, &sigalg)
+        .add_object(&ASN1Constructed::new_cn(issuer))
+        .add_object(&ASN1Constructed::new_validity(duration))
+        .add_object(&ASN1Constructed::new_cn(subject))
+        .add_object(&ASN1Constructed::new_subject_key_rsa(&pubkey))
+        .add_bytes(0xa3, &[0x30, 0x00]) // extensions
 }
 
 /**
  * Create a server key with a self-signed certificate */
 fn create_key(key_file: &str, certs_file: &str) -> Result<(), String> {
-    use rsa::RsaPrivateKey;
     use rsa::pkcs8::{EncodePrivateKey, LineEnding};
-    use rsa::pss::BlindedSigningKey;
-    use rsa::signature::{RandomizedSigner, Signature};
-    use sha2::Sha256;
 
-    let kprv = RsaPrivateKey::new(
+    let kprv = rsa::RsaPrivateKey::new(
         &mut rand::thread_rng(), 2048)
         .map_err(|err| err.to_string())?;
     let zstr = kprv.to_pkcs8_pem(LineEnding::CRLF)
         .map_err(|err| err.to_string())?;
 
-    let tbs = ASN1Object::new(0x30)
-        .add_bytes(0xa0, &[0x02, 0x01, 0x02]) // version
-        .add_bytes(0x02, &[0x01, 0x01, 0x01, 0x01]) // serial ???
-        .add_bytes(0x30, &[0x01, 0x01, 0x01, 0x01]) // sigalg ???
-        .add_bytes(0x30, &[0x01, 0x01, 0x01, 0x01]) // issuer ???
-        .add_bytes(0x30, &[0x01, 0x01, 0x01, 0x01]) // validity ???
-        .add_bytes(0x30, &[0x01, 0x01, 0x01, 0x01]) // subject ???
-        .add_bytes(0x30, &[0x01, 0x01, 0x01, 0x01]) // pubkey ???
-        .add_bytes(0xa3, &[0x30, 0x00]) // extensions
-        ;
+    let sigalg_rsapss = [0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7,
+                         0x0d, 0x01, 0x01, 0x0b, 0x05, 0x00];
+    let tbs = create_x509_tbs
+        ("issuer", "subject", 10 * 52 /* weeks */,
+         &kprv.to_public_key(), &sigalg_rsapss);
+
+    // :TODO: support elliptic curve keys
+    use rsa::pss::BlindedSigningKey;
+    use rsa::signature::{RandomizedSigner};
+    use sha2::Sha256;
     let signing_key = BlindedSigningKey::<Sha256>::new(kprv);
     let signature = signing_key.sign_with_rng(
-        &mut rand::thread_rng(), tbs.as_bytes());
-    assert_ne!(signature.as_bytes(), tbs.as_bytes());
-    // :TODO: pack up X.509 DER
-    // :TODO: convert to Base64
-    // :TODO: add certificate header and footer
-    // :TODO: write certificate to file    
+        &mut rand::thread_rng(), &tbs.get_bytes());
+
+    let certdata = ASN1Constructed::new(0x30)
+        .add_object(&tbs)
+        .add_bytes(0x30, &sigalg_rsapss)
+        .add_bytes(0x03, &signature)
+        .get_bytes();
+    println!("DEBUG: {}", hex::encode(&certdata));
+
+    let mut certificate = String::new();
+    certificate.push_str("-----BEGIN CERTIFICATE-----\n");
+    for (ii, cc) in base64::encode(&certdata).chars().enumerate() {
+        if (ii != 0) && ((ii % 64) == 0) {
+            certificate.push_str("\n");
+        }
+        certificate.push(cc);
+    }
+    match certificate.chars().last() {
+        Some(cc) if cc != '\n' => { certificate.push_str("\n") },
+        _ => { }
+    }
+    certificate.push_str("-----END CERTIFICATE-----\n");
 
     use std::fs;
     fs::write(key_file, &zstr).map_err(|err| err.to_string())?;
-    fs::write(certs_file, &zstr).map_err(|err| err.to_string())?;
+    fs::write(certs_file, &certificate).map_err(|err| err.to_string())?;
     Ok(())
 }
+
+use figment::Figment;
+use figment::value::Value;
 
 pub fn bootstrap_tls(fig: &Figment) {
     if let Ok(key) = fig.find_value("tls.key") {
         if let Value::String(_, key_file) = key {
             if !Path::new(&key_file).exists() {
-                let certs_file = "server-certs.pem";
+                let certs_file = "server-chain.pem";
                 match create_key(&key_file, &certs_file) {
-                    Ok(_) => panic!("Critical success!"),
-                    Err(_) => panic!("Critical failure!")
+                    Ok(_) => {},
+                    Err(estr) =>
+                        panic!("Failed to create certificate: {}", estr)
                 }
             }
         }
@@ -116,12 +225,16 @@ pub fn bootstrap_tls(fig: &Figment) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use figment::Figment;
 
     #[test]
     fn bootstrap() {
     }
 }
+
+use rocket::route;
+use rocket::http::uri::Segments;
+use rocket::http::ext::IntoOwned;
+use rocket::response::Redirect;
 
 /**
  * A modified version of Rocket FileServer that accepts root URIs and
