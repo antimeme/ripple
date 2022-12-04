@@ -9,11 +9,11 @@
         "Ripple"
     ],
     "dependencies": {
-        "sqlite": "*",
-        "electron": "*"
+        "electron": "*",
+        "sqlite": "*"
     },
     "devDependencies": {
-        "mocha": "~8.0.1"
+        "mocha": "^10.1.0"
     },
     "main": "source/server.js",
     "scripts": {
