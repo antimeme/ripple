@@ -8,65 +8,73 @@
 *.pem
 *.srl
 *.p12
-.deps/
-.libs/
-aclocal.m4
-autom4te.cache/
-compile
-config.guess
-config.log
-config.status
-config.sub
-configure
-depcomp
-install-sh
-libtool
-ltmain.sh
-missing
-test-driver
-package.json
-Makefile
-Makefile.in
-source/.dirstamp
-source/check/.dirstamp
-include/ripple/config.h
-include/ripple/config.h.in
-include/ripple/stamp-h1
-ripple.dpkg
-ripple.spec
-ripple-*.tar.gz
-check-ripple
-check-ripple.exe
-.docker-build
+/source/.deps/
+/source/check/.deps/
+/.libs/
+/aclocal.m4
+/autom4te.cache/
+/compile
+/config.guess
+/config.log
+/config.status
+/config.sub
+/configure
+/depcomp
+/install-sh
+/libtool
+/ltmain.sh
+/missing
+/test-driver
+/package.json
+/Makefile
+/Makefile.in
+/source/.dirstamp
+/source/check/.dirstamp
+/include/ripple/config.h
+/include/ripple/config.h.in
+/include/ripple/stamp-h1
+/scripts/ripple.dpkg
+/scripts/ripple.spec
+/ripple-*.tar.gz
+/check-ripple
+/check-ripple.exe
+/.docker-build
 
 # Sqlite
-expense.db
-expense.db-shm
-expense.db-wal
+/expense.db
+/expense.db-shm
+/expense.db-wal
 
 # Python
-py-compile
-build/
-dist/
-ripple.egg-info/
-source/__init__.py
+/py-compile
+/build/
+/dist/
+/ripple.egg-info/
+/source/__init__.py
 
 # Java
-classes/
-javadoc/
-.javadoc
-source/Ripple.java
-ripple-*.jar
-ripple.jar
-ripple-*.war
-ripple.war
-servlet-api.jar
-WEB-INF/classes/
-scripts/check-java.sh
+/classes/
+/javadoc/
+/.javadoc
+/source/Ripple.java
+/ripple-*.jar
+/ripple.jar
+/ripple-*.war
+/ripple.war
+/servlet-api.jar
+/WEB-INF/classes/
+/scripts/check-java.sh
 
 # JavaScript
-node_modules/
+/node_modules/
 
 # Rust
-Cargo.toml
-target/
+/Cargo.toml
+/target/
+
+# Raspberry Pi
+/raspi/sdcard.img
+/raspi/kernel*
+/raspi/initrd.img*
+/raspi/*.dtb
+/raspi/image/
