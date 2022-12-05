@@ -55,4 +55,14 @@ raspi_${RPI_MODEL}_${DEBIAN_RELEASE}.img.xz:
 write: raspi_${RPI_MODEL}_${DEBIAN_RELEASE}.img.xz
 	xzcat $* | dd of=${SDCARD} bs=64k oflag=dsync status=progress
 
-.PHONY: all clean emulate commit serial write
+mount:
+	mkdir -p image
+	sudo mount $(SDCARD)2 image
+	sudo mount $(SDCARD)1 image/boot
+
+umount:
+	sudo umount image/boot; \
+	sudo umount image; \
+	rmdir image
+
+.PHONY: all clean mount umount emulate commit serial write
