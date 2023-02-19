@@ -1,24 +1,13 @@
-// :TODO: read location of server.db file from environment or config
-// :TODO: support TLS if certficates are available
 // :TODO: request optional TLS client certificates
 use rocket::fs::relative;
-
 use ripple::rocketutil::FileExtServer;
 use ripple::rocketutil::bootstrap_tls;
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
-    }
-}
 
 fn create_server() -> rocket::Rocket<rocket::Build> {
     use figment::providers::{Format, Json};
 
     let figment = rocket::Config::figment()
+        .merge(Json::file("/etc/ripple/server.json"))
         .merge(Json::file("./server.json"))
         .join(("address", "0.0.0.0"))
         .join(("port", 7878))
