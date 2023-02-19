@@ -157,7 +157,7 @@ lib/jackson-core.jar:
 $(WAR_ROOT)/.classes: $(J2EE_DISTSRC) lib/servlet-api.jar
 	$(MKDIR_P) $(WAR_ROOT)
 	$(JCC) -classpath lib/*.jar -d $(WAR_ROOT) \
-	       -source 1.7 -target 1.7 -Xlint:-options $(J2EE_DISTSRC)
+	       -source 8 -target 8 -Xlint:-options $(J2EE_DISTSRC)
 	find $(WAR_ROOT) -name \*.class | \
 	    sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
 	    sort -u > $@
