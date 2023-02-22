@@ -145,14 +145,17 @@ SERVLET_DIR = javax/servlet/javax.servlet-api/4.0.1
 SERVLET_URL = $(MVN_REPO_URL)/$(SERVLET_DIR)/javax.servlet-api-4.0.1.jar
 JACKSON_DIR = com/fasterxml/jackson/core/jackson-core/2.9.9/
 JACKSON_URL = $(MVN_REPO_URL)/$(JACKSON_DIR)/jackson-core-2.9.9.jar
+SQLITE_DIR = org/xerial/sqlite-jdbc/3.40.1.0
+SQLITE_URL = $(MVN_REPO_URL)/$(SQLITE_DIR)/sqlite-jdbc-3.40.1.0.jar
 
 lib/servlet-api.jar:
-	$(MKDIR_P) lib
-	curl -o $@ $(SERVLET_URL)
+	$(MKDIR_P) lib && curl -o $@ $(SERVLET_URL)
 
 lib/jackson-core.jar:
-	$(MKDIR_P) lib
-	curl -o $@ $(JACKSON_URL)
+	$(MKDIR_P) lib && curl -o $@ $(JACKSON_URL)
+
+lib/sqlite-jdbc.jar:
+	$(MKDIR_P) lib && curl -o $@ $(SQLITE_URL)
 
 $(WAR_ROOT)/.classes: $(J2EE_DISTSRC) lib/servlet-api.jar
 	$(MKDIR_P) $(WAR_ROOT)
@@ -161,6 +164,10 @@ $(WAR_ROOT)/.classes: $(J2EE_DISTSRC) lib/servlet-api.jar
 	find $(WAR_ROOT) -name \*.class | \
 	    sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
 	    sort -u > $@
+
+dbtest: lib/sqlite-jdbc.jar
+	$(JCC) -classpath lib/*.jar DBTest.java
+	$(JAVA) DBTest
 
 @PACKAGE@-@VERSION@.war: .javadoc $(srcdir)/META-INF/MANIFEST.MF \
 			 $(JAR_ROOT)/.classes $(WAR_ROOT)/.classes
