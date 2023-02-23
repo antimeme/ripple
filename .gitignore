@@ -54,6 +54,7 @@
 
 # Java
 /classes/
+/lib/
 /javadoc/
 /.javadoc
 /source/Ripple.java

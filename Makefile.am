@@ -1,5 +1,5 @@
 ## Makefile.am
-## Copyright (C) 2006-2020 by Jeff Gold.
+## Copyright (C) 2006-2023 by Jeff Gold.
 ##
 ## This program is free software: you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -50,6 +50,10 @@ JAVA_DISTSRC = \
 
 J2EE_DISTSRC = \
 	$(srcdir)/source/servlet/RippleServlet.java
+
+EMPTY =
+SPACE = $(EMPTY) $(EMPTY)
+SEPARATOR = :
 
 ## C ===================================================================
 lib_LTLIBRARIES = lib@PACKAGE@.la
@@ -117,16 +121,16 @@ WAR_ROOT = $(top_builddir)/WEB-INF/classes
 
 $(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
 	$(MKDIR_P) $(JAR_ROOT)
-	$(JCC) -d $(JAR_ROOT) -source 1.7 -target 1.7 \
+	$(JCC) -d $(JAR_ROOT) -source 8 -target 8 \
 	    -Xlint:-options $(JAVA_SRCFILES)
-	find $(JAR_ROOT) -name \*.class | \
-	    sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
-	    sort -u > $@
+	touch $@
 
 .javadoc: $(JAVA_SRCFILES)
 	$(JAVADOC) -docencoding utf-8 -public \
 	    -d javadoc $(JAVA_SRCFILES)
-	@touch $@
+	find $(JAR_ROOT) -name \*.class | \
+	   sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
+	   sort -u > $@
 
 @PACKAGE@-@VERSION@.jar: $(srcdir)/META-INF/MANIFEST.MF \
 			 $(JAR_ROOT)/.classes .javadoc
@@ -157,13 +161,15 @@ lib/jackson-core.jar:
 lib/sqlite-jdbc.jar:
 	$(MKDIR_P) lib && curl -o $@ $(SQLITE_URL)
 
+J2EE_LIBS = $(wildcard lib/*.jar)
+J2EE_CLASSPATH = $(subst $(SPACE),$(SEPARATOR),$(J2EE_LIBS))
+
 $(WAR_ROOT)/.classes: $(J2EE_DISTSRC) lib/servlet-api.jar
-	$(MKDIR_P) $(WAR_ROOT)
-	$(JCC) -classpath lib/*.jar -d $(WAR_ROOT) \
-	       -source 1.7 -target 1.7 -Xlint:-options $(J2EE_DISTSRC)
-	find $(WAR_ROOT) -name \*.class | \
-	    sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
-	    sort -u > $@
+	$(MKDIR_P)  $(WAR_ROOT)
+	$(JCC) -classpath "$(J2EE_CLASSPATH)" \
+	       -d $(WAR_ROOT) -source 8 -target 8 \
+	       -Xlint:-options $(J2EE_DISTSRC)
+	touch $@
 
 dbtest: lib/sqlite-jdbc.jar
 	$(JCC) -classpath lib/*.jar DBTest.java
