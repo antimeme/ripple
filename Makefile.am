@@ -49,7 +49,8 @@ JAVA_DISTSRC = \
 	$(srcdir)/source/Octahedron.java
 
 J2EE_DISTSRC = \
-	$(srcdir)/source/servlet/RippleServlet.java
+	$(srcdir)/source/servlet/RippleServlet.java \
+	$(srcdir)/source/servlet/ExpenseServlet.java
 
 EMPTY =
 SPACE = $(EMPTY) $(EMPTY)
@@ -166,13 +167,13 @@ J2EE_CLASSPATH = $(subst $(SPACE),$(SEPARATOR),$(J2EE_LIBS))
 
 $(WAR_ROOT)/.classes: $(J2EE_DISTSRC) lib/servlet-api.jar
 	$(MKDIR_P)  $(WAR_ROOT)
-	$(JCC) -classpath "$(J2EE_CLASSPATH)" \
+	$(JCC) -cp "$(J2EE_CLASSPATH)" \
 	       -d $(WAR_ROOT) -source 8 -target 8 \
 	       -Xlint:-options $(J2EE_DISTSRC)
 	touch $@
 
 dbtest: lib/sqlite-jdbc.jar
-	$(JCC) -classpath lib/*.jar DBTest.java
+	$(JCC) -cp lib/*.jar DBTest.java
 	$(JAVA) DBTest
 
 @PACKAGE@-@VERSION@.war: .javadoc $(srcdir)/META-INF/MANIFEST.MF \
