@@ -27,8 +27,10 @@ public class RippleServlet extends HttpServlet
             ("javax.servlet.context.tempdir");
     }
 
+    @Override
     public void destroy() {}
 
+    @Override
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
         throws ServletException, IOException {
