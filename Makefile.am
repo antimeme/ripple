@@ -166,15 +166,10 @@ J2EE_LIBS = $(wildcard lib/*.jar)
 J2EE_CLASSPATH = $(subst $(SPACE),$(SEPARATOR),$(J2EE_LIBS))
 
 $(WAR_ROOT)/.classes: $(J2EE_DISTSRC) lib/servlet-api.jar
-	$(MKDIR_P)  $(WAR_ROOT)
-	$(JCC) -cp "$(J2EE_CLASSPATH)" \
-	       -d $(WAR_ROOT) -source 8 -target 8 \
-	       -Xlint:-options $(J2EE_DISTSRC)
+	$(MKDIR_P) $(WAR_ROOT)
+	$(JCC) -cp "$(J2EE_CLASSPATH)" -d $(WAR_ROOT) \
+	       -source 8 -target 8 -Xlint:-options $(J2EE_DISTSRC)
 	touch $@
-
-dbtest: lib/sqlite-jdbc.jar
-	$(JCC) -cp lib/*.jar DBTest.java
-	$(JAVA) DBTest
 
 @PACKAGE@-@VERSION@.war: .javadoc $(srcdir)/META-INF/MANIFEST.MF \
 			 $(JAR_ROOT)/.classes $(WAR_ROOT)/.classes
