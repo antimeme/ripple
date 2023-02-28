@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>Noise</title>
+<style>
+ html, body, canvas, div { margin: 0; padding: 0 }
+ html, body { height: 100%; }
+ body { overflow-x: visible; overflow-y: hidden; }
+</style>
+<canvas id="noise"></canvas>
+
+<script type="module">//<![CDATA[
+ import noise from "./ripple/noise.mjs";
+
+ var go = function() {
+     const canvas = document.querySelector("#noise");
+     canvas.width = document.body.clientWidth;
+     canvas.height = document.body.clientHeight;
+     noise({
+         canvas: canvas,
+         algorithm: "perlin",
+         freq: 0.04
+     });
+ };
+
+ if (document.attachEvent ?
+     (document.readyState === "complete") :
+     (document.readyState !== "loading"))
+     go();
+ else document.addEventListener('DOMContentLoaded', go);
+//]]></script>
