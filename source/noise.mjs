@@ -16,7 +16,10 @@
 // <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
+// A collection of tools for creating pseudo-random noise.
 //
+// Any code here borrowed from someone else is credited and marked.
+// Where applicable the original license is included and applies.
 
 var noiseSquirrel5 = function(seed, px, py, pz, pt) {
     // Squirrel Eiserloh's raw noise function
@@ -129,6 +132,78 @@ var perlinSimplex3 = function(x, y, z) {
     return K(hi) + K(3-hi-lo) + K(lo) + K(0);
 };
 
+/**
+ * Returns binomial coefficient without explicit factorials */
+function pascalTriangle(a, b) {
+  var result = 1;
+  for (var ii = 0; ii < b; ++ii)
+    result *= (a - ii) / (ii + 1);
+  return result;
+}
+
+/**
+ * Creates a version of the smoothstep function with a configurable
+ * degree of continuity.  Providing 0 gives a linear transition with
+ * a discontinuous derivative.  Providing 1 gives a cubic equation
+ * with a continuous derivative but a discontinous second derivative,
+ * which is to say acceleration.  Each additional step adds another
+ * continuous derivative.
+ *
+ * This is adapted from https://en.wikipedia.org/wiki/Smoothstep
+ * but should perform much better because coefficients are computed
+ * in advance rather than on each call. */
+function generalSmoothStep(order) {
+    var coefficients = [];
+    for (var n = 0; n <= order; ++n)
+        coefficients.push(pascalTriangle(-order - 1, n) *
+            pascalTriangle(2 * order + 1, order - n));
+    return function(t) {
+        var factor = Array.from({length: order})
+                          .reduce((a) => a * t, 1);
+        return (t < 0) ? 0 : (t > 1) ? 1 :
+               coefficients.reduce(function(a, c) {
+                   factor *= t; return a + c * factor; }, 0);
+    };
+}
+export var smoothStep   = generalSmoothStep(1); // 3t^2 - 2t^3
+export var smootherStep = generalSmoothStep(2); // 6t^5 - 15t^4 + 10t^3
+
+function createNoiseSimplex(config) {
+    return function() {
+    };
+};
+
+/**
+ * Draw */
+function drawNoise(ctx, startX, startY, width, height,
+                   freq, fn, stats) {
+    const data = new Uint8ClampedArray(4 * width * height);
+    var max = undefined, min = undefined;
+
+    for (var yy = 0; yy < height; ++yy)
+        for (var xx = 0; xx < width; ++xx) {
+            var index = 4 * (yy * width + xx);
+            var value = fn(xx * freq, yy * freq);
+            if (isNaN(min) || (value < min))
+                min = value;
+            if (isNaN(max) || (value > max))
+                max = value;
+            value = Math.min(255, Math.max(0, Math.floor(
+                255.99 * value)));
+
+            data[index + 0] = value;
+            data[index + 1] = value;
+            data[index + 2] = value;
+            data[index + 3] = 255; /* opaque */
+        }
+
+    if (stats && typeof(stats) === "function")
+        stats({min: min, max: max});
+    ctx.putImageData(new ImageData(data, width, height),
+                     startX, startY);
+    return ctx;
+}
+
 export default function(config) {
     var result = undefined;
 
@@ -147,40 +222,18 @@ export default function(config) {
             var value = perlinSimplex3(x, y);
             return (1 + (value / 0.32549)) / 2;
         }
-    } else {
-        result = noiseSimplex;
-    }
+    } else result = createNoiseSimplex(config);
 
-    // Apply selected noise algorithm to a given canvas
-    var max = undefined, min = undefined, count = 6;
-    var canvas = (config && config.canvas) ? config.canvas : undefined;
-    if (result && canvas && canvas instanceof HTMLCanvasElement) {
-        const width = canvas.width;
-        const height = canvas.height;
+    if (config && config.canvas &&
+        config.canvas instanceof HTMLCanvasElement) {
+        const canvas = config.canvas;
+        const ctx = config.canvas.getContext("2d");
         const freq = (config && config.freq) ? config.freq : 0.05;
-        const data = new Uint8ClampedArray(4 * width * height);
-
-        for (var yy = 0; yy < height; ++yy)
-            for (var xx = 0; xx < width; ++xx) {
-                var index = 4 * (yy * width + xx);
-                var value = result(xx * freq, yy * freq);
-                if (isNaN(min) || (value < min))
-                    min = value;
-                if (isNaN(max) || (value > max))
-                    max = value;
-                value = Math.floor(255.99 * value);
-                value = Math.min(255, Math.max(0, value));
-
-                data[index + 0] = value;
-                data[index + 1] = value;
-                data[index + 2] = value;
-                data[index + 3] = 255;
-            }
-
-        const ctx = canvas.getContext("2d");
-        ctx.putImageData(new ImageData(data, width, height), 0, 0);
+        drawNoise(ctx, 0, 0, canvas.width, canvas.height,
+                  freq, result, (stats) =>
+                      console.log("DEBUG", stats.min, stats.max));
     }
-    //console.log("DEBUG-range", min, max);
+
     return result;
 };
 
