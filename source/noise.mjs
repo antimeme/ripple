@@ -165,8 +165,8 @@ function generalSmoothStep(order) {
                    factor *= t; return a + c * factor; }, 0);
     };
 }
-export var smoothStep   = generalSmoothStep(1); // 3t^2 - 2t^3
-export var smootherStep = generalSmoothStep(2); // 6t^5 - 15t^4 + 10t^3
+var smoothStep   = generalSmoothStep(1); // 3t^2 - 2t^3
+var smootherStep = generalSmoothStep(2); // 6t^5 - 15t^4 + 10t^3
 
 function createNoiseSimplex(config) {
     return function() {
@@ -174,7 +174,7 @@ function createNoiseSimplex(config) {
 };
 
 /**
- * Draw */
+ * Creates a rectangular canvas image of a given noise function. */
 function drawNoise(ctx, startX, startY, width, height,
                    freq, fn, stats) {
     const data = new Uint8ClampedArray(4 * width * height);
