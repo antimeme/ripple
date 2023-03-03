@@ -158,8 +158,7 @@ function generalSmoothStep(order) {
         coefficients.push(pascalTriangle(-order - 1, n) *
             pascalTriangle(2 * order + 1, order - n));
     return function(t) {
-        var factor = Array.from({length: order})
-                          .reduce((a) => a * t, 1);
+        var factor = Array(order).fill(0).reduce((a) => a * t, 1);
         return (t < 0) ? 0 : (t > 1) ? 1 :
                coefficients.reduce(function(a, c) {
                    factor *= t; return a + c * factor; }, 0);
@@ -168,9 +167,165 @@ function generalSmoothStep(order) {
 var smoothStep   = generalSmoothStep(1); // 3t^2 - 2t^3
 var smootherStep = generalSmoothStep(2); // 6t^5 - 15t^4 + 10t^3
 
+/**
+ * Precomputed properties are required for each noise dimension.
+ * These are created the first time they are needed and cached
+ * for future use. */
+var cacheNoise = {
+    skewFactors: {},
+    unskewFactors: {},
+
+    /**
+     * Convert a point in ordinary space to a skewed space where
+     * simplex vertices match the vertices of a hypercube.  In
+     * this skewed space it's easier to identify which simplex
+     * within the hypercube contains the point.
+     *
+     * @param point an array with one entry per noise dimension
+     * @returns an array representing the point in skewed space */
+    getSkewed: function(point) {
+        var displace = point.reduce((a, c) => a + c, 0);
+        var n = point.length;
+
+        if (isNaN(this.skewFactors[n]))
+            this.skewFactors[n] = ((Math.sqrt(n + 1) - 1) / n);
+        displace *= this.skewFactors[n];
+        return point.map(v => v + displace);
+    },
+
+    /**
+     * Convert a skewed point back to the original space for use in
+     * additional calculations.
+     *
+     * @param point an array in the skewed space
+     * @returns an array representing the point in original space */
+    getUnskewed: function(point) {
+        var displace = point.reduce((a, c) => a + c, 0);
+        var n = point.length;
+
+        if (isNaN(this.unskewFactors[n]))
+            this.unskewFactors[n] = ((1 - 1 / Math.sqrt(n + 1)) / n);
+        displace *= this.unskewFactors[n];
+        return point.map(v => v - displace);
+    },
+
+};
+
 function createNoiseSimplex(config) {
-    return function() {
+    const seed = (config && config.seed) ? config.seed : 0;
+    let debugCount = 12;
+
+    // Compute pseudo-random gradient vectors.  These are what makes
+    // the noise noisy.
+    let gradientLattice = {};
+    function getGradient(vertex) {
+        let result;
+        let lattice = gradientLattice;
+
+        vertex.slice(0, -1).forEach(function(coord) {
+            if (!(coord in lattice))
+                lattice[coord] = {};
+            lattice = lattice[coord];
+        });
+
+        let coord = vertex.slice(-1)[0];
+        if (!(coord in lattice)) {
+            let gradient = [(Math.random() > 0.5) ? 1 : -1];
+            vertex.slice(1).forEach(function(coord) {
+                let direction = Math.random() * Math.PI;
+                let sin = Math.sin(direction);
+                gradient = gradient.map(c => c * sin);
+                gradient.push(Math.cos(direction));
+            });
+            lattice[coord] = gradient;
+        }
+        result = lattice[coord];
+        return result;
     };
+
+    /*
+     * An implementation of Ken Perlin's Simplex Noise in an
+     * arbitrary number of dimensions.  Reference:.
+     *   https://en.wikipedia.org/wiki/Simplex_noise        
+     * Call with coordinates of point in order.  For example,
+     * call noiseSimplex(x, y) for two dimensional noise. */
+    let noiseSimplex = function() {
+        let point = []; // Position for which to calculate noise
+        let ii, jj;
+        for (ii = 0; ii < arguments.length; ++ii)
+            if (!isNaN(arguments[ii])) {
+                point.push(arguments[ii]);
+            } else throw new Error(
+                "argument " + ii + " (\"" + arguments[ii] +
+                "\") is not a number");
+        const n = point.length;
+
+        // ## Coordinate Skewing
+        // Converts points in a regular simplex grid to a skewed grid
+        // where all verticex lie on the corners of a hypercube.  This
+        // makes it easier to determine which of the n-factorial
+        // simplices contains the point.
+        let skewed = cacheNoise.getSkewed(point);
+        let delta = skewed.map(c => c - Math.floor(c));
+
+        // ## Simplical Subdivision
+        // Select the simplex within a hypercube which contains the
+        // input point.  This should run in O(n^2) time and create
+        // n + 1 vertices (where n is the number of dimensions).
+        let simplex = []; // Hypercube vertices in simplex
+        let index;
+        let selection = Array(n).fill(0);
+        simplex.push(selection.slice());
+        for (ii = 0; ii < n; ++ii) {
+            index = undefined;
+            for (jj = 0; jj < n; ++jj) {
+                if (selection[jj])
+                    continue;
+                if (isNaN(index) || (delta[jj] > delta[index]))
+                    index = jj;
+            }
+            if (!isNaN(index))
+                selection[index] = 1;
+            simplex.push(selection.slice());
+        }
+
+        // ## Kernel Summation
+        let result = 0;
+        let surflet = function(delta, gradient) {
+            let result = 1;
+
+            // Compute delta dot gradient
+            result *= delta.reduce(
+                (a, c, ii) => a + (c * gradient[ii]), 0);
+
+            // Separable quintic falloff
+            //result = result * delta.reduce(
+            //    (a, c) => a * (1 - smootherStep(Math.abs(c))), 1);
+
+            // Radial quintic falloff
+            result *= (1 - smootherStep(Math.sqrt(
+                delta.reduce((a, c) => a + (c * c), 0)) / 0.6));
+
+            return result;
+        };
+
+        result = simplex.reduce(function(acc, selection, ii) {
+            // We must compute the difference between the point and
+            // the vertex in the original space, but we'll choose
+            // a gradient in the skewed space because there each
+            // simplex vertex has integer coeficients
+            const vertex = selection.map(
+                (c, jj) => Math.floor(skewed[jj]) + c);
+            return acc + surflet(
+                cacheNoise.getUnskewed(vertex).map(
+                    (c, jj) => point[jj] - c),
+                getGradient(vertex));
+        }, 0);
+
+        return (result * 5 + 1) / 2;
+    };
+
+    return noiseSimplex;
 };
 
 /**
@@ -236,189 +391,3 @@ export default function(config) {
 
     return result;
 };
-
-var noiseSimplex = function() {
-        // An implementation of Ken Perlin's Simplex Noise.
-        //   https://en.wikipedia.org/wiki/Simplex_noise
-        // Call with coordinates of point in order.  For example,
-        // call noise.simplex(x, y) for two dimensional noise.
-        var config, ii, jj, kk, start = 0;
-        var point = []; // Position for which to calculate noise
-
-        // All arguments are expected to be numeric coordinates
-        if ((typeof(arguments[0]) == "object") && arguments[0]) {
-            config = arguments[0];
-            start = 1;
-        }
-        if (!config || !config.point)
-            for (ii = start; ii < arguments.length; ++ii)
-                if (!isNaN(arguments[ii])) {
-                    point.push(arguments[ii]);
-                } else throw new Error(
-                    "noise.simplex: argument " + ii + " (\"" +
-                    arguments[ii] + "\") is not a number");
-        var n = point.length;
-        var radius = (config && config.radius) ? config.radius : 0.6;
-
-        // Precomputed properties are required for each dimension.
-        // These are created the first time they are needed and
-        // cached for future use.
-        if (!this.__cache)
-            this.__cache = {
-                skewFactors: {}, unskewFactors: {},
-                G: {}, P: {},
-
-                getSkewed: function(point) {
-                    // Convert a point in ordinary space to a
-                    // skewed space where simplex vertices match
-                    // the vertices of a hypercube.  In this
-                    // skewed space it's easier to identify which
-                    // hypercube and eventually which simplex any
-                    // given point belongs to.
-                    var ii, factor = 0, n = point.length;
-
-                    for (ii = 0; ii < n; ++ii)
-                        factor += point[ii];
-                    if (isNaN(this.skewFactors[n]))
-                        this.skewFactors[n] = (
-                            (Math.sqrt(n + 1) - 1) / n);
-                    factor *= this.skewFactors[n];
-
-                    var result = [];
-                    for (ii = 0; ii < n; ++ii)
-                        result.push(point[ii] + factor);
-                    return result;
-                },
-
-                getUnskewed: function(point) {
-                    // Convert a skewed point back to the original
-                    // space for use in additional calculations.
-                    var ii, factor = 0, n = point.length;
-
-                    for (ii = 0; ii < n; ++ii)
-                        factor += point[ii];
-                    if (isNaN(this.unskewFactors[n]))
-                        this.unskewFactors[n] = (
-                            (1 - 1 / Math.sqrt(n + 1)) / n);
-                    factor *= this.unskewFactors[n];
-
-                    var result = [];
-                    for (ii = 0; ii < n; ++ii)
-                        result.push(point[ii] - factor);
-                    return result;
-                },
-
-                getGradient: function(vertex) {
-                    // Select a gradient vector which points to a
-                    // hypercube edge -- and therefore does not
-                    // point directly at any simplex vertex.
-                    var ii, n = vertex.length;
-                    var index = 0;
-
-                    if (!this.P[n]) { // Populate cache if necessary
-                        var P = [], limit = n * (1 << (n - 1));
-                        var ii, jj, swap;
-
-                        for (ii = 0; ii < limit; ++ii)
-                            P.push(ii);
-                        for (ii = P.length; ii > 0; --ii) {
-                            // TODO: pseudo-random this
-                            jj = Math.floor(Math.random() * ii);
-                            swap = P[ii - 1];
-                            P[ii - 1] = P[jj];
-                            P[jj] = swap;
-                        }
-                        this.P[n] = P;
-                    }
-
-                    // Compute a pseudo-random index between
-                    // zero and (n * 2^(n - 1)) - 1.
-                    var modulo = this.P[n].length;
-                    for (ii = 0; ii < vertex.length; ++ii)
-                        index = this.P[n][(index + Math.floor(
-                            vertex[ii])) % modulo];
-                    if (index < 0)
-                        index += modulo;
-
-                    // Use index to select a hypercube edge
-                    var result = [];
-                    var usedbits = 0;
-                    for (ii = 0; ii < n; ++ii)
-                        result.push((ii !== Math.floor(
-                            index / (1 << (n - 1)))) ?
-                                    (((index % (1 << (n - 1))) &
-                                      (1 << usedbits++)) ? -1 : 1) : 0);
-                    return result;
-                }
-            };
-
-        // ## Coordinate Skewing
-        // Converts points in a regular simplex grid to a skewed grid
-        // where the verticex lie on the corners of a hypercube.  This
-        // makes it easier to determine which of the n-factorial
-        // simplexes contains the point.
-        var skewed = this.__cache.getSkewed(point);
-        var position = []; // Position within skewed simplex
-        for (ii = 0; ii < n; ++ii)
-            position.push(skewed[ii] - Math.floor(skewed[ii]));
-
-        // ## Simplical Subdivision
-        // Select the simplex in a hypercube which contains the input
-        // point.  This should run in n^2 time (where n is the number
-        // of dimensions the point is in).
-        var simplex = []; // Hypercube vertices in simplex
-        var vertex = [];
-        var index;
-        for (ii = 0; ii < n; ++ii)
-            vertex.push(0);
-        simplex.push(vertex.slice());
-        for (ii = 0; ii < n; ++ii) {
-            index = undefined;
-            for (jj = 0; jj < n; ++jj) {
-                if (vertex[jj])
-                    continue;
-                if (isNaN(index) || (position[jj] > position[index]))
-                    index = jj;
-            }
-            if (!isNaN(index))
-                vertex[index] = 1;
-            simplex.push(vertex.slice());
-        }
-
-        // Convert the abstract simplex into unskewed coordinates
-        // so that we can interpolate based on displacement in
-        // the steps that follow
-        for (ii = 0; ii < simplex.length; ++ii) {
-            for (jj = 0; jj < simplex[ii].length; ++jj)
-                simplex[ii][jj] += Math.floor(skewed[jj]);
-            simplex[ii] = this.__cache.getUnskewed(simplex[ii]);
-        }
-        
-        // ## Gradient Selection
-        var gradients = []; // Pseudo random gradients per vertex
-        for (ii = 0; ii < simplex.length; ++ii)
-            gradients.push(this.__cache.getGradient(simplex[ii]));
-        //console.error("DEBUG", gradients);
-
-        // ## Kernel Summation
-        var result = 0;
-        var displacement, dsquared, contribution, gdot;
-
-        for (ii = 0; ii < simplex.length; ++ii) {
-            dsquared = 0;
-            displacement = [];
-            for (jj = 0; jj < n; ++jj) {
-                displacement[jj] = point[jj] - simplex[ii][jj];
-                dsquared += displacement[jj] * displacement[jj];
-            }
-
-            contribution = radius - dsquared;
-            gdot = 0;
-            for (jj = 0; jj < displacement.length; ++jj)
-                gdot += gradients[ii][jj] * displacement[jj];
-            contribution *= contribution;
-            contribution *= contribution;
-            result += 12 * (1 << n) * contribution * gdot;
-        }
-        return result;
-    };
