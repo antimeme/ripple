@@ -18,11 +18,16 @@
      const canvas = document.querySelector("#noise");
      canvas.width = document.body.clientWidth;
      canvas.height = document.body.clientHeight;
-     noise({
-         canvas: canvas,
-         //algorithm: "perlin",
-         freq: 0.01
-     });
+
+     var config = { canvas: canvas };
+     window.location.search.substr(1).split("&")
+           .forEach(function(item) {
+               let pair = item.split("=");
+               config[pair[0]] =
+                   (pair.length === 2) ? decodeURIComponent(
+                       pair[1].replace(/\+/g, " ")) : true; });
+
+     noise(config);
  };
 
  if (document.attachEvent ?
