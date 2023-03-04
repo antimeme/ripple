@@ -174,6 +174,7 @@ var smootherStep = generalSmoothStep(2); // 6t^5 - 15t^4 + 10t^3
 var cacheNoise = {
     skewFactors: {},
     unskewFactors: {},
+    sqrts: {},
 
     /**
      * Convert a point in ordinary space to a skewed space where
@@ -216,8 +217,10 @@ function createNoiseSimplex(config) {
     const separable = (config && config.separable) ? 1 : 0;
     let debugCount = 12;
 
-    // Compute pseudo-random gradient vectors.  These are what makes
-    // the noise noisy.
+    // Compute pseudo-random gradient vectors given a vertex
+    // with one integer coordinate for each dimension.
+    // Gradients are what makes the noise noisy.
+    // :TODO: make these respect the seed value
     let gradientLattice = {};
     function getGradient(vertex) {
         let result;
@@ -250,7 +253,7 @@ function createNoiseSimplex(config) {
      *   https://en.wikipedia.org/wiki/Simplex_noise        
      * Call with coordinates of point in order.  For example,
      * call noiseSimplex(x, y) for two dimensional noise. */
-    let noiseSimplex = function() {
+    function noiseSimplex() {
         let point = []; // Position for which to calculate noise
         let ii, jj;
         for (ii = 0; ii < arguments.length; ++ii)
@@ -279,18 +282,18 @@ function createNoiseSimplex(config) {
                 let index = undefined;
 
                 selection.forEach(function(coord, ii) {
-                    if (coord)
-                        return;
-                    if (isNaN(index) || (delta[ii] > delta[index]))
-                        index = ii;
-                });
+                    if (!coord && (isNaN(index) ||
+                                   (delta[ii] > delta[index])))
+                        index = ii; });
                 if (!isNaN(index))
                     selection[index] = 1;
                 return selection.slice();
-        }));
+            }) );
 
         // ## Kernel Summation
-        const sqrt_n = Math.sqrt(n);
+        if (!(n in cacheNoise.sqrts))
+            cacheNoise.sqrts[n] = Math.sqrt(n);
+        const sqrt_n = cacheNoise.sqrts[n];
         let result = 0;
         let surflet = function(delta, gradient) {
             let result = delta.reduce( // this is a dot product
@@ -326,13 +329,36 @@ function createNoiseSimplex(config) {
     return noiseSimplex;
 };
 
+function applyOctaves(fn, config) {
+    const octaves   = (config && config.octaves) ?
+                      parseInt(config.octaves) :  1;
+    const amplitude = (config && config.amplitude) ?
+                      parseFloat(config.amplitude) : 1;
+    const bias      = (config && config.bias) ?
+                      parseFloat(config.bias) : 0.5;
+    const lambda    = (config && config.lambda) ?
+                      parseFloat(config.lambda) : 20;
+    const frequency = 1/lambda;
+
+    return function() {
+        let value = 0, ii;
+        let amp   = amplitude;
+        let freq  = frequency;
+
+        for (ii = 0; ii < octaves; ++ii) {
+            value += amp * fn.apply(
+                this, Array.prototype.map.call(
+                    arguments, coord => coord * freq));
+            amp  *= 0.5;
+            freq *= 2;
+        }
+        return value + bias;
+    };
+}
+
 /**
  * Creates a rectangular canvas image of a given noise function. */
 function drawNoise(ctx, fn, config) {
-    const spread = (config && config.spread) ?
-                   parseFloat(config.spread) : 1.75;
-    const bias   = (config && config.bias) ?
-                   parseFloat(config.bias) : 0.5;
     const red    = (config && config.red) ?
                    parseFloat(config.red) : 0.5;
     const green  = (config && config.green) ?
@@ -349,16 +375,14 @@ function drawNoise(ctx, fn, config) {
                    parseInt(config.height) : 240;
     const stats  = (config && config.stats) ?
                    config.stats : function() {};
-    const space  = (config && config.space) ?
-                   parseFloat(config.space) : 20;
-    const freq = isNaN(space) ? 0.01 : (1/space);
+    const freq   = 125 / Math.min(width, height);
     const data   = new Uint8ClampedArray(4 * width * height);
     let max = undefined, min = undefined;
 
     for (let yy = 0; yy < height; ++yy)
         for (let xx = 0; xx < width; ++xx) {
             let index = 4 * (yy * width + xx);
-            let value = fn(xx * freq, yy * freq) * spread + bias;
+            let value = fn(xx * freq, yy * freq);
 
             if (isNaN(min) || (value < min))
                 min = value;
@@ -401,16 +425,15 @@ export default function(config) {
         }
     } else result = createNoiseSimplex(config);
 
+    result = applyOctaves(result, config);
+
     if (config && config.canvas &&
         config.canvas instanceof HTMLCanvasElement) {
         const canvas = config.canvas;
         const ctx = config.canvas.getContext("2d");
-        const space = (config && config.space) ?
-                      parseFloat(config.space) : 20.0;
         drawNoise(ctx, result, Object.assign(config, {
             width: canvas.width,
             height: canvas.height,
-            space: space,
             stats: s => console.log(
                 "DEBUG-stats", s.min, s.max, s.max - s.min)
         }));

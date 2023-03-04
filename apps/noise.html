@@ -16,10 +16,7 @@
 
  var go = function() {
      const canvas = document.querySelector("#noise");
-     canvas.width = document.body.clientWidth;
-     canvas.height = document.body.clientHeight;
-
-     var config = { canvas: canvas };
+     const config = { canvas: canvas };
      window.location.search.substr(1).split("&")
            .forEach(function(item) {
                let pair = item.split("=");
@@ -27,7 +24,13 @@
                    (pair.length === 2) ? decodeURIComponent(
                        pair[1].replace(/\+/g, " ")) : true; });
 
-     noise(config);
+
+     window.addEventListener("resize", function() {
+         canvas.width = document.body.clientWidth;
+         canvas.height = document.body.clientHeight;
+         noise(config);
+     });
+     window.dispatchEvent(new Event("resize"));
  };
 
  if (document.attachEvent ?
