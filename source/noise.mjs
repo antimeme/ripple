@@ -18,10 +18,10 @@
 // ---------------------------------------------------------------------
 // A collection of tools for creating pseudo-random noise.
 //
-// Any code here borrowed from someone else is credited and marked.
-// Where applicable the original license is included and applies.
+// Code borrowed from someone else is credited and the original license
+// is included where applicable.
 
-var noiseSquirrel5 = function(seed, px, py, pz, pt) {
+function noiseSquirrel5(seed, px, py, pz, pt) {
     // Squirrel Eiserloh's raw noise function
     // https://twitter.com/SquirrelTweets/status/1421251894274625536
     //
@@ -36,7 +36,7 @@ var noiseSquirrel5 = function(seed, px, py, pz, pt) {
     if (isNaN(px))
         throw new Error("Position x must be numeric: " + px);
 
-    var mangledBits = Math.floor(px);
+    let mangledBits = Math.floor(px);
     if (!isNaN(py))
         mangledBits += 198491317 * Math.floor(py);
     if (!isNaN(pz))
@@ -65,78 +65,77 @@ var noiseSquirrel5 = function(seed, px, py, pz, pt) {
     mangledBits ^= (mangledBits >> 15);
     mangledBits *= SQ5_BIT_NOISE5;
     mangledBits ^= (mangledBits >> 17);
+    mangledBits >>>= 0; // convert to 32-bit signed integer
     return mangledBits;
 };
 
-var perlinSimplex3 = function(x, y, z) {
+function perlinSimplex3(x, y, z) {
     // Adapted from chapter 2 of Ken Perlin's 2001 SIGGRAPH
     // Course Notes.
-    var A = [];
-    var T = [0x15,0x38,0x32,0x2c,0x0d,0x13,0x07,0x2a];
-    var bi = function(N, B) { return N>>B & 1; };
-    var b = function(i, j, k, B) {
+    let A = [];
+    let T = [0x15,0x38,0x32,0x2c,0x0d,0x13,0x07,0x2a];
+    let bi = function(N, B) { return N>>B & 1; };
+    let b = function(i, j, k, B) {
         return T[bi(i,B)<<2 | bi(j,B)<<1 | bi(k,B)];
     };
-    var shuffle = function(i, j, k) {
-        return b(i,j,k,0) + b(j,k,i,1) + b(k,i,j,2) + b(i,j,k,3) +
-            b(j,k,i,4) + b(k,i,j,5) + b(i,j,k,6) + b(j,k,i,7) ;
+    let shuffle = function(i, j, k) {
+        return b(i, j, k, 0) + b(j, k, i, 1) + b(k, i, j, 2) +
+               b(i, j, k, 3) + b(j, k, i, 4) + b(k, i, j, 5) +
+               b(i, j, k, 6) + b(j, k, i, 7) ;
     }
 
-    var K = function(a) {
-        var s = (A[0]+A[1]+A[2])/6.;
-        var x = u - A[0] + s,
+    let K = function(a) {
+        let s = (A[0] + A[1] + A[2]) / 6.;
+        let x = u - A[0] + s,
             y = v - A[1] + s,
             z = w - A[2] + s,
             t = .6 - x * x - y * y - z * z;
-        var h = shuffle(i + A[0], j + A[1], k + A[2]);
+        let h = shuffle(i + A[0], j + A[1], k + A[2]);
         A[a]++;
         if (t < 0)
             return 0;
-        var b5 = h>>5 & 1,
+        let b5 = h>>5 & 1,
             b4 = h>>4 & 1,
             b3 = h>>3 & 1,
             b2 = h>>2 & 1,
             b = h & 3;
-        var p = b==1 ? x : b==2 ? y : z,
-            q = b==1 ? y : b==2 ? z : x,
-            r = b==1 ? z : b==2 ? x : y;
-        p = (b5==b3 ? -p : p);
-        q = (b5==b4 ? -q : q);
-        r = (b5!=(b4^b3) ? -r : r);
+        let p = b == 1 ? x : b == 2 ? y : z,
+            q = b == 1 ? y : b == 2 ? z : x,
+            r = b == 1 ? z : b == 2 ? x : y;
+        p = (b5 == b3 ? -p : p);
+        q = (b5 == b4 ? -q : q);
+        r = (b5 != (b4 ^ b3) ? -r : r);
         t *= t;
-        return 8 * t * t * (p + (b==0 ? q+r : b2==0 ? q : r));
+        return 8 * t * t * (p + (b == 0 ? q + r : b2 == 0 ? q : r));
     }
 
-    if (isNaN(x))
-        x = 0;
-    if (isNaN(y))
-        y = 0;
-    if (isNaN(z))
-        z = 0;
-    var i, j, k;
-    var u, v, w;
-    var s = (x + y + z)/3;
+    x = isNaN(x) ? 0 : x;
+    y = isNaN(y) ? 0 : y;
+    z = isNaN(z) ? 0 : z;
+    let i, j, k;
+    let u, v, w;
+    let s = (x + y + z) / 3;
 
     i = Math.floor(x + s);
     j = Math.floor(y + s);
     k = Math.floor(z + s);
-    s = (i + j + k)/6.;
+    s = (i + j + k) / 6.;
     u = x - i + s;
     v = y - j + s;
     w = z - k + s;
 
-    A[0]=A[1]=A[2]=0;
-    var hi = u>=w ? u>=v ? 0 : 1 : v>=w ? 1 : 2;
-    var lo = u< w ? u< v ? 0 : 1 : v< w ? 1 : 2;
+    A[0] = A[1] = A[2] = 0;
+    let hi = u >= w ? u >= v ? 0 : 1 : v >= w ? 1 : 2;
+    let lo = u <  w ? u <  v ? 0 : 1 : v <  w ? 1 : 2;
     
-    return K(hi) + K(3-hi-lo) + K(lo) + K(0);
+    return K(hi) + K(3 - hi - lo) + K(lo) + K(0);
 };
 
 /**
  * Returns binomial coefficient without explicit factorials */
 function pascalTriangle(a, b) {
-  var result = 1;
-  for (var ii = 0; ii < b; ++ii)
+  let result = 1;
+  for (let ii = 0; ii < b; ++ii)
     result *= (a - ii) / (ii + 1);
   return result;
 }
@@ -153,28 +152,43 @@ function pascalTriangle(a, b) {
  * but should perform much better because coefficients are computed
  * in advance rather than on each call. */
 function generalSmoothStep(order) {
-    var coefficients = [];
-    for (var n = 0; n <= order; ++n)
+    let coefficients = [];
+    for (let n = 0; n <= order; ++n)
         coefficients.push(pascalTriangle(-order - 1, n) *
             pascalTriangle(2 * order + 1, order - n));
     return function(t) {
-        var factor = Array(order).fill(0).reduce((a) => a * t, 1);
+        let factor = Array(order).fill(0).reduce((a) => a * t, 1);
         return (t < 0) ? 0 : (t > 1) ? 1 :
                coefficients.reduce(function(a, c) {
                    factor *= t; return a + c * factor; }, 0);
     };
 }
-var smoothStep   = generalSmoothStep(1); // 3t^2 - 2t^3
-var smootherStep = generalSmoothStep(2); // 6t^5 - 15t^4 + 10t^3
+let smoothStep   = generalSmoothStep(1); // 3t^2 - 2t^3
+let smootherStep = generalSmoothStep(2); // 6t^5 - 15t^4 + 10t^3
 
 /**
  * Precomputed properties are required for each noise dimension.
  * These are created the first time they are needed and cached
  * for future use. */
-var cacheNoise = {
-    skewFactors: {},
-    unskewFactors: {},
-    sqrts: {},
+let cacheNoise = {
+
+    /**
+     * Compute and cache the height of an n dimensional simplex */
+    getSimplexHeight: function(n) {
+        if (!(n in this.__simplexHeights))
+            this.__simplexHeights[n] = Math.sqrt((n + 1) / (2 * n));
+        return this.__simplexHeights[n];
+    },
+    __simplexHeights: {},
+
+    getSimplexEdge: function(n) {
+        if (!(n in this.__simplexEdges))
+            this.__simplexEdges[n] = Math.sqrt(
+                this.getUnskewed(Array(n).fill(1))
+                    .reduce((a, c) => a + c * c, 1));
+        return this.__simplexEdges[n];
+    },
+    __simplexEdges: {},
 
     /**
      * Convert a point in ordinary space to a skewed space where
@@ -185,14 +199,15 @@ var cacheNoise = {
      * @param point an array with one entry per noise dimension
      * @returns an array representing the point in skewed space */
     getSkewed: function(point) {
-        var displace = point.reduce((a, c) => a + c, 0);
-        var n = point.length;
+        let n = point.length;
 
-        if (isNaN(this.skewFactors[n]))
-            this.skewFactors[n] = ((Math.sqrt(n + 1) - 1) / n);
-        displace *= this.skewFactors[n];
+        if (!(n in this.__skewFactors))
+            this.__skewFactors[n] = ((Math.sqrt(n + 1) - 1) / n);
+        let displace = point.reduce((a, c) =>
+            a + c, 0) * this.__skewFactors[n];
         return point.map(v => v + displace);
     },
+    __skewFactors: {},
 
     /**
      * Convert a skewed point back to the original space for use in
@@ -201,26 +216,37 @@ var cacheNoise = {
      * @param point an array in the skewed space
      * @returns an array representing the point in original space */
     getUnskewed: function(point) {
-        var displace = point.reduce((a, c) => a + c, 0);
-        var n = point.length;
+        let n = point.length;
 
-        if (isNaN(this.unskewFactors[n]))
-            this.unskewFactors[n] = ((1 - 1 / Math.sqrt(n + 1)) / n);
-        displace *= this.unskewFactors[n];
+        if (!(n in this.__unskewFactors))
+            this.__unskewFactors[n] = ((1 - 1 / Math.sqrt(n + 1)) / n);
+        let displace = point.reduce((a, c) =>
+            a + c, 0) * this.__unskewFactors[n];
         return point.map(v => v - displace);
     },
+    __unskewFactors: {},
 
 };
 
 function createNoiseSimplex(config) {
-    const seed = (config && config.seed) ? config.seed : 0;
     const separable = (config && config.separable) ? 1 : 0;
-    let debugCount = 12;
 
-    // Compute pseudo-random gradient vectors given a vertex
-    // with one integer coordinate for each dimension.
-    // Gradients are what makes the noise noisy.
-    // :TODO: make these respect the seed value
+    // As we get farther from simplex vertices the influence should
+    // fall off gradually.  This is how that gets done.
+    function falloff(t) { return 1 - smootherStep(Math.abs(t)); }
+
+    // Generate pseudo-random numbers for use in setting gradient
+    // vector directions.
+    let seed = ((config && config.seed) ? parseInt(config.seed) : 0) ||
+               Math.floor(Math.random() * 1024);
+    let random = function(vertex, index) {
+        return vertex.reduce(
+            (a, c) => noiseSquirrel5(a, c),
+            noiseSquirrel5(seed, index)) / (2 * (1 << 30));
+    }
+
+    // Compute pseudo-random gradient vectors given a vertex with one
+    // integer coordinate for each dimension.
     let gradientLattice = {};
     function getGradient(vertex) {
         let result;
@@ -234,9 +260,9 @@ function createNoiseSimplex(config) {
 
         let coord = vertex.slice(-1)[0];
         if (!(coord in lattice)) {
-            let gradient = [(Math.random() > 0.5) ? 1 : -1];
-            vertex.slice(1).forEach(function(coord) {
-                let direction = Math.random() * Math.PI;
+            let gradient = [(random(vertex, 0) > 0.5) ? 1 : -1];
+            vertex.slice(1).forEach(function(coord, ii) {
+                let direction = random(vertex, ii) * Math.PI;
                 let sin = Math.sin(direction);
                 gradient = gradient.map(c => c * sin);
                 gradient.push(Math.cos(direction));
@@ -278,7 +304,7 @@ function createNoiseSimplex(config) {
         // n + 1 vertices (where n is the number of dimensions).
         let selection = Array(n).fill(0);
         let simplex = [selection.slice()].concat(
-            Array(n).fill(selection).map(function() {
+            Array(n).fill(selection).map(function(_) {
                 let index = undefined;
 
                 selection.forEach(function(coord, ii) {
@@ -291,24 +317,20 @@ function createNoiseSimplex(config) {
             }) );
 
         // ## Kernel Summation
-        if (!(n in cacheNoise.sqrts))
-            cacheNoise.sqrts[n] = Math.sqrt(n);
-        const sqrt_n = cacheNoise.sqrts[n];
-        let result = 0;
+        const influence = cacheNoise.getSimplexEdge(n);
         let surflet = function(delta, gradient) {
             let result = delta.reduce( // this is a dot product
                 (a, c, ii) => a + (c * gradient[ii]), 0);
 
-            if (separable) {
-                result *= delta.reduce((a, c) => a * (
-                    1 - smootherStep(Math.abs(c))), 1);
-            } else result *= (1 - smootherStep(Math.sqrt(
-                delta.reduce((a, c) => a + (c * c), 0)) * sqrt_n));
+            if (separable)
+                result *= delta.reduce((a, c) => a * falloff(c), 1);
+            else result *= falloff(Math.sqrt(
+                delta.reduce((a, c) => a + (c * c), 0)) * influence);
 
             return result;
         };
 
-        result = simplex.reduce(function(acc, selection, ii) {
+        return simplex.reduce(function(acc, selection, ii) {
             // We must compute the difference between the point and
             // the vertex in the original space, but we'll choose
             // a gradient in the skewed space because there each
@@ -320,25 +342,24 @@ function createNoiseSimplex(config) {
                     (c, jj) => point[jj] - c),
                 getGradient(vertex));
         }, 0);
-
-        if (debugCount-- > 0)
-            console.log("DEBUG-factors", cacheNoise.unskewFactors[2]);
-        return result;
     };
 
     return noiseSimplex;
 };
 
+/**
+ * Repeats a given noise function with half the amplitude and
+ * twice the frequency for each octave to create finer details. */
 function applyOctaves(fn, config) {
-    const octaves   = (config && config.octaves) ?
-                      parseInt(config.octaves) :  1;
-    const amplitude = (config && config.amplitude) ?
-                      parseFloat(config.amplitude) : 1;
-    const bias      = (config && config.bias) ?
-                      parseFloat(config.bias) : 0.5;
-    const lambda    = (config && config.lambda) ?
-                      parseFloat(config.lambda) : 20;
-    const frequency = 1/lambda;
+    const octaves    = (config && config.octaves) ?
+                       parseInt(config.octaves) :  1;
+    const amplitude  = (config && config.amplitude) ?
+                       parseFloat(config.amplitude) : 1;
+    const bias       = (config && config.bias) ?
+                       parseFloat(config.bias) : 0.5;
+    const wavelength = (config && config.wavelength) ?
+                       parseFloat(config.wavelength) : 20;
+    const frequency = 1/wavelength;
 
     return function() {
         let value = 0, ii;
@@ -346,9 +367,8 @@ function applyOctaves(fn, config) {
         let freq  = frequency;
 
         for (ii = 0; ii < octaves; ++ii) {
-            value += amp * fn.apply(
-                this, Array.prototype.map.call(
-                    arguments, coord => coord * freq));
+            value += amp * fn.apply(this, Array.prototype.map.call(
+                arguments, coord => coord * freq));
             amp  *= 0.5;
             freq *= 2;
         }
@@ -356,15 +376,47 @@ function applyOctaves(fn, config) {
     };
 }
 
+function drawGrid(ctx, width, height, size) {
+    for (let ii = 0; ii <= (width / size); ++ii) {
+        ctx.moveTo(ii * size, 0);
+        ctx.lineTo(ii * size, height);
+    }
+    for (let ii = 0; ii <= (height / size); ++ii) {
+        ctx.moveTo(0, ii * size, 0);
+        ctx.lineTo(width, ii * size);
+    }
+    return ctx;
+}
+
+function drawSimplexLattice(ctx, width, height, size) {
+    for (let ii = 0; ii <= (width / size); ++ii) {
+        for (let jj = 0; jj <= (height / size); ++jj) {
+            let node = cacheNoise.getUnskewed([ii * size, jj * size]);
+            ctx.moveTo(node[0] + size / 25, node[1]);
+            ctx.arc(node[0], node[1], size / 25, 0, 2 * Math.PI);
+        }
+    }
+    return ctx;
+}
+
+function parseColorWeight(config, name, base) {
+    let result = isNaN(base) ? 1 : base;
+    if (config && name in config) {
+        let value = parseFloat(config[name]);
+        if (isNaN(value) || (value < 0) || (value > 256)) {
+        } else if ((value > 1) && (value <= 256))
+            result = value / 256;
+        else result = value;
+    }
+    return result;
+};
+
 /**
  * Creates a rectangular canvas image of a given noise function. */
 function drawNoise(ctx, fn, config) {
-    const red    = (config && config.red) ?
-                   parseFloat(config.red) : 0.5;
-    const green  = (config && config.green) ?
-                   parseFloat(config.green) : 0.5;
-    const blue   = (config && config.blue) ?
-                   parseFloat(config.blue) : 1;
+    const red    = parseColorWeight(config, "red", 0.5);
+    const green  = parseColorWeight(config, "green", 0.5);
+    const blue   = parseColorWeight(config, "blue", 1);
     const startX = (config && config.startX) ?
                    parseInt(config.startX) : 0
     const startY = (config && config.startY) ?
@@ -375,7 +427,9 @@ function drawNoise(ctx, fn, config) {
                    parseInt(config.height) : 240;
     const stats  = (config && config.stats) ?
                    config.stats : function() {};
-    const freq   = 125 / Math.min(width, height);
+    const wavelength = (config && config.wavelength) ?
+                       parseFloat(config.wavelength) : 20;
+    const freq   = 1; //25 / Math.min(width, height);
     const data   = new Uint8ClampedArray(4 * width * height);
     let max = undefined, min = undefined;
 
@@ -384,10 +438,8 @@ function drawNoise(ctx, fn, config) {
             let index = 4 * (yy * width + xx);
             let value = fn(xx * freq, yy * freq);
 
-            if (isNaN(min) || (value < min))
-                min = value;
-            if (isNaN(max) || (value > max))
-                max = value;
+            min = (isNaN(min) || (value < min)) ? value : min;
+            max = (isNaN(max) || (value > max)) ? value : max;
 
             data[index + 0] = Math.min(255, Math.max(0, Math.floor(
                 255.99 * red * value)));
@@ -406,21 +458,21 @@ function drawNoise(ctx, fn, config) {
 }
 
 export default function(config) {
-    var result = undefined;
+    let result = undefined;
 
     // Choose a noise algorithm
-    var algorithm = (config && config.algorithm) ?
+    let algorithm = (config && config.algorithm) ?
         config.algorithm : undefined;
-    var seed = (config && config.seed) ? config.seed : 0;
+    let seed = (config && config.seed) ? config.seed : 0;
     if (algorithm === "squirrel") {
-        result = function(x, y) {
-            var seed = 100;
-            var value = noiseSquirrel5(seed, x, y);
+        result = function(x, y, z, t) {
+            let seed = 100;
+            let value = noiseSquirrel5(seed, x, y, z, t);
             return (value / (2 * (1 << 30)));
         }
     } else if (algorithm === "perlin") {
         result = function(x, y) {
-            var value = perlinSimplex3(x, y);
+            let value = perlinSimplex3(x, y);
             return (1 + (value / 0.32549)) / 2;
         }
     } else result = createNoiseSimplex(config);
@@ -433,10 +485,7 @@ export default function(config) {
         const ctx = config.canvas.getContext("2d");
         drawNoise(ctx, result, Object.assign(config, {
             width: canvas.width,
-            height: canvas.height,
-            stats: s => console.log(
-                "DEBUG-stats", s.min, s.max, s.max - s.min)
-        }));
+            height: canvas.height}));
     }
 
     return result;

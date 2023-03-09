@@ -16,7 +16,11 @@
 
  var go = function() {
      const canvas = document.querySelector("#noise");
-     const config = { canvas: canvas };
+     const config = {
+         canvas: canvas,
+         stats: s => console.log(
+             "Stats:", s.min, s.max, s.max - s.min)
+     };
      window.location.search.substr(1).split("&")
            .forEach(function(item) {
                let pair = item.split("=");
@@ -24,13 +28,16 @@
                    (pair.length === 2) ? decodeURIComponent(
                        pair[1].replace(/\+/g, " ")) : true; });
 
-
      window.addEventListener("resize", function() {
          canvas.width = document.body.clientWidth;
          canvas.height = document.body.clientHeight;
          noise(config);
      });
      window.dispatchEvent(new Event("resize"));
+
+     canvas.addEventListener("click", function(event) {
+         console.log("DEBUG-client", event.clientX, event.clientY);
+     });
  };
 
  if (document.attachEvent ?
