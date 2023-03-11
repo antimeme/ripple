@@ -230,6 +230,8 @@ let cacheNoise = {
 
 function createNoiseSimplex(config) {
     const separable = (config && config.separable) ? 1 : 0;
+    const reach = (config && config.reach) ?
+                  parseFloat(config.reach) : 1;
 
     // As we get farther from simplex vertices the influence should
     // fall off gradually.  This is how that gets done.
@@ -242,7 +244,7 @@ function createNoiseSimplex(config) {
     let random = function(vertex, index) {
         return vertex.reduce(
             (a, c) => noiseSquirrel5(a, c),
-            noiseSquirrel5(seed, index)) / (2 * (1 << 30));
+            noiseSquirrel5(seed, index)) / (-1 >>> 1);
     }
 
     // Compute pseudo-random gradient vectors given a vertex with one
@@ -296,7 +298,7 @@ function createNoiseSimplex(config) {
         // makes it easier to determine which of the n-factorial
         // simplices contains the point.
         let skewed = cacheNoise.getSkewed(point);
-        let delta = skewed.map(c => c - Math.floor(c));
+        let delta  = skewed.map(c => c - Math.floor(c));
 
         // ## Simplical Subdivision
         // Select the simplex within a hypercube which contains the
@@ -317,7 +319,7 @@ function createNoiseSimplex(config) {
             }) );
 
         // ## Kernel Summation
-        const influence = cacheNoise.getSimplexEdge(n);
+        const influence = reach * cacheNoise.getSimplexEdge(n);
         let surflet = function(delta, gradient) {
             let result = delta.reduce( // this is a dot product
                 (a, c, ii) => a + (c * gradient[ii]), 0);
@@ -468,14 +470,11 @@ export default function(config) {
         result = function(x, y, z, t) {
             let seed = 100;
             let value = noiseSquirrel5(seed, x, y, z, t);
-            return (value / (2 * (1 << 30)));
+            return (value / (-1 >>> 0));
         }
-    } else if (algorithm === "perlin") {
-        result = function(x, y) {
-            let value = perlinSimplex3(x, y);
-            return (1 + (value / 0.32549)) / 2;
-        }
-    } else result = createNoiseSimplex(config);
+    } else if (algorithm === "perlin")
+        result = perlinSimplex3;
+    else result = createNoiseSimplex(config);
 
     result = applyOctaves(result, config);
 
