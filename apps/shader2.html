@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>Shader Experiment</title>
+<style>
+ html, body, canvas, div { margin: 0; padding: 0 }
+ html, body { height: 100%; }
+ body { overflow-x: visible; overflow-y: hidden; }
+</style>
+<canvas id="experiment"></canvas>
+
+<script id="vertex-shader" type="x-shader/x-vertex">// <![CDATA[
+ attribute vec2 a_position;
+ void main() {
+     gl_Position = vec4(a_position, 0, 1);
+ } // ]]></script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">// <![CDATA[
+ #ifdef GL_ES
+ precision mediump float;
+ #endif
+ uniform vec2  u_resolution;
+ uniform vec2  u_mouse;
+ uniform float u_time;
+
+ void main() {
+     vec2 st = gl_FragCoord.xy / u_resolution;
+     gl_FragColor = vec4(abs(sin(u_time)), 0.0, 0.0, 1.0);
+ } // ]]></script>
+
+<script type="module">//<![CDATA[
+ let gl;
+ let width;
+ let height;
+ let program;
+ let initialized = 0;
+ let u_resolution;
+ let u_mouse;
+ let u_time;
+
+ function init() {
+     gl.viewport(0, 0, gl.drawingBufferWidth,
+                 gl.drawingBufferHeight);
+     let buffer = gl.createBuffer();
+     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+     gl.bufferData(
+         gl.ARRAY_BUFFER, 
+         new Float32Array([
+            -1.0, -1.0,  1.0, -1.0,
+            -1.0,  1.0, -1.0,  1.0,
+             1.0, -1.0,  1.0,  1.0]), 
+         gl.STATIC_DRAW
+     );
+
+     program = gl.createProgram();
+     var shader;
+
+     shader = gl.createShader(gl.VERTEX_SHADER);
+     gl.shaderSource(shader, document.getElementById(
+         "vertex-shader").text);
+     gl.compileShader(shader);
+     gl.attachShader(program, shader);
+     shader = gl.createShader(gl.FRAGMENT_SHADER);
+     gl.shaderSource(shader, document.getElementById(
+         "fragment-shader").text);
+     gl.compileShader(shader);
+     gl.attachShader(program, shader);
+     gl.linkProgram(program);
+
+     u_resolution = gl.getUniformLocation(program, "u_resolution");
+     u_time       = gl.getUniformLocation(program, "u_time");
+     u_mouse      = gl.getUniformLocation(program, "u_mouse");
+
+     gl.useProgram(program);
+
+     return 1;
+ }
+
+ function draw() {
+     const now = new Date().getTime() / 1000;
+     if (!initialized)
+         initialized = init();
+
+     gl.uniform2f(u_resolution, width, height);
+     gl.uniform1f(u_time, now);
+     gl.uniform2f(u_mouse, 0.0, 0.0);
+
+     gl.clearColor(1.0, 0.0, 0.0, 1.0);
+     gl.clear(gl.COLOR_BUFFER_BIT);
+     var positionLocation = gl.getAttribLocation(program, "a_position");
+     gl.enableVertexAttribArray(positionLocation);
+     gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+     gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+     requestAnimationFrame(draw);
+ }
+ 
+ function go() {
+     const canvas = document.querySelector("#experiment");
+     gl = canvas.getContext("webgl");
+
+     window.addEventListener("resize", function() {
+         width = canvas.width = document.body.clientWidth;
+         height = canvas.height = document.body.clientHeight;
+         console.log("DEBUG u_resolution", width, height);
+
+         draw();
+     });
+     window.dispatchEvent(new Event("resize"));
+
+ }
+
+ if (document.attachEvent ?
+     (document.readyState === "complete") :
+     (document.readyState !== "loading"))
+     go();
+ else document.addEventListener('DOMContentLoaded', go);
+ //]]></script>
