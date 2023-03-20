@@ -27,7 +27,7 @@
 
  void main() {
      vec2 st = gl_FragCoord.xy / u_resolution;
-     gl_FragColor = vec4(abs(sin(u_time)), 0.0, 0.0, 1.0);
+     gl_FragColor = vec4(st.x, st.y, abs(sin(u_time / 2.0)), 1.0);
  } // ]]></script>
 
 <script type="module">//<![CDATA[
@@ -41,8 +41,6 @@
  let u_time;
 
  function init() {
-     gl.viewport(0, 0, gl.drawingBufferWidth,
-                 gl.drawingBufferHeight);
      let buffer = gl.createBuffer();
      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
      gl.bufferData(
@@ -75,7 +73,7 @@
 
      gl.useProgram(program);
 
-     return 1;
+     return new Date().getTime() / 1000;
  }
 
  function draw() {
@@ -83,9 +81,12 @@
      if (!initialized)
          initialized = init();
 
-     gl.uniform2f(u_resolution, width, height);
-     gl.uniform1f(u_time, now);
+     gl.viewport(0, 0, gl.drawingBufferWidth,
+                 gl.drawingBufferHeight);
+     gl.uniform2fv(u_resolution, [width, height]);
+     gl.uniform1f(u_time, now - initialized);
      gl.uniform2f(u_mouse, 0.0, 0.0);
+     //console.log("DEBUG", now);
 
      gl.clearColor(1.0, 0.0, 0.0, 1.0);
      gl.clear(gl.COLOR_BUFFER_BIT);
@@ -104,8 +105,6 @@
      window.addEventListener("resize", function() {
          width = canvas.width = document.body.clientWidth;
          height = canvas.height = document.body.clientHeight;
-         console.log("DEBUG u_resolution", width, height);
-
          draw();
      });
      window.dispatchEvent(new Event("resize"));
