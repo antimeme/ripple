@@ -378,87 +378,6 @@ function applyOctaves(fn, config) {
     };
 }
 
-function drawGrid(ctx, width, height, size) {
-    for (let ii = 0; ii <= (width / size); ++ii) {
-        ctx.moveTo(ii * size, 0);
-        ctx.lineTo(ii * size, height);
-    }
-    for (let ii = 0; ii <= (height / size); ++ii) {
-        ctx.moveTo(0, ii * size, 0);
-        ctx.lineTo(width, ii * size);
-    }
-    return ctx;
-}
-
-function drawSimplexLattice(ctx, width, height, size) {
-    for (let ii = 0; ii <= (width / size); ++ii) {
-        for (let jj = 0; jj <= (height / size); ++jj) {
-            let node = cacheNoise.getUnskewed([ii * size, jj * size]);
-            ctx.moveTo(node[0] + size / 25, node[1]);
-            ctx.arc(node[0], node[1], size / 25, 0, 2 * Math.PI);
-        }
-    }
-    return ctx;
-}
-
-function parseColorWeight(config, name, base) {
-    let result = isNaN(base) ? 1 : base;
-    if (config && name in config) {
-        let value = parseFloat(config[name]);
-        if (isNaN(value) || (value < 0) || (value > 256)) {
-        } else if ((value > 1) && (value <= 256))
-            result = value / 256;
-        else result = value;
-    }
-    return result;
-};
-
-/**
- * Creates a rectangular canvas image of a given noise function. */
-function drawNoise(ctx, fn, config) {
-    const red    = parseColorWeight(config, "red", 0.5);
-    const green  = parseColorWeight(config, "green", 0.5);
-    const blue   = parseColorWeight(config, "blue", 1);
-    const startX = (config && config.startX) ?
-                   parseInt(config.startX) : 0
-    const startY = (config && config.startY) ?
-                   parseInt(config.startY) : 0
-    const width  = (config && config.width) ?
-                   parseInt(config.width) : 320;
-    const height = (config && config.height) ?
-                   parseInt(config.height) : 240;
-    const stats  = (config && config.stats) ?
-                   config.stats : function() {};
-    const wavelength = (config && config.wavelength) ?
-                       parseFloat(config.wavelength) : 20;
-    const freq   = 1; //25 / Math.min(width, height);
-    const data   = new Uint8ClampedArray(4 * width * height);
-    let max = undefined, min = undefined;
-
-    for (let yy = 0; yy < height; ++yy)
-        for (let xx = 0; xx < width; ++xx) {
-            let index = 4 * (yy * width + xx);
-            let value = fn(xx * freq, yy * freq);
-
-            min = (isNaN(min) || (value < min)) ? value : min;
-            max = (isNaN(max) || (value > max)) ? value : max;
-
-            data[index + 0] = Math.min(255, Math.max(0, Math.floor(
-                255.99 * red * value)));
-            data[index + 1] = Math.min(255, Math.max(0, Math.floor(
-                255.99 * green * value)));
-            data[index + 2] = Math.min(255, Math.max(0, Math.floor(
-                255.99 * blue * value)));
-            data[index + 3] = 255; /* opaque */
-        }
-
-    if (stats && typeof(stats) === "function")
-        stats({min: min, max: max});
-    ctx.putImageData(new ImageData(data, width, height),
-                     startX, startY);
-    return ctx;
-}
-
 export default function(config) {
     let result = undefined;
 
@@ -477,15 +396,6 @@ export default function(config) {
     else result = createNoiseSimplex(config);
 
     result = applyOctaves(result, config);
-
-    if (config && config.canvas &&
-        config.canvas instanceof HTMLCanvasElement) {
-        const canvas = config.canvas;
-        const ctx = config.canvas.getContext("2d");
-        drawNoise(ctx, result, Object.assign(config, {
-            width: canvas.width,
-            height: canvas.height}));
-    }
 
     return result;
 };

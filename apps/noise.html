@@ -14,35 +14,82 @@
 <script type="module">//<![CDATA[
  import noise from "./ripple/noise.mjs";
 
- var go = function() {
+ function parseColorWeight(config, name, base) {
+     let result = isNaN(base) ? 1 : base;
+     if (config && name in config) {
+         let value = parseFloat(config[name]);
+         if (isNaN(value) || (value < 0) || (value > 256)) {
+         } else if ((value > 1) && (value <= 256))
+             result = value / 256;
+         else result = value;
+     }
+     return result;
+ }
+
+ function drawNoise(ctx, width, height, fn, config) {
+     const red    = parseColorWeight(config, "red", 0.5);
+     const green  = parseColorWeight(config, "green", 0.5);
+     const blue   = parseColorWeight(config, "blue", 1);
+     const stats  = (config && config.stats) ?
+                    config.stats : function() {};
+     const wavelength = (config && config.wavelength) ?
+                        parseFloat(config.wavelength) : 20;
+     const freq   = 125 / Math.min(width, height);
+     const data   = new Uint8ClampedArray(4 * width * height);
+     let max = undefined, min = undefined;
+
+     for (let yy = 0; yy < height; ++yy)
+         for (let xx = 0; xx < width; ++xx) {
+             let index = 4 * (yy * width + xx);
+             let value = fn(xx * freq, yy * freq);
+
+             min = (isNaN(min) || (value < min)) ? value : min;
+             max = (isNaN(max) || (value > max)) ? value : max;
+
+             data[index + 0] = Math.min(255, Math.max(0, Math.floor(
+                 255.99 * red * value)));
+             data[index + 1] = Math.min(255, Math.max(0, Math.floor(
+                 255.99 * green * value)));
+             data[index + 2] = Math.min(255, Math.max(0, Math.floor(
+                 255.99 * blue * value)));
+             data[index + 3] = 255; /* opaque */
+         }
+
+     if (stats && typeof(stats) === "function")
+         stats({min: min, max: max});
+     ctx.putImageData(new ImageData(data, width, height), 0, 0);
+     return ctx;
+ }
+
+ function go() {
      const canvas = document.querySelector("#noise");
-     const config = {
-         canvas: canvas,
-         stats: s => console.log(
-             "Stats:", s.min, s.max, s.max - s.min)
-     };
+     const config = { canvas: canvas, stats: s => console.log(
+         "Stats:", s.min, s.max, s.max - s.min) };
      window.location.search.substr(1).split("&")
            .forEach(function(item) {
                let pair = item.split("=");
                config[pair[0]] =
                    (pair.length === 2) ? decodeURIComponent(
                        pair[1].replace(/\+/g, " ")) : true; });
+     const fn = noise(config);
 
      window.addEventListener("resize", function() {
          canvas.width = document.body.clientWidth;
          canvas.height = document.body.clientHeight;
-         noise(config);
+
+         const ctx = config.canvas.getContext("2d");
+         drawNoise(ctx, canvas.width, canvas.height, fn, config);
      });
      window.dispatchEvent(new Event("resize"));
 
      canvas.addEventListener("click", function(event) {
          console.log("DEBUG-client", event.clientX, event.clientY);
      });
- };
+ }
 
  if (document.attachEvent ?
      (document.readyState === "complete") :
      (document.readyState !== "loading"))
      go();
  else document.addEventListener('DOMContentLoaded', go);
-//]]></script>
+ //]]></script>
