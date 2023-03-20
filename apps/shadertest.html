@@ -3,13 +3,13 @@
 <meta name="viewport" content="width=device-width, user-scalable=no" />
 <meta name="viewport" content="initial-scale=1, maximum-scale=1" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
-<title>Shader Experiment</title>
+<title>Shader Test</title>
 <style>
  html, body, canvas, div { margin: 0; padding: 0 }
  html, body { height: 100%; }
  body { overflow-x: visible; overflow-y: hidden; }
 </style>
-<canvas id="experiment"></canvas>
+<canvas id="shadertest"></canvas>
 
 <script id="vertex-shader" type="x-shader/x-vertex">// <![CDATA[
  attribute vec2 a_position;
@@ -99,7 +99,7 @@
  }
  
  function go() {
-     const canvas = document.querySelector("#experiment");
+     const canvas = document.querySelector("#shadertest");
      gl = canvas.getContext("webgl");
 
      window.addEventListener("resize", function() {
