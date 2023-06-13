@@ -57,20 +57,6 @@
 //   multivec([2, 1]).x === 2 // true
 //   multivec("2o1 + o2").x === 2 // true
 //   multivec({x: 2, y: 1}).x === 2 // true
-//
-// Three distinct inner products are offered.  All are equivalent
-// when applied to vectors but they differ substantially for other
-// kinds of multi-vectors -- including scalars.
-// - inner: gemoetric product excluding the outer product
-// - dot: inner product with scalar components
-// - contract: non-associative dual projection
-//
-// Product   | o1, o1 | o1, o2 | 2, 7 | o1o2, o1 | o1, o1o2 | o1o2, o2o3
-//  geometric| 1      | o1o2   | 14   | -o2      | o2       | o1o3
-//  outer    | 0      | o1o2   | 14   | 0        | 0        | 0
-//  inner    | 1      | 0      | 0    | -o2      | o2       | o1o3
-//  dot      | 1      | 0      | 14   | -o2      | o2       | 0
-//  contract | 1      | 0      | 0    | 0        | o2       | 0
 
 /**
  * Returns true if and only if the given value is close enough
@@ -140,8 +126,9 @@ function canonicalBasis(basis) {
     for (squeeze = 1; squeeze < vectors.length; ++squeeze) {
         swapped = false;
         for (ii = 0; ii < vectors.length - squeeze; ++ii)
-            if ((vectors[ii].signature > vectors[ii + 1].signature) ||
-                (vectors[ii].subscript > vectors[ii + 1].subscript)) {
+            if ((vectors[ii].signature < vectors[ii + 1].signature) ||
+                ((vectors[ii].signature === vectors[ii + 1].signature) &&
+                 (vectors[ii].subscript > vectors[ii + 1].subscript))) {
                 swap = vectors[ii];
                 vectors[ii] = vectors[ii + 1];
                 vectors[ii + 1] = swap;
@@ -245,6 +232,27 @@ function product(left, right, filter) {
     return result;
 }
 
+function dualize(base, target, weight_fn) {
+    let result = {};
+
+    base.eachBasis((base_key, weight) => {
+        let base_basis = canonicalBasis(base_key);
+        target.eachBasis((key, value) => {
+            let basis = canonicalBasis(key);
+            let dualkey = base_basis.vectors.filter(vector => {
+                return !basis.vectors.includes(vector);
+            }).join('');
+            let dualbasis = canonicalBasis(key + dualkey);
+
+            if (!(dualkey in result))
+                result[dualkey] = 0.0;
+            result[dualkey] += (
+                dualbasis.sign * weight_fn(weight, value));
+        });
+    });
+    return new Multivec(result);
+}
+
 /**
  * Represents a quantity in Geometric Algebra. */
 class Multivec {
@@ -306,9 +314,8 @@ class Multivec {
                             a + (c in reverseAliases ?
                                  reverseAliases[c] : c), "");
             let fn = v => ((config && config.places) ?
-                           Number(v.toFixed(
-                               config.places)).toString() :
-                           v.toString());
+                           Number(v.toFixed(config.places)) :
+                           v).toString();
 
             if (result)
                 multiterm = true;
@@ -388,6 +395,17 @@ class Multivec {
         this.eachBasis((key, value) => {
             if (key && !zeroish(value))
                 result = false; });
+        return result;
+    }
+
+    /**
+     * Returns true if and only if the only significant terms in
+     * this multivector are single basis terms. */
+    isVector() {
+        let result = true;
+        this.eachBasis((key, value) => {
+            if (key && !zeroish(value))
+                result = canonicalBasis(key).vectors.length === 1; });
         return result;
     }
 
@@ -530,7 +548,7 @@ class Multivec {
         // of any caller so the first time we're asked for the
         // norm we store it for future reference (unless it doesn't
         // actually exist).
-        if (!isNaN(this.__norm)) {
+        if (isNaN(this.__norm)) {
             let quad = this.quadrance();
             if (!quad.isScalar())
                 throw new Error("Multivector has non-scalar " +
@@ -550,116 +568,122 @@ class Multivec {
      * norm of one.  This is possible only when the multivector is
      * invertable. */
     normalize() {
-        let norm = this.norm();
-        if (zeroish(norm))
-            throw new Error("Multivector has effectively zero norm " +
-                            "and therefore cannot be normalized: " +
-                            this.toString());
-        return this.multiply(1 / norm);
+        if (this.__normv === undefined) {
+            let norm = this.norm();
+            if (zeroish(norm))
+                throw new Error("Multivector has effectively zero " +
+                                "norm and therefore cannot be " +
+                                "normalized: " + this.toString());
+            this.__normv = this.multiply(1 / norm);
+        }
+        return this.__normv;
     }
 
-    dual(pseudoscalar) {
+    dual(other) {
         // Duals are important in Geometric Algebra because they're
-        // necessary for computing either the join or the meet of a
-        // subspace, depending on representation.  This implementation
-        // should be correct but avoids relying on division by the
-        // pseudoscalar in case the metric is degenerate (for example,
-        // in Projective Geometric Algebra an extra dimension with
-        // a basis vector that squares to zero is added).
-        if (typeof(pseudoscalar) !== "string")
-            throw new Error("String argument required for dual");
-        let ps = canonicalBasis(pseudoscalar);
-        let result = {};
-
-        this.eachBasis((key, value) => {
-            let basis = canonicalBasis(key);
-            let dualkey = ps.vectors.filter(vector => {
-                return !basis.vectors.includes(vector);
-            }).join('');
-            let dualbasis = canonicalBasis(key + dualkey);
-
-            if (!(dualkey in result))
-                result[dualkey] = 0.0;
-            result[dualkey] += dualbasis.sign * value;
-        });
-        return new Multivec(result);
+        // necessary for computing meet of a subspace (or the join
+        // when using a dual representation).  This implementation
+        // should be correct (?) but avoids relying on division by the
+        // pseudoscalar because in some cases (such as most
+        // formulations of Projective Geometric Algebra) one or more
+        // basis vectors square to zero, creating a degenerate metric.
+        return dualize(this, Multivec.create(other), (w, v) => v * w);
     }
 
-    undual(pseudoscalar) {
-        return this.dual(psuedoscalar); // FIXME
+    undual(other) {
+        return dualize(this, Multivec.create(other), (w, v) => v / w);
     }
 
-    static addValues() {
-        let result = new Multivec(0.);
-        for (let ii = 0; ii < arguments.length; ++ii)
+    regress(start) {
+        let result = this.dual(start);
+        for (let ii = 1; ii < arguments.length; ++ii)
+            result = result.wedge(this.dual(arguments[ii]));
+        return this.undual(result);
+    }
+
+    static addValues(start) {
+        let result = Multivec.create(
+            arguments.length ? arguments[0] : 0);
+        for (let ii = 1; ii < arguments.length; ++ii)
             result = result.add(arguments[ii]);
         return result;
     }
 
-    static multiplyValues() {
-        let result = new Multivec(1.);
-        for (let ii = 0; ii < arguments.length; ++ii)
+    static multiplyValues(start) {
+        let result = Multivec.create(
+            arguments.length ? arguments[0] : 1);
+        for (let ii = 1; ii < arguments.length; ++ii)
             result = result.multiply(arguments[ii]);
         return result;
     }
 
-    static wedgeValues() {
-        let result = new Multivec(1.);
-        for (let ii = 0; ii < arguments.length; ++ii)
+    static wedgeValues(start) {
+        let result = Multivec.create(
+            arguments.length ? arguments[0] : 1);
+        for (let ii = 1; ii < arguments.length; ++ii)
             result = result.wedge(arguments[ii]);
         return result;
     }
 
     static contractValues(start) {
-        let result = Multivec.create(arguments[0]);
+        let result = Multivec.create(
+            arguments.length ? arguments[0] : 0);
         for (let ii = 1; ii < arguments.length; ++ii)
             result = result.contract(arguments[ii]);
         return result;
     }
+
+    static test() {
+        let config = {places: 3, parens: true};
+        let products = [
+            {vectors: ["w", "w + x + y"], ops: {wedge: 1}},
+            {vectors: ["3x + w", "3y + w"], ops: {wedge: 1}},
+            {vectors: ["wx + wy", "9xy - 3wx + 3wy"],
+             ops: {dual: "xyw", regress: "xyw"}},
+            {vectors: ["y - x", "9w - 3y - 3x"], ops: {wedge: 1}},
+            {vectors: ["-9wy + 6xy + 9wx"], ops: {dual: "xyw"}},
+            {vectors: ["2x + w", "2y + w"], ops: {wedge: 1}},
+            {vectors: ["4xy - 2wx + 2wy"], ops: {dual: "xyw"}},
+            {vectors: ["4w - 2y - 2x", "9w - 3y - 3x"], ops: {wedge: 1}},
+            {vectors: ["6wy + 6wx"], ops: {dual: "xwy"}},
+            {vectors: ["9w - 3y - 3x", "9w - 3y - 3x"], ops: {wedge: 1}},
+            {vectors: ["x + w", "x + w + 9y"], ops: {geo: 1}},
+            {vectors: ["2x", "2y", "xy", "xw", "yw", "xyw", "wyx"],
+             ops: {dual: "xyw"}},
+        ];
+
+        products.forEach(product => {
+            if (!product.ops || product.ops.geo)
+                console.log(product.vectors.reduce((a,c) =>
+                    a + (a ? " " : "") + "(" + c + ")", ""), "=",
+                            product.vectors.reduce((a, c) => a.multiply(c),
+                                                   Multivec.create(1))
+                                   .toString(config));
+            if (product.ops && product.ops.wedge)
+                console.log(product.vectors.reduce((a,c) =>
+                    a + (a ? " ^ " : "") + "(" + c + ")", ""), "=",
+                            product.vectors.reduce((a, c) => a.wedge(c),
+                                                   Multivec.create(1))
+                                   .toString(config));
+            if (product.ops && product.ops.dot)
+                console.log(product.vectors.reduce((a,c) =>
+                    a + (a ? " | " : "") + "(" + c + ")", ""), "=",
+                            Multivec.contractValues.apply(
+                                null, product.vectors).toString(config));
+            if (product.ops && product.ops.dual)
+                product.vectors.forEach(vector => {
+                    console.log("Dual:", vector, "=>",
+                                Multivec.create(product.ops.dual)
+                                        .dual(vector).toString(config));
+                });
+            if (product.ops && product.ops.regress) {
+                let ps = Multivec.create(product.ops.regress);
+                console.log("Regress:", product.vectors, "=>",
+                            ps.regress.apply(ps, product.vectors)
+                              .toString(config));
+            }
+        });
+    }
 }
 
-function multivec(value) { return Multivec.create(value); };
-
-multivec.test = function() {
-    let config = {places: 3, parens: true};
-    let products = [
-        {vectors: ["w", "w + x + y"], ops: {wedge: 1}},
-        {vectors: ["3x + w", "3y + w"], ops: {wedge: 1}},
-        {vectors: ["wx + wy", "9xy - 3wx + 3wy"], ops: {dual: "xyw"}},
-        {vectors: ["y - x", "9w - 3y - 3x"], ops: {wedge: 1}},
-        {vectors: ["-9wy + 6xy + 9wx"], ops: {dual: "xyw"}},
-        {vectors: ["2x + w", "2y + w"], ops: {wedge: 1}},
-        {vectors: ["4xy - 2wx + 2wy"], ops: {dual: "xyw"}},
-        {vectors: ["4w - 2y - 2x", "9w - 3y - 3x"], ops: {wedge: 1}},
-        {vectors: ["6wy + 6wx"], ops: {dual: "xwy"}},
-        {vectors: ["9w - 3y - 3x", "9w - 3y - 3x"], ops: {wedge: 1}},
-    ];
-
-    products.forEach(product => {
-        if (!product.ops || product.ops.geo)
-            console.log(product.vectors.reduce((a,c) =>
-                a + (a ? " " : "") + "(" + c + ")", ""), "=",
-                        product.vectors.reduce((a, c) => a.multiply(c),
-                                               Multivec.create(1))
-                               .toString(config));
-        if (product.ops && product.ops.wedge)
-            console.log(product.vectors.reduce((a,c) =>
-                a + (a ? " ^ " : "") + "(" + c + ")", ""), "=",
-                        product.vectors.reduce((a, c) => a.wedge(c),
-                                               Multivec.create(1))
-                               .toString(config));
-        if (product.ops && product.ops.dot)
-            console.log(product.vectors.reduce((a,c) =>
-                a + (a ? " | " : "") + "(" + c + ")", ""), "=",
-                        Multivec.contractValues.apply(
-                            null, product.vectors).toString(config));
-        if (product.ops && product.ops.dual)
-            product.vectors.forEach(vector => {
-                let v = Multivec.create(vector);
-                console.log("Dual:", vector, "=>",
-                            v.dual(product.ops.dual).toString(config));
-        });
-    });
-};
-
-export { Multivec, multivec };
+export default Multivec;
