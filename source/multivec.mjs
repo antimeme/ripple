@@ -302,6 +302,11 @@ class Multivec {
     }
 
     /**
+     * Return true if and only if the argument is close enough
+     * to zero to be considered zero. */
+    static zeroish(value) { return Multivec.create(value).isZeroish(); }
+
+    /**
      * Returns a representation of the multi-vector */
     toString(config) {
         let result = "";
@@ -388,26 +393,32 @@ class Multivec {
     }
 
     /**
-     * Returns true if and only if the only significant term in
-     * this multivector is the scalar term. */
-    isScalar() {
+     * Returns true if and only if the only significant terms in
+     * this multivector have a grade equal to the first argument. */
+    isKVector(k) {
         let result = true;
         this.eachBasis((key, value) => {
-            if (key && !zeroish(value))
-                result = false; });
+            if ((canonicalBasis(key).vectors.length !== k) &&
+                !zeroish(value))
+                result = false;
+        });
         return result;
     }
 
     /**
+     * Returns true if and only if the only significant term in
+     * this multivector is the scalar term. */
+    isScalar() { return this.isKVector(0); }
+
+    /**
      * Returns true if and only if the only significant terms in
      * this multivector are single basis terms. */
-    isVector() {
-        let result = true;
-        this.eachBasis((key, value) => {
-            if (key && !zeroish(value))
-                result = canonicalBasis(key).vectors.length === 1; });
-        return result;
-    }
+    isVector() { return this.isKVector(1); }
+
+    /**
+     * Returns true if and only if the only significant terms in
+     * this multivector are single basis terms. */
+    isBiector() { return this.isKVector(2); }
 
     /**
      * Return the sum of this multivector and each argument. */
@@ -426,13 +437,8 @@ class Multivec {
     }
 
     /**
-     * Return the sum of this multivector and each argument. */
-    plus(other) {
-        let result = this;
-        for (let ii = 0; ii < arguments.length; ++ii)
-            result = result.add(arguments[ii]);
-        return result;
-    }
+     * Return this multivector minus each argument. */
+    plus(other) { return this.add.apply(this, arguments); }
 
     /**
      * Return the additive inverse of this multivector. */
@@ -453,24 +459,22 @@ class Multivec {
     }
 
     /**
+     * Return this multivector minus each argument. */
+    minus(other) { return this.subtract.apply(this, arguments); }
+
+    /**
      * Return the product of this multivector (on the left) and each
      * argument (from the right). */
     multiply(other) {
         let result = this;
         for (let ii = 0; ii < arguments.length; ++ii)
-            result = product(
-                result, Multivec.create(arguments[ii]));
+            result = product(result, Multivec.create(arguments[ii]));
         return Multivec.create(result);
     }
 
     /**
      * Return the product of this multivector and each argument. */
-    times(other) {
-        let result = this;
-        for (let ii = 0; ii < arguments.length; ++ii)
-            result = result.multiply(arguments[ii]);
-        return result;
-    }
+    times(other) { return this.multiply.apply(this, arguments); }
 
     /**
      * Return the multiplicative inverse of this multivector or
