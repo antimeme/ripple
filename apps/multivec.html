@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<title>Multivector</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<style>
+ html, body, canvas, div { margin: 0; padding: 0 }
+ html, body { height: 100%; }
+ body { overflow-x: visible; overflow-y: hidden; }
+ #screen { background-color: slategray; }
+</style>
+<canvas id="screen"></canvas>
+<script type="module">//<![CDATA[
+ import Multivec from "./ripple/multivec.mjs";
+
+ let screen = document.querySelector("#screen");
+ let rotation = true;
+ let selected = undefined;
+ let theta = Math.PI / 2;
+ let points = [
+     {color: "red"},
+     {color: "red"},
+     {color: "blue"},
+     {color: "blue"},
+     {color: "green"},
+     {color: "green"},
+     {color: "white"},
+     {color: "white"},
+     {color: "white"},
+ ];
+ let lines = [
+     {p1: points[0], p2: points[1], color: "red"},
+     {p1: points[2], p2: points[3], color: "blue"},
+     {p1: points[4], p2: points[5], color: "green"}];
+
+ class Camera {
+     constructor(width, height) {
+         this.width = width;
+         this.height = height;
+
+         this.scale = Math.min(width, height) / 2;
+         this.position = { x: 0, y: 0 };
+         this.spin = 0;
+     }
+
+     configureContext(ctx) {
+         ctx.clearRect(0, 0, this.width, this.height);
+         ctx.save();
+         ctx.translate(this.width / 2, this.height / 2);
+         ctx.scale(this.scale, -this.scale);
+         ctx.rotate(this.spin);
+         ctx.translate(this.position.x, this.position.y);
+         return ctx;
+     }
+     restoreContext(ctx) { ctx.restore(); return ctx; }
+
+     /**
+      * Convert a point from world space to screen space.
+      * An input here should come from the world being
+      * represented by the program, such as the position or
+      * a character or resource. */
+     toScreen(point) {
+         point.x -= this.position.x;
+         point.y -= this.position.y;
+
+         if (this.spin) {
+             let cos = Math.cos(this.spin);
+             let sin = Math.sin(this.spin);
+             point = {
+                 x: point.x * cos - point.y * sin,
+                 y: point.x * sin + point.y * cos };
+         }
+
+         point.x *= this.scale;
+         point.y *= -this.scale;
+
+         point.x += this.width / 2;
+         point.y += this.height / 2;
+         return point;
+     }
+
+     /**
+      * Convert a point from screen space to world space.
+      * An input here might be a mouse click or some other
+      * display oriented coordinate. */
+     toWorld(point) {
+         point.x -= this.width / 2;
+         point.y -= this.height / 2;
+
+         point.x /= this.scale;
+         point.y /= -this.scale;
+
+         if (this.spin) {
+             let cos = Math.cos(this.spin);
+             let sin = Math.sin(this.spin);
+             point = {
+                 x: point.y * sin + point.x * cos,
+                 y: point.y * cos - point.x * sin };
+         }
+
+         point.x += this.position.x;
+         point.y += this.position.y;
+         return point;
+     }
+ }
+
+ function drawLinePGA(camera, ctx, p1, p2, color) {
+     const pseudoscalar = Multivec.create("wxy");
+     const origin = Multivec.create("w");
+     const line = origin.add(p1).wedge(origin.add(p2));
+     const corners = [
+         origin.add(camera.toWorld({x: 0, y: 0})),
+         origin.add(camera.toWorld({x: camera.width, y: 0})),
+         origin.add(camera.toWorld({
+             x: camera.width, y: camera.height})),
+         origin.add(camera.toWorld({x: 0, y: camera.height})) ];
+     const intersects = [
+         pseudoscalar.regress(line, corners[0].wedge(corners[1])),
+         pseudoscalar.regress(line, corners[1].wedge(corners[2])),
+         pseudoscalar.regress(line, corners[2].wedge(corners[3])),
+         pseudoscalar.regress(line, corners[3].wedge(corners[0])) ];
+
+     // TODO: figure out which intersections to consider instead of
+     // just jumping around to all of them
+     ctx.beginPath();
+     ctx.moveTo(p1.x, p1.y);
+     intersects.filter(intersect =>
+         !Multivec.create(intersect.w).isZeroish()).map(intersect =>
+             intersect.divide(intersect.w)).forEach(intersect =>
+                 { ctx.lineTo(intersect.x, intersect.y); });
+     ctx.closePath();
+     ctx.lineWidth = 0.015;
+     ctx.strokeStyle = color;
+     ctx.stroke();
+ }
+
+ function drawPoint(ctx, point, radius, color) {
+     ctx.beginPath();
+     ctx.moveTo(point.x + radius * 1.2, point.y);
+     ctx.arc(point.x, point.y, radius * 1.2, 0, Math.PI * 2);
+     ctx.closePath();
+     ctx.fillStyle = "black";
+     ctx.fill();
+
+     ctx.beginPath();
+     ctx.moveTo(point.x + radius, point.y);
+     ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
+     ctx.closePath();
+     ctx.fillStyle = color;
+     ctx.fill();
+ }
+
+ function drawIntersectPGA(line1, line2) {
+     const pseudoscalar = Multivec.create("wxy");
+     const origin = Multivec.create("w");
+     let color = "white";
+
+     if (((line1.color === "red") && (line2.color === "blue")) ||
+         ((line1.color === "blue") && (line2.color === "red")))
+         color = "magenta";
+     else if (((line1.color === "green") && (line2.color === "blue")) ||
+              ((line1.color === "blue") && (line2.color === "green")))
+         color = "cyan";
+     else if (((line1.color === "red") && (line2.color === "green")) ||
+              ((line1.color === "green") && (line2.color === "red")))
+         color = "yellow";
+
+     let point = pseudoscalar.regress(
+         origin.add(line1.p1).wedge(origin.add(line1.p2)),
+         origin.add(line2.p1).wedge(origin.add(line2.p2)));
+
+     if (!Multivec.zeroish(point.w)) {
+         point = point.divide(point.w);
+         drawPoint(ctx, point, 0.02, color);
+     }
+ }
+
+ let camera = undefined;
+ let ctx = undefined;
+ function draw() {
+     camera.configureContext(ctx);
+
+     lines.forEach(line => {
+         drawLinePGA(camera, ctx, line.p1, line.p2, line.color); });
+
+     lines.forEach((line, ii) => {
+         lines.forEach((other, jj) => {
+             if (ii < jj)
+                 drawIntersectPGA(line, other); }); });
+
+     points.forEach(point => {
+         drawPoint(ctx, point, 0.02, point.color); });
+
+     camera.restoreContext(ctx);
+ }
+
+ function update() {
+     if (rotation) {
+         let now = new Date().getTime();
+         let phi = Math.PI / 2;
+         theta = now / 2000;
+
+         points.forEach((point, ii) => {
+             if (ii < 6) {
+                 point.x = Math.cos(theta) * 0.6;
+                 point.y = Math.sin(theta) * 0.6;
+                 theta += Math.PI / 3;
+             } else {
+                 point.x = Math.cos(phi) * 0.9;
+                 point.y = Math.sin(phi) * 0.9;
+                 phi += Math.PI * 2 / 3;
+             }
+         });
+         requestAnimationFrame(update);
+     }
+     draw();
+ }
+
+ document.addEventListener("DOMContentLoaded", () => {
+
+     window.addEventListener("resize", function() {
+         ctx = screen.getContext("2d");
+         screen.width = document.body.clientWidth;
+         screen.height = document.body.clientHeight;
+         camera = new Camera(screen.width, screen.height);
+         update();
+         draw();
+     });
+     window.dispatchEvent(new Event("resize"));
+ });
+
+ screen.addEventListener("mousedown", (event) => {
+     if (!camera)
+         return;
+     rotation = false;
+
+     let click = Multivec.create(camera.toWorld({
+         x: event.clientX, y: event.clientY}));
+     let closest = null;
+
+     points.forEach(function(point, ii) {
+         if (!closest || (click.subtract(point).quadrance() <
+             click.subtract(closest).quadrance())) {
+             closest = point;
+             selected = ii;
+         }
+     });
+     update();
+ });
+
+ screen.addEventListener("mouseup", (event) => {
+     selected = undefined; });
+
+ screen.addEventListener("mousemove", (event) => {
+     if (!camera)
+         return;
+     let click = Multivec.create(camera.toWorld({
+         x: event.clientX, y: event.clientY}));
+     if (!isNaN(selected)) {
+         points[selected].x = click.x;
+         points[selected].y = click.y;
+     }
+     update();
+ });
+
+ //]]></script>
