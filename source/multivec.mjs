@@ -232,7 +232,14 @@ function product(left, right, filter) {
     return result;
 }
 
-function dualize(base, target, weight_fn) {
+// Duals are important in Geometric Algebra because they're
+// necessary for computing meet of a subspace (or the join
+// when using a dual representation).  This implementation
+// should be correct (?) but avoids relying on division by the
+// pseudoscalar because in some cases (such as most
+// formulations of Projective Geometric Algebra) one or more
+// basis vectors square to zero, creating a degenerate metric.
+function hodgestar(base, target, weight_fn) {
     let result = {};
 
     base.eachBasis((base_key, weight) => {
@@ -244,10 +251,12 @@ function dualize(base, target, weight_fn) {
             }).join('');
             let dualbasis = canonicalBasis(key + dualkey);
 
-            if (!(dualkey in result))
-                result[dualkey] = 0.0;
-            result[dualkey] += (
-                dualbasis.sign * weight_fn(weight, value));
+            if (!zeroish(value)) {
+                if (!(dualkey in result))
+                    result[dualkey] = 0.0;
+                result[dualkey] += (
+                    dualbasis.sign * weight_fn(weight, value));
+            }
         });
     });
     return new Multivec(result);
@@ -281,7 +290,7 @@ class Multivec {
             "Cannot construct multi-vector from type " +
             typeof(value) + ": " + value);
 
-        polish(this);
+        Object.freeze(polish(this));
     }
 
     eachBasis(fn, context) {
@@ -326,17 +335,19 @@ class Multivec {
                 multiterm = true;
             if (zeroish(value)) {
                 // skip zero value terms
-            } else if (!result && value >= 0) { // first term
+            } else if (!result && value >= 0) // first term
                 result += ((!key || !zeroish(value - 1)) ?
                            fn(value) : '') + label;
-            } else if (!result) { // negative first term
+            else if (!result) // negative first term
                 result += ((!key || !zeroish(value + 1)) ?
                            fn(value) : '-') + label;
-            } else if (value >= 0) { // non-negative term
+            else if (value >= 0) // non-negative term
                 result += " + " + (
-                    zeroish(value - 1) ? "" : fn(value)) + label;
-            } else result += " - " + (
-                zeroish(value + 1) ? "" : fn(-value)) + label;
+                    (label && zeroish(value - 1)) ?
+                    "" : fn(value)) + label;
+            else result += " - " + (
+                (label && zeroish(value + 1)) ?
+                "" : fn(-value)) + label;
 
         });
 
@@ -552,19 +563,16 @@ class Multivec {
         // of any caller so the first time we're asked for the
         // norm we store it for future reference (unless it doesn't
         // actually exist).
-        if (isNaN(this.__norm)) {
-            let quad = this.quadrance();
-            if (!quad.isScalar())
-                throw new Error("Multivector has non-scalar " +
-                                " quadrance and therefore no norm: " +
-                                this.toString());
-            if (quad.scalar < 0)
-                throw new Error("Multivector has negative quadrance " +
-                                "and therefore no norm: " +
-                                this.toString());
-            this.__norm = Math.sqrt(quad.scalar);
-        }
-        return this.__norm;
+        let quad = this.quadrance();
+        if (!quad.isScalar())
+            throw new Error("Multivector has non-scalar " +
+                            " quadrance and therefore no norm: " +
+                            this.toString());
+        if (quad.scalar < 0)
+            throw new Error("Multivector has negative quadrance " +
+                            "and therefore no norm: " +
+                            this.toString());
+        return Math.sqrt(quad.scalar);
     }
 
     /**
@@ -572,30 +580,20 @@ class Multivec {
      * norm of one.  This is possible only when the multivector is
      * invertable. */
     normalize() {
-        if (this.__normv === undefined) {
-            let norm = this.norm();
-            if (zeroish(norm))
-                throw new Error("Multivector has effectively zero " +
-                                "norm and therefore cannot be " +
-                                "normalized: " + this.toString());
-            this.__normv = this.multiply(1 / norm);
-        }
-        return this.__normv;
+        let norm = this.norm();
+        if (zeroish(norm))
+            throw new Error("Multivector has effectively zero " +
+                            "norm and therefore cannot be " +
+                            "normalized: " + this.toString());
+        return this.multiply(1 / norm);
     }
 
     dual(other) {
-        // Duals are important in Geometric Algebra because they're
-        // necessary for computing meet of a subspace (or the join
-        // when using a dual representation).  This implementation
-        // should be correct (?) but avoids relying on division by the
-        // pseudoscalar because in some cases (such as most
-        // formulations of Projective Geometric Algebra) one or more
-        // basis vectors square to zero, creating a degenerate metric.
-        return dualize(this, Multivec.create(other), (w, v) => v * w);
+        return hodgestar(this, Multivec.create(other), (w, v) => v * w);
     }
 
     undual(other) {
-        return dualize(this, Multivec.create(other), (w, v) => v / w);
+        return hodgestar(this, Multivec.create(other), (w, v) => v / w);
     }
 
     regress(start) {
@@ -637,23 +635,58 @@ class Multivec {
         return result;
     }
 
+    // === Projective Geometric Algebra (PGA)
+
+    static originPointPGA = Multivec.create("w");
+    static pseudoScalarPGA = Multivec.create("xyzw");
+
+    static createPointPGA(point)
+    { return this.originPointPGA.plus(point); }
+
+    // When called on a PGA point, returns its weight as a scalar
+    weightPGA() { return this.w; }
+
+    normalizePointPGA() { return this.divide(this.weightPGA); }
+
+    static regressPGA(start) {
+        return this.pseudoScalarPGA.regress.apply(
+            this.pseudoScalarPGA, arguments);
+    }
+
+    // === Conformal Geometric Algebra (CGA)
+
+    static originPointCGA = Multivec.create({'o0': 0.5, 'i0': 0.5});
+    static infinityPointCGA = Multivec.create({'o0': -1,  'i0': 1});
+    static pseudoScalarCGA = Multivec.create("xyzo0i0");
+
+    static createPointCGA(point) {
+        return this.originPointCGA.plus(this.infinityPointCGA.times(
+            this.quadrance().scalar / 2));
+    }
+
+    // When called on a CGA point, returns its weight as a scalar
+    weightCGA()
+    { return this.infinityPointCGA.times(-1).contract(this).scalar; }
+
+    normalizePointCGA() { return this.divide(this.weightCGA()); }
+
+    static regressCGA(start) {
+        let result = this.pseudoScalarCGA.dual(start);
+        for (let ii = 1; ii < arguments.length; ++ii)
+            result = result.wedge(
+                this.pseudoScalarCGA.dual(arguments[ii]));
+        return this.pseudoScalarCGA.undual(result);
+    }
+
+    // === Testing
+
     static test() {
         let config = {places: 3, parens: true};
         let products = [
-            {vectors: ["w", "w + x + y"], ops: {wedge: 1}},
             {vectors: ["3x + w", "3y + w"], ops: {wedge: 1}},
-            {vectors: ["wx + wy", "9xy - 3wx + 3wy"],
-             ops: {dual: "xyw", regress: "xyw"}},
-            {vectors: ["y - x", "9w - 3y - 3x"], ops: {wedge: 1}},
-            {vectors: ["-9wy + 6xy + 9wx"], ops: {dual: "xyw"}},
-            {vectors: ["2x + w", "2y + w"], ops: {wedge: 1}},
-            {vectors: ["4xy - 2wx + 2wy"], ops: {dual: "xyw"}},
-            {vectors: ["4w - 2y - 2x", "9w - 3y - 3x"], ops: {wedge: 1}},
-            {vectors: ["6wy + 6wx"], ops: {dual: "xwy"}},
-            {vectors: ["9w - 3y - 3x", "9w - 3y - 3x"], ops: {wedge: 1}},
-            {vectors: ["x + w", "x + w + 9y"], ops: {geo: 1}},
-            {vectors: ["2x", "2y", "xy", "xw", "yw", "xyw", "wyx"],
-             ops: {dual: "xyw"}},
+            {vectors: ["x + y + w", "w"], ops: {wedge: 1}},
+            {vectors: ["9xy + 3xw - 3yw", "xw + yw"],
+             ops: {dual: "xyw", regress: "xyw"}}
         ];
 
         products.forEach(product => {
@@ -682,7 +715,9 @@ class Multivec {
                 });
             if (product.ops && product.ops.regress) {
                 let ps = Multivec.create(product.ops.regress);
-                console.log("Regress:", product.vectors, "=>",
+                console.log("Regress:", product.vectors.map(
+                    vector => "(" + vector.toString() + ")")
+                                               .join(" V "), "=>",
                             ps.regress.apply(ps, product.vectors)
                               .toString(config));
             }
