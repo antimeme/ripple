@@ -108,6 +108,29 @@
      }
  }
 
+ function drawCircle(camera, ctx, circle) {
+     let mvecCircle = Multivec.wedgeValues(
+         Multivec.createPointCGA(circle.p1),
+         Multivec.createPointCGA(circle.p2),
+         Multivec.createPointCGA(circle.p3));
+     if (!mvecCircle.isZeroish()) {
+         let discriminant = mvecCircle.divide(mvecCircle.wedge(
+             Multivec.infinityPointCGA), -1);
+         let center = Multivec.infinityPointCGA
+                              .times(1/2, discriminant, discriminant)
+                              .plus(discriminant).normalizePointCGA();
+         let radius = Math.sqrt(discriminant.times(discriminant).scalar);
+
+         ctx.beginPath();
+         ctx.moveTo(center.x + radius, center.y);
+         ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+         ctx.closePath();
+         ctx.lineWidth = 0.015;
+         ctx.strokeStyle = circle.color;
+         ctx.stroke();
+     }
+ }
+
  function drawLine(camera, ctx, p1, p2, color) {
      const line = Multivec.createPointPGA(p1).wedge(
          Multivec.createPointPGA(p2));
@@ -183,6 +206,8 @@
  let ctx = undefined;
  function draw() {
      camera.configureContext(ctx);
+
+     circles.forEach(circle => drawCircle(camera, ctx, circle));
 
      lines.forEach(line => {
          drawLine(camera, ctx, line.p1, line.p2, line.color); });

@@ -660,13 +660,20 @@ class Multivec {
     static pseudoScalarCGA = Multivec.create("xyzo0i0");
 
     static createPointCGA(point) {
-        return this.originPointCGA.plus(this.infinityPointCGA.times(
-            this.quadrance().scalar / 2));
+        const pointCGA = Multivec.create(point);
+        return pointCGA.plus(this.originPointCGA,
+                             this.infinityPointCGA.times(
+                                 pointCGA.quadrance().scalar / 2));
     }
 
     // When called on a CGA point, returns its weight as a scalar
-    weightCGA()
-    { return this.infinityPointCGA.times(-1).contract(this).scalar; }
+    weightCGA() {
+        let result = Multivec.infinityPointCGA;
+        result = result.times(-1);
+        result = result.contract(this);
+        result = result.scalar;
+        return result;
+    }
 
     normalizePointCGA() { return this.divide(this.weightCGA()); }
 
