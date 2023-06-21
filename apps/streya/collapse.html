@@ -15,27 +15,19 @@
 <script src="../ripple/multivec.js"></script>
 <script src="../ripple/grille.js"></script>
 <script src="../ripple/pathf.js"></script>
-<script src="structure.js"></script>
-<script>//<![CDATA[
+<script type="module">//<![CDATA[
+ import { createSampleShip } from "./structure.mjs";
+
  fascia.ready(function(preloads) {
      "use strict";
      var skipWalls = ripple.paramBoolean("skipwalls");
 
-     var ship = structure.Structure.create();
+     var ship = createSampleShip();
      var nCells = 0;
      var nFree  = 0;
-     var row, col;
-     for (row = -10; row <= 10; ++row)
-         for (col = -10; col <= 10; ++col)
-             ship.setCellUnresolved({row: row, col: col});
-     for (row = -5; row <= 5; ++row)
-         for (col = 10; col <= 15; ++col)
-             ship.setCellUnresolved({row: row, col: col});
-     ship.resolve();
      ship.eachCell(function(cell, node) { ++nCells; });
-     ship.eachRoom(function(room) { room.eachNode(function(node) {
-         ++nFree;
-     }); });
+     ship.eachRoom(function(room) { room.eachNode(
+         function(node) { ++nFree; }); });
 
      return { // Fascia framework callbacks
          init: function(camera, canvas, container, fasciaRedraw) {
