@@ -393,15 +393,25 @@ class Multivec {
     }
 
     /**
+     * Converts a multivector to quantity which is truthy if and
+     * only if the multivector has non-zero components.  This also
+     * results in a scalar if that makes sense. */
+    valueOf() {
+        let empty  = true;
+        let scalar = true;
+        this.eachBasis((key, value) => {
+            if (zeroish(value)) {
+            } else if (key && key.length) {
+                empty = scalar = false;
+            } else empty = false;
+        });
+        return empty ? 0 : (scalar ? this.scalar : this);
+    }
+
+    /**
      * Returns true if and only if this multivector has no terms
      * without coefficients that are close enough to zero. */
-    isZeroish() {
-        let result = true;
-        this.eachBasis((key, value) => {
-            if (!zeroish(value))
-                result = false; });
-        return result;
-    }
+    isZeroish() { return !this.valueOf(); }
 
     /**
      * Returns true if and only if the only significant terms in
@@ -429,7 +439,7 @@ class Multivec {
     /**
      * Returns true if and only if the only significant terms in
      * this multivector are single basis terms. */
-    isBiector() { return this.isKVector(2); }
+    isBivector() { return this.isKVector(2); }
 
     /**
      * Return the sum of this multivector and each argument. */
@@ -685,6 +695,48 @@ class Multivec {
         return this.pseudoScalarCGA.undual(result);
     }
 
+    /**
+     * Returns an array containing zero, one or two points recovered.
+     * This method is only valid on a CGA dipole or flat point. */
+    recoverPointsCGA() {
+        if (!this.isBivector())
+            throw new Error("Cannot recover points from " +
+                            "non-bivector: " + this.toString());
+        let result = [];
+
+        // Our first step is to find out whether we can extract two
+        // distinct points, which requires that we won't be dividing
+        // by a null vector when we contract the infinity point into
+        // the point pair.
+        let denominator = Multivec.infinityPointCGA
+                                  .times(-1).contract(this);
+        if (denominator.quadrance().isZeroish()) {
+            // We have a flat point (a round point wedged with
+            // infinity) or zero (the intersection of parallel lines).
+            var minkowski = Multivec.originPointCGA.wedge(
+                Multivec.infinityPointCGA);
+            denominator = minkowski.contract(this);
+            if (!denominator.isZeroish())
+                result.push(
+                    minkowski.contract(
+                        Multivec.originPointCGA.wedge(this))
+                             .divide(denominator, -1).createPointCGA());
+        } else {
+            // Square the pair and take the square root to get a
+            // scalar that indicates how far along the line we have
+            // to slide to get to each point.  Division will sort
+            // out the actual point locations.
+            let slide = Multivec.create(Math.sqrt(
+                Math.abs(this.quadrance().scalar)));
+            if (slide.isZeroish()) // This is a tangent pair!
+                result.push(pair.divide(denominator));
+            else result.push(
+                pair.minus(slide).divide(denominator),
+                pair.plus(slide).divide(denominator));
+        }
+        return result;
+    }
+
     // === Testing
 
     static test() {
@@ -693,7 +745,15 @@ class Multivec {
             {vectors: ["3x + w", "3y + w"], ops: {wedge: 1}},
             {vectors: ["x + y + w", "w"], ops: {wedge: 1}},
             {vectors: ["9xy + 3xw - 3yw", "xw + yw"],
-             ops: {dual: "xyw", regress: "xyw"}}
+             ops: {dual: "xyw", regress: "xyw"}},
+            {vectors: ["2x", "-2x"], ops: {conp: 1}},
+            {vectors: ["2x - 1.5o0 + 2.5i0",
+                       "-2x - 1.5o0 + 2.5i0"], ops: {wedge: 1}},
+            {vectors: ["6o0x + 10xi0", "i0 - o0"],
+             ops: {wedge: 1}},
+            {vectors: ["6o0x + 10xi0"], ops: {dual: "o0xyi0"}},
+            {vectors: ["6yi0 - 10o0y", "i0 - o0"], ops: {wedge: 1}},
+            {vectors: ["-16o0yi0", "6o0x + 10xi0"], ops: {regress: "o0xyi0"}}
         ];
 
         products.forEach(product => {
@@ -727,6 +787,11 @@ class Multivec {
                                                .join(" V "), "=>",
                             ps.regress.apply(ps, product.vectors)
                               .toString(config));
+            }
+            if (product.ops && product.ops.conp) {
+                product.vectors.forEach(vector =>
+                    console.log("ConformalPoint:",
+                                Multivec.createPointCGA(vector).toString()));
             }
         });
     }
