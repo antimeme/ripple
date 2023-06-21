@@ -12,6 +12,7 @@
 </style>
 <canvas id="screen"></canvas>
 <script type="module">//<![CDATA[
+ let debug = true;
  import Multivec from "./ripple/multivec.mjs";
  const pseudoscalar = Multivec.create("wxy");
 
@@ -108,30 +109,66 @@
      }
  }
 
- function drawCircle(camera, ctx, circle) {
-     let mvecCircle = Multivec.wedgeValues(
-         Multivec.createPointCGA(circle.p1),
-         Multivec.createPointCGA(circle.p2),
-         Multivec.createPointCGA(circle.p3));
-     if (!mvecCircle.isZeroish()) {
-         let discriminant = mvecCircle.divide(mvecCircle.wedge(
-             Multivec.infinityPointCGA), -1);
-         let center = Multivec.infinityPointCGA
-                              .times(1/2, discriminant, discriminant)
-                              .plus(discriminant).normalizePointCGA();
-         let radius = Math.sqrt(discriminant.times(discriminant).scalar);
+ function drawCircle(camera, ctx, color, p1, p2, p3) {
+     const pseudoscalar = Multivec.create("o0xyi0");
+     const infinity = Multivec.infinityPointCGA;
+     let circle = Multivec.wedgeValues(
+         p1 ? Multivec.createPointCGA(p1) : infinity,
+         p2 ? Multivec.createPointCGA(p2) : infinity,
+         p3 ? Multivec.createPointCGA(p3) : infinity);
+     if (circle.isZeroish()) { // non-distinct points
+         // Nothing to draw
+     } else if (circle.wedge(infinity).isZeroish()) {
+         const intersects = [
+             Multivec.createPointCGA(camera.toWorld({x: 0, y: 0})),
+             Multivec.createPointCGA(
+                 camera.toWorld({x: camera.width, y: 0})),
+             Multivec.createPointCGA(
+                 camera.toWorld({x: camera.width, y: camera.height})),
+             Multivec.createPointCGA(
+                 camera.toWorld({x: 0, y: camera.height}))
+         ].map((corner, ii, corners) => // screen boundary lines
+             corner.wedge(corners[(ii + 1) % corners.length], infinity))
+          .map(edge => pseudoscalar.regress(circle, edge));
+
+         console.log("INTERSECTS");
+         intersects.forEach(intersect =>
+             console.log("  ", intersect.recoverPointsCGA().toString()));
+         intersects.forEach(intersect => {
+             let weight = intersect.weightCGA();
+             if (false && !Multivec.zeroish(weight)) {
+                 let radius = 0.1;
+                 let center = intersect.normalizePointCGA();
+
+                 ctx.beginPath();
+                 ctx.moveTo(center.x + radius, center.y);
+                 ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+                 ctx.closePath();
+                 ctx.lineWidth = 0.015;
+                 ctx.strokeStyle = color;
+                 ctx.stroke();
+             }
+         });
+     } else {
+         let discriminant = circle.divide(
+             circle.wedge(infinity), -1);
+         let center = infinity
+             .times(1/2, discriminant, discriminant)
+             .plus(discriminant).normalizePointCGA();
+         let radius = Math.sqrt(
+             discriminant.times(discriminant).scalar);
 
          ctx.beginPath();
          ctx.moveTo(center.x + radius, center.y);
          ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
          ctx.closePath();
          ctx.lineWidth = 0.015;
-         ctx.strokeStyle = circle.color;
+         ctx.strokeStyle = color;
          ctx.stroke();
      }
  }
 
- function drawLine(camera, ctx, p1, p2, color) {
+ function drawLine(camera, ctx, color, p1, p2) {
      const line = Multivec.createPointPGA(p1).wedge(
          Multivec.createPointPGA(p2));
      const corners = [
@@ -153,8 +190,8 @@
      ctx.moveTo(p1.x, p1.y);
      intersects.filter(intersect => !Multivec.zeroish(intersect.w))
                .map(intersect => intersect.divide(intersect.w))
-               .forEach(intersect =>
-                   ctx.lineTo(intersect.x, intersect.y));
+               .forEach(intersect => {
+                   ctx.lineTo(intersect.x, intersect.y); });
      ctx.closePath();
      ctx.lineWidth = 0.015;
      ctx.strokeStyle = color;
@@ -207,10 +244,17 @@
  function draw() {
      camera.configureContext(ctx);
 
-     circles.forEach(circle => drawCircle(camera, ctx, circle));
+     circles.forEach(circle => drawCircle(
+         camera, ctx, circle.color,
+         circle.p1, circle.p2, circle.p3));
 
-     lines.forEach(line => {
-         drawLine(camera, ctx, line.p1, line.p2, line.color); });
+     lines.forEach(line => drawLine(camera, ctx, line.color,
+                                    line.p1, line.p2));
+
+     if (debug) try {
+         drawCircle(camera, ctx, lines[0].color,
+                    lines[0].p1, lines[0].p2);
+     } catch (error) { console.error(error); }
 
      lines.forEach((line, ii) => {
          lines.forEach((other, jj) => {
@@ -221,6 +265,7 @@
          drawPoint(ctx, point, 0.02, point.color); });
 
      camera.restoreContext(ctx);
+     debug = false;
  }
 
  function update() {
@@ -275,16 +320,13 @@
          }
      });
      update();
-
-     let line = Multivec.createPointPGA(
-         camera.toWorld({x: camera.width, y: 0})).wedge(
-             Multivec.createPointPGA(
-                 camera.toWorld({x: 0, y: 0})));
  });
 
- screen.addEventListener("mouseup", (event) => {
-     selected = undefined;
- });
+ screen.addEventListener("mouseup", (event) =>
+     { selected = undefined; });
+
+ screen.addEventListener("mouseleave", (event) =>
+     { selected = undefined; });
 
  screen.addEventListener("mousemove", (event) => {
      if (!camera)
@@ -292,6 +334,7 @@
      let click = Multivec.create(camera.toWorld({
          x: event.clientX, y: event.clientY}));
      if (!isNaN(selected)) {
+         debug = true;
          points[selected].x = click.x;
          points[selected].y = click.y;
      }
