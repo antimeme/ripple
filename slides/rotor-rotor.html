@@ -73,7 +73,9 @@
             </p>               
         </section><section>
             <h2>Geometric Product</h2>
-            <ul><li class="fragment">
+            <p class="fragment">
+                Don't panic!  It's just multiplication
+            </p><ul><li class="fragment">
                 <strong>v</strong> =
                 v<sub>x</sub><strong>x</strong> +
                 v<sub>y</sub><strong>y</strong>
@@ -84,20 +86,28 @@
             </li><li class="fragment">
                 <strong>v</strong> <strong>u</strong>
                 <span class="fragment">
-                    = v<sub>x</sub> u<sub>x</sub>
-                    <strong>x</strong> <strong>x</strong> +
-                    v<sub>x</sub> u<sub>y</sub>
-                    <strong>x</strong> <strong>y</strong> +
-                    v<sub>y</sub> u<sub>x</sub>
-                    <strong>y</strong> <strong>x</strong> +
-                    v<sub>y</sub> u<sub>y</sub>
-                    <strong>y</strong> <strong>y</strong>
+                    = (v<sub>x</sub><strong>x</strong>)
+                    (u<sub>x</sub><strong>x</strong>) +
+                    (v<sub>x</sub><strong>x</strong>)
+                    (u<sub>y</sub><strong>y</strong>) +
+                    (v<sub>y</sub><strong>x</strong>)
+                    (u<sub>x</sub><strong>y</strong>) +
+                    (v<sub>y</sub><strong>y</strong>)
+                    (u<sub>y</sub><strong>y</strong>)
                 </span>
-            </li></ul><p class="fragment">
-                Don't panic!  It's just multiplication
-            </p>
+            </li><li class="fragment">
+                <strong>v</strong> <strong>u</strong>
+                = v<sub>x</sub> u<sub>x</sub>
+                <strong>x</strong> <strong>x</strong> +
+                v<sub>x</sub> u<sub>y</sub>
+                <strong>x</strong> <strong>y</strong> +
+                v<sub>y</sub> u<sub>x</sub>
+                <strong>y</strong> <strong>x</strong> +
+                v<sub>y</sub> u<sub>y</sub>
+                <strong>y</strong> <strong>y</strong>
+            </li></ul>
         </section><section>
-            <h2>Basis Squares</h2>
+            <h2>Basis Collapse</h2>
             <p>
                 Our axiom requires basis vectors to square to one.
             </p><ul><li class="fragment">
@@ -156,6 +166,27 @@
                 </span>
             </li></ul>
         </section><section>
+            <h2>Geometric Product</h2>
+            <p>Let's review what we've learned so far:</p>
+            <ul><li class="fragment">
+                Scalars commute:
+                &#x2200;a&#x2208;&#x211d;
+                &#x2200;<strong>v</strong>&#x2208;&#x1d54d;
+                a <strong>v</strong> = <strong>v</strong> a
+            </li><li class="fragment">
+                Basis Collapse:
+                <strong>x</strong> <strong>x</strong> =
+                <strong>y</strong> <strong>y</strong> =
+                <strong>z</strong> <strong>z</strong> = 1
+            </li><li class="fragment">
+                Anti-Commute Basis:
+                <strong>x</strong> <strong>y</strong> =
+                - <strong>y</strong> <strong>x</strong>
+            </li></ul><p class="fragment">
+                This is everything we need to compute the
+                geometric product!
+            </p>
+        </section><section>
             <h2>Bivectors</h2>
             <p>
                 Bivectors have two basis vectors in each term.
@@ -164,13 +195,13 @@
                 a basis for bivectors in
                 the same way that <strong>x</strong>, <strong>y</strong>
                 and <strong>z</strong> serve as a basis for vectors.
+                Bivectors are linear combinations of these:
             </p><p class="fragment">
-                <strong>B</strong> =
+                &#x2203; B<sub>x y</sub>, B<sub>y z</sub>,
+                B<sub>x z</sub>&#x2208;&#x211d; : <strong>B</strong> =
                 B<sub>x y</sub><strong>x y</strong> +
                 B<sub>y z</sub><strong>y z</strong> +
                 B<sub>x z</sub><strong>x z</strong>
-                (B<sub>x y</sub>, B<sub>x y</sub>,
-                B<sub>x y</sub>&#x2208;&#x211d;)
             </p>
         </section><section>
             <h2>Trivectors</h2>
@@ -179,6 +210,7 @@
                 Only one basis trivectors is possible in three
                 dimensions so they are pseudo-scalars.
             </p><p class="fragment">
+                &#x2203; T<sub>x y z</sub>&#x2208;&#x211d; :
                 <strong>T</strong> =
                 T<sub>x y z</sub><strong>x y z</strong>
             </p>
@@ -203,7 +235,7 @@
                 <td>...</td><td>...</td>
             </tr></table><p>
                 Pascal's Triangle:
-                N[r][c] = N[r - 1][c] + N[r - 1][r - 1]
+                N[r][c] = N[r - 1][c] + N[r - 1][c - 1]
             </p>
         </section><section>
             <h2>Conjugate</h2>
@@ -693,9 +725,11 @@
                     (1 + <strong>x</strong>)
                 </span><span class="fragment">
                     = <br /> 1 + <strong>x</strong> +
-                    <strong>x</strong> + 1
+                    <strong>x</strong> +
+                    <strong>x</strong> <strong>x</strong>
                 </span><span class="fragment">
                     = 2 + 2<strong>x</strong>
+                </span><span class="fragment">
                     <em>Not a scalar!</em>
                 </span>
             </li><li class="fragment">
@@ -919,7 +953,7 @@
         </section><section>
             <h2>Anti-Commute Basis</h2>
             <p>
-                Our axiom request basis vectors to anti-commute.
+                Our axiom requires basis vectors to anti-commute.
             </p><ul><li class="fragment">
                 (<strong>x y</strong> = -<strong>y x</strong>) &and;
                 (<strong>y z</strong> = -<strong>z y</strong>) &and;
@@ -1088,7 +1122,7 @@
                 <strong>M M</strong><sup>&#x2020;</sup> =
                 M<sub>c</sub><sup>2</sup> - M<sub>s</sub><sup>2</sup> = 1
             </p><p class="fragment">
-                This is the equation of a hyperbola
+                This is the equation of a unit hyperbola
             </p><p class="fragment">
                 cosh(&phi;)<sup>2</sup> - sinh(&phi;)<sup>2</sup> = 1
             </p>
