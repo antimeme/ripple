@@ -171,13 +171,18 @@ $(WAR_ROOT)/.classes: $(J2EE_DISTSRC) lib/servlet-api.jar
 	       -source 8 -target 8 -Xlint:-options $(J2EE_DISTSRC)
 	touch $@
 
-@PACKAGE@-@VERSION@.war: .javadoc $(srcdir)/META-INF/MANIFEST.MF \
-			 $(JAR_ROOT)/.classes $(WAR_ROOT)/.classes
+@PACKAGE@-@VERSION@.war: $(srcdir)/META-INF/MANIFEST.MF \
+			 $(JAR_ROOT)/.classes \
+	                 $(WAR_ROOT)/.classes \
+	                 $(top_builddir)/.javadoc \
+	                 $(srcdir)/source/servlet/index.html \
+	                 $(srcdir)/apps/expense.html
 	$(JAR) cvfm $@ $(srcdir)/META-INF/MANIFEST.MF \
 	    -C $(srcdir)/resources sounds \
 	    -C $(srcdir)/resources images \
 	    -C $(srcdir) WEB-INF/web.xml \
 	    -C $(srcdir)/source/servlet index.html \
+	    -C $(srcdir)/apps expense.html \
 	    -C $(top_builddir) javadoc WEB-INF/classes/ \
 	    -C $(JAR_ROOT) .
 	chmod +x $@
