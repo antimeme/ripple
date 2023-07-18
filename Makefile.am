@@ -266,6 +266,9 @@ server-chain.pem: server-cert.pem ca-cert.pem
 	    cp server-cert.pem $@; cat ca-cert.pem >>$@; \
 	else touch $@; fi
 
+serve: source/server.js server-key.pem server-chain.pem ca-cert.pem
+	node $<
+
 tomcat-key.pem:
 	$(OPENSSL) genrsa -out $@ $(KEYSIZE)
 
