@@ -51,6 +51,16 @@
          ctx.arc(this.center.x, this.center.y, radius, begin, end);
      }
 
+     __compliment(path) {
+         var result = [];
+         for (let ii = 0; ii < path.length; ++ii) {
+             let current = path.slice(0, path.length - ii);
+             current[current.length - 1] ^= 1;
+             result.push(current);
+         }
+         return result;
+     }
+
      __section(point, increment) {
          if (!point)
              return null;
@@ -58,27 +68,47 @@
          if (!increment)
              increment = this.radius / (this.depth + 1);
 
+         let result = null;
+
          if (quadrance < increment * increment) {
-             return { root: true };
+             result = { root: true };
          } else if ((this.selected.y > 0) &&
                     (quadrance < this.radius * this.radius)) {
              let radians = this.__radians(point);
+             let path = [];
 
              for (let ii = 1; ii <= this.depth; ++ii) {
-                 if (quadrance < (ii + 1) * increment *
-                     (ii + 1) * increment) {
-                     let slices = 1 << ii;
-                     let slice = Math.floor(slices * radians / Math.PI);
+                 let slices = 1 << ii;
+                 let slice = Math.floor(slices * radians / Math.PI);
 
-                     return {
+                 path.push(slice);
+                 if (quadrance < ((ii + 1) * increment *
+                     (ii + 1) * increment)) {
+
+                     result = {
                          inner: ii * increment,
                          outer: (ii + 1) * increment,
                          start: Math.PI * slice / slices,
-                         stop: Math.PI * (slice + 1) / slices };
+                         stop: Math.PI * (slice + 1) / slices,
+                         path: path
+                     };
+                     break;
                  }
              }
          }
-         return null;
+         return result;
+     }
+
+     __drawSection(ctx, start, stop, outer, inner) {
+         ctx.moveTo(
+             this.center.x + Math.cos(start) * outer,
+             this.center.y + Math.sin(start) * outer);
+         ctx.arc(this.center.x, this.center.y, outer, start, stop);
+         ctx.lineTo(
+             this.center.x + Math.cos(stop) * inner,
+             this.center.y + Math.sin(stop) * inner);
+         ctx.arc(this.center.x, this.center.y, inner,
+                 stop, start, true);
      }
 
      draw(ctx) {
@@ -94,50 +124,41 @@
 
          let section = this.__section(this.selected, increment);
          if (section) {
+             // Highlight children of selected node
              ctx.beginPath();
-             if (section.root) {
+             if (section.root)
                  this.__arc(ctx, this.radius, 0, Math.PI);
-             } else {
-                 ctx.moveTo(
-                     this.center.x + Math.cos(
-                         section.start) * this.radius,
-                     this.center.y + Math.sin(
-                         section.start) * this.radius);
-                 ctx.arc(this.center.x, this.center.y,
-                       this.radius, section.start, section.stop);
-                 ctx.lineTo(
-                     this.center.x + Math.cos(
-                         section.stop) * section.inner,
-                     this.center.y + Math.sin(
-                         section.stop) * section.inner);
-                 ctx.arc(this.center.x, this.center.y, section.inner,
-                         section.stop, section.start, true);
-             }             
+             else this.__drawSection(ctx, section.start, section.stop,
+                                     this.radius, section.inner);
              ctx.closePath();
              ctx.fillStyle = this.colors["child"];;
              ctx.fill();
 
+             // Highlight selected node itself
              ctx.beginPath();
-             if (section.root) {
+             if (section.root)
                  this.__arc(ctx, increment, 0, 2 * Math.PI);
-             } else {
-                 ctx.moveTo(
-                     this.center.x + Math.cos(
-                         section.start) * section.outer,
-                     this.center.y + Math.sin(
-                         section.start) * section.outer);
-                 ctx.arc(this.center.x, this.center.y,
-                         section.outer, section.start, section.stop);
-                 ctx.lineTo(
-                     this.center.x + Math.cos(
-                         section.stop) * section.inner,
-                     this.center.y + Math.sin(
-                         section.stop) * section.inner);
-                 ctx.arc(this.center.x, this.center.y, section.inner,
-                         section.stop, section.start, true);
-             }
+             else this.__drawSection(ctx, section.start, section.stop,
+                                     section.outer, section.inner);
              ctx.closePath();
              ctx.fillStyle = this.colors["selected"];;
+             ctx.fill();
+
+             // Highlight nodes needed for proof of membership
+             ctx.beginPath();
+             if (section.path) {
+                 this.__compliment(section.path).forEach((path) => {
+                     let index = path.length;
+                     let slices = 1 << index;
+                     let slice = path[path.length - 1];
+
+                     this.__drawSection(
+                         ctx, Math.PI * slice / slices,
+                         Math.PI * (slice + 1) / slices,
+                         (index + 1) * increment, index * increment);
+                 }, this);
+             }
+             ctx.fillStyle = this.colors["parent"];
              ctx.fill();
          }
 
@@ -203,9 +224,7 @@
 
  screen.addEventListener("mouseleave", (event) => { });
 
- screen.addEventListener("mousemove", (event) => {
-     update();
- });
+ screen.addEventListener("mousemove", (event) => { });
 
  document.addEventListener("DOMContentLoaded", () => {
      window.addEventListener("resize", function() {
