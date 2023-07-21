@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<title>Merkle Tree</title>
+<!-- An interactive illustration of a Merkle tree.
+     Click to select a node. -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<style>
+ html, body, canvas, div { margin: 0; padding: 0 }
+ html, body { height: 100%; }
+ body { overflow-x: visible; overflow-y: hidden; }
+ #screen { background-color: slategray; }
+</style>
+<canvas id="screen"></canvas>
+<script type="module">//<![CDATA[
+ import Camera from "./ripple/camera.mjs";
+ import Multivec from "./ripple/multivec.mjs";
+
+ class MerkleTree {
+     constructor(depth, radius, center) {
+         this.selected = null;
+         this.center = center || {x: 0, y: 0};
+         this.radius = isNaN(radius) ? 1 : Math.abs(radius);
+         this.depth = isNaN(depth) ? 5 : Math.max(1, depth);
+         this.colors = {
+             base: "white",
+             lines: "darkslategray",
+             selected: "deepskyblue",
+             parent: "tomato",
+             child: "orchid" };
+     }
+
+     __quadrance(point) {
+         let delta = {
+             x: point.x - this.center.x,
+             y: point.y - this.center.y };
+         return delta.x * delta.x + delta.y * delta.y;
+     }
+
+     __radians(point) {
+         let delta = {
+             x: point.x - this.center.x,
+             y: point.y - this.center.y };
+         let length = Math.sqrt(delta.x * delta.x + delta.y * delta.y);
+         return Math.acos(delta.x / length);
+     }
+
+     __arc(ctx, radius, begin, end) {
+         ctx.moveTo(this.center.x + radius, this.center.y);
+         ctx.arc(this.center.x, this.center.y, radius, begin, end);
+     }
+
+     __section(point, increment) {
+         if (!point)
+             return null;
+         let quadrance = this.__quadrance(this.selected);
+         if (!increment)
+             increment = this.radius / (this.depth + 1);
+
+         if (quadrance < increment * increment) {
+             return { root: true };
+         } else if ((this.selected.y > 0) &&
+                    (quadrance < this.radius * this.radius)) {
+             let radians = this.__radians(point);
+
+             for (let ii = 1; ii <= this.depth; ++ii) {
+                 if (quadrance < (ii + 1) * increment *
+                     (ii + 1) * increment) {
+                     let slices = 1 << ii;
+                     let slice = Math.floor(slices * radians / Math.PI);
+
+                     return {
+                         inner: ii * increment,
+                         outer: (ii + 1) * increment,
+                         start: Math.PI * slice / slices,
+                         stop: Math.PI * (slice + 1) / slices };
+                 }
+             }
+         }
+         return null;
+     }
+
+     draw(ctx) {
+         let increment = this.radius / (this.depth + 1);
+         let ii, jj;
+
+         // Background
+         ctx.beginPath();
+         this.__arc(ctx, this.radius, 0, Math.PI);
+         this.__arc(ctx, increment, 0, 2 * Math.PI);
+         ctx.fillStyle = this.colors["base"];;
+         ctx.fill();
+
+         let section = this.__section(this.selected, increment);
+         if (section) {
+             ctx.beginPath();
+             if (section.root) {
+                 this.__arc(ctx, this.radius, 0, Math.PI);
+             } else {
+                 ctx.moveTo(
+                     this.center.x + Math.cos(
+                         section.start) * this.radius,
+                     this.center.y + Math.sin(
+                         section.start) * this.radius);
+                 ctx.arc(this.center.x, this.center.y,
+                       this.radius, section.start, section.stop);
+                 ctx.lineTo(
+                     this.center.x + Math.cos(
+                         section.stop) * section.inner,
+                     this.center.y + Math.sin(
+                         section.stop) * section.inner);
+                 ctx.arc(this.center.x, this.center.y, section.inner,
+                         section.stop, section.start, true);
+             }             
+             ctx.closePath();
+             ctx.fillStyle = this.colors["child"];;
+             ctx.fill();
+
+             ctx.beginPath();
+             if (section.root) {
+                 this.__arc(ctx, increment, 0, 2 * Math.PI);
+             } else {
+                 ctx.moveTo(
+                     this.center.x + Math.cos(
+                         section.start) * section.outer,
+                     this.center.y + Math.sin(
+                         section.start) * section.outer);
+                 ctx.arc(this.center.x, this.center.y,
+                         section.outer, section.start, section.stop);
+                 ctx.lineTo(
+                     this.center.x + Math.cos(
+                         section.stop) * section.inner,
+                     this.center.y + Math.sin(
+                         section.stop) * section.inner);
+                 ctx.arc(this.center.x, this.center.y, section.inner,
+                         section.stop, section.start, true);
+             }
+             ctx.closePath();
+             ctx.fillStyle = this.colors["selected"];;
+             ctx.fill();
+         }
+
+         // Lines to separate each cell
+         ctx.beginPath();
+         for (ii = 2; ii <= this.depth; ++ii)
+             this.__arc(ctx, increment * ii, 0, Math.PI);
+         for (ii = 1; ii <= this.depth; ++ii) {
+             for (jj = 0; jj < (1 << (ii - 1)); ++jj) {
+                 let radians = Math.PI * (2 * jj + 1) / (1 << ii);;
+                 ctx.moveTo(ii * increment * Math.cos(radians),
+                            ii * increment * Math.sin(radians));
+                 ctx.lineTo(this.radius * Math.cos(radians),
+                            this.radius * Math.sin(radians));
+             }
+         }
+         ctx.moveTo(increment, 0);
+         ctx.lineTo(this.radius, 0);
+         this.__arc(ctx, this.radius, 0, Math.PI);
+         ctx.lineTo(-increment, 0);
+         this.__arc(ctx, increment, 0, 2 * Math.PI);
+         ctx.lineWidth = 0.01;
+         ctx.strokeStyle = this.colors["lines"];
+         ctx.stroke();
+     }
+
+     select(point) {
+         let quadrance = this.__quadrance(point);
+
+         if ((quadrance < (this.radius * this.radius /
+             this.depth * this.depth)) ||
+             ((point.y > 0) &&
+              (quadrance < (this.radius * this.radius))))
+             this.selected = point;
+         else this.selected = null;
+             
+     }
+ }
+
+ let screen = document.querySelector("#screen");
+ let camera = undefined;
+ let ctx = undefined;
+ let tree = new MerkleTree(5);
+
+ function draw() {
+     camera.configureContext(ctx);
+     tree.draw(ctx);
+     camera.restoreContext(ctx);
+ }
+
+ function update() {
+     draw();
+ }
+
+ screen.addEventListener("mousedown", (event) => {
+     if (camera)
+         tree.select(camera.toWorld({
+             x: event.clientX, y: event.clientY}));
+     update();
+ });
+
+ screen.addEventListener("mouseup", (event) => { });
+
+ screen.addEventListener("mouseleave", (event) => { });
+
+ screen.addEventListener("mousemove", (event) => {
+     update();
+ });
+
+ document.addEventListener("DOMContentLoaded", () => {
+     window.addEventListener("resize", function() {
+         ctx = screen.getContext("2d");
+         screen.width = document.body.clientWidth;
+         screen.height = document.body.clientHeight;
+         camera = new Camera(screen.width, screen.height);
+         camera.pan({x: 0, y: -0.45});
+         camera.zoom(1.5);
+         update();
+         draw();
+     });
+     window.dispatchEvent(new Event("resize"));
+ });
+
+ //]]></script>
