@@ -13,6 +13,7 @@
 <canvas id="screen"></canvas>
 <script type="module">//<![CDATA[
  let debug = true;
+ import Camera from "./ripple/camera.mjs";
  import Multivec from "./ripple/multivec.mjs";
  const pseudoscalar = Multivec.create("wxy");
 
@@ -37,77 +38,6 @@
      {p1: points[4], p2: points[5], color: "green"}];
  let circles = [
      {p1: points[6], p2: points[7], p3: points[8], color: "white"}];
-
- class Camera {
-     constructor(width, height) {
-         this.width = width;
-         this.height = height;
-
-         this.scale = Math.min(width, height) / 2;
-         this.position = { x: 0, y: 0 };
-         this.spin = 0;
-     }
-
-     configureContext(ctx) {
-         ctx.clearRect(0, 0, this.width, this.height);
-         ctx.save();
-         ctx.translate(this.width / 2, this.height / 2);
-         ctx.scale(this.scale, -this.scale);
-         ctx.rotate(this.spin);
-         ctx.translate(this.position.x, this.position.y);
-         return ctx;
-     }
-     restoreContext(ctx) { ctx.restore(); return ctx; }
-
-     /**
-      * Convert a point from world space to screen space.
-      * An input here should come from the world being
-      * represented by the program, such as the position or
-      * a character or resource. */
-     toScreen(point) {
-         point.x -= this.position.x;
-         point.y -= this.position.y;
-
-         if (this.spin) {
-             let cos = Math.cos(this.spin);
-             let sin = Math.sin(this.spin);
-             point = {
-                 x: point.x * cos - point.y * sin,
-                 y: point.x * sin + point.y * cos };
-         }
-
-         point.x *= this.scale;
-         point.y *= -this.scale;
-
-         point.x += this.width / 2;
-         point.y += this.height / 2;
-         return point;
-     }
-
-     /**
-      * Convert a point from screen space to world space.
-      * An input here might be a mouse click or some other
-      * display oriented coordinate. */
-     toWorld(point) {
-         point.x -= this.width / 2;
-         point.y -= this.height / 2;
-
-         point.x /= this.scale;
-         point.y /= -this.scale;
-
-         if (this.spin) {
-             let cos = Math.cos(this.spin);
-             let sin = Math.sin(this.spin);
-             point = {
-                 x: point.y * sin + point.x * cos,
-                 y: point.y * cos - point.x * sin };
-         }
-
-         point.x += this.position.x;
-         point.y += this.position.y;
-         return point;
-     }
- }
 
  function drawCircle(camera, ctx, color, p1, p2, p3) {
      const pseudoscalar = Multivec.create("o0xyi0");
