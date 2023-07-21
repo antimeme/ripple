@@ -245,7 +245,7 @@
  let screen = document.querySelector("#screen");
  let camera = undefined;
  let ctx = undefined;
- let tree = new MerkleTree(5);
+ let tree = new MerkleTree();
 
  function draw() {
      let hash = tree.getSelectedHash();
