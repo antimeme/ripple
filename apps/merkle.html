@@ -18,85 +18,69 @@
  import Multivec from "./ripple/multivec.mjs";
 
  class MerkleTree {
-     constructor(depth, radius, center) {
+     constructor(config) {
          this.selected = null;
-         this.center = center || {x: 0, y: 0};
-         this.radius = isNaN(radius) ? 1 : Math.abs(radius);
-         this.depth = isNaN(depth) ? 5 : Math.max(1, depth);
+         this.center = (config && config.center) ?
+                       config : {x: 0, y: 0};
+         this.radius = (config && !isNaN(config.radius)) ?
+                       Math.abs(radius) : 1;
+         this.depth = (config && !isNaN(config.depth)) ?
+                      Math.max(1, depth) : 5;
+         this.algorithm = (config && config.algorith) ?
+                          config.algorithm : "SHA-256";
          this.colors = {
              base: "white",
              lines: "darkslategray",
              selected: "deepskyblue",
              parent: "tomato",
              child: "orchid" };
+
+         this.hashes = [];
+         this.__createMTree(this.depth);
      }
 
-     __quadrance(point) {
-         let delta = {
-             x: point.x - this.center.x,
-             y: point.y - this.center.y };
-         return delta.x * delta.x + delta.y * delta.y;
+     __concat(start) {
+         let ii, size = 0, consumed = 0;
+         for (ii = 0; ii < arguments.length; ++ii)
+             size += arguments[ii].byteLength;
+
+         const result = new Uint8Array(size);
+         for (ii = 0; ii < arguments.length; ++ii) {
+             result.set(new Uint8Array(arguments[ii]), consumed);
+             consumed += arguments[ii].byteLength;
+         }
+         return result.buffer;
      }
 
-     __radians(point) {
-         let delta = {
-             x: point.x - this.center.x,
-             y: point.y - this.center.y };
-         let length = Math.sqrt(delta.x * delta.x + delta.y * delta.y);
-         return Math.acos(delta.x / length);
+     async __createMTree(depth) {
+         let encoder = new TextEncoder();
+         let previous = [];
+
+         for (let ii = 0; ii < (1 << this.depth); ++ii)
+             previous.push(await crypto.subtle.digest(
+                 this.algorithm, encoder.encode(
+                     "leaf" + ii.toString().padStart(4, "0"))));
+         this.hashes.unshift(previous);
+
+         while (previous.length > 2) {
+             let next = [];
+             for (let ii = 0; ii + 1 < previous.length; ii += 2)
+                 next.push(await crypto.subtle.digest(
+                     this.algorithm, this.__concat(
+                         previous[ii], previous[ii + 1])));
+             this.hashes.unshift(next);
+             previous = next;
+         }
+
+         if (previous.length === 2)
+             this.hashes.unshift(await crypto.subtle.digest(
+                 this.algorithm, this.__concat(
+                     previous[0], previous[1])));
      }
 
      __arc(ctx, radius, begin, end) {
          ctx.moveTo(this.center.x + radius, this.center.y);
          ctx.arc(this.center.x, this.center.y, radius, begin, end);
-     }
-
-     __compliment(path) {
-         var result = [];
-         for (let ii = 0; ii < path.length; ++ii) {
-             let current = path.slice(0, path.length - ii);
-             current[current.length - 1] ^= 1;
-             result.push(current);
-         }
-         return result;
-     }
-
-     __section(point, increment) {
-         if (!point)
-             return null;
-         let quadrance = this.__quadrance(this.selected);
-         if (!increment)
-             increment = this.radius / (this.depth + 1);
-
-         let result = null;
-
-         if (quadrance < increment * increment) {
-             result = { root: true };
-         } else if ((this.selected.y > 0) &&
-                    (quadrance < this.radius * this.radius)) {
-             let radians = this.__radians(point);
-             let path = [];
-
-             for (let ii = 1; ii <= this.depth; ++ii) {
-                 let slices = 1 << ii;
-                 let slice = Math.floor(slices * radians / Math.PI);
-
-                 path.push(slice);
-                 if (quadrance < ((ii + 1) * increment *
-                     (ii + 1) * increment)) {
-
-                     result = {
-                         inner: ii * increment,
-                         outer: (ii + 1) * increment,
-                         start: Math.PI * slice / slices,
-                         stop: Math.PI * (slice + 1) / slices,
-                         path: path
-                     };
-                     break;
-                 }
-             }
-         }
-         return result;
      }
 
      __drawSection(ctx, start, stop, outer, inner) {
@@ -120,59 +104,61 @@
          ctx.beginPath();
          this.__arc(ctx, this.radius, 0, Math.PI);
          this.__arc(ctx, increment, 0, 2 * Math.PI);
-         ctx.fillStyle = this.colors["base"];;
+         ctx.fillStyle = this.colors["base"];
          ctx.fill();
 
-         let section = this.__section(this.selected, increment);
-         if (section) {
+         if (this.selected && this.selected.row < 0) {
+             ctx.beginPath();
+             this.__drawSection(ctx, 0, Math.PI,
+                                (0 - this.selected.row) * increment,
+                                (1 - this.selected.row) * increment);
+             ctx.fillStyle = this.colors["child"];;
+             ctx.fill();
+         } else if (this.selected) {
              // Highlight children of selected node
              ctx.beginPath();
-             if (section.root)
+             if (this.selected.root)
                  this.__arc(ctx, this.radius, 0, Math.PI);
-             else this.__drawSection(ctx, section.start, section.stop,
-                                     this.radius, section.inner);
+             else this.__drawSection(
+                 ctx, Math.PI * this.selected.slice /
+                 (1 << this.selected.row),
+                 Math.PI * (this.selected.slice + 1) /
+                 (1 << this.selected.row),
+                 this.radius,
+                 this.selected.row * increment);
              ctx.closePath();
              ctx.fillStyle = this.colors["child"];;
              ctx.fill();
 
              // Highlight selected node itself
              ctx.beginPath();
-             if (section.root)
+             if (this.selected.root)
                  this.__arc(ctx, increment, 0, 2 * Math.PI);
-             else this.__drawSection(ctx, section.start, section.stop,
-                                     section.outer, section.inner);
+             else this.__drawSection(
+                 ctx, Math.PI * this.selected.slice /
+                 (1 << this.selected.row),
+                 Math.PI * (this.selected.slice + 1) /
+                 (1 << this.selected.row),
+                 (this.selected.row + 1) * increment,
+                 this.selected.row * increment);
              ctx.closePath();
              ctx.fillStyle = this.colors["selected"];;
              ctx.fill();
 
              // Highlight nodes needed for proof of membership
              ctx.beginPath();
-             if (section.path) {
-                 this.__compliment(section.path).forEach((path) => {
-                     let index = path.length;
-                     let slices = 1 << index;
-                     let slice = path[path.length - 1];
+             if (this.selected.path)
+                 this.selected.path.forEach((component, index) => {
+                     let slices = 1 << (index + 1);
+                     let slice = component ^ 1;
 
                      this.__drawSection(
                          ctx, Math.PI * slice / slices,
                          Math.PI * (slice + 1) / slices,
-                         (index + 1) * increment, index * increment);
+                         (index + 2) * increment,
+                         (index + 1) * increment);
                  }, this);
-             }
              ctx.fillStyle = this.colors["parent"];
-             ctx.fill();
-         } else if (this.selected && this.selected.y < 0) {
-             let quadrance = this.__quadrance(this.selected);
-             ctx.beginPath();
-             for (ii = 2; ii <= this.depth + 1; ++ii) {
-                 if (quadrance < ii * increment * ii * increment) {
-                     this.__drawSection(ctx, 0, Math.PI,
-                                        (ii - 1) * increment,
-                                        ii * increment);
-                     break;
-                 }
-             }
-             ctx.fillStyle = this.colors["child"];;
              ctx.fill();
          }
 
@@ -200,14 +186,59 @@
      }
 
      select(point) {
-         let quadrance = this.__quadrance(point);
+         let delta = {
+             x: point.x - this.center.x,
+             y: point.y - this.center.y };
+         let quadrance = delta.x * delta.x + delta.y * delta.y;
+         let increment = this.radius / (this.depth + 1);
 
-         if ((quadrance < (this.radius * this.radius /
-             this.depth * this.depth)) ||
-             (quadrance < (this.radius * this.radius)))
-             this.selected = point;
-         else this.selected = null;
-             
+         if (quadrance < this.radius * this.radius) {
+             if (quadrance < increment * increment) {
+                 this.selected = { root: true };
+             } else if (point.y < 0) {
+                 for (let ii = 2; ii <= this.depth + 1; ++ii) {
+                     if (quadrance < ii * increment * ii * increment) {
+                         this.selected = { row: 1 - ii };
+                         break;
+                     }
+                 }
+             } else {
+                 let length = Math.sqrt(
+                     delta.x * delta.x + delta.y * delta.y);
+                 let radians = Math.acos(delta.x / length);
+                 let path = [];
+
+                 for (let ii = 1; ii <= this.depth; ++ii) {
+                     let slices = 1 << ii;
+                     let slice = Math.floor(slices * radians / Math.PI);
+
+                     path.push(slice);
+                     if (quadrance < ((ii + 1) * increment *
+                         (ii + 1) * increment)) {
+                         this.selected = {
+                             path: path, slice: slice, row: ii };
+                         break;
+                     }
+                 }
+             }
+         } else this.selected = null;
+     }
+
+     getSelectedHash() {
+         let result = null;
+         if (this.selected) {
+             if (this.selected.root)
+                 result = this.hashes[0];
+             else if (this.selected.row > 0)
+                 result = this.hashes[
+                     this.selected.row][this.selected.slice];
+         }
+
+         if (result)
+             result = Array.from(
+                 new Uint8Array(result)).map((bytes) =>
+                     bytes.toString(16).padStart(2, '0')).join('');
+         return result;
      }
  }
 
@@ -217,9 +248,16 @@
  let tree = new MerkleTree(5);
 
  function draw() {
+     let hash = tree.getSelectedHash();
+
      camera.configureContext(ctx);
      tree.draw(ctx);
      camera.restoreContext(ctx);
+     if (hash) {
+         ctx.font = "24px sans-serif";
+         ctx.textAlign = "center";
+         ctx.fillText(hash, camera.width / 2, 30);
+     }
  }
 
  function update() {
