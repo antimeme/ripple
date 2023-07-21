@@ -109,6 +109,7 @@
              this.center.y + Math.sin(stop) * inner);
          ctx.arc(this.center.x, this.center.y, inner,
                  stop, start, true);
+         ctx.closePath();
      }
 
      draw(ctx) {
@@ -160,6 +161,19 @@
              }
              ctx.fillStyle = this.colors["parent"];
              ctx.fill();
+         } else if (this.selected && this.selected.y < 0) {
+             let quadrance = this.__quadrance(this.selected);
+             ctx.beginPath();
+             for (ii = 2; ii <= this.depth + 1; ++ii) {
+                 if (quadrance < ii * increment * ii * increment) {
+                     this.__drawSection(ctx, 0, Math.PI,
+                                        (ii - 1) * increment,
+                                        ii * increment);
+                     break;
+                 }
+             }
+             ctx.fillStyle = this.colors["child"];;
+             ctx.fill();
          }
 
          // Lines to separate each cell
@@ -190,8 +204,7 @@
 
          if ((quadrance < (this.radius * this.radius /
              this.depth * this.depth)) ||
-             ((point.y > 0) &&
-              (quadrance < (this.radius * this.radius))))
+             (quadrance < (this.radius * this.radius)))
              this.selected = point;
          else this.selected = null;
              
