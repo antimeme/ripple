@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<title>Winternitz Example</title>
+<meta charset="utf-8" />
+<style>
+ html, body, canvas, div { margin: 0; padding: 0 }
+ html, body { height: 100%; }
+ body {
+     color: white; background-color: slategray;
+ }
+</style>
+<fieldset>
+    <legend id="legend">Winternitz</legend>
+    <label>
+        <button id="seedButton">Seed</button>
+        <input id="seedDisplay" disabled="disabled" />
+    </label>
+    <label>W<input id="w" size="2" disabled="disabled" /></label>
+    <label>
+        <button id="signButton" disabled="disabled">Sign</button>
+        <input id="signDisplay" disabled="disabled" />
+    </label>
+    <table id="chains"></table>
+</fieldset>
+<script type="module">//<![CDATA[
+ const chains = document.querySelector("#chains");
+ const hashSize = 256;
+ const hashName = "SHA-256";
+ let w = 8;
+ let prvkey = null;
+
+ function concat(start) {
+     let ii, size = 0, consumed = 0;
+     for (ii = 0; ii < arguments.length; ++ii)
+         size += arguments[ii].byteLength;
+
+     const result = new Uint8Array(size);
+     for (ii = 0; ii < arguments.length; ++ii) {
+         result.set(new Uint8Array(arguments[ii]), consumed);
+         consumed += arguments[ii].byteLength;
+     }
+     return result.buffer;
+ }
+
+ let sign = null;
+ const signDisplay = document.querySelector("#signDisplay");
+ const signButton = document.querySelector("#signButton");
+ signButton.addEventListener("click", async event => {
+     const encoder = new TextEncoder();
+     const signArray = new Uint8Array(32);
+     crypto.getRandomValues(signArray);
+
+     sign = signArray.buffer;
+     signDisplay.value = Array.from(signArray).map((bytes) =>
+         bytes.toString(16).padStart(2, '0')).join('');
+
+     // Compute indices for moving signature drop downs
+     const segments = [];
+     for (let ii = 0; ii < signArray.length; ++ii) {
+         switch (w) {
+             case 8:
+                 segments.push(signArray[ii]);
+                 break;
+             case 4:
+                 segments.push((signArray[ii] >> 0) & 0xF);
+                 segments.push((signArray[ii] >> 4) & 0xF);
+                 break;
+             case 2:
+                 segments.push((signArray[ii] >> 0) & 0x3);
+                 segments.push((signArray[ii] >> 2) & 0x3);
+                 segments.push((signArray[ii] >> 4) & 0x3);
+                 segments.push((signArray[ii] >> 6) & 0x3);
+                 break;
+             case 1:
+                 segments.push((signArray[ii] >> 0) & 0x1);
+                 segments.push((signArray[ii] >> 1) & 0x1);
+                 segments.push((signArray[ii] >> 2) & 0x1);
+                 segments.push((signArray[ii] >> 3) & 0x1);
+                 segments.push((signArray[ii] >> 4) & 0x1);
+                 segments.push((signArray[ii] >> 5) & 0x1);
+                 segments.push((signArray[ii] >> 6) & 0x1);
+                 segments.push((signArray[ii] >> 7) & 0x1);
+                 break;
+             default:
+         }
+     }
+     segments.forEach((segment, ii) => {
+         const selectSig = document.querySelector(
+             "#" + "sig" + ii.toString().padStart(3, '0'));
+         selectSig.selectedIndex = (1 << w) - segment;
+     });
+ });
+
+ let seed = null;
+ const seedDisplay = document.querySelector("#seedDisplay");
+ const seedButton = document.querySelector("#seedButton");
+ seedButton.addEventListener("click", async event => {
+     const encoder = new TextEncoder();
+     const seedArray = new Uint8Array(32);
+     crypto.getRandomValues(seedArray);
+
+     seed = seedArray.buffer;
+     seedDisplay.value = Array.from(seedArray).map((bytes) =>
+         bytes.toString(16).padStart(2, '0')).join('');
+
+     const prvnew = [];
+     for (let ii = 0; ii < (hashSize / w); ++ii) {
+         const prvname = "prv" + ii.toString().padStart(3, '0');
+         const inputPrv = document.querySelector("#" + prvname);
+         const inputPub = document.querySelector(
+             "#" + "pub" + ii.toString().padStart(3, '0'));
+         const selectSig = document.querySelector(
+             "#" + "sig" + ii.toString().padStart(3, '0'));
+         let current = await crypto.subtle.digest(
+             hashName, concat(seed, encoder.encode(prvname)));
+         inputPrv.value = Array.from(
+             new Uint8Array(current)).map((bytes) =>
+                 bytes.toString(16).padStart(2, '0')).join('');
+         prvnew.push(current);
+
+         selectSig.innerHTML = "";
+         for (let jj = 0; jj < (1 << w); ++jj) {
+             const option = document.createElement("option");
+             current = await crypto.subtle.digest(hashName, current);
+             
+             option.appendChild(document.createTextNode(
+                 (jj + 1).toString() + ": " + Array.from(
+                     new Uint8Array(current)).map((bytes) =>
+                         bytes.toString(16).padStart(2, '0'))
+                         .join('').slice(0, 16) + "..."));
+             if (jj + 1 >= (1 << w))
+                 option.selected = true;
+             selectSig.appendChild(option);
+         }
+         inputPub.value = Array.from(
+             new Uint8Array(current)).map((bytes) =>
+                 bytes.toString(16).padStart(2, '0')).join('');
+     }
+     prvkey = prvnew;
+     signButton.disabled = false;
+ });
+ 
+ document.addEventListener("DOMContentLoaded", () => {
+     const legend = document.querySelector("#legend");
+     legend.innerHTML += ": " + hashName;
+
+     const winput = document.querySelector("#w");
+     winput.value = w;
+
+     for (let ii = 0; ii < (hashSize / w); ++ii) {
+         const row = document.createElement("tr");
+
+         const cellPrv = document.createElement("td");
+         const labelPrv = document.createElement("label");
+         const inputPrv = document.createElement("input");
+         inputPrv.setAttribute(
+             "id", "prv" + ii.toString().padStart(3, '0'));
+         inputPrv.setAttribute("disabled", "disabled");
+         cellPrv.appendChild(labelPrv);
+         labelPrv.appendChild(document.createTextNode(
+             "Private " + ii.toString()));
+         labelPrv.appendChild(inputPrv);         
+         row.appendChild(cellPrv);
+
+         const cellPub = document.createElement("td");
+         const labelPub = document.createElement("label");
+         const inputPub = document.createElement("input");
+         inputPub.setAttribute(
+             "id", "pub" + ii.toString().padStart(3, '0'));
+         inputPub.setAttribute("disabled", "disabled");
+         cellPub.appendChild(labelPub);
+         labelPub.appendChild(document.createTextNode(
+             "Public " + ii.toString()));
+         labelPub.appendChild(inputPub);
+         row.appendChild(cellPub);
+
+         const cellSig = document.createElement("td");
+         const labelSig = document.createElement("label");
+         const selectSig = document.createElement("select");
+         selectSig.setAttribute(
+             "id", "sig" + ii.toString().padStart(3, '0'));
+         labelSig.appendChild(document.createTextNode(
+             "Signature " + ii.toString()));
+         labelSig.appendChild(selectSig);
+         cellSig.appendChild(labelSig);
+         row.appendChild(cellSig);
+
+         chains.appendChild(row);
+         seedDisplay.vaue = "";
+     }
+ });
+ //]]></script>
