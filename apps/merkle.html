@@ -15,7 +15,10 @@
 <canvas id="screen"></canvas>
 <script type="module">//<![CDATA[
  import Camera from "./ripple/camera.mjs";
- import Multivec from "./ripple/multivec.mjs";
+
+ function smoothstep(t) {
+     return t * t * t * (6 * t * t - 15 * t + 10);
+ };
 
  class MerkleTree {
      constructor(config) {
@@ -35,7 +38,7 @@
              parent: "tomato",
              child: "orchid" };
 
-         this.hashes = [];
+         this.hashes = null;
          this.__createMTree(this.depth);
      }
 
@@ -53,14 +56,15 @@
      }
 
      async __createMTree(depth) {
-         let encoder = new TextEncoder();
+         const result = [];
+         const encoder = new TextEncoder();
          let previous = [];
 
          for (let ii = 0; ii < (1 << this.depth); ++ii)
              previous.push(await crypto.subtle.digest(
                  this.algorithm, encoder.encode(
                      "leaf" + ii.toString().padStart(4, "0"))));
-         this.hashes.unshift(previous);
+         result.unshift(previous);
 
          while (previous.length > 2) {
              let next = [];
@@ -68,22 +72,26 @@
                  next.push(await crypto.subtle.digest(
                      this.algorithm, this.__concat(
                          previous[ii], previous[ii + 1])));
-             this.hashes.unshift(next);
+             result.unshift(next);
              previous = next;
          }
 
          if (previous.length === 2)
-             this.hashes.unshift(await crypto.subtle.digest(
+             result.unshift(await crypto.subtle.digest(
                  this.algorithm, this.__concat(
                      previous[0], previous[1])));
+         this.hashes = result;
      }
 
      __arc(ctx, radius, begin, end) {
          ctx.moveTo(this.center.x + radius, this.center.y);
          ctx.arc(this.center.x, this.center.y, radius, begin, end);
      }
+     
+     __drawSection(ctx, inner, outer, start, stop, fraction) {
+         if (!isNaN(fraction) && (fraction >= 0) && (fraction <= 1))
+             outer = inner + fraction * (outer - inner);
 
-     __drawSection(ctx, start, stop, outer, inner) {
          ctx.moveTo(
              this.center.x + Math.cos(start) * outer,
              this.center.y + Math.sin(start) * outer);
@@ -97,7 +105,12 @@
      }
 
      draw(ctx) {
-         let increment = this.radius / (this.depth + 1);
+         const now = new Date().getTime();
+         const fraction =
+             (this.selected && !isNaN(this.selected.when) &&
+              this.selected.when + 1000) ?
+             smoothstep((now - this.selected.when) / 1000) : 1.0;
+         const increment = this.radius / (this.depth + 1);
          let ii, jj;
 
          // Background
@@ -109,40 +122,41 @@
 
          if (this.selected && this.selected.row < 0) {
              ctx.beginPath();
-             this.__drawSection(ctx, 0, Math.PI,
+             this.__drawSection(ctx,
+                                (1 - this.selected.row) * increment,
                                 (0 - this.selected.row) * increment,
-                                (1 - this.selected.row) * increment);
-             ctx.fillStyle = this.colors["child"];;
+                                0, Math.PI, fraction);
+             ctx.fillStyle = this.colors["child"];
              ctx.fill();
          } else if (this.selected) {
              // Highlight children of selected node
              ctx.beginPath();
              if (this.selected.root)
-                 this.__arc(ctx, this.radius, 0, Math.PI);
+                 this.__drawSection(ctx, increment, this.radius,
+                                    0, Math.PI, fraction);
              else this.__drawSection(
-                 ctx, Math.PI * this.selected.slice /
+                 ctx, this.selected.row * increment, this.radius,
+                 Math.PI * this.selected.slice /
                  (1 << this.selected.row),
                  Math.PI * (this.selected.slice + 1) /
-                 (1 << this.selected.row),
-                 this.radius,
-                 this.selected.row * increment);
+                 (1 << this.selected.row), fraction);
              ctx.closePath();
-             ctx.fillStyle = this.colors["child"];;
+             ctx.fillStyle = this.colors["child"];
              ctx.fill();
 
              // Highlight selected node itself
              ctx.beginPath();
              if (this.selected.root)
-                 this.__arc(ctx, increment, 0, 2 * Math.PI);
+                 this.__arc(ctx, increment * fraction, 0, 2 * Math.PI);
              else this.__drawSection(
-                 ctx, Math.PI * this.selected.slice /
+                 ctx, this.selected.row * increment,
+                 (this.selected.row + 1) * increment,
+                 Math.PI * this.selected.slice /
                  (1 << this.selected.row),
                  Math.PI * (this.selected.slice + 1) /
-                 (1 << this.selected.row),
-                 (this.selected.row + 1) * increment,
-                 this.selected.row * increment);
+                 (1 << this.selected.row), fraction);
              ctx.closePath();
-             ctx.fillStyle = this.colors["selected"];;
+             ctx.fillStyle = this.colors["selected"];
              ctx.fill();
 
              // Highlight nodes needed for proof of membership
@@ -153,10 +167,10 @@
                      let slice = component ^ 1;
 
                      this.__drawSection(
-                         ctx, Math.PI * slice / slices,
-                         Math.PI * (slice + 1) / slices,
+                         ctx, (index + 1) * increment,
                          (index + 2) * increment,
-                         (index + 1) * increment);
+                         Math.PI * slice / slices,
+                         Math.PI * (slice + 1) / slices, fraction);
                  }, this);
              ctx.fillStyle = this.colors["parent"];
              ctx.fill();
@@ -193,12 +207,13 @@
          let increment = this.radius / (this.depth + 1);
 
          if (quadrance < this.radius * this.radius) {
+             const now = new Date().getTime();
              if (quadrance < increment * increment) {
-                 this.selected = { root: true };
+                 this.selected = { root: true, when: now };
              } else if (point.y < 0) {
                  for (let ii = 2; ii <= this.depth + 1; ++ii) {
                      if (quadrance < ii * increment * ii * increment) {
-                         this.selected = { row: 1 - ii };
+                         this.selected = { row: 1 - ii, when: now };
                          break;
                      }
                  }
@@ -216,7 +231,8 @@
                      if (quadrance < ((ii + 1) * increment *
                          (ii + 1) * increment)) {
                          this.selected = {
-                             path: path, slice: slice, row: ii };
+                             path: path, slice: slice,
+                             row: ii, when: now };
                          break;
                      }
                  }
@@ -226,7 +242,9 @@
 
      getSelectedHash() {
          let result = null;
-         if (this.selected) {
+         if (!this.hashes) {
+             // Not done creating hashes yet
+         } else if (this.selected) {
              if (this.selected.root)
                  result = this.hashes[0];
              else if (this.selected.row > 0)
@@ -240,14 +258,19 @@
                      bytes.toString(16).padStart(2, '0')).join('');
          return result;
      }
+
+     isActive() {
+         return this.selected &&
+                this.selected.when + 1000 > new Date().getTime();
+     }
  }
 
- let screen = document.querySelector("#screen");
+ const screen = document.querySelector("#screen");
+ const tree = new MerkleTree();
  let camera = undefined;
  let ctx = undefined;
- let tree = new MerkleTree();
 
- function draw() {
+ function update() {
      let hash = tree.getSelectedHash();
 
      camera.configureContext(ctx);
@@ -258,10 +281,8 @@
          ctx.textAlign = "center";
          ctx.fillText(hash, camera.width / 2, 30);
      }
- }
-
- function update() {
-     draw();
+     if (tree.isActive())
+         requestAnimationFrame(update);
  }
 
  screen.addEventListener("mousedown", (event) => {
@@ -286,7 +307,6 @@
          camera.pan({x: 0, y: -0.45});
          camera.zoom(1.5);
          update();
-         draw();
      });
      window.dispatchEvent(new Event("resize"));
  });
