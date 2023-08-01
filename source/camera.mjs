@@ -20,24 +20,30 @@
 
 class Camera {
     constructor(width, height) {
+        this.resize(width, height);
+        this.position = { x: 0, y: 0 };
+        this.scale = 1;
+        this.spin = 0;
+    }
+
+    resize(width, height) {
         this.width = width;
         this.height = height;
-
-        this.scale = Math.min(width, height) / 2;
-        this.position = { x: 0, y: 0 };
-        this.spin = 0;
+        this.radius = Math.min(width, height) / 2;
     }
 
     configureContext(ctx) {
         ctx.clearRect(0, 0, this.width, this.height);
         ctx.save();
         ctx.translate(this.width / 2, this.height / 2);
-        ctx.scale(this.scale, -this.scale);
+        ctx.scale(this.radius / this.scale, -this.radius / this.scale);
         ctx.rotate(this.spin);
         ctx.translate(this.position.x, this.position.y);
         return ctx;
     }
     restoreContext(ctx) { ctx.restore(); return ctx; }
+
+    getRadius() { return this.radius; }
 
     /**
      * Convert a point from world space to screen space.
@@ -56,8 +62,8 @@ class Camera {
                 y: point.x * sin + point.y * cos };
         }
 
-        point.x *= this.scale;
-        point.y *= -this.scale;
+        point.x *= this.radius / this.scale;
+        point.y *= -this.radius / this.scale;
 
         point.x += this.width / 2;
         point.y += this.height / 2;
@@ -72,8 +78,8 @@ class Camera {
         point.x -= this.width / 2;
         point.y -= this.height / 2;
 
-        point.x /= this.scale;
-        point.y /= -this.scale;
+        point.x *= this.scale / this.radius;
+        point.y *= -this.scale / this.radius;
 
         if (this.spin) {
             let cos = Math.cos(this.spin);
@@ -122,4 +128,3 @@ class Camera {
 }
 
 export default Camera;
-

@@ -8,26 +8,235 @@
 <style>
  html, body {
      padding: 0; margin: 0; overflow: hidden;
-     position: relative; background: gray;
+     position: relative; background: #888;
  }
- canvas { background: white; color: #336; }
+ canvas { background: #eee; }
  .menu {
      position: absolute; padding: 0.5em;
-     background: #333; color: white;
-     border: 2px solid white; border-radius: 5px;
+     top: 10px; left: 25px;
+     background: #333; color: #eee;
+     border: 2px solid #eee; border-radius: 10px;
      list-style-type: none; list-style-position: outside;
  }
- .menu a { text-decoration: none; color: white; }
- .menu li { padding: 0.5em; border-radius: 5px; }
+ .menu a { text-decoration: none; color: #eee; }
+ .menu li { padding: 0.5em; border-radius: 10px; }
  .menu li:hover { background: #55e; }
- #container { height: 90vh; margin: 2% 2%; }
 </style>
-<!-- <div id="container"></div>-->
+<script type="module">//<![CDATA[
+ import Camera from "./ripple/camera.mjs";
+ import Grid from "./ripple/grid.mjs";
 
-<script src="ripple/polyfill.js"></script>
-<script src="ripple/ripple.js"></script>
-<script src="ripple/grid.js"></script>
-<script>//<![CDATA[
- ripple.ready(function() {
-     grid.test(document.getElementById('container'));
+ const colors = {
+     grid:       "rgba( 32,  32,  64, 1.0)",
+     tapInner:   "rgba( 45,  45, 128, 0.8)",
+     tapOuter:   "rgba(128, 255, 128, 0.6)",
+     selected:   "rgba(192, 192,   0, 0.6)",
+     neighbor:   "rgba(128, 128,   0, 0.4)",
+     line:       "rgba(128, 128, 224, 0.5)",
+     segment:    "rgba( 64,  64, 112, 0.5)",
+     edgeSelect: "rgba(128, 128, 224, 1.0)" };
+
+ document.addEventListener('DOMContentLoaded', () => {
+     const screen = document.createElement("canvas");
+     const camera = new Camera(320, 240).setScale(4);
+     let grid = Grid.create({type: "square", radius: 1});
+     let selected = [];
+     let numbers = 0;
+     let draw_id = 0;
+
+     function draw() {
+         if (!screen.getContext)
+             throw Error("canvas has no getContext");
+         const ctx = screen.getContext("2d");
+         camera.configureContext(ctx);
+         ctx.lineWidth = camera.getRadius() / 4096;
+         ctx.font = "bold 12px sans-serif";
+         ctx.textAlign = "center";
+         ctx.textBaseline = "middle";
+
+         // Highlight selected and neighboring grid cells
+         selected.forEach(selection => {
+             ctx.beginPath();
+             grid.drawNode(ctx, selection);
+             ctx.fillStyle = colors.selected;
+             ctx.fill();
+
+             ctx.beginPath();
+             grid.eachNeighbor(selection, neighbor =>
+                 { grid.drawNode(ctx, neighbor); });
+             ctx.fillStyle = colors.neighbor;
+             ctx.fill();
+         });
+
+         // Mark the cells that make up the grid
+         ctx.beginPath();
+         ctx.fillStyle = colors.grid;
+         grid.mapRectangle(
+             camera.toWorld({x: 0, y: 0}),
+             camera.toWorld({x: screen.width, y: screen.height}),
+             node => {
+                 grid.drawNode(ctx, node);
+
+                 ctx.save();
+                 if (numbers > 1)
+                     ctx.fillText(node.id, node.x, node.y);
+                 else if (numbers > 0)
+                     ctx.fillText("(" + node.row + ", " +
+                                  node.col + ")", node.x, node.y);
+                 ctx.restore();
+         });
+         ctx.lineCap = "round";
+         ctx.strokeStyle = colors.grid;
+         ctx.stroke();
+
+         // Show the last mouse click or touches
+         selected.forEach((selection, index) => {
+             ctx.beginPath();
+             ctx.moveTo(selection.x + 1/3, selection.y);
+             ctx.arc(selection.x, selection.y, 1/3, 0, 2 * Math.PI);
+             ctx.fillStyle = colors.tapOuter;
+             ctx.fill();
+             if (!index) {
+                 ctx.beginPath();
+                 ctx.moveTo(selection.x + 1/7, selection.y);
+                 ctx.arc(selection.x, selection.y, 1/7, 0, 2 * Math.PI);
+                 ctx.fillStyle = colors.tapInner;
+                 ctx.fill();
+             }
+         });
+
+         camera.restoreContext(ctx);
+         draw_id = 0;
+     }
+     function redraw() {
+         if (!draw_id)
+             draw_id = requestAnimationFrame(draw);
+         return false;
+     }
+
+     const menu = document.createElement("ul");
+     menu.classList.add("menu");
+     menu.style.display = 'none';
+     menu.style.zIndex = 2;
+     document.body.appendChild(menu);
+     screen.style.zIndex = 1;
+
+     function setGrid() {
+         const options = JSON.parse(decodeURIComponent(
+             menuSelectGrid.value));
+         options.isometric   = menuCheckIsometric.checked;
+         options.radius = 1;
+         if (!isNaN(menuSliderRotate.value))
+             options.rotate = menuSliderRotate.value;
+         grid = Grid.create(options);
+         selected.splice(0, selected.length);
+         redraw();
+     }
+
+     function setGridClose() {
+         setGrid();
+         menu.style.display = "none";
+     }
+
+     const menuSelectGrid = document.createElement("select");
+     Grid.canonical.forEach(function(entry) {
+         const option = document.createElement("option");
+         option.value = JSON.stringify(entry);
+         option.appendChild(document.createTextNode(entry.name));
+         menuSelectGrid.appendChild(option);
+     });
+     menuSelectGrid.addEventListener("change", setGridClose);
+     menu.appendChild(menuSelectGrid);
+
+     menu.appendChild(document.createElement("br"));
+     const menuCheckIsometric = document.createElement("input");
+     menuCheckIsometric.type = "checkbox";
+     menuCheckIsometric.value = "isometric";
+     menuCheckIsometric.addEventListener("change", setGridClose);
+     const menuLabelIsometric = document.createElement("label");
+     menuLabelIsometric.appendChild(menuCheckIsometric);
+     menuLabelIsometric.appendChild(document.createTextNode("Isometric"));
+     menu.appendChild(menuLabelIsometric);
+
+     menu.appendChild(document.createElement("br"));
+     const menuSliderRotate = document.createElement("input");
+     menuSliderRotate.type = "range";
+     menuSliderRotate.value = 0;
+     menuSliderRotate.step = Math.PI / 60;
+     menuSliderRotate.min  = -Math.PI;
+     menuSliderRotate.max  = Math.PI;
+     menuSliderRotate.addEventListener("change", setGridClose);
+     menu.appendChild(menuSliderRotate);
+
+     menu.appendChild(document.createElement("hr"));
+
+     const menuToggleNumbers = document.createElement("li");
+     menuToggleNumbers.appendChild(
+         document.createTextNode("Toggle Numbers"));
+     menuToggleNumbers.setAttribute("data-action", "numbers");
+     //menu.appendChild(menuToggleNumbers);
+     const menuFullscreen = document.createElement("li");
+     menuFullscreen.appendChild(
+         document.createTextNode("Full Screen"));
+     menuFullscreen.setAttribute("data-action", "fullscreen");
+     menu.appendChild(menuFullscreen);
+
+     menu.addEventListener("click", event => {
+         if (event.target.tagName.toLowerCase() !== "li")
+             return false;
+         menu.style.display = "none";
+         switch (event.target.getAttribute("data-action")) {
+             case "fullscreen": {
+                 if (!document.fullscreenElement)
+                     document.body.requestFullscreen();
+                 else document.exitFullscreen();
+             } break;
+             case "numbers": {
+                 numbers += 1;
+                 numbers %= 3;
+                 redraw();
+             } break;
+         }
+     });
+
+     screen.addEventListener("dblclick", event =>
+         { menu.style.display = "block"; });
+
+     screen.addEventListener("mousedown", event => {
+         selected = [grid.markCell(camera.toWorld({
+             x: event.offsetX,
+             y: event.offsetY}))];
+         return redraw();
+     });
+
+     screen.addEventListener("wheel", event => {
+         camera.zoom((event.wheelDeltaY > 0) ?
+                     (5/4) : (4/5), 1, 20);
+
+         event.preventDefault();
+         return redraw();
+     });
+
+     screen.addEventListener("touchstart", event => {
+         const bounds = event.target.getBoundingClientRect();
+         selected.splice(0, selected.length);
+         for (let ii = 0; ii < event.targetTouches.length; ++ii)
+             selected.push(grid.markCell(camera.toWorld({
+                 x: event.targetTouches[ii].clientX - bounds.x,
+                 y: event.targetTouches[ii].clientY - bounds.y })));
+
+         event.preventDefault();
+         return redraw();
+     });
+
+     document.body.appendChild(screen);
+
+     window.addEventListener("resize", event => {
+         screen.height = window.innerHeight || window.clientHeight;
+         screen.width = window.innerWidth || window.clientWidth;
+         camera.resize(screen.width, screen.height);
+         return redraw();
+     });
+     window.dispatchEvent(new Event("resize"));
+
  }); //]]></script>
