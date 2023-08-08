@@ -199,31 +199,49 @@
          }
      });
 
+     function getPoint(event, thing) {
+         const bounds = event.target.getBoundingClientRect();
+         if (!thing)
+             thing = event;
+         return {x: thing.clientX - bounds.x,
+                 y: thing.clientY - bounds.y};
+     }
+     let drag = undefined;
+
      screen.addEventListener("dblclick", event =>
          { menu.style.display = "block"; });
 
      screen.addEventListener("mousedown", event => {
-         selected = [grid.markCell(camera.toWorld({
-             x: event.offsetX,
-             y: event.offsetY}))];
+         drag = grid.markCell(camera.toWorld(getPoint(event)));
+         selected = [drag];
+         return redraw();
+     });
+
+     screen.addEventListener("mousemove", event => {
+         if (!drag)
+             return false;
+         drag = camera.toWorld(getPoint(event));
+         camera.pan({x: drag.x - selected[0].x,
+                     y: drag.y - selected[0].y});
+         return redraw();
+     });
+
+     screen.addEventListener("mouseup", event => {
+         drag = undefined;
          return redraw();
      });
 
      screen.addEventListener("wheel", event => {
-         camera.zoom((event.wheelDeltaY > 0) ?
-                     (5/4) : (4/5), 1, 20);
-
+         camera.zoom((event.wheelDeltaY > 0) ? (5/4) : (4/5), 1, 20);
          event.preventDefault();
          return redraw();
      });
 
      screen.addEventListener("touchstart", event => {
-         const bounds = event.target.getBoundingClientRect();
          selected.splice(0, selected.length);
          for (let ii = 0; ii < event.targetTouches.length; ++ii)
-             selected.push(grid.markCell(camera.toWorld({
-                 x: event.targetTouches[ii].clientX - bounds.x,
-                 y: event.targetTouches[ii].clientY - bounds.y })));
+             selected.push(grid.markCell(camera.toWorld(
+                 getPoint(event, event.targetTouches[ii]))));
 
          event.preventDefault();
          return redraw();
