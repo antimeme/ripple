@@ -4,6 +4,7 @@ AddHandler cgi-script .cgi
 Options +MultiViews
 AddType text/html .cgi
 AddType application/json .cgi
+AddType application/javascript .mjs
 
 AuthType Digest
 AuthName "RippleApps"
