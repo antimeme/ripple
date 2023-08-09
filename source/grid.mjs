@@ -220,7 +220,7 @@ class BaseGrid {
 
     // Guarantees a node with both cell and coordinate data
     _checkNodeCenter(node) {
-        let result = this._checkNodeCell(node);
+        const result = this._checkNodeCell(node);
         this._markCenter(result);
         return result;
     }
@@ -415,13 +415,15 @@ class BaseGrid {
      * Given a node with coordinates, return the neighboring
      * node that shares the edge closest to those coordinates */
     getEdgeNeighbor(node) {
-        node = this._checkNodePoint(node);
+        const start = this._checkNodePoint(node);
 
-        const neighbor = this._getEdgeNeighbor(node);
-        neighbor.edge = this._getPairPoints(node, neighbor);
-        neighbor.peer = node;
-        node.peer = neighbor;
-        node.edge = neighbor.edge;
+        const neighbor = this._getEdgeNeighbor(start);
+        this._markCenter(start);
+        this._markCenter(neighbor);
+        neighbor.edge = this._getPairPoints(start, neighbor);
+        neighbor.peer = start;
+        start.peer = neighbor;
+        start.edge = neighbor.edge;
         return neighbor;
     }
     _getEdgeNeighbor(node) {
@@ -844,7 +846,7 @@ class AdapterGrid extends BaseGrid {
 
     _getEdgeNeighbor(node) {
         this.fromWorld(node);
-        const result = underlying._getEdgeNeighbor(node);
+        const result = this.underlying._getEdgeNeighbor(node);
         this.toWorld(node);
         this.toWorld(result);
         return result;
