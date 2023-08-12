@@ -55,13 +55,22 @@
          const ctx = screen.getContext("2d");
          camera.configureContext(ctx);
          ctx.lineWidth = camera.getRadius() / 4096;
-         ctx.font = "bold 12px sans-serif";
+         ctx.font = "bold 42px sans-serif";
          ctx.textAlign = "center";
          ctx.textBaseline = "middle";
 
          // Highlight selected and neighboring grid cells
          selected.forEach(selection => {
-             if (!edgeSelect) {
+             if (edgeSelect) {
+                 selection.peer = grid.getEdgeNeighbor(selection);
+                 selection.edge = selection.peer.edge;
+
+                 ctx.beginPath();
+                 [selection, selection.peer].forEach((node) =>
+                     { grid.drawNode(ctx, node); });
+                 ctx.fillStyle = colors.neighbor;
+                 ctx.fill();
+             } else {
                  ctx.beginPath();
                  grid.drawNode(ctx, selection);
                  ctx.fillStyle = colors.selected;
@@ -72,78 +81,91 @@
                      { grid.drawNode(ctx, neighbor); });
                  ctx.fillStyle = colors.neighbor;
                  ctx.fill();
-             } else {
-                 const neighbor = grid.getEdgeNeighbor(selection);
-                 ctx.beginPath();
-                 [neighbor, neighbor.peer].forEach((node) => {
-                     grid.drawNode(ctx, node);
-                 });
-                 ctx.fillStyle = colors.neighbor;
-                 ctx.fill();
              }
          });
 
          // Mark the cells that make up the grid
          ctx.beginPath();
-         ctx.fillStyle = colors.grid;
          grid.mapRectangle(
              camera.toWorld({x: 0, y: 0}),
              camera.toWorld({x: screen.width, y: screen.height}),
-             node => {
-                 grid.drawNode(ctx, node);
-
-                 ctx.save();
-                 if (numbers > 1)
-                     ctx.fillText(node.id, node.x, node.y);
-                 else if (numbers > 0)
-                     ctx.fillText("(" + node.row + ", " +
-                                  node.col + ")", node.x, node.y);
-                 ctx.restore();
-         });
+             node => { grid.drawNode(ctx, node); });
          ctx.lineCap = "round";
          ctx.strokeStyle = colors.grid;
          ctx.stroke();
 
+         if (numbers) {
+             ctx.beginPath();
+             ctx.fillStyle = colors.grid;
+             grid.mapRectangle(
+                 camera.toWorld({x: 0, y: 0}),
+                 camera.toWorld({x: screen.width, y: screen.height}),
+                 node => {
+                     const scale = 1 / camera.getRadius();
+                     ctx.save();
+                     ctx.translate(node.x, node.y);
+                     ctx.scale(scale, -scale);
+                     if (numbers > 1)
+                         ctx.fillText(node.id, 0, 0);
+                     else ctx.fillText("(" + node.row + ", " +
+                                       node.col + ")", 0, 0);
+                     ctx.restore();
+             });
+             ctx.fill();
+         }
+
          // Draw selection related things on top of the grid
          selected.forEach((selection, index) => {
-             if (neighborDots && !edgeSelect)
-                 grid.eachNeighbor(selection, (neighbor, index) => {
-                     const points = grid.getPairPoints(
-                         selection, grid.markCenter(neighbor));
-
+             if (neighborDots) {
+                 if (edgeSelect) {
                      ctx.beginPath();
-                     if (points.length > 1) {
-                         const vector = {x: points[1].x - points[0].x,
-                                         y: points[1].y - points[0].y};
-                         ctx.moveTo(points[0].x + 0.25 * vector.x,
-                                    points[0].y + 0.25 * vector.y);
-                         ctx.lineTo(points[0].x + 0.75 * vector.x,
-                                    points[0].y + 0.75 * vector.y);
-                     } else if (points.length === 1) {
-                         const radius = ctx.lineWidth * 5;
-                         ctx.moveTo(points[0].x + radius,
-                                    points[0].y);
-                         ctx.arc(points[0].x, points[0].y,
-                                 radius, 0, 2 * Math.PI);
-                     }
-                     ctx.moveTo(neighbor.x + ctx.lineWidth * 2,
-                                neighbor.y);
-                     ctx.arc(neighbor.x, neighbor.y,
-                             ctx.lineWidth * 2, 0, 2 * Math.PI);
-                     ctx.strokeStyle = colors.neighbors[
-                         index % colors.neighbors.length];
+                     [selection.peer,
+                      selection.peer.peer].forEach(node => {
+                          ctx.moveTo(node.x + ctx.lineWidth * 2, node.y);
+                          ctx.arc(node.x, node.y, ctx.lineWidth * 2,
+                                  0, 2 * Math.PI); });
+                     ctx.strokeStyle = colors.neighbors[0];
                      ctx.stroke();
-                 });
+                 } else {
+                     grid.eachNeighbor(selection, (neighbor, index) => {
+                         const points = grid.getPairPoints(
+                             selection, grid.markCenter(neighbor));
 
-             if (edgeSelect) {
-                 const neighbor = grid.getEdgeNeighbor(selection);
-                 if (neighbor && neighbor.edge &&
-                     (neighbor.edge.length > 1)) {
+                         ctx.beginPath();
+                         if (points.length > 1) {
+                             const vector = {
+                                 x: points[1].x - points[0].x,
+                                 y: points[1].y - points[0].y };
+                             ctx.moveTo(points[0].x + 0.25 * vector.x,
+                                        points[0].y + 0.25 * vector.y);
+                             ctx.lineTo(points[0].x + 0.75 * vector.x,
+                                        points[0].y + 0.75 * vector.y);
+                         } else if (points.length === 1) {
+                             const radius = ctx.lineWidth * 5;
+                             ctx.moveTo(points[0].x + radius,
+                                        points[0].y);
+                             ctx.arc(points[0].x, points[0].y,
+                                     radius, 0, 2 * Math.PI);
+                         }
+                         ctx.moveTo(neighbor.x + ctx.lineWidth * 2,
+                                    neighbor.y);
+                         ctx.arc(neighbor.x, neighbor.y,
+                                 ctx.lineWidth * 2, 0, 2 * Math.PI);
+                         ctx.strokeStyle = colors.neighbors[
+                         index % colors.neighbors.length];
+                         ctx.stroke();
+                     });
+                 }
+             }
+
+             if (edgeSelect && selection.peer) {
+                 if (selection.peer && selection.peer.edge &&
+                     (selection.peer.edge.length > 1)) {
                      ctx.beginPath();
-                     ctx.moveTo(neighbor.edge[0].x,
-                                neighbor.edge[0].y);
-                     ctx.lineTo(neighbor.edge[1].x,
-                                neighbor.edge[1].y);
+                     ctx.moveTo(selection.peer.edge[0].x,
+                                selection.peer.edge[0].y);
+                     ctx.lineTo(selection.peer.edge[1].x,
+                                selection.peer.edge[1].y);
                      ctx.strokeStyle = colors["edgeSelect"];
                      ctx.stroke();
                  }
@@ -229,19 +251,6 @@
 
      menu.appendChild(document.createElement("hr"));
 
-     const menuNeighborDots = document.createElement("li");
-     menuNeighborDots.appendChild(
-         document.createTextNode("Neighbor Dots"));
-     menuNeighborDots.setAttribute("data-action", "fullscreen");
-     menuNeighborDots.addEventListener("click", event => {
-         neighborDots = !neighborDots;
-         if (neighborDots)
-             edgeSelect = false;
-         menu.style.display = "none";
-         redraw();
-     });
-     menu.appendChild(menuNeighborDots);
-
      const menuEdgeSelect = document.createElement("li");
      menuEdgeSelect.appendChild(
          document.createTextNode("Edge Select"));
@@ -253,6 +262,17 @@
      });
      menu.appendChild(menuEdgeSelect);
 
+     const menuNeighborDots = document.createElement("li");
+     menuNeighborDots.appendChild(
+         document.createTextNode("Toggle Dots"));
+     menuNeighborDots.setAttribute("data-action", "fullscreen");
+     menuNeighborDots.addEventListener("click", event => {
+         neighborDots = !neighborDots;
+         menu.style.display = "none";
+         redraw();
+     });
+     menu.appendChild(menuNeighborDots);
+
      const menuToggleNumbers = document.createElement("li");
      menuToggleNumbers.addEventListener("click", event => {
          numbers = (numbers + 1) % 3;
@@ -262,7 +282,7 @@
      menuToggleNumbers.appendChild(
          document.createTextNode("Toggle Numbers"));
      menuToggleNumbers.setAttribute("data-action", "numbers");
-     //menu.appendChild(menuToggleNumbers);
+     menu.appendChild(menuToggleNumbers);
 
      const menuFullscreen = document.createElement("li");
      menuFullscreen.appendChild(
@@ -315,15 +335,36 @@
          return redraw();
      });
 
-     screen.addEventListener("touchstart", event => {
-         selected.splice(0, selected.length);
-         for (let ii = 0; ii < event.targetTouches.length; ++ii)
-             selected.push(grid.markCell(camera.toWorld(
-                 getPoint(event, event.targetTouches[ii]))));
+     let touchLength = undefined;
+     function getDistance(p1, p2) {
+         return Math.sqrt(
+             ((touches[0].x - touches[1].x) *
+                 (touches[0].x - touches[1].x)) + (
+                     (touches[0].y - touches[1].y) *
+                     (touches[0].y - touches[1].y)));
+     }
+     function touchUpdate(event) {
+         const touches = event.targetTouches.map(
+             touch => getPoint(event, touch));
+         if (touches.length !== 2) {
+             touchLength = undefined;
+         } else if (isNaN(touchLength)) {
+             touchLength = getDistance(touches[0], touches[1]);
+         } else if (event.type === "touchmove") {
+             camera.zoom(getDistance(touches[0], touches[1]) /
+                 touchLength, 1, 20);
+         }
 
+         selected.splice(0, selected.length);
+         touches.forEach(touch => {
+             selected.push(grid.markCell(camera.toWorld(touch))); } );
          event.preventDefault();
          return redraw();
-     });
+     }
+
+     screen.addEventListener("touchstart", touchUpdate);
+     screen.addEventListener("touchmove",  touchUpdate);
+     screen.addEventListener("touchend",   touchUpdate);
 
      document.body.appendChild(screen);
 

@@ -331,6 +331,7 @@ class BaseGrid {
         let index = 0;
 
         do {
+            current.id = pair(current.row, current.col);
             if (fn.call(context, current, index++, this, start, end))
                 return context;
             visited[pair(current.row, current.col)] = current;
@@ -388,8 +389,10 @@ class BaseGrid {
                 self._markCenter(neighbor);
                 if (!visited[id] &&
                     (neighbor.x >= minX) && (neighbor.x <= maxX) &&
-                    (neighbor.y >= minY) && (neighbor.y <= maxY))
+                    (neighbor.y >= minY) && (neighbor.y <= maxY)) {
+                    neighbor.id = id;
                     queue.push(neighbor);
+                }
             });
         }
 
