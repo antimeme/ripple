@@ -110,6 +110,7 @@ class Camera {
         return this;
     }
 
+    getScale() { return this.scale; }
     setScale(factor, min, max) {
         if (!isNaN(factor)) {
             if (!isNaN(max) && (factor > max))

@@ -28,6 +28,8 @@
 
  const colors = {
      grid:       "rgba( 32,  32,  64, 1.0)",
+     gridInvert: "rgba(224, 224, 192, 1.0)",
+     gridFill:   "rgba( 32,  32,  64, 1.0)",
      tapInner:   "rgba( 45,  45, 128, 0.8)",
      tapOuter:   "rgba(128, 255, 128, 0.6)",
      selected:   "rgba(192, 192,   0, 0.6)",
@@ -46,6 +48,7 @@
      let selected = [];
      let neighborDots = false;
      let edgeSelect = false;
+     let invertColors = false;
      let numbers = 0;
      let draw_id = 0;
 
@@ -58,6 +61,16 @@
          ctx.font = "bold 42px sans-serif";
          ctx.textAlign = "center";
          ctx.textBaseline = "middle";
+
+         if (invertColors) {
+             ctx.beginPath();
+             grid.mapRectangle(
+                 camera.toWorld({x: 0, y: 0}),
+                 camera.toWorld({x: screen.width, y: screen.height}),
+                 node => { grid.drawNode(ctx, node); });
+             ctx.fillStyle = colors.gridFill;
+             ctx.fill();
+         }
 
          // Highlight selected and neighboring grid cells
          selected.forEach(selection => {
@@ -91,12 +104,15 @@
              camera.toWorld({x: screen.width, y: screen.height}),
              node => { grid.drawNode(ctx, node); });
          ctx.lineCap = "round";
-         ctx.strokeStyle = colors.grid;
+         if (invertColors) {
+             ctx.strokeStyle = colors.gridInvert;
+         } else ctx.strokeStyle = colors.grid;
          ctx.stroke();
 
          if (numbers) {
              ctx.beginPath();
-             ctx.fillStyle = colors.grid;
+             ctx.fillStyle = invertColors ?
+                             colors.gridInvert : colors.grid;
              grid.mapRectangle(
                  camera.toWorld({x: 0, y: 0}),
                  camera.toWorld({x: screen.width, y: screen.height}),
@@ -253,7 +269,7 @@
 
      const menuEdgeSelect = document.createElement("li");
      menuEdgeSelect.appendChild(
-         document.createTextNode("Edge Select"));
+         document.createTextNode("Toggle Edge"));
      menuEdgeSelect.setAttribute("data-action", "fullscreen");
      menuEdgeSelect.addEventListener("click", event => {
          edgeSelect = !edgeSelect;
@@ -283,6 +299,16 @@
          document.createTextNode("Toggle Numbers"));
      menuToggleNumbers.setAttribute("data-action", "numbers");
      menu.appendChild(menuToggleNumbers);
+
+     const menuToggleColors = document.createElement("li");
+     menuToggleColors.addEventListener("click", event => {
+         invertColors = !invertColors;
+         redraw();
+     });
+     menuToggleColors.appendChild(
+         document.createTextNode("Toggle Colors"));
+     menuToggleColors.setAttribute("data-action", "colors");
+     menu.appendChild(menuToggleColors);
 
      const menuFullscreen = document.createElement("li");
      menuFullscreen.appendChild(
