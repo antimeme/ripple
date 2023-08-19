@@ -126,3 +126,16 @@ export function eachPermutation(elements, fn, context) {
     }
     return context;
 }
+
+export class Bounds {
+    constructor(event)
+    { this.bounds = event.target.getBoundingClientRect(); }
+    getPoint(point) {
+        return {x: point.clientX - this.bounds.x,
+                y: point.clientY - this.bounds.y};
+    }
+    static eventPoint(event) {
+        return new Bounds(event).getPoint(event);
+    }
+}
+

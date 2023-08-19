@@ -23,8 +23,9 @@
  .menu li:hover { background: #55e; }
 </style>
 <script type="module">//<![CDATA[
- import Camera from "./ripple/camera.mjs";
  import Grid from "./ripple/grid.mjs";
+ import Camera from "./ripple/camera.mjs";
+ import { Bounds } from "./ripple/ripple.mjs";
 
  const colors = {
      grid:       "rgba( 32,  32,  64, 1.0)",
@@ -168,7 +169,7 @@
                          ctx.arc(neighbor.x, neighbor.y,
                                  ctx.lineWidth * 2, 0, 2 * Math.PI);
                          ctx.strokeStyle = colors.neighbors[
-                         index % colors.neighbors.length];
+                             index % colors.neighbors.length];
                          ctx.stroke();
                      });
                  }
@@ -321,20 +322,14 @@
      });
      menu.appendChild(menuFullscreen);
 
-     function getPoint(event, thing) {
-         const bounds = event.target.getBoundingClientRect();
-         if (!thing)
-             thing = event;
-         return {x: thing.clientX - bounds.x,
-                 y: thing.clientY - bounds.y};
-     }
      let drag = undefined;
+     let lastTap = 0;
 
      screen.addEventListener("dblclick", event =>
          { menu.style.display = "block"; });
 
      screen.addEventListener("mousedown", event => {
-         drag = grid.markCell(camera.toWorld(getPoint(event)));
+         drag = grid.markCell(camera.toWorld(Bounds.eventPoint(event)));
          selected = [drag];
          return redraw();
      });
@@ -342,7 +337,7 @@
      screen.addEventListener("mousemove", event => {
          if (!drag)
              return false;
-         drag = camera.toWorld(getPoint(event));
+         drag = camera.toWorld(Bounds.eventPoint(event));
          camera.pan({x: drag.x - selected[0].x,
                      y: drag.y - selected[0].y});
          return redraw();
@@ -368,8 +363,11 @@
                      (touches[0].y - touches[1].y)));
      }
      function touchUpdate(event) {
+         invertColors = true;
+         event.preventDefault();
+         const bounds = Bounds(event);
          const touches = event.targetTouches.map(
-             touch => getPoint(event, touch));
+             touch => bounds.getPoint(touch));
          if (touches.length !== 2) {
              touchLength = undefined;
          } else if (isNaN(touchLength)) {
@@ -382,10 +380,8 @@
          selected.splice(0, selected.length);
          touches.forEach(touch => {
              selected.push(grid.markCell(camera.toWorld(touch))); } );
-         event.preventDefault();
          return redraw();
      }
-
      screen.addEventListener("touchstart", touchUpdate);
      screen.addEventListener("touchmove",  touchUpdate);
      screen.addEventListener("touchend",   touchUpdate);
