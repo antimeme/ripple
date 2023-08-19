@@ -1,0 +1,38 @@
+{
+     "itemtypes": {
+         "Pair of Boots": { "mass": 2100, "wear": "feet" },
+         "Space Boots": { "mass": 4400, "wear": "feet" },
+         "Pendant": {"mass": 50, "wear": "neck"},
+         "Plasma Pistol": {"mass": 825},
+         "Plasma Magazine": {"mass": 250},
+         "Keycard": {"mass": 5},
+         "Fuse": {"mass": 3500},
+         "Fire Extinguisher": {"mass": 2500},
+         "Blanket": {"mass": 1800},
+         "Tablet": {"mass": 1500},
+         "Cup": {"mass": 240}
+     },
+     "character": {
+         "slots": { "feet": true, "neck": true },
+         "wearing": [
+             {"itemtype": "Pair of Boots"},
+             {"itemtype": "Pendant"} ],
+         "carrying": [
+             {"itemtype": "Plasma Pistol"},
+             {"itemtype": "Plasma Magazine"},
+             {"itemtype": "Keycard"} ]
+     },
+     "containers": [{
+         "name": "Locker",
+         "items": [
+             {"itemtype": "Fire Extinguisher"},
+             {"itemtype": "Blanket"},
+             {"itemtype": "Space Boots"},
+             {"itemtype": "Fuse"} ]
+     }, {
+         "name": "Desk",
+         "items": [
+             {"itemtype": "Tablet"},
+             {"itemtype": "Cup"} ]
+     }]
+}

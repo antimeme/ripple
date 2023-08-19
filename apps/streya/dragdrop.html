@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<title>Simple Inventory System with Drag and Drop</title>
+<style>
+ body { font-family: Arial, sans-serif; }
+ .container {
+     border: 1px solid #ccc;
+     padding: 10px;
+     width: 200px;
+     min-height: 100px;
+     margin: 10px;
+     float: left;
+ }
+ .over { background-color: #80f980; }
+ .dragging { opacity: 0.4; color: #f92020; background-color: #f98080; }
+ .item {
+     background-color: #f9f9f9;
+     border: 1px solid #ccc;
+     padding: 5px;
+     margin: 5px;
+     cursor: grab;
+ }
+ .selected { background-color: #8080f9; }
+</style>
+<h1>Simple Inventory System</h1>
+<fieldset class="container" id="wearing">
+    <legend>Wearing</legend>
+</fieldset>
+<fieldset class="container" id="carrying">
+    <legend>Carrying</legend>
+</fieldset>
+<fieldset class="container" id="currentContainer">
+    <legend><select id="containerSelect">
+        <option>-</option>
+    </select></legend>
+</fieldset>
+
+<script type="module">
+ import Inventory from "./inventory.mjs";
+
+ let dragSource = null;
+
+ function populateView(view, inventory) {
+     const legend = 
+     view.querySelectorAll(".item").forEach(
+         (item) => view.removeChild(item));
+     inventory.eachItem((item, index) => {
+         const result = document.createElement("div");
+         result.classList.add("item");
+         result.setAttribute("draggable", true);
+         result.setAttribute("data-index", index);
+         result.appendChild(document.createTextNode(item.getName()));
+         result.addEventListener("dragstart", (event) => {
+             if (!event.target.classList)
+                 return;
+             dragSource = {
+                 view: view, inventory: inventory, index: index };
+             event.dataTransfer.effectAllowed = "move";
+             event.target.classList.add("dragging");
+             //event.dataTransfer.setData("text/html", this.innerHTML);
+         });
+         result.addEventListener("dragend", (event) => {
+             if (!event.target.classList)
+                 return;
+             dragSource = null;
+             event.target.classList.remove("dragging");
+         });
+         result.addEventListener("click", (event) => {
+             result.classList.toggle("selected");
+         })
+         view.appendChild(result);
+     });
+ }
+
+ function preload(urls, fn) {
+     const loaded = {};
+
+     if (typeof(urls) === "string")
+         urls = [urls];
+
+     let count = 0;
+     function next(url, content) {
+         if (url) {
+             ++count;
+             loaded[url] = content;
+         }
+         if (count === urls.length)
+             fn(loaded);
+     }
+
+     urls.forEach((url) => {
+         const request = new XMLHttpRequest();
+         request.open("GET", url, true);
+         request.addEventListener("load", () => {
+             if (request.status === 200) {
+                 next(url, JSON.parse(request.responseText));
+             } else console.error("preload status (" +
+                                  request.status + "):", url);
+         });
+         request.addEventListener("error", () => {
+             console.error("preload status (" +
+                           request.status + "):", url);
+         });
+         request.send();
+     });
+     document.addEventListener("DOMContentLoaded", () => { next() });
+ }
+
+ preload("./gestalt.json", (loaded) => {
+     const gestalt = loaded["./gestalt.json"];
+     const wearing  = document.getElementById("wearing");
+     const carrying = document.getElementById("carrying");
+     const containerSelect = document.getElementById("containerSelect");
+     const currentContainer = document.getElementById(
+         "currentContainer");
+
+     Inventory.loadItemTypes(gestalt.itemtypes);
+     const character = {
+         wearing: new Inventory(gestalt.character.wearing,
+                                {slots: gestalt.character.slots}),
+         carrying: new Inventory(gestalt.character.carrying)
+     };
+     const containers = gestalt.containers.map((container, index) => {
+         const option = document.createElement("option");
+         option.appendChild(document.createTextNode(container.name));
+         option.value = index + 1;
+         containerSelect.appendChild(option);
+         return new Inventory(container.items);
+     });
+
+     populateView(wearing, character.wearing);
+     populateView(carrying, character.carrying);
+     containerSelect.addEventListener("change", (event) => {
+         if (containerSelect.selectedIndex)
+             populateView(currentContainer, containers[
+                 containerSelect.selectedIndex - 1]);
+         else currentContainer.innerHTML = "";
+     });
+
+     // Add event listeners to containers for drop events
+     [{
+         view: wearing,
+         getInventory: () => character.wearing
+     }, {
+         view: carrying,
+         getInventory: () => character.carrying
+     }, {
+         view: currentContainer,
+         getInventory: () => containerSelect.selectedIndex ?
+                             containers[containerSelect
+                                 .selectedIndex - 1] : null
+     }].forEach((container) => {
+         container.view.addEventListener("dragenter", (event) => {
+             event.preventDefault();
+             if (!dragSource ||
+                 (dragSource.container == event.target) ||
+                 !container.getInventory())
+                 return false;
+             event.target.classList.add("over");
+         });
+         container.view.addEventListener("dragover", (event) => {
+             event.preventDefault();
+             event.dataTransfer.dropEffect = "move";
+             return false;
+         });
+         container.view.addEventListener("dragleave", (event) =>
+             { event.target.classList.remove("over"); });
+
+         container.view.addEventListener("drop", (event) => {
+             event.stopPropagation();
+             if (!dragSource ||
+                 (dragSource.container == event.target) ||
+                 !container.getInventory())
+                 return false;
+
+             event.target.classList.remove("over");
+
+             const inventory = container.getInventory();
+             if (inventory.accept(dragSource.inventory,
+                                  dragSource.index)) {
+                 populateView(container.view, inventory);
+                 populateView(dragSource.view, dragSource.inventory);
+             }
+             //event.target.innerHTML =
+             //        event.dataTransfer.getData("text/html");
+             return false;
+         });
+     });
+ });
+</script>

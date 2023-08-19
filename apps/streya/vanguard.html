@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="X-UA-Compatible" content="chrome=1">
+<title>Streya Vanguard</title>
+<style>
+ html, body {
+     padding: 0; margin: 0; overflow: hidden;
+     position: relative; background: #888;
+ }
+ canvas { background: #eee; }
+ .menu {
+     position: absolute; padding: 0.5em;
+     top: 10px; left: 25px;
+     background: #333; color: #eee;
+     border: 2px solid #eee; border-radius: 10px;
+     list-style-type: none; list-style-position: outside;
+ }
+ .menu a { text-decoration: none; color: #eee; }
+ .menu li { padding: 0.5em; border-radius: 10px; }
+ .menu li:hover { background: #55e; }
+</style>
+<script type="module">//<![CDATA[
+ import Camera from "./ripple/camera.mjs";
+ import Grid from "./ripple/grid.mjs";
+
+ function createMenu() {
+     const menu = document.createElement("ul");
+     menu.classList.add("menu");
+     menu.style.display = 'none';
+     menu.style.zIndex = 2;
+     document.body.appendChild(menu);
+     return menu;
+ }
+
+ document.addEventListener('DOMContentLoaded', () => {
+     const screen = document.createElement("canvas");
+     const camera = new Camera(320, 240).setScale(4);
+     const grid = Grid.create({type: "square", radius: 1});
+     let draw_id = 0;
+
+     function draw() {
+         if (!screen.getContext)
+             throw Error("canvas has no getContext");
+         const ctx = screen.getContext("2d");
+         camera.configureContext(ctx);
+         ctx.lineWidth = camera.getRadius() / 4096;
+         ctx.font = "bold 42px sans-serif";
+         ctx.textAlign = "center";
+         ctx.textBaseline = "middle";
+
+
+         camera.restoreContext(ctx);
+         draw_id = 0;
+     }
+     function redraw() {
+         if (!draw_id)
+             draw_id = requestAnimationFrame(draw);
+         return false;
+     }
+
+     function getPoint(event, thing) {
+         const bounds = event.target.getBoundingClientRect();
+         if (!thing)
+             thing = event;
+         return {x: thing.clientX - bounds.x,
+                 y: thing.clientY - bounds.y};
+     }
+     let drag = undefined;
+
+     screen.addEventListener("dblclick", event =>
+         { menu.style.display = "block"; });
+
+     screen.addEventListener("mousedown", event => {
+         drag = grid.markCell(camera.toWorld(getPoint(event)));
+         selected = [drag];
+         return redraw();
+     });
+
+     screen.addEventListener("mousemove", event => {
+         if (!drag)
+             return false;
+         drag = camera.toWorld(getPoint(event));
+         camera.pan({x: drag.x - selected[0].x,
+                     y: drag.y - selected[0].y});
+         return redraw();
+     });
+
+     screen.addEventListener("mouseup", event => {
+         drag = undefined;
+         return redraw();
+     });
+
+     screen.addEventListener("wheel", event => {
+         camera.zoom((event.wheelDeltaY > 0) ? (5/4) : (4/5), 1, 20);
+         event.preventDefault();
+         return redraw();
+     });
+
+     let touchLength = undefined;
+     function getDistance(p1, p2) {
+         return Math.sqrt(
+             ((touches[0].x - touches[1].x) *
+                 (touches[0].x - touches[1].x)) + (
+                     (touches[0].y - touches[1].y) *
+                     (touches[0].y - touches[1].y)));
+     }
+     function touchUpdate(event) {
+         const touches = event.targetTouches.map(
+             touch => getPoint(event, touch));
+         if (touches.length !== 2) {
+             touchLength = undefined;
+         } else if (isNaN(touchLength)) {
+             touchLength = getDistance(touches[0], touches[1]);
+         } else if (event.type === "touchmove") {
+             camera.zoom(getDistance(touches[0], touches[1]) /
+                 touchLength, 1, 20);
+         }
+
+         selected.splice(0, selected.length);
+         touches.forEach(touch => {
+             selected.push(grid.markCell(camera.toWorld(touch))); } );
+         event.preventDefault();
+         return redraw();
+     }
+
+     screen.addEventListener("touchstart", touchUpdate);
+     screen.addEventListener("touchmove",  touchUpdate);
+     screen.addEventListener("touchend",   touchUpdate);
+
+     document.body.appendChild(screen);
+
+     window.addEventListener("resize", event => {
+         screen.height = window.innerHeight || window.clientHeight;
+         screen.width = window.innerWidth || window.clientWidth;
+         camera.resize(screen.width, screen.height);
+         return redraw();
+     });
+     window.dispatchEvent(new Event("resize"));
+
+ }); //]]></script>
