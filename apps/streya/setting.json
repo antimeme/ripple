@@ -1,0 +1,266 @@
+{
+    "schema": { "version": 0.1 },
+    "places": {
+        "Stratchi": {
+            "comments": [
+                "Stratchi Station is a prosperous trade hub.  ",
+                "Society is stratified into three social classes ",
+                "with considerable unrest."],
+            "population": 182,
+            "namegen": {
+                "surname": [
+                    "Naigud",
+                    "Vuteg",
+                    "Nirin",
+                    "Hugit",
+                    "Amux",
+                    "Itit",
+                    "Vaajok",
+                    "Mutug",
+                    "Virok",
+                    "Runin",
+                    "Dazek",
+                    "Ettax",
+                    "Aagix",
+                    "Airrek",
+                    "Memix",
+                    "Haathed",
+                    "Rugid",
+                    "Avak",
+                    "Vottid",
+                    "Gunag",
+                ],
+                "fname_male": [
+                    "Nurrit",
+                    "Gathit",
+                    "Rathin",
+                    "Rimax",
+                    "Vegun",
+                    "Inax",
+                    "Mattag",
+                    "Zaitit",
+                    "Huthid",
+                    "Zanag",
+                    "Hanuk",
+                    "Damix",
+                    "Vujix",
+                    "Nugin",
+                    "Zuttix",
+                    "Hottud",
+                    "Aijak",
+                    "Hinox",
+                    "Hagod",
+                    "Arrek",
+                ],
+                "fname_female": [
+                    "Chenihi",
+                    "Rhaaji",
+                    "Frari",
+                    "Avi",
+                    "Fraizi",
+                    "Yeni",
+                    "Edi",
+                    "Raari",
+                    "Daigi",
+                    "Aazani",
+                    "Hogi",
+                    "Ceki",
+                    "Lori",
+                    "Hevi",
+                    "Ori",
+                    "Dajili",
+                    "Chadi",
+                    "Edi",
+                    "Nozi",
+                    "Shanegi",
+                ]
+                "backgrounds": {
+                }
+        },
+        "Galarga": {
+            "comments": [
+                "Galarga Station is a industrial power. ",
+                "Society is disciplined and organized."],
+            "population": 112,
+            "namegen": {
+                "surname": [
+                    "Pirnat",
+                    "Jesenko",
+                    "Dolar",
+                    "Vranik",
+                    "Bele",
+                    "Bauman",
+                    "Stropnik",
+                    "Dvoršak",
+                    "Skirl",
+                    "Hribersek",
+                    "Lenareie",
+                    "Divjak",
+                    "Mernik",
+                    "Kalan",
+                    "Rebernik",
+                    "Oman",
+                    "Bevc",
+                    "Jagodie",
+                    "Udovie",
+                    "Urbanija"
+                ],
+                "fname_male": [
+                    "Edis",
+                    "Jovo",
+                    "Valent",
+                    "Vojo",
+                    "Ludovik",
+                    "Aco",
+                    "Frenk",
+                    "Dejvid",
+                    "Tej",
+                    "Natan",
+                    "Gustav",
+                    "Ratko",
+                    "Manfred",
+                    "Erazem",
+                    "Esmir",
+                    "Antonio",
+                    "Elmin",
+                    "David",
+                    "Zdenko",
+                    "Shaban"
+                ],
+                "fname_female": [
+                    "Merisa",
+                    "Zofija",
+                    "Hilda",
+                    "Bosiljka",
+                    "Stela",
+                    "Hema",
+                    "Brankica",
+                    "Rafaela",
+                    "Irina",
+                    "Nicole",
+                    "Lena",
+                    "Elina",
+                    "Ela",
+                    "Ines",
+                    "Amna",
+                    "Anela",
+                    "Esma",
+                    "Smiljana",
+                    "Stanka",
+                    "Valentina"
+                ]
+                "backgrounds": {
+                }
+        },
+        "Vendimire": {
+            "comments": [
+                "Vendimire Station is a military dictatorship. ",
+                "Society is hierarchical and controled by a ",
+                "collection of powerful guilds."],
+            "population": 112,
+            "namegen": {
+                "lname": [
+                    "Reginard",
+                    "Chlodomer",
+                    "Cyricus",
+                    "Ratold",
+                    "Haldemarus",
+                    "Atacinus",
+                    "Enurchus",
+                    "Chlodowig",
+                    "Medard",
+                    "Huebald",
+                    "Willibrord",
+                    "Chlodmer",
+                    "Sinopus",
+                    "Marellus",
+                    "Magneric",
+                    "Gedalcaus",
+                    "Gaudulfus",
+                    "Pippin",
+                    "Chararic",
+                    "Ingalbertus",
+                ],
+                "fname_male": [
+                    "Anthonis",
+                    "Maddax",
+                    "Grald",
+                    "Bentlix",
+                    "Jayedn",
+                    "Aris",
+                    "Traze",
+                    "Malakye",
+                    "Camren",
+                    "Justan",
+                    "Calwin",
+                    "Horrison",
+                    "Damiran",
+                    "Ryder",
+                    "Camden",
+                    "Larris",
+                    "Aldon",
+                    "Harlin",
+                    "Malcalm",
+                    "Adryel"
+                ],
+                "fname_female": [
+                    "Riya",
+                    "Allany",
+                    "Sabrya",
+                    "Kaelyn",
+                    "Cathrise",
+                    "Byenca",
+                    "Rianara",
+                    "Celethe",
+                    "Renette",
+                    "Braealyn"
+                    "Jexica",
+                    "Catlea",
+                    "Jennix",
+                    "Dlaney",
+                    "Giana",
+                    "Diyana",
+                    "Adley",
+                    "Idelle",
+                    "Jordyna",
+                    "Kimbr"
+                ]
+            },
+            "backgrounds": {
+                "Dishonored Soldier": {
+                    "recruit": true,
+                    "comments": [
+                        "$fname served in the Vendimire Navy but "
+                        "was dishonorably discharged for ",
+                        "insubordination"],
+                    "previous": [
+                        {"b": "Academy Graduate"},
+                        {
+                            "b": "Aristocratic Scion",
+                            "c": [
+                                "To protect the family from shame, ",
+                                "strings were pulled to give $fname ",
+                                "a position in the prestigious "
+                                "Vendimire navy."]
+                        }
+                    ]
+                },
+                "Academy Graduate": {
+                    "adolescent": true,
+                    "comments": [
+                        "$fname graduate from the Vendimire Naval ",
+                        "Academy with honors."
+                    ]
+                },
+                "Aristocratic Scion": {
+                    "adolescent": true,
+                    "comments": [
+                        "As a teenager, $fname lived a life of ",
+                        "leisure and gambling protected by powerful ",
+                        "family connections."
+                    ]
+                }
+            }
+        }
+    }
+}
