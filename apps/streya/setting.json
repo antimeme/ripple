@@ -6,7 +6,31 @@
                 "Stratchi Station is a prosperous trade hub.  ",
                 "Society is stratified into three social classes ",
                 "with considerable unrest."],
-            "population": 182,
+            "population": {
+                "Sartan": {
+                    "population": 177
+                },
+                "Pellarnik": {
+                    "population": 5
+                }               
+            }
+        },
+        "Galarga": {
+            "comments": [
+                "Galarga Station is a industrial power. ",
+                "Society is disciplined and organized."],
+            "population": { "Pellarnik": 112 }
+        },
+        "Vendimire": {
+            "comments": [
+                "Vendimire Station is a military dictatorship. ",
+                "Society is hierarchical and controled by a ",
+                "collection of powerful guilds."],
+            "population": { "Karbic": 112 }
+        }
+    },
+    "cultures": {
+        "Sartan": {
             "namegen": {
                 "surname": [
                     "Naigud",
@@ -28,8 +52,7 @@
                     "Rugid",
                     "Avak",
                     "Vottid",
-                    "Gunag",
-                ],
+                    "Gunag"],
                 "fname_male": [
                     "Nurrit",
                     "Gathit",
@@ -50,8 +73,7 @@
                     "Aijak",
                     "Hinox",
                     "Hagod",
-                    "Arrek",
-                ],
+                    "Arrek"],
                 "fname_female": [
                     "Chenihi",
                     "Rhaaji",
@@ -72,16 +94,10 @@
                     "Chadi",
                     "Edi",
                     "Nozi",
-                    "Shanegi",
-                ]
-                "backgrounds": {
-                }
+                    "Shanegi"]
+            }
         },
-        "Galarga": {
-            "comments": [
-                "Galarga Station is a industrial power. ",
-                "Society is disciplined and organized."],
-            "population": 112,
+        "Pellanik": {
             "namegen": {
                 "surname": [
                     "Pirnat",
@@ -103,8 +119,7 @@
                     "Bevc",
                     "Jagodie",
                     "Udovie",
-                    "Urbanija"
-                ],
+                    "Urbanija"],
                 "fname_male": [
                     "Edis",
                     "Jovo",
@@ -125,8 +140,7 @@
                     "Elmin",
                     "David",
                     "Zdenko",
-                    "Shaban"
-                ],
+                    "Shaban"],
                 "fname_female": [
                     "Merisa",
                     "Zofija",
@@ -147,17 +161,10 @@
                     "Esma",
                     "Smiljana",
                     "Stanka",
-                    "Valentina"
-                ]
-                "backgrounds": {
-                }
+                    "Valentina"]
+            }
         },
-        "Vendimire": {
-            "comments": [
-                "Vendimire Station is a military dictatorship. ",
-                "Society is hierarchical and controled by a ",
-                "collection of powerful guilds."],
-            "population": 112,
+        "Karbic": {
             "namegen": {
                 "lname": [
                     "Reginard",
@@ -179,8 +186,7 @@
                     "Gaudulfus",
                     "Pippin",
                     "Chararic",
-                    "Ingalbertus",
-                ],
+                    "Ingalbertus"],
                 "fname_male": [
                     "Anthonis",
                     "Maddax",
@@ -201,8 +207,7 @@
                     "Aldon",
                     "Harlin",
                     "Malcalm",
-                    "Adryel"
-                ],
+                    "Adryel"],
                 "fname_female": [
                     "Riya",
                     "Allany",
@@ -223,43 +228,194 @@
                     "Adley",
                     "Idelle",
                     "Jordyna",
-                    "Kimbr"
-                ]
+                    "Kimbr"]
+            }
+        }
+    },
+    "backgrounds": {
+        "Marine": {
+            "recruit": true,
+            "stage": "adult",
+            "skills": {
+                "Marksman": { "min": 3, "range": 3 },
+                "Discipline": { "min": 3, "range": 3 } },
+            "previous": {
+                "Navy Crewman": { "reason": "Dishonorably discharged" },
+                "Mechanic": { "reason": "Restless" },
+                "Security Guard": { "reason": "Low pay" },
+                "Police Officer": { "reason": "Excessive use of force" }
+            }
+        },
+        "Pilot": {
+            "recruit": true,
+            "stage": "adult",
+            "skills": {
+                "Pilot": { "min": 3, "range": 4 },
+                "Navigation": { "min": 1, "range": 3 },
+                "Gunnery": { "min": 1, "range": 3 }
+            }
+        },
+        "Navigator": {
+            "recruit": true,
+            "stage": "adult",
+            "skills": {
+                "Navigation": { "min": 3, "range": 4 },
+                "Pilot": { "min": 1, "range": 3 }
+            }
+        },
+        "Gunner": {
+            "recruit": true,
+            "stage": "adult",
+            "skills": {
+                "Gunnery": { "min": 3, "range": 4 },
+                "Pilot": { "min": 1, "range": 3 }
+            }
+        },
+        "Mechanic": {
+            "recruit": true,
+            "stage": "adult",
+            "skills": {
+                "Mechanic": { "min": 3, "range": 4 },
+                "Engineering": { "min": 1, "range": 3 },
+                "Gunnery": { "min": 1, "range": 3 },
+            }
+        },
+        "Engineer": {
+            "recruit": true,
+            "stage": "adult",
+            "skills": {
+                "Engineering": { "min": 3, "range": 4 }
+                "Mechanic": { "min": 1, "range": 3 },
+            }
+        },
+        "Researcher": {
+            "recruit": true,
+            "stage": "adult",
+            "skills": {
+                "Research": { "min": 3, "range": 3 },
             },
-            "backgrounds": {
-                "Dishonored Soldier": {
-                    "recruit": true,
-                    "comments": [
-                        "$fname served in the Vendimire Navy but "
-                        "was dishonorably discharged for ",
-                        "insubordination"],
-                    "previous": [
-                        {"b": "Academy Graduate"},
-                        {
-                            "b": "Aristocratic Scion",
-                            "c": [
-                                "To protect the family from shame, ",
-                                "strings were pulled to give $fname ",
-                                "a position in the prestigious "
-                                "Vendimire navy."]
-                        }
-                    ]
-                },
-                "Academy Graduate": {
-                    "adolescent": true,
-                    "comments": [
-                        "$fname graduate from the Vendimire Naval ",
-                        "Academy with honors."
-                    ]
-                },
-                "Aristocratic Scion": {
-                    "adolescent": true,
-                    "comments": [
-                        "As a teenager, $fname lived a life of ",
-                        "leisure and gambling protected by powerful ",
-                        "family connections."
-                    ]
-                }
+            "previous": {
+                "Academy Graduate": { "reason": "No prospects" },
+                "Research Assistant": { "reason": "Scandal" }
+            }
+        },
+        "Smuggler": {
+            "recruit": true,
+            "stage": "adult",
+            "skills": {
+                "Pilot": { "min": 2, "range": 2 },
+                "Navigation": { "min": 2, "range": 2 },
+                "Gunnery": { "min": 2, "range": 2 },
+                "Marksman": { "min": 2, "range": 2 },
+                "Mechanic": { "min": 2, "range": 2 }
+            }
+        },
+        "Miner": {
+            "recruit": true,
+            "stage": "adult",
+            "skills": {
+                "Mining": { "min": 3, "range": 3 }
+            }
+        },
+        "Navy Crewman": {
+            "stage": "adult",
+            "skills": {
+                "Marksman": { "min": 2, "range": 2 },
+                "Mechanic": { "min": 2, "range": 2 }
+            }
+        },
+        "Security Guard": {
+            "stage": "adult",
+            "skills": {
+                "Marksman": { "min": 2, "range": 3 },
+                "Discipline": { "min": 1, "range": 2 }
+            }
+        },
+        "Police Officer": {
+            "stage": "adult",
+            "skills": {
+                "Marksman": { "min": 3, "range": 2 },
+                "Discipline": { "min": 2, "range": 2 }
+            }
+        },
+        "Scholar": {
+            "stage": "adult",
+            "skills": {
+                "Research": { "min": 3, "range": 4 }
+            },
+            "previous": {
+                "Academy Graduate": { "reason": "Advanced degree" },
+                "Research Assistant": { "reason": "Return to academia" }
+            }
+        },
+        "Academy Graduate": {
+            "stage": "adolescent",
+            "skills": {
+                "Research": { "min": 2, "range": 3 },
+                "Engineering": { "min": 0, "range": 3 },
+                "Navigation": { "min": 0, "range": 3 }
+            }
+        },
+        "Academy Dropout": {
+            "stage": "adolescent",
+            "skills": {
+                "Charm": { "min": 1, "range": 3 },
+                "Discipline": { "min": 0, "range": 2 }
+            }
+        },
+        "Student": {
+            "stage": "childhood",
+            "skills": {
+                "Discipline": { "min": 1, "range": 2 }
+            }
+        },
+        "Dropout": {
+            "stage": "childhood",
+            "skills": {
+                "Streetwise": { "min": 1, "range": 2 }
+            }
+        },
+        "Research Assistant": {
+            "stage": "adult",
+            "skills": {
+                "Research": { "min": 1, "range": 3 }
+            },
+            "previous": {
+                "Academy Graduate": { "reason": "Recruited by lab" }
+            }
+        },
+        "Research Director": {
+            "stage": "adult",
+            "skills": {
+                "Research": { "min": 4, "range": 3 }
+            },
+            "previous": {
+                "Research Assistant": { "reason": "Promotion" }
+            }
+        },
+        "Gambler": {
+            "stage": "adult",
+            "skills": {
+                "Streetwise": { "min": 1, "range": 5 },
+                "Charm": { "min": 1, "range": 3 },
+                "Gambling": { "min": 1, "range": 5 }
+            }
+        },
+        "Fence": {
+            "stage": "adult",
+            "skills": {
+                "Streetwise": { "min": 2, "range": 4 },
+                "Stealth": { "min": 1, "range": 4 },
+                "Gambling": { "min": 1, "range": 4 },
+                "Marksman": { "min": 0, "range": 3 }
+            }
+        },
+        "Ganster": {
+            "stage": "adult",
+            "skills": {
+                "Streetwise": { "min": 2, "range": 4 },
+                "Gambling": { "min": 2, "range": 4 },
+                "Marksman": { "min": 2, "range": 4 }
             }
         }
     }
