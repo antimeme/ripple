@@ -4,46 +4,156 @@
 <meta name="viewport" content="initial-scale=1, maximum-scale=1" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta http-equiv="X-UA-Compatible" content="chrome=1">
-<title>Omnivore Test</title>
+<title>Omnivore: Parser and Generator</title>
 <style>
-    html, body
-    { padding: 0; margin: 0; overflow: hidden; position: relative; }
-    canvas { background: white; color: #336; }
+ html, body
+ { padding: 0; margin: 0; overflow: hidden; position: relative; }
+ canvas { background: white; color: #336; }
+ h1 { margin: 0 }
 </style>
 
-<select id="rule">
-    <option>entry</option>
-    <option>male_name</option>
-    <option>female_name</option>
-</select>
-<button id="generate">Generate</button>
-<div id="list"></div>
+<h1>Omnivore: Parser and Generator</h1>
+<div><textarea id="grammar" rows="10" cols="72">
+{
+    "expression": [["%term", " + ", "%expression"], ["%term"]],
+    "term": [["%number", " * ", "%term"], ["%number"]],
+    "number": [["%nzdigit", "%digits"]],
+    "digits": [["%digit", "%digits"], ""],
+    "digit": ["0", {"weight": 9, "rule": "%nzdigit"}],
+    "nzdigit": ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+}
+</textarea><textarea id="value" rows="2" cols="72"></textarea></div>
+<div>
+    <button id="generate">Generate</button>
+    <button id="parse">Parse</button>
+    <select id="rule"></select>
+</div><div>
+    Examples:
+    <select id="examples">
+    </select>
+</div>
 
-<script src="ripple/polyfill.js"></script>
-<script src="ripple/ripple.js"></script>
-<script src="ripple/omnivore.js"></script>
-<script>//<![CDATA[
- ripple.ready(function() {
-     var list = document.getElementById('list');
-     var generate = document.getElementById('generate');
-     var select = document.getElementById('rule');
-     var rule = 'entry';
+<script type="module">//<![CDATA[
+ import omnivore from "./ripple/omnivore.mjs";
 
-     select.addEventListener('change', function(event) {
-         rule = event.target.value
+ const exampleGrammars = {
+     Arithmetic: {
+         expression: [["%term", " + ", "%expression"], ["%term"]],
+         term: [["%number", " * ", "%term"], ["%number"]],
+         number: [["%nzdigit", "%digits"]],
+         digits: [["%digit", "%digits"], ""],
+         digit: ["0", {"weight": 9, "rule": "%nzdigit"}],
+         nzdigit: ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+     },
+     Imaginary: {
+         i: [["i * ", "%i"], "i"]
+     },
+     Medieval: {
+         entry: [['%male_name', '%wsp', '%last_name',
+                  '%wsp', 'm', '%ws', '%notes'],
+                 ['%female_name', '%wsp', '%last_name',
+                  '%wsp', 'f', '%ws', '%notes']],
+         ws: [' ', {weight: 0, rule: '\t'}, {weight: 0, rule: '\r'},
+              {weight: 0, rule: '\n'}],
+         wsp: ['%ws', {weight: 0, rule: ['%ws', '%wsp']}],
+         wss: ['', '%wsp'],
+         notes: [['(', '%quirk', ' ', '%skill', ')']],
+         skill: ['baker', 'cook', 'blacksmith', 'cobbler',
+                 'soldier', 'guard', 'carpenter', 'poet',
+                 'musician(lute)', 'musician(flute)'],
+         quirk: ['quick-tempered', 'selfish', 'shy',
+                 'generous', 'gregarious', 'secretive',
+                 'stern', 'meddlesome', 'aloof'],
+
+         male_name: ['Merek', 'Carac', 'Ulric', 'Tybalt', 'Borin',
+                     'Sadon', 'Terrowin', 'Rowan', 'Forthwind', 'Brom',
+                     'Hadrian', 'Walter', 'Gregory', 'Peter', 'Henry',
+                     'Frederick', 'Thomas', 'Arthur', 'Bryce',
+                     'Leofrick', 'Lief', 'Barda', 'Jarin', 'Gavin',
+                     'Josef', 'Doran', 'Asher', 'Quinn', 'Zane',
+                     'Favian', 'Destrian', 'Dain', 'Berinon',
+                     'Tristan', 'Gorvenal'],
+         female_name: ['Alys', 'Ayleth', 'Ailenor', 'Cedany', 'Ellyn',
+                       'Helewys', 'Sybbyl', 'Ysmay', 'Thea', 'Amelia',
+                       'Bess', 'Catherine', 'Anne', 'Mary', 'Arabella',
+                       'Elspeth', 'Hidlegard', 'Brunhild', 'Adelaide',
+                       'Beatrix', 'Emaline', 'Isabel', 'Margaret',
+                       'Mirabelle', 'Rose', 'Guinevere', 'Isolde',
+                       'Maerwynn', 'Godiva', 'Catrain', 'Jasmine',
+                       'Josslyn', 'Victoria', 'Gwendolynn', 'Janet',
+                       'Krea', 'Dimia', 'Ariana', 'Katrina', 'Loreena',
+                       'Serephina', 'Duriana', 'Ryia', 'Ryla'],
+         last_name: [['%last_first', '%last_last']],
+         last_first: ['Yard', 'River', 'Stone', 'Cobble', 'Tangle',
+                      'Yarn', 'Loom', 'Fletch', 'Notch', 'Buckle'],
+         last_last: ['star', 'ran', 'mace', 'mance', 'alber',
+                     'ton', 'berry', 'merry', 'string'],
+     }
+ };
+
+function compactStringify(object, indent = 0) {
+     if (Array.isArray(object) || (typeof object !== 'object') ||
+         (object === null))
+         return JSON.stringify(object);
+     const nextIndent = indent + 2;
+     const keys = Object.keys(object);
+     let result = `{\n${' '.repeat(nextIndent)}`;
+
+     keys.forEach((key, index) => {
+         const value = object[key];
+         result += `"${key}": ${compactStringify(value, nextIndent)}`;
+         if (index < keys.length - 1)
+             result += `,\n${' '.repeat(nextIndent)}`;
      });
 
-     generate.addEventListener('click', function(event) {
-         list.insertBefore(
-             ripple.createElement(
-                 'p', null, omnivore.example.generate(rule)),
-             list.childNodes[0]);
+     result += `\n${' '.repeat(indent)}}`;
+     return result;
+ }
+
+ document.addEventListener('DOMContentLoaded', () => {
+     const grammar  = document.getElementById("grammar");
+     const value    = document.getElementById("value");
+     const generate = document.getElementById("generate");
+     const parse    = document.getElementById("parse");
+     const rule     = document.getElementById("rule");
+     const examples = document.getElementById("examples");
+
+     let grmr = undefined;
+
+     function setGrammar(value) {
+         grmr = omnivore.createGrammar(JSON.parse(value));
+         rule.innerHTML = "";
+         grmr.eachRule(ruleName => {
+             const option = document.createElement("option");
+             option.setAttribute("value", ruleName);
+             option.appendChild(document.createTextNode(ruleName));
+             rule.appendChild(option);
+         });
+         grammar.value = value;
+     }
+     setGrammar(grammar.value);
+
+     Object.keys(exampleGrammars).forEach(key => {
+         const option = document.createElement("option");
+         option.setAttribute("value", key);
+         option.appendChild(document.createTextNode(key));
+         examples.appendChild(option);
      });
 
-     for (var ii = 0; ii < 8; ++ii)
-         list.insertBefore(
-             ripple.createElement(
-                 'p', null, omnivore.example.generate(rule)),
-             list.childNodes[0]);
-     
- }); //]]></script>
+     grammar.addEventListener("change", event => {
+         setGrammar(grammar.value);
+     });
+
+     generate.addEventListener("click", event => {
+         value.value = grmr.generate(rule.value);
+     });
+     parse.addEventListener("click", event => {
+         console.log("Parse", grmr.parse(rule.value, value.value));
+     });
+
+     examples.addEventListener("change", event => {
+         setGrammar(compactStringify(exampleGrammars[examples.value]));
+     })
+ });
+
+ //]]></script>
