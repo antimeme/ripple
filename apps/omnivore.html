@@ -14,15 +14,8 @@
 
 <h1>Omnivore: Parser and Generator</h1>
 <div><textarea id="grammar" rows="10" cols="72">
-{
-    "expression": [["%term", " + ", "%expression"], ["%term"]],
-    "term": [["%number", " * ", "%term"], ["%number"]],
-    "number": [["%nzdigit", "%digits"]],
-    "digits": [["%digit", "%digits"], ""],
-    "digit": ["0", {"weight": 9, "rule": "%nzdigit"}],
-    "nzdigit": ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
-}
-</textarea><textarea id="value" rows="2" cols="72"></textarea></div>
+</textarea><textarea id="value" rows="2" cols="72">
+</textarea></div>
 <div>
     <button id="generate">Generate</button>
     <button id="parse">Parse</button>
@@ -121,14 +114,16 @@ function compactStringify(object, indent = 0) {
      let grmr = undefined;
 
      function setGrammar(value) {
-         grmr = omnivore.createGrammar(JSON.parse(value));
-         rule.innerHTML = "";
-         grmr.eachRule(ruleName => {
-             const option = document.createElement("option");
-             option.setAttribute("value", ruleName);
-             option.appendChild(document.createTextNode(ruleName));
-             rule.appendChild(option);
-         });
+         if (value.trim()) {
+             grmr = omnivore.createGrammar(JSON.parse(value));
+             rule.innerHTML = "";
+             grmr.eachRule(ruleName => {
+                 const option = document.createElement("option");
+                 option.setAttribute("value", ruleName);
+                 option.appendChild(document.createTextNode(ruleName));
+                 rule.appendChild(option);
+             });
+         }
          grammar.value = value;
      }
      setGrammar(grammar.value);

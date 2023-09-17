@@ -189,7 +189,7 @@ class Alternative {
                 current = rules[getRule(element)]
                     .parse(rules, value, current);
             else current = matchString(
-                unquoteRule(element), value, index);
+                unquoteRule(element), value, current);
         }, this);
         return current;
     }
