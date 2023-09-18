@@ -23,19 +23,22 @@
 //
 // Here is an example grammar that parses arithmetic expressions:
 //
-//   const arithmetic = omnivore.create({
-//     "nzdigit": ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
-//     "digit": ["0", {"weight": 9, "rule": "%nzdigit"}],
-//     "digits": [["%digit", "%digits"], ""],
-//     "number": [["%nzdigit", "%digits"]],
-//     "term": [["%number", " * ", "%term"], ["%number"]],
-//     "expression": [["%term", " + ", "%expression"], ["%term"]]
-//   });
+// {
+//     expression: [["%term", " + ", "%expression"], "%term"],
+//     term: [["(", "%expression", ")"],
+//            ["%number", " * ", "%term"], "%number"],
+//     number: [["%@integer", ".", "%@fractional"], "%@integer"],
+//     "@integer": [{weight: 10, rule: [
+//         "%@nonZeroDigit", "%@digits"]}, "0"],
+//     "@fractional": [["%@digit", "%@fractional"], "%@nonZeroDigit"],
+//     "@digits": [["%@digit", "%@digits"], ""],
+//     "@digit": ["0", {"weight": 9, "rule": "%@nonZeroDigit"}],
+//     "@nonZeroDigit": ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+// }
 //
 // Notice that the way this grammar is defined creates:
 //   - No left recursion (rule is never first element in production)
 //   - No ambiguity (only one parse tree possible for any value)
-//   - Greedy strategy (longer matches come first)
 // Grammars defined less carefully will create unexpected results,
 // mostly in the form of valid values not being recognized.
 //
@@ -134,18 +137,18 @@ class Alternative {
         this.__elements = forceStringArray(value);
 
         if (this.__elements) {
-            this.weight = 1;
+            this.__weight = 1;
         } else if ((typeof(value) === "object") && value.rule) {
             this.__elements = forceStringArray(value.rule);
             if (this.__elements) {
-                this.weight = nonNegative(1, value.weight, value.w);
+                this.__weight = nonNegative(1, value.weight, value.w);
             } else throw new TypeError(
                 "Unrecognized object rule (" + typeof(value.rule) +
                 "): " + value.rule);
         } else if ((typeof(value) === "object") && value.r) {
             this.__elements = forceStringArray(value.r);
             if (this.__elements) {
-                this.weight = nonNegative(1, value.weight, value.w);
+                this.__weight = nonNegative(1, value.weight, value.w);
             } else throw new TypeError(
                 "Unrecognized object r (" + typeof(value.r) +
                 "): " + value.r);
@@ -165,7 +168,7 @@ class Alternative {
                value : new Alternative(rules, value);
     }
 
-    getWeight() { return this.weight; }
+    getWeight() { return this.__weight; }
 
     generate(rules) {
         const result = [];
@@ -179,19 +182,37 @@ class Alternative {
         return result.join("");
     }
 
-    parse(rules, value, index) {
+    parse(rules, rule, value, index) {
+        const entries = [];
         let current = index;
 
         this.__elements.forEach(element => {
-            if (current < 0)
-                return;
-            if (isReference(element))
-                current = rules[getRule(element)]
-                    .parse(rules, value, current);
-            else current = matchString(
-                unquoteRule(element), value, current);
+            if (current < 0) { // skip element
+            } else if (isReference(element)) {
+                const subrule = getRule(element);
+                const parsed = rules[subrule].parse(
+                    rules, subrule, value, current);
+                if (parsed && parsed.rule.startsWith("@")) {
+                    entries.push(value.substring(current, parsed.stop));
+                    current = parsed.stop;
+                } else if (parsed) {
+                    entries.push(parsed);
+                    current = parsed.stop;
+                } else current = -1;
+            } else {
+                const entry = unquoteRule(element);
+                entries.push(entry);
+                current = matchString(entry, value, current);
+            }
         }, this);
-        return current;
+        return (current >= 0) ? {
+            rule: rule, entries: entries,
+            start: index, stop: current } : false;
+    }
+
+    toJSON() {
+        return (this.__weight == 1) ? this.__elements :
+               {weight: this.__weight, rule: this.__elements};
     }
 }
 
@@ -233,13 +254,18 @@ class Production {
         return result.join("");
     }
 
-    parse(rules, value, index) {
-        let result = undefined;
+    parse(rules, rule, value, index) {
+        let result = false;
+
         this.__alternatives.forEach(alt => {
-            if (isNaN(result) || (result < 0))
-                result = alt.parse(rules, value, index);
-        });
+            if (!result)
+                result = alt.parse(rules, rule, value, index);
+        }, this);
         return result;
+    }
+
+    toJSON() {
+        return this.__alternatives;
     }
 }
 
@@ -297,11 +323,12 @@ class Grammar {
         // :TODO: detect (and correct?) left recursion
         // :TODO: detect non-determinism?
 
-        const candidate = this.__rules[rule].parse(
-            this.__rules, value, 0);
-        if (candidate !== value.length)
-            throw new ParseError("Parsing failed (" + candidate + ")");
-        return candidate;
+        const result = this.__rules[rule].parse(
+            this.__rules, rule, value, 0);
+        if (!result || (result.stop !== value.length))
+            throw new ParseError("Parsing failed (" +
+                                 JSON.stringify(result) + ")");
+        return result;
     }
 }
 

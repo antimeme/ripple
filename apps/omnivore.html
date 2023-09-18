@@ -13,8 +13,9 @@
 </style>
 
 <h1>Omnivore: Parser and Generator</h1>
-<div><textarea id="grammar" rows="10" cols="72">
+<div><textarea id="grammar" rows="5" cols="72">
 </textarea><textarea id="value" rows="2" cols="72">
+</textarea><textarea id="results" rows="2" cols="72" disabled="true">
 </textarea></div>
 <div>
     <button id="generate">Generate</button>
@@ -24,6 +25,7 @@
     Examples:
     <select id="examples">
     </select>
+    <button id="compute">Compute</button>
 </div>
 
 <script type="module">//<![CDATA[
@@ -31,12 +33,16 @@
 
  const exampleGrammars = {
      Arithmetic: {
-         expression: [["%term", " + ", "%expression"], ["%term"]],
-         term: [["%number", " * ", "%term"], ["%number"]],
-         number: [["%nzdigit", "%digits"]],
-         digits: [["%digit", "%digits"], ""],
-         digit: ["0", {"weight": 9, "rule": "%nzdigit"}],
-         nzdigit: ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+         expression: [["%term", " + ", "%expression"], "%term"],
+         term: [["(", "%expression", ")"],
+                ["%number", " * ", "%term"], "%number"],
+         number: [["%@integer", ".", "%@fractional"], "%@integer"],
+         "@integer": [{weight: 10, rule: [
+             "%@nonZeroDigit", "%@digits"]}, "0"],
+         "@fractional": [["%@digit", "%@fractional"], "%@nonZeroDigit"],
+         "@digits": [["%@digit", "%@digits"], ""],
+         "@digit": ["0", {"weight": 9, "rule": "%@nonZeroDigit"}],
+         "@nonZeroDigit": ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
      },
      Imaginary: {
          i: [["i * ", "%i"], "i"]
@@ -84,49 +90,144 @@
      }
  };
 
-function compactStringify(object, indent = 0) {
-     if (Array.isArray(object) || (typeof object !== 'object') ||
-         (object === null))
-         return JSON.stringify(object);
-     const nextIndent = indent + 2;
-     const keys = Object.keys(object);
-     let result = `{\n${' '.repeat(nextIndent)}`;
+ /**
+  * Create a string represntation similar to JSON.stringify but
+  * attempt to keep the value within a column limit */
+ function compactStringify(object, indent = 0, start = 0, limit = 72) {
+     const speculative = JSON.stringify(object);
+     if (speculative.length + start > limit) {
+         const result = [];
+         const nexti = indent + 2;
+         if (Array.isArray(object)) {
+             result.push("[");
+             object.forEach((entry, index) => {
+                 if (index !== 0)
+                     result.push(",");
+                 result.push(`\n${' '.repeat(nexti)}`);
+                 result.push(compactStringify(
+                     entry, nexti, nexti, limit));
+             });
+             if ((result.length > 0) &&
+                 (result[result.length - 1].length + nexti + 2 < limit))
+                 result.push("]");
+             else result.push(`\n${' '.repeat(indent)}]`);
+         } else if ((typeof(object) === "object") && object) {
+             const keys = Object.keys(object);
+             result.push(`{\n${' '.repeat(nexti)}`);
 
-     keys.forEach((key, index) => {
-         const value = object[key];
-         result += `"${key}": ${compactStringify(value, nextIndent)}`;
-         if (index < keys.length - 1)
-             result += `,\n${' '.repeat(nextIndent)}`;
-     });
+             keys.forEach((key, index) => {
+                 const value = object[key];
+                 result.push(`"${key}": `);
+                 result.push(compactStringify(
+                     value, nexti, nexti + key.length + 4, limit));
+                 if (index < keys.length - 1)
+                     result.push(`,\n${' '.repeat(nexti)}`);
+             });
+             result.push(`\n${' '.repeat(indent)}}`);
+         } else result.push(speculative);
+         return result.join("");
+     }
+     return speculative;
+ }
 
-     result += `\n${' '.repeat(indent)}}`;
+ function computeExpression(tree) {
+     let result = undefined;
+     if (tree.rule === "number") {
+         if (tree.entries.length === 1)
+             result = parseInt(tree.entries[0]);
+         else if (tree.entries.length === 3)
+             result = parseInt(tree.entries[0]) + (
+                 parseInt(tree.entries[2]) /
+                 parseInt('1' + '0'.repeat(tree.entries[2].length)));
+         else result = "Unrecognized number: " + tree.entries;
+     } else if (tree.rule === "term") {
+         if ((tree.entries.length === 3) &&
+             (tree.entries[0] === "(") &&
+             (tree.entries[1] &&
+              tree.entries[1].rule === "expression") &&
+             (tree.entries[2] === ")"))
+             result = computeExpression(tree.entries[1]);
+         else if ((tree.entries.length === 1) &&
+                  tree.entries[0] &&
+                  (tree.entries[0].rule === "number"))
+             result = computeExpression(tree.entries[0]);
+         else if ((tree.entries.length === 3) &&
+                  (tree.entries[1] === " * ")) {
+             const left = computeExpression(tree.entries[0]);
+             const right = computeExpression(tree.entries[2]);
+             if (!isNaN(left) && !isNaN(right))
+                 result = left * right;
+             else result = [left, "*", right];
+         } else if ((tree.entries.length === 3) &&
+                  (tree.entries[1] === " / ")) {
+             const left = computeExpression(tree.entries[0]);
+             const right = computeExpression(tree.entries[2]);
+             if (!isNaN(left) && !isNaN(right))
+                 result = left / right;
+             else result = [left, "/", right];
+         } else result = "Unknown term: " + tree.entries;
+     } else if (tree.rule === "expression") {
+         if ((tree.entries.length === 1) &&
+             tree.entries[0] &&
+             (tree.entries[0].rule === "term"))
+             result = computeExpression(tree.entries[0]);
+         else if ((tree.entries.length === 3) &&
+                  (tree.entries[1] === " + ")) {
+             const left = computeExpression(tree.entries[0]);
+             const right = computeExpression(tree.entries[2]);
+             if (!isNaN(left) && !isNaN(right))
+                 result = left + right;
+             else result = [left, "+", right];
+         } else if ((tree.entries.length === 3) &&
+                  (tree.entries[1] === " - ")) {
+             const left = computeExpression(tree.entries[0]);
+             const right = computeExpression(tree.entries[2]);
+             if (!isNaN(left) && !isNaN(right))
+                 result = left - right;
+             else result = [left, "-", right];
+         } else result = "Unknown expression: " + tree.entries;
+     } else result = "Unrecognized rule: " + tree.rule;
      return result;
  }
 
  document.addEventListener('DOMContentLoaded', () => {
-     const grammar  = document.getElementById("grammar");
-     const value    = document.getElementById("value");
-     const generate = document.getElementById("generate");
-     const parse    = document.getElementById("parse");
-     const rule     = document.getElementById("rule");
-     const examples = document.getElementById("examples");
+     const grammarTA  = document.getElementById("grammar");
+     const valueTA    = document.getElementById("value");
+     const resultsTA  = document.getElementById("results");
+     const generateBN = document.getElementById("generate");
+     const parseBN    = document.getElementById("parse");
+     const ruleSL     = document.getElementById("rule");
+     const examplesSL = document.getElementById("examples");
+     const computeBN  = document.getElementById("compute");
 
      let grmr = undefined;
 
      function setGrammar(value) {
-         if (value.trim()) {
-             grmr = omnivore.createGrammar(JSON.parse(value));
+         try {
+             if (typeof(value) === "string")
+                 value = JSON.parse(value.trim());
+             else grammarTA.value = compactStringify(value);
+
+             grmr = omnivore.createGrammar(value);
              rule.innerHTML = "";
              grmr.eachRule(ruleName => {
+                 if (ruleName.startsWith("@"))
+                     return;
                  const option = document.createElement("option");
                  option.setAttribute("value", ruleName);
                  option.appendChild(document.createTextNode(ruleName));
                  rule.appendChild(option);
              });
+             valueTA.disabled    = false;
+             generateBN.disabled = false;
+             parseBN.disabled    = false;
+         } catch (ex) {
+             resultsTA.value = ex.toString();
+             valueTA.disabled    = true;
+             generateBN.disabled = true;
+             parseBN.disabled    = true;
          }
-         grammar.value = value;
      }
-     setGrammar(grammar.value);
 
      Object.keys(exampleGrammars).forEach(key => {
          const option = document.createElement("option");
@@ -134,21 +235,33 @@ function compactStringify(object, indent = 0) {
          option.appendChild(document.createTextNode(key));
          examples.appendChild(option);
      });
+     setGrammar(exampleGrammars[examplesSL.value]);
 
-     grammar.addEventListener("change", event => {
-         setGrammar(grammar.value);
+     grammarTA.addEventListener("change", event => {
+         setGrammar(grammarTA.value);
      });
 
-     generate.addEventListener("click", event => {
-         value.value = grmr.generate(rule.value);
+     generateBN.addEventListener("click", event => {
+         valueTA.value = grmr.generate(ruleSL.value);
+         resultsTA.value = "";
      });
-     parse.addEventListener("click", event => {
-         console.log("Parse", grmr.parse(rule.value, value.value));
+     parseBN.addEventListener("click", event => {
+         try {
+             const parsed = grmr.parse(ruleSL.value, valueTA.value);
+             resultsTA.value = compactStringify(parsed);
+         } catch (ex) {
+             resultsTA.value = ex.toString();
+         }
      });
 
-     examples.addEventListener("change", event => {
-         setGrammar(compactStringify(exampleGrammars[examples.value]));
+     examplesSL.addEventListener("change", event => {
+         setGrammar(exampleGrammars[examplesSL.value]);
      })
+
+     computeBN.addEventListener("click", event => {
+         resultsTA.value = computeExpression(
+             grmr.parse(ruleSL.value, valueTA.value));
+     });
  });
 
  //]]></script>
