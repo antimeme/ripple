@@ -289,8 +289,10 @@ class Grammar {
 
     eachRule(fn, context) {
         let index = 0;
-        Object.keys(this.__rules).forEach(rule =>
-            { fn.call(context, rule, index++, this.__rules[rule]); });
+        Object.keys(this.__rules).forEach(rule => {
+            if (!rule.startsWith("@"))
+                fn.call(context, rule, index++, this.__rules[rule]);
+        });
     }
 
     /**

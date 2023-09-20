@@ -211,8 +211,6 @@
              grmr = omnivore.createGrammar(value);
              rule.innerHTML = "";
              grmr.eachRule(ruleName => {
-                 if (ruleName.startsWith("@"))
-                     return;
                  const option = document.createElement("option");
                  option.setAttribute("value", ruleName);
                  option.appendChild(document.createTextNode(ruleName));
