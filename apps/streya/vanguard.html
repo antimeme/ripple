@@ -11,27 +11,69 @@
      position: relative; background: #888;
  }
  canvas { background: #eee; }
- .menu {
-     position: absolute; padding: 0.5em;
-     top: 10px; left: 25px;
-     background: #333; color: #eee;
-     border: 2px solid #eee; border-radius: 10px;
-     list-style-type: none; list-style-position: outside;
+ .panel {
+     position: absolute; border: 3px solid blue; background: #aaa;
+     overflow-y: scroll;
  }
- .menu a { text-decoration: none; color: #eee; }
- .menu li { padding: 0.5em; border-radius: 10px; }
- .menu li:hover { background: #55e; }
+ .panel legend
+ { border: 3px solid blue; background: #aaa; border-radius: 8px; }
+ .recruit
+ { border: 2px solid green; border-radius: 8px; float: left; }
+ .recruit legend
+ { border: 2px solid green; border-radius: 8px; }
+ .recruit ul { padding: 0; }
+ .recruit li { padding: 0; list-style-type: none; }
 </style>
 <script type="module">//<![CDATA[
+ import Ripple from "../ripple/ripple.mjs";
  import Camera from "../ripple/camera.mjs";
  import Grid from "../ripple/grid.mjs";
- import Omnivore from "../ripple/omnivore.mjs";
+ import Character from "./character.mjs";
 
- document.addEventListener('DOMContentLoaded', () => {
+ function createPanel(parent) {
+     const result = document.createElement("fieldset");
+     const contents = document.createElement("div");
+     const legend = document.createElement("legend");
+     const title = document.createTextNode("Panel");
+     const closeBTN = document.createElement("button");
+     closeBTN.appendChild(document.createTextNode("X"));
+     closeBTN.addEventListener("click", event =>
+         { result.style.display = "none"; });
+     legend.appendChild(closeBTN);
+     legend.appendChild(title);
+
+     result.appendChild(legend);
+     result.appendChild(contents);
+     result.style.display = "none";
+     result.classList.add("panel");
+     parent.appendChild(result);
+
+     return {
+         element: result,
+         contents: contents,
+         setTitle: text => { title.data = text; },
+         show: function() { this.element.style.display = "block"; },
+         resize: function(width, height) {
+             const size = Math.min(width, height);
+             const getPixels = value => Math.round(value) + "px";
+             this.element.style.top = getPixels(size * 0.05);
+             this.element.style.left = getPixels(size * 0.05);
+             this.element.style.bottom = getPixels(0.05 * size);
+             this.element.style.right = getPixels(0.05 * size);
+             this.element.style.borderRadius = getPixels(size * 0.05);
+         }
+     };
+ }
+
+ Ripple.preloadURLs("./setting.json", (loaded) => {
+     const setting = loaded["./setting.json"];
      const screen = document.createElement("canvas");
      const camera = new Camera(320, 240).setScale(4);
      const grid = Grid.create({type: "square", radius: 1});
      let draw_id = 0;
+
+     document.body.appendChild(screen);
+     const panel = createPanel(document.body);
 
      function draw() {
          if (!screen.getContext)
@@ -43,6 +85,13 @@
          ctx.textAlign = "center";
          ctx.textBaseline = "middle";
 
+         ctx.beginPath();
+         grid.mapRectangle(
+             camera.toWorld({x: 0, y: 0}),
+             camera.toWorld({x: camera.width, y: camera.height}),
+             node => { grid.drawNode(ctx, node); });
+         ctx.strokeStyle = "#222";
+         ctx.stroke();
 
          camera.restoreContext(ctx);
          draw_id = 0;
@@ -63,8 +112,14 @@
      let drag = undefined;
      let selected = undefined;
 
-     screen.addEventListener("dblclick", event =>
-         { menu.style.display = "block"; });
+     screen.addEventListener("dblclick", event => {
+         panel.contents.innerHTML = "";
+         [0, 1, 2, 3].forEach(index => {
+             panel.contents.appendChild(
+                 Character.createRecruit(setting)); });
+         panel.setTitle("Recruits");
+         panel.show();
+     });
 
      screen.addEventListener("mousedown", event => {
          drag = grid.markCell(camera.toWorld(getPoint(event)));
@@ -92,43 +147,12 @@
          return redraw();
      });
 
-     let touchLength = undefined;
-     function getDistance(p1, p2) {
-         return Math.sqrt(
-             ((touches[0].x - touches[1].x) *
-                 (touches[0].x - touches[1].x)) + (
-                     (touches[0].y - touches[1].y) *
-                     (touches[0].y - touches[1].y)));
-     }
-     function touchUpdate(event) {
-         const touches = event.targetTouches.map(
-             touch => getPoint(event, touch));
-         if (touches.length !== 2) {
-             touchLength = undefined;
-         } else if (isNaN(touchLength)) {
-             touchLength = getDistance(touches[0], touches[1]);
-         } else if (event.type === "touchmove") {
-             camera.zoom(getDistance(touches[0], touches[1]) /
-                 touchLength, 1, 20);
-         }
-
-         selected.splice(0, selected.length);
-         touches.forEach(touch => {
-             selected.push(grid.markCell(camera.toWorld(touch))); } );
-         event.preventDefault();
-         return redraw();
-     }
-
-     screen.addEventListener("touchstart", touchUpdate);
-     screen.addEventListener("touchmove",  touchUpdate);
-     screen.addEventListener("touchend",   touchUpdate);
-
-     document.body.appendChild(screen);
-
      window.addEventListener("resize", event => {
          screen.height = window.innerHeight || window.clientHeight;
          screen.width = window.innerWidth || window.clientWidth;
          camera.resize(screen.width, screen.height);
+         panel.resize(screen.width, screen.height);
+         
          return redraw();
      });
      window.dispatchEvent(new Event("resize"));
