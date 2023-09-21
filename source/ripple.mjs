@@ -139,3 +139,43 @@ export class Bounds {
     }
 }
 
+/**
+ * Calls a specified function after the page has completely loaded and
+ * an array of URLs are fetched using an XMLHttpRequest (AJAX). */
+export function preloadURLs(urls, fn) {
+    const loaded = {};
+
+    if (typeof(urls) === "string")
+        urls = [urls];
+
+    let count = 0;
+    function next(url, content) {
+        if (url) {
+             ++count;
+            loaded[url] = content;
+        }
+        if (count === urls.length)
+            fn(loaded);
+    }
+
+    urls.forEach((url) => {
+        const request = new XMLHttpRequest();
+        request.open("GET", url, true);
+        request.addEventListener("load", () => {
+            if (request.status === 200) {
+                next(url, JSON.parse(request.responseText));
+            } else console.error("preload status (" +
+                                 request.status + "):", url);
+        });
+        request.addEventListener("error", () => {
+            console.error("preload status (" +
+                          request.status + "):", url);
+        });
+        request.send();
+    });
+    document.addEventListener("DOMContentLoaded", () => { next() });
+}
+
+export default {
+    zeroish, shuffle, eachPermutation,
+    pair, unpair, preloadURLs };

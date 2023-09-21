@@ -35,6 +35,7 @@
 </fieldset>
 
 <script type="module">
+ import Ripple from "../ripple/ripple.mjs";
  import Inventory from "./inventory.mjs";
 
  let dragSource = null;
@@ -71,41 +72,7 @@
      });
  }
 
- function preload(urls, fn) {
-     const loaded = {};
-
-     if (typeof(urls) === "string")
-         urls = [urls];
-
-     let count = 0;
-     function next(url, content) {
-         if (url) {
-             ++count;
-             loaded[url] = content;
-         }
-         if (count === urls.length)
-             fn(loaded);
-     }
-
-     urls.forEach((url) => {
-         const request = new XMLHttpRequest();
-         request.open("GET", url, true);
-         request.addEventListener("load", () => {
-             if (request.status === 200) {
-                 next(url, JSON.parse(request.responseText));
-             } else console.error("preload status (" +
-                                  request.status + "):", url);
-         });
-         request.addEventListener("error", () => {
-             console.error("preload status (" +
-                           request.status + "):", url);
-         });
-         request.send();
-     });
-     document.addEventListener("DOMContentLoaded", () => { next() });
- }
-
- preload("./gestalt.json", (loaded) => {
+ Ripple.preloadURLs("./gestalt.json", (loaded) => {
      const gestalt = loaded["./gestalt.json"];
      const wearing  = document.getElementById("wearing");
      const carrying = document.getElementById("carrying");
