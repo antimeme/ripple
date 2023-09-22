@@ -27,7 +27,7 @@
 // Instead, you could specify a radius.  This should give a more
 // similar cell size among different grid types.
 //
-//     const g = Grid.createGrid({type: "hex", radius: 15});
+//     const g = Grid.create({type: "hex", radius: 15});
 //
 // This creates a hexagonal grid with a radius of fifteen units.
 //
