@@ -10,7 +10,7 @@
      padding: 0; margin: 0; overflow: hidden;
      position: relative; background: #888;
  }
- canvas { background: #eee; }
+ canvas { background: #111; }
  .panel {
      position: absolute; border: 3px solid blue; background: #aaa;
      overflow-y: scroll;
@@ -27,8 +27,9 @@
 <script type="module">//<![CDATA[
  import Ripple from "../ripple/ripple.mjs";
  import Camera from "../ripple/camera.mjs";
- import Grid from "../ripple/grid.mjs";
+ import Grid   from "../ripple/grid.mjs";
  import Character from "./character.mjs";
+ import Structure from "./structure.mjs";
 
  function createPanel(parent) {
      const result = document.createElement("fieldset");
@@ -75,6 +76,8 @@
      document.body.appendChild(screen);
      const panel = createPanel(document.body);
 
+     const ship = Structure.createSampleShip();
+
      function draw() {
          if (!screen.getContext)
              throw Error("canvas has no getContext");
@@ -116,7 +119,7 @@
          panel.contents.innerHTML = "";
          [0, 1, 2, 3].forEach(index => {
              panel.contents.appendChild(
-                 Character.createRecruit(setting)); });
+                 Character.createRecruit(setting).getCard()); });
          panel.setTitle("Recruits");
          panel.show();
      });
