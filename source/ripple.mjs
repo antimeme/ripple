@@ -1,4 +1,4 @@
-// ripple.js
+// ripple.mjs
 // Copyright (C) 2014-2023 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-// A collection of utilities
+// A collection of useful routines that don't fit anywhere else.
 
 const epsilon = 1 / (1 << 20); // approximately one in a million
 export function zeroish(value) { return Math.abs(value) < epsilon; }
@@ -127,6 +127,11 @@ export function eachPermutation(elements, fn, context) {
     return context;
 }
 
+/**
+ * Converts client coordinates to relative locations within an element.
+ * This is an object because touch events may have many points to
+ * convert and it's not desirable to recalculate the bounding rectangle
+ * for each point. */
 export class Bounds {
     constructor(event)
     { this.bounds = event.target.getBoundingClientRect(); }
@@ -154,7 +159,7 @@ export function preloadURLs(urls, fn) {
              ++count;
             loaded[url] = content;
         }
-        if (count === urls.length)
+        if (!urls || (count === urls.length))
             fn(loaded);
     }
 
