@@ -1,5 +1,5 @@
-// Streya Struture Library
-// Copyright (C) 2021-2022 by Jeff Gold.
+// structure.mjs
+// Copyright (C) 2021-2023 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -20,10 +20,12 @@
 // This is primarily buildings within space stations and ships.
 //
 // One unit is one meter in this design.
+import Ripple from "../ripple/ripple.mjs";
+import Grid   from "../ripple/grid.mjs";
 
 // Convert a node to a numeric index suitable for integer lookup
 var getIndex = function(node)
-{ return ripple.pair(node.col, node.row); };
+{ return Ripple.pair(node.col, node.row); };
 
 // Compute the distance of each tile to outside the structure
 var computeDistances = function(structure, grid) {
@@ -76,7 +78,7 @@ var Cell = {
 
     draw: function(ctx, node, grid, structure) {
         ctx.beginPath();
-        grid.draw(ctx, node);
+        grid.drawNode(ctx, node);
         if (structure.__selectedRoom &&
             structure.__selectedRoom.containsNode(node))
             ctx.fillStyle = "teal";
@@ -99,7 +101,7 @@ var Hull = Object.assign(Object.create(Cell), {
     isObstructed: true,
     draw: function(ctx, node, grid) {
         ctx.beginPath();
-        grid.draw(ctx, node);
+        grid.drawNode(ctx, node);
         ctx.fillStyle = "dimgray";
         ctx.fill();
     }
@@ -229,7 +231,7 @@ var Structure = {
     { return Object.create(this).init(config); },
 
     init: function(config) {
-        this.__grid = grille.createGrid({
+        this.__grid = Grid.create({
             type: "square", diagonal: true, edge: 1 });
         this.__defaultLevel = 0;
         this.__cellData = {};
@@ -318,7 +320,7 @@ var Structure = {
 
         var indexA = getIndex(nodeA);
         var indexB = getIndex(nodeB);
-        var index = ripple.pair(Math.min(indexA, indexB),
+        var index = Ripple.pair(Math.min(indexA, indexB),
                                 Math.max(indexA, indexB));
 
         return (level in this.__walls) ?
@@ -337,7 +339,7 @@ var Structure = {
 
         var indexA = getIndex(nodeA);
         var indexB = getIndex(nodeB);
-        var index = ripple.pair(Math.min(indexA, indexB),
+        var index = Ripple.pair(Math.min(indexA, indexB),
                                 Math.max(indexA, indexB));
 
         if (!(level in this.__walls))
@@ -376,7 +378,7 @@ var Structure = {
 
         var indexA = getIndex(nodeA);
         var indexB = getIndex(nodeB);
-        var index = ripple.pair(Math.min(indexA, indexB),
+        var index = Ripple.pair(Math.min(indexA, indexB),
                                 Math.max(indexA, indexB));
 
         if (!(level in this.__walls))
@@ -547,7 +549,7 @@ var Structure = {
             Object.keys(boundaries).forEach(function(peer) {
                 if (peer < index)
                     return;
-                var pairs = ripple.shuffle(boundaries[peer]);
+                var pairs = Ripple.shuffle(boundaries[peer]);
                 var door = pairs.shift();
                 this.makeDoor(door.a, door.b);
 
@@ -987,9 +989,9 @@ var Station = {
         // district measures 255 meters on each side we get a
         // period of 28.59 seconds with six rows of districts.
         result.rules = config && config.rules;
-        result.districtGrid = grille.createGrid({
+        result.districtGrid = Grid.create({
             type: "square", edge: District.cellCount});
-        result.cellGrid = grille.createGrid({
+        result.cellGrid = Grid.create({
             type: "square", edge: 1});
         result.rows = Math.min((config && config.rows) ?
                                config.rows : 6, 6);
@@ -1064,9 +1066,10 @@ var Station = {
     }
 };
 
-var createSampleShip = function() {
-    var ship = Structure.create();
-    var row, col;
+export function createSampleShip() {
+    const ship = Structure.create();
+    let row, col;
+
     for (row = -10; row <= 10; ++row)
         for (col = -10; col <= 10; ++col)
             ship.setCellUnresolved({row: row, col: col});
@@ -1077,4 +1080,4 @@ var createSampleShip = function() {
     return ship;
 };
 
-export { createSampleShip,  Structure }
+export default { createSampleShip, Structure, Station };
