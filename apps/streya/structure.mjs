@@ -23,8 +23,10 @@
 import Ripple from "../ripple/ripple.mjs";
 import Grid   from "../ripple/grid.mjs";
 
-// Convert a node to a numeric index suitable for integer lookup
-var getIndex = function(node)
+/**
+ * Convert a node with numeric row and col fields into a single
+ * integer suitable for use as an object key. */
+function getNodeIndex(node)
 { return Ripple.pair(node.col, node.row); };
 
 // Compute the distance of each tile to outside the structure
@@ -33,10 +35,10 @@ var computeDistances = function(structure, grid) {
     var unresolved = [];
 
     var computeDistance = function(node, grid, structure) {
-        var distance = distances[getIndex(node)];
+        var distance = distances[getNodeIndex(node)];
         grid.eachNeighbor(node, function(neighbor) {
             if (structure.getCell(neighbor)) {
-                var peer = distances[getIndex(neighbor)];
+                var peer = distances[getNodeIndex(neighbor)];
                 if (peer && !isNaN(peer) &&
                     (!distance || isNaN(distance) ||
                      (distance > peer)))
@@ -44,22 +46,21 @@ var computeDistances = function(structure, grid) {
             } else distance = 1;
         }, this);
         grid.eachNeighbor(node, function(neighbor) {
-            var peer = distances[getIndex(neighbor)];
+            var peer = distances[getNodeIndex(neighbor)];
             if (structure.getCell(neighbor) &&
                 peer && !isNaN(peer) &&
                 (peer > distance + 1)) {
-                distances[getIndex(neighbor)] = undefined;
+                distances[getNodeIndex(neighbor)] = undefined;
                 unresolved.push(neighbor);
             }
         }, this);
 
         if (distance)
-            distances[getIndex(node)] = distance;
+            distances[getNodeIndex(node)] = distance;
         else unresolved.push(node);
     };
 
-    structure.eachCell(function(
-        contents, node, grid, structure) {
+    structure.eachCell((contents, node, grid, structure) => {
         computeDistance(node, grid, structure);
     }, this);
     while (unresolved.length)
@@ -69,14 +70,14 @@ var computeDistances = function(structure, grid) {
 
 // Base class for the contents of a cell in a ship or building.
 // A cell knows whether it is obstructed.
-var Cell = {
-    create: function(config)
-    { return Object.create(this).init(config); },
-    init: function(config) { return this; },
+class Cell {
+    constructor(config) { this.init(config); }
 
-    isObstructed: false,
+    init(config) { }
 
-    draw: function(ctx, node, grid, structure) {
+    isObstructed = false;
+
+    draw(ctx, node, grid, structure) {
         ctx.beginPath();
         grid.drawNode(ctx, node);
         if (structure.__selectedRoom &&
@@ -85,152 +86,70 @@ var Cell = {
         else ctx.fillStyle = "lightslategray";
         ctx.fill();
     }
-};
+}
 
 // A superposition is a cell with contents that have not yet
 // been decided -- a place holder.
-var Superposition = Object.assign(Object.create(Cell), {
-    init: function(config) {
+class Superposition extends Cell {
+    init(config) {
         this.row = config && config.row || 0;
         this.col = config && config.col || 0;
-        return this;
-    },
-});
+    }
+}
 
-var Hull = Object.assign(Object.create(Cell), {
-    isObstructed: true,
-    draw: function(ctx, node, grid) {
+class Hull extends Cell {
+    isObstructed = true;
+    draw(ctx, node, grid) {
         ctx.beginPath();
         grid.drawNode(ctx, node);
         ctx.fillStyle = "dimgray";
         ctx.fill();
     }
-});
+}
 
-var cellTypes = {
-    bulkhead: Object.assign(Object.create(Cell), {
-        draw: function(ctx, node, grid) {
-            ctx.beginPath();
-            grid.draw(ctx, node);
-            ctx.fillStyle = "gray";
-            ctx.fill();
-        }
-    }),
-    door: Object.assign(Object.create(Cell), {
-        draw: function(ctx, node, grid) {
-            var radius = grid.getRadius() / 2;
-            ctx.beginPath();
-            ctx.moveTo(node.x - radius, node.y - radius);
-            ctx.lineTo(node.x + radius, node.y - radius);
-            ctx.lineTo(node.x + radius, node.y + radius);
-            ctx.lineTo(node.x - radius, node.y + radius);
-            ctx.lineTo(node.x - radius, node.y - radius);
-            ctx.fillStyle = "red";
-            ctx.fill();
-        }
-    }),
-    bedHead: Object.assign(Object.create(Cell), {
-        draw: function(ctx, node, grid) {
-            var radius = grid.getRadius() / 2;
-            ctx.beginPath();
-            ctx.moveTo(node.x - radius, node.y - radius);
-            ctx.lineTo(node.x + radius, node.y - radius);
-            ctx.lineTo(node.x + radius, node.y + radius);
-            ctx.lineTo(node.x - radius, node.y + radius);
-            ctx.fillStyle = "red";
-            ctx.fill();
-        }
-    }),
-    bedFoot: Object.assign(Object.create(Cell), {
-        draw: function(ctx, node, grid) {
-            var radius = grid.getRadius() / 2;
-            ctx.beginPath();
-            ctx.moveTo(node.x - radius, node.y - radius);
-            ctx.lineTo(node.x + radius, node.y + radius);
-            ctx.lineTo(node.x - radius, node.y + radius);
-            ctx.lineTo(node.x - radius, node.y - radius);
-            ctx.fillStyle = "red";
-            ctx.fill();
-        }
-    }),
-    dresser: Object.assign(Object.create(Cell), {
-        draw: function(ctx, node, grid) {
-            var radius = grid.getRadius() / 2;
-            ctx.beginPath();
-            ctx.moveTo(node.x - radius, node.y - radius);
-            ctx.lineTo(node.x + radius, node.y - radius);
-            ctx.lineTo(node.x + radius, node.y + radius);
-            ctx.lineTo(node.x - radius, node.y + radius);
-            ctx.lineTo(node.x - radius, node.y - radius);
-            ctx.fillStyle = "green";
-            ctx.fill();
-        }
-    }),
-    desk: Object.assign(Object.create(Cell), {
-        draw: function(ctx, node, grid) {
-            var radius = grid.getRadius() / 2;
-            ctx.beginPath();
-            ctx.moveTo(node.x - radius, node.y - radius);
-            ctx.lineTo(node.x + radius, node.y - radius);
-            ctx.lineTo(node.x + radius, node.y + radius);
-            ctx.lineTo(node.x - radius, node.y + radius);
-            ctx.lineTo(node.x - radius, node.y - radius);
-            ctx.fillStyle = "purple";
-            ctx.fill();
-        }
-    }),
-    floor: Object.assign(Object.create(Cell), {
-        draw: function(ctx, node, grid) {
-        }
-    }),
-};
-
-var Room = {
-    __index: 0,
-    create: function(structure) {
-        var result = Object.create(this);
-        result.__structure = structure;
-        result.__nodes = {};
-        result.__cells = {};
-        result.__index = this.__index++;
-        return result;
-    },
-    getNodeCount: function() {
+class Room {
+    static __globalIndex = 0;
+    constructor(structure) {
+        this.__structure = structure;
+        this.__nodes = {};
+        this.__cells = {};
+        this.__index = this.__globalIndex++;
+    }
+    getNodeCount() {
         return Object.keys(this.__cells).length;
-    },
-    addNode: function(node, level) {
-        var index = getIndex(node);
+    }
+    addNode(node, level) {
+        var index = getNodeIndex(node);
         this.__nodes[index] = node;
         this.__cells[index] = true;
-    },
-    containsNode: function(node, level) {
-        return this.__cells[getIndex(node)] || false;
-    },
-    eachNode: function(fn, context) {
+    }
+    containsNode(node, level) {
+        return this.__cells[getNodeIndex(node)] || false;
+    }
+    eachNode(fn, context) {
         Object.keys(this.__cells).forEach(function(index) {
             var node = this.__nodes[index];
             fn.call(context, node, this, this.__structure);
         }, this);
-    },
-    setSelected: function() {
+    }
+    setSelected() {
         this.__structure.__selectedRoom = this;
     }
-};
+}
 
-// A structure is a building or a space ship.  It's a self
-// contained unit with some kind of functional purpose.
-// Structures exist within a grid of cells on one or more
-// levels, which can be traversed using special cell
-// entries like stairs or elevators.
-//
-// Accessing data in a structure requires nodes.  A node
-// must have integer row and col fields and may optionally
-// have a level field as well.
-var Structure = {
-    create: function(config)
-    { return Object.create(this).init(config); },
+/**
+ * A structure is self contained unit with some kind of functional
+ * purpose, usually a building or a ship.  Structures exist within a
+ * grid of cells on one or more levels, which can be traversed using
+ * special cell entries like stairs or lifts.
+ *
+ * Accessing data in a structure requires nodes.  A node must have
+ * integer row and col fields and may optionally have a level field as
+ * well. */
+class Structure {
+    constructor(config) { this.init(config); }
 
-    init: function(config) {
+    init(config) {
         this.__grid = Grid.create({
             type: "square", diagonal: true, edge: 1 });
         this.__defaultLevel = 0;
@@ -240,11 +159,10 @@ var Structure = {
         this.__rooms = [];
         this.__roomMap = {};
         this.__selectedRoom = undefined;
-        return this;
-    },
+    }
 
     // Returns the contents at specified node, if any.
-    getCell: function(node) {
+    getCell(node) {
         if (node && !isNaN(node.x) && !isNaN(node.y))
             this.__grid.markCell(node);
         if (!node || isNaN(node.row) || isNaN(node.col))
@@ -253,16 +171,16 @@ var Structure = {
         var level = isNaN(node.level) ?
             this.__defaultLevel : node.level;
         return (level in this.__cellData) ?
-            this.__cellData[level][getIndex(node)] : undefined;
-    },
+            this.__cellData[level][getNodeIndex(node)] : undefined;
+    }
 
     // Replaces the contents at specified node with the value given.
-    setCell: function(node, value) {
+    setCell(node, value) {
         if (node && !isNaN(node.x) && !isNaN(node.y))
             this.__grid.markCell(node);
         if (!node || isNaN(node.row) || isNaN(node.col))
             throw new Error("row and col must be numeric");
-        var index = getIndex(node);
+        var index = getNodeIndex(node);
 
         var level = isNaN(node.level) ?
             this.__defaultLevel : level;
@@ -280,7 +198,7 @@ var Structure = {
         }
 
         return this;
-    },
+    }
 
     // Calls the supplied function for each cell in the structure.
     // The context argument is supplied as "this" variable.
@@ -289,7 +207,7 @@ var Structure = {
     //   - Position of the cell (object with .row and .col)
     //   - Grid used by this structure
     //   - This structure itself
-    eachCell: function(fn, context) {
+    eachCell(fn, context) {
         var level = this.__defaultLevel;
         if (!isNaN(arguments[0])) {
             level   = arguments[0];
@@ -306,9 +224,9 @@ var Structure = {
                         this.__grid, this);
             }, this);
         return this;
-    },
+    }
 
-    getWall: function(nodeA, nodeB) {
+    getWall(nodeA, nodeB) {
         var level = this.__defaultLevel;
         if (!isNaN(nodeA.level) && !isNaN(nodeB.level) &&
             (nodeA.level !== nodeB.level))
@@ -318,16 +236,16 @@ var Structure = {
         else if (!isNaN(nodeB.level))
             level = nodeB.level;
 
-        var indexA = getIndex(nodeA);
-        var indexB = getIndex(nodeB);
+        var indexA = getNodeIndex(nodeA);
+        var indexB = getNodeIndex(nodeB);
         var index = Ripple.pair(Math.min(indexA, indexB),
                                 Math.max(indexA, indexB));
 
         return (level in this.__walls) ?
             this.__walls[level][index] : undefined;
-    },
+    }
 
-    makeWall: function(nodeA, nodeB) {
+    makeWall(nodeA, nodeB) {
         var level = this.__defaultLevel;
         if (!isNaN(nodeA.level) && !isNaN(nodeB.level) &&
             (nodeA.level !== nodeB.level))
@@ -337,8 +255,8 @@ var Structure = {
         else if (!isNaN(nodeB.level))
             level = nodeB.level;
 
-        var indexA = getIndex(nodeA);
-        var indexB = getIndex(nodeB);
+        var indexA = getNodeIndex(nodeA);
+        var indexB = getNodeIndex(nodeB);
         var index = Ripple.pair(Math.min(indexA, indexB),
                                 Math.max(indexA, indexB));
 
@@ -349,9 +267,9 @@ var Structure = {
             points: this.__grid.getPairPoints(nodeA, nodeB)
         };
         return this;
-    },
+    }
 
-    eachWall: function(fn, context) {
+    eachWall(fn, context) {
         var level = this.__defaultLevel;
         if (!isNaN(arguments[0])) {
             level   = arguments[0];
@@ -364,9 +282,9 @@ var Structure = {
             fn.call(context, points, wall.nodeA, wall.nodeB);
         });
         return this;
-    },
+    }
 
-    makeDoor: function(nodeA, nodeB) {
+    makeDoor(nodeA, nodeB) {
         var level = this.__defaultLevel;
         if (!isNaN(nodeA.level) && !isNaN(nodeB.level) &&
             (nodeA.level !== nodeB.level))
@@ -376,8 +294,8 @@ var Structure = {
         else if (!isNaN(nodeB.level))
             level = nodeB.level;
 
-        var indexA = getIndex(nodeA);
-        var indexB = getIndex(nodeB);
+        var indexA = getNodeIndex(nodeA);
+        var indexB = getNodeIndex(nodeB);
         var index = Ripple.pair(Math.min(indexA, indexB),
                                 Math.max(indexA, indexB));
 
@@ -388,52 +306,52 @@ var Structure = {
             points: this.__grid.getPairPoints(nodeA, nodeB)
         };
         return this;
-    },
+    }
 
     // Calls the supplied function for each level in the structure.
     // The context argument is supplied as "this" variable.
     // Arguments are:
     //   - Numeric level
     //   - This structure itself
-    eachLevel: function(fn, context) {
+    eachLevel(fn, context) {
         var originalLevel = this.__defaultLevel;
         Object.keys(this.__cellData).forEach(function(level) {
                 fn.call(context, level, this.setLevel(level)); }, this);
         this.__defaultLevel = originalLevel;
         return this;
-    },
+    }
 
-    setLevel: function(level)
-    { this.__defaultLevel = level; return this; },
+    setLevel(level)
+    { this.__defaultLevel = level; return this; }
 
-    getRoomCount: function() { return this.__rooms.length; },
+    getRoomCount() { return this.__rooms.length; }
 
-    getRoom: function(node) {
+    getRoom(node) {
         if (node && !isNaN(node.x) && !isNaN(node.y))
             this.__grid.markCell(node);
         if (!node || isNaN(node.row) || isNaN(node.col))
             throw new Error("row and column must be numeric");
-        return this.__roomMap[getIndex(node)];
-    },
+        return this.__roomMap[getNodeIndex(node)];
+    }
 
-    eachRoom: function(fn, context) {
+    eachRoom(fn, context) {
         this.__rooms.forEach(function(room) {
             fn.call(context, room, this); });
-    },
+    }
 
     /**
      * Mark a cell for inclusion in a ship without
      * resolving the contents of that cell.  Call
      * the resolve method once all unresolved cells
      * have been marked. */
-    setCellUnresolved: function(node) {
-        this.setCell(node, Superposition.create(node));
-    },
+    setCellUnresolved(node) {
+        this.setCell(node, new Superposition(node));
+    }
 
     /* Convert all unresolved cells to some component.
      * This method does its best to create a workable structure
      * according to given rules. */
-    resolve: function(level) {
+    resolve(level) {
         if (!isNaN(level))
             return this.eachLevel(function(level) {
                 this.resolve(level); }, this);
@@ -444,11 +362,11 @@ var Structure = {
         // by their distance to a hull tile.
         var nodes = [];
         this.eachCell(function(contents, node, grid) {
-            if (!Superposition.isPrototypeOf(contents))
+            if (!(contents instanceof Superposition))
                 return;
-            node.distance = distances[getIndex(node)];
+            node.distance = distances[getNodeIndex(node)];
             if (node.distance <= 1)
-                this.setCell(node, Hull.create());
+                this.setCell(node, new Hull());
             else nodes.push(node);
             }, this);
         nodes.sort(function(a, b) {
@@ -462,16 +380,16 @@ var Structure = {
 
         while (nodes.length) { // Use all superposition nodes
             var node = nodes.shift();
-            if (roomMap[getIndex(node)])
+            if (roomMap[getNodeIndex(node)])
                 continue; // Node was taken by a previous room
 
             var desiredNodes = Math.floor(25 + 12 * Math.random());
-            var room = Room.create(this);
+            var room = new Room(this);
 
             while ((room.getNodeCount() < desiredNodes)) {
                 // Consume the current node
                 room.addNode(node);
-                roomMap[getIndex(node)] = room;
+                roomMap[getNodeIndex(node)] = room;
 
                 // Each neighbor is a candidate for expansion
                 var candidates = [];
@@ -479,12 +397,12 @@ var Structure = {
                     this.__grid
                         .eachNeighbor(node, function(neighbor) {
                             if (!neighbor.diagonal &&
-                                !roomMap[getIndex(neighbor)] &&
+                                !roomMap[getNodeIndex(neighbor)] &&
                                 !room.containsNode(neighbor) &&
-                                Superposition.isPrototypeOf(
-                                    this.getCell(neighbor))) {
+                                this.getCell(neighbor) instanceof
+                                Superposition) {
                                 neighbor.distance =
-                                    distances[getIndex(neighbor)];
+                                    distances[getNodeIndex(neighbor)];
                                 candidates.push(neighbor);
                             }
                         }, this);
@@ -523,7 +441,7 @@ var Structure = {
         rooms.forEach(function(room, index) {
             roomIndices[index] = room;
             room.eachNode(function(node)
-                          { nodeRooms[getIndex(node)] = index; });
+                          { nodeRooms[getNodeIndex(node)] = index; });
         });
         var roomPeers = [];
         rooms.forEach(function(room, index) {
@@ -533,9 +451,9 @@ var Structure = {
             room.eachNode(function(node) {
                 this.__grid.eachNeighbor(node, function(neighbor) {
                     if (room.containsNode(neighbor) ||
-                        Hull.isPrototypeOf(this.getCell(neighbor)))
+                        (this.getCell(neighbor) instanceof Hull))
                         return;
-                    var peer = nodeRooms[getIndex(neighbor)];
+                    var peer = nodeRooms[getNodeIndex(neighbor)];
                     if (isNaN(peer))
                         return this.makeWall(node, neighbor);
 
@@ -558,22 +476,20 @@ var Structure = {
                 }, this);
             }, this);
         }, this);
-    },
+    }
 
-    draw: function(ctx, camera) {
+    draw(ctx, camera) {
         this.__grid.mapRectangle(
-            camera.toWorldFromScreen({x: 0, y: 0}),
-            camera.toWorldFromScreen(
-                {x: camera.width, y: camera.height}),
+            camera.toWorld({x: 0, y: 0}),
+            camera.toWorld({x: camera.width, y: camera.height}),
             function(node, index, grid) {
                 var cell = this.getCell(node);
                 if (cell)
                     cell.draw(ctx, node, grid, this);
             }, this);
         this.__grid.mapRectangle(
-            camera.toWorldFromScreen({x: 0, y: 0}),
-            camera.toWorldFromScreen(
-                {x: camera.width, y: camera.height}),
+            camera.toWorld({x: 0, y: 0}),
+            camera.toWorld({x: camera.width, y: camera.height}),
             function(node, index, grid) {
                 var currentRoom = this.getRoom(node);
 
@@ -627,20 +543,20 @@ var Structure = {
                     }
                 }, this);
             }, this);
-    },
+    }
 
-    toJSON: function() {
+    toJSON() {
         return {}; // TODO
-    },
+    }
 
-};
+}
 
 // A building is a single structure inside a habitat.
-var Building = Object.assign(Object.create(Structure), {
-    create: function(config)
-    { return Object.create(this).init(config); },
+class Building extends Structure {
+    create(config)
+    { return Object.create(this).init(config); }
 
-    init: function(config) {
+    init(config) {
         Structure.init.call(this, config);
         var rand = (config && config.rand) ? config.rand : Math;
         var lot = (config && config.lot) ? config.lot :
@@ -695,9 +611,9 @@ var Building = Object.assign(Object.create(Structure), {
         }
 
         return this;
-    },
+    }
 
-    __createRandomLayout: function() {
+    __createRandomLayout() {
         var buildingRowSize = this.end.row - this.start.row;
         var buildingColSize = this.end.col - this.start.col;
         var roomSize = (buildingRowSize >= 14) ? 5 : 4;
@@ -725,9 +641,9 @@ var Building = Object.assign(Object.create(Structure), {
             row = this.end.row;
             this.setCell({row: row, col: col}, this.__cellWall);
         }
-    },
+    }
 
-    drawOverview: function(ctx, grid, node) {
+    drawOverview(ctx, grid, node) {
         ctx.beginPath();
         ctx.moveTo(node.x - this.start.col,
                    node.y - this.start.row);
@@ -749,16 +665,16 @@ var Building = Object.assign(Object.create(Structure), {
             this.district.type.wallColor :
             "rgb(192, 192, 240)";
             ctx.stroke();
-    },
-});
+    }
+}
 
 // A district is a substantial section of a space station.
 // Districts contain buildings and other structures that have an
 // effect on the station and its population.  Districts have a
 // type which reflects the kind of infrastructure they contain.
 // This infrastructure confers advantages and disadvantages.
-var District = {
-    create: function(config) {
+class District {
+    create(config) {
         var result = Object.create(this);
         result.rules = config && config.rules;
         result.rand = (config && config.rand) ? config.rand : Math;
@@ -780,9 +696,9 @@ var District = {
         } else result.__vacantLots.push(startingLot);
 
         return result;
-    },
+    }
 
-    eachBuilding: function(fn, context) {
+    eachBuilding(fn, context) {
         var result = fn ? this : [];
         this.__buildings.forEach(function(building, index) {
             if (fn)
@@ -790,19 +706,19 @@ var District = {
             else result.push(building);
         });
         return result;
-    },
+    }
 
-    addBuilding: function(building) {
+    addBuilding(building) {
         building.eachCell(function(cell, node) {
-            this.__cellMap[getIndex(node)] =
+            this.__cellMap[getNodeIndex(node)] =
                 building.getCell(node);
         }, this);
         this.__buildings.push(building);
-    },
+    }
 
-    __rand: Math,
+    __rand = Math;
 
-    __randomType: function(rand) {
+    __randomType(rand) {
         var entries = [];
         Object.keys(this.rules.districtTypes).forEach(
             function(name) {
@@ -821,11 +737,11 @@ var District = {
             else determinant -= entry.weight;
         });
         return this.rules.districtTypes[selected];
-    },
+    }
 
     // Returns an equivalent lot such that the start row and column
     // are no greater than the end row and column.
-    __orderLot: function(lot) {
+    __orderLot(lot) {
         return ((lot.start.row <= lot.end.row) &&
                 (lot.start.col <= lot.end.col)) ? lot : {
                     start: {
@@ -835,9 +751,9 @@ var District = {
                         row: Math.max(lot.start.row, lot.end.row),
                         col: Math.max(lot.start.col, lot.end.col)
                     }};
-    },
+    }
 
-    __splitLot: function(lot) {
+    __splitLot(lot) {
         var width  = lot.end.col - lot.start.col;
         var height = lot.end.row - lot.start.row;
         var result = [{
@@ -868,9 +784,9 @@ var District = {
             end:   {row: lot.end.row, col: lot.end.col}
         }];
         return result;
-    },
+    }
 
-    __createRandomBuilding: function(lot, p_split, p_used) {
+    __createRandomBuilding(lot, p_split, p_used) {
         var result = null;
         var size = Math.min(
             Math.abs(lot.start.row - lot.end.row),
@@ -889,11 +805,11 @@ var District = {
 
         if (result)
             this.addBuilding(result);
-    },
+    }
 
-    cellCount: 255,
+    cellCount = 255;
 
-    drawBackground: function(ctx, districtGrid, node) {
+    drawBackground(ctx, districtGrid, node) {
         ctx.beginPath();
         districtGrid.draw(ctx, node);
         ctx.fillStyle = this.type.color;
@@ -902,17 +818,17 @@ var District = {
         ctx.lineWidth = 1;
         ctx.lineCap = "square";
         ctx.stroke();
-    },
+    }
 
-    drawOverview: function(ctx, districtGrid, node) {
+    drawOverview(ctx, districtGrid, node) {
         this.eachBuilding(function(building) {
             building.drawOverview(ctx, districtGrid, node); });
-    },
+    }
 
     // Draw the icon for this district.  Each district type has an
     // optional icon which helps to identify the district type
     // when zoomed out.
-    drawIcon: function(ctx, districtGrid, node) {
+    drawIcon(ctx, districtGrid, node) {
         if (this.type && this.type.icon &&
             Array.isArray(this.type.icon)) {
             var size = districtGrid.getEdge();
@@ -947,13 +863,12 @@ var District = {
             ctx.stroke();
             ctx.restore();
         }
-    },
+    }
 
-    draw: function(ctx, camera, cellGrid, center) {
+    draw(ctx, camera, cellGrid, center) {
         cellGrid.mapRectangle(
-            camera.toWorldFromScreen({x: 0, y: 0}),
-            camera.toWorldFromScreen(
-                {x: camera.width, y: camera.height}),
+            camera.toWorld({x: 0, y: 0}),
+            camera.toWorld({x: camera.width, y: camera.height}),
             function(node, index, cGrid) {
                 var range = Math.floor((District.cellCount - 1) / 2);
                 var relative = {row: center.row - node.row,
@@ -963,7 +878,7 @@ var District = {
                     (Math.abs(relative.col) > range))
                     return; // Only draw if in our district
 
-                var contents = this.__cellMap[getIndex(relative)];
+                var contents = this.__cellMap[getNodeIndex(relative)];
                 if (!contents) {
                     ctx.beginPath();
                     cellGrid.draw(ctx, node);
@@ -972,12 +887,10 @@ var District = {
                 } else contents.draw(ctx, node, cellGrid);
             }, this);
     }
-};
+}
 
-var Station = {
-    create: function(config) {
-        var result = Object.create(this);
-
+class Station {
+    constructor(config) {
         // Artificial gravity is created by rotating a cylinder.
         // (https://en.wikipedia.org/wiki/Artificial_gravity).
         // Rotation at or less than two revolutions per minute
@@ -988,32 +901,31 @@ var Station = {
         // Plugging in 9.8 for the acceleration and assuming each
         // district measures 255 meters on each side we get a
         // period of 28.59 seconds with six rows of districts.
-        result.rules = config && config.rules;
-        result.districtGrid = Grid.create({
+        this.rules = config && config.rules;
+        this.districtGrid = Grid.create({
             type: "square", edge: District.cellCount});
-        result.cellGrid = Grid.create({
+        this.cellGrid = Grid.create({
             type: "square", edge: 1});
-        result.rows = Math.min((config && config.rows) ?
+        this.rows = Math.min((config && config.rows) ?
                                config.rows : 6, 6);
-        result.cols = (config && config.cols) ? config.cols : 6;
-        result.districts = [];
-        for (var rr = 0; rr < result.rows; ++rr)
-            for (var cc = 0; cc < result.cols; ++cc)
-                result.districts.push(District.create(
-                    { rules: result.rules, random: true,
+        this.cols = (config && config.cols) ? config.cols : 6;
+        this.districts = [];
+        for (var rr = 0; rr < this.rows; ++rr)
+            for (var cc = 0; cc < this.cols; ++cc)
+                this.districts.push(District.create(
+                    { rules: this.rules, random: true,
                       row: rr, col: cc }));
-        return result;
-    },
+    }
 
-    getDistrict: function(row, col) {
+    getDistrict(row, col) {
         row = row % this.rows;
         if (row < 0)
             row += this.rows;
         return ((row >= 0) && (row < this.rows) &&
                 (col >= 0) && (col < this.cols)) ?
-            this.districts[row * this.cols + col] : null; },
+            this.districts[row * this.cols + col] : null; }
 
-    eachDistrict: function(fn, context) {
+    eachDistrict(fn, context) {
         var result = fn ? undefined : [];
         this.districts.forEach(function(district) {
             if (fn)
@@ -1021,16 +933,15 @@ var Station = {
             else result.push(district);
         }, this);
         return result;
-    },
+    }
 
-    draw: function(ctx, camera) {
+    draw(ctx, camera) {
         var size = Math.min(camera.height, camera.width);
         var districtPixels = camera.scale * District.cellCount;
 
         this.districtGrid.mapRectangle(
-            camera.toWorldFromScreen({x: 0, y: 0}),
-            camera.toWorldFromScreen(
-                {x: camera.width, y: camera.height}),
+            camera.toWorld({x: 0, y: 0}),
+            camera.toWorld({x: camera.width, y: camera.height}),
             function(node, index, dGrid) {
                 var district = this.getDistrict(node.row, node.col);
                 if (!district) {
@@ -1064,10 +975,10 @@ var Station = {
                 }
             }, this);
     }
-};
+}
 
 export function createSampleShip() {
-    const ship = Structure.create();
+    const ship = new Structure();
     let row, col;
 
     for (row = -10; row <= 10; ++row)

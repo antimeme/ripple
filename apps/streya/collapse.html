@@ -6,67 +6,122 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <style>
  html, body
- { position: absolute; padding: 0; margin: 0; overflow: hidden;  }
+ { position: absolute; padding: 0; margin: 0; overflow: hidden; }
+ canvas { background-color: #112; }
 </style>
 <title>Collapse</title>
-<script src="../ripple/polyfill.js"></script>
-<script src="../ripple/ripple.js"></script>
-<script src="../ripple/fascia.js"></script>
-<script src="../ripple/multivec.js"></script>
-<script src="../ripple/grille.js"></script>
-<script src="../ripple/pathf.js"></script>
 <script type="module">//<![CDATA[
+ import Ripple from "../ripple/ripple.mjs";
+ import Camera from "../ripple/camera.mjs";
  import { createSampleShip } from "./structure.mjs";
 
- fascia.ready(function(preloads) {
-     "use strict";
-     var skipWalls = ripple.paramBoolean("skipwalls");
+ function roundRect(ctx, x, y, width, height, radius) {
+     ctx.beginPath();
+     ctx.moveTo(x + radius, y);
+     ctx.lineTo(x + width - radius, y);
+     ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+     ctx.lineTo(x + width, y + height - radius);
+     ctx.quadraticCurveTo(x + width, y + height,
+                          x + width - radius, y + height);
+     ctx.lineTo(x + radius, y + height);
+     ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+     ctx.lineTo(x, y + radius);
+     ctx.quadraticCurveTo(x, y, x + radius, y);
+     ctx.closePath();
+     ctx.fill();
+ }
 
-     var ship = createSampleShip();
-     var nCells = 0;
-     var nFree  = 0;
+ Ripple.preloadURLs(undefined, (loaded) => {
+     const screen = document.createElement("canvas");
+     const camera = new Camera(320, 240).setScale(4);
+     document.body.appendChild(screen);
+
+     const ship = createSampleShip();
+     let nCells = 0;
+     let nFree  = 0;
      ship.eachCell(function(cell, node) { ++nCells; });
      ship.eachRoom(function(room) { room.eachNode(
          function(node) { ++nFree; }); });
 
-     return { // Fascia framework callbacks
-         init: function(camera, canvas, container, fasciaRedraw) {
-             camera.setScale(Math.min(
-                 camera.width, camera.height) / 22);
-             canvas.style.background = "darkslategray";
-         },
-         resize: function(camera) {
-             var size = Math.min(camera.width, camera.height);
-             camera.setMinZoom(size / 22);
-             camera.setMaxZoom(size);
-         },
-         wheel: function(event, camera) { camera.wheel(event); },
-         drag:  function(event, camera) { camera.drag(event);  },
-         pinchStart: function(event, camera)
-         { this._pinchScale = camera.scale; },
-         pinchMove: function(event, camera) {
-             var size = Math.min(camera.width, camera.height);
-             camera.setScale(
-                 this._pinchScale * event.length, size / 22, size);
-         },
-         tap: function(event, camera) {
-             var point = camera.toWorldFromScreen(event.point);
-             var room = ship.getRoom(point);
-             if (room)
-                 room.setSelected();
-         },
-         draw(ctx, camera, now, last) { ship.draw(ctx, camera); },
-         drawAfter(ctx, camera, now, last) {
-             ctx.font = (
-                 Math.min(camera.width, camera.height) /
-                 20) + "px sans";
-             ctx.textAlign = "center";
-             ctx.fillStyle = "black";
-             ctx.fillText("Rooms: " + ship.getRoomCount() +
-                          " Cells: " + nFree + "/" + nCells,
-                          camera.width / 2,
-                          camera.height * 19 / 20);
-         }
-     };
- });
- //]]></script>
+     let draw_id = 0;
+     function draw() {
+         if (!screen.getContext)
+             throw Error("canvas has no getContext");
+         const ctx = screen.getContext("2d");
+         camera.configureContext(ctx);
+
+         ship.draw(ctx, camera);
+
+         camera.restoreContext(ctx);
+         ctx.globalAlpha = 0.5;
+         ctx.fillStyle = "#eee";
+         const width  = camera.width / 3;
+         const height = camera.height / 15;
+         roundRect(ctx, camera.width / 2 - width / 2,
+                   camera.height * 94 / 100 - height / 2,
+                   width, height,
+                   Math.max(camera.width, camera.height) / 100);
+
+         ctx.globalAlpha = 1.0;
+         ctx.font = (
+             Math.min(camera.width, camera.height) /
+             20) + "px sans";
+         ctx.textAlign = "center";
+         ctx.fillStyle = "black";
+         ctx.fillText("Rooms: " + ship.getRoomCount() +
+                      " Cells: " + nFree + "/" + nCells,
+                      camera.width / 2,
+                      camera.height * 19 / 20);
+         draw_id = 0;
+     }
+     function redraw() {
+         if (!draw_id)
+             draw_id = requestAnimationFrame(draw);
+         return false;
+     }
+
+     function getPoint(event, thing) {
+         const bounds = event.target.getBoundingClientRect();
+         if (!thing)
+             thing = event;
+         return {x: thing.clientX - bounds.x,
+                 y: thing.clientY - bounds.y};
+     }
+
+     let drag = undefined;
+     let selected = undefined;
+
+     screen.addEventListener("mousedown", event => {
+         drag = camera.toWorld(getPoint(event));
+         selected = drag;
+         return redraw();
+     });
+
+     screen.addEventListener("mousemove", event => {
+         if (!drag)
+             return false;
+         drag = camera.toWorld(getPoint(event));
+         camera.pan({x: drag.x - selected.x,
+                     y: drag.y - selected.y});
+         return redraw();
+     });
+
+     screen.addEventListener("mouseup", event => {
+         drag = undefined;
+         return redraw();
+     });
+
+     screen.addEventListener("wheel", event => {
+         camera.zoom((event.wheelDeltaY > 0) ? (5/4) : (4/5), 1, 20);
+         event.preventDefault();
+         return redraw();
+     });
+
+     window.addEventListener("resize", event => {
+         screen.height = window.innerHeight || window.clientHeight;
+         screen.width = window.innerWidth || window.clientWidth;
+         camera.resize(screen.width, screen.height);
+         return redraw();
+     });
+     window.dispatchEvent(new Event("resize"));
+ }); //]]></script>
