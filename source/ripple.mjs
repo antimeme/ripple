@@ -152,6 +152,8 @@ export function preloadURLs(urls, fn) {
 
     if (typeof(urls) === "string")
         urls = [urls];
+    else if (!Array.isArray(urls))
+        urls = [];
 
     let count = 0;
     function next(url, content) {
