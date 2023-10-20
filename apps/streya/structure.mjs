@@ -149,8 +149,10 @@ class Room {
 class Structure {
     constructor(config) { this.init(config); }
 
+    #grid = undefined;
+
     init(config) {
-        this.__grid = Grid.create({
+        this.#grid = Grid.create({
             type: "square", diagonal: true, edge: 1 });
         this.__defaultLevel = 0;
         this.__cellData = {};
@@ -161,10 +163,12 @@ class Structure {
         this.__selectedRoom = undefined;
     }
 
+    get grid() { return this.#grid; }
+
     // Returns the contents at specified node, if any.
     getCell(node) {
         if (node && !isNaN(node.x) && !isNaN(node.y))
-            this.__grid.markCell(node);
+            this.#grid.markCell(node);
         if (!node || isNaN(node.row) || isNaN(node.col))
             throw new Error("first argument must have numeric " +
                             "row and col fields");
@@ -177,7 +181,7 @@ class Structure {
     // Replaces the contents at specified node with the value given.
     setCell(node, value) {
         if (node && !isNaN(node.x) && !isNaN(node.y))
-            this.__grid.markCell(node);
+            this.#grid.markCell(node);
         if (!node || isNaN(node.row) || isNaN(node.col))
             throw new Error("row and col must be numeric");
         var index = getNodeIndex(node);
@@ -219,9 +223,9 @@ class Structure {
             Object.keys(this.__nodeData[level])
             .forEach(function(key) {
                 fn.call(context, this.__cellData[level][key],
-                        this.__grid.markCenter(
+                        this.#grid.markCenter(
                             this.__nodeData[level][key]),
-                        this.__grid, this);
+                        this.#grid, this);
             }, this);
         return this;
     }
@@ -264,7 +268,7 @@ class Structure {
             this.__walls[level] = {};
         this.__walls[level][index] = {
             nodeA: nodeA, nodeB: nodeB, door: false,
-            points: this.__grid.getPairPoints(nodeA, nodeB)
+            points: this.#grid.getPairPoints(nodeA, nodeB)
         };
         return this;
     }
@@ -303,7 +307,7 @@ class Structure {
             this.__walls[level] = {};
         this.__walls[level][index] = {
             nodeA: nodeA, nodeB: nodeB, door: true,
-            points: this.__grid.getPairPoints(nodeA, nodeB)
+            points: this.#grid.getPairPoints(nodeA, nodeB)
         };
         return this;
     }
@@ -328,7 +332,7 @@ class Structure {
 
     getRoom(node) {
         if (node && !isNaN(node.x) && !isNaN(node.y))
-            this.__grid.markCell(node);
+            this.#grid.markCell(node);
         if (!node || isNaN(node.row) || isNaN(node.col))
             throw new Error("row and column must be numeric");
         return this.__roomMap[getNodeIndex(node)];
@@ -356,7 +360,7 @@ class Structure {
             return this.eachLevel(function(level) {
                 this.resolve(level); }, this);
 
-        var distances = computeDistances(this, this.__grid);
+        var distances = computeDistances(this, this.#grid);
 
         // Create an exterior hull and sort interior nodes
         // by their distance to a hull tile.
@@ -394,7 +398,7 @@ class Structure {
                 // Each neighbor is a candidate for expansion
                 var candidates = [];
                 room.eachNode(function(node) {
-                    this.__grid
+                    this.#grid
                         .eachNeighbor(node, function(neighbor) {
                             if (!neighbor.diagonal &&
                                 !roomMap[getNodeIndex(neighbor)] &&
@@ -415,7 +419,7 @@ class Structure {
                 // to the current room
                 candidates.forEach(function(candidate) {
                     var connections = 0;
-                    this.__grid.eachNeighbor(candidate, function(
+                    this.#grid.eachNeighbor(candidate, function(
                         neighbor) {
                         if (!neighbor.diagonal &&
                             room.containsNode(neighbor))
@@ -449,7 +453,7 @@ class Structure {
             roomPeers.push(boundaries);
 
             room.eachNode(function(node) {
-                this.__grid.eachNeighbor(node, function(neighbor) {
+                this.#grid.eachNeighbor(node, function(neighbor) {
                     if (room.containsNode(neighbor) ||
                         (this.getCell(neighbor) instanceof Hull))
                         return;
@@ -479,7 +483,7 @@ class Structure {
     }
 
     draw(ctx, camera) {
-        this.__grid.mapRectangle(
+        this.#grid.mapRectangle(
             camera.toWorld({x: 0, y: 0}),
             camera.toWorld({x: camera.width, y: camera.height}),
             function(node, index, grid) {
@@ -487,7 +491,7 @@ class Structure {
                 if (cell)
                     cell.draw(ctx, node, grid, this);
             }, this);
-        this.__grid.mapRectangle(
+        this.#grid.mapRectangle(
             camera.toWorld({x: 0, y: 0}),
             camera.toWorld({x: camera.width, y: camera.height}),
             function(node, index, grid) {

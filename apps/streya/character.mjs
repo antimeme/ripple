@@ -17,6 +17,19 @@
 //
 // ---------------------------------------------------------------------
 // Abstractions for managing characters in a game.
+//
+/* https://nomnoml.com/
+   [Character|
+   [<table>Stats|
+   name|"|background|a||
+   health|#|wounds-|a||
+   stamina|#|exhaustion-|#||
+   water|#|bladder-|#||
+   food|#|waste-|#||
+   excercise|#|filth-|#||
+   social|#|boredom-|#]
+   [Wearing] +-> [Item]
+   [Inventory] +-> [Item] ] */
 import Omnivore from "../ripple/omnivore.mjs";
 
 /**
@@ -115,6 +128,25 @@ class Character {
         // :TODO: create inventory with some items
 
         return recruit;
+    }
+}
+
+class HumanCharacter extends Character {
+    constructor(config) {
+        super(config);
+
+        this.health = 10;
+        this.brawn = 10;
+        this.agility = 10;
+        this.will = 10;
+        this.charm = 10;
+        this.wounds = [];
+
+        this.stamina = 10;
+        this.water = 10;    this.graywater = 0;
+        this.food = 10;     this.waste = 0;
+        this.exercise = 10; this.filth = 0;
+        this.social = 10;   this.boredom = 0;
     }
 }
 

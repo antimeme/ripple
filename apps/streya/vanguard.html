@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, user-scalable=no" />
 <meta name="viewport" content="initial-scale=1, maximum-scale=1" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
-<meta http-equiv="X-UA-Compatible" content="chrome=1">
+<link rel="icon" href="streya.svg?serial=ENUjMO" />
 <title>Streya Vanguard</title>
 <style>
  html, body {
@@ -27,7 +27,6 @@
 <script type="module">//<![CDATA[
  import Ripple from "../ripple/ripple.mjs";
  import Camera from "../ripple/camera.mjs";
- import Grid   from "../ripple/grid.mjs";
  import Character from "./character.mjs";
  import Structure from "./structure.mjs";
 
@@ -70,13 +69,11 @@
      const setting = loaded["./setting.json"];
      const screen = document.createElement("canvas");
      const camera = new Camera(320, 240).setScale(4);
-     const grid = Grid.create({type: "square", radius: 1});
+     const ship = Structure.createSampleShip();
      let draw_id = 0;
 
      document.body.appendChild(screen);
      const panel = createPanel(document.body);
-
-     const ship = Structure.createSampleShip();
 
      function draw() {
          if (!screen.getContext)
@@ -89,12 +86,14 @@
          ctx.textBaseline = "middle";
 
          ctx.beginPath();
-         grid.mapRectangle(
+         ship.grid.mapRectangle(
              camera.toWorld({x: 0, y: 0}),
              camera.toWorld({x: camera.width, y: camera.height}),
-             node => { grid.drawNode(ctx, node); });
+             node => { ship.grid.drawNode(ctx, node); });
          ctx.strokeStyle = "#222";
          ctx.stroke();
+
+         ship.draw(ctx, camera);
 
          camera.restoreContext(ctx);
          draw_id = 0;
@@ -125,7 +124,7 @@
      });
 
      screen.addEventListener("mousedown", event => {
-         drag = grid.markCell(camera.toWorld(getPoint(event)));
+         drag = ship.grid.markCell(camera.toWorld(getPoint(event)));
          selected = drag;
          return redraw();
      });
