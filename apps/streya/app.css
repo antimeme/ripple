@@ -1,7 +1,21 @@
-html, body
-{ position: absolute; padding: 0; margin: 0; overflow: hidden; }
+html, body {
+    position: absolute; padding: 0; margin: 0;
+    overflow: hidden;
+}
+canvas { background-color: #111; }
 
-canvas { background-color: #222; }
+.panel {
+    position: absolute; border: 3px solid blue; background: #aaa;
+    overflow-y: scroll;
+}
+.panel legend
+{ border: 3px solid blue; background: #aaa; border-radius: 8px; }
+.recruit
+{ border: 2px solid green; border-radius: 8px; float: left; }
+.recruit legend
+{ border: 2px solid green; border-radius: 8px; }
+.recruit ul { padding: 0; margin: 0; }
+.recruit li { padding: 0; list-style-type: none; }
 
 .editor-menu {
     position: fixed; top: 10px; left: 10px;
