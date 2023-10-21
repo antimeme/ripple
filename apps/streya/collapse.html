@@ -33,7 +33,7 @@
 
  Ripple.preloadURLs(undefined, (loaded) => {
      const screen = document.createElement("canvas");
-     const camera = new Camera(320, 240).setScale(4);
+     const camera = new Camera(screen).setScale(4);
      document.body.appendChild(screen);
 
      const ship = createSampleShip();
@@ -120,7 +120,7 @@
      window.addEventListener("resize", event => {
          screen.height = window.innerHeight || window.clientHeight;
          screen.width = window.innerWidth || window.clientWidth;
-         camera.resize(screen.width, screen.height);
+         camera.resize();
          return redraw();
      });
      window.dispatchEvent(new Event("resize"));

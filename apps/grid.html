@@ -25,7 +25,6 @@
 <script type="module">//<![CDATA[
  import Grid from "./ripple/grid.mjs";
  import Camera from "./ripple/camera.mjs";
- import { Bounds } from "./ripple/ripple.mjs";
 
  const colors = {
      grid:       "rgba( 32,  32,  64, 1.0)",
@@ -44,7 +43,7 @@
 
  document.addEventListener('DOMContentLoaded', () => {
      const screen = document.createElement("canvas");
-     const camera = new Camera(320, 240).setScale(4);
+     const camera = new Camera(screen).setScale(4);
      let grid = Grid.create({type: "square", radius: 1});
      let selected = [];
      let neighborDots = false;
@@ -58,7 +57,7 @@
              throw Error("canvas has no getContext");
          const ctx = screen.getContext("2d");
          camera.configureContext(ctx);
-         ctx.lineWidth = camera.getRadius() / 4096;
+         ctx.lineWidth = camera.radius / 4096;
          ctx.font = "bold 42px sans-serif";
          ctx.textAlign = "center";
          ctx.textBaseline = "middle";
@@ -118,7 +117,7 @@
                  camera.toWorld({x: 0, y: 0}),
                  camera.toWorld({x: screen.width, y: screen.height}),
                  node => {
-                     const scale = 1 / camera.getRadius();
+                     const scale = 1 / camera.radius;
                      ctx.save();
                      ctx.translate(node.x, node.y);
                      ctx.scale(scale, -scale);
@@ -329,7 +328,7 @@
          { menu.style.display = "block"; });
 
      screen.addEventListener("mousedown", event => {
-         drag = grid.markCell(camera.toWorld(Bounds.eventPoint(event)));
+         drag = grid.markCell(camera.toWorld(camera.getPoint(event)));
          selected = [drag];
          return redraw();
      });
@@ -337,7 +336,7 @@
      screen.addEventListener("mousemove", event => {
          if (!drag)
              return false;
-         drag = camera.toWorld(Bounds.eventPoint(event));
+         drag = camera.toWorld(camera.getPoint(event));
          camera.pan({x: drag.x - selected[0].x,
                      y: drag.y - selected[0].y});
          return redraw();
@@ -365,9 +364,8 @@
      function touchUpdate(event) {
          invertColors = true;
          event.preventDefault();
-         const bounds = Bounds(event);
          const touches = event.targetTouches.map(
-             touch => bounds.getPoint(touch));
+             touch => camera.getPoint(touch));
          if (touches.length !== 2) {
              touchLength = undefined;
          } else if (isNaN(touchLength)) {

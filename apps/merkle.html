@@ -303,7 +303,7 @@
          ctx = screen.getContext("2d");
          screen.width = document.body.clientWidth;
          screen.height = document.body.clientHeight;
-         camera = new Camera(screen.width, screen.height);
+         camera = new Camera(screen);
          camera.pan({x: 0, y: -0.45});
          camera.zoom(0.75);
          update();

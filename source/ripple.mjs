@@ -128,23 +128,6 @@ export function eachPermutation(elements, fn, context) {
 }
 
 /**
- * Converts client coordinates to relative locations within an element.
- * This is an object because touch events may have many points to
- * convert and it's not desirable to recalculate the bounding rectangle
- * for each point. */
-export class Bounds {
-    constructor(event)
-    { this.bounds = event.target.getBoundingClientRect(); }
-    getPoint(point) {
-        return {x: point.clientX - this.bounds.x,
-                y: point.clientY - this.bounds.y};
-    }
-    static eventPoint(event) {
-        return new Bounds(event).getPoint(event);
-    }
-}
-
-/**
  * Calls a specified function after the page has completely loaded and
  * an array of URLs are fetched using an XMLHttpRequest (AJAX). */
 export function preloadURLs(urls, fn) {
@@ -184,5 +167,4 @@ export function preloadURLs(urls, fn) {
 }
 
 export default {
-    zeroish, shuffle, eachPermutation,
-    pair, unpair, preloadURLs };
+    zeroish, pair, unpair, shuffle, eachPermutation, preloadURLs };

@@ -67,96 +67,55 @@
 
  Ripple.preloadURLs("./setting.json", (loaded) => {
      const setting = loaded["./setting.json"];
-     const screen = document.createElement("canvas");
-     const camera = new Camera(320, 240).setScale(4);
-     const ship = Structure.createSampleShip();
-     let draw_id = 0;
-
-     document.body.appendChild(screen);
+     const screen = document.body.appendChild(
+         document.createElement("canvas"));
      const panel = createPanel(document.body);
+     const camera = new Camera(screen).setScale(4);
+     const ship = Structure.createSampleShip();
+     const player = Character.createRecruit(setting);
 
-     function draw() {
-         if (!screen.getContext)
-             throw Error("canvas has no getContext");
-         const ctx = screen.getContext("2d");
-         camera.configureContext(ctx);
-         ctx.lineWidth = camera.getRadius() / 4096;
-         ctx.font = "bold 42px sans-serif";
-         ctx.textAlign = "center";
-         ctx.textBaseline = "middle";
-
-         ctx.beginPath();
-         ship.grid.mapRectangle(
-             camera.toWorld({x: 0, y: 0}),
-             camera.toWorld({x: camera.width, y: camera.height}),
-             node => { ship.grid.drawNode(ctx, node); });
-         ctx.strokeStyle = "#222";
-         ctx.stroke();
-
-         ship.draw(ctx, camera);
-
-         camera.restoreContext(ctx);
-         draw_id = 0;
-     }
-     function redraw() {
-         if (!draw_id)
-             draw_id = requestAnimationFrame(draw);
-         return false;
-     }
-
-     function getPoint(event, thing) {
-         const bounds = event.target.getBoundingClientRect();
-         if (!thing)
-             thing = event;
-         return {x: thing.clientX - bounds.x,
-                 y: thing.clientY - bounds.y};
-     }
      let drag = undefined;
      let selected = undefined;
 
-     screen.addEventListener("dblclick", event => {
-         panel.contents.innerHTML = "";
-         [0, 1, 2, 3].forEach(index => {
-             panel.contents.appendChild(
-                 Character.createRecruit(setting).getCard()); });
-         panel.setTitle("Recruits");
-         panel.show();
+     camera.manage({
+         draw: (ctx) => {
+             ship.draw(ctx, camera);
+         },
+         dblclick: event => {
+             panel.contents.innerHTML = "";
+             [0, 1, 2, 3].forEach(index => {
+                 panel.contents.appendChild(
+                     Character.createRecruit(setting).getCard()); });
+             panel.setTitle("Recruits");
+             panel.show();
+         },
+         mousedown: event => {
+             const point = camera.toWorld(camera.getPoint(event));
+             drag = ship.grid.markCell(point);
+             selected = drag;
+             const cell = ship.getCell(drag);
+             console.log(cell);
+             return camera.redraw();
+         },
+         mousemove: event => {
+             if (!drag)
+                 return false;
+             drag = camera.toWorld(camera.getPoint(event));
+             camera.pan({x: drag.x - selected.x,
+                         y: drag.y - selected.y});
+             return camera.redraw();
+         },
+         mouseup: event => {
+             drag = undefined;
+             return camera.redraw();
+         },
+         wheel: event => {
+             camera.zoom((event.wheelDeltaY > 0) ?
+                         (5/4) : (4/5), 1, 20);
+             event.preventDefault();
+             return camera.redraw();
+         },
+         resize: () => { panel.resize(camera.width, camera.height); }
      });
-
-     screen.addEventListener("mousedown", event => {
-         drag = ship.grid.markCell(camera.toWorld(getPoint(event)));
-         selected = drag;
-         return redraw();
-     });
-
-     screen.addEventListener("mousemove", event => {
-         if (!drag)
-             return false;
-         drag = camera.toWorld(getPoint(event));
-         camera.pan({x: drag.x - selected.x,
-                     y: drag.y - selected.y});
-         return redraw();
-     });
-
-     screen.addEventListener("mouseup", event => {
-         drag = undefined;
-         return redraw();
-     });
-
-     screen.addEventListener("wheel", event => {
-         camera.zoom((event.wheelDeltaY > 0) ? (5/4) : (4/5), 1, 20);
-         event.preventDefault();
-         return redraw();
-     });
-
-     window.addEventListener("resize", event => {
-         screen.height = window.innerHeight || window.clientHeight;
-         screen.width = window.innerWidth || window.clientWidth;
-         camera.resize(screen.width, screen.height);
-         panel.resize(screen.width, screen.height);
-         
-         return redraw();
-     });
-     window.dispatchEvent(new Event("resize"));
 
  }); //]]></script>
