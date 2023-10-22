@@ -54,8 +54,8 @@ const pairFunctions = {
 export function pair(x, y, method) {
     const m = (method && method in pairFunctions) ?
               pairFunctions[method] : pairFunctions.szudzik;
-    const nx = (x >= 0) ? (2 * x) : (-2 * x - 1);
-    const ny = (y >= 0) ? (2 * y) : (-2 * y - 1);
+    const nx = (x >= 0) ? (2 * x) : -(2 * x + 1);
+    const ny = (y >= 0) ? (2 * y) : -(2 * y + 1);
     return m.pair(nx, ny);
 }
 
@@ -99,7 +99,7 @@ export function shuffle(elements, rand) {
  *   https://en.wikipedia.org/wiki/Heap%27s_algorithm */
 export function eachPermutation(elements, fn, context) {
     if (!fn)
-        return ripple.eachPermutation(elements, permutation =>
+        return eachPermutation(elements, permutation =>
             { this.push(permutation.slice()); }, []);
     const current  = elements.slice();
     let count = 0;
@@ -116,13 +116,10 @@ export function eachPermutation(elements, fn, context) {
             current[ii] = swap;
 
             if (fn.call(context, current, count++))
-                return context;
+                break;
             counters[ii] += 1;
             ii = 1;
-        } else {
-            counters[ii] = 0;
-            ii += 1;
-        }
+        } else counters[ii++] = 0;
     }
     return context;
 }
@@ -130,7 +127,7 @@ export function eachPermutation(elements, fn, context) {
 /**
  * Calls a specified function after the page has completely loaded and
  * an array of URLs are fetched using an XMLHttpRequest (AJAX). */
-export function preloadURLs(urls, fn) {
+export function preloadURLs(urls, fn, errfn) {
     const loaded = {};
 
     if (typeof(urls) === "string")
@@ -140,26 +137,29 @@ export function preloadURLs(urls, fn) {
 
     let count = 0;
     function next(url, content) {
-        if (url) {
-             ++count;
+        ++count;
+        if (url)
             loaded[url] = content;
-        }
-        if (!urls || (count === urls.length))
+        if (count === urls.length + 1)
             fn(loaded);
     }
 
     urls.forEach((url) => {
         const request = new XMLHttpRequest();
         request.open("GET", url, true);
-        request.addEventListener("load", () => {
+        request.addEventListener("load", event => {
             if (request.status === 200) {
                 next(url, JSON.parse(request.responseText));
-            } else console.error("preload status (" +
+            } else if (typeof(errfn) === "function") {
+                errfn(event, url, request);
+            } else console.error("preload failed (" +
                                  request.status + "):", url);
         });
-        request.addEventListener("error", () => {
-            console.error("preload status (" +
-                          request.status + "):", url);
+        request.addEventListener("error", event => {
+            if (typeof(errfn) === "function")
+                errfn(event, url, request);
+            else console.error("preload failed (" +
+                               request.status + "):", url);
         });
         request.send();
     });
