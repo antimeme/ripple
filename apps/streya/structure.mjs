@@ -168,8 +168,10 @@ class Structure extends Pathf.Pathable {
     // Path finding
     pathNeighbor(node, fn, context) {
         this.grid.eachNeighbor(node, (neighbor) => {
+            const wall = this.getWall(node, neighbor);
             const cell = this.getCell(neighbor);
-            if (cell && !cell.isObstructed)
+            if (cell && !cell.isObstructed &&
+                (!wall || wall.door))
                 fn.call(context, neighbor);
         });
     }
@@ -517,8 +519,18 @@ class Structure extends Pathf.Pathable {
 
                 grid.eachNeighbor(node, function(neighbor) {
                     var wall = this.getWall(node, neighbor);
-                    if (wall && wall.points &&
-                        (wall.points.length >= 2)) {
+                    if (wall && wall.door && wall.points &&
+                        (wall.points.length == 1)) {
+                        ctx.beginPath();
+                        ctx.moveTo(wall.points[0].x + 2/20,
+                                   wall.points[0].y);
+                        ctx.arc(wall.points[0].x, wall.points[0].y,
+                                2/20, 0, Math.PI * 2);
+                        ctx.lineWidth = 2/20;
+                        ctx.strokeStyle = "#333";
+                        ctx.stroke();
+                    } else if (wall && wall.points &&
+                               (wall.points.length >= 2)) {
                         var p0 = wall.points[0];
                         var p1 = wall.points[1];
 
