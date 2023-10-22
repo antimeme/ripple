@@ -63,10 +63,72 @@ function createListItem(text) {
 }
 
 class Character {
-    constructor(config) {}
+    constructor(config) {
+        const period = 4500;
+        this._cycle = {phase: Math.random() * period, period: period};
+    }
 
-    drawFace(ctx) {}
-    drawTopDown(ctx) {
+    _position = {x: 0, y: 0};
+    _spin = 0;
+    _cycle; // state of idle animation
+
+    _ship = undefined;
+    _path = undefined;
+    _step = 0;
+    _speed = 0.001;
+
+    _colors = {base: "blue"};
+
+    get position() { return this._position; }
+    setPosition(position) { this._position = position; return this; }
+
+    get ship() { return this._ship; }
+    setShip(ship) { this._ship = ship; return this; }
+
+    setPath(path) { this._path = path; return this; }
+
+    drawFace(ctx, now) {
+        // TODO
+    }
+
+    drawTopDown(ctx, now) {
+        ctx.save();
+        ctx.translate(this._position.x, this._position.y);
+        ctx.rotate(this._spin);
+        this._drawTopDown(ctx, now);
+        ctx.restore();
+    }
+
+    _drawTopDown(ctx, now) {
+        const points = [
+            {x: 0.9, y: 0.9}, {x: 0.9, y: -0.9},
+            {x: -0.9, y: -0.9}, {x: -0.9, y: 0.9}];
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        points.forEach(point => { ctx.lineTo(point.x, point.y); });
+        ctx.closePath();
+
+        ctx.fillStyle = this._colors.base;
+        ctx.fill();
+    }
+    
+    update(last, now) {
+        if (this.ship && this._path) {
+            let current = this._position;
+            let step = this._step + this._speed * (now - last);
+
+            for (; (step >= 1) && this._path.length; --step)
+                current = this._path.shift();
+            if (this._path.length) {
+                const next = this.ship.grid.markCenter(this._path[0]);
+                current = {
+                    row: current.row, col: current.col,
+                    x: current.x + step * (next.x - current.x),
+                    y: current.y + step * (next.y - current.y) };
+                this._step = step;
+            } else this._step = 0;
+            this._position = current;
+        }
     }
 
     getCard() {
@@ -95,7 +157,7 @@ class Character {
     }
 
     static createRecruit(setting) {
-        const recruit = new Character();
+        const recruit = new HumanCharacter();
 
         recruit.birthplace = chooseKey(setting.places);
         recruit.gender = chooseKey(
@@ -135,6 +197,17 @@ class HumanCharacter extends Character {
     constructor(config) {
         super(config);
 
+        const colors = {
+            body: ["blue", "green", "red", "purple", "cyan", "yellow"],
+            head: ["orange", "red", "purple"],
+            eyes: ["blue", "green", "brown"] };
+        this._colors.body = colors.body[Math.floor(
+            Math.random() * colors.body.length)];
+        this._colors.head = colors.head[Math.floor(
+            Math.random() * colors.head.length)];
+        this._colors.eyes = colors.eyes[Math.floor(
+            Math.random() * colors.eyes.length)];
+
         this.health = 10;
         this.brawn = 10;
         this.agility = 10;
@@ -147,6 +220,35 @@ class HumanCharacter extends Character {
         this.food = 10;     this.waste = 0;
         this.exercise = 10; this.filth = 0;
         this.social = 10;   this.boredom = 0;
+    }
+
+    _drawTopDown(ctx, now) {
+        ctx.beginPath();
+        ctx.moveTo(0, 0.4);
+        ctx.ellipse(0, 0, 0.4, 0.265, 0, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fillStyle = this._colors.body;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0.25);
+        ctx.arc(0, 0, 0.25, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fillStyle = this._colors.head;
+        ctx.fill();
+
+        const cycle = Math.floor((now + this._cycle.phase) %
+            this._cycle.period) / this._cycle.period;
+        if (cycle > 0.075) { // Draw eyes except when blinking
+            ctx.beginPath();
+            ctx.moveTo(-0.1, -0.1);
+            ctx.arc(-0.1, -0.1, 0.05, 0, Math.PI * 2);
+            ctx.moveTo(0.1, -0.1);
+            ctx.arc(0.1, -0.1, 0.05, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.fillStyle = this._colors.eyes;
+            ctx.fill();
+        }            
     }
 }
 

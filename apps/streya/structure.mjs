@@ -22,6 +22,7 @@
 // One unit is one meter in this design.
 import Ripple from "../ripple/ripple.mjs";
 import Grid   from "../ripple/grid.mjs";
+import Pathf  from "../ripple/pathf.mjs";
 
 /**
  * Convert a node with numeric row and col fields into a single
@@ -146,10 +147,8 @@ class Room {
  * Accessing data in a structure requires nodes.  A node must have
  * integer row and col fields and may optionally have a level field as
  * well. */
-class Structure {
-    constructor(config) { this.init(config); }
-
-    #grid = undefined;
+class Structure extends Pathf.Pathable {
+    constructor(config) { super(); this.init(config); }
 
     init(config) {
         this.#grid = Grid.create({
@@ -163,7 +162,26 @@ class Structure {
         this.__selectedRoom = undefined;
     }
 
+    #grid = undefined;
     get grid() { return this.#grid; }
+
+    // Path finding
+    pathNeighbor(node, fn, context) {
+        this.grid.eachNeighbor(node, (neighbor) => {
+            const cell = this.getCell(neighbor);
+            if (cell && !cell.isObstructed)
+                fn.call(context, neighbor);
+        });
+    }
+    pathNodeIndex(node) { return getNodeIndex(node); }
+    pathSameNode(a, b) { return (a.row === b.row) && (a.col === b.col); }
+    pathCost(node, previous) { return 1; }
+    pathHeuristic(node, goal)
+    { return Math.hypot(goal.row - node.row, goal.col - node.col); }
+    pathVisit(node, cost, total) {
+        if (this.pathDebug)
+            this.pathDebug.push(node); }
+    pathDebug = undefined;
 
     // Returns the contents at specified node, if any.
     getCell(node) {
@@ -482,7 +500,7 @@ class Structure {
         }, this);
     }
 
-    draw(ctx, camera) {
+    draw(ctx, now, camera) {
         this.#grid.mapRectangle(
             camera.toWorld({x: 0, y: 0}),
             camera.toWorld({x: camera.width, y: camera.height}),

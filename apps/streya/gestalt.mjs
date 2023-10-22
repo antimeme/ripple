@@ -1,0 +1,118 @@
+import Character from "./character.mjs";
+import Structure from "./structure.mjs";
+
+function createPanel() {
+    const result = document.createElement("fieldset");
+    const contents = document.createElement("div");
+    const legend = document.createElement("legend");
+    const title = document.createTextNode("Panel");
+    const closeBTN = document.createElement("button");
+    closeBTN.appendChild(document.createTextNode("X"));
+    closeBTN.addEventListener("click", event =>
+        { result.style.display = "none"; });
+    legend.appendChild(closeBTN);
+    legend.appendChild(title);
+    document.body.appendChild(result);
+
+    result.appendChild(legend);
+    result.appendChild(contents);
+    result.style.display = "none";
+    result.classList.add("panel");
+
+    return {
+        element: result,
+        contents: contents,
+        setTitle: text => { title.data = text; },
+        show: function() { this.element.style.display = "block"; },
+        resize: function(width, height) {
+            const size = Math.min(width, height);
+            const getPixels = value => Math.round(value) + "px";
+            this.element.style.top = getPixels(size * 0.05);
+            this.element.style.left = getPixels(size * 0.05);
+            this.element.style.bottom = getPixels(0.05 * size);
+            this.element.style.right = getPixels(0.05 * size);
+            this.element.style.borderRadius = getPixels(size * 0.05);
+        }
+    };
+}
+const panel = createPanel();
+
+class Gestalt {
+    constructor(setting) {
+        this.#panel = panel;
+        this.#setting = setting;
+        this.#player = Character.createRecruit(this.#setting);
+        this.#ship = Structure.createSampleShip();
+
+        this.#player.setPosition(
+            this.#ship.grid.markCell({x: 0, y: 0}));
+        this.#player.setShip(this.#ship);
+    }
+
+    #setting;
+    #player;
+    #ship;
+    #panel;
+
+    active = true;
+    autofill = true;
+    autodrag = false;
+    autozoom = { min: 1, max: 20 };
+
+    resize(event, camera) {
+        this.#panel.resize(camera.width, camera.height);
+    }
+
+    dblclick(event, camera) {
+        this.#panel.contents.innerHTML = "";
+        [0, 1, 2, 3].forEach(index => {
+            this.#panel.contents.appendChild(
+                Character.createRecruit(this.#setting).getCard()); });
+        this.#panel.setTitle("Recruits");
+        this.#panel.show();
+    }
+
+    click(event, camera) {
+        const point = this.#ship.grid.markCell(
+            camera.toWorld(camera.getPoint(event)));
+        //console.log("DEBUG point", point);
+
+        const cell = this.#ship.getCell(point);
+        if (cell && !cell.isObstructed) {
+            this.#ship.pathDebug = [];
+            this.#player.setPath(this.#ship.createPath(
+                this.#player.position, point));
+            this.debugListTime = new Date().getTime();
+        }
+    }
+
+    lastUpdate = undefined;
+
+    update(now, camera) {
+        this.#player.update(this.lastUpdate, now);
+        camera.setPosition(this.#player.position);
+        this.lastUpdate = now;
+    }
+
+    debugListTime;
+
+    draw(ctx, camera) {
+        this.#ship.draw(ctx, this.lastUpdate, camera);
+
+        if (this.debugListTime && this.#ship.pathDebug) {
+            ctx.beginPath();
+            this.#ship.pathDebug.forEach((node, index) => {
+                if (this.lastUpdate > this.debugListTime + 100 * index)
+                    this.#ship.grid.drawNode(
+                        ctx, this.#ship.grid.markCenter(node));
+            });
+            ctx.fillStyle = "rgba(255, 255,255, 0.5)";
+            ctx.fill();
+        }
+
+        this.#player.drawTopDown(ctx, this.lastUpdate);
+    }
+
+}
+
+export default Gestalt;

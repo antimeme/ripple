@@ -9,95 +9,10 @@
 <script type="module">//<![CDATA[
  import Ripple from "../ripple/ripple.mjs";
  import Camera from "../ripple/camera.mjs";
- import Character from "./character.mjs";
- import Structure from "./structure.mjs";
-
- function createPanel(parent) {
-     const result = document.createElement("fieldset");
-     const contents = document.createElement("div");
-     const legend = document.createElement("legend");
-     const title = document.createTextNode("Panel");
-     const closeBTN = document.createElement("button");
-     closeBTN.appendChild(document.createTextNode("X"));
-     closeBTN.addEventListener("click", event =>
-         { result.style.display = "none"; });
-     legend.appendChild(closeBTN);
-     legend.appendChild(title);
-
-     result.appendChild(legend);
-     result.appendChild(contents);
-     result.style.display = "none";
-     result.classList.add("panel");
-     parent.appendChild(result);
-
-     return {
-         element: result,
-         contents: contents,
-         setTitle: text => { title.data = text; },
-         show: function() { this.element.style.display = "block"; },
-         resize: function(width, height) {
-             const size = Math.min(width, height);
-             const getPixels = value => Math.round(value) + "px";
-             this.element.style.top = getPixels(size * 0.05);
-             this.element.style.left = getPixels(size * 0.05);
-             this.element.style.bottom = getPixels(0.05 * size);
-             this.element.style.right = getPixels(0.05 * size);
-             this.element.style.borderRadius = getPixels(size * 0.05);
-         }
-     };
- }
+ import Gestalt from "./gestalt.mjs";
 
  Ripple.preloadURLs("./setting.json", (loaded) => {
-     const setting = loaded["./setting.json"];
-     const screen = document.body.appendChild(
-         document.createElement("canvas"));
-     const panel = createPanel(document.body);
-     const camera = new Camera(screen).setScale(4);
-     const ship = Structure.createSampleShip();
-     const player = Character.createRecruit(setting);
-
-     let drag = undefined;
-     let selected = undefined;
-
-     camera.manage({
-         draw: (ctx) => {
-             ship.draw(ctx, camera);
-         },
-         dblclick: event => {
-             panel.contents.innerHTML = "";
-             [0, 1, 2, 3].forEach(index => {
-                 panel.contents.appendChild(
-                     Character.createRecruit(setting).getCard()); });
-             panel.setTitle("Recruits");
-             panel.show();
-         },
-         mousedown: event => {
-             const point = camera.toWorld(camera.getPoint(event));
-             drag = ship.grid.markCell(point);
-             selected = drag;
-             const cell = ship.getCell(drag);
-             console.log(cell);
-             return camera.redraw();
-         },
-         mousemove: event => {
-             if (!drag)
-                 return false;
-             drag = camera.toWorld(camera.getPoint(event));
-             camera.pan({x: drag.x - selected.x,
-                         y: drag.y - selected.y});
-             return camera.redraw();
-         },
-         mouseup: event => {
-             drag = undefined;
-             return camera.redraw();
-         },
-         wheel: event => {
-             camera.zoom((event.wheelDeltaY > 0) ?
-                         (5/4) : (4/5), 1, 20);
-             event.preventDefault();
-             return camera.redraw();
-         },
-         resize: () => { panel.resize(camera.width, camera.height); }
-     });
-
+     const gestalt = new Gestalt(loaded["./setting.json"]);
+     const camera = new Camera(document.body.appendChild(
+         document.createElement("canvas"))).setScale(4).manage(gestalt);
  }); //]]></script>
