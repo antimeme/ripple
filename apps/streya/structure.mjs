@@ -177,7 +177,9 @@ class Structure extends Pathf.Pathable {
     }
     pathNodeIndex(node) { return getNodeIndex(node); }
     pathSameNode(a, b) { return (a.row === b.row) && (a.col === b.col); }
-    pathCost(node, previous) { return 1; }
+    pathCost(node, previous) {
+        return isNaN(node.cost) ? 1 : node.cost;
+    }
     pathHeuristic(node, goal)
     { return Math.hypot(goal.row - node.row, goal.col - node.col); }
     pathVisit(node, cost, total) {
@@ -372,13 +374,14 @@ class Structure extends Pathf.Pathable {
         this.setCell(node, new Superposition(node));
     }
 
-    /* Convert all unresolved cells to some component.
+    /**
+     * Convert all unresolved cells to some component.
      * This method does its best to create a workable structure
      * according to given rules. */
     resolve(level) {
-        if (!isNaN(level))
-            return this.eachLevel(function(level) {
-                this.resolve(level); }, this);
+        if (isNaN(level))
+            return this.eachLevel((level) => {
+                this.resolve(level); });
 
         var distances = computeDistances(this, this.#grid);
 
@@ -462,44 +465,45 @@ class Structure extends Pathf.Pathable {
         // Create walls and doors between rooms.
         var roomIndices = {};
         var nodeRooms = {};
-        rooms.forEach(function(room, index) {
+        rooms.forEach((room, index) => {
             roomIndices[index] = room;
-            room.eachNode(function(node)
-                          { nodeRooms[getNodeIndex(node)] = index; });
+            room.eachNode(node =>
+                { nodeRooms[getNodeIndex(node)] = index; });
         });
         var roomPeers = [];
-        rooms.forEach(function(room, index) {
+        rooms.forEach((room, index) => {
             var boundaries = {};
             roomPeers.push(boundaries);
 
-            room.eachNode(function(node) {
-                this.#grid.eachNeighbor(node, function(neighbor) {
+            room.eachNode(node => {
+                this.#grid.eachNeighbor(node, neighbor => {
                     if (room.containsNode(neighbor) ||
                         (this.getCell(neighbor) instanceof Hull))
                         return;
+                    if (neighbor.diagonal) {
+                        this.makeWall(node, neighbor);
+                        return;
+                    }
                     var peer = nodeRooms[getNodeIndex(neighbor)];
-                    if (isNaN(peer))
-                        return this.makeWall(node, neighbor);
-
                     if (!boundaries[peer])
                         boundaries[peer] = [];
-                    boundaries[peer].push({ a: node, b: neighbor });
-                }, this);
-            }, this);
-        }, this);
-        roomPeers.forEach(function(boundaries, index) {
-            Object.keys(boundaries).forEach(function(peer) {
+                    boundaries[peer].push({
+                        a: node, b: neighbor });
+                });
+            });
+        });
+        roomPeers.forEach((boundaries, index) => {
+            Object.keys(boundaries).forEach(peer => {
                 if (peer < index)
                     return;
                 var pairs = Ripple.shuffle(boundaries[peer]);
                 var door = pairs.shift();
                 this.makeDoor(door.a, door.b);
 
-                pairs.forEach(function(pair) {
-                    this.makeWall(pair.a, pair.b);
-                }, this);
-            }, this);
-        }, this);
+                pairs.forEach(pair =>
+                    { this.makeWall(pair.a, pair.b); });
+            });
+        });
     }
 
     draw(ctx, now, camera) {
