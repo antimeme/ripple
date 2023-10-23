@@ -176,15 +176,15 @@ class Structure extends Pathf.Pathable {
         });
     }
     pathNodeIndex(node) { return getNodeIndex(node); }
-    pathSameNode(a, b) { return (a.row === b.row) && (a.col === b.col); }
+    pathSameNode(a, b) {
+        if (this.pathDebug)
+            this.pathDebug.push(a);
+        return (a.row === b.row) && (a.col === b.col); }
     pathCost(node, previous) {
         return isNaN(node.cost) ? 1 : node.cost;
     }
     pathHeuristic(node, goal)
     { return Math.hypot(goal.row - node.row, goal.col - node.col); }
-    pathVisit(node, cost, total) {
-        if (this.pathDebug)
-            this.pathDebug.push(node); }
     pathDebug = undefined;
 
     // Returns the contents at specified node, if any.

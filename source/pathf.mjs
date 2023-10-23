@@ -141,7 +141,6 @@ export class Pathable {
     pathSameNode(a, b) { return a === b; }
     pathCost(node, previous) { return 1; }
     pathHeuristic(node, goal) { return 0; } // Dijkstra's Algorithm
-    pathVisit(node, cost, total) {} // Useful for debugging
 
     // Returns the heuristic of the cheapest goal
     #getBest(node, goals) {
@@ -181,10 +180,9 @@ export class Pathable {
 
         while (!found && (frontier.size() > 0)) {
             const current = frontier.pop();
-            this.pathVisit(current.node, current.cost, current.total);
 
             if (goals.some((goal) =>
-                this.pathSameNode(goal, current.node))) {
+                this.pathSameNode(current.node, goal))) {
                 found = current;
             } else this.pathNeighbor(current.node, (neighbor) => {
                 const cost = current.cost + this.pathCost(
