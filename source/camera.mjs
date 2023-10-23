@@ -47,7 +47,8 @@ class Camera {
     get radius() { return this.#radius; }
 
     /**
-     * Recalculate things that depend on the screen size */
+     * Recalculate things that depend on the screen size.  Note
+     * that this is called automatically for managed apps. */
     resize() {
         this.#bounds = this.#screen.getBoundingClientRect();
         this.#radius = Math.min(this.#screen.width,
@@ -62,7 +63,15 @@ class Camera {
     }
 
     /**
-     * Set up a context for drawing */
+     * Set up a context for drawing.  After calling this drawing
+     * operations are relative to world space rather than screen
+     * space.  For example, (0, 0) is no longer the upper left of
+     * the screen.  Use toWorld on screen coordinates before
+     * drawing with them to make them relative to the screen.
+     *
+     * This method is called automatically for managed apps (use
+     * drawBefore or drawAfter to draw in screen space rather than
+     * world space). */
     configureContext(ctx) {
         ctx.clearRect(0, 0, this.#screen.width, this.#screen.height);
         ctx.save();
@@ -75,7 +84,8 @@ class Camera {
     }
 
     /**
-     * Undo context settings */
+     * Undo context settings.  After this coordinates refer to
+     * screen space again. */
     restoreContext(ctx) { ctx.restore(); return ctx; }
 
     /**
@@ -143,7 +153,7 @@ class Camera {
         return this;
     }
 
-    getScale() { return this.#scale; }
+    get scale() { return this.#scale; }
     setScale(factor, min, max) {
         if (!isNaN(factor)) {
             if (!isNaN(max) && (factor > max))
@@ -168,12 +178,13 @@ class Camera {
      * Registers handlers for events and drawing.
      *
      * This is safe to call more than once to change the mode of
-     * an application. */
+     * an application because handlers are applied only once. */
     manage(app) {
         this.#app = app;
 
         if (!this.#listeners) {
             let dragStart = undefined;
+            let pinchQuad = undefined;
 
             this.#screen.addEventListener("click", event => {
                 return this.#delegate(event);
@@ -211,12 +222,37 @@ class Camera {
                 return this.#delegate(event);
             });
             this.#screen.addEventListener("touchstart", event => {
+                if (this.#app && this.#app.autozoom &&
+                    (event.targetTouches.length === 2))
+                    pinchLen = Math.hypot(
+                        event.targetTouches[0].clientX -
+                        event.targetTouches[1].clientX,
+                        event.targetTouches[0].clientY -
+                        event.targetTouches[1].clientY);
                 return this.#delegate(event);
             });
             this.#screen.addEventListener("touchmove", event => {
+                if (this.#app && this.#app.autozoom &&
+                    (event.targetTouches.length === 2) &&
+                    !isNaN(pinchLen))
+                    this.setScale(
+                        this.scale * Math.hypot(
+                            event.targetTouches[0].clientX -
+                            event.targetTouches[1].clientX,
+                            event.targetTouches[0].clientY -
+                            event.targetTouches[1].clientY) / pinchLen,
+                        this.#app.autozoom.min,
+                        this.#app.autozoom.max);
                 return this.#delegate(event);
             });
             this.#screen.addEventListener("touchend", event => {
+                if (this.#app && this.#app.autozoom &&
+                    (event.targetTouches.length === 2))
+                    pinchLen = Math.hypot(
+                        event.targetTouches[0].clientX -
+                        event.targetTouches[1].clientX,
+                        event.targetTouches[0].clientY -
+                        event.targetTouches[1].clientY);
                 return this.#delegate(event);
             });
             this.#screen.addEventListener("touchend", event => {
@@ -241,9 +277,9 @@ class Camera {
     }
 
     #draw() {
-        const now = new Date().getTime();
         if (this.#app && typeof(this.#app.update) === "function")
-            this.#app.update.call(this.#app, now, this);
+            this.#app.update.call(
+                this.#app, new Date().getTime(), this);
 
         if (!this.#screen.getContext)
             throw Error("screen has no getContext");
@@ -263,6 +299,12 @@ class Camera {
             this.redraw();
     }
 
+    /**
+     * Call this to schedule a redraw as soon as possible.
+     * Multiple calls to this method between drawing calls will
+     * be condensed so it's safe to call just to be sure.  Note
+     * that managed apps with a truthy active field will be
+     * redrawn automatically without the need to call this. */
     redraw() {
         if (!this.#draw_id)
             this.#draw_id = requestAnimationFrame(
