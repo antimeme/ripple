@@ -74,8 +74,8 @@ class Character {
 
     _ship = undefined;
     _path = undefined;
-    _step = 0;
-    _speed = 0.001;
+    _pathStep = 0;
+    _speed = 0.002;
 
     _colors = {base: "blue"};
 
@@ -113,20 +113,31 @@ class Character {
     }
     
     update(last, now) {
-        if (this.ship && this._path) {
-            let current = this._position;
-            let step = this._step + this._speed * (now - last);
+        if (this.ship && this._path && (this._path.length > 0)) {
+            let distance = this._pathStep + this._speed * (now - last);
+            let current = this.ship.grid.markCenter(this._position);
+            let next = this.ship.grid.markCenter(this._path[0]);
 
-            for (; (step >= 1) && this._path.length; --step)
-                current = this._path.shift();
-            if (this._path.length) {
-                const next = this.ship.grid.markCenter(this._path[0]);
-                current = {
-                    row: current.row, col: current.col,
-                    x: current.x + step * (next.x - current.x),
-                    y: current.y + step * (next.y - current.y) };
-                this._step = step;
-            } else this._step = 0;
+            while (distance > 0) {
+                let gap = Math.hypot(current.x - next.x,
+                                     current.y - next.y);
+                if (distance >= gap) {
+                    distance -= gap;
+                    current = next;
+                    this._path.shift();
+                    if (this._path.length)
+                        next = this.ship.grid.markCenter(this._path[0]);
+                    else distance = 0;
+                } else {
+                    const fraction = distance / gap;
+                    current = {
+                        row: current.row, col: current.col,
+                        x: current.x + fraction * (next.x - current.x),
+                        y: current.y + fraction * (next.y - current.y) };
+                    this._pathStep = distance;
+                    distance = 0;
+                }
+            }
             this._position = current;
         }
     }

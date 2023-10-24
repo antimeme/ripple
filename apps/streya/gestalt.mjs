@@ -108,6 +108,18 @@ class Gestalt {
             });
             ctx.fillStyle = "rgba(255, 255,255, 0.5)";
             ctx.fill();
+
+            [this.#ship.pathDebug[0],
+             this.#ship.pathDebug[this.#ship.pathDebug.length - 1]]
+                .forEach((node, index) => {
+                    this.#ship.grid.markCenter(node);
+                    ctx.beginPath();
+                    ctx.moveTo(node.x + 0.5, node.y);
+                    ctx.arc(node.x, node.y, 0.5, 0, Math.PI * 2);
+                    ctx.lineWidth = 0.1;
+                    ctx.strokeStyle = index ? "#4d4" : "#44d";
+                    ctx.stroke();
+                });
         }
 
         this.#player.drawTopDown(ctx, this.lastUpdate);
