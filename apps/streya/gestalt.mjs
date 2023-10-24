@@ -100,14 +100,17 @@ class Gestalt {
         this.#ship.draw(ctx, this.lastUpdate, camera);
 
         if (this.debugListTime && this.#ship.pathDebug) {
-            ctx.beginPath();
             this.#ship.pathDebug.forEach((node, index) => {
+                const value = Math.floor(
+                    127 + 128 * index / this.#ship.pathDebug.length);
+                ctx.beginPath();
                 if (this.lastUpdate > this.debugListTime + 100 * index)
                     this.#ship.grid.drawNode(
                         ctx, this.#ship.grid.markCenter(node));
+                ctx.fillStyle = "rgba(" + value + "," + value + "," +
+                                value + ", 0.5)";
+                ctx.fill();
             });
-            ctx.fillStyle = "rgba(255, 255,255, 0.5)";
-            ctx.fill();
 
             [this.#ship.pathDebug[0],
              this.#ship.pathDebug[this.#ship.pathDebug.length - 1]]
