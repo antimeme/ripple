@@ -183,8 +183,8 @@ class Camera {
         this.#app = app;
 
         if (!this.#listeners) {
-            let dragStart = undefined;
-            let pinchLen  = undefined;
+            let dragStart  = undefined;
+            let pinchScale = undefined;
 
             this.#screen.addEventListener("click", event => {
                 return this.#delegate(event);
@@ -223,32 +223,32 @@ class Camera {
             });
             this.#screen.addEventListener("touchstart", event => {
                 if (this.#app && this.#app.autozoom &&
-                    (event.targetTouches.length === 2))
-                    pinchLen = Math.hypot(
+                    (event.targetTouches.length === 2)) {
+                    pinchScale = this.#scale * Math.hypot(
                         event.targetTouches[0].clientX -
                         event.targetTouches[1].clientX,
                         event.targetTouches[0].clientY -
                         event.targetTouches[1].clientY);
-                else pinchLen = undefined;
+                } else pinchScale = undefined;
                 return this.#delegate(event);
             });
             this.#screen.addEventListener("touchend", event => {
                 if (this.#app && this.#app.autozoom &&
-                    (event.targetTouches.length === 2))
-                    pinchLen = Math.hypot(
+                    (event.targetTouches.length === 2)) {
+                    pinchScale = this.#scale * Math.hypot(
                         event.targetTouches[0].clientX -
                         event.targetTouches[1].clientX,
                         event.targetTouches[0].clientY -
                         event.targetTouches[1].clientY);
-                else pinchLen = undefined;
+                } else pinchScale = undefined;
                 return this.#delegate(event);
             });
             this.#screen.addEventListener("touchmove", event => {
                 if (this.#app && this.#app.autozoom &&
                     (event.targetTouches.length === 2) &&
-                    !isNaN(pinchLen))
+                    !isNaN(pinchScale))
                     this.setScale(
-                        this.scale * pinchLen / Math.hypot(
+                        pinchScale / Math.hypot(
                             event.targetTouches[0].clientX -
                             event.targetTouches[1].clientX,
                             event.targetTouches[0].clientY -
