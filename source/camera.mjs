@@ -248,11 +248,11 @@ class Camera {
                     (event.targetTouches.length === 2) &&
                     !isNaN(pinchLen))
                     this.setScale(
-                        this.scale * Math.hypot(
+                        this.scale * pinchLen / Math.hypot(
                             event.targetTouches[0].clientX -
                             event.targetTouches[1].clientX,
                             event.targetTouches[0].clientY -
-                            event.targetTouches[1].clientY) / pinchLen,
+                            event.targetTouches[1].clientY),
                         this.#app.autozoom.min,
                         this.#app.autozoom.max);
                 return this.#delegate(event);
