@@ -66,6 +66,7 @@ class Character {
     constructor(config) {
         const period = 4500;
         this._cycle = {phase: Math.random() * period, period: period};
+        this._spin = Math.random() * Math.PI * 2;
     }
 
     _position = {x: 0, y: 0};
@@ -251,11 +252,13 @@ class HumanCharacter extends Character {
         const cycle = Math.floor((now + this._cycle.phase) %
             this._cycle.period) / this._cycle.period;
         if (cycle > 0.075) { // Draw eyes except when blinking
+            const eyeRadius = 0.05;
+            const eyeDist   = 0.1;
             ctx.beginPath();
-            ctx.moveTo(-0.1, -0.1);
-            ctx.arc(-0.1, -0.1, 0.05, 0, Math.PI * 2);
-            ctx.moveTo(0.1, -0.1);
-            ctx.arc(0.1, -0.1, 0.05, 0, Math.PI * 2);
+            ctx.moveTo(-eyeDist + eyeRadius, eyeDist);
+            ctx.arc(-eyeDist, eyeDist, eyeRadius, 0, Math.PI * 2);
+            ctx.moveTo(eyeDist + eyeRadius, eyeDist);
+            ctx.arc(eyeDist, eyeDist, eyeRadius, 0, Math.PI * 2);
             ctx.closePath();
             ctx.fillStyle = this._colors.eyes;
             ctx.fill();
