@@ -22,7 +22,10 @@
  * Priority queue implementation based on an internal array.
  * An optional compare function determines the smallest
  * element, which can be fetched in O(log(n)) time.
- * An element can also be added in O(log(n)) time. */
+ * An element can also be added in O(log(n)) time.
+ * Note that by default this is a min heap.  To create a
+ * max heap, invert the comparison function (make it return
+ * positive when the second argument is larger). */
 export class Heap {
     constructor(compare, elements) {
         [compare, elements].forEach((thing) => {
