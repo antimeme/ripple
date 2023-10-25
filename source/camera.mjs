@@ -184,12 +184,31 @@ class Camera {
 
         if (!this.#listeners) {
             let dragStart = undefined;
-            let pinchQuad = undefined;
+            let pinchLen  = undefined;
 
             this.#screen.addEventListener("click", event => {
                 return this.#delegate(event);
             });
             this.#screen.addEventListener("dblclick", event => {
+                return this.#delegate(event);
+            });
+            this.#screen.addEventListener("mousedown", event => {
+                if (this.#app && this.#app.autodrag)
+                    dragStart = this.toWorld(this.getPoint(event));
+                return this.#delegate(event);
+            });
+            this.#screen.addEventListener("mouseup", event => {
+                if (this.#app && this.#app.autodrag)
+                    dragStart = undefined;
+                return this.#delegate(event);
+            });
+            this.#screen.addEventListener("mousemove", event => {
+                if (this.#app && this.#app.autodrag && dragStart) {
+                    const point = this.toWorld(this.getPoint(event));
+                    this.pan({x: point.x - dragStart.x,
+                              y: point.y - dragStart.y});
+                    this.redraw();
+                }
                 return this.#delegate(event);
             });
             this.#screen.addEventListener("wheel", event => {
@@ -202,25 +221,6 @@ class Camera {
                 }
                 return this.#delegate(event);
             });
-            this.#screen.addEventListener("mousedown", event => {
-                if (this.#app && this.#app.autodrag)
-                    dragStart = this.toWorld(this.getPoint(event));
-                return this.#delegate(event);
-            });
-            this.#screen.addEventListener("mousemove", event => {
-                if (this.#app && this.#app.autodrag && dragStart) {
-                    const point = this.toWorld(this.getPoint(event));
-                    this.pan({x: point.x - dragStart.x,
-                              y: point.y - dragStart.y});
-                    this.redraw();
-                }
-                return this.#delegate(event);
-            });
-            this.#screen.addEventListener("mouseup", event => {
-                if (this.#app && this.#app.autodrag)
-                    dragStart = undefined;
-                return this.#delegate(event);
-            });
             this.#screen.addEventListener("touchstart", event => {
                 if (this.#app && this.#app.autozoom &&
                     (event.targetTouches.length === 2))
@@ -229,6 +229,18 @@ class Camera {
                         event.targetTouches[1].clientX,
                         event.targetTouches[0].clientY -
                         event.targetTouches[1].clientY);
+                else pinchLen = undefined;
+                return this.#delegate(event);
+            });
+            this.#screen.addEventListener("touchend", event => {
+                if (this.#app && this.#app.autozoom &&
+                    (event.targetTouches.length === 2))
+                    pinchLen = Math.hypot(
+                        event.targetTouches[0].clientX -
+                        event.targetTouches[1].clientX,
+                        event.targetTouches[0].clientY -
+                        event.targetTouches[1].clientY);
+                else pinchLen = undefined;
                 return this.#delegate(event);
             });
             this.#screen.addEventListener("touchmove", event => {
@@ -243,16 +255,6 @@ class Camera {
                             event.targetTouches[1].clientY) / pinchLen,
                         this.#app.autozoom.min,
                         this.#app.autozoom.max);
-                return this.#delegate(event);
-            });
-            this.#screen.addEventListener("touchend", event => {
-                if (this.#app && this.#app.autozoom &&
-                    (event.targetTouches.length === 2))
-                    pinchLen = Math.hypot(
-                        event.targetTouches[0].clientX -
-                        event.targetTouches[1].clientX,
-                        event.targetTouches[0].clientY -
-                        event.targetTouches[1].clientY);
                 return this.#delegate(event);
             });
             this.#screen.addEventListener("touchend", event => {
