@@ -202,12 +202,20 @@ class Camera {
                     dragStart = undefined;
                 return this.#delegate(event);
             });
+            this.#screen.addEventListener("mouseout", event => {
+                return this.#delegate(event);
+            });
+            this.#screen.addEventListener("mouseleave", event => {
+                return this.#delegate(event);
+            });
             this.#screen.addEventListener("mousemove", event => {
                 if (this.#app && this.#app.autodrag && dragStart) {
                     const point = this.toWorld(this.getPoint(event));
                     this.pan({x: point.x - dragStart.x,
                               y: point.y - dragStart.y});
                     this.redraw();
+                    if (typeof(this.#app.autodrag) === "function")
+                        this.#app.autodrag.call(this.#app, event, this);
                 }
                 return this.#delegate(event);
             });

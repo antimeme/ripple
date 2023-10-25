@@ -54,10 +54,11 @@ class Gestalt {
     #ship;
     #panel;
 
+    #float = false;
     active = true;
     autofill = true;
-    autodrag = false;
     autozoom = { min: 1, max: 20 };
+    autodrag(event) { this.#float = true; };
 
     resize(event, camera) {
         this.#panel.resize(camera.width, camera.height);
@@ -72,13 +73,20 @@ class Gestalt {
         this.#panel.show();
     }
 
-    click(event, camera) {
-        const point = this.#ship.grid.markCell(
-            camera.toWorld(camera.getPoint(event)));
-        //console.log("DEBUG point", point);
+    #mdown = undefined;
+    mousedown(event, camera) { this.#mdown = camera.getPoint(event); }
+    mouseup(event, camera) {
+        const point = camera.getPoint(event);
+        const down  = this.#mdown;
+        this.#mdown = undefined;
+        if (down && ((point.x - down.x) * (point.x - down.x) +
+                     (point.y - down.y) * (point.y - down.y)) > 25)
+            return;
 
-        const cell = this.#ship.getCell(point);
+        const cell = this.#ship.getCell(
+            this.#ship.grid.markCell(camera.toWorld(point)));
         if (cell && !cell.isObstructed) {
+            this.#float = false;
             this.#ship.pathDebug = [];
             this.#player.setPath(this.#ship.createPath(
                 this.#player.position, point));
@@ -90,7 +98,8 @@ class Gestalt {
 
     update(now, camera) {
         this.#player.update(this.lastUpdate, now);
-        camera.setPosition(this.#player.position);
+        if (!this.#float)
+            camera.setPosition(this.#player.position);
         this.lastUpdate = now;
     }
 
