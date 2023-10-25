@@ -7,12 +7,11 @@
 <link rel="stylesheet" href="app.css" />
 <title>Streya Vanguard</title>
 <script type="module">//<![CDATA[
- import Ripple from "../ripple/ripple.mjs";
  import Camera from "../ripple/camera.mjs";
  import Gestalt from "./gestalt.mjs";
 
- Ripple.preloadURLs("./setting.json", (loaded) => {
-     const gestalt = new Gestalt(loaded["./setting.json"]);
+ Camera.preload("./setting.json", (loaded) => {
      const camera = new Camera(document.body.appendChild(
-         document.createElement("canvas"))).setScale(4).manage(gestalt);
+         document.createElement("canvas"))).setScale(4).manage(
+             new Gestalt(loaded["./setting.json"]));
  }); //]]></script>
