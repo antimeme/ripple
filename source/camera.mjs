@@ -329,6 +329,48 @@ class Camera {
         ctx.closePath();
     }
 
+    /**
+     * Calls a specified function after the page has completely loaded
+     * and an array of URLs are fetched using XMLHttpRequest (AJAX). */
+    static preload(urls, fn, errfn) {
+        const loaded = {};
+        let count = 0;
+
+        if (typeof(urls) === "string")
+            urls = [urls];
+        else if (!Array.isArray(urls))
+            urls = [];
+        function next(url, content) {
+            if (url)
+                loaded[url] = content;
+            if (++count === urls.length + 1)
+                fn(loaded);
+        }
+
+        urls.forEach((url) => {
+            const request = new XMLHttpRequest();
+            request.open("GET", url, true);
+            request.addEventListener("load", event => {
+                if (count < 0) { // Error already reported
+                } else if (request.status === 200) {
+                    next(url, JSON.parse(request.responseText));
+                } else if (typeof(errfn) === "function") {
+                    errfn(event, url, request);
+                    count = -1;
+                } else console.error("preload failed (" +
+                                     request.status + "):", url);
+            });
+            request.addEventListener("error", event => {
+                if (typeof(errfn) === "function") {
+                    errfn(event, url, request);
+                    count = -1;
+                } else console.error("preload failed (" +
+                                   request.status + "):", url);
+            });
+            request.send();
+        });
+        document.addEventListener("DOMContentLoaded", () => { next() });
+    }
 }
 
 export default Camera;
