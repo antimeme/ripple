@@ -183,13 +183,32 @@ class Camera {
         this.#app = app;
 
         if (!this.#listeners) {
-            let dragStart  = undefined;
             let pinchScale = undefined;
+            let dragStart  = undefined;
+            const drag = (event, point) => {
+                this.pan({x: point.x - dragStart.x,
+                          y: point.y - dragStart.y});
+                this.redraw();
+                if (typeof(this.#app.autodrag) === "function")
+                    this.#app.autodrag.call(this.#app, event, this);
+            };
 
             this.#screen.addEventListener("click", event => {
                 return this.#delegate(event);
             });
             this.#screen.addEventListener("dblclick", event => {
+                return this.#delegate(event);
+            });
+            this.#screen.addEventListener("mouseenter", event => {
+                return this.#delegate(event);
+            });
+            this.#screen.addEventListener("mouseover", event => {
+                return this.#delegate(event);
+            });
+            this.#screen.addEventListener("mouseout", event => {
+                return this.#delegate(event);
+            });
+            this.#screen.addEventListener("mouseleave", event => {
                 return this.#delegate(event);
             });
             this.#screen.addEventListener("mousedown", event => {
@@ -202,21 +221,9 @@ class Camera {
                     dragStart = undefined;
                 return this.#delegate(event);
             });
-            this.#screen.addEventListener("mouseout", event => {
-                return this.#delegate(event);
-            });
-            this.#screen.addEventListener("mouseleave", event => {
-                return this.#delegate(event);
-            });
             this.#screen.addEventListener("mousemove", event => {
-                if (this.#app && this.#app.autodrag && dragStart) {
-                    const point = this.toWorld(this.getPoint(event));
-                    this.pan({x: point.x - dragStart.x,
-                              y: point.y - dragStart.y});
-                    this.redraw();
-                    if (typeof(this.#app.autodrag) === "function")
-                        this.#app.autodrag.call(this.#app, event, this);
-                }
+                if (this.#app && this.#app.autodrag && dragStart)
+                    drag(event, this.toWorld(this.getPoint(event)));
                 return this.#delegate(event);
             });
             this.#screen.addEventListener("wheel", event => {
@@ -230,6 +237,11 @@ class Camera {
                 return this.#delegate(event);
             });
             this.#screen.addEventListener("touchstart", event => {
+                if (this.#app && this.#app.autodrag &&
+                    (event.targetTouches.length === 1))
+                    dragStart = this.toWorld(this.getPoint(
+                        event.targetTouches[0]));
+                else dragStart = undefined;
                 if (this.#app && this.#app.autozoom &&
                     (event.targetTouches.length === 2)) {
                     pinchScale = this.#scale * Math.hypot(
@@ -241,6 +253,11 @@ class Camera {
                 return this.#delegate(event);
             });
             this.#screen.addEventListener("touchend", event => {
+                if (this.#app && this.#app.autodrag &&
+                    (event.targetTouches.length === 1))
+                    dragStart = this.toWorld(this.getPoint(
+                        event.targetTouches[0]));
+                else dragStart = undefined;
                 if (this.#app && this.#app.autozoom &&
                     (event.targetTouches.length === 2)) {
                     pinchScale = this.#scale * Math.hypot(
@@ -252,6 +269,10 @@ class Camera {
                 return this.#delegate(event);
             });
             this.#screen.addEventListener("touchmove", event => {
+                if (this.#app && this.#app.autodrag && dragStart &&
+                    (event.targetTouches.length === 1))
+                    drag(event, this.toWorld(this.getPoint(
+                        event.targetTouches[0])));
                 if (this.#app && this.#app.autozoom &&
                     (event.targetTouches.length === 2) &&
                     !isNaN(pinchScale))
