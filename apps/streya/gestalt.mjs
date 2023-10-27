@@ -60,9 +60,8 @@ class Gestalt {
     autozoom = { min: 1, max: 20 };
     autodrag(event) { this.#float = true; };
 
-    resize(event, camera) {
-        this.#panel.resize(camera.width, camera.height);
-    }
+    resize(event, camera)
+    { this.#panel.resize(camera.width, camera.height); }
 
     dblclick(event, camera) {
         this.#panel.contents.innerHTML = "";
@@ -73,26 +72,30 @@ class Gestalt {
         this.#panel.show();
     }
 
-    #mdown = undefined;
-    mousedown(event, camera) { this.#mdown = camera.getPoint(event); }
-    mouseup(event, camera) {
-        const point = camera.getPoint(event);
-        const down  = this.#mdown;
-        this.#mdown = undefined;
-        if (down && ((point.x - down.x) * (point.x - down.x) +
-                     (point.y - down.y) * (point.y - down.y)) > 25)
-            return;
-
-        const cell = this.#ship.getCell(
-            this.#ship.grid.markCell(camera.toWorld(point)));
-        if (cell && !cell.isObstructed) {
-            this.#float = false;
-            this.#ship.pathDebug = [];
-            this.#player.setPath(this.#ship.createPath(
-                this.#player.position, point));
-            this.debugListTime = new Date().getTime();
+    #beginClick = undefined;
+    selectGoal(camera, point) {
+        if (this.#beginClick &&
+            (point.x - this.#beginClick.x) *
+            (point.x - this.#beginClick.x) +
+            (point.y - this.#beginClick.y) *
+            (point.y - this.#beginClick.y) < 5 * 5) {
+            const node = this.#ship.grid.markCell(
+                camera.toWorld(this.#beginClick));
+            const cell = this.#ship.getCell(node);
+            if (cell && !cell.isObstructed) {
+                this.#float = false;
+                this.#ship.pathDebug = [];
+                this.#player.setPath(this.#ship.createPath(
+                    this.#player.position, node));
+                this.debugListTime = new Date().getTime();
+            }
         }
     }
+
+    mousedown(event, camera)
+    { this.#beginClick = camera.getPoint(event); }
+    mouseup(event, camera)
+    { this.selectGoal(camera, camera.getPoint(event)); }
 
     lastUpdate = undefined;
 
