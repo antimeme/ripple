@@ -317,12 +317,12 @@
              });
          },
 
-         click: (event, camera) => {
+         dblclick: event => { menu.style.display = "block" },
+         mousedown: (event, camera) => {
              camera.redraw();
              menu.style.display = "none";
              selected = [camera.toWorld(camera.getPoint(event))];
          },
-         dblclick: event => { menu.style.display = "block" },
          touchupdate: (event, camera) => {
              camera.redraw();
              menu.style.display = "none";
