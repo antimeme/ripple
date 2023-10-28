@@ -184,7 +184,14 @@ class Camera {
 
         if (!this.#listeners) {
             let pinchScale = undefined;
-            let dragStart  = undefined;
+            const pinchDistance = (event) => Math.hypot(
+                event.targetTouches[0].clientX -
+                event.targetTouches[1].clientX,
+                event.targetTouches[0].clientY -
+                event.targetTouches[1].clientY);
+
+            let dragStart = undefined;
+            let dragTouch = undefined;
             const drag = (event, point) => {
                 this.pan({x: point.x - dragStart.x,
                           y: point.y - dragStart.y});
@@ -222,7 +229,8 @@ class Camera {
                 return this.#delegate(event);
             });
             this.#screen.addEventListener("mousemove", event => {
-                if (this.#app && this.#app.autodrag && dragStart)
+                if (this.#app && this.#app.autodrag &&
+                    dragStart && !dragTouch)
                     drag(event, this.toWorld(this.getPoint(event)));
                 return this.#delegate(event);
             });
@@ -239,32 +247,24 @@ class Camera {
             this.#screen.addEventListener("touchstart", event => {
                 if (this.#app && this.#app.autodrag &&
                     (event.targetTouches.length === 1))
-                    dragStart = this.toWorld(this.getPoint(
+                    dragTouch = dragStart = this.toWorld(this.getPoint(
                         event.targetTouches[0]));
                 else dragStart = undefined;
                 if (this.#app && this.#app.autozoom &&
                     (event.targetTouches.length === 2)) {
-                    pinchScale = this.#scale * Math.hypot(
-                        event.targetTouches[0].clientX -
-                        event.targetTouches[1].clientX,
-                        event.targetTouches[0].clientY -
-                        event.targetTouches[1].clientY);
+                    pinchScale = this.#scale * pinchDistance(event);
                 } else pinchScale = undefined;
                 return this.#delegate(event);
             });
             this.#screen.addEventListener("touchend", event => {
                 if (this.#app && this.#app.autodrag &&
                     (event.targetTouches.length === 1))
-                    dragStart = this.toWorld(this.getPoint(
+                    dragTouch = dragStart = this.toWorld(this.getPoint(
                         event.targetTouches[0]));
                 else dragStart = undefined;
                 if (this.#app && this.#app.autozoom &&
                     (event.targetTouches.length === 2)) {
-                    pinchScale = this.#scale * Math.hypot(
-                        event.targetTouches[0].clientX -
-                        event.targetTouches[1].clientX,
-                        event.targetTouches[0].clientY -
-                        event.targetTouches[1].clientY);
+                    pinchScale = this.#scale * pinchDistance(event);
                 } else pinchScale = undefined;
                 return this.#delegate(event);
             });
@@ -277,16 +277,9 @@ class Camera {
                     (event.targetTouches.length === 2) &&
                     !isNaN(pinchScale))
                     this.setScale(
-                        pinchScale / Math.hypot(
-                            event.targetTouches[0].clientX -
-                            event.targetTouches[1].clientX,
-                            event.targetTouches[0].clientY -
-                            event.targetTouches[1].clientY),
+                        pinchScale / pinchDistance(event),
                         this.#app.autozoom.min,
-                        this.#app.autozoom.max);
-                return this.#delegate(event);
-            });
-            this.#screen.addEventListener("touchend", event => {
+                        this.#app.autozoom.max).redraw();
                 return this.#delegate(event);
             });
 
