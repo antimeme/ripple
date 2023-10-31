@@ -62,6 +62,19 @@ function createListItem(text) {
     return result;
 }
 
+/**
+ * Given start and end values in radians, return the number of
+ * radians needed to go from one to the other the shortest way.
+ * Positive values go counter clockwise. */
+function radianDelta(start, end) {
+    let result = end - start;
+    if (result > Math.PI)
+        result -= 2 * Math.PI;
+    else if (result < -Math.PI)
+        result += 2 * Math.PI;
+    return result;
+}
+
 class Character {
     constructor(config) {
         const period = 4500;
@@ -77,6 +90,7 @@ class Character {
     _path = undefined;
     _pathStep = 0;
     _speed = 0.002;
+    _angspeed = 0.002;
 
     _colors = {base: "blue"};
 
