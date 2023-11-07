@@ -73,7 +73,14 @@ class Gestalt {
     }
 
     #beginClick = undefined;
-    selectGoal(camera, point) {
+
+    mousedown(event, camera) {
+        this.#beginClick = camera.getPoint(event);
+        this.#player.pointAt(camera.toWorld(camera.getPoint(event)));
+    }
+
+    mouseup(event, camera) {
+        const point = camera.getPoint(event);
         if (this.#beginClick &&
             (point.x - this.#beginClick.x) *
             (point.x - this.#beginClick.x) +
@@ -91,11 +98,6 @@ class Gestalt {
             }
         }
     }
-
-    mousedown(event, camera)
-    { this.#beginClick = camera.getPoint(event); }
-    mouseup(event, camera)
-    { this.selectGoal(camera, camera.getPoint(event)); }
 
     lastUpdate = undefined;
 

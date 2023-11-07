@@ -62,24 +62,48 @@ function createListItem(text) {
     return result;
 }
 
-/**
- * Given start and end values in radians, return the number of
- * radians needed to go from one to the other the shortest way.
- * Positive values go counter clockwise. */
-function radianDelta(start, end) {
-    let result = end - start;
-    if (result > Math.PI)
-        result -= 2 * Math.PI;
-    else if (result < -Math.PI)
-        result += 2 * Math.PI;
-    return result;
+class Radians {
+
+    /**
+     * Given a value in radians, returns an equivalent value that
+     * is clamped between pi and minus pi. */
+    static normalize(value) {
+        while (value > Math.PI)
+            value -= 2 * Math.PI;
+        while (value <= -Math.PI)
+            value += 2 * Math.PI;
+        return value;
+    }
+
+    /**
+     * Given start and end vectors or angles, returns the angle in
+     * radians necessary to turn from the start to the end. */
+    static difference(start, end) {
+        let result = 0;
+        if (!isNaN(start) && !isNaN(end)) {
+            result = Radians.normalize(end - start);
+        } else if (start && (typeof(start) === "object") &&
+                   !isNaN(start.x) && !isNaN(start.y) &&
+                   end && (typeof(end) === "object") &&
+                   !isNaN(end.x) && !isNaN(end.y)) {
+            const wedge = start.x * end.y - start.y * end.x;
+            result = ((wedge > 0) ? 1 : -1) * Math.acos(
+                (end.x * start.x + end.y * start.y) /
+                Math.sqrt((start.x * start.x + start.y * start.y) *
+                    (end.x * end.x + end.y * end.y)));
+        } else throw new Error("invalid start or end: " +
+                               JSON.stringify(start) + " :: " +
+                               JSON.stringify(end));
+        return result;
+    }
 }
 
 class Character {
     constructor(config) {
         const period = 4500;
         this._cycle = {phase: Math.random() * period, period: period};
-        this._spin = Math.random() * Math.PI * 2;
+        this._spin     = Math.random() * Math.PI * 2;
+        this._spinGoal = Math.random() * Math.PI * 2;
     }
 
     _position = {x: 0, y: 0};
@@ -90,7 +114,7 @@ class Character {
     _path = undefined;
     _pathStep = 0;
     _speed = 0.002;
-    _angspeed = 0.002;
+    _angv  = 0.002;
 
     _colors = {base: "blue"};
 
@@ -101,6 +125,15 @@ class Character {
     setShip(ship) { this._ship = ship; return this; }
 
     setPath(path) { this._path = path; return this; }
+
+    pointAt(point) {
+        this._spinGoal = Radians.difference({x: 0, y: 1}, {
+            x: point.x - this._position.x,
+            y: point.y - this._position.y });
+        console.log("DEBUG pointAt", this._spinGoal.toFixed(3),
+                    this._spin.toFixed(3));
+        return this;
+    }
 
     drawFace(ctx, now) {
         // TODO
@@ -128,8 +161,9 @@ class Character {
     }
     
     update(last, now) {
+        const elapsed = isNaN(last) ? 0 : (now - last);
         if (this.ship && this._path && (this._path.length > 0)) {
-            let distance = this._pathStep + this._speed * (now - last);
+            let distance = this._pathStep + this._speed * elapsed;
             let current = this.ship.grid.markCenter(this._position);
             let next = this.ship.grid.markCenter(this._path[0]);
 
@@ -140,8 +174,10 @@ class Character {
                     distance -= gap;
                     current = next;
                     this._path.shift();
-                    if (this._path.length)
+                    if (this._path.length) {
                         next = this.ship.grid.markCenter(this._path[0]);
+                        this.pointAt(next);
+                    }
                     else distance = 0;
                 } else {
                     const fraction = distance / gap;
@@ -154,6 +190,14 @@ class Character {
                 }
             }
             this._position = current;
+        }
+
+        if (this._spin != this._spinGoal) {
+            const diff = Radians.difference(this._spin, this._spinGoal);
+            const turn = this._angv * elapsed;
+            if (turn > Math.abs(diff))
+                this._spin = this._spinGoal;
+            else this._spin += turn * (diff > 0 ? 1 : - 1);
         }
     }
 
