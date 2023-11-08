@@ -98,6 +98,9 @@ class Radians {
     }
 }
 
+function smootherStep(t)
+{ return t * t * t * (6 * t * t - 15 * t + 10); }
+
 class Character {
     constructor(config) {
         const period = 4500;
@@ -114,7 +117,7 @@ class Character {
     _path = undefined;
     _pathStep = 0;
     _speed = 0.002;
-    _angv  = 0.002;
+    _angv  = 0.005;
 
     _colors = {base: "blue"};
 
@@ -130,8 +133,6 @@ class Character {
         this._spinGoal = Radians.difference({x: 0, y: 1}, {
             x: point.x - this._position.x,
             y: point.y - this._position.y });
-        console.log("DEBUG pointAt", this._spinGoal.toFixed(3),
-                    this._spin.toFixed(3));
         return this;
     }
 
@@ -162,6 +163,7 @@ class Character {
     
     update(last, now) {
         const elapsed = isNaN(last) ? 0 : (now - last);
+
         if (this.ship && this._path && (this._path.length > 0)) {
             let distance = this._pathStep + this._speed * elapsed;
             let current = this.ship.grid.markCenter(this._position);
@@ -180,7 +182,7 @@ class Character {
                     }
                     else distance = 0;
                 } else {
-                    const fraction = distance / gap;
+                    const fraction = smootherStep(distance / gap);
                     current = {
                         row: current.row, col: current.col,
                         x: current.x + fraction * (next.x - current.x),
