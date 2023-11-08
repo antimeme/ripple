@@ -2,20 +2,16 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, user-scalable=no" />
 <meta name="viewport" content="initial-scale=1, maximum-scale=1" />
-<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes" />
-<link rel="shortcut icon" href="streya.svg?serial=248" />
-<link rel="stylesheet" type="text/css" href="../fascia.css" />
-<link rel="stylesheet" type="text/css" href="app.css" />
-<title>Streya</title>
+<link rel="icon" href="streya.svg?serial=ENUjMO" />
+<link rel="stylesheet" href="app.css" />
+<title>Streya Vanguard</title>
+<script type="module">//<![CDATA[
+ import Camera from "../ripple/camera.mjs";
+ import Gestalt from "./gestalt.mjs";
 
-<script src="../ripple/polyfill.js"></script>
-<script src="../ripple/ripple.js"></script>
-<script src="../ripple/grille.js"></script>
-<script src="../ripple/fascia.js"></script>
-<script src="./structure.js" type="module"></script>
-<script src="./editorMode.js"></script>
-<script src="./stationMode.js"></script>
-<script src="./app.js"></script>
-<script>//<![CDATA[
- fascia.ready(app.create, ['app.json']); //]]></script>
+ Camera.preload("./setting.json", (loaded) => {
+     const camera = new Camera(document.body.appendChild(
+         document.createElement("canvas"))).setScale(4).manage(
+             new Gestalt(loaded["./setting.json"]));
+ }); //]]></script>
