@@ -654,6 +654,8 @@ class HexGrid extends BaseGrid {
 class TriangleGrid extends BaseGrid {
     constructor(config) { super(config); }
     _init(config) {
+        this.diagonal = (config && config.diagonal) ?
+                        config.diagonal : false;
         this._rowh    = this._edge * sqrt3 / 2;
         this._centerh = this._edge * sqrt3 / 6;
     }
@@ -686,13 +688,73 @@ class TriangleGrid extends BaseGrid {
     _eachNeighbor(node, fn) {
         if ((node.row + node.col) % 2) {
             fn({row: node.row - 1, col: node.col});
+            if (this.diagonal) {
+                fn({row: node.row - 1, col: node.col + 1,
+                    diagonal: true});
+                fn({row: node.row - 1, col: node.col + 2,
+                    diagonal: true});
+                fn({row: node.row,     col: node.col + 2,
+                    diagonal: true});
+            }
             fn({row: node.row,     col: node.col + 1});
+            if (this.diagonal) {
+                fn({row: node.row + 1, col: node.col + 1,
+                    diagonal: true});
+                fn({row: node.row + 1, col: node.col,
+                    diagonal: true});
+                fn({row: node.row + 1, col: node.col - 1,
+                    diagonal: true});
+            }
             fn({row: node.row,     col: node.col - 1});
+            if (this.diagonal) {
+                fn({row: node.row, col: node.col - 2,
+                    diagonal: true});
+                fn({row: node.row - 1, col: node.col - 2,
+                    diagonal: true});
+                fn({row: node.row - 1, col: node.col - 1,
+                    diagonal: true});
+            }
         } else {
             fn({row: node.row,     col: node.col + 1});
+            if (this.diagonal) {
+                fn({row: node.row,     col: node.col + 2});
+                fn({row: node.row + 1, col: node.col + 2});
+                fn({row: node.row + 1, col: node.col + 1});
+            }
             fn({row: node.row + 1, col: node.col});
+            if (this.diagonal) {
+                fn({row: node.row + 1, col: node.col - 1});
+                fn({row: node.row + 1, col: node.col - 2});
+                fn({row: node.row,     col: node.col - 2});
+            }
             fn({row: node.row,     col: node.col - 1});
+            if (this.diagonal) {
+                fn({row: node.row - 1, col: node.col - 1});
+                fn({row: node.row - 1, col: node.col});
+                fn({row: node.row - 1, col: node.col + 1});
+            }
         }
+    }
+
+    _getPairPoints(nodeA, nodeB) {
+        if ((Math.abs(nodeA.row - nodeB.row) +
+             Math.abs(nodeA.col - nodeB.col) > 1) ||
+            ((nodeA.col === nodeB.col) &&
+             (nodeB.row === nodeA.row + ((nodeA.row + nodeA.col) % 2 ?
+                                         1 : -1)))) {
+            let result = undefined;
+            let best = undefined;
+            this._getPoints(nodeA).forEach(point => {
+                const current =
+                    ((nodeB.x - point.x) * (nodeB.x - point.x) +
+                     (nodeB.y - point.y) * (nodeB.y - point.y));
+                if (isNaN(best) || (best > current)) {
+                    result = point;
+                    best = current;
+                }
+            });
+            return [result];
+        } else return super._getPairPoints(nodeA, nodeB);
     }
 
     _getPoints(node) {
@@ -947,7 +1009,8 @@ export default {
         {name: "Square(diagonal)", type: "square", diagonal: true},
         {name: "Hex(point)", type: "hex", point: true},
         {name: "Hex(edge)", type: "hex", point: false},
-        {name: "Triangle", type: "triangle"},
+        {name: "Triangle(strict)", type: "triangle"},
+        {name: "Triangle(diagonal)", type: "triangle", diagonal: true},
         {name: "Wedge(regular)", type: "wedge"},
         {name: "Wedge(diamond)", type: "wedge", diamond: true},
     ],
