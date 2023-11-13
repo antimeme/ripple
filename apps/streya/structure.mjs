@@ -152,8 +152,8 @@ class Structure extends Pathf.Pathable {
 
     init(config) {
         this.#grid = Grid.create({
-            type: "square", isometric: false,
-            diagonal: true, edge: 1 });
+            type: "square", radius: 1,
+            isometric: false, diagonal: true });
         this.__defaultLevel = 0;
         this.__cellData = {};
         this.__nodeData = {};
