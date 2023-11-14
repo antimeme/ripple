@@ -18,6 +18,7 @@
     "main": "source/server.js",
     "scripts": {
         "start": "node source/server.js",
+        "mocha": "mocha source/mocha",
         "streya": "electron apps/streya.html",
         "habitat": "electron apps/habitat.html",
         "whiplash": "electron apps/whiplash.html"

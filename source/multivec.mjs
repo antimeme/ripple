@@ -736,65 +736,6 @@ class Multivec {
         }
         return result;
     }
-
-    // === Testing
-
-    static test() {
-        let config = {places: 3, parens: true};
-        let products = [
-            {vectors: ["3x + w", "3y + w"], ops: {wedge: 1}},
-            {vectors: ["x + y + w", "w"], ops: {wedge: 1}},
-            {vectors: ["9xy + 3xw - 3yw", "xw + yw"],
-             ops: {dual: "xyw", regress: "xyw"}},
-            {vectors: ["2x", "-2x"], ops: {conp: 1}},
-            {vectors: ["2x - 1.5o0 + 2.5i0",
-                       "-2x - 1.5o0 + 2.5i0"], ops: {wedge: 1}},
-            {vectors: ["6o0x + 10xi0", "i0 - o0"],
-             ops: {wedge: 1}},
-            {vectors: ["6o0x + 10xi0"], ops: {dual: "o0xyi0"}},
-            {vectors: ["6yi0 - 10o0y", "i0 - o0"], ops: {wedge: 1}},
-            {vectors: ["-16o0yi0", "6o0x + 10xi0"], ops: {regress: "o0xyi0"}}
-        ];
-
-        products.forEach(product => {
-            if (!product.ops || product.ops.geo)
-                console.log(product.vectors.reduce((a,c) =>
-                    a + (a ? " " : "") + "(" + c + ")", ""), "=",
-                            product.vectors.reduce((a, c) => a.multiply(c),
-                                                   Multivec.create(1))
-                                   .toString(config));
-            if (product.ops && product.ops.wedge)
-                console.log(product.vectors.reduce((a,c) =>
-                    a + (a ? " ^ " : "") + "(" + c + ")", ""), "=",
-                            product.vectors.reduce((a, c) => a.wedge(c),
-                                                   Multivec.create(1))
-                                   .toString(config));
-            if (product.ops && product.ops.dot)
-                console.log(product.vectors.reduce((a,c) =>
-                    a + (a ? " | " : "") + "(" + c + ")", ""), "=",
-                            Multivec.contractValues.apply(
-                                null, product.vectors).toString(config));
-            if (product.ops && product.ops.dual)
-                product.vectors.forEach(vector => {
-                    console.log("Dual:", vector, "=>",
-                                Multivec.create(product.ops.dual)
-                                        .dual(vector).toString(config));
-                });
-            if (product.ops && product.ops.regress) {
-                let ps = Multivec.create(product.ops.regress);
-                console.log("Regress:", product.vectors.map(
-                    vector => "(" + vector.toString() + ")")
-                                               .join(" V "), "=>",
-                            ps.regress.apply(ps, product.vectors)
-                              .toString(config));
-            }
-            if (product.ops && product.ops.conp) {
-                product.vectors.forEach(vector =>
-                    console.log("ConformalPoint:",
-                                Multivec.createPointCGA(vector).toString()));
-            }
-        });
-    }
 }
 
 export default Multivec;
