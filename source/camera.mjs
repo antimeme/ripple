@@ -238,7 +238,7 @@ class Camera {
                 if (this.#app && this.#app.autozoom) {
                     event.preventDefault();
                     this.redraw();
-                    this.zoom((event.wheelDeltaY > 0) ? (5/4) : (4/5),
+                    this.zoom((event.wheelDeltaY > 0) ? (4/5) : (5/4),
                               this.#app.autozoom.min,
                               this.#app.autozoom.max);
                 }
