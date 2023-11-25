@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="X-UA-Compatible" content="chrome=1">
+<title>Solar System</title>
+<style>
+ html, body {
+     padding: 0; margin: 0; overflow: hidden;
+     position: relative; background: #888;
+ }
+ canvas { background: #222; }
+</style>
+<script type="module">//<![CDATA[
+ import Camera from "./ripple/camera.mjs";
+ const bodies = {
+     // Except for Sol, radii are to scale in megameters.
+     // Orbits are given in astronomical units (150 gigameters)
+     sol: {radius: 9, orbit: 0, color: "yellow"},
+     mercury: {radius: 2.4, orbit: 0.38, color: "#808080", tri: true},
+     venus: {radius: 6, orbit: 0.715, color: "#FFF8DC", tri: true},
+     earth: {radius: 6.3, orbit: 1, color: "blue"},
+     mars: {radius: 3.3, orbit: 1.52, color: "#FF5733", tri: true}
+ };
+
+ function updateBody(body, now) {
+     const delay = (body.orbit > 0.001) ? (2000 * body.orbit) : 1;
+     if (isNaN(body.phase))
+         body.phase = Math.random() * 2 * Math.PI;
+     body.angle = (now / delay + body.phase) % (2 * Math.PI);
+     body.x = body.orbit * Math.cos(body.angle);
+     body.y = body.orbit * Math.sin(body.angle);
+ }
+
+ function drawBody(ctx, body) {
+     const radius = body.radius * 0.01;
+
+     if (body.orbit > 0.001) {
+         ctx.beginPath();
+         ctx.moveTo(0 + body.orbit, 0);
+         ctx.arc(0, 0, body.orbit, 0, 2 * Math.PI);
+         ctx.lineWidth = 0.01;
+         ctx.strokeStyle = "#111";
+         ctx.stroke();
+     }
+
+     ctx.save();
+     ctx.translate(body.x, body.y);
+     ctx.beginPath();
+     ctx.moveTo(radius, 0);
+     ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+     ctx.fillStyle = body.color;
+     ctx.fill();
+     if (body.orbit > 0.001) {
+         ctx.save();
+         ctx.rotate(body.angle);
+         ctx.beginPath();
+         ctx.moveTo(0, radius);
+         ctx.arc(0, 0, radius, 3 * Math.PI / 2, Math.PI / 2);
+         ctx.fillStyle = "rgba(32, 32, 32, 0.5)";
+         ctx.fill();
+         ctx.restore();
+     }
+
+     if (!isNaN(body.daymark)) {
+         ctx.beginPath();
+         ctx.moveTo(0, 0);
+         ctx.lineTo(radius * Math.cos(body.daymark),
+                    radius * Math.sin(body.daymark));
+         ctx.lineWidth = 0.01;
+         ctx.strokeStyle = "red";
+         ctx.stroke();
+     }
+     ctx.restore();
+ }
+
+ let stopped = false;
+ let tri = undefined;
+
+ Camera.preload(undefined, () => {
+     const camera = new Camera(document.body.appendChild(
+         document.createElement("canvas")));
+         camera.setScale(1.1).manage({
+         autofill: true, autodrag: false, autozoom: false, active: true,
+         draw: (ctx, camera) => {
+             const now = new Date().getTime();
+             if (!stopped)
+                 for (const name in bodies)
+                     updateBody(bodies[name], now);
+             if (tri) {
+                 ctx.beginPath();
+                 ctx.moveTo(bodies.sol.x, bodies.sol.y);
+                 ctx.lineTo(bodies.earth.x, bodies.earth.y);
+                 ctx.lineTo(tri.x, tri.y);
+                 ctx.closePath();
+                 ctx.fillStyle = "#224";
+                 ctx.fill();
+             }
+
+             for (const name in bodies)
+                 drawBody(ctx, bodies[name]);
+         },
+         click: (event, camera) => {
+             if (!tri) {
+                 const point = camera.toWorld(camera.getPoint(event));
+                 let best = undefined;
+                 for (const name in bodies) {
+                     const body = bodies[name];
+                     const dist = Math.pow(point.x - body.x, 2) +
+                                  Math.pow(point.y - body.y, 2);
+                     if (!body.tri) {
+                     } else if (isNaN(best) || best > dist) {
+                         best = dist;
+                         tri = bodies[name];
+                     }
+                 }
+             } else tri = undefined;
+         },
+         dblclick: (event, camera) => { stopped = !stopped; }
+     });
+ }); //]]></script>
