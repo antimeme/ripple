@@ -415,26 +415,52 @@
             }
         }
     },
-     "itemtypes": {
-         "Magboots": {"mass": 1200},
-         "Coverall": {"mass": 3200, "wear": "fullbody"},
-         "Pressure Suit": {"mass": 8000, "wear": "fullbody"},
-         "Pressure Helmet": {
-             "mass": 1500, "wear": "head",
-             "accept": "Respirator Charge"},
-         "Emergency Respirator": {
-             "mass": 750, "wear": "face",
-             "accept": "Respirator Charge"},
-         "Respirator Charge": {
-             "comments": "About 5 hours of breathing",
-             "mass": 900, "wear": "face"},
-         "Medkit": {"mass": 2200},
-         "Fire Extinguisher": {"mass": 2500},
-         "Thrust Belt": {"mass": 3300, "accept": "Propellant"},
-         "Propellant": {
-             "comments": "About 32m/s deltaV",
-             "mass": 2100, "exhaust": 1800 },
-         "Plasma Pistol": {"mass": 825, "accept": "Plasma Magazine"},
-         "Plasma Magazine": {"mass": 250}
-     }
+    "races": {
+        "Human": {
+            "draw": {
+                "colors": {
+                    "body": ["blue", "green", "cyan", "yellow"],
+                    "head": ["orange", "red", "purple"],
+                    "eyes": ["blue", "green", "brown"]
+                },
+                "topDown": [{
+                    "op": "ellipse", "x": 0, "y": 0,
+                    "rx": 0.4, "ry": 0.265, "fill": "body"
+                }, {
+                    "op": "circle", "x": 0, "y": 0,
+                    "r": 0.25, "fill": "head"
+                }, {
+                    "op": "circle", "x": 0.1, "y": 0.1,
+                    "r": 0.05, "fill": "eyes",
+                    "period": 4500, "blink": 0.075
+                }, {
+                    "op": "circle", "x": -0.1, "y": 0.1,
+                    "r": 0.05, "fill": "eyes",
+                    "period": 4500, "blink": 0.075 }]
+            },
+            "slots": { "feet": true, "neck": true }
+        }
+    },
+    "itemtypes": {
+        "Magboots": {"mass": 1200},
+        "Coverall": {"mass": 3200, "wear": "fullbody"},
+        "Pressure Suit": {"mass": 8000, "wear": "fullbody"},
+        "Pressure Helmet": {
+            "mass": 1500, "wear": "head",
+            "accept": "Respirator Charge"},
+        "Emergency Respirator": {
+            "mass": 750, "wear": "face",
+            "accept": "Respirator Charge"},
+        "Respirator Charge": {
+            "comments": "About 5 hours of breathing",
+            "mass": 900, "wear": "face"},
+        "Medkit": {"mass": 2200},
+        "Fire Extinguisher": {"mass": 2500},
+        "Thrust Belt": {"mass": 3300, "accept": "Propellant Pack"},
+        "Propellant Pack": {
+            "comments": "About 32m/s deltaV",
+            "mass": 2100, "exhaust": 1800 },
+        "Coil Pistol": {"mass": 825, "accept": "Slug Magazine"},
+        "Slug Magazine": {"mass": 250}
+    }
 }

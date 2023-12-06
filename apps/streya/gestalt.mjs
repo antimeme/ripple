@@ -1,4 +1,5 @@
 import Character from "./character.mjs";
+import Inventory from "./inventory.mjs";
 import Structure from "./structure.mjs";
 
 function createPanel() {
@@ -39,6 +40,9 @@ const panel = createPanel();
 
 class Gestalt {
     constructor(setting) {
+        Character.setup(setting);
+        Inventory.loadItemTypes(setting.itemtypes);
+
         this.#panel = panel;
         this.#setting = setting;
         this.#player = Character.createRecruit(this.#setting);
@@ -55,9 +59,9 @@ class Gestalt {
     #panel;
 
     #float = false;
-    active = true;
-    autofill = true;
-    autozoom = { min: 1, max: 20 };
+    get active() { return true };
+    get autofill() { return true };
+    get autozoom() { return { min: 1, max: 20 } };
     autodrag(event) { this.#float = true; };
 
     resize(event, camera)
@@ -137,6 +141,15 @@ class Gestalt {
                     ctx.strokeStyle = index ? "#4d4" : "#44d";
                     ctx.stroke();
                 });
+
+            // Draw the planned path of the player
+            ctx.beginPath();
+            ctx.moveTo(this.#player._position.x,
+                       this.#player._position.y);
+            this.#player._path.forEach(step => {
+                ctx.lineTo(step.x, step.y); });
+            ctx.strokeStyle = "red";
+            ctx.stroke();
         }
 
         this.#player.drawTopDown(ctx, this.lastUpdate);

@@ -79,7 +79,8 @@ class Inventory {
             config = { name: config };
         this.name = (config && config.name) ? config.name : null;
         this.slots = (config && config.slots) ? config.slots : null;
-        this.contents = contents.map((item) => new Item(item));
+        this.contents = contents ?
+                        contents.map((item) => new Item(item)) : [];
     }
 
     /**

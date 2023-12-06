@@ -30,6 +30,7 @@
    social|#|boredom-|#]
    [Wearing] +-> [Item]
    [Inventory] +-> [Item] ] */
+import Inventory from "./inventory.mjs";
 import Omnivore from "../ripple/omnivore.mjs";
 
 /**
@@ -38,7 +39,7 @@ import Omnivore from "../ripple/omnivore.mjs";
  * argument must be a function that accepts an object and a key and
  * returns a non-negative number to use as the weight for that key.
  * Keys are chosen with probability equal to their share of the total
- * weight.  So given keys "a"  (weight 3) and "b" (weight 1) this
+ * weight.  So given keys "a" (weight 3) and "b" (weight 1) this
  * routine will choose "a" three quarters of the time. */
 function chooseKey(object, getWeight = (o, k) => 1) {
     const choice = Math.random();
@@ -101,20 +102,109 @@ class Radians {
 function smootherStep(t)
 { return t * t * t * (6 * t * t - 15 * t + 10); }
 
+class Race {
+    constructor(racedef) {
+        this._slots = racedef.slots ? racedef.slots : {};
+        this._draw  = racedef.draw ? racedef.draw : [];
+    }
+
+    #finishStep(ctx, step, colors) {
+        if (step.fill) {
+            ctx.fillStyle = (colors && (step.fill in colors)) ?
+                            colors[step.fill] : step.fill;
+            ctx.fill();
+        }
+        if (step.stroke) {
+            ctx.strokeStyle = (colors && (step.stroke in colors)) ?
+                              colors[step.stroke] : step.stroke;
+            ctx.stroke();
+        }
+    }
+
+    drawTopDown(ctx, colors, now, phase) {
+        // Drawing instructions consist of an array of step
+        // objects.  Each must have an "op" field that describes
+        // what to draw as well as parameters appropriate to that
+        // operation.  In addition, there may be "period" and
+        // "blink" fields to disable drawing on a periodic basis.
+        // Period should be a number of milliseconds.  Blink should
+        // be a number between zero and one that specifies how much
+        // of the period should be omitted for drawing.
+
+        this._draw.topDown.forEach(step => {
+            if (!isNaN(step.period) && !isNaN(step.blink) &&
+                (step.blink > Math.floor((
+                    now + step.period * phase) %
+                    step.period) / step.period)) {
+                console.log("DEBUG", phase);
+            } else if ((step.op === "ellipse") &&
+                       !isNaN(step.x)  && !isNaN(step.y) &&
+                       !isNaN(step.rx) && !isNaN(step.ry)) {
+                    ctx.beginPath();
+                ctx.moveTo(step.x + step.rx, step.y);
+                ctx.ellipse(step.x, step.y, step.rx, step.ry,
+                            0, 0, 2 * Math.PI);
+                this.#finishStep(ctx, step, colors);
+            } else if ((step.op === "circle") && !isNaN(step.r) &&
+                       !isNaN(step.x) && !isNaN(step.y)) {
+                ctx.beginPath();
+                ctx.moveTo(step.x + step.r, step.y);
+                ctx.arc(step.x, step.y, step.r, 0, 2 * Math.PI);
+                this.#finishStep(ctx, step, colors);
+            }
+        });
+    }
+
+    apply(character) {
+        character._race = this;
+        if (this._draw && this._draw.colors) {
+            character._colors = Object.keys(
+                this._draw.colors).reduce((colors, name) => {
+                    const color = this._draw.colors[name];
+                    if (typeof(color) === "string")
+                        colors[name] = color;
+                    else if (Array.isArray(color))
+                        colors[name] = color[
+                            Math.floor(Math.random() * color.length)];
+                    else throw new TypeError(
+                        "Unrecognized color type: " + typeof(color));
+                    return colors;
+                }, {});
+        }
+    }
+
+    toJSON()
+    { return { slots: this._slots, draw: this._draw }; }
+}
+
 class Character {
     constructor(config) {
         const period = 4500;
         this._cycle = {phase: Math.random() * period, period: period};
-        this._spin     = Math.random() * Math.PI * 2;
-        this._spinGoal = Math.random() * Math.PI * 2;
+
+        this._position = {x: 0, y: 0};
+        this._wearing = new Inventory();
+        this._carrying = new Inventory();
+
+        this._racename = (config && config.race) ?
+                         config.race : undefined;
+        if (!Character._races) {
+            this._race = undefined;
+        } else if (this._racename &&
+                   (this._racename in Character._races)) {
+            Character._races[this._racename].apply(this);
+        } else if (!this._racename) {
+            this._racename = chooseKey(Character._races, (o, k) =>
+                isNaN(o[k].weight) ? 1 : o[k].weight);
+            Character._races[this._racename].apply(this);
+        } else this._race = undefined;
     }
 
-    _position = {x: 0, y: 0};
     _spin = 0;
     _cycle; // state of idle animation
 
     _ship = undefined;
-    _path = undefined;
+    _path = [];
     _pathStep = 0;
     _speed = 0.002;
     _angv  = 0.005;
@@ -125,7 +215,12 @@ class Character {
     setPosition(position) { this._position = position; return this; }
 
     get ship() { return this._ship; }
-    setShip(ship) { this._ship = ship; return this; }
+    setShip(ship) {
+        this._ship = ship;
+        this._spin     = Math.random() * Math.PI * 2;
+        this._spinGoal = Math.random() * Math.PI * 2;
+        return this;
+    }
 
     setPath(path) { this._path = path; return this; }
 
@@ -144,21 +239,20 @@ class Character {
         ctx.save();
         ctx.translate(this._position.x, this._position.y);
         ctx.rotate(this._spin);
-        this._drawTopDown(ctx, now);
+        if (!this._race) {
+            const points = [
+                {x: 0.45, y: 0.45}, {x: 0.45, y: -0.45},
+                {x: -0.45, y: -0.45}, {x: -0.45, y: 0.45}];
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            points.forEach(point => { ctx.lineTo(point.x, point.y); });
+            ctx.closePath();
+
+            ctx.fillStyle = this._colors.base;
+            ctx.fill();
+        } else this._race.drawTopDown(
+            ctx, this._colors, now, this._cycle.phase);
         ctx.restore();
-    }
-
-    _drawTopDown(ctx, now) {
-        const points = [
-            {x: 0.9, y: 0.9}, {x: 0.9, y: -0.9},
-            {x: -0.9, y: -0.9}, {x: -0.9, y: 0.9}];
-        ctx.beginPath();
-        ctx.moveTo(points[0].x, points[0].y);
-        points.forEach(point => { ctx.lineTo(point.x, point.y); });
-        ctx.closePath();
-
-        ctx.fillStyle = this._colors.base;
-        ctx.fill();
     }
     
     update(last, now) {
@@ -174,15 +268,17 @@ class Character {
                                      current.y - next.y);
                 if (distance >= gap) {
                     distance -= gap;
-                    current = next;
-                    this._path.shift();
-                    if (this._path.length) {
+                    current = this._path.shift();
+                    if (this._path.length > 0) {
                         next = this.ship.grid.markCenter(this._path[0]);
                         this.pointAt(next);
+                    } else {
+                        this._path = [];
+                        distance = 0;
                     }
-                    else distance = 0;
                 } else {
-                    const fraction = smootherStep(distance / gap);
+                    const fraction = ((distance / gap) +
+                                      smootherStep(distance / gap)) / 2;
                     current = {
                         row: current.row, col: current.col,
                         x: current.x + fraction * (next.x - current.x),
@@ -229,7 +325,7 @@ class Character {
     }
 
     static createRecruit(setting) {
-        const recruit = new HumanCharacter();
+        const recruit = new Character();
 
         recruit.birthplace = chooseKey(setting.places);
         recruit.gender = chooseKey(
@@ -263,66 +359,11 @@ class Character {
 
         return recruit;
     }
-}
 
-class HumanCharacter extends Character {
-    constructor(config) {
-        super(config);
-
-        const colors = {
-            body: ["blue", "green", "red", "purple", "cyan", "yellow"],
-            head: ["orange", "red", "purple"],
-            eyes: ["blue", "green", "brown"] };
-        this._colors.body = colors.body[Math.floor(
-            Math.random() * colors.body.length)];
-        this._colors.head = colors.head[Math.floor(
-            Math.random() * colors.head.length)];
-        this._colors.eyes = colors.eyes[Math.floor(
-            Math.random() * colors.eyes.length)];
-
-        this.health = 10;
-        this.brawn = 10;
-        this.agility = 10;
-        this.will = 10;
-        this.charm = 10;
-        this.wounds = [];
-
-        this.stamina = 10;
-        this.water = 10;    this.graywater = 0;
-        this.food = 10;     this.waste = 0;
-        this.exercise = 10; this.filth = 0;
-        this.social = 10;   this.boredom = 0;
-    }
-
-    _drawTopDown(ctx, now) {
-        ctx.beginPath();
-        ctx.moveTo(0, 0.4);
-        ctx.ellipse(0, 0, 0.4, 0.265, 0, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fillStyle = this._colors.body;
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.moveTo(0, 0.25);
-        ctx.arc(0, 0, 0.25, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fillStyle = this._colors.head;
-        ctx.fill();
-
-        const cycle = Math.floor((now + this._cycle.phase) %
-            this._cycle.period) / this._cycle.period;
-        if (cycle > 0.075) { // Draw eyes except when blinking
-            const eyeRadius = 0.05;
-            const eyeDist   = 0.1;
-            ctx.beginPath();
-            ctx.moveTo(-eyeDist + eyeRadius, eyeDist);
-            ctx.arc(-eyeDist, eyeDist, eyeRadius, 0, Math.PI * 2);
-            ctx.moveTo(eyeDist + eyeRadius, eyeDist);
-            ctx.arc(eyeDist, eyeDist, eyeRadius, 0, Math.PI * 2);
-            ctx.closePath();
-            ctx.fillStyle = this._colors.eyes;
-            ctx.fill();
-        }            
+    static _races = {};
+    static setup(setting) {
+        for (const racename in setting.races)
+            this._races[racename] = new Race(setting.races[racename]);
     }
 }
 
