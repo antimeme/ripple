@@ -3,7 +3,7 @@ use chrono::{prelude::Utc, SecondsFormat};
 use axum;
 
 fn log(message: &str) {
-    println!("{} {message}", Utc::now().to_rfc3339_opts
+    println!("[{}] {message}", Utc::now().to_rfc3339_opts
              (SecondsFormat::Millis, true));
 }
 
@@ -23,7 +23,7 @@ async fn main() {
         .route("/", axum::routing::get(|| async { "Hello, Rust!" }))
         .layer(axum::middleware::from_fn(logging));
 
-    log(&format!("starting server on http://localhost:{port}"));
+    log(&format!("START http://localhost:{port}"));
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await.unwrap();

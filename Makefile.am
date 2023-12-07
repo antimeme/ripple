@@ -103,6 +103,11 @@ egg: dist/@PACKAGE@-@VERSION@-py@PYTHON_VERSION@.egg
 TESTS += source/random.py source/match.py
 endif
 
+## Rust ================================================================
+
+rs-serve: Cargo.toml
+	cargo run
+
 ## Java ================================================================
 # Names of macros such as JCC, JAR_ROOT and JAVA_SRCFILES have been
 # chosen to avoid the broken and unmaintained autoconf support for
