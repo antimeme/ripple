@@ -1,22 +1,10 @@
+# https://doc.rust-lang.org/cargo/reference/manifest.html
 [package]
 name    = "@PACKAGE@"
 version = "@VERSION@"
 edition = "2021"
 license = "GPL-3.0+"
 authors = ["Jeff Gold <jgold@esclat.net>"]
-# https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-chrono = { version = "0.4.23" }
-serde = { version = "1.0", features = ["derive"] }
-rand = { version = "0.8.5" }
-rsa = { version = "0.7.2", features = ["pem"] }
-sha2 = { version = "0.10.6" }
-hex = { version = "0.4.3" }
-base64 = { version = "0.13.1" }
-figment = { version = "0.10.8", features = ["json"] }
-rocket = { version = "0.5.0-rc.2", features = ["json", "mtls"] }
-rocket_db_pools = { version = "0.1.0-rc.2", features = ["sqlx_sqlite"] }
 
 [lib]
 name = "ripple"
@@ -25,3 +13,10 @@ path = "source/ripple.rs"
 [[bin]]
 name = "server"
 path = "source/server.rs"
+
+[dependencies]
+chrono = "0.4.31"
+axum = {version = "0.6.20", features = ["headers"]}
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.68"
+tokio = { version = "1.0", features = ["full"] }
