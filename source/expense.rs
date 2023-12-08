@@ -1,3 +1,5 @@
+use std::fs::File;
+use std::io::Read;
 use axum;
 use sqlx::{self, Row};
 use serde::{Serialize, Deserialize};
@@ -14,6 +16,35 @@ pub struct Expense {
 #[derive(Serialize, Deserialize)]
 pub struct ExpenseList {
     expenses: Vec<Expense>
+}
+
+async fn page() -> impl axum::response::IntoResponse
+{
+    match File::open("./apps/expense.html") {
+        Ok(mut file) => {
+            let mut contents = String::new();
+            match file.read_to_string(&mut contents) {
+                Ok(_) => {
+                    axum::response::Response::builder()
+                        .status(axum::http::StatusCode::OK)
+                        .body(axum::body::Body::from(contents))
+                        .unwrap()
+                },
+                Err(err) => {
+                    axum::response::Response::builder()
+                        .status(axum::http::StatusCode::INTERNAL_SERVER_ERROR)
+                        .body(axum::body::Body::from(err.to_string()))
+                        .unwrap()
+                }
+            }            
+        },
+        Err(err) => {
+            axum::response::Response::builder()
+                .status(axum::http::StatusCode::NOT_FOUND)
+                .body(axum::body::Body::from(err.to_string()))
+                .unwrap()
+        }
+    }
 }
 
 async fn list(axum::extract::Extension(pool):
@@ -42,8 +73,9 @@ async fn list(axum::extract::Extension(pool):
 }
 
 async fn add(axum::extract::Extension(pool):
-                 axum::extract::Extension<sqlx::SqlitePool>,
-                 expense: axum::Json<Expense>) -> String
+             axum::extract::Extension<sqlx::SqlitePool>,
+             expense: axum::Json<Expense>) ->
+      impl axum::response::IntoResponse
 {
     match sqlx::query(r#"
         INSERT INTO expenses (reason, amount, date)
@@ -52,8 +84,14 @@ async fn add(axum::extract::Extension(pool):
         .bind(expense.amount)
         .bind(&expense.date)
         .execute(&pool).await {
-            Ok(_) => "Success".to_string(),
-            Err(err) => err.to_string()
+            Ok(_) => axum::response::Response::builder()
+                .status(axum::http::StatusCode::CREATED)
+                .body(axum::body::Body::from("Expense created"))
+                .unwrap(),
+            Err(err) => axum::response::Response::builder()
+                .status(axum::http::StatusCode::INTERNAL_SERVER_ERROR)
+                .body(axum::body::Body::from(err.to_string()))
+                .unwrap()
         }
 }
 
@@ -75,6 +113,10 @@ pub async fn setup(app: axum::Router) -> axum::Router {
         .execute(&pool)
         .await.expect("Failed to create table");
     app
+        .route("/expense", axum::routing::get(page))
+        .route("/expense/", axum::routing::get(page))
+        .route("/expense/index", axum::routing::get(page))
+        .route("/expense/index.html", axum::routing::get(page))
         .route("/expense/list", axum::routing::get(list))
         .route("/expense/add", axum::routing::post(add))
         .layer(axum::extract::Extension(pool))
