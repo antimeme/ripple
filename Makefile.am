@@ -105,8 +105,8 @@ endif
 
 ## Rust ================================================================
 
-rs-serve: Cargo.toml
-	cargo run
+rs-serve: Cargo.toml server-cert.pem
+	cargo run server
 
 ## Java ================================================================
 # Names of macros such as JCC, JAR_ROOT and JAVA_SRCFILES have been
