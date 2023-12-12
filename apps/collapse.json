@@ -1,0 +1,59 @@
+{
+    "defaultTile": "deepwater",
+    "tileSpecs": {
+        "deepwater": {
+            "draw": { "background": "navy", "steps": [] },
+            "constrain": {
+                "neighbors": ["deepwater", "water"]
+            }
+        },
+        "water": {
+            "draw": { "background": "blue", "steps": [] },
+            "constrain": {
+                "neighbors": ["water", "deepwater", "beach"]
+            }
+        },
+        "beach": {
+            "draw": { "background": "sandybeige", "steps": [] },
+            "constrain": {
+                "neighbors": ["beach", "water", "grass"]
+            }
+        },
+        "grass": {
+            "draw": { "background": "grassgreen", "steps": [] },
+            "constrain": {
+                "neighbors": ["grass", "forest", "hills", "beach"]
+            }
+        },
+        "deepforest": {
+            "draw": { "background": "darkforestgreen", "steps": [] },
+            "constrain": {
+                "neighbors": ["deepforest", "forest"]
+            }
+        },
+        "forest": {
+            "draw": { "background": "forestgreen", "steps": [] },
+            "constrain": {
+                "neighbors": ["forest", "deepforest", "grass"]
+            }
+        },
+        "hills": {
+            "draw": { "background": "earthybrown", "steps": [] },
+            "constrain": {
+                "neighbors": ["grass", "forest", "mountain"]
+            }
+        },
+        "mountain": {
+            "draw": { "background": "gray", "steps": [] },
+            "constrain": {
+                "neighbors": ["hills", "mountain", "deepmountain"]
+            }
+        },
+        "deepmountain": {
+            "draw": { "background": "lightgray", "steps": [] },
+            "constrain": {
+                "neighbors": ["deepmountain", "mountain"]
+            }
+        }
+    }
+}
