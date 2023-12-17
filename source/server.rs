@@ -1,3 +1,32 @@
+// server.rs
+// Copyright (C) 2023 by Jeff Gold.
+//
+// This program is free software: you can redistribute it and/or
+// modify it under the terms of the GNU General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see
+// <http://www.gnu.org/licenses/>.
+//
+// ---------------------------------------------------------------------
+// An HTTPS server with optional client certificates.
+//
+// Links from nylonicious
+// https://github.com/programatik29/axum-server/blob/master/examples/rustls_session.rs
+// https://github.com/programatik29/axum-server/blob/e575e90d1fc796401d144f306648553909336700/examples/rustls_session.rs#L37
+// https://docs.rs/rustls/latest/rustls/server/struct.ServerConfig.html#method.builder
+// https://docs.rs/rustls/latest/rustls/server/struct.ClientCertVerifierBuilder.html
+// https://github.com/seanmonstar/warp/blob/2c3581e8387e29bab2ac1aa5f9ae9602fe62339f/src/tls.rs#L226
+// https://docs.rs/axum-server/latest/src/axum_server/tls_rustls/mod.rs.html#156
+// https://docs.rs/axum-server/latest/axum_server/tls_rustls/struct.RustlsConfig.html#method.from_config
+// https://github.com/programatik29/axum-server/blob/master/examples/rustls_session.rs
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use chrono;
