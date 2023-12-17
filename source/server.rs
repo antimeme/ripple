@@ -23,9 +23,8 @@ async fn logging(request: axum::http::Request<axum::body::Body>,
 #[tokio::main]
 async fn main() {
     let port = 7878; // TODO: make configurable
-    let app = expense::setup(axum::Router::new()).await
-        .route("/", axum::routing::get(|| async { "Hello, Rust!" }))
-        .layer(axum::middleware::from_fn(logging));
+    let mut app = axum::Router::new();
+    app = expense::setup(app).await;
 
     log(&format!("START http://localhost:{port}"));
     axum_server::bind_rustls(
@@ -35,6 +34,10 @@ async fn main() {
                 .join("server-cert.pem"),
             PathBuf::from(env!("CARGO_MANIFEST_DIR"))
                 .join("server-key.pem")).await.unwrap())
-        .serve(app.into_make_service())
+        .serve(app
+               .route("/", axum::routing::get(
+                   || async { "Hello, Rust!" }))
+               .layer(axum::middleware::from_fn(logging))
+               .into_make_service())
         .await.unwrap();
 }

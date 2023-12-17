@@ -147,6 +147,7 @@ class Gestalt {
             ctx.moveTo(this.#player._position.x,
                        this.#player._position.y);
             this.#player._path.forEach(step => {
+                this.#ship.grid.markCenter(step);
                 ctx.lineTo(step.x, step.y); });
             ctx.strokeStyle = "red";
             ctx.stroke();
