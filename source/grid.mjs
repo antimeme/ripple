@@ -234,6 +234,16 @@ class BaseGrid {
     getEdge() { return this._edge; }
 
     /**
+     * Return an identifier for a node with row and col properties */
+    getID(node) { checkCell(node); return pair(node.row, node.col); }
+
+    /**
+     * Set the value of the "id" property on node to an identifier
+     * useful for storing in an object without conflicting with
+     * other possible nodes. */
+    markID(node) { node.id = this.getID(node); return node; }
+
+    /**
      * Given a node with row and col properties, set the x and y
      * coordinates of the center of that node in place */
     markCenter(node)
@@ -289,7 +299,7 @@ class BaseGrid {
         const base = this._checkNodeCell(node);
         let index = 0;
         this._eachNeighbor(base, neighbor => {
-            neighbor.id = pair(neighbor.row, neighbor.col);
+            this.markID(neighbor);
             if ((index >= 0) &&
                 fn.call(context, neighbor, index++, this, node))
                 index = -1;
@@ -331,14 +341,14 @@ class BaseGrid {
         let index = 0;
 
         do {
-            current.id = pair(current.row, current.col);
+            this.markID(current);
             if (fn.call(context, current, index++, this, start, end))
                 return context;
-            visited[pair(current.row, current.col)] = current;
+            visited[current.id] = current;
 
             let next = null;
             this.eachNeighbor(current, neighbor => {
-                if (next || visited[pair(neighbor.row, neighbor.col)])
+                if (next || visited[this.getID(neighbor)])
                     return;
                 const points = this.getPairPoints(current, neighbor);
                 if (points.length < 2)
@@ -376,21 +386,19 @@ class BaseGrid {
         let   index   = 0;
         const self    = this;
         function visit(node) {
-            const id = pair(node.row, node.col);
-            if (visited[id])
+            self.markID(node);
+            if (visited[node.id])
                 return;
             self._markCenter(node);
             if (fn.call(context, node, index++, self, start, end))
                 index = -1;
-            visited[id] = node;
+            visited[node.id] = node;
 
             self._eachNeighbor(node, neighbor => {
-                const id = pair(neighbor.row, neighbor.col);
-                self._markCenter(neighbor);
-                if (!visited[id] &&
+                self._markCenter(self.markID(neighbor));
+                if (!visited[neighbor.id] &&
                     (neighbor.x >= minX) && (neighbor.x <= maxX) &&
                     (neighbor.y >= minY) && (neighbor.y <= maxY)) {
-                    neighbor.id = id;
                     queue.push(neighbor);
                 }
             });
