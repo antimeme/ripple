@@ -2,48 +2,54 @@ import Character from "./character.mjs";
 import Inventory from "./inventory.mjs";
 import Structure from "./structure.mjs";
 
-function createPanel() {
-    const result = document.createElement("fieldset");
-    const contents = document.createElement("div");
-    const legend = document.createElement("legend");
-    const title = document.createTextNode("Panel");
-    const closeBTN = document.createElement("button");
-    closeBTN.appendChild(document.createTextNode("X"));
-    closeBTN.addEventListener("click", event =>
-        { result.style.display = "none"; });
-    legend.appendChild(closeBTN);
-    legend.appendChild(title);
-    document.body.appendChild(result);
+class Panel {
+    constructor() {
+        const element = document.createElement("fieldset");
+        const contents = document.createElement("div");
+        const legend = document.createElement("legend");
+        const title = document.createTextNode("Panel");
+        const closeBTN = document.createElement("button");
+        closeBTN.appendChild(document.createTextNode("X"));
+        closeBTN.addEventListener("click", event =>
+            { element.style.display = "none"; });
+        legend.appendChild(closeBTN);
+        legend.appendChild(title);
+        document.body.appendChild(element);
 
-    result.appendChild(legend);
-    result.appendChild(contents);
-    result.style.display = "none";
-    result.classList.add("panel");
+        element.appendChild(legend);
+        element.appendChild(contents);
+        element.style.display = "none";
+        element.classList.add("panel");
 
-    return {
-        element: result,
-        contents: contents,
-        setTitle: text => { title.data = text; },
-        show: function() { this.element.style.display = "block"; },
-        resize: function(width, height) {
-            const size = Math.min(width, height);
-            const getPixels = value => Math.round(value) + "px";
-            this.element.style.top = getPixels(size * 0.05);
-            this.element.style.left = getPixels(size * 0.05);
-            this.element.style.bottom = getPixels(0.05 * size);
-            this.element.style.right = getPixels(0.05 * size);
-            this.element.style.borderRadius = getPixels(size * 0.05);
-        }
-    };
+        this._element = element;
+        this._contents = contents;
+        this._title = title;
+    }
+
+    show() { this._element.style.display = "block"; }
+
+    setTitle(text) { this._title.data = text; }
+
+    get contents() { return this._contents; }
+
+    resize(width, height) {
+        const size = Math.min(width, height);
+        const getPixels = value => Math.round(value) + "px";
+        this._element.style.top = getPixels(size * 0.05);
+        this._element.style.left = getPixels(size * 0.05);
+        this._element.style.bottom = getPixels(0.05 * size);
+        this._element.style.right = getPixels(0.05 * size);
+        this._element.style.borderRadius = getPixels(size * 0.05);
+        return this;
+    }
 }
-const panel = createPanel();
 
 class Gestalt {
     constructor(setting) {
         Character.setup(setting);
         Inventory.loadItemTypes(setting.itemtypes);
 
-        this.#panel = panel;
+        this.#panel = new Panel();
         this.#setting = setting;
         this.#player = Character.createRecruit(this.#setting);
         this.#ship = Structure.createSampleShip();
