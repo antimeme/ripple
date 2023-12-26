@@ -18,7 +18,7 @@
                 A rotor is a concept from Geometric Algebra that can
                 serve as a rotation, a complex number, a quaternion, a
                 translation (projective geometry) and
-                even a Lorentz transformation (relativity).
+                even a Lorentz boost (relativity).
             </p>
         </section><section>
             <h2>But first...</h2>
@@ -29,7 +29,9 @@
             </p>
         </section><section>
             <h2>Vectors</h2>
-            <ul><li class="fragment">
+            <p>
+                A vector is an oriented length (one dimension).
+            </p><ul><li class="fragment">
                 Orthonormal Basis: <strong>x</strong>, <strong>y</strong>,
                 <strong>z</strong>
                 <ul><li class="fragment">
@@ -113,15 +115,15 @@
             </p><ul><li class="fragment">
                 <strong>x x</strong><sup>&#x2020;</sup> =
                 <strong>x x</strong> =
-                |<strong>x</strong>|<sup>2</sup> = 1
+                |<strong>x</strong>|<sup>2</sup> = 1<sup>2</sup> = 1
             </li><li class="fragment">
                 <strong>y y</strong><sup>&#x2020;</sup> =
                 <strong>y y</strong> =
-                |<strong>y</strong>|<sup>2</sup> = 1
+                |<strong>y</strong>|<sup>2</sup> = 1<sup>2</sup> = 1
             </li><li class="fragment">
                 <strong>z z</strong><sup>&#x2020;</sup> =
                 <strong>z z</strong> =
-                |<strong>z</strong>|<sup>2</sup> = 1
+                |<strong>z</strong>|<sup>2</sup> = 1<sup>2</sup> = 1
             </li>
         </section><section>
             <h2>Anti-Commute Basis</h2>
@@ -644,8 +646,8 @@
             </li><li class="fragment">
                 i j = (<strong>x</strong>
                 <strong>y</strong>) (<strong>y</strong>
-                <strong>z</strong>) = (<strong>x</strong>
-                <strong>z</strong>) = k
+                <strong>z</strong>) = <strong>x</strong>
+                <strong>z</strong> = k
             </li><li class="fragment">
                 j i = (<strong>y z</strong>) (<strong>x y</strong>) =
                 -(<strong><span class="intro">z y</span> x y</strong>) =
@@ -708,9 +710,23 @@
                 </span><span class="fragment">
                     = 1
                 </span>
-            </li></ul><p class="fragment">
-                An inverse exists when product with conjugate is any
-                non-zero scalar.
+            </p><p class="fragment">
+                (<strong>v</strong><sup>-1</sup>)<sup>-1</sup>
+                <span class="fragment">
+                    =
+                    <strong>v</strong><sup>-1 &#x2020;</sup> /
+                    (<strong>v</strong><sup>-1</sup>
+                    <strong>v</strong><sup>-1 &#x2020;</sup>)
+                </span><span class="fragment">
+                    =
+                    <strong>v</strong><sup>&#x2020; &#x2020;</sup> /
+                    (<del><strong>v</strong>
+                    <strong>v</strong><sup>&#x2020;</sup>
+                    <strong>v</strong><sup>-1</sup>
+                    <strong>v</strong><sup>-1 &#x2020;</sup></del>)
+                </span><span class="fragment">
+                    = <strong>v</strong>
+                </span>
             </p>
         </section><section>
             <h2>Uninvertable</h2>
@@ -726,7 +742,12 @@
                 </span><span class="fragment">
                     = <br /> 1 + <strong>x</strong> +
                     <strong>x</strong> +
-                    <strong>x</strong> <strong>x</strong>
+                    <span class="intro">
+                        <strong>x</strong> <strong>x</strong>
+                    </span>
+                </span><span class="fragment">
+                    = 1 + <strong>x</strong> +
+                    <strong>x</strong> + 1
                 </span><span class="fragment">
                     = 2 + 2<strong>x</strong>
                 </span><span class="fragment">
@@ -841,9 +862,11 @@
             <p>
                 A unit rotor has a norm of one.
             </p><p>
-                |<strong>R</strong>|<sup>2</sup> =
-                R<sub>c</sub><sup>2</sup> +
-                R<sub>s</sub><sup>2</sup> = 1
+                |<strong>R</strong>|<sup>2</sup> = 1<sup>2</sup> = 1
+                <span class="fragment">
+                    = R<sub>c</sub><sup>2</sup> +
+                    R<sub>s</sub><sup>2</sup>
+                </span>
             </p><p class="fragment">
                 Is this starting to look familiar?
             </p><p class="fragment">
@@ -852,9 +875,14 @@
         </section><section>
             <h2>Euler's Formula</h2>
             <p>
-                Consider: <strong>U</strong>
-                <strong>U</strong><sup>&#x2020;</sup> = 1 &and;
-                <strong>U</strong><sup>2</sup> = -1
+                Consider: <strong>U</strong><sup>2</sup> =
+                -1<span class="fragment">,
+                <strong>U</strong><sup>3</sup> =
+                -<strong>U</strong></span><span class="fragment">,
+                    <strong>U</strong><sup>4</sup> =
+                    1</span><span class="fragment">,
+                        <strong>U</strong><sup>5</sup> =
+                        <strong>U</strong>, ...</span>
             </p><ul><li class="fragment">
                 e<sup>x</sup> = 1 + x + x<sup>2</sup>/2 +
                 x<sup>3</sup>/6 + ...
@@ -872,7 +900,7 @@
                 &theta;<sup>2</sup>/2 -
                 &theta;<sup>3</sup>/6 <strong>U</strong> + ...
             </li><li class="fragment">
-                e<sup>&theta; <strong>U</strong></sup> =
+                e<sup>&theta;<strong>U</strong></sup> =
                 (1 - &theta;<sup>2</sup>/2 + ...) +
                 (&theta; - &theta;<sup>3</sup>/6 +
                 ...)<strong>U</strong>
@@ -883,49 +911,106 @@
         </section><section>
             <h2>Euler's Rotor</h2>
             <p>
+                All unit rotors can be expressed this way
+            </p><ul><li class="fragment">
+                <strong>I</strong> =
+                e<sup>&theta; <strong>U</strong></sup> =
+                cos(&theta;) + sin(&theta;) <strong>U</strong>
+            </li><li class="fragment">
+                <strong>I I</strong><sup>&#x2020;</sup>
+                <span class="fragment">
+                    = (cos(&theta;) + sin(&theta;)
+                    <strong>U</strong>)
+                    (cos(&theta;) - sin(&theta;)
+                    <strong>U</strong>)
+                </span><span class="fragment">
+                    = cos(&theta;)<sup>2</sup> -
+                    <del>cos(&theta;) sin(&theta;)
+                        <strong>U</strong></del> +
+                    <del>sin(&theta;) cos(&theta;)
+                        <strong>U</strong></del> -
+                    sin(&theta;)<sup>2</sup>
+                        <strong class="intro">U</strong><sup>2</sup>
+                </span><span class="fragment">
+                    = cos(&theta;)<sup>2</sup> +
+                    sin(&theta;)<sup>2</sup>
+                </span><span class="fragment"> = 1</span>
+            </li></ul>
+        </section><section>
+            <h2>Euler's Rotor</h2>
+            <p>
                 <strong>R</strong> =
                 |<strong>R</strong>|
                 e<sup>&theta;<strong>U</strong></sup> =
                 |<strong>R</strong>| (cos(&theta;) +
                 sin(&theta;)<strong>U</strong>)
             </p><ul><li class="fragment">
-                <strong>R</strong><sup>&#x2020;</sup>
+                <strong>R</strong><sup>-1</sup> =
+                <strong>R</strong><sup>&#x2020;</sup> /
+                (<strong>R R</strong><sup>&#x2020;</sup>)
                 <span class="fragment">
                     = |<strong>R</strong>| (cos(&theta;) +
                     sin(&theta;)<strong>U</strong><sup>&#x2020;</sup>)
+                    / |<strong>R</strong>|<sup>2</sup>
                 </span><span class="fragment">
-                    = <br /> |<strong>R</strong>|
+                    = <br />
                     (cos(&theta;) - sin(&theta;)<strong>U</strong>)
+                    / |<strong>R</strong>|
                 </span><span class="fragment">
-                    = <br /> |<strong>R</strong>|
+                    = <br />
                     (cos(-&theta;) + sin(-&theta;)<strong>U</strong>)
+                    / |<strong>R</strong>|
                 </span><span class="fragment">
-                    = |<strong>R</strong>|
-                    e<sup>-&theta;<strong>U</strong></sup>
+                    = e<sup>-&theta;<strong>U</strong></sup> /
+                    |<strong>R</strong>|
                 </span>
             </li><li class="fragment">
                 <strong>R v R</strong><sup>-1</sup>
                 <span class="fragment">
-                    = (|<strong>R</strong>|
+                    = (<del>|<strong>R</strong>|</del>
                     e<sup>&theta;<strong>U</strong></sup>)
                     <strong>v</strong>
-                    (|<strong>R</strong>|
-                    e<sup>-&theta;<strong>U</strong></sup> /
-                    |<strong>R</strong>|<sup>2</sup>)
-                </span><span class="fragment">
-                    = <br /> <del>|<strong>R</strong>|<sup>2</sup></del>
-                    e<sup>&theta;<strong>U</strong></sup>
-                    <strong>v</strong>
-                    e<sup>-&theta;<strong>U</strong></sup> /
-                    <del>|<strong>R</strong>|<sup>2</sup></del>
+                    (e<sup>-&theta;<strong>U</strong></sup> /
+                    <del>|<strong>R</strong>|</del>)
                 </span><span class="fragment">
                     = e<sup>&theta;<strong>U</strong></sup>
                     <strong>v</strong>
                     e<sup>-&theta;<strong>U</strong></sup>
                 </span>
-            </li><p class="fragment">
+            </li></ul><p class="fragment">
                 Rotor angles are all that matters in sandwich
-            </p>            
+            </p>
+        </section><section>
+            <h2>Euclidian Rotor</h2>
+            <p>
+                Consider: <strong>v</strong>' =
+                <strong>R v R</strong><sup>-1</sup>
+            </p><p class="fragment">
+                |<strong>v</strong>'|<sup>2</sup>
+                <span class="fragment">
+                    = <strong>v</strong>'
+                    <strong>v</strong>'<sup>&#x2020;</sup>
+                </span><span class="fragment">
+                    = (<strong>R v R</strong><sup>-1</sup>)
+                    (<strong>R v R</strong><sup>-1</sup>)
+                </span><span class="fragment">
+                    = <strong>R v <del>R</del></strong><sup>-1</sup>
+                    <strong><del>R</del> v R</strong><sup>-1</sup>
+                </span><span class="fragment">
+                    = <br /> <strong>R v v R</strong><sup>-1</sup>
+                </span><span class="fragment">
+                    = <strong>R v v</strong><sup>&#x2020;</sup>
+                    <strong>R</strong><sup>-1</sup>
+                </span><span class="fragment">
+                    = |<strong>v</strong>|<sup>2</sup>
+                    <del><strong>R R</strong></del><sup>-1</sup>
+                </span><span class="fragment">
+                    = |<strong>v</strong>|<sup>2</sup>
+                </span>
+            </p><p class="fragment">
+                Euclidian rotors preserve vector quadrance and
+                therefore also length
+            </p>
         </section><section>
             <h2>Projective Geometry</h2>
             <p>
@@ -1009,7 +1094,7 @@
         </section><section>
             <h2>Spacetime Vectors</h2>
             <p>
-                Vectors in spacetime can be characterized by their
+                Spacetime vectors are characterized by their
                 squared norm
             </p><ul><li class="fragment">
                 Spacelike: <strong>v</strong>
@@ -1038,7 +1123,9 @@
                     v<sub>z</sub><sup>2</sup> =
                     (c v<sub>t</sub>)<sup>2</sup>
                 </span>
-            </li></ul>
+            </li></ul><p class="fragment">
+                Lightlike vectors form the light cone.
+            </p>
         </section><section>
             <h2>Minkowski Rotors</h2>
             <p>
@@ -1118,9 +1205,12 @@
             <p>
                 A unit Minkowski rotor has a norm of one
             </p><p>
-                |<strong>M</strong>|<sup>2</sup> =
-                <strong>M M</strong><sup>&#x2020;</sup> =
-                M<sub>c</sub><sup>2</sup> - M<sub>s</sub><sup>2</sup> = 1
+                |<strong>M</strong>|<sup>2</sup> = 1<sup>2</sup> = 1
+                <span class="fragment">
+                    = <strong>M M</strong><sup>&#x2020;</sup> =
+                    M<sub>c</sub><sup>2</sup> -
+                    M<sub>s</sub><sup>2</sup>
+                </span>
             </p><p class="fragment">
                 This is the equation of a unit hyperbola
             </p><p class="fragment">
@@ -1129,9 +1219,7 @@
         </section><section>
             <h2>Lorentz Rotor</h2>
             <p>
-                Consider: <strong>x t</strong>
-                (<strong>x t</strong>)<sup>&#x2020;</sup> =
-                -1 &and;
+                Consider: 
                 (<strong>x t</strong>)<sup>2</sup> = 1
             </p><ul><li class="fragment">
                 e<sup>&phi; <strong>x</strong>
@@ -1161,59 +1249,107 @@
                 <strong>x</strong> <strong>t</strong>
             </li></ul>
         </section><section>
-            <h2>Lorentz Transform</h2>
+            <h2>Lorentz Rotor</h2>
             <p>
+                Perhaps surprisingly, this is a unit rotor
+            </p><ul><li class="fragment">
                 <strong>L</strong> =
-                L<sub>x t</sub><strong>x t</strong> +
-                L<sub>y t</sub><strong>y t</strong> +
-                L<sub>z t</sub><strong>z t</strong> &and;
-                (L<sub>x t</sub><sup>2</sup> +
-                L<sub>y t</sub><sup>2</sup> +
-                L<sub>z t</sub><sup>2</sup>) = 1
-            </p><p>
+                e<sup>&phi; <strong>x</strong>
+                <strong>t</strong></sup> =
+                cosh(&phi;) + sinh(&phi;) <strong>x t</strong>
+            </li><li class="fragment">
+                <strong>L L</strong><sup>&#x2020;</sup>
+                <span class="fragment">
+                    = (cosh(&phi;) + sinh(&phi;)
+                    <strong>x t</strong>)
+                    (cosh(&phi;) + sinh(&phi;)
+                    <strong>t x</strong>)
+                </span><span class="fragment">
+                    = cosh(&phi;)<sup>2</sup> +
+                    <del>cosh(&phi;) sinh(&phi;)
+                        <strong>t x</strong></del> +
+                    <del>sinh(&phi;) cosh(&phi;)
+                        <strong>x t</strong></del> +
+                    sinh(&phi;)<sup>2</sup>
+                        <strong class="intro">x t t x</strong>
+                </span><span class="fragment">
+                    = cosh(&phi;)<sup>2</sup> -
+                    sinh(&phi;)<sup>2</sup>
+                </span><span class="fragment"> = 1</span>
+            </li></ul>
+        </section><section>
+            <h2>Lorentz Boosts</h2>
+            <p>
                 <strong>M</strong> =
                 |<strong>M</strong>|
                 e<sup>&phi;<strong>L</strong></sup> =
                 |<strong>M</strong>| (cosh(&phi;) +
                 sinh(&phi;)<strong>L</strong>)
             </p><ul><li class="fragment">
-                <strong>M</strong><sup>&#x2020;</sup>
+                <strong>M</strong><sup>-1</sup> =
+                <strong>M</strong><sup>&#x2020;</sup> /
+                <strong>M M</strong><sup>&#x2020;</sup>
                 <span class="fragment">
                     = |<strong>M</strong>| (cosh(&phi;) +
                     sinh(&phi;)<strong>L</strong><sup>&#x2020;</sup>)
+                    / |<strong>M</strong>|<sup>2</sup>
                 </span><span class="fragment">
-                    = <br /> |<strong>M</strong>|
-                    (cosh(&phi;) - sinh(&phi;)<strong>L</strong>)
+                    = (cosh(&phi;) - sinh(&phi;)<strong>L</strong>) /
+                    |<strong>M</strong>|
                 </span><span class="fragment">
-                    = <br /> |<strong>M</strong>|
-                    (cosh(-&phi;) + sinh(-&phi;)<strong>L</strong>)
+                    <br /> = (cosh(-&phi;) +
+                    sinh(-&phi;)<strong>L</strong>) /
+                    |<strong>M</strong>|
                 </span><span class="fragment">
-                    = |<strong>M</strong>|
-                    e<sup>-&phi;<strong>L</strong></sup>
+                    = e<sup>-&phi;<strong>L</strong></sup> /
+                    |<strong>M</strong>|
                 </span>
             </li><li class="fragment">
                 <strong>M v M</strong><sup>-1</sup>
                 <span class="fragment">
-                    = (|<strong>M</strong>|
+                    = (<del>|<strong>M</strong>|</del>
                     e<sup>&phi;<strong>L</strong></sup>)
                     <strong>v</strong>
-                    (|<strong>M</strong>|
-                    e<sup>-&phi;<strong>L</strong></sup> /
-                    |<strong>M</strong>|<sup>2</sup>)
-                </span><span class="fragment">
-                    = <br /> <del>|<strong>M</strong>|<sup>2</sup></del>
-                    e<sup>&phi;<strong>L</strong></sup>
-                    <strong>v</strong>
-                    e<sup>-&phi;<strong>L</strong></sup> /
-                    <del>|<strong>M</strong>|<sup>2</sup></del>
+                    (e<sup>-&phi;<strong>L</strong></sup> /
+                    <del>|<strong>M</strong>|</del>)
                 </span><span class="fragment">
                     = e<sup>&phi;<strong>L</strong></sup>
                     <strong>v</strong>
                     e<sup>-&phi;<strong>L</strong></sup>
                 </span>
             </li><p class="fragment">
-                Hyperbolic angles are all that matter
+                Hyperbolic angles are all that matter in sandwich
             </p>            
+        </section><section>
+            <h2>Lorentz Boosts</h2>
+            <p>
+                Consider: <strong>v</strong>' =
+                <strong>M v M</strong><sup>-1</sup>
+            </p><p class="fragment">
+                |<strong>v</strong>'|<sup>2</sup>
+                <span class="fragment">
+                    = <strong>v</strong>'
+                    <strong>v</strong>'<sup>&#x2020;</sup>
+                </span><span class="fragment">
+                    = (<strong>M v M</strong><sup>-1</sup>)
+                    (<strong>M v M</strong><sup>-1</sup>)
+                </span><span class="fragment">
+                    = <strong>M v <del>M</del></strong><sup>-1</sup>
+                    <strong><del>M</del> v M</strong><sup>-1</sup>
+                </span><span class="fragment">
+                    = <br /> <strong>M v v M</strong><sup>-1</sup>
+                </span><span class="fragment">
+                    = <strong>M v v</strong><sup>&#x2020;</sup>
+                    <strong>M</strong><sup>-1</sup>
+                </span><span class="fragment">
+                    = |<strong>v</strong>|<sup>2</sup>
+                    <del><strong>M M</strong></del><sup>-1</sup>
+                </span><span class="fragment">
+                    = |<strong>v</strong>|<sup>2</sup>
+                </span>
+            </p><p class="fragment">
+                Minkowski rotors preserve spacetime intervals
+            </p>
         </section>
     </section></div></div>
     <script src="lib/reveal/head.min.js"></script>
