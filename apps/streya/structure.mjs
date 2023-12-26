@@ -76,7 +76,7 @@ class Cell {
 
     init(config) { }
 
-    isObstructed = false;
+    get isObstructed() { return false; }
 
     draw(ctx, node, grid, structure) {
         ctx.beginPath();
@@ -98,14 +98,21 @@ class Superposition extends Cell {
     }
 }
 
+// A hull block separates a ship from the void.
 class Hull extends Cell {
-    isObstructed = true;
+    get isObstructed() { return true; }
     draw(ctx, node, grid) {
         ctx.beginPath();
         grid.drawNode(ctx, node);
         ctx.fillStyle = "dimgray";
         ctx.fill();
     }
+
+    // Hull blocks are relatively boring so a single instance can
+    // be used for all of them.  This should be considered a
+    // constant; anything that would change it (such as a hull
+    // breach) should replace the instance.
+    static instance = new Hull();
 }
 
 class Room {
@@ -140,7 +147,7 @@ class Room {
 
 /**
  * A structure is self contained unit with some kind of functional
- * purpose, usually a building or a ship.  Structures exist within a
+ * purpose -- usually a building or a ship.  Structures exist within a
  * grid of cells on one or more levels, which can be traversed using
  * special cell entries like stairs or lifts.
  *
@@ -384,17 +391,18 @@ class Structure extends Pathf.Pathable {
             return this.eachLevel((level) => {
                 this.resolve(level); });
 
-        var distances = computeDistances(this, this.#grid);
+        const distances = computeDistances(this, this.#grid);
 
         // Create an exterior hull and sort interior nodes
         // by their distance to a hull tile.
+
         var nodes = [];
         this.eachCell(function(contents, node, grid) {
             if (!(contents instanceof Superposition))
                 return;
             node.distance = distances[getNodeIndex(node)];
             if (node.distance <= 1)
-                this.setCell(node, new Hull());
+                this.setCell(node, Hull.instance);
             else nodes.push(node);
             }, this);
         nodes.sort(function(a, b) {
