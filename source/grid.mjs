@@ -170,8 +170,8 @@ class BaseGrid {
     { throw new Error("BaseGrid markCenter is not valid"); }
     _markCell(node)
     { throw new Error("BaseGrid markCell is not valid"); }
-    _eachNeighbor(node, fn)
-    { throw new Error("BaseGrid eachNeighbor is not valid"); }
+    _getNeighbors(node)
+    { throw new Error("BaseGrid getNeighbors is not valid"); }
     _getPoints(node)
     { throw new Error("BaseGrid getPoints is not valid"); }
 
@@ -289,20 +289,27 @@ class BaseGrid {
      *
      *     fn(neighbor, index, grid, node)
      *
+     * Each neighbors has the following properties:
+     *
+     *     row: integer position within grid
+     *     col: integer position within grid
+     *     diagonal: truthy for vertex neighbors
+     *     cost: number representing relative distance
+     *
      * A truthy return from the provided function will terminate the
      * process so the function won't be called again. */
     eachNeighbor(node, fn, context) {
         if (!fn)
-            return this.eachNeighbor(node, neighbor =>
-                { this.push(neighbor); }, []);
+            return this._getNeighbors(node);
 
         const base = this._checkNodeCell(node);
-        let index = 0;
-        this._eachNeighbor(base, neighbor => {
-            this.markID(neighbor);
-            if ((index >= 0) &&
-                fn.call(context, neighbor, index++, this, node))
-                index = -1;
+        const neighbors = this._getNeighbors(base);
+        let done = false;
+        neighbors.forEach((neighbor, index) => {
+            if (done)
+                return;
+            if (fn.call(context, neighbor, index, this, node))
+                done = true;
         });
         return context;
     }
@@ -311,7 +318,7 @@ class BaseGrid {
      * Return truthy iff nodeA and nodeB are neighbors */
     isAdjacent(nodeA, nodeB) {
         nodeB = this._checkNodeCell(nodeB);
-        return this.eachNeighbor(nodeA).some(neighbor =>
+        return this._getNeighbors(nodeA).some(neighbor =>
             ((neighbor.row === nodeB.row) &&
              (neighbor.col === nodeB.col)));
     }
@@ -347,7 +354,7 @@ class BaseGrid {
             visited[current.id] = current;
 
             let next = null;
-            this.eachNeighbor(current, neighbor => {
+            this._getNeighbors(current).forEach(neighbor => {
                 if (next || visited[this.getID(neighbor)])
                     return;
                 const points = this.getPairPoints(current, neighbor);
@@ -360,7 +367,7 @@ class BaseGrid {
                     between2D(points[0], points[1], crossing) &&
                     between2D(start, end, crossing))
                     next = neighbor;
-            }, this);
+            });
             current = next;
         } while (current && ((current.row !== end_node.row) ||
                              (current.col !== end_node.col)));
@@ -394,7 +401,7 @@ class BaseGrid {
                 index = -1;
             visited[node.id] = node;
 
-            self._eachNeighbor(node, neighbor => {
+            self._getNeighbors(node).forEach(neighbor => {
                 self._markCenter(self.markID(neighbor));
                 if (!visited[neighbor.id] &&
                     (neighbor.x >= minX) && (neighbor.x <= maxX) &&
@@ -441,7 +448,7 @@ class BaseGrid {
         const self   = this;
         let best     = undefined;
         let shortest = undefined;
-        this._eachNeighbor(node, neighbor => {
+        this._getNeighbors(node).forEach(neighbor => {
             self._markCenter(neighbor);
             const dSquared = sumSquares(
                 neighbor.x - node.x, neighbor.y - node.y);
@@ -503,24 +510,26 @@ class SquareGrid extends BaseGrid {
         node.col = Math.floor((node.x + halfedge) / this._edge);
     }
 
-    _eachNeighbor(node, fn) {
+    _getNeighbors(node) {
         // Neighbors are provided clockwise from the top
-        fn({row: node.row - 1, col: node.col});
+        const result = [];
+        result.push({row: node.row - 1, col: node.col, cost: 1});
         if (this.diagonal)
-            fn({row: node.row - 1, col: node.col + 1,
-                cost: sqrt2, diagonal: true});
-        fn({row: node.row, col: node.col + 1});
+            result.push({row: node.row - 1, col: node.col + 1,
+                         cost: sqrt2, diagonal: true});
+        result.push({row: node.row, col: node.col + 1, cost: 1});
         if (this.diagonal)
-            fn({row: node.row + 1, col: node.col + 1,
-                cost: sqrt2, diagonal: true});
-        fn({row: node.row + 1, col: node.col});
+            result.push({row: node.row + 1, col: node.col + 1,
+                         cost: sqrt2, diagonal: true});
+        result.push({row: node.row + 1, col: node.col, cost: 1});
         if (this.diagonal)
-            fn({row: node.row + 1, col: node.col - 1,
-                cost: sqrt2, diagonal: true});
-        fn({row: node.row, col: node.col - 1});
+            result.push({row: node.row + 1, col: node.col - 1,
+                         cost: sqrt2, diagonal: true});
+        result.push({row: node.row, col: node.col - 1, cost: 1});
         if (this.diagonal)
-            fn({row: node.row - 1, col: node.col - 1,
-                cost: sqrt2, diagonal: true});
+            result.push({row: node.row - 1, col: node.col - 1,
+                         cost: sqrt2, diagonal: true});
+        return result;
     }
 
     _getPoints(node) {
@@ -611,37 +620,40 @@ class HexGrid extends BaseGrid {
         this._adjustCoords(node);
     }
 
-    _eachNeighbor(node, fn) {
+    _getNeighbors(node) {
         // Neighbors are provided clockwise from the top left.
+        const result = [];
         if (this.point && (node.row % 2)) {
-            fn({row: node.row - 1, col: node.col + 1});
-            fn({row: node.row,     col: node.col + 1});
-            fn({row: node.row + 1, col: node.col + 1});
-            fn({row: node.row + 1, col: node.col});
-            fn({row: node.row,     col: node.col - 1});
-            fn({row: node.row - 1, col: node.col});
+            result.push({row: node.row - 1, col: node.col + 1});
+            result.push({row: node.row,     col: node.col + 1});
+            result.push({row: node.row + 1, col: node.col + 1});
+            result.push({row: node.row + 1, col: node.col});
+            result.push({row: node.row,     col: node.col - 1});
+            result.push({row: node.row - 1, col: node.col});
         } else if (this.point && !(node.row % 2)) {
-            fn({row: node.row - 1, col: node.col});
-            fn({row: node.row,     col: node.col + 1});
-            fn({row: node.row + 1, col: node.col});
-            fn({row: node.row + 1, col: node.col - 1});
-            fn({row: node.row,     col: node.col - 1});
-            fn({row: node.row - 1, col: node.col - 1});
+            result.push({row: node.row - 1, col: node.col});
+            result.push({row: node.row,     col: node.col + 1});
+            result.push({row: node.row + 1, col: node.col});
+            result.push({row: node.row + 1, col: node.col - 1});
+            result.push({row: node.row,     col: node.col - 1});
+            result.push({row: node.row - 1, col: node.col - 1});
         } else if (node.col % 2) {
-            fn({row: node.row - 1, col: node.col});
-            fn({row: node.row,     col: node.col + 1});
-            fn({row: node.row + 1, col: node.col + 1});
-            fn({row: node.row + 1, col: node.col});
-            fn({row: node.row + 1, col: node.col - 1});
-            fn({row: node.row,     col: node.col - 1});
+            result.push({row: node.row - 1, col: node.col});
+            result.push({row: node.row,     col: node.col + 1});
+            result.push({row: node.row + 1, col: node.col + 1});
+            result.push({row: node.row + 1, col: node.col});
+            result.push({row: node.row + 1, col: node.col - 1});
+            result.push({row: node.row,     col: node.col - 1});
         } else {
-            fn({row: node.row - 1, col: node.col});
-            fn({row: node.row - 1, col: node.col + 1});
-            fn({row: node.row,     col: node.col + 1});
-            fn({row: node.row + 1, col: node.col});
-            fn({row: node.row,     col: node.col - 1});
-            fn({row: node.row - 1, col: node.col - 1});
+            result.push({row: node.row - 1, col: node.col});
+            result.push({row: node.row - 1, col: node.col + 1});
+            result.push({row: node.row,     col: node.col + 1});
+            result.push({row: node.row + 1, col: node.col});
+            result.push({row: node.row,     col: node.col - 1});
+            result.push({row: node.row - 1, col: node.col - 1});
         }
+        result.forEach(neighbor => { neighbor.cost = 1; });
+        return result;
     }
 
     _getPoints(node) {
@@ -693,55 +705,57 @@ class TriangleGrid extends BaseGrid {
         node.col = col;
     }
 
-    _eachNeighbor(node, fn) {
+    _getNeighbors(node) {
+        const result = [];
         if ((node.row + node.col) % 2) {
-            fn({row: node.row - 1, col: node.col});
+            result.push({row: node.row - 1, col: node.col});
             if (this.diagonal) {
-                fn({row: node.row - 1, col: node.col + 1,
-                    diagonal: true});
-                fn({row: node.row - 1, col: node.col + 2,
-                    diagonal: true});
-                fn({row: node.row,     col: node.col + 2,
-                    diagonal: true});
+                result.push({row: node.row - 1, col: node.col + 1,
+                             diagonal: true});
+                result.push({row: node.row - 1, col: node.col + 2,
+                             diagonal: true});
+                result.push({row: node.row,     col: node.col + 2,
+                             diagonal: true});
             }
-            fn({row: node.row,     col: node.col + 1});
+            result.push({row: node.row, col: node.col + 1});
             if (this.diagonal) {
-                fn({row: node.row + 1, col: node.col + 1,
-                    diagonal: true});
-                fn({row: node.row + 1, col: node.col,
-                    diagonal: true});
-                fn({row: node.row + 1, col: node.col - 1,
-                    diagonal: true});
+                result.push({row: node.row + 1, col: node.col + 1,
+                             diagonal: true});
+                result.push({row: node.row + 1, col: node.col,
+                             diagonal: true});
+                result.push({row: node.row + 1, col: node.col - 1,
+                             diagonal: true});
             }
-            fn({row: node.row,     col: node.col - 1});
+            result.push({row: node.row, col: node.col - 1});
             if (this.diagonal) {
-                fn({row: node.row, col: node.col - 2,
-                    diagonal: true});
-                fn({row: node.row - 1, col: node.col - 2,
-                    diagonal: true});
-                fn({row: node.row - 1, col: node.col - 1,
-                    diagonal: true});
+                result.push({row: node.row, col: node.col - 2,
+                             diagonal: true});
+                result.push({row: node.row - 1, col: node.col - 2,
+                             diagonal: true});
+                result.push({row: node.row - 1, col: node.col - 1,
+                             diagonal: true});
             }
         } else {
-            fn({row: node.row,     col: node.col + 1});
+            result.push({row: node.row, col: node.col + 1});
             if (this.diagonal) {
-                fn({row: node.row,     col: node.col + 2});
-                fn({row: node.row + 1, col: node.col + 2});
-                fn({row: node.row + 1, col: node.col + 1});
+                result.push({row: node.row,     col: node.col + 2});
+                result.push({row: node.row + 1, col: node.col + 2});
+                result.push({row: node.row + 1, col: node.col + 1});
             }
-            fn({row: node.row + 1, col: node.col});
+            result.push({row: node.row + 1, col: node.col});
             if (this.diagonal) {
-                fn({row: node.row + 1, col: node.col - 1});
-                fn({row: node.row + 1, col: node.col - 2});
-                fn({row: node.row,     col: node.col - 2});
+                result.push({row: node.row + 1, col: node.col - 1});
+                result.push({row: node.row + 1, col: node.col - 2});
+                result.push({row: node.row,     col: node.col - 2});
             }
-            fn({row: node.row,     col: node.col - 1});
+            result.push({row: node.row, col: node.col - 1});
             if (this.diagonal) {
-                fn({row: node.row - 1, col: node.col - 1});
-                fn({row: node.row - 1, col: node.col});
-                fn({row: node.row - 1, col: node.col + 1});
+                result.push({row: node.row - 1, col: node.col - 1});
+                result.push({row: node.row - 1, col: node.col});
+                result.push({row: node.row - 1, col: node.col + 1});
             }
         }
+        return result;
     }
 
     _getPairPoints(nodeA, nodeB) {
@@ -814,16 +828,18 @@ class WedgeGrid extends BaseGrid {
         node.col = col;
     }
 
-    _eachNeighbor(node, fn) {
+    _getNeighbors(node) {
+        const result = [];
         let rmod = node.col % 2 ?  1 : -1;
         let cmod = node.col % 2 ? -1 :  1;
         if (this.diamond) {
             rmod *= ((node.row < 0) ^ (node.col < 0)) ? -1 : 1;
             cmod *= ((node.row < 0) ^ (node.row + rmod < 0)) ? 0 : 1;
         }
-        fn.call(self, {row: node.row, col: node.col + 1});
-        fn.call(self, {row: node.row, col: node.col - 1});
-        fn.call(self, {row: node.row + rmod, col: node.col + cmod});
+        result.push({row: node.row, col: node.col + 1});
+        result.push({row: node.row, col: node.col - 1});
+        result.push({row: node.row + rmod, col: node.col + cmod});
+        return result;
     }
 
     _getPoints(node) {
@@ -896,8 +912,8 @@ class AdapterGrid extends BaseGrid {
         this.toWorld(node);
     }
 
-    _eachNeighbor(node, fn)
-    { return this.underlying._eachNeighbor(node, fn); }
+    _getNeighbors(node)
+    { return this.underlying._getNeighbors(node); }
 
     _getPoints(node) {
         this.fromWorld(node);
