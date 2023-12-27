@@ -175,12 +175,44 @@ class Structure extends Pathf.Pathable {
 
     // Path finding
     pathNeighbor(node, fn, context) {
-        this.grid.eachNeighbor(node, (neighbor) => {
-            const wall = this.getWall(node, neighbor);
+        const neighbors = this.grid.eachNeighbor(node);
+        neighbors.forEach((neighbor, index) => {
+            // Avoid moving along diagonals if there are walls
+            // along the closest edge neighbors.
+            if (neighbor.diagonal) {
+                for (let step = 1; ; ++step) {
+                    const current = (index + step) % neighbors.length;
+                    if (current === index)
+                        break;
+                    const wall = this.getWall(node, neighbors[current]);
+                    if (wall && !wall.door)
+                        return;
+                    if (neighbors[current] === neighbor)
+                        break;
+                    console.log("DEBUG step-plus", index, step);
+                }
+
+                for (let step = 1; ; ++step) {
+                    const current = (neighbors.length + index -
+                                     step) % neighbors.length;
+                    if (current === index)
+                        break;
+                    const wall = this.getWall(node, neighbors[current]);
+                    if (wall && !wall.door)
+                        return;
+                    if (!neighbors[current] === neighbor)
+                        break;
+                }
+            }
+
+            // Don't leave the ship or walk through walls
             const cell = this.getCell(neighbor);
-            if (cell && !cell.isObstructed &&
-                (!wall || wall.door))
-                fn.call(context, neighbor);
+            if (!cell || cell.isObstructed)
+                return;
+            const wall = this.getWall(node, neighbor);
+            if (wall && !wall.door)
+                return;
+            fn.call(context, neighbor);
         });
     }
     pathNodeIndex(node) { return getNodeIndex(node); }
@@ -188,9 +220,8 @@ class Structure extends Pathf.Pathable {
         if (this.pathDebug)
             this.pathDebug.push(a);
         return (a.row === b.row) && (a.col === b.col); }
-    pathCost(node, previous) {
-        return isNaN(node.cost) ? 1 : node.cost;
-    }
+    pathCost(node, previous)
+    { return isNaN(node.cost) ? 1 : node.cost; }
     pathHeuristic(node, goal)
     { return Math.hypot(goal.row - node.row, goal.col - node.col); }
     pathDebug = undefined;
