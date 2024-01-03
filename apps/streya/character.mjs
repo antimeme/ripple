@@ -274,6 +274,7 @@ class Character {
                         this.pointAt(next);
                     } else {
                         this._path = [];
+                        this._pathStep = 0;
                         distance = 0;
                     }
                 } else {
