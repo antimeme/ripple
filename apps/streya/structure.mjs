@@ -177,34 +177,6 @@ class Structure extends Pathf.Pathable {
     pathNeighbor(node, fn, context) {
         const neighbors = this.grid.eachNeighbor(node);
         neighbors.forEach((neighbor, index) => {
-            // Avoid moving along diagonals if there are walls
-            // along the closest edge neighbors.
-            if (neighbor.diagonal) {
-                for (let step = 1; ; ++step) {
-                    const current = (index + step) % neighbors.length;
-                    if (current === index)
-                        break;
-                    const wall = this.getWall(node, neighbors[current]);
-                    if (wall && !wall.door)
-                        return;
-                    if (neighbors[current] === neighbor)
-                        break;
-                    console.log("DEBUG step-plus", index, step);
-                }
-
-                for (let step = 1; ; ++step) {
-                    const current = (neighbors.length + index -
-                                     step) % neighbors.length;
-                    if (current === index)
-                        break;
-                    const wall = this.getWall(node, neighbors[current]);
-                    if (wall && !wall.door)
-                        return;
-                    if (!neighbors[current] === neighbor)
-                        break;
-                }
-            }
-
             // Don't leave the ship or walk through walls
             const cell = this.getCell(neighbor);
             if (!cell || cell.isObstructed)
@@ -291,48 +263,81 @@ class Structure extends Pathf.Pathable {
         return this;
     }
 
-    getWall(nodeA, nodeB) {
-        var level = this.__defaultLevel;
-        if (!isNaN(nodeA.level) && !isNaN(nodeB.level) &&
-            (nodeA.level !== nodeB.level))
+    __boundaryID(nodeA, nodeB) {
+        if (((nodeA.row === nodeB.row) && (nodeA.col === nodeB.col)) ||
+            (!isNaN(nodeA.level) && !isNaN(nodeB.level) &&
+             (nodeA.level !== nodeB.level)))
             return undefined;
-            else if (!isNaN(nodeA.level))
-                level = nodeA.level;
-        else if (!isNaN(nodeB.level))
-            level = nodeB.level;
-
-        var indexA = getNodeIndex(nodeA);
-        var indexB = getNodeIndex(nodeB);
-        var index = Ripple.pair(Math.min(indexA, indexB),
-                                Math.max(indexA, indexB));
-
-        return (level in this.__walls) ?
-            this.__walls[level][index] : undefined;
+        const indexA = getNodeIndex(nodeA);
+        const indexB = getNodeIndex(nodeB);
+        return Ripple.pair(Math.min(indexA, indexB),
+                           Math.max(indexA, indexB));
     }
 
-    makeWall(nodeA, nodeB) {
-        var level = this.__defaultLevel;
-        if (!isNaN(nodeA.level) && !isNaN(nodeB.level) &&
-            (nodeA.level !== nodeB.level))
-            throw new Error("nodes are on different levels");
-        else if (!isNaN(nodeA.level))
-            level = nodeA.level;
-        else if (!isNaN(nodeB.level))
-            level = nodeB.level;
+    getWall(nodeA, nodeB) {
+        const index = this.__boundaryID(nodeA, nodeB);
+        const level = !isNaN(nodeA.level) ? nodeA.level :
+                      !isNaN(nodeB.level) ? nodeB.level :
+                      this.__defaultLevel;
+        return (!isNaN(index) && this.#grid.isAdjacent(nodeA, nodeB) &&
+                (level in this.__walls)) ?
+               this.__walls[level][index] : undefined;
+    }
 
-        var indexA = getNodeIndex(nodeA);
-        var indexB = getNodeIndex(nodeB);
-        var index = Ripple.pair(Math.min(indexA, indexB),
-                                Math.max(indexA, indexB));
+    __boundarySweep(node, start, neighbors) {
+        let step;
 
-        if (!(level in this.__walls))
-            this.__walls[level] = {};
-        this.__walls[level][index] = {
-            nodeA: nodeA, nodeB: nodeB, door: false,
-            points: this.#grid.getPairPoints(nodeA, nodeB)
-        };
+        for (step = 1; step < neighbors.length; ++step) {
+            const current = (start + step) % neighbors.length;
+            if (neighbors[current].diagonal)
+                this.__boundaryCreate(node, neighbors[current]);
+            else break;
+        }
+        for (step = 1; step < neighbors.length; ++step) {
+            const current = ((start < step) ? neighbors.length : 0) +
+                            start - step;
+            if (neighbors[current].diagonal)
+                this.__boundaryCreate(node, neighbors[current]);
+            else break;
+        }
+    }
+
+    __boundaryCreate(nodeA, nodeB) {
+        const neighborsA = this.#grid.eachNeighbor(nodeA);
+        const nnum = neighborsA.reduce((acc, neighbor, index) =>
+            ((nodeB.row === neighbor.row) &&
+             (nodeB.col === neighbor.col)) ? index : acc, -1);
+        if (nnum < 0) {
+            // Ignore request for wall between non-neighbors
+        } else {
+            if (!neighborsA[nnum].diagonal) {
+                // Diagonal neighbors between the pair must have walls
+                // to prevent navigating across corners.
+                const neighborsB = this.#grid.eachNeighbor(nodeB);
+                this.__boundarySweep(nodeB, neighborsB.reduce(
+                    (acc, neighbor, index) =>
+                        ((nodeA.row === neighbor.row) &&
+                         (nodeA.col === neighbor.col)) ?
+                        index : acc, -1), neighborsB);
+                this.__boundarySweep(nodeA, nnum, neighborsA);
+            }
+            const index = this.__boundaryID(nodeA, nodeB);
+            const level = !isNaN(nodeA.level) ? nodeA.level :
+                          !isNaN(nodeB.level) ? nodeB.level :
+                          this.__defaultLevel;
+
+            if (!(level in this.__walls))
+                this.__walls[level] = {};
+            this.__walls[level][index] = {
+                nodeA: nodeA, nodeB: nodeB, door: false,
+                points: this.#grid.getPairPoints(nodeA, nodeB)
+            };
+        }
         return this;
     }
+
+    makeWall(nodeA, nodeB)
+    { return this.__boundaryCreate(nodeA, nodeB); }
 
     eachWall(fn, context) {
         var level = this.__defaultLevel;
