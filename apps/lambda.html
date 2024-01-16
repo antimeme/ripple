@@ -30,13 +30,14 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
 <select id="library-expressions">
     <option></option>
 </select>
+<button id="normal">Normal?</button>
 <button id="canonical">Canonical</button>
 <button id="variables">Variables</button>
+<input id="vdisplay" type="text" disabled="disabled" />
 <br />
 <button id="clear">Clear</button>
 <button id="restore">Restore</button>
 <input id="previous" type="text" disabled="disabled" />
-<input id="vdisplay" type="text" disabled="disabled" />
 
 <p>
     Lambda Calculus is an abstract model of computation.  Other models,
@@ -390,67 +391,70 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
     the programming environment.
 </p>
 
-<script src="ripple/ripple.js"></script>
-<script src="ripple/lambda.js"></script>
-<script>//<![CDATA[
- var expression = document.getElementById("expression");
- var reduce     = document.getElementById("reduce");
- var repeat     = document.getElementById("repeat");
- var restore    = document.getElementById("restore");
- var clear      = document.getElementById("clear");
- var library    = document.getElementById("library");
- var discover   = document.getElementById("discover");
- var lexprs     = document.getElementById("library-expressions");
- var variables  = document.getElementById("variables");
- var vdisplay   = document.getElementById("vdisplay");
- var delay      = document.getElementById("delay");
- var previous   = document.getElementById("previous");
- var sizes      = document.getElementById("size");
- var maxsize    = document.getElementById("maxsize");
- var steps      = document.getElementById("steps");
- var stepCount = 0;
- var repeating = false;
+<script type="module">//<![CDATA[
+ import Lambda from "./ripple/lambda.mjs";
+ const expression = document.getElementById("expression");
+ const reduce     = document.getElementById("reduce");
+ const repeat     = document.getElementById("repeat");
+ const restore    = document.getElementById("restore");
+ const clear      = document.getElementById("clear");
+ const library    = document.getElementById("library");
+ const discover   = document.getElementById("discover");
+ const lexprs     = document.getElementById("library-expressions");
+ const normal     = document.getElementById("normal");
+ const canonical  = document.getElementById("canonical");
+ const variables  = document.getElementById("variables");
+ const vdisplay   = document.getElementById("vdisplay");
+ const delay      = document.getElementById("delay");
+ const previous   = document.getElementById("previous");
+ const sizes      = document.getElementById("size");
+ const maxsize    = document.getElementById("maxsize");
+ const steps      = document.getElementById("steps");
+ let stepCount = 0;
+ let repeating = false;
 
  // Populate library drop down box
- lambda.eachLibrary(function(expression, name) {
+ Lambda.eachLibrary(function(expression, name) {
      var option = document.createElement("option");
-     option.setAttribute("value", expression.toString({showColor: true}));
+     option.setAttribute("value", expression.toString(
+         {showColor: true}));
      option.innerHTML = name;
      lexprs.appendChild(option);
  });
 
- var getExpression = function() {
+ function getExpression() {
      var result;
      try {
-         result = lambda.create(expression.value);
-     } catch(ex) { alert(ex); }
+         result = new Lambda(expression.value);
+     } catch(ex) { console.error(ex); alert(ex); }
      return result;
- };
+ }
 
- var setSize = function(value) {
+ function setSize(value) {
      size.value = value.length;
-     if (isNaN(maxsize.value) ||
-         (parseInt(size.value) > parseInt(maxsize.value)))
-         maxsize.value = size.value;
- };
+     if (!maxsize.value || isNaN(maxsize.value) ||
+         (parseInt(maxsize.value) < value.length))
+         maxsize.value = value.length;
+ }
 
- var continuousReduce = function() {
+ function continuousReduce() {
      var expr = getExpression();
      if (!expr)
          return;
-     try { expr = expr.reduce(); }
-     catch (ex) { alert(ex); return; }
-
-     if (!expr.normal) {
+     try {
+         expr = expr.reduce();
+         expression.value = expr.toString();
          stepCount += 1;
          steps.value = stepCount;
-
-         expression.value = expr.toString();
          setSize(expression.value);
-         if (repeating)
+
+         if (expr.isNormal()) {
+             repeating = false;
+             console.log("NORMAL", expr.toString());
+         } else if (repeating)
              setTimeout(continuousReduce, delay.value);
-     }
- };
+     } catch (ex) { console.error(ex); alert(ex); repeating = false; }
+ }
 
  expression.addEventListener("change", function(event) {
      previous.value = expression.value;
@@ -486,8 +490,8 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
      if (!previous.value)
          previous.value = expression.value;
      try { expr = expr.reduce(); }
-     catch (ex) { alert(ex); }
-     if (!expr.normal) {
+     catch (ex) { console.error(ex); alert(ex); }
+     if (!expr.isNormal()) {
          stepCount += 1;
          steps.value = stepCount;
      }
@@ -533,14 +537,22 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
      var expr = getExpression();
      if (!expr)
          return;
-     vdisplay.value = Object.keys(expr.free).join(' ');
+     vdisplay.value = Object.keys(expr.getFreeVariables()).join(' ');
+ });
+
+ normal.addEventListener("click", function(event) {
+     var expr = getExpression();
+     if (!expr)
+         return;
+     vdisplay.value = expr.isNormal().toString();
+     repeating = false;
  });
 
  canonical.addEventListener("click", function(event) {
      var expr = getExpression();
      if (!expr)
          return;
-     expression.value = expr.__canonicalize().toString();
+     expression.value = expr.canonicalize().toString();
      repeating = false;
  });
  //]]></script>

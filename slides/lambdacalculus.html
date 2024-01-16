@@ -21,16 +21,24 @@
                 <span class="intro">formal system</span> that creates a
                 <span class="intro">simple</span> and
                 <span class="intro">universal</span> model of
-                computation.  Published by
-                <a href="https://en.wikipedia.org/wiki/Alonzo_Church">Alonso
-                    Church</a> in 1936 CE, it slightly predates
-                <a href="https://en.wikipedia.org/wiki/Turing_machine">Turing
-                    Machines</a>.  Both can compute any generally
-                recursive function.
+                computation.
+            </p>
+        </section><section>
+            <h2>History</h2>
+            <p>
+                Published by
+                <a href="https://en.wikipedia.org/wiki/Alonzo_Church"
+                >Alonso Church</a> in 1936 CE, it slightly predates
+                <a href="https://en.wikipedia.org/wiki/Turing_machine"
+                >Turing Machines</a>.  Both can compute any
+                <a href="https://en.wikipedia.org/wiki/General_recursive_function"
+                >generally recursive function</a>.
             </p>
         </section><section>
             <h3>Definition</h3>
-            <ul><li class="fragment">
+            <p>
+                A brief overview (don't fret about notation yet)
+            </p><ul><li class="fragment">
                 Variables: <span class="variable">v</span> :=
                 "[^&#x03bb;.()\s]+"
             </li><li class="fragment">
@@ -47,36 +55,45 @@
                 &#x2282; <span class="variable">v</span>
             </li><li class="fragment">
                 Equivalence:
-                b&#x2209;FV[<span class="expression">E</span>] &#x27f9;
-                &#x03bb;a.<span class="expression">E</span> &#x2251;
-                &#x03bb;b.(<span class="expression">E</span> [a := b])
+                <span class="variable">b</span> &#x2209;
+                FV[<span class="expression">E</span>] &#x27f9;
+                &#x03bb;<span class="variable"
+                >a</span>.<span class="expression">E</span> &#x2251;
+                &#x03bb;<span class="variable"
+                >b</span>.(<span class="expression">E</span>
+                [<span class="variable">a</span> :=
+                <span class="variable">b</span>])
             </li><li class="fragment">
                 Reduction:
-                (&#x03bb;a.<span class="expression">E</span>)
+                (&#x03bb;<span class="variable"
+                >a</span>.<span class="expression">E</span>)
                 <span class="expression">F</span> ... &#x25b7;
                 <span class="expression">E</span>
-                [a := <span class="expression">F</span>] ...
+                [<span class="variable">a</span> :=
+                <span class="expression">F</span>] ...
             </li></ul><p class="fragment">
                 This is a complete description of lambda calculus.
             </p>
         </section><section>
             <h3>Variables</h3>
             <p>
-                <span class="variable">a</span> := "[^&#x03bb;.()\s]+"
+                <span class="variable">v</span> := "[^&#x03bb;.()\s]+"
             </p><p>
                 A variable is a sequence of characters excluding
                 <q class="intro">&#x03bb;</q>, <q class="intro">.</q>,
                 <q class="intro">(</q>, <q class="intro">)</q> and
-                white space.  A single variable by itself is a valid
-                expression.
+                white space.  They serve as labels and focal points
+                for substitution.
             </p><p class="fragment">
-                Examples: <span class="">a</span>,
-                <span class="">b</span>,
-                <span class="">c</span>,
-                <span class="">MULTIPLY</span>,
-                <span class="">172</span>,
-                <span class="">IS-NIL?</span>,
-                <span class="">@!</span>, ...
+                A variable by itself is a valid expression.
+            </p><p class="fragment">
+                Examples: <span class="">a</span>
+                <span class="">b</span>
+                <span class="">c</span>
+                <span class="">MULTIPLY</span>
+                <span class="">172</span>
+                <span class="">IS-NIL?</span>
+                <span class="">@!</span>
             </p>
         </section><section>
             <h3>Expressions</h3>
@@ -100,7 +117,7 @@
             </li><li class="fragment">
                 Grouping: (<span class="expression">E</span>)
             </li></ul><p class="fragment">
-                Expressions are left associative, so
+                Application is conventionally left associative. <br />
                 <span class="expression">E</span>
                 <span class="expression">F</span>
                 <span class="expression">G</span>
@@ -116,12 +133,19 @@
         </section><section>
             <h3>Free Variables</h3>
             <p>
-                Any variable not bound by an abstraction is free.
+                A free variable is one not bound by abstraction. <br />
+                <span class="variable">a</span> is free in
+                [&#x03bb;b.b <span class="variable">a</span>]
+                but bound in [&#x03bb;<span class="variable"
+                >a</span>.<span class="variable">a</span> b]
             </p><ul><li class="fragment">
-                FV[a] &#x225d; {a}
+                FV[<span class="variable">a</span>] &#x225d;
+                {<span class="variable">a</span>}
             </li><li class="fragment">
-                FV[&#x03bb;a.<span class="expression">E</span>] &#x225d;
-                FV[<span class="expression">E</span>] - {a}
+                FV[&#x03bb;<span class="variable"
+                >a</span>.<span class="expression">E</span>] &#x225d;
+                FV[<span class="expression">E</span>] -
+                {<span class="variable">a</span>}
             </li><li class="fragment">
                 FV[<span class="expression">E</span>
                 <span class="expression">F</span>] &#x225d;
@@ -140,17 +164,21 @@
                 FV[&#x03bb;a.a]
                 <span class="fragment">= {a} - {a} = {}</span>
             </li><li class="fragment">
-                FV[&#x03bb;a.b]
-                <span class="fragment">= {b} - {a} = {b}</span>
+                FV[&#x03bb;a.a b]
+                <span class="fragment">= {a, b} - {a} = {b}</span>
             </li><li class="fragment">
                 FV[(&#x03bb;b.b) b]
                 <span class="fragment">= {} &cup; {b} = {b}</span>
             </li><li class="fragment">
                 FV[(&#x03bb;a.a b) &#x03bb;b.c b c]
-                <span class="fragment">= {b, c}</span>
+                <span class="fragment">
+                    = {b} &cup; {c} = {b, c}
+                </span>
             </li><li class="fragment">
                 FV[&#x03bb;a.&#x03bb;b.b a]
-                <span class="fragment">= {}</span>
+                <span class="fragment">
+                    = {a, b} - {b} - {a} = {}
+                </span>
             </li></ul>
         </section>
         <section>
@@ -159,49 +187,75 @@
                 Substitution replaces all instances of a free variable
                 with an expression.
             </p><ul><li class="fragment">
-                a [a := <span class="expression">G</span>] &#x225d;
+                <span class="variable">a</span>
+                [<span class="variable">a</span> :=
+                <span class="expression">G</span>] &#x225d;
                 <span class="expression">G</span>
                 <span class="fragment">
-                    &and; b [a := <span class="expression">G</span>]
+                    &and; b [<span class="variable">a</span> :=
+                    <span class="expression">G</span>]
                     &#x225d; b
                 </span>
             </li><li class="fragment">
-                &#x03bb;a.<span class="expression">E</span>
-                [a := <span class="expression">G</span>] &#x225d;
-                &#x03bb;a.<span class="expression">E</span>
-                <span class="fragment">
-                    &and; <br />
-                    &#x03bb;b.<span class="expression">E</span>
-                    [a := <span class="expression">G</span>] &#x225d;
-                    &#x03bb;b.(<span class="expression">E</span>
-                    [a := <span class="expression">G</span>])
-                </span>
-            </li><li class="fragment">
                 <span class="expression">E</span>
                 <span class="expression">F</span>
-                [a := <span class="expression">G</span>] &#x225d;
+                [<span class="variable">a</span> :=
+                <span class="expression">G</span>] &#x225d;
                 <span class="expression">E</span>
-                [a := <span class="expression">G</span>]
+                [<span class="variable">a</span> :=
+                <span class="expression">G</span>]
                 <span class="expression">F</span>
-                [a := <span class="expression">G</span>]
+                [<span class="variable">a</span> :=
+                <span class="expression">G</span>]
             </li><li class="fragment">
                 (<span class="expression">E</span>)
-                [a := <span class="expression">G</span>] &#x225d;
+                [<span class="variable">a</span> :=
+                <span class="expression">G</span>] &#x225d;
                 (<span class="expression">E</span>
-                [a := <span class="expression">G</span>])
+                [<span class="variable">a</span> :=
+                <span class="expression">G</span>])
+            </li><li class="fragment">
+                &#x03bb;<span class="variable"
+                >a</span>.<span class="expression">E</span>
+                [<span class="variable">a</span> :=
+                <span class="expression">G</span>] &#x225d;
+                &#x03bb;<span class="variable"
+                >a</span>.<span class="expression">E</span>
+                <span class="fragment">
+                    &and;
+                    (b &#x2209; FV[<span class="expression">G</span>])
+                    &#x27f9; <br />
+                    &#x03bb;b.<span class="expression">E</span>
+                    [<span class="variable">a</span> :=
+                    <span class="expression">G</span>] &#x225d;
+                    &#x03bb;b.(<span class="expression">E</span>
+                    [<span class="variable">a</span> :=
+                    <span class="expression">G</span>])
+                    
+                </span>
             </li></ul>
         </section>
         <section>
             <h3>Equivalence</h3>
             <p>
                 Replacing all occurances of a bound variable does not
-                change the meaning of an expression unless it coincides
-                with a free variable.
-            </p><p>
-                b&#x2209;FV[<span class="expression">E</span>] &#x27f9;
-                &#x03bb;a.<span class="expression">E</span>
+                change the meaning of an expression as long as free
+                variables are preserved.
+            </p><p class="fragment">
+                <span class="variable">b</span> &#x2209;
+                FV[<span class="expression">E</span>] &#x27fa;
+                &#x03bb;<span class="variable">a</span
+                >.<span class="expression">E</span>
                 &#x2251;
-                &#x03bb;b.(<span class="expression">E</span> [a := b])
+                &#x03bb;<span class="variable"
+                >b</span>.(<span class="expression">E</span>
+                [<span class="variable">a</span> :=
+                <span class="variable">b</span>])
+            </p><p class="fragment">
+                <span class="expression">E</span> &#x2251;
+                <span class="expression">F</span> &#x27f9;
+                FV[<span class="expression">E</span>] =
+                FV[<span class="expression">F</span>]
             </p>
         </section>
         <section>
@@ -210,8 +264,8 @@
                 &#x03bb;a.a &#x2251;
                 <span class="true">&#x03bb;b.b</span>
             </li><li class="fragment">
-                &#x03bb;a.c &#x2251;
-                <span class="true">&#x03bb;b.c</span>
+                &#x03bb;a.a b c &#x2251;
+                <span class="true">&#x03bb;d.d b c</span>
             </li><li class="fragment">
                 &#x03bb;f.(&#x03bb;a.f (a a)) &#x03bb;a.f (a a)
                 &#x2251; <br />
@@ -219,26 +273,30 @@
                     &#x03bb;g.(&#x03bb;b.g (b b)) &#x03bb;c.g (c c)
                 </span>
             </li></ul></td><td><ul><li class="fragment">
-                &#x03bb;a.b &ne;
-                <span class="false">&#x03bb;a.c</span>
-            </li><li class="fragment">
-                &#x03bb;a.b &ne;
-                <span class="false">&#x03bb;b.b</span>
-            </li><li class="fragment">
                 &#x03bb;a.&#x03bb;b.a &ne;
                 <span class="false">&#x03bb;c.&#x03bb;b.a</span>
+            </li><li class="fragment">
+                &#x03bb;a.a b c &ne;
+                <span class="false">&#x03bb;b.a b c</span>
+            </li><li class="fragment">
+                &#x03bb;a.a b c &ne;
+                <span class="false">&#x03bb;b.b b c</span>
+            </li><li class="fragment">
+                &#x03bb;a.a b c &ne;
+                <span class="false">&#x03bb;d.b c d</span>
             </li></ul></td></tr></table>
         </section><section>
             <h3>Reduction</h3>
             <p>
-                Reduction replaces an abstraction followed by an
-                expression with the body of the abstraction
-                with the variable substited by the expression.
-            </p><p>
+                Reduction applies an abstration to the expression
+                that follows.  This replaces the abstraction and
+                following expression with the body of the abstraction
+                with the bound variable substituted.
+            </p><p span class="fragment">
                 (&#x03bb;a.<span class="expression">E</span>)
                 <span class="expression">F</span> ...
                 <span class="fragment">
-                    &#x25b7; <span class="expression">E</span>
+                    &#x2aa2; <span class="expression">E</span>
                     [a := <span class="expression">F</span>] ...
                 </span>
             </p>
@@ -247,21 +305,21 @@
             <ul><li class="fragment">
                 (&#x03bb;a.a) b
                 <span class="fragment">
-                    &#x25b7; a [a := b]
+                    &#x2aa2; a [a := b]
                 </span><span class="fragment">
                     &#x25b7; b
                 </span>
             </li><li class="fragment">
                 (&#x03bb;a.a a) b c
                 <span class="fragment">
-                    &#x25b7; (a a [a := b]) c
+                    &#x2aa2; (a a [a := b]) c
                 </span><span class="fragment">
                     &#x25b7; b b c
                 </span>
             </li><li class="fragment">
                 &#x03bb;a.(&#x03bb;b.b a) c
                 <span class="fragment">
-                    &#x25b7; &#x03bb;a.(b a [b := c])
+                    &#x2aa2; &#x03bb;a.(b a [b := c])
                 </span><span class="fragment">
                     &#x25b7; &#x03bb;a.c a
                 </span>
@@ -274,14 +332,14 @@
             </p><p class="fragment">
                 (&#x03bb;a.&#x03bb;b.a) b
                 <span class="fragment false">
-                    &#x25b7; &#x03bb;b.a [a := b]
+                    &#x2aa2; &#x03bb;b.a [a := b]
                 </span><span class="fragment false">
                     &#x25b7; &#x03bb;b.b
                 </span>
             </p><p class="fragment">
                 (&#x03bb;a.&#x03bb;c.a) b    
                 <span class="fragment true">
-                    &#x25b7; &#x03bb;c.a [a := b]
+                    &#x2aa2; &#x03bb;c.a [a := b]
                 </span><span class="fragment true">
                     &#x25b7; &#x03bb;c.b
                 </span>
@@ -302,18 +360,18 @@
             </li><li class="fragment">
                 (&#x03bb;a.a) &#x03bb;b.&#x03bb;c.b
                 <span class="fragment">
-                    &#x25b7; a [a := &#x03bb;b.&#x03bb;c.b]
+                    &#x2aa2; a [a := &#x03bb;b.&#x03bb;c.b]
                 </span><span class="fragment">
                     &#x25b7; &#x03bb;b.&#x03bb;c.b
                 </span><span class="fragment">&#10003;</span>
             </li><li class="fragment">
                 (&#x03bb;a.a) ((&#x03bb;b.b) &#x03bb;c.c)
                 <span class="fragment">
-                    &#x25b7; a [a := (&#x03bb;b.b) &#x03bb;c.c]
+                    &#x2aa2; a [a := (&#x03bb;b.b) &#x03bb;c.c]
                 </span><span class="fragment">
                     &#x25b7; <br />(&#x03bb;b.b) &#x03bb;c.c
                 </span><span class="fragment">
-                    &#x25b7; b [b := &#x03bb;c.c]
+                    &#x2aa2; b [b := &#x03bb;c.c]
                 </span><span class="fragment">
                     &#x25b7; &#x03bb;c.c
                 </span><span class="fragment">&#10003;</span>
@@ -326,14 +384,19 @@
             </p><p class="fragment">
                 (&#x03bb;a.a a) &#x03bb;a.a a
                 <span class="fragment">
-                    &#x25b7; <br /> a a [a := &#x03bb;a.a a]
-                </span><span class="fragment">
-                    &#x25b7; (&#x03bb;a.a a) &#x03bb;a.a a
+                    &#x2aa2; a a [a := &#x03bb;a.a a]
                 </span><span class="fragment">
                     &#x25b7; <br /> (&#x03bb;a.a a) &#x03bb;a.a a
                 </span><span class="fragment">
                     &#x25b7; (&#x03bb;a.a a) &#x03bb;a.a a
+                </span><span class="fragment">
+                    &#x25b7; <br /> (&#x03bb;a.a a) &#x03bb;a.a a
                 </span><span class="fragment">&#x25b7; ...</span>
+            </p><p class="fragment">
+                No algorithm can decide whether an abritrary expression
+                has a normal form
+                (<a href="https://en.wikipedia.org/wiki/Halting_problem"
+                 >halting problem</a>)
             </p>
         </section>
         <section>
@@ -341,20 +404,18 @@
             <p>
                 Normal order performs the outer most, left most
                 reduction first when more than one are available.
-            </p><ul><li class="fragment">
+            <p class="fragment">
                 (&#x03bb;a.a a) ((&#x03bb;b.b) c)
                 <span class="fragment">
-                    &#x25b7; a a [a := ((&#x03bb;b.b) c)]
-                </span>
-            </li><li class="fragment">
-                ((&#x03bb;b.b) c) ((&#x03bb;b.b) c)
-                <span class="fragment">
-                    &#x25b7; b [b := c] ((&#x03bb;b.b) c)
-                </span>
-            </li><li class="fragment">
-                c ((&#x03bb;b.b) c)
-                <span class="fragment">
-                    &#x25b7; c b [b := c]
+                    &#x2aa2; a a [a := ((&#x03bb;b.b) c)]
+                </span><span class="fragment">
+                    &#x25b7; <br />((&#x03bb;b.b) c) ((&#x03bb;b.b) c)
+                </span><span class="fragment">
+                    &#x2aa2; b [b := c] ((&#x03bb;b.b) c)
+                </span><span class="fragment">
+                    &#x25b7; <br /> c ((&#x03bb;b.b) c)
+                </span><span class="fragment">
+                    &#x2aa2; c (b [b := c])
                 </span><span class="fragment">
                     &#x25b7; c c
                 </span><span class="fragment">&#10003;</span>
@@ -369,15 +430,14 @@
                 A disadvantage of normal form is that it can evaluate
                 parts of an expression many times.  Applicative
                 evaluation solves this problem.
-            </p><ul><li class="fragment">
+            </p><p class="fragment">
                 (&#x03bb;a.a a) ((&#x03bb;b.b) c)
                 <span class="fragment">
-                    &#x25b7; (&#x03bb;a.a a) b [b := c]
-                </span>
-            </li><li class="fragment">
-                (&#x03bb;a.a a) c
-                <span class="fragment">
-                    &#x25b7; a a [a := c]
+                    &#x2aa2; (&#x03bb;a.a a) (b [b := c])
+                </span><span class="fragment">
+                    &#x25b7; <br /> (&#x03bb;a.a a) c
+                </span><span class="fragment">
+                    &#x2aa2; a a [a := c]
                 </span><span class="fragment">
                     &#x25b7; c c
                 </span><span class="fragment">&#10003;</span>
@@ -395,19 +455,21 @@
             </p><table class="large"><tr><td><ul class="fragment">
                 Normal Order                
                 <li class="fragment">
-                    (&#x03bb;b.c) ((&#x03bb;d.d d) &#x03bb;d.d d)
+                    &#x25b7; (&#x03bb;b.c) ((&#x03bb;d.d d)
+                    &#x03bb;d.d d)
                 </li><li class="fragment">
-                    c [b := ((&#x03bb;d.d d) &#x03bb;d.d d)]
-                </li><li class="fragment">
-                    c <span class="fragment">&#10003;</span>
+                    &#x25b7; c <span class="fragment">&#10003;</span>
                 </li></ul>
             </td><td><ul class="fragment">
                 Applicative Order
                 <li class="fragment">
-                    (&#x03bb;a.&#x03bb;b.a) c
+                    &#x25b7; (&#x03bb;a.&#x03bb;b.a) c
                     ((&#x03bb;d.d d) &#x03bb;d.d d)
                 </li><li class="fragment">
-                    (&#x03bb;a.&#x03bb;b.a) c
+                    &#x25b7; (&#x03bb;a.&#x03bb;b.a) c
+                    ((&#x03bb;d.d d) &#x03bb;d.d d)
+                </li><li class="fragment">
+                    &#x25b7; (&#x03bb;a.&#x03bb;b.a) c
                     ((&#x03bb;d.d d) &#x03bb;d.d d)
                 </li><li class="fragment">
                     ...
@@ -423,22 +485,22 @@
             </p><ul><li class="fragment">
                 (&#x03bb;a.a a) ((&#x03bb;b.b) c)
                 <span class="fragment">
-                    &#x25b7; a a [a := ((&#x03bb;b.b) c)]
-                </span>
-            </li><li class="fragment">
-                ((&#x03bb;b.b) c) ((&#x03bb;b.b) c)
+                    &#x2aa2; a a [a := ((&#x03bb;b.b) c)]
+                </span><span class="fragment">
+                    &#x25b7; <br />
+                    (<span class="intro">(&#x03bb;b.b) c</span>)
+                    (<span class="intro">(&#x03bb;b.b) c</span>)
                 <span class="fragment">&#x25b7; c c</span>
                 <span class="fragment">&#10003;</span>
             </li></ul><p class="fragment">
-                This is the best of both worlds but may be tricky to
-                implement.
+                Stable, efficient... and tricky to implement.
             </p>
         </section><section>
             <h3>Currying</h3>
             <p>
-                All abstractions accept a single variable (Frege 1893
-                CE).  Additional variables are nested:
-                &#x03bb;a.&#x03bb;b.<span class="expression">E</span>
+                Frege (1893 CE) pointed out that abstractions with a
+                single argument can be nested to produce multi-variable
+                abstractions.
             </p><ul><li class="fragment">
                 (&#x03bb;a.&#x03bb;b.<span class="expression">E</span>)
                 <span class="expression">F</span>
@@ -467,19 +529,27 @@
         </section><section>
             <h3>Multi-Argument Notation</h3>
             <p>
-                There is a convenient short hand for nested
-                abstractions.
-            </p><p>
-                <span class="intro">&#x03bb;a
-                    b.</span><span class="expression">E</span> &#x225d;
-                &#x03bb;a.&#x03bb;b.<span class="expression">E</span>
+                Nested abstractions have a convenient short hand.
             </p><p class="fragment">
-                <span class="intro">&#x03bb;a b
-                    c.<span class="expression">E</span></span> &#x225d;
-                &#x03bb;a.&#x03bb;b.&#x03bb;c.<span class="expression"
-                                              >E</span>
+                &#x03bb;<span class="variable">a</span>
+                <span class="variable"
+                >b</span>.</span><span class="expression">E</span>
+                &#x225d; &#x03bb;<span class="variable"
+                >a</span>.&#x03bb;<span class="variable"
+                >b</span>.<span class="expression">E</span>
             </p><p class="fragment">
-                And so on for more arguments...
+                &#x03bb;<span class="variable">a</span>
+                <span class="variable"
+                >b</span> <span class="variable"
+                >c</span>.</span><span class="expression">E</span>
+                &#x225d; &#x03bb;<span class="variable"
+                >a</span>.&#x03bb;<span class="variable"
+                >b</span>.&#x03bb;<span class="variable"
+                >c</span>.<span class="expression">E</span>
+            </p><p class="fragment">
+                ...
+            </p><p class="fragment">
+                Spaces separate variables.
             </p>
         </section><section>
             <h3>Lambda Calculus</h3>
@@ -500,19 +570,29 @@
                 &#x2282; <span class="variable">v</span>
             </li><li>
                 Equivalence:
-                b&#x2209;FV[<span class="expression">E</span>] &#x27f9;
-                &#x03bb;a.<span class="expression">E</span> &#x2251;
-                &#x03bb;b.(<span class="expression">E</span> [a := b])
+                <span class="variable">b</span> &#x2209;
+                FV[<span class="expression">E</span>] &#x27f9;
+                &#x03bb;<span class="variable"
+                >a</span>.<span class="expression">E</span> &#x2251;
+                &#x03bb;<span class="variable"
+                >b</span>.(<span class="expression">E</span>
+                [<span class="variable">a</span> :=
+                <span class="variable">b</span>])
             </li><li>
                 Reduction:
-                (&#x03bb;a.<span class="expression">E</span>)
+                (&#x03bb;<span class="variable"
+                >a</span>.<span class="expression">E</span>)
                 <span class="expression">F</span> ... &#x25b7;
                 <span class="expression">E</span>
-                [a := <span class="expression">F</span>] ...
+                [<span class="variable">a</span> :=
+                <span class="expression">F</span>] ...
             </li></ul><p>
-                Notation: &#x03bb;a
-                b.</span><span class="expression">E</span> &#x225d;
-                &#x03bb;a.&#x03bb;b.<span class="expression">E</span>
+                Notation: &#x03bb;<span class="variable">a
+                b</span>.</span><span class="expression">E</span>
+                &#x225d;
+                &#x03bb;<span class="variable"
+                >a</span>.&#x03bb;<span class="variable"
+                >b</span>.<span class="expression">E</span>
             </p>
         </section><section>
             <h3>Lambda Playground</h3>
@@ -524,21 +604,38 @@
             <h2>Lambda Computation</h2>
             <p>
                 Lambda calculus is certainly simple.  But isn't it
-                supposed to be universal?  There's no boolean logic,
-                no numbers, no recursion and no data structures.
-            </p><p>
-                We can construct these using combinators.
+                supposed to be universal?
+            </p>
+        </section><section>
+            <h3>Missing Features</h3>
+            <p>
+                Some things lambda calculus seems to lack:
+            </p><ul><li class="fragment">
+                Boolean Logic
+            </li><li class="fragment">
+                Numbers
+            </li><li class="fragment">
+                Arithmetic
+            </li><li class="fragment">
+                Flow Control
+            </li><li class="fragment">
+                Data Structures
+            </li></ul><p class="fragment">
+                We can construct these!
             </p>
         </section><section>
             <h3>Combinators</h3>
             <p>
-                A combinator is an abstraction with no free variables.
+                A combinator is an abstraction that has no
+                free variables.
+                <span class="fragment">
+                    FV[&#x03bb;<span class="variable"
+                    >v</span>.<span class="expression">E</span>]
+                    = {}
+                </span>
+            </p><p class="fragment">
                 As a consequence they have no state or external
                 interactions.
-            </p><p>
-                FV[&#x03bb;<span class="variable"
-                           >v</span>.<span class="expression">E</span>]
-                = {}
             </p>
         </section><section>
             <h3>Combinator Birds</h3>
@@ -583,9 +680,11 @@
                 we represent these in lambda calculus?
             </p>
             <ul><li class="fragment">
-                <span class="true">TRUE</span>[Kestral]: &#x03bb;a b.a
+                <span class="true">TRUE</span> &#x225d;
+                &#x03bb;a b.a [Kestral]
             </li><li class="fragment">
-                <span class="false">FALSE</span>[Kite]: &#x03bb;a b.b
+                <span class="false">FALSE</span> &#x225d;
+                &#x03bb;a b.b [Kite]
             </li></ul>
         </section><section>
             <h3>Conditional Statements</h3>
@@ -614,9 +713,9 @@
                 We don't need a conditional combinator.
             </p>
         </section><section>
-            <h3>Combinator NOT</h3>
+            <h3>Combinator Negate</h3>
             <p>
-                NOT [Cardinal]: &#x03bb;p a b.p b a
+                NOT: &#x03bb;p a b.p b a [Cardinal]
             </p><table><tr><td><ul><li class="fragment">
                 NOT TRUE
             </li><li class="fragment">
@@ -633,7 +732,7 @@
                 <span class="fragment">&#x25b7; TRUE</span>
             </li></ul></td></tr></table>
         </section><section>
-            <h3>Combinator AND</h3>
+            <h3>Combinator Conjunction</h3>
             <p>
                 AND: &#x03bb;p q.p q p
             </p><table><tr><td><ul><li class="fragment">
@@ -662,7 +761,7 @@
                 FALSE
             </li></ul></td></tr></table>
         </section><section>
-            <h3>Combinator OR</h3>
+            <h3>Combinator Disjunction</h3>
             <p>
                 OR: &#x03bb;p q.p p q
             </p><table><tr><td><ul><li class="fragment">
@@ -691,7 +790,7 @@
                 FALSE
             </li></ul></td></tr></table>
         </section><section>
-            <h3>Combinator Booleans</h3>
+            <h3>Combinator Equality</h3>
             <p>
                 BOOLEQ?: &#x03bb;p q.p q (NOT q)
             </p><table class="large"><tr><td><ul><li class="fragment">
@@ -722,13 +821,13 @@
                 <span class="fragment">&#x25b7; TRUE</span>
             </li></ul></td></tr></table>
         </section><section>
-            <h3>Combinator Booleans</h3>
+            <h3>Review: Booleans</h3>
             <ul><li>
-                TRUE[Kestral]: &#x03bb;a b.a
+                TRUE: &#x03bb;a b.a [Kestral]
             </li><li>
-                FALSE[Kite]: &#x03bb;a b.b
+                FALSE: &#x03bb;a b.b [Kite]
             </li><li>
-                NOT[Cardinal]: &#x03bb;p a b.p b a
+                NOT: &#x03bb;p a b.p b a [Cardinal]
             </li><li>
                 AND: &#x03bb;p q.p q p
             </li><li>
@@ -758,8 +857,8 @@
             <p>
                 Natural numbers include zero and its successors.
             </p><p class="fragment">
-                ZERO <span class="fragment">[Kite/FALSE]</span>:
-                &#x03bb;f a.a
+                ZERO: &#x03bb;f a.a
+                <span class="fragment">[Kite/FALSE]</span>
             </p><p class="fragment">
                 SUCCESSOR: &#x03bb;n f a.f (n f a)
             </p>
@@ -806,7 +905,7 @@
             <p>
                 Compose numbers to multiply:
             </p><p>
-                MULTIPLY [Bluebird]: &#x03bb;m n f.m (n f)
+                MULTIPLY: &#x03bb;m n f.m (n f) [Bluebird]
             </p><ul><li class="fragment">
                 MULTIPLY THREE TWO
             </li><li class="fragment">
@@ -827,7 +926,7 @@
             <p>
                 Raise one number to the power of another:
             </p><p>
-                POWER [Thrush]: &#x03bb;n m.m n
+                POWER: &#x03bb;n m.m n [Thrush]
             </p><ul><li class="fragment">
                 POWER THREE TWO
             </li><li class="fragment">
@@ -841,17 +940,17 @@
                 <span class="fragment">[NINE]</span>
             </li></ul>
         </section><section>
-            <h3>Combinator Numbers</h3>
+            <h3>Review: Numbers and Arithmetic</h3>
             <ul><li>
-                ZERO [Kite/FALSE]: &#x03bb;f a.a
+                ZERO: &#x03bb;f a.a [Kite/FALSE]
             </li><li>
                 SUCCESSOR: &#x03bb;n f a.f (n f a)
             </li><li>
                 ADD: &#x03bb;m n.n SUCCESSOR m
             </li><li>
-                MULTIPLY [Bluebird]: &#x03bb;m n f.m (n f)
+                MULTIPLY: &#x03bb;m n f.m (n f) [Bluebird]
             </li><li>
-                POWER [Thrush]: &#x03bb;n m.m n
+                POWER: &#x03bb;n m.m n [Thrush]
             </li></ul>
         </section><section>
             <h3>Combinator Subtraction</h3>
@@ -891,9 +990,7 @@
                 &#x03bb;f a.f ((&#x03bb;c.a) f)
                 <span class="fragment">
                     &#x25b7; &#x03bb;f a.f a
-                </span><span class="fragment">
-                    &#x25b7; ONE
-                </span>
+                </span><span class="fragment">[ONE]</span>
             </li></ul>
         </section><section>
             <h3>Combinator Subtraction</h3>
@@ -917,9 +1014,7 @@
                 &#x03bb;f a.((&#x03bb;c.a) f)
                 <span class="fragment">
                     &#x25b7; &#x03bb;f a.a
-                </span><span class="fragment">
-                    &#x25b7; ZERO
-                </span>
+                </span><span class="fragment">[ZERO]</span>
             </li></ul>
         </section><section>
             <h3>Combinator Subtraction</h3>
@@ -935,9 +1030,7 @@
                 &#x03bb;f a.(&#x03bb;c.a) (&#x03bb;b.b)
                 <span class="fragment">
                     &#x25b7; &#x03bb;f a.a
-                </span><span class="fragment">
-                    &#x25b7; ZERO
-                </span>
+                </span><span class="fragment">[ZERO]</span>
             </li></ul><p class="fragment">
                 Zero is its own predecessor.  This isn't mathematically
                 accurate but it will prove useful.
@@ -1036,43 +1129,52 @@
         </section><section>
             <h3>Combinator Flow</h3>
             <p>
-                While Church Numerals make it easy to create a loop
-                with a fixed count we have no way to perform a
-                computation until some condition is met.  That's an
-                important gap in our programming ability.
+                We can easily use a Church numeral directly to loop a
+                fixed number of times.
+            </p><p class="fragment">
+                However, we still don't have a way to stop a loop when
+                some condition is met.  That's an important gap in our
+                programming ability.
             </p>
         </section><section id="loops">
             <h3>Combinator Loops</h3>
-            <p>See <a href="#recursion">recursion</a>.</p>
+            <p>
+                These require statements, which we don't have.
+                See <a href="#recursion">recursion</a>.
+            </p>
         </section><section id="recursion">
             <h3>Combinator Recursion</h3>
-            <p>See <a href="#loops">loops</a>.</p>
+            <p>
+                These require named functions, which we don't have.
+                See <a href="#loops">loops</a>.
+            </p>
         </section><section>
             <h3>Combinator Fixed Points</h3>
             <p>
-                Introducing the fixed point combinator, better
-                known as the famous Y combinator:
-            </p><ul><li class="fragment">
+                Introducing the normal order fixed point combinator:
+            </p><p class="fragment">
                 FIX &#x225d; &#x03bb;f.(&#x03bb;a.f (a a))
                 &#x03bb;a.f (a a)
-            </li><li class="fragment">
+            </p><p class="fragment">
                 FIX g
                 <span class="fragment">
-                    = (&#x03bb;a.g (a a))
+                    &#x25b7; (&#x03bb;a.g (a a))
                     &#x03bb;a.g (a a)
-                </span>
-            </li><li class="fragment">
-                FIX g = g ((&#x03bb;a.g (a a)) &#x03bb;a.g (a a))
-                <span class="fragment">
-                    = g (FIX g)
-                <span class="fragment">
-                    = <br /> g (g (FIX g))
                 </span><span class="fragment">
-                    = g (g (g (FIX g)))
+                    &#x25b7; <br />
+                    g ((&#x03bb;a.g (a a)) &#x03bb;a.g (a a))
                 </span><span class="fragment">
-                    = ...
+                    &#x2251; g (FIX g)
+                </span><span class="fragment">
+                    &#x25b7; <br /> g (g (FIX g))
+                </span><span class="fragment">
+                    &#x25b7; g (g (g (FIX g)))
+                </span><span class="fragment">
+                    &#x25b7; ...
                 </span>
-            </li></ul>
+            </p><p class="fragment">
+                Forever? Normal order reduces outer most first.
+            </p>
         </section><section>
             <h3>Factorial</h3>
             <p>
@@ -1082,7 +1184,7 @@
                 FACTORIAL &#x225d; FIX FSTEP
             </p>
         </section><section>
-            <h3>Factorial</h3>
+            <h3>Factorial Example</h3>
             <p>
                 FACTORIAL ONE
                 <span class="fragment"> &#x225d; FIX FSTEP ONE</span>
@@ -1090,21 +1192,29 @@
             <ul><li class="fragment">
                 FIX FSTEP ONE &#x25b7; FSTEP (FIX FSTEP) ONE
             </li><li class="fragment">
-                (IS-ZERO? ONE) ONE <br />
-                (MULTIPLY ONE (FIX FSTEP (PREDECESSOR ONE)))
+                (<span class="false">IS-ZERO? ONE</span>) ONE
+                (MULTIPLY ...)
             </li><li class="fragment">
-                MULTIPLY ONE (FIX FSTEP (PREDECESSOR ONE))
+                MULTIPLY ONE (FIX FSTEP
+                (<span class="intro">PREDECESSOR ONE</span>))
             </li><li class="fragment">
-                MULTIPLY ONE (FSTEP (FIX FSTEP) ZERO)
+                MULTIPLY ONE (<span class="intro">FIX FSTEP</span> ZERO)
             </li><li class="fragment">
-                MULTIPLY ONE ONE &#x25b7; ONE
+                MULTIPLY ONE (<span class="intro">FSTEP
+                (FIX FSTEP) ZERO</span>)
+            </li><li class="fragment">
+                MULTIPLY ONE ((<span class="true">IS-ZERO?
+                ZERO</span>) ONE (...))
+            </li><li class="fragment">
+                MULTIPLY ONE ONE
+                <span class="fragment">&#x25b7; ONE</span>
             </li></ul>
         </section><section>
             <h3>Combinator Ordered Pairs</h3>
             <p>
                 We can take advantage of closure to store values.
             </p><ul><li class="fragment">
-                PAIR[Verio]: &#x03bb;a b f.f a b
+                PAIR: &#x03bb;a b f.f a b [Verio]
             </li><li class="fragment">
                 HEAD: &#x03bb;p.p TRUE
             </li><li class="fragment">
@@ -1140,7 +1250,7 @@
             </li><li class="fragment">
                 TAIL (PAIR FIRST LAST)
                 <span class="fragment">
-                    &#x25b7; <br />FALSE FIRST LAST
+                    &#x25b7; ... &#x25b7; <br />FALSE FIRST LAST
                 </span><span class="fragment">
                     &#x25b7; LAST
                 </span>
@@ -1226,7 +1336,7 @@
             </p><ul><li class="fragment">
                 SUM (PAIR ONE (PAIR TWO (PAIR THREE NIL)))
             </li><li class="fragment">
-                SUM = FIX (&#x03bb;f l.(IS-NIL? l) ZERO <br />
+                SUM &#x225d; FIX (&#x03bb;f l.(IS-NIL? l) ZERO <br />
                 (ADD (HEAD l) (f (TAIL l))))
             </li><li class="fragment">
                 ADD ONE (ADD TWO (ADD THREE ZERO))
@@ -1239,18 +1349,18 @@
             <p>
                 We can apply a function to every member of a list
             </p><ul><li class="fragment">
-                MAP = FIX (&#x03bb;f g l.(IS-NIL? l) NIL <br />
+                MAP &#x225d; FIX (&#x03bb;f g l.(IS-NIL? l) NIL <br />
                 (PAIR (g (HEAD l)) (f g (TAIL l))))
             </li><li class="fragment">
-                MAP (&#x03bb;n.ADD n n) <br />
+                MAP (&#x03bb;n.ADD n ONE) <br />
                 (PAIR ONE (PAIR TWO (PAIR THREE NIL)))
             </li><li class="fragment">
-                PAIR TWO (PAIR FOUR (PAIR SIX NIL))
+                PAIR TWO (PAIR THREE (PAIR FOUR NIL))
             </li></ul>
         </section><section>
-            <h3>Combinator Data Structures</h3>
+            <h3>Review: Data Structures</h3>
             <ul><li>
-                PAIR[Verio]: &#x03bb;a b f.f a b
+                PAIR: &#x03bb;a b f.f a b [Verio]
             </li><li>
                 HEAD: &#x03bb;p.p TRUE
             </li><li>
@@ -1348,7 +1458,7 @@
             </li><li>
                 Arithmetic: &#x03bb;m n.n (&#x03bb;n f a.f (n f a)) m
             </li><li>
-                Recursion: &#x03bb;f.(&#x03bb;a.f (a a))
+                Flow Control: &#x03bb;f.(&#x03bb;a.f (a a))
                 &#x03bb;a.f (a a)
             </li><li>
                 Data Structures: &#x03bb;a b f.f a b
@@ -1375,26 +1485,28 @@
                 The identity has many Starling and Kestral forms:
             </p><ul><li class="fragment">
                 S K X
-            </li><li class="fragment">
-                (&#x03bb;a b c.a c (b c)) K X
                 <span class="fragment">
+                    &#x2aa2; (&#x03bb;a b c.a c (b c)) K X
+                </span><span class="fragment">
                     &#x25b7; (&#x03bb;b c.K c (b c)) X
-                </span>
-            </li><li class="fragment">
-                &#x25b7; &#x03bb;c.K c (X c)
-                <span class="fragment">
-                    &#x25b7; &#x03bb;c.(&#x03bb;a b.a) c (X c)
+                </span><span class="fragment">
+                    &#x25b7; <br /> &#x03bb;c.K c (X c)
+                </span><span class="fragment">
+                    &#x2aa2; &#x03bb;c.(&#x03bb;a b.a) c
+                    <span class="false">(X c)</span>
                 </span><span class="fragment">
                     &#x25b7; &#x03bb;c.c
+                </span><span class="fragment">
+                    &#x2aa2; I
                 </span>
             </li></ul><p class="fragment">
                 S K K
                 <span class="fragment">
-                    = S K S
+                    &#x2251; S K S
                 </span><span class="fragment">
-                    = S K (anything)
+                    &#x2251; S K (anything)
                 </span><span class="fragment">
-                    = I
+                    &#x2251; I
                 </span>
             </p>
         </section><section>
@@ -1402,31 +1514,29 @@
             <p>
                 A common pattern reduces to the Kestral:
             </p><p class="fragment">
-                S (K K) I <span class="fragment">= K</span>
-            </p><ul><li class="fragment">
+                S (K K) I <span class="fragment">&#x2251; K</span>
+            </p><p class="fragment">
                 (&#x03bb;a b c.a c (b c)) (K K) I
                 <span class="fragment">
-                    &#x25b7; (&#x03bb;b c.(K K) c (b c))  I
-                </span>
-            </li><li class="fragment">
-                &#x25b7; &#x03bb;c.(K K) c
-                (<span class="intro">I c</span>)
-                <span class="fragment">
+                    &#x25b7; (&#x03bb;b c.(K K) c (b c)) I
+                </span><span class="fragment">
+                    &#x25b7; <br /> &#x03bb;c.(K K) c
+                    (<span class="intro">I c</span>)
+                </span><span class="fragment">
                     &#x25b7; &#x03bb;c.<span class="intro">K
                     K c</span> c
                 </span><span class="fragment">
                     &#x25b7; &#x03bb;c.K c
-                </span>
-            </li><li class="fragment">
-                &#x25b7; &#x03bb;c.(&#x03bb;a b.a) c
-                <span class="fragment">
+                </span><span class="fragment">
+                    &#x2aa2; &#x03bb;c.(&#x03bb;a b.a) c
+                </span><span class="fragment">
                     &#x25b7; &#x03bb;c.&#x03bb;b.c
                 </span><span class="fragment">
-                    &#x25b7; &#x03bb;c b.c
+                    &#x2aa2; &#x03bb;c b.c
                 </span><span class="fragment">
-                    &#x25b7; K
+                    &#x2aa2; K
                 </span>
-            </li></ul>
+            </p>
         </section><section>
             <h3>Converting Lambda</h3>
             <p>
@@ -1498,8 +1608,9 @@
                 &#x03bb;b.&#x03bb;a.a
             </li><li class="fragment">
                 &#x03bb;b a.a
-            </li><li class="fragment">
-                &#x03bb;a b.b
+                <span class="fragment">
+                    &#x2251; &#x03bb;a b.b
+                </span>
             </li></ul>
         </section><section>
             <h3>Conversion: Mockingbird</h3>
@@ -1513,6 +1624,9 @@
                 &#x03bb;c.(&#x03bb;a.a) c ((&#x03bb;a.a) c)
             </li><li class="fragment">
                 &#x03bb;c.c c
+                <span class="fragment">
+                    &#x2251; &#x03bb;a.a a
+                </span>
             </li></ul>
         </section><section>
             <h3>S K Combinators</h3>
@@ -1539,10 +1653,10 @@
         </section><section>
             <h3>There Can Be Only One</h3>
             <p>
-                The <a href="https://en.wikipedia.org/wiki/Iota_and_Jot"
-                    >iota</a> combinator is universal all by itself
-                (Chris Barker 2001 CE)
-            </p><p>
+                Chris Barker 2001 CE:
+                <a href="https://en.wikipedia.org/wiki/Iota_and_Jot"
+                >iota</a> combinator is universal
+            </p><p class="fragment">
                 i &#x225d; &#x03bb;f.f (&#x03bb;a b c.a c (b c))
                 &#x03bb;d e.d
             </p><ul><li class="fragment">
@@ -1607,22 +1721,37 @@
             <h2>Conclusion</h2>
             <p>
                 None of this is efficient compared to conventional von
-                Neumann programming languages.  So what's the point?
+                Neumann programming languages.
+            </p><p>
+                What's the point?
             </p>
         </section><section>
-            <h3>Conclusion</h3>
-            <ul><li class="fragment">
-                Expressions alone are universal
-            </li><li class="fragment">
-                Expressions are stateless
-            </li><li class="fragment">
-                Expressions can be parallelized
-            </li><li class="fragment">
-                Expressions submit to mathematical tools
-            </li></ul><p class="fragment">
-                But more important than all of that, this may help us
-                to appreciate how the power of computation can bloom
-                from simple seeds.
+            <h3>Let's get Functional</h3>
+            <p>
+                As we've seen, expressions are universal, stateless
+                (therefore can be computed in parallel) and submit to
+                mathematical analysis.
+            </p><p class="fragment">
+                This makes them a powerful foundation for functional
+                programming languages.
+            </p>
+        </section><section>
+            <h3>Control the Computation</h3>
+            <p>
+                Running untrusted code requires limiting cycle
+                consumption and memory.
+                <span class="fragment">
+                    How would you do that with
+                    a conventional programming language?
+                </span>
+            </p><p class="fragment">
+                It's obvious how to do this with lambda calculus:
+                limit reductions and expression size.
+            </p>
+        </section><section>
+            <h2>Conclusion</h2>
+            <p>
+                Computation is powerful and can bloom from simple seeds.
             </p>
         </section>
     </section></div></div>
