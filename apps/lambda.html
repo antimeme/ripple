@@ -10,7 +10,6 @@
  #size     { text-align: right; width: 6%; }
  #maxsize  { text-align: right; width: 6%; }
  #previous { text-align: right; width: 50%; }
- #canonical { display: none; }
  .blue { color: blue; }
 </style>
 <title>Lambda Calculus</title>
@@ -31,8 +30,7 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
     <option></option>
 </select>
 <button id="normal">Normal?</button>
-<button id="canonical">Canonical</button>
-<button id="variables">Variables</button>
+<button id="freev">Free</button>
 <input id="vdisplay" type="text" disabled="disabled" />
 <br />
 <button id="clear">Clear</button>
@@ -402,8 +400,7 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
  const discover   = document.getElementById("discover");
  const lexprs     = document.getElementById("library-expressions");
  const normal     = document.getElementById("normal");
- const canonical  = document.getElementById("canonical");
- const variables  = document.getElementById("variables");
+ const freev      = document.getElementById("freev");
  const vdisplay   = document.getElementById("vdisplay");
  const delay      = document.getElementById("delay");
  const previous   = document.getElementById("previous");
@@ -450,7 +447,6 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
 
          if (expr.isNormal()) {
              repeating = false;
-             console.log("NORMAL", expr.toString());
          } else if (repeating)
              setTimeout(continuousReduce, delay.value);
      } catch (ex) { console.error(ex); alert(ex); repeating = false; }
@@ -533,7 +529,7 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
      repeating = false;
  });
 
- variables.addEventListener("click", function(event) {
+ freev.addEventListener("click", function(event) {
      var expr = getExpression();
      if (!expr)
          return;
@@ -548,11 +544,4 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
      repeating = false;
  });
 
- canonical.addEventListener("click", function(event) {
-     var expr = getExpression();
-     if (!expr)
-         return;
-     expression.value = expr.canonicalize().toString();
-     repeating = false;
- });
  //]]></script>

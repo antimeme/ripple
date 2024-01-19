@@ -209,11 +209,18 @@ class Lambda {
      * Attempt to eliminate unnecessary complexity in an expression. */
     #simplify() {
         let result = this;
-        result.#values.forEach((value, index) => {
+        this.#values.forEach((value, index) => {
             if (value instanceof Lambda) {
                 const simpler = value.#simplify();
-                if (simpler !== value) {
-                    result = new Lambda(result);
+                if ((simpler.#variables.length === 0) &&
+                    (simpler.#values.length === 1) &&
+                    !(simpler.#values[0] instanceof Lambda)) {
+                    if (result === this)
+                        result = new Lambda(result);
+                    result.#values.splice(index, 1, simpler.#values[0]);
+                } else if (simpler !== value) {
+                    if (result === this)
+                        result = new Lambda(result);
                     result.#values.splice(index, 1, simpler);
                 }
             }
@@ -226,6 +233,17 @@ class Lambda {
             (result.#values[0] instanceof Lambda))
             result = result.#values[0];
 
+        // Application is left associative, so embedded lambdas
+        // at the front with no variables are just extra parentheses.
+        if ((result.#values.length >= 1) &&
+            (result.#values[0] instanceof Lambda) &&
+            (result.#values[0].#variables.length === 0)) {
+            const embedded = result.#values[0].#values;
+            if (result === this)
+                result = new Lambda(result);
+            result.#values.splice(0, 1, ...embedded);
+        }
+
         // A lambda with variables that contains only a single
         // lambda might be able to transfer its variables.
         if ((result.#variables.length > 0) &&
@@ -233,23 +251,13 @@ class Lambda {
             (result.#values[0] instanceof Lambda) &&
             !result.#variables.some(variable =>
                 result.#values[0].#variables.includes(variable))) {
-            result = new Lambda(result);
+            if (result === this)
+                result = new Lambda(result);
             const next = new Lambda(result.#values[0]);
             while (result.#variables.length > 0)
                 next.#variables.unshift(result.#variables.pop());
             result = next;
         }
-
-        // Pull up lambdas that contain nothing but a single variable
-        result.#values.forEach((value, index) => {
-            if ((value instanceof Lambda) &&
-                (value.#variables.length === 0) &&
-                (value.#values.length === 1) &&
-                !(value.#values[0] instanceof Lambda)) {
-                result = new Lambda(result);
-                result.#values.splice(index, 1, value.#values[0]);
-            }
-        });
 
         return result;
     }
@@ -259,7 +267,7 @@ class Lambda {
      * values.  So "\a b.a" becomes "\v1 v2.v1" for example.  This
      * makes it possible to compare expressions that are structurally
      * identical but with different bound variable names. */
-    canonicalize(index, variables) {
+    #canonicalize(index, variables) {
         const result = new Lambda(this).#simplify();
         index = !isNaN(index) ? index : 0;
         variables = Object.assign({}, variables);
@@ -268,7 +276,7 @@ class Lambda {
             variables[variable] = "v" + (++index));
         result.#values = this.#values.map(value =>
             (value instanceof Lambda) ?
-            value.canonicalize(index, variables) :
+            value.#canonicalize(index, variables) :
             ((typeof(value) === "string") && variables[value]) ?
             variables[value] : value);
         return result;
@@ -292,8 +300,8 @@ class Lambda {
      * purpose the names of bound variables don't matter so "\a.a b"
      * and "\c.c b" are equal but "\a.a d" is not. */
     equals(other) {
-        return this.canonicalize().#internalEqual(
-            other.canonicalize());
+        return this.#canonicalize().#internalEqual(
+            other.#canonicalize());
     }
 
     /**
@@ -384,7 +392,7 @@ class Lambda {
             Object.keys(exclude).forEach(freev => {
                 if (result.#variables.includes(freev))
                     result.#rename(freev, exclude); });
-            result.#values = this.#values.map(value =>
+            result.#values = result.#values.map(value =>
                 (value instanceof Lambda) ?
                 value.#substitute(variable, expression) :
                 (value === variable) ? expression : value);
@@ -615,7 +623,7 @@ class Lambda {
                      value: "lambda n.n (lambda a.NOT a) FALSE" },
         PREDECESSOR: { description: "Church Numeral Decrement",
                        value: "lambda n f a.n (lambda g h.h (g f)) " +
-                              "(lambda c.a) IDENTITY" },
+                              "(lambda c.a) (lambda u.u)" },
         SUBTRACT: { description: "Church Numeral Subtraction",
                     value: "lambda m n.n PREDECESSOR m" },
         MINUS: { description: "Church Numeral Subtraction",
@@ -648,11 +656,12 @@ class Lambda {
                       "(TAIL l)) l"},
         FIX: { description: "Fixed-point Combinator",
                value: Lambda.combinators.Y.value },
-        FSTEP: { description: "Partial implementation of FACTORIAL",
-                 value: "lambda f n.(IS-ZERO? n) ONE " +
-                        "(MULTIPLY n (f (PREDECESSOR n)))" },
         FACTORIAL: { description: "Church Numeral FACTORIAL",
-                     value: "FIX FSTEP" },
+                     value: "FIX (lambda f n.(IS-ZERO? n) ONE " +
+                            "(MULTIPLY n (f (PREDECESSOR n))))" },
+        ADDUP: { description: "Church Numeral FACTORIAL",
+                 value: "FIX (lambda f n.(IS-ZERO? n) ZERO " +
+                        "(ADD n (f (PREDECESSOR n))))" },
         SUM: { description: "Add up a list of numbers",
                value: "FIX (lambda f l.(IS-NIL? l) ZERO " +
                       "(ADD (HEAD l) (f (TAIL l))))" },
@@ -690,9 +699,9 @@ class Lambda {
                               test.description : [test.description];
             } else throw new Error("Unknown test type: " + typeof(test));
 
-            description.forEach(line => { console.log(line); });
+            if (description.length)
+                description.forEach(line => { console.log(line); });
             console.log(expression.toString());
-            console.log(expression.canonicalize().toString());
             let count = 100;
             for (; !expression.isNormal() && (count > 0); --count) {
                 expression = expression.reduce();
@@ -744,6 +753,7 @@ class Lambda {
              "as the bound variable of the same name and should ",
              "either cause an exception or dynamic renaming of ",
              "the bound variable."]},
+        {test: "(\\a.a a) (\\b.b) c", expected: "c"}
     ];
 }
 
