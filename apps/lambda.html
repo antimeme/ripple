@@ -18,6 +18,7 @@
 </textarea><br />
 <button id="reduce">Reduce</button>
 <button id="repeat">Repeat</button>
+<button id="go">Go</button>
 Delay:
 <input id="delay" type="range" min="5" value="50" max="1000" />
 Steps: <input id="steps" type="text" disabled="disabled" />
@@ -396,6 +397,7 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
  const repeat     = document.getElementById("repeat");
  const restore    = document.getElementById("restore");
  const clear      = document.getElementById("clear");
+ const go         = document.getElementById("go");
  const library    = document.getElementById("library");
  const discover   = document.getElementById("discover");
  const lexprs     = document.getElementById("library-expressions");
@@ -409,12 +411,17 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
  const steps      = document.getElementById("steps");
  let stepCount = 0;
  let repeating = false;
+ let resolving = false;
 
  // Populate library drop down box
- Lambda.eachLibrary(function(expression, name) {
-     var option = document.createElement("option");
+ Lambda.eachLibrary((expression, name, entry) => {
+     if (!name || !isNaN(name))
+         return;         
+     const option = document.createElement("option");
      option.setAttribute("value", expression.toString(
          {showColor: true}));
+     if (entry.description)
+         option.setAttribute("title", entry.description);
      option.innerHTML = name;
      lexprs.appendChild(option);
  });
@@ -427,7 +434,8 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
      return result;
  }
 
- function setSize(value) {
+ function setExpression(value) {
+     expression.value = value;
      size.value = value.length;
      if (!maxsize.value || isNaN(maxsize.value) ||
          (parseInt(maxsize.value) < value.length))
@@ -435,31 +443,30 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
  }
 
  function continuousReduce() {
-     var expr = getExpression();
-     if (!expr)
+     let expr = getExpression();
+     if (!expr || !repeating)
          return;
      try {
-         expr = expr.reduce();
-         expression.value = expr.toString();
-         stepCount += 1;
-         steps.value = stepCount;
-         setSize(expression.value);
+         setExpression((expr = expr.reduce()).toString());
+         steps.value = (stepCount += 1);
 
          if (expr.isNormal()) {
              repeating = false;
-         } else if (repeating)
-             setTimeout(continuousReduce, delay.value);
+             if (resolving)
+                 expression.value =
+                     (expr = expr.reverseLibrary()).toString();
+         } else setTimeout(continuousReduce, delay.value);
      } catch (ex) { console.error(ex); alert(ex); repeating = false; }
  }
 
- expression.addEventListener("change", function(event) {
+ expression.addEventListener("change", event => {
      previous.value = expression.value;
      repeating = false;
      steps.value = stepCount = 0;
      lexprs.value = "";
  });
 
- lexprs.addEventListener("change", function(event) {
+ lexprs.addEventListener("change", event => {
      if (lexprs.value) {
          previous.value = expression.value;
          expression.value = lexprs.value;
@@ -467,7 +474,7 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
      }
  });
 
- clear.addEventListener("click", function(event) {
+ clear.addEventListener("click", event => {
      previous.value = expression.value;
      expression.value = "";
      repeating = false;
@@ -478,7 +485,7 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
      vdisplay.value = "";
  });
 
- reduce.addEventListener("click", function(event) {
+ reduce.addEventListener("click", event => {
      var expr = getExpression();
      if (!expr)
          return;
@@ -492,20 +499,20 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
          steps.value = stepCount;
      }
 
-     expression.value = expr.toString();
-     setSize(expression.value);
+     setExpression(expr.toString());
      repeating = false;
  });
 
- repeat.addEventListener("click", function(event) {
+ repeat.addEventListener("click", event => {
      if (!previous.value)
          previous.value = expression.value;
      steps.value = stepCount = 0;
      repeating = true;
+     resolving = false;
      setTimeout(continuousReduce, delay.value);
  });
 
- restore.addEventListener("click", function(event) {
+ restore.addEventListener("click", event => {
      if (previous.value)
          expression.value = previous.value;
      steps.value = stepCount = 0;
@@ -513,31 +520,48 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
      repeating = true;
  });
 
- library.addEventListener("click", function(event) {
-     var expr = getExpression();
+ go.addEventListener("click", event => {
+     let previous;
+     let expr = getExpression();
      if (!expr)
          return;
-     expression.value = expr.applyLibrary().toString();
+     do {
+         previous = expr;
+         expr = expr.applyLibrary(undefined, undefined, true);
+     } while (expr !== previous);
+     expression.value = expr.toString();
+
+     repeating = true;
+     resolving = true;
+     setTimeout(continuousReduce, delay.value);
+ });
+
+ library.addEventListener("click", event => {
+     const expr = getExpression();
+     if (!expr)
+         return;
+     expression.value = expr.applyLibrary(
+         undefined, undefined, true).toString();
      repeating = false;
  });
 
- discover.addEventListener("click", function(event) {
-     var expr = getExpression();
+ discover.addEventListener("click", event => {
+     const expr = getExpression();
      if (!expr)
          return;
      expression.value = expr.reverseLibrary().toString();
      repeating = false;
  });
 
- freev.addEventListener("click", function(event) {
-     var expr = getExpression();
+ freev.addEventListener("click", event => {
+     const expr = getExpression();
      if (!expr)
          return;
      vdisplay.value = Object.keys(expr.getFreeVariables()).join(' ');
  });
 
- normal.addEventListener("click", function(event) {
-     var expr = getExpression();
+ normal.addEventListener("click", event => {
+     const expr = getExpression();
      if (!expr)
          return;
      vdisplay.value = expr.isNormal().toString();
