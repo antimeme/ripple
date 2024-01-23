@@ -201,10 +201,13 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
 <p>
     Let's use the lambda calculus to take on the famous
     <a href="https://en.wikipedia.org/wiki/Halting_problem">halting
-        problem</a>.  Can we write a program that accepts another
-    program as input and returns <code>TRUE</code> if it has a normal
-    form and <code>FALSE</code> if it doesn't?  The answer is no.
-    Let's use the lambda calculus to understand why.
+        problem</a>.  Sometimes we can observe that a program never
+    reaches normal form, as with the double mockingbird example above.
+    Sometimes we can observe that a program does eventually halt by
+    performing enough reductions.  But can we write a program that
+    accepts any program as input and returns <code>TRUE</code>
+    if it has a normal form and <code>FALSE</code> if it doesn't?
+    The answer is no.  Let's use the lambda calculus to understand why.
 </p><p>
     Suppose we could solve the problem.  Suppose a lambda
     expression which we'll call <code>HALTS?</code> accepts any
@@ -225,9 +228,9 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
     form this program reduces to the mockingbird applied to itself,
     which has no normal form.  Given a program which has no normal
     form when applied to itself -- such as the mockingbird -- this
-    program reduces to <code>TRUE</code> and therefore does have a normal
-    form.  So it does the opposite of the program it has been given.
-    This may seem silly but it's clearly a valid combination of
+    program reduces to <code>TRUE</code> and therefore does have a
+    normal form.  So it does the opposite of the program it has been
+    given.  This may seem silly but it's a valid combination of
     expressions.  But what happens when we apply this program to
     itself?
 </p><blockquote><code>
@@ -241,14 +244,13 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
     <code>TRUE</code>!  If it did that would mean
     <code>HALTS? (p p)</code> must also reduce to
     <code>TRUE</code> which means the outer expression reduces to
-    <code>(λm.m m) (λm.m m)</code> which clearly does not halt.  But
+    <code>(λm.m m) (λm.m m)</code> which does not halt.  But
     it also can't reduce to <code>FALSE</code>!  If it did then
     <code>HALTS? (p p)</code> must also reduce to <code>FALSE</code>
     and that means the outer expression reduces to <code>TRUE</code>
     which clearly halts.  Our original assumption that
     <code>HALTS?</code> always reduces in a finite number of steps
-    to either <code>TRUE</code> or <code>FALSE</code> is clearly
-    impossible!
+    to either <code>TRUE</code> or <code>FALSE</code> is impossible!
 </p>
 <h2><a name="instructions">Instructions</a></h2>
 <p>
@@ -314,8 +316,8 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
 </pre></blockquote><p>
     Click the <q>Library</q> button until there are no more free
     variables.  Then click repeat and get comfortable.  This will take
-    134 steps and considerable time.  But it will return the lambda
-    calculus expression: <code>lambda a b.a</code>  What does that
+    134 steps.  But it will return the lambda calculus expression:
+    <code>lambda a b.a</code>  What does that
     mean?  Click the <q>Discover</q> button to find out which library
     function this matches.  You should see that it's <code>TRUE</code>.
 </p><p>
@@ -362,32 +364,38 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
 </p><blockquote><pre>
       FACTORIAL THREE
 </pre></blockquote><p>
-    After 2,907 steps this arrives at the Church Numeral representation
+    After 646 steps this arrives at the Church Numeral representation
     of <code>SIX</code> (because three factorial is three times two
     times one).  This representation of six looks a little different.
-    In particular, it uses a different variable name.  We can check
-    that this is <code>SIX</code> the same way we compared our earlier
+    because it uses a different variable name.  We can check that this
+    is <code>SIX</code> the same way we compared our earlier
     result to <code>FIVE</code>.
 </p><p>
-    Computing <code>FACTORIAL FIVE</code> takes 50,586 steps and a
-    long time but it produces this:
+    Computing <code>FACTORIAL FOUR</code> takes 3,873 steps and
+    results in Church Numeral <code>TWENTYFOUR</code>:
 </p><p><code>
     λc a.c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c
-    (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c
-    (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c
-    (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c
-    (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c
-    (c (c (c (c (c (c (c (c (c (c (c (c a)
-    )))))))))) )))))))))) ))))))))))) )))))))))) ))))))))) )))))))))
-    )))))))))) )))))))))) ))))))))))) )))))))))) ))))))))) )))))))))
+    (c (c (c (c a)))))))))))))))))))))))
 </code></p><p>
-    So how does this work?  It makes use of the <code>FIX</code>
-    combinator -- also known as the
-    <a href="https://en.wikipedia.org/wiki/Fixed-point_combinator">Y
-        combinator</a>.  The Y combinator causes a function to be
-    called with itself as an argument.  This makes it possible for
-    the function to call itself without any support for recursion in
-    the programming environment.
+    Computing <code>FACTORIAL FIVE</code> takes 26,899 steps and a
+    long time but it reduces to a function of two variables that
+    applies the first to the second one hundred twenty times
+    (truncated for brevity):
+</p><p><code>
+    λc a.c (c (c (c ... (c a) ...)))
+</code></p><p>
+    5! = 5 &times; 4 &times; 3 &times; 2 &times; 1 =
+    120.  So how does this work?  It makes use of the
+    <code>FIX</code> combinator -- also known as the fixed point or
+    <a href="https://en.wikipedia.org/wiki/Fixed-point_combinator"
+    >Y combinator</a>.  The Y combinator followed by a function
+    reduces to that function followed by an application of the Y
+    combinator to that function.  This means it will call the function
+    with itself as an argument indefinitely.  As long as the function
+    this is applied to has some terminating condition this won't
+    reduce forever.  This makes it possible for the function to call
+    itself without any support for recursion in the programming
+    environment.
 </p>
 
 <script type="module">//<![CDATA[

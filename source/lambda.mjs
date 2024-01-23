@@ -175,12 +175,10 @@ class Lambda {
         return ((this.#variables.length > 0) ?
                 ('\u03bb' + this.#variables.join(' ') + '.') : '') +
                this.#values.map((value, index, values) =>
-                   ((value instanceof Lambda)
-                       /* &&
-                        *                     (values.length > 1) &&
-                        *                     ((index + 1 < values.length) ||
-                        *                      (value.#variables.length === 0)) */
-                   ) ?
+                   ((value instanceof Lambda) &&
+                    (values.length > 1) &&
+                    ((index + 1 < values.length) ||
+                     (value.#variables.length === 0))) ?
                    '(' + value.toString() + ')' :
                    value.toString()).join(' ');
     }
@@ -338,7 +336,7 @@ class Lambda {
 
     /**
      * Return a variable name which is not a key in exclude */
-    #pickUnique(exclude) {
+    #pickUnused(exclude) {
 
         /**
          * Advance an array of components, propagating backwards
@@ -367,10 +365,10 @@ class Lambda {
      * This method MUTATES the expression and MUST NOT be called
      * externally. */
     #rename(variable, exclude) {
-        const replacement = this.#pickUnique(Object.assign(
+        const replacement = this.#pickUnused(Object.assign(
             {}, exclude, this.getFreeVariables(),
             this.#variables.reduce((acc, vv) =>
-                {acc[vv] = true; return acc;}, {})));
+                { acc[vv] = true; return acc; }, {})));
         this.#variables = this.#variables.map(vv =>
             (vv === variable) ? replacement : vv);
         this.#values = this.#values.map(value =>
@@ -384,10 +382,15 @@ class Lambda {
      * Replaces a variable with an expression. */
     #substitute(variable, expression) {
         let result = this;
-        if (!this.#variables.includes(variable)) {
-            const exclude = ((expression instanceof Lambda) ?
-                             expression : new Lambda(expression))
-                .getFreeVariables();
+
+        if (!this.#variables.includes(variable) &&
+            this.#values.some(value =>
+                (value instanceof Lambda) ?
+                (variable in value.getFreeVariables()) :
+                (value === variable))) {
+            const exclude = (expression instanceof Lambda) ?
+                            expression.getFreeVariables() :
+                            {[expression]: true};
             result = new Lambda(this);
             Object.keys(exclude).forEach(freev => {
                 if (result.#variables.includes(freev))
@@ -400,19 +403,6 @@ class Lambda {
         return result;
     }
 
-    #apply(expression) {
-        let result = this;
-        if (this.#variables.length > 0) {
-            result = new Lambda(this);
-            const variable = result.#variables.shift();
-            result.#values = result.#values.map(value =>
-                (value instanceof Lambda) ?
-                value.#substitute(variable, expression) :
-                (value === variable) ? expression : value);
-        } else result = new Lambda(this.#values.concat(expression));
-        return result;
-    }
-
     /**
      * Return an expression with one computation step completed.  This
      * method uses normal order evaluation, which performs the outer
@@ -420,12 +410,10 @@ class Lambda {
     reduce() {
         let result = this;
         if (this.#reducible()) { // Direct
-            const fn = this.#values[0];
-            const argument = this.#values[1];
-            const value = fn.#apply(argument);
-
+            const fn = new Lambda(this.#values[0]);
             result = new Lambda(this);
-            result.#values.splice(0, 2, value);
+            result.#values.splice(0, 2, fn.#substitute(
+                fn.#variables.shift(), this.#values[1]));
         } else this.#values.forEach((value, index) => { // Indirect
             // Skip variables and reductions after the first
             if ((result === this) && (value instanceof Lambda)) {
@@ -439,28 +427,11 @@ class Lambda {
         return result.#simplify();
     }
 
-    applyLibrary(library, exclude) {
-        let result   = new Lambda(this);
-        library = library ? library : Lambda.defaultLibrary;
-        exclude = Object.assign({}, exclude, this.#variables.reduce(
-            (acc, vv) => { acc[vv] = true; return acc; }, {}));
-
-        result.#values = this.#values.map(value =>
-            (value instanceof Lambda) ?
-            value.applyLibrary(library, exclude) :
-            ((typeof(value) === "string") &&
-             (value in library) && !(value in exclude)) ?
-            (library[value].expression ? library[value].expression :
-             (library[value].expression =
-                 new Lambda(library[value].value))) : value);
-        return result;
-    }
-
     static eachLibrary(fn, library, self) {
         const result = fn ? self : [];
         library = library ? library : Lambda.defaultLibrary;
         Object.keys(library).forEach(name => {
-            let entry = library[name];
+            const entry = library[name];
             if (!entry.expression) {
                 entry.expression = new Lambda(entry.value);
                 entry.expression.color = entry.color;
@@ -473,40 +444,58 @@ class Lambda {
         return result;
     }
 
-    reverseLibrary(library) {
-        var result   = this;
-        var replaced = false;
-        var values   = [];
-        library = library ? library : this.defaultLibrary;
+    applyLibrary(library, exclude, ignoreCase) {
+        let result = this;
+        library = library ? library : Lambda.defaultLibrary;
+        exclude = Object.assign({}, exclude, this.#variables.reduce(
+            (acc, vv) => { acc[vv] = true; return acc; }, {}));
 
-        this.#values.forEach(function(value) {
+        this.#values.forEach((value, index) => {
             if (value instanceof Lambda) {
-                var current = value.reverseLibrary(library);
-                values.push(current);
-                if (current !== value)
-                    replaced = true;
-            } else values.push(value);
+                const current = value.applyLibrary(
+                    library, exclude, ignoreCase);
+                if (current !== value) {
+                    if (result === this)
+                        result = new Lambda(this);
+                    result.#values.splice(index, 1, current);
+                }
+            } else if (typeof(value) === "string") {
+                const current = ignoreCase ?
+                                value.toUpperCase() : value;
+                if ((current in library) && !(value in exclude)) {
+                    if (result === this)
+                        result = new Lambda(this);
+                    if (!library[current].expression)
+                        library[current].expression =
+                            new Lambda(library[current].value);
+                    result.#values.splice(
+                        index, 1, library[current].expression);
+                }
+            }
         });
-        if (replaced) {
-            result = new Lambda(this);
-            result.#values = values;
-        }
-
-        var selection = undefined;
-        var priority  = undefined;
-        Lambda.eachLibrary((expression, name, entry) => {
-            if (!entry.expression.equals(result))
-                return;
-            if (!isNaN(priority) &&
-                (isNaN(entry.priority) ||
-                 (entry.priority < priority)))
-                return;
-            selection = name;
-            priority  = entry.priority;
-        });
-        if (selection)
-            result = selection;
         return result;
+    }
+
+    reverseLibrary(library) {
+        let result = this;
+        library = library ? library : Lambda.defaultLibrary;
+
+        this.#values.forEach((value, index) => {
+            if (value instanceof Lambda) {
+                const current = value.reverseLibrary(library);
+                if (current !== value) {
+                    if (result === this)
+                        result = new Lambda(this);
+                    result.#values.splice(index, 1, current);
+                }
+            }
+        });
+
+        Lambda.eachLibrary((expression, name, entry) => {
+            if (expression.equals(result))
+                result = new Lambda(name);
+        }, library);
+        return result.#simplify();
     }
 
     toStarlingKestral() { // :TODO:
@@ -517,8 +506,8 @@ class Lambda {
             result.#values = result.#values.map(value =>
                 (value instanceof Lambda) ?
                 value.toStarlingKestral() : value);
-        } else if ((result.#variables.length === 1) &&
-                   (result.#values.length === 1) &&
+        } else if ((result.#values.length === 1) &&
+                   (result.#variables.length === 1) &&
                    (result.#variables[0] === result.#values[0])) {
             result = new Lambda("I"); // T[\x.x] => I
         } else if ((result.#variables.length > 0) &&
@@ -536,39 +525,19 @@ class Lambda {
         return result;
     }
 
-    static combinators = {
-        I: { name: "Identity",
-             value: "lambda a.a" },
-        M: { name: "Mockingbird",
-             value: "lambda a.a a" },
-        S: { name: "Starling",
-             value: "lambda a b c.a c (b c)" },
-        K: { name: "Kestral",
-             value: "lambda a b.a" },
-        KI: { name: "Kite", value: "lambda a b.b" },
-        C: { name: "Cardinal", value: "lambda a b c.a c b" },
-        B: { name: "Bluebird", value: "lambda a b c.a (b c)" },
-        T: { name: "Thrush", value: "lambda a b.b a" },
-        V: { name: "Virio", value: "lambda a b f.f a b" },
-        Y: { name: "Fixed-Point",
-             value: "lambda f.(lambda a.f (a a)) " +
-                    "(lambda a.f (a a))" },
-        i: { name: "Iota",
-             value: "\\f.f (\\a b c.a c (b c)) \\d e.d" }
-    };
-
     static __augmentLibrary(library) {
         var numbers = ["ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE",
                        "SIX", "SEVEN", "EIGHT", "NINE", "TEN", "ELEVEN",
                        "TWELVE", "THIRTEEN", "FOURTEEN", "FIFTEEN",
                        "SIXTEEN", "SEVENTEEN", "EIGHTEEN", "NINETEEN"];
         ["TWENTY", "THIRTY", "FORTY", "FIFTY", "SIXTY",
-         "SEVENTY", "EIGHTY", "NINETY"].forEach(function(current) {
+         "SEVENTY", "EIGHTY", "NINETY"].forEach(current => {
              numbers.push(current);
              for (let ii = 1; ii < 10; ++ii)
                  numbers.push(current + numbers[ii]); });
+        numbers.push("ONEHUNDRED");
 
-        for (let ii = 0; ii <= numbers.length; ++ii) {
+        for (let ii = 0; ii < numbers.length; ++ii) {
             let expression = (ii > 0) ? "f a" : "a";
             for (let jj = 2; jj <= ii; ++jj)
                 expression = "f (" + expression + ")";
@@ -581,26 +550,28 @@ class Lambda {
                 priority: 1, value: expression };
         }
 
+        library["="] = library["EQUAL?"];
         library["+"] = library["PLUS"]  = library["ADD"];
         library["*"] = library["TIMES"] = library["MULTIPLY"];
-        library["="] = library["EQUAL?"];
+        library["-"] = library["MINUS"] = library["SUBTRACT"];
+        library["/"] = library["DIVIDE"];
         return library;
     }
 
     static defaultLibrary = Lambda.__augmentLibrary({
         TRUE: { description: "Logical TRUE", priority: 2,
-                value: Lambda.combinators.K.value },
+                value: "lambda a b.a" },
         FALSE: { description: "Logical FALSE", priority: 2,
-                 value: Lambda.combinators.KI.value },
+                 value: "lambda a b.b" },
         NOT: { description: "Logical NOT",
-               value: Lambda.combinators.C.value },
+               value: "lambda a b c.a c b" },
         AND: { description: "Logical AND",
                value: "lambda p q.p q p" },
         OR: { description: "Logical OR",
               value: "lambda p q.p p q" },
         "BOOLEQ?": { description: "Boolean Equality",
                      value: "lambda p q.p q (NOT q)" },
-        PAIR: { value: Lambda.combinators.V.value },
+        PAIR: { value: "lambda h t f.f h t" },
         HEAD: { value: "lambda p.p TRUE" },
         TAIL: { value: "lambda p.p FALSE" },
         "IS-NIL?": { value: "lambda p.p (lambda a b.FALSE)" },
@@ -608,11 +579,11 @@ class Lambda {
         SUCCESSOR: { description: "Successor",
                      value: "lambda n f a.f (n f a)" },
         ZERO: { description: "Church Numeral ZERO",
-                value: Lambda.combinators.KI.value },
+                value: "lambda f a.a" },
         ADD: { description: "Church Numeral Addition",
                value: "lambda m n f a.m f (n f a)" },
         MULTIPLY: { description: "Church Numeral Multiplication",
-                    value: Lambda.combinators.B.value },
+                    value: "lambda m n f.m (n f)" },
         POWER: { description: "Church Numeral Exponentiation",
                  value: "lambda m n f a.(n m) f a" },
         "IS-ZERO?": { description: "Church Numeral Zero Check",
@@ -626,8 +597,6 @@ class Lambda {
                               "(lambda c.a) (lambda u.u)" },
         SUBTRACT: { description: "Church Numeral Subtraction",
                     value: "lambda m n.n PREDECESSOR m" },
-        MINUS: { description: "Church Numeral Subtraction",
-                 value: "lambda m n.n PREDECESSOR m" },
         DIVIDE: { description: "Church Numeral Division",
                   value: "lambda n.((lambda f.(lambda x.x x) " +
                          "(lambda x.f (x x))) (lambda c.lambda " +
@@ -641,10 +610,10 @@ class Lambda {
                          "(lambda u.u)) m) n m))) ((lambda " +
                          "n.lambda f.lambda x. f (n f x)) n)"},
         "LESSEQ?": { description: "Church Numeral Less Than or Equal",
-                     value: "lambda m n.IS-ZERO? (MINUS m n)" },
+                     value: "lambda m n.IS-ZERO? (SUBTRACT m n)" },
         "GREATEREQ?": {
             description: "Church Numeral Greater Than or Equal",
-            value: "lambda m n.IS-ZERO? (MINUS n m)" },
+            value: "lambda m n.IS-ZERO? (SUBTRACT n m)" },
         "LESS?": { description: "Church Numeral Less Than",
                    value: "lambda m n.NOT (GREATEREQ? m n)" },
         "GREATER?": { description: "Church Numeral Greater Than",
@@ -654,8 +623,11 @@ class Lambda {
                            "(LESSEQ? n m)" },
         NTH: { value: "lambda n l.n (lambda l.(IS-NIL? l) NIL " +
                       "(TAIL l)) l"},
+        FACTITER: { description: "Factorial computed iteratively",
+                    value: "λn.TAIL (n (λp.PAIR (+ ONE (HEAD p)) " +
+                           "(* (HEAD p) (TAIL p))) (PAIR ONE ONE))"},
         FIX: { description: "Fixed-point Combinator",
-               value: Lambda.combinators.Y.value },
+               value: "lambda f.(lambda a.f (a a)) lambda a.f (a a)" },
         FACTORIAL: { description: "Church Numeral FACTORIAL",
                      value: "FIX (lambda f n.(IS-ZERO? n) ONE " +
                             "(MULTIPLY n (f (PREDECESSOR n))))" },
@@ -668,14 +640,26 @@ class Lambda {
         MAP: { description: "Apply a function to each list member",
                value: "FIX (lambda f g l.(IS-NIL? l) NIL " +
                       "(PAIR (g (HEAD l)) (f g (TAIL l))))" },
-        STARLING: { description: "Starling",
-                    value: Lambda.combinators.S.value },
-        KESTRAL: { description: "Kestral",
-                   value: Lambda.combinators.K.value },
         IDENTITY: { description: "Identity",
-                    value: Lambda.combinators.I.value },
+                    value: "lambda i.i" },
+        KESTRAL: { description: "Kestral",
+                   value: "lambda a b.a" },
+        KITE: { description: "Kestral",
+                value: "lambda a b.b" },
+        MOCKINGBIRD: { description: "Mockingbird",
+                       value: "lambda a.a a" },
+        CARDINAL: { description: "Cardinal",
+                    value: "lambda a b c.a c b" },
+        BLUEBIRD: { description: "Bluebird",
+                    value: "lambda a b c.a (b c)" },
+        THRUSH: { description: "Thrush",
+                  value: "lambda a b.b a" },
+        VIRIO: { description: "Virio",
+                 value: "lambda a b c.c a b" },
+        STARLING: { description: "Starling",
+                    value: "lambda a b c.a c (b c)" },
         IOTA: { description: "Iota",
-                value: Lambda.combinators.i.value },
+                value: "lambda f.f STARLING KESTRAL" },
     });
 
     static check(tests) {
@@ -697,7 +681,8 @@ class Lambda {
                 forever = test.forever;
                 description = Array.isArray(test.description) ?
                               test.description : [test.description];
-            } else throw new Error("Unknown test type: " + typeof(test));
+            } else throw new Error("Unknown test type: " +
+                                   typeof(test));
 
             if (description.length)
                 description.forEach(line => { console.log(line); });
@@ -718,7 +703,8 @@ class Lambda {
             } else if (expected && !expected.equals(expression)) {
                 console.error("ERROR: expected", expected.toString());
                 ++failures;
-            } else console.log("Success:", expression.getFreeVariables());
+            } else console.log("Success:",
+                               expression.getFreeVariables());
             console.log();
         });
         if (failures > 0) {
@@ -746,14 +732,19 @@ class Lambda {
         {test: "lambda a.a b (lambda c.c d)",
          expected: "lambda c.c b (lambda a.a d)",
          description: ["Check that variable names don't matter."]},
+
         {test: "(lambda a.lambda b.a) b", expected: "lambda a.b",
-         description: [
-             "Tricks a naive implementation into producing the ",
-             "identity.  The free variable b is not the same ",
-             "as the bound variable of the same name and should ",
-             "either cause an exception or dynamic renaming of ",
-             "the bound variable."]},
-        {test: "(\\a.a a) (\\b.b) c", expected: "c"}
+         description: ["Avoid free variable capture."]},
+        {test: "(lambda a b.a) b", expected: "lambda a.b",
+         description: ["Avoid free variable capture."]},
+        {test: "(lambda a.lambda b.b) b", expected: "lambda b.b",
+         description: ["Don't avoid capture too hard."]},
+        {test: "(lambda a b.b) b", expected: "lambda b.b",
+         description: ["Don't avoid capture too hard."]},
+        {test: "(λg.(λa.(λb.a))) a", expected: "λa b.a",
+         description: ["Subtle capture problem."]},
+        {test: "(λg a b.a) a", expected: "λa b.a",
+         description: ["Subtle capture problem."]}
     ];
 }
 
