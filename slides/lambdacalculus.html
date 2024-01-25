@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
     <title>Lambda Calculus</title>
-    <!-- Copyright (C) 2020-2021 by Jeff Gold.  All rights reserved. -->
+    <!-- Copyright (C) 2020-2024 by Jeff Gold.  All rights reserved. -->
     <meta charset="utf-8" />
     <link rel="shortcut icon" href="lambdacalculus.svg" />
     <link rel="stylesheet" href="lib/reveal/reveal.css" />
     <link rel="stylesheet" href="lib/reveal/sky.css" />
     <link rel="stylesheet" href="lib/slides.css" />
+    <style>
+     .order { font-size: 75%; }
+     .examples { font-size: 90%; }
+     li.extra { list-style-type: circle; }
+    </style>
     <div class="reveal"><div class="slides"><section id="lambdacalculus">
         <section>
             <h1>Lambda Calculus</h1>
@@ -37,7 +42,7 @@
         </section><section>
             <h3>Definition</h3>
             <p>
-                A brief overview (don't fret about notation yet)
+                A brief overview (notation will be explained later)
             </p><ul><li class="fragment">
                 Variables: <span class="variable">v</span> :=
                 "[^&#x03bb;.()\s]+"
@@ -72,7 +77,7 @@
                 [<span class="variable">a</span> :=
                 <span class="expression">F</span>] ...
             </li></ul><p class="fragment">
-                This is a complete description of lambda calculus.
+                This is everything in lambda calculus.
             </p>
         </section><section>
             <h3>Variables</h3>
@@ -85,15 +90,11 @@
                 white space.  They serve as labels and focal points
                 for substitution.
             </p><p class="fragment">
-                A variable by itself is a valid expression.
-            </p><p class="fragment">
-                Examples: <span class="">a</span>
-                <span class="">b</span>
-                <span class="">c</span>
-                <span class="">MULTIPLY</span>
-                <span class="">172</span>
-                <span class="">IS-NIL?</span>
-                <span class="">@!</span>
+                Examples: <span class="fragment">a b c</span>
+                <span class="fragment">MULTIPLY</span>
+                <span class="fragment">172</span>
+                <span class="fragment">IS-NIL?</span>
+                <span class="fragment">@!</span>
             </p>
         </section><section>
             <h3>Expressions</h3>
@@ -117,27 +118,27 @@
             </li><li class="fragment">
                 Grouping: (<span class="expression">E</span>)
             </li></ul><p class="fragment">
-                Application is conventionally left associative. <br />
-                <span class="expression">E</span>
-                <span class="expression">F</span>
-                <span class="expression">G</span>
-                is the same as
-                (<span class="expression">E</span>
-                <span class="expression">F</span>)
-                <span class="expression">G</span>
-                but not
-                <span class="expression">E</span>
-                (<span class="expression">F</span>
-                <span class="expression">G</span>)
+                Application is conventionally left associative.
+                <span class="fragment">
+                    <br /> <span class="expression">E</span>
+                    <span class="expression">F</span>
+                    <span class="expression">G</span>
+                    is the same as
+                    (<span class="expression">E</span>
+                    <span class="expression">F</span>)
+                    <span class="expression">G</span>
+                </span><span class="fragment">
+                    but not
+                    <span class="expression">E</span>
+                    (<span class="expression">F</span>
+                    <span class="expression">G</span>)
+                </span>
             </p>
         </section><section>
             <h3>Free Variables</h3>
             <p>
-                A free variable is one not bound by abstraction. <br />
-                <span class="variable">a</span> is free in
-                [&#x03bb;b.b <span class="variable">a</span>]
-                but bound in [&#x03bb;<span class="variable"
-                >a</span>.<span class="variable">a</span> b]
+                A free variable is one not bound by abstraction.
+                Every expression has a set of free variables.
             </p><ul><li class="fragment">
                 FV[<span class="variable">a</span>] &#x225d;
                 {<span class="variable">a</span>}
@@ -155,7 +156,10 @@
                 FV[(<span class="expression">E</span>)] &#x225d;
                 FV[<span class="expression">E</span>]
             </li></ul><p class="fragment">
-                These rules cover all possible expressions.
+                <span class="variable">a</span> is free in
+                [&#x03bb;b.b <span class="variable">a</span>]
+                but bound in [&#x03bb;<span class="variable"
+                >a</span>.<span class="variable">a</span> b]
             </p>
         </section>
         <section>
@@ -170,7 +174,12 @@
                 FV[(&#x03bb;b.b) b]
                 <span class="fragment">= {} &cup; {b} = {b}</span>
             </li><li class="fragment">
-                FV[(&#x03bb;a.a b) &#x03bb;b.c b c]
+                FV[(&#x03bb;a.a b) c]
+                <span class="fragment">
+                    = ({a, b} - {a}) &cup; {c} = {b, c}
+                </span>
+            </li><li class="fragment">
+                FV[(&#x03bb;a.a b) &#x03bb;b.c b]
                 <span class="fragment">
                     = {b} &cup; {c} = {b, c}
                 </span>
@@ -184,8 +193,7 @@
         <section>
             <h3>Substitution</h3>
             <p>
-                Substitution replaces all instances of a free variable
-                with an expression.
+                Replaces a free variable with an expression.
             </p><ul><li class="fragment">
                 <span class="variable">a</span>
                 [<span class="variable">a</span> :=
@@ -201,12 +209,12 @@
                 <span class="expression">F</span>
                 [<span class="variable">a</span> :=
                 <span class="expression">G</span>] &#x225d;
-                <span class="expression">E</span>
+                (<span class="expression">E</span>
                 [<span class="variable">a</span> :=
-                <span class="expression">G</span>]
-                <span class="expression">F</span>
+                <span class="expression">G</span>])
+                (<span class="expression">F</span>
                 [<span class="variable">a</span> :=
-                <span class="expression">G</span>]
+                <span class="expression">G</span>])
             </li><li class="fragment">
                 (<span class="expression">E</span>)
                 [<span class="variable">a</span> :=
@@ -231,7 +239,21 @@
                     &#x03bb;b.(<span class="expression">E</span>
                     [<span class="variable">a</span> :=
                     <span class="expression">G</span>])
-                    
+                </span><span class="fragment">
+                    &and; <br />
+                    (b &#x2208; FV[<span class="expression">G</span>]
+                    &and; c &#x2209;
+                    FV[<span class="expression">E</span> &cup;
+                    <span class="expression">G</span>)]
+                    &#x27f9; <br />
+                    &#x03bb;b.<span class="expression">E</span>
+                    [<span class="variable">a</span> :=
+                    <span class="expression">G</span>] &#x225d;
+                    &#x03bb;c.(<span class="expression">E</span>
+                    [<span class="variable">b</span> :=
+                    <span class="variable">c</span>,
+                    <span class="variable">a</span> :=
+                    <span class="expression">G</span>])
                 </span>
             </li></ul>
         </section>
@@ -260,7 +282,7 @@
         </section>
         <section>
             <h3>Equivalence: Examples</h3>
-            <table><tr><td><ul><li class="fragment">
+            <table class="examples"><tr><td><ul><li class="fragment">
                 &#x03bb;a.a &#x2251;
                 <span class="true">&#x03bb;b.b</span>
             </li><li class="fragment">
@@ -273,8 +295,8 @@
                     &#x03bb;g.(&#x03bb;b.g (b b)) &#x03bb;c.g (c c)
                 </span>
             </li></ul></td><td><ul><li class="fragment">
-                &#x03bb;a.&#x03bb;b.a &ne;
-                <span class="false">&#x03bb;c.&#x03bb;b.a</span>
+                &#x03bb;a.a a &ne;
+                <span class="false">&#x03bb;b.b</span>
             </li><li class="fragment">
                 &#x03bb;a.a b c &ne;
                 <span class="false">&#x03bb;b.a b c</span>
@@ -327,8 +349,15 @@
         </section><section>
             <h3>Reduction: Capture</h3>
             <p>
-                Free variables in the application must not match any
-                bound variables in the abstraction.
+                Free variables in the application argument must not
+                match bound variables in nested abstractions.
+            </p><p class="fragment">
+                (&#x03bb;a.b) b
+                <span class="fragment">
+                    &#x2aa2; b [a := b]
+                </span><span class="fragment">
+                    &#x25b7; b
+                </span>
             </p><p class="fragment">
                 (&#x03bb;a.&#x03bb;b.a) b
                 <span class="fragment false">
@@ -452,7 +481,7 @@
             </p><p>
                 (&#x03bb;a.&#x03bb;b.a) c
                 ((&#x03bb;d.d d) &#x03bb;d.d d)
-            </p><table class="large"><tr><td><ul class="fragment">
+            </p><table class="order"><tr><td><ul class="fragment">
                 Normal Order                
                 <li class="fragment">
                     &#x25b7; (&#x03bb;b.c) ((&#x03bb;d.d d)
@@ -478,7 +507,7 @@
                 Stable or efficient -- pick one!
             </p>
         </section><section>
-            <h3>Lazy Order</h3>
+            <h3>Lazy Evaluation</h3>
             <p>
                 Lazy evaluation is like normal order but it keeps
                 of expressions so they're evaluated only once.
@@ -498,30 +527,54 @@
         </section><section>
             <h3>Currying</h3>
             <p>
-                Frege (1893 CE) pointed out that abstractions with a
-                single argument can be nested to produce multi-variable
-                abstractions.
-            </p><ul><li class="fragment">
+                Frege (1893 CE) pointed out that single argument
+                functions can emulate multi-argument functions.
+            </p><ul class="examples"><li class="fragment">
                 (&#x03bb;a.&#x03bb;b.<span class="expression">E</span>)
                 <span class="expression">F</span>
                 <span class="expression">G</span>
                 <span class="fragment">
                     &#x25b7;
-                    (&#x03bb;b.<span class="expression">E</span>
-                    [a := <span class="expression">F</span>])
+                    (&#x03bb;b.(<span class="expression">E</span>
+                    [a := <span class="expression">F</span>]))
                     <span class="expression">G</span>
                 </span><span class="fragment">
-                    &#x25b7; <br /> <span class="expression">E</span>
+                    &#x25b7; <span class="expression">E</span>
                     [a := <span class="expression">F</span>,
                     b := <span class="expression">G</span>]
+                </span>
+            </li><li class="fragment">
+                (&#x03bb;a.&#x03bb;b.&#x03bb;c.<span
+                class="expression">E</span>)
+                <span class="expression">F</span>
+                <span class="expression">G</span>
+                <span class="expression">H</span>
+                <span class="fragment">
+                    &#x25b7;
+                    (&#x03bb;b.&#x03bb;c.(<span
+                    class="expression">E</span>
+                    [a := <span class="expression">F</span>]))
+                    <span class="expression">G</span>
+                    <span class="expression">H</span>
+                </span><span class="fragment">
+                    &#x25b7; <br />
+                    (&#x03bb;c.(<span class="expression">E</span>
+                    [a := <span class="expression">F</span>,
+                    b := <span class="expression">G</span>]))
+                    <span class="expression">H</span>
+                </span><span class="fragment">
+                    &#x25b7; <span class="expression">E</span>
+                    [a := <span class="expression">F</span>,
+                    b := <span class="expression">G</span>,
+                    c := <span class="expression">H</span>]
                 </span>
             </li><li class="fragment">
                 (&#x03bb;a.&#x03bb;b.<span class="expression">E</span>)
                 <span class="expression">F</span>
                 <span class="fragment">
                     &#x25b7;
-                    &#x03bb;b.<span class="expression">E</span>
-                    [a := <span class="expression">F</span>]
+                    &#x03bb;b.(<span class="expression">E</span>
+                    [a := <span class="expression">F</span>])
                 </span>
             </li></ul><p class="fragment">
                 Supplying some but not all arguments is allowed.
@@ -586,18 +639,29 @@
                 <span class="expression">E</span>
                 [<span class="variable">a</span> :=
                 <span class="expression">F</span>] ...
-            </li></ul><p>
-                Notation: &#x03bb;<span class="variable">a
+            </li><li class="extra">
+                Left-Associative:
+                <span class="expression">E F G</span> &#x2251;
+                (<span class="expression">E F</span>)
+                <span class="expression">G</span>
+            </li><li class="extra">
+                Multi-Argument: &#x03bb;<span class="variable">a
                 b</span>.</span><span class="expression">E</span>
                 &#x225d;
                 &#x03bb;<span class="variable"
                 >a</span>.&#x03bb;<span class="variable"
                 >b</span>.<span class="expression">E</span>
-            </p>
+            </li></ul>
         </section><section>
             <h3>Lambda Playground</h3>
-            <div class="lambda"></div>
-            <p>Not yet <a href="../apps/lambda">integrated</a>...</p>
+            <div class="lambda"
+                 data-expr="(&#x03bb;n.n ((&#x03bb;a b.a)
+                        (&#x03bb;a b.b)) (&#x03bb;a b.a))
+                        (&#x03bb;a b.b)"></div>
+            <p>
+                This is a JavaScript
+                <a href="../apps/lambda">implementation</a>.
+            </p>
         </section>
     </section><section>
         <section>
@@ -666,9 +730,6 @@
                 Thrush (Power): &#x03bb;a b.b a
             </li><li class="fragment">
                 Vireo (Pair): &#x03bb;a b c.c a b
-            </li><li class="fragment">
-                Blackbird:
-                &#x03bb;a b c d.a (b c d)
             </li><li class="fragment">
                 Starling: &#x03bb;a b c.a c (b c)
             </li></ul>
@@ -940,6 +1001,10 @@
                 <span class="fragment">[NINE]</span>
             </li></ul>
         </section><section>
+            <h3>Combinator Exponentiation</h3>
+            <div class="lambda"
+                 data-expr="POWER THREE TWO"></div>
+        </section><section>
             <h3>Review: Numbers and Arithmetic</h3>
             <ul><li>
                 ZERO: &#x03bb;f a.a [Kite/FALSE]
@@ -1056,6 +1121,10 @@
                 Any questions?  Of course not.  Moving on...
             </p>
         </section><section>
+            <h3>Combinator Division</h3>
+            <div class="lambda"
+                 data-expr="DIVIDE 9 3"></div>
+        </section><section>
             <h3>Combinator Zero Test</h3>
             <p>
                 We can ask questions about numbers:
@@ -1115,7 +1184,7 @@
             </p>
         </section><section>
             <h3>Combinator Comparisons</h3>
-            <ul><li class="fragment">
+            <ul class="examples"><li class="fragment">
                 LESSEQ?: &#x03bb;n m.IS-ZERO? (SUBTRACT n m)
             </li><li class="fragment">
                 GREATEREQ?: &#x03bb;n m.IS-ZERO? (SUBTRACT m n)
@@ -1178,7 +1247,7 @@
         </section><section>
             <h3>Factorial</h3>
             <p>
-                FSTEP: (&#x03bb;f n.(IS-ZERO? n) ONE <br />
+                FSTEP: (&#x03bb;f n.IS-ZERO? n ONE <br />
                 (MULTIPLY n (f (PREDECESSOR n))))
             </p><p class="fragment">
                 FACTORIAL &#x225d; FIX FSTEP
@@ -1488,11 +1557,11 @@
                 <span class="fragment">
                     &#x2aa2; (&#x03bb;a b c.a c (b c)) K X
                 </span><span class="fragment">
-                    &#x25b7; (&#x03bb;b c.K c (b c)) X
+                    &#x25b7; <br /> (&#x03bb;b c.K c (b c)) X
                 </span><span class="fragment">
-                    &#x25b7; <br /> &#x03bb;c.K c (X c)
+                    &#x25b7; &#x03bb;c.K c (X c)
                 </span><span class="fragment">
-                    &#x2aa2; &#x03bb;c.(&#x03bb;a b.a) c
+                    &#x2aa2; <br /> &#x03bb;c.(&#x03bb;a b.a) c
                     <span class="false">(X c)</span>
                 </span><span class="fragment">
                     &#x25b7; &#x03bb;c.c
@@ -1564,13 +1633,14 @@
                 T[&#x03bb;a.&#x03bb;b.<span class="expression">E</span>]
                 &and; a&#x2208;FV[<span class="expression">E</span>]
                 &#x27f9; T[&#x03bb;a.T[&#x03bb;b.<span class="expression"
-                                                 >E</span>]]
+                >E</span>]]
             </li><li class="fragment">
                 T[&#x03bb;a.<span class="expression">E</span>
                 <span class="expression">F</span>]
-                &and; a&#x2208;(FV[<span class="expression">E</span>] &cup;
-                FV[<span class="expression">F</span>])
-                &#x27f9; S T[&#x03bb;a.<span class="expression">E</span>]
+                &and; a&#x2208;(FV[<span class="expression">E</span>]
+                &cup;
+                FV[<span class="expression">F</span>]) &#x27f9; <br />
+                S T[&#x03bb;a.<span class="expression">E</span>]
                 T[&#x03bb;a.<span class="expression">F</span>]]
             </li></ul>
         </section><section>
@@ -1645,8 +1715,6 @@
             </li><li class="fragment">
                 Vireo: V =  S (K (S (S (K (S (K S) K)) S) (K K)))
                 <br />(S (K (S I)) K)
-            </li><li class="fragment">
-                Blackbird: Bl = S (K (S (K S) K)) (S (K S) K)
             </li><li class="fragment">
                 FIX = S (K (S I I)) (S (S (K S) K) (K (S I I)))
             </li></ul>
@@ -1755,12 +1823,26 @@
             </p>
         </section>
     </section></div></div>
-    <script src="lib/reveal/head.min.js"></script>
-    <script src="lib/reveal/reveal.js"></script>
-    <script src="ripple/polyfill.js"></script>
-    <script src="ripple/ripple.js"></script>
-    <script src="ripple/logic.js"></script>
-    <script src="ripple/multivec.js"></script>
-    <script src="ripple/triggy.js"></script>
-    <script src="lib/slides.js"></script>
+    <script type="module">
+     import Reveal from "./lib/reveal/reveal.esm.js";
+     import Search from "./lib/reveal/search.esm.js";
+     import Notes  from "./lib/reveal/notes.esm.js";
+     import Lambda from "./ripple/lambda.mjs";
+
+     Reveal.initialize({
+         slideNumber: 'h.v', transition: 'convex', history: true,
+	 plugins: [ Search, Notes ]
+     });
+     Reveal.addEventListener("ready", event => {
+         //event.getScale();
+         //Reveal.getCurrentSlide();
+     });
+     Reveal.addEventListener("slidechanged", event => {
+         //event.currentSlide;
+     });
+
+     document.querySelectorAll(".lambda").forEach(element => {
+         Lambda.createInterface(element);
+     });
+    </script>
 </html>

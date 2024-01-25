@@ -22,6 +22,10 @@
 //     https://plato.stanford.edu/entries/lambda-calculus/
 //
 // :TODO: implement lazy evaluation
+// :TODO: better handling of library case insensitivity
+// :TODO: optional controls in interface
+// :TODO: create a number subclass for more flexible arithmetic
+// :TODO: finish S K combinator conversion
 
 /**
  * Generating variable names uses this */
@@ -498,7 +502,7 @@ class Lambda {
         return result.#simplify();
     }
 
-    toStarlingKestral() { // :TODO:
+    toStarlingKestral() { // incomplete!
         var result = this;
         var changed = false;
         if (result.variables.length === 0) {
@@ -560,107 +564,223 @@ class Lambda {
 
     static defaultLibrary = Lambda.__augmentLibrary({
         TRUE: { description: "Logical TRUE", priority: 2,
-                value: "lambda a b.a" },
+                value: "\\a b.a" },
         FALSE: { description: "Logical FALSE", priority: 2,
-                 value: "lambda a b.b" },
+                 value: "\\a b.b" },
         NOT: { description: "Logical NOT",
-               value: "lambda a b c.a c b" },
+               value: "\\a b c.a c b" },
         AND: { description: "Logical AND",
-               value: "lambda p q.p q p" },
+               value: "\\p q.p q p" },
         OR: { description: "Logical OR",
-              value: "lambda p q.p p q" },
-        "BOOLEQ?": { description: "Boolean Equality",
-                     value: "lambda p q.p q (NOT q)" },
-        PAIR: { value: "lambda h t f.f h t" },
-        HEAD: { value: "lambda p.p TRUE" },
-        TAIL: { value: "lambda p.p FALSE" },
-        "IS-NIL?": { value: "lambda p.p (lambda a b.FALSE)" },
-        NIL: { value: "lambda a.TRUE" },
-        SUCCESSOR: { description: "Successor",
-                     value: "lambda n f a.f (n f a)" },
-        ZERO: { description: "Church Numeral ZERO",
-                value: "lambda f a.a" },
-        ADD: { description: "Church Numeral Addition",
-               value: "lambda m n f a.m f (n f a)" },
-        MULTIPLY: { description: "Church Numeral Multiplication",
-                    value: "lambda m n f.m (n f)" },
-        POWER: { description: "Church Numeral Exponentiation",
-                 value: "lambda m n f a.(n m) f a" },
-        "IS-ZERO?": { description: "Church Numeral Zero Check",
-                      value: "lambda n.n (lambda a.FALSE) TRUE" },
-        "IS-EVEN?": { description: "Church Numeral EvenCheck",
-                      value: "lambda n.n (lambda a.NOT a) TRUE" },
-        "IS-ODD?": { description: "Church Numeral Odd Check",
-                     value: "lambda n.n (lambda a.NOT a) FALSE" },
-        PREDECESSOR: { description: "Church Numeral Decrement",
-                       value: "lambda n f a.n (lambda g h.h (g f)) " +
-                              "(lambda c.a) (lambda u.u)" },
-        SUBTRACT: { description: "Church Numeral Subtraction",
-                    value: "lambda m n.n PREDECESSOR m" },
-        DIVIDE: { description: "Church Numeral Division",
-                  value: "lambda n.((lambda f.(lambda x.x x) " +
-                         "(lambda x.f (x x))) (lambda c.lambda " +
-                         "n.lambda m.lambda f.lambda x.(lambda " +
-                         "d.(lambda n.n (lambda x.(lambda " +
-                         "a.lambda b.b)) (lambda a.lambda b.a)) d " +
-                         "((lambda f.lambda x.x) f x) " +
-                         "(f (c d m f x))) ((lambda m.lambda n.n " +
-                         "(lambda n.lambda f.lambda x.n (lambda " +
-                         "g.lambda h.h (g f)) (lambda u.x) " +
-                         "(lambda u.u)) m) n m))) ((lambda " +
-                         "n.lambda f.lambda x. f (n f x)) n)"},
-        "LESSEQ?": { description: "Church Numeral Less Than or Equal",
-                     value: "lambda m n.IS-ZERO? (SUBTRACT m n)" },
+              value: "\\p q.p p q" },
+        "BOOLEQ?": { description: "Boolean equality",
+                     value: "\\p q.p q (NOT q)" },
+
+        PAIR: { value: "\\h t f.f h t" },
+        HEAD: { value: "\\p.p TRUE" },
+        TAIL: { value: "\\p.p FALSE" },
+        "IS-NIL?": { value: "\\p.p (\\a b.FALSE)" },
+        NIL: { value: "\\a.TRUE" },
+
+        SUCCESSOR: { description: "Adds one to a Church numerals",
+                     value: "\\n f a.f (n f a)" },
+        ZERO: { description: "Zero expressed as a Church numeral",
+                value: "\\f a.a" },
+        ADD: { description: "Addition of Church numerals",
+               value: "\\m n f a.m f (n f a)" },
+        MULTIPLY: { description: "Multiplication of Church numerals",
+                    value: "\\m n f.m (n f)" },
+        POWER: { description: "Exponentiation of Church numerals",
+                 value: "\\m n f a.(n m) f a" },
+        "IS-ZERO?": { description: "Reduces to true if an only if " +
+                                   "argument is zero",
+                      value: "\\n.n (\\a.FALSE) TRUE" },
+        "IS-EVEN?": { description: "Reduces to true if and only if " +
+                                   "argument is even",
+                      value: "\\n.n (\\a.NOT a) TRUE" },
+        "IS-ODD?": { description: "Reduces to true if and only if " +
+                                  "argument is odd",
+                     value: "\\n.n (\\a.NOT a) FALSE" },
+        PREDECESSOR: { description: "Decrements a Church numeral",
+                       value: "\\n f a.n (\\g h.h (g f)) " +
+                              "(\\c.a) (\\u.u)" },
+        SUBTRACT: { description: "Subtraction of Church numerals",
+                    value: "\\m n.n PREDECESSOR m" },
+        DIVIDE: { description: "Division of Church numerals",
+                  value: "\\n.((\\f.(\\x.x x) " +
+                         "(\\x.f (x x))) (\\c.\\" +
+                         "n.\\m.\\f.\\x.(\\" +
+                         "d.(\\n.n (\\x.(\\" +
+                         "a.\\b.b)) (\\a.\\b.a)) d " +
+                         "((\\f.\\x.x) f x) " +
+                         "(f (c d m f x))) ((\\m.\\n.n " +
+                         "(\\n.\\f.\\x.n (\\" +
+                         "g.\\h.h (g f)) (\\u.x) " +
+                         "(\\u.u)) m) n m))) ((\\" +
+                         "n.\\f.\\x. f (n f x)) n)"},
+
+        "LESSEQ?": {
+            description: "Reduces to true if the first Church " +
+                         "numeral is less than or equal to " +
+                         "the second",
+            value: "\\m n.IS-ZERO? (SUBTRACT m n)" },
         "GREATEREQ?": {
-            description: "Church Numeral Greater Than or Equal",
-            value: "lambda m n.IS-ZERO? (SUBTRACT n m)" },
-        "LESS?": { description: "Church Numeral Less Than",
-                   value: "lambda m n.NOT (GREATEREQ? m n)" },
-        "GREATER?": { description: "Church Numeral Greater Than",
-                      value: "lambda m n.NOT (LESSEQ? m n)" },
-        "EQUAL?": { description: "Church Numeral Equality",
-                    value: "lambda m n.AND (LESSEQ? m n) " +
-                           "(LESSEQ? n m)" },
-        NTH: { value: "lambda n l.n (lambda l.(IS-NIL? l) NIL " +
-                      "(TAIL l)) l"},
-        FACTITER: { description: "Factorial computed iteratively",
-                    value: "λn.TAIL (n (λp.PAIR (+ ONE (HEAD p)) " +
-                           "(* (HEAD p) (TAIL p))) (PAIR ONE ONE))"},
-        FIX: { description: "Fixed-point Combinator",
-               value: "lambda f.(lambda a.f (a a)) lambda a.f (a a)" },
-        FACTORIAL: { description: "Church Numeral FACTORIAL",
-                     value: "FIX (lambda f n.(IS-ZERO? n) ONE " +
-                            "(MULTIPLY n (f (PREDECESSOR n))))" },
-        ADDUP: { description: "Church Numeral FACTORIAL",
-                 value: "FIX (lambda f n.(IS-ZERO? n) ZERO " +
-                        "(ADD n (f (PREDECESSOR n))))" },
-        SUM: { description: "Add up a list of numbers",
-               value: "FIX (lambda f l.(IS-NIL? l) ZERO " +
-                      "(ADD (HEAD l) (f (TAIL l))))" },
+            description: "Reduces to true if the first Church " +
+                         "numeral is greater than or equal to " +
+                         "the second",
+            value: "\\m n.IS-ZERO? (SUBTRACT n m)" },
+        "LESS?": {
+            description: "Reduces to true if the first Church " +
+                         "numeral is less than the second",
+            value: "\\m n.NOT (GREATEREQ? m n)" },
+        "GREATER?": {
+            description: "Reduces to true if the first Church " +
+                         "numeral is greater than the second",
+            value: "\\m n.NOT (LESSEQ? m n)" },
+        "EQUAL?": {
+            description: "Reduces to true if and only if the two " +
+            "Church numeral arguments are the same",
+            value: "\\m n.AND (LESSEQ? m n) (LESSEQ? n m)" },
+
+        NTH: {
+            description: "Reduces to the nth member of a list",
+            value: "\\n l.n (\\l.(IS-NIL? l) NIL " +
+                   "(TAIL l)) l"},
+        FACTITER: {
+            description: "Factorial computed iteratively",
+            value: "λn.TAIL (n (λp.PAIR (+ ONE (HEAD p)) " +
+                   "(* (HEAD p) (TAIL p))) (PAIR ONE ONE))"},
+
+        FIX: {
+            description: "Fixed-point combinator for applying a " +
+                         "function to itself repeatedly",
+            value: "\\f.(\\a.f (a a)) \\a.f (a a)" },
+        FACTORIAL: {
+            description: "Factorial computed recursively",
+            value: "FIX \\f n.IS-ZERO? n ONE " +
+                   "(MULTIPLY n (f (PREDECESSOR n)))" },
+        ADDUP: {
+            description: "Return the sum of a Church numeral and " +
+                         "all of its predecessors",
+            value: "FIX \\f n.IS-ZERO? n ZERO " +
+                   "(ADD n (f (PREDECESSOR n)))" },
+        SUM: {
+            description: "Reduce to the sum of all numbers in a list",
+            value: "FIX \\f l.IS-NIL? l ZERO " +
+                   "(ADD (HEAD l) (f (TAIL l)))" },
         MAP: { description: "Apply a function to each list member",
-               value: "FIX (lambda f g l.(IS-NIL? l) NIL " +
-                      "(PAIR (g (HEAD l)) (f g (TAIL l))))" },
-        IDENTITY: { description: "Identity",
-                    value: "lambda i.i" },
-        KESTRAL: { description: "Kestral",
-                   value: "lambda a b.a" },
-        KITE: { description: "Kestral",
-                value: "lambda a b.b" },
-        MOCKINGBIRD: { description: "Mockingbird",
-                       value: "lambda a.a a" },
-        CARDINAL: { description: "Cardinal",
-                    value: "lambda a b c.a c b" },
-        BLUEBIRD: { description: "Bluebird",
-                    value: "lambda a b c.a (b c)" },
-        THRUSH: { description: "Thrush",
-                  value: "lambda a b.b a" },
-        VIRIO: { description: "Virio",
-                 value: "lambda a b c.c a b" },
-        STARLING: { description: "Starling",
-                    value: "lambda a b c.a c (b c)" },
-        IOTA: { description: "Iota",
-                value: "lambda f.f STARLING KESTRAL" },
+               value: "FIX \\f g l.IS-NIL? l NIL " +
+                      "(PAIR (g (HEAD l)) (f g (TAIL l)))" },
+
+        IDENTITY: { description: "Identity combinator",
+                    value: "\\i.i" },
+        KESTRAL: { description: "Kestral combinator",
+                   value: "\\a b.a" },
+        KITE: { description: "Kite combinator",
+                value: "\\a b.b" },
+        MOCKINGBIRD: { description: "Mockingbird combinator",
+                       value: "\\a.a a" },
+        CARDINAL: { description: "Cardinal combinator",
+                    value: "\\a b c.a c b" },
+        BLUEBIRD: { description: "Bluebird combinator",
+                    value: "\\a b c.a (b c)" },
+        THRUSH: { description: "Thrush combinator",
+                  value: "\\a b.b a" },
+        VIRIO: { description: "Virio combinator",
+                 value: "\\a b c.c a b" },
+        STARLING: { description: "Starling combinator",
+                    value: "\\a b c.a c (b c)" },
+        IOTA: { description: "Iota combinator",
+                value: "\\f.f STARLING KESTRAL" },
     });
+
+    static createInterface(element) {
+        const expression = document.createElement("textarea");
+        const steps = document.createElement("input");
+        const delay = document.createElement("input");
+        let repeating = false;
+
+        expression.value =
+            (typeof(element.dataset.expr) === "string") ?
+            element.dataset.expr.replace(/\s+/g, " ") : "";
+
+        function countReduce(expr) {
+            if (expr.isNormal()) {
+                repeating = false;
+            } else {
+                const value = parseInt(steps.value);
+                steps.value = isNaN(value) ? 1 : (value + 1);
+                expr = expr.reduce();
+            }
+            return expr;
+        }
+
+        function setExpression(expr) {
+            expression.value = expr.toString();
+            return expr;
+        }
+
+        function createButton(name, fn) {
+            const button = document.createElement("button");
+            button.appendChild(document.createTextNode(name));
+            button.addEventListener("click", event => {
+                try {
+                     setExpression(fn(new Lambda(expression.value)));
+                } catch (ex) { console.error(ex); alert(ex); }
+            });
+            element.appendChild(button);
+        }
+
+        function createRepeatButton(name, fn, pre, post) {
+            const button = document.createElement("button");
+            button.appendChild(document.createTextNode(name));
+            function repeat() {
+                try {
+                    const expr = fn(new Lambda(expression.value));
+                    setExpression(expr);
+                    if (expr.isNormal()) {
+                        if (post)
+                            setExpression(post(expr));
+                    } else if (repeating)
+                        setTimeout(repeat, delay.value);
+                } catch (ex) { console.error(ex); alert(ex); }
+            }
+            button.addEventListener("click", event => {
+                try {
+                    repeating = true;
+                    if (pre)
+                        setExpression(pre(new Lambda
+                            (expression.value)));
+                    setTimeout(repeat, delay.value);
+                } catch (ex) { console.error(ex); alert(ex); }
+            });
+            element.appendChild(button);
+        }
+
+        createButton("Reduce", countReduce);
+        createRepeatButton("Repeat", countReduce);
+        createRepeatButton("Go", countReduce,
+                           expr => expr.applyLibrary(),
+                           expr => expr.reverseLibrary());
+        createButton("Library", expr => expr.applyLibrary());
+        createButton("Discover", expr => expr.reverseLibrary());
+        steps.disabled = true;
+        steps.style = "text-align: right; width: 5em;";
+        element.appendChild(steps);
+        delay.type = "range";
+        delay.min = 5;
+        delay.max = 1000;
+        delay.value = 100
+        delay.style = "text-align: right; width: 5em;";
+        element.appendChild(delay);
+        element.appendChild(document.createElement("br"));
+        expression.setAttribute("rows", 12);
+        expression.setAttribute("cols", 80);
+        expression.addEventListener("input", event =>
+            { repeating = false; steps.value = 0; });
+        element.appendChild(expression);
+        return element;
+    }
 
     static check(tests) {
         let failures = 0;
@@ -714,36 +834,36 @@ class Lambda {
     }
 
     static tests = [
-        {test: "(lambda a.a) a", expected: "a",
+        {test: "(\\a.a) a", expected: "a",
          description: ["Check a simple reduction."]},
-        {test: "(lambda a.a) lambda b.b", expected: "lambda b.b",
+        {test: "(\\a.a) \\b.b", expected: "\\b.b",
          description: ["Check a simple reduction."]},
-        {test: "(lambda a.a a) (lambda b.b) c", expected: "c",
+        {test: "(\\a.a a) (\\b.b) c", expected: "c",
          description: ["Check a multi-step reduction."]},
-        {test: "(lambda a.a a) (lambda a.a a)", forever: true,
+        {test: "(\\a.a a) (\\a.a a)", forever: true,
          description: ["Check that infinite loops keep looping."]},
-        {test: "(lambda a.b) ((lambda a.a a) (lambda a.a a))",
+        {test: "(\\a.b) ((\\a.a a) (\\a.a a))",
          expected: "b", description: [
              "Check that normal order evaluation works."]},
-        {test: "(lambda a.(lambda a.a) a a) b", expected: "b b",
+        {test: "(\\a.(\\a.a) a a) b", expected: "b b",
          description: "Check that variables get shadowed."},
-        {test: "(lambda a.a) (lambda b.b)", expected: "lambda c.c",
+        {test: "(\\a.a) (\\b.b)", expected: "\\c.c",
          description: ["Check that variable names don't matter."]},
-        {test: "lambda a.a b (lambda c.c d)",
-         expected: "lambda c.c b (lambda a.a d)",
+        {test: "\\a.a b (\\c.c d)",
+         expected: "\\c.c b (\\a.a d)",
          description: ["Check that variable names don't matter."]},
 
-        {test: "(lambda a.lambda b.a) b", expected: "lambda a.b",
+        {test: "(\\a.\\b.a) b", expected: "\\a.b",
          description: ["Avoid free variable capture."]},
-        {test: "(lambda a b.a) b", expected: "lambda a.b",
+        {test: "(\\a b.a) b", expected: "\\a.b",
          description: ["Avoid free variable capture."]},
-        {test: "(lambda a.lambda b.b) b", expected: "lambda b.b",
+        {test: "(\\a.\\b.b) b", expected: "\\b.b",
          description: ["Don't avoid capture too hard."]},
-        {test: "(lambda a b.b) b", expected: "lambda b.b",
+        {test: "(\\a b.b) b", expected: "\\b.b",
          description: ["Don't avoid capture too hard."]},
-        {test: "(λg.(λa.(λb.a))) a", expected: "λa b.a",
+        {test: "(\\g.(\\a.(\\b.a))) a", expected: "\\a b.a",
          description: ["Subtle capture problem."]},
-        {test: "(λg a b.a) a", expected: "λa b.a",
+        {test: "(\\g a b.a) a", expected: "\\a b.a",
          description: ["Subtle capture problem."]}
     ];
 }
