@@ -57,8 +57,14 @@ class Lambda {
             this.#variables = value.#variables.slice();
             this.#values    = value.#values.slice();
         } else if (Array.isArray(value)) {
-            this.#variables = [];
-            this.#values    = value.slice();
+            if ((value.length === 1) &&
+                (value[0] instanceof Lambda)) {
+                this.#variables = value[0].#variables.slice();
+                this.#values    = value[0].#values.slice();
+            } else {
+                this.#variables = [];
+                this.#values    = value.slice();
+            }
         } else throw new TypeError(
             "invalid value (" + typeof(value) + "): " + value);
     }
@@ -209,11 +215,11 @@ class Lambda {
 
     /**
      * Attempt to eliminate unnecessary complexity in an expression. */
-    #simplify() {
+    simplify() {
         let result = this;
         this.#values.forEach((value, index) => {
             if (value instanceof Lambda) {
-                const simpler = value.#simplify();
+                const simpler = value.simplify();
                 if ((simpler.#variables.length === 0) &&
                     (simpler.#values.length === 1) &&
                     !(simpler.#values[0] instanceof Lambda)) {
@@ -270,7 +276,7 @@ class Lambda {
      * makes it possible to compare expressions that are structurally
      * identical but with different bound variable names. */
     #canonicalize(index, variables) {
-        const result = new Lambda(this).#simplify();
+        const result = new Lambda(this).simplify();
         index = !isNaN(index) ? index : 0;
         variables = Object.assign({}, variables);
 
@@ -298,7 +304,8 @@ class Lambda {
 
     /**
      * Return true if and only if this expression and the other are
-     * the same from the perspective of lambda calculus.  For this
+     * the same from the perspective of lambda calculus.  This is
+     * intensional equality, not extensional equality.  For this
      * purpose the names of bound variables don't matter so "\a.a b"
      * and "\c.c b" are equal but "\a.a d" is not. */
     equals(other) {
@@ -428,7 +435,7 @@ class Lambda {
                 }
             }
         });
-        return result.#simplify();
+        return result;
     }
 
     static eachLibrary(fn, library, self) {
@@ -499,34 +506,101 @@ class Lambda {
             if (expression.equals(result))
                 result = new Lambda(name);
         }, library);
-        return result.#simplify();
+        return result.simplify();
     }
 
-    toStarlingKestral() { // incomplete!
-        var result = this;
-        var changed = false;
-        if (result.variables.length === 0) {
+    #skSimplify() {
+        let result = this.simplify();
+        this.#values.forEach((value, index) => {
+            if (value instanceof Lambda)  {
+                const simpler = value.#skSimplify();
+                if (simpler !== value) {
+                    result = new Lambda(result);
+                    result.#values.splice(index, 1, simpler);
+                }
+            }
+        });
+
+        if ((result.#values.length >= 3) &&
+                   (result.#values[0] === "S") &&
+                   (result.#values[0] === "K")) {
+            result = new Lambda(result);
+            result.#values.splice(0, 3, "I");
+        }
+        if ((result.#values.length > 1) &&
+             (result.#values[0] === "I")) {
+            result = new Lambda(result);
+            result.#values.splice(0, 1);
+        }
+        if ((result.#values.length >= 3) &&
+            (result.#values[0] === "S") &&
+            (result.#values[1] instanceof Lambda) &&
+            (result.#values[1].#variables.length === 0) &&
+            (result.#values[1].#values.length === 2) &&
+            (result.#values[1].#values[0] === "K") &&
+            (result.#values[1].#values[1] === "K") &&
+            (result.#values[2] === "I")) {
+            result = new Lambda(result);
+            result.#values.splice(0, 3, "K");
+        }
+        return result;
+    }
+
+    toStarlingKestral(config) {
+        let result = this;
+        if (config && !isNaN(config.count) &&
+            --config.count < 1)
+            throw new Error("Overflow");
+
+        if (result.#variables.length === 0) {
+            // T[a] => a ^ T[E F] => T[E] T[F]
             result = new Lambda(result);
             result.#values = result.#values.map(value =>
                 (value instanceof Lambda) ?
-                value.toStarlingKestral() : value);
+                value.toStarlingKestral(config) : value);
         } else if ((result.#values.length === 1) &&
                    (result.#variables.length === 1) &&
                    (result.#variables[0] === result.#values[0])) {
-            result = new Lambda("I"); // T[\x.x] => I
+            result = new Lambda("I"); // T[\a.a] => I
         } else if ((result.#variables.length > 0) &&
-                   result.#values.some(value =>
+                   !result.#values.some(value =>
                        (value instanceof Lambda) ?
-                       value.getFreeVariables()[result.#variables[0]] :
-                       ((typeof(value) === "string") &&
-                        value === result.#variables[0]))) {
-            // :FIXME: T[\x.E] => (K T[E]) (x not free in E)
-        } else if (result.variables.length > 1) {
-            // :FIXME: T[\x.\y.E] => T[\x.T[\y.E]] (x free in E)
-        } else {
-            // :FIXME: T[\x.(E F)] => (S T[\x.E] T[\x.F]) (x free in E or F)
+                       (result.#variables[0] in
+                           value.getFreeVariables()) :
+                       (value === result.#variables[0]))) {
+            // T[\a.E] => K T[E] (a not free in E)
+            const remain = new Lambda(result);
+            remain.#variables.shift();
+            result = new Lambda([
+                "K", remain.toStarlingKestral(config)]);
+        } else if (result.#variables.length > 1) {
+            // T[\a b.E] => T[\a.T[\b.E]] (a free in E)
+            const remain = new Lambda(result);
+            const variable = remain.#variables.shift();
+            result = remain.toStarlingKestral(config);
+            result.#variables.unshift(variable);
+            result = result.toStarlingKestral(config);
+        } else if ((result.#values.length === 1) &&
+                   (result.#values[0] instanceof Lambda) &&
+                   (result.#values[0].#variables.length > 0)) {
+            // T[\a.\b.E] => T[\a.T[\b.E]] (a free in E)
+            const variable = result.#variables[0];
+            result = new Lambda([
+                result.#values[0].toStarlingKestral(config)]);
+            result.#variables.unshift(variable);
+            result = result.toStarlilngKestral(config);
+        } else if (result.#values.length > 1) {
+            // T[\a.E F] => S T[\a.E] T[\a.F] (a free in E or F)
+            result = new Lambda(result);
+            const variable = result.#variables.shift();
+            const last = new Lambda(result.#values.slice(-1));
+            const prev = new Lambda(result.#values.slice(0, -1));
+            last.#variables.unshift(variable);
+            prev.#variables.unshift(variable);
+            result = new Lambda(["S", prev.toStarlingKestral(config),
+                                 last.toStarlingKestral(config)]);
         }
-        return result;
+        return result.#skSimplify();
     }
 
     static __augmentLibrary(library) {
@@ -603,21 +677,13 @@ class Lambda {
                      value: "\\n.n (\\a.NOT a) FALSE" },
         PREDECESSOR: { description: "Decrements a Church numeral",
                        value: "\\n f a.n (\\g h.h (g f)) " +
-                              "(\\c.a) (\\u.u)" },
+                              "(\\c.a) \\b.b" },
         SUBTRACT: { description: "Subtraction of Church numerals",
                     value: "\\m n.n PREDECESSOR m" },
         DIVIDE: { description: "Division of Church numerals",
-                  value: "\\n.((\\f.(\\x.x x) " +
-                         "(\\x.f (x x))) (\\c.\\" +
-                         "n.\\m.\\f.\\x.(\\" +
-                         "d.(\\n.n (\\x.(\\" +
-                         "a.\\b.b)) (\\a.\\b.a)) d " +
-                         "((\\f.\\x.x) f x) " +
-                         "(f (c d m f x))) ((\\m.\\n.n " +
-                         "(\\n.\\f.\\x.n (\\" +
-                         "g.\\h.h (g f)) (\\u.x) " +
-                         "(\\u.u)) m) n m))) ((\\" +
-                         "n.\\f.\\x. f (n f x)) n)"},
+                  value: "\\n.FIX (\\c n m f a.(\\d.IS-ZERO? d a " +
+                         "(f (c d m f a))) (SUBTRACT n m)) " +
+                         "(SUCCESSOR n)"},
 
         "LESSEQ?": {
             description: "Reduces to true if the first Church " +
@@ -639,7 +705,7 @@ class Lambda {
             value: "\\m n.NOT (LESSEQ? m n)" },
         "EQUAL?": {
             description: "Reduces to true if and only if the two " +
-            "Church numeral arguments are the same",
+                         "Church numeral arguments are the same",
             value: "\\m n.AND (LESSEQ? m n) (LESSEQ? n m)" },
 
         NTH: {
@@ -710,7 +776,7 @@ class Lambda {
             } else {
                 const value = parseInt(steps.value);
                 steps.value = isNaN(value) ? 1 : (value + 1);
-                expr = expr.reduce();
+                expr = expr.reduce().simplify();
             }
             return expr;
         }
@@ -725,7 +791,7 @@ class Lambda {
             button.appendChild(document.createTextNode(name));
             button.addEventListener("click", event => {
                 try {
-                     setExpression(fn(new Lambda(expression.value)));
+                    setExpression(fn(new Lambda(expression.value)));
                 } catch (ex) { console.error(ex); alert(ex); }
             });
             element.appendChild(button);
@@ -759,22 +825,29 @@ class Lambda {
 
         createButton("Reduce", countReduce);
         createRepeatButton("Repeat", countReduce);
-        createRepeatButton("Go", countReduce,
-                           expr => expr.applyLibrary(),
-                           expr => expr.reverseLibrary());
-        createButton("Library", expr => expr.applyLibrary());
-        createButton("Discover", expr => expr.reverseLibrary());
-        steps.disabled = true;
-        steps.style = "text-align: right; width: 5em;";
-        element.appendChild(steps);
         delay.type = "range";
         delay.min = 5;
         delay.max = 1000;
         delay.value = 100
         delay.style = "text-align: right; width: 5em;";
         element.appendChild(delay);
+        if (typeof(element.dataset.expr) === "string")
+            createButton("Reset", expr => {
+                steps.value = 0;
+                return element.dataset.expr.replace(/\s+/g, " ");
+            });
+        if (element.dataset.library) {
+            createButton("Library", expr => expr.applyLibrary());
+            createButton("Discover", expr => expr.reverseLibrary());
+            createRepeatButton("Go", countReduce,
+                               expr => expr.applyLibrary(),
+                               expr => expr.reverseLibrary());
+        }
+        steps.disabled = true;
+        steps.style = "text-align: right; width: 5em;";
+        element.appendChild(steps);
         element.appendChild(document.createElement("br"));
-        expression.setAttribute("rows", 12);
+        expression.setAttribute("rows", 3);
         expression.setAttribute("cols", 80);
         expression.addEventListener("input", event =>
             { repeating = false; steps.value = 0; });
@@ -787,6 +860,7 @@ class Lambda {
         Lambda.tests.forEach(test => {
             let expression;
             let expected;
+            let expectSK;
             let description = [];
             let forever = false;
 
@@ -796,7 +870,10 @@ class Lambda {
                 if (test.skip)
                     return;
                 expression = new Lambda(test.test);
-                if (test.expected)
+                if (test.sk) {
+                    expected = new Lambda(test.sk);
+                    expectSK = true;
+                } else if (test.expected)
                     expected = new Lambda(test.expected);
                 forever = test.forever;
                 description = Array.isArray(test.description) ?
@@ -808,10 +885,16 @@ class Lambda {
                 description.forEach(line => { console.log(line); });
             console.log(expression.toString());
             let count = 100;
-            for (; !expression.isNormal() && (count > 0); --count) {
-                expression = expression.reduce();
-                if (!forever)
-                    console.log(">", expression.toString());
+            if (expectSK) {
+                expression = expression.toStarlingKestral(
+                    {count: 1000});
+                console.log(">", expression.toString());
+            } else {
+                for (; !expression.isNormal() && (count > 0); --count) {
+                    expression = expression.reduce().simplify();
+                    if (!forever)
+                        console.log(">", expression.toString());
+                }
             }
 
             if (!forever && (count <= 0)) {
@@ -864,7 +947,25 @@ class Lambda {
         {test: "(\\g.(\\a.(\\b.a))) a", expected: "\\a b.a",
          description: ["Subtle capture problem."]},
         {test: "(\\g a b.a) a", expected: "\\a b.a",
-         description: ["Subtle capture problem."]}
+         description: ["Subtle capture problem."]},
+
+        {test: "\\a b.a", sk: "K",
+         description: ["Convert Kestral to SK"]},
+        {test: "\\a b.b", sk: "K I",
+         description: ["Convert Kite to SK"]},
+        {test: "\\a b c.a (b c)",
+         sk: "S (S (K S) (S (K K) (S (K S) K))) (K (S (S (K S) K) (K I)))",
+         description: ["Convert Bluebird to SK"]},
+        {test: "\\a b c.a c b",
+         sk: "S (S (K S) (S (K K) (S (K S) (S (S (K S) K) (K I))))) (K K)",
+         description: ["Convert Cardinal to SK"]},
+        {test: "\\a b.b a", sk: "S (K (S I)) K",
+         description: ["Convert Thrush to SK"]},
+        {test: "\\a.a a", sk: "S I I",
+         description: ["Convert Mockingbird to SK"]},
+        {test: "\\f.(\\a.f (a a)) \\a.f (a a)",
+         sk: "S (S (S (K S) K) (K (S I I))) (S (S (K S) K) (K (S I I)))",
+         description: ["Convert Fixed Point to SK"]}
     ];
 }
 
