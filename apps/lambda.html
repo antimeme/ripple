@@ -456,7 +456,7 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
      if (!expr || !repeating)
          return;
      try {
-         setExpression((expr = expr.reduce()).toString());
+         setExpression((expr = expr.reduce().simplify()).toString());
          steps.value = (stepCount += 1);
 
          if (expr.isNormal()) {
@@ -501,7 +501,7 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
 
      if (!previous.value)
          previous.value = expression.value;
-     try { expr = expr.reduce(); }
+     try { expr = expr.reduce().simplify(); }
      catch (ex) { console.error(ex); alert(ex); }
      if (!expr.isNormal()) {
          stepCount += 1;
