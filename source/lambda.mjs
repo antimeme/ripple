@@ -330,6 +330,26 @@ class Lambda {
                    !(value instanceof Lambda) || value.isNormal());
     }
 
+    #innerChurchNumeral(func, arg) {
+        return ((this.#values.length === 1) &&
+                (this.#values[0] === arg)) ? 0 :
+               ((this.#values.length === 2) &&
+                (this.#values[0] === func) &&
+                (this.#values[1] === arg)) ? 1 :
+               ((this.#values.length === 2) &&
+                (this.#values[0] === func) &&
+                (this.#values[1] instanceof Lambda) &&
+                (this.#values[1].#variables.length === 0)) ?
+               (this.#values[1].#innerChurchNumeral
+                   (func, arg) + 1) : NaN;
+    }
+
+    getChurchNumeral() {
+        return (this.#variables.length === 2) ?
+               this.#innerChurchNumeral(
+                   this.#variables[0], this.#variables[1]) : NaN;
+    }
+
     /**
      * Replace instances of a free variable with some other value.
      * This operates recursively but does not mutate. */
@@ -470,6 +490,15 @@ class Lambda {
                         result = new Lambda(this);
                     result.#values.splice(index, 1, current);
                 }
+            } else if (!isNaN(value)) {
+                let number = new Array(parseInt(value, 10))
+                    .fill(0).reduce((acc, ignore) =>
+                        new Lambda(["f", acc]), new Lambda("a"));
+                number.#variables.push("f");
+                number.#variables.push("a");
+                if (result === this)
+                    result = new Lambda(this);
+                result.#values.splice(index, 1, number.simplify());
             } else if (typeof(value) === "string") {
                 const current = ignoreCase ?
                                 value.toUpperCase() : value;
@@ -489,6 +518,9 @@ class Lambda {
 
     reverseLibrary(library) {
         let result = this;
+        const numeral = result.getChurchNumeral();
+        if (!isNaN(numeral))
+            return numeral;
         library = library ? library : Lambda.defaultLibrary;
 
         this.#values.forEach((value, index) => {
@@ -623,9 +655,6 @@ class Lambda {
             library[numbers[ii]] = {
                 description: "Church Numeral " + numbers[ii],
                 value: expression };
-            library[ii] = {
-                description: "Church Numeral " + ii,
-                priority: 1, value: expression };
         }
 
         library["="] = library["EQUAL?"];
