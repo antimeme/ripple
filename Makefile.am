@@ -85,6 +85,17 @@ check_@PACKAGE@_SOURCES  = \
 	source/check/pixie.c \
 	source/check/juju.c
 
+if HAVE_SDL2
+bin_PROGRAMS = gizmo
+gizmo_SOURCES = source/gizmo.c
+gizmo_LDADD = -lSDL2main -lSDL2 -lm
+endif
+
+if HAVE_EMCC
+gizmo.wasm:
+	$(EMCC) -o gizmo.wasm -s USE_SDL=2 source/gizmo.c
+endif
+
 TESTS = $(check_PROGRAMS)
 MOSTLYCLEANFILES =
 DISTCLEANFILES   =
