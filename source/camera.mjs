@@ -73,7 +73,6 @@ class Camera {
      * drawBefore or drawAfter to draw in screen space rather than
      * world space). */
     configureContext(ctx) {
-        ctx.clearRect(0, 0, this.#screen.width, this.#screen.height);
         ctx.save();
         ctx.translate(this.#screen.width / 2, this.#screen.height / 2);
         ctx.scale(this.#radius / this.#scale,
@@ -165,6 +164,11 @@ class Camera {
         return this;
     }
 
+    setScaleNatural() {
+        this.#scale = this.#radius;
+        return this;
+    }
+
     zoom(factor, min, max) {
         return this.setScale(this.#scale * factor, min, max);
     }
@@ -199,6 +203,16 @@ class Camera {
                 if (typeof(this.#app.autodrag) === "function")
                     this.#app.autodrag.call(this.#app, event, this);
             };
+
+            if (this.#app && this.#app.usekeys) {
+                this.#screen.tabIndex = 1;
+                this.#screen.addEventListener("keydown", event => {
+                    return this.#delegate(event);
+                });
+                this.#screen.addEventListener("keyup", event => {
+                    return this.#delegate(event);
+                });
+            }
 
             this.#screen.addEventListener("click", event => {
                 return this.#delegate(event);
@@ -297,6 +311,7 @@ class Camera {
             window.dispatchEvent(new Event("resize"));
             this.#listeners = true;
         }
+        this.#screen.focus();
         return this.redraw();
     }
 
@@ -308,6 +323,11 @@ class Camera {
         if (!this.#screen.getContext)
             throw Error("screen has no getContext");
         const ctx = this.#screen.getContext("2d");
+        const style = getComputedStyle(this.#screen);
+        ctx.strokeStyle = style.color;
+        ctx.fillStyle = style.color;
+        ctx.clearRect(0, 0, this.#screen.width, this.#screen.height);
+
         if (this.#app && typeof(this.#app.drawBefore) === "function")
             this.#app.drawBefore.call(this.#app, ctx, this);
         this.configureContext(ctx);
@@ -316,6 +336,7 @@ class Camera {
         this.restoreContext(ctx);
         if (this.#app && typeof(this.#app.drawAfter) === "function")
             this.#app.drawAfter.call(this.#app, ctx, this);
+
         this.#draw_id = 0;
         if (this.#app &&
             ((typeof(this.#app.active) === "function") ?
