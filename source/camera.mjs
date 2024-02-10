@@ -174,8 +174,12 @@ class Camera {
     }
 
     #delegate(event) {
-        if (this.#app && (typeof(this.#app[event.type]) === "function"))
+        if (this.#app && (typeof(this.#app[event.type]) === "function")) {
+            if (this.#app && typeof(this.#app.update) === "function")
+                this.#app.update.call(
+                    this.#app, Date.now(), this);
             this.#app[event.type].call(this.#app, event, this);
+        }
     }
 
     /**
@@ -318,7 +322,7 @@ class Camera {
     #draw() {
         if (this.#app && typeof(this.#app.update) === "function")
             this.#app.update.call(
-                this.#app, new Date().getTime(), this);
+                this.#app, Date.now(), this);
 
         if (!this.#screen.getContext)
             throw Error("screen has no getContext");
