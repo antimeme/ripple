@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
 /* This program can be executed in a web browser using
  * emscripten and WebAssembly:
@@ -31,7 +32,8 @@
 #  include <emscripten/html5.h>
 #endif
 
-int setupSDL(SDL_Renderer **renderer, SDL_Window **window)
+int
+setupSDL(SDL_Renderer **renderer, SDL_Window **window)
 {
   int result = EXIT_SUCCESS;
   SDL_DisplayMode mode;
@@ -62,6 +64,26 @@ int setupSDL(SDL_Renderer **renderer, SDL_Window **window)
   return result;
 }
 
+int
+setup_icon(SDL_Window *window, const char *data, unsigned length)
+{
+  int result = EXIT_SUCCESS;
+  SDL_Surface *icon = NULL;
+  SDL_RWops *image = NULL;
+
+  if ((image = SDL_RWFromConstMem(data, length)) == NULL) {
+    fprintf(stderr, "Failed to create SDL_RWops: %s\n", SDL_GetError());
+    result = EXIT_FAILURE;
+  } else if ((icon = IMG_Load_RW(image, 0)) == NULL) {
+    fprintf(stderr, "Failed to load image: %s\n", SDL_GetError());
+    result = EXIT_FAILURE;
+  } else SDL_SetWindowIcon(window, icon);
+
+  if (image != NULL)
+    SDL_RWclose(image);
+  return result;
+}
+
 struct app {
   unsigned done;
   int  (*init)(struct app *app);
@@ -79,6 +101,14 @@ struct keymap {
 /* ------------------------------------------------------------------ */
 /* A simplistic Asteroids clone.  This is a sample to demonstrate
  * basic features of SDL2 with an easy to understand context. */
+
+const char asteroids_icon_svg[] =
+  "<svg xmlns='http://www.w3.org/2000/svg' "
+  "     width='128' height='128'> "
+  "  <polygon points='64,8 107,120 64,98 21,120' "
+  "           stroke-width='12' stroke='#222' fill='none' /> "
+  "  <polygon points='64,8 107,120 64,98 21,120' "
+  "           stroke-width='4' stroke='#eee' fill='none' /></svg>";
 
 struct point { float x; float y; };
 
@@ -410,7 +440,9 @@ main(int argc, char **argv)
   gizmo.app = asteroids_get_app();
   printf("Gizmo: activating Asteroids\n");
 
-  result = setupSDL(&gizmo.renderer, &gizmo.window);
+  if (EXIT_SUCCESS != (result = setupSDL
+                       (&gizmo.renderer, &gizmo.window)))
+    return result;
   if (gizmo.app->init)
     result = gizmo.app->init(gizmo.app);
 
@@ -418,6 +450,11 @@ main(int argc, char **argv)
   emscripten_set_main_loop_arg((void (*)(void *))gizmo_frame,
                                &gizmo, 0, 1);
 #else
+  if (EXIT_SUCCESS != (result = setup_icon
+                       (gizmo.window, asteroids_icon_svg,
+                        sizeof(asteroids_icon_svg))))
+    return result;
+
   gizmo.app->done = 0;
   while ((result == EXIT_SUCCESS) && !gizmo.app->done) {
     gizmo_frame(&gizmo);

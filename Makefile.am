@@ -88,12 +88,15 @@ check_@PACKAGE@_SOURCES  = \
 if HAVE_SDL2
 bin_PROGRAMS = gizmo
 gizmo_SOURCES = source/gizmo.c
-gizmo_LDADD = -lSDL2main -lSDL2 -lm
+gizmo_LDADD = -lSDL2 -lSDL2_image -lm
 endif
 
 if HAVE_EMCC
-gizmo.wasm:
-	$(EMCC) -o gizmo.wasm -s USE_SDL=2 source/gizmo.c
+gizmo.wasm gizmo.js gizmo.html: source/gizmo.c
+	$(EMCC) -o $@ \
+	    -sUSE_SDL=2 -sUSE_SDL_IMAGE=3 \
+	    -sSDL2_IMAGE_FORMATS='[svg]' \
+	    source/gizmo.c
 endif
 
 TESTS = $(check_PROGRAMS)
