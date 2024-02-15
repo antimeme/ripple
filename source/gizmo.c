@@ -593,15 +593,15 @@ static int
 asteroids__ship_shoot(struct ship *ship, float direction, float size) {
   int result = EXIT_SUCCESS;
 
-  if (ship->n_shots + 1 > ship->m_shots) {
+  if (ship->m_shots < ship->n_shots + 1) {
     struct shot *newshots = realloc
-      (ship->shots, (ship->m_shots + 1) * sizeof(*ship->shots));
+      (ship->shots, (ship->n_shots + 1) * sizeof(*ship->shots));
     if (newshots) {
       ship->shots = newshots;
-      ship->m_shots++;
+      ship->m_shots = ship->n_shots + 1;
     } else {
       fprintf(stderr, "Failed to allocate %lu bytes for shot\n",
-              (ship->m_shots + 1) * sizeof(*ship->shots));
+              (ship->n_shots + 1) * sizeof(*ship->shots));
       result = EXIT_FAILURE;
     }
   }
@@ -718,7 +718,6 @@ asteroids_reset(struct app_asteroids *self)
   self->lives = 3;
   self->nextwave = 1000;
 
-  asteroids_resize(self, self->app.width, self->app.height);
   self->player.direction = -M_PI / 2;
   self->player.velocity.x = 0;
   self->player.velocity.y = 0;
@@ -765,7 +764,7 @@ asteroids_init(struct app_asteroids *self)
   };
   const unsigned n_points = sizeof(points) / sizeof(*points);
   const unsigned n_points_player = 4;
-  const unsigned n_points_enemy = 4;
+  const unsigned n_points_saucer = 4;
   unsigned n_points_used = 0;
 
   if (!self) {
@@ -781,8 +780,8 @@ asteroids_init(struct app_asteroids *self)
             sizeof(struct point) * n_points);
     result = EXIT_FAILURE;
   } else {
-    self->size = (self->app.width < self->app.height) ?
-      self->app.width : self->app.height;
+    asteroids_resize(self, self->app.width, self->app.height);
+
     self->n_points = n_points;
     self->points = newpoints;
     for (ii = 0; ii < n_points; ++ii)
@@ -795,8 +794,8 @@ asteroids_init(struct app_asteroids *self)
     n_points_used += n_points_player;
 
     self->saucer.points   = self->points + n_points_used;
-    self->saucer.n_points = n_points_enemy;
-    n_points_used += n_points_enemy;
+    self->saucer.n_points = n_points_saucer;
+    n_points_used += n_points_saucer;
 
     self->n_debris = self->m_debris = 0;
     self->debris = NULL;
@@ -837,16 +836,12 @@ asteroids_update(struct app_asteroids *self, unsigned elapsed)
   self->report -= (elapsed > self->report) ? self->report : elapsed;
   if (!self->report) {
     self->report = 900;
-    if (0) {
-      printf("REPORT (%d, %d) ship=(%f, %f) shots=%u\n",
+    if (1) {
+      printf("REPORT (%d, %d) ship=(%f, %f)[%f] shots=%u\n",
              self->app.width, self->app.height,
              self->player.position.x,
-             self->player.position.y, self->player.n_shots);
-      for (ii = 0; ii < self->n_asteroids; ++ii) {
-        printf("       (%f, %f)\n",
-               self->asteroids[ii].position.x,
-               self->asteroids[ii].position.y);
-      }
+             self->player.position.y, self->player.size,
+             self->player.n_shots);
     }
   }
   self->tapshot -= (elapsed > self->tapshot) ? self->tapshot : elapsed;
