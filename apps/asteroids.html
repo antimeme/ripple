@@ -1,5 +1,8 @@
 <!DOCTYPE html>
 <meta charset="utf-8" />
+<!-- :TODO: swipe for hyperspace -- SWIPERSPACE! -->
+<!-- :TODO: don't reset after GAME OVER until user input -->
+<!-- :TODO: use classes -->
 <!-- asteroids.html
      Copyright (C) 2020-2024 by Jeff Gold.
 
@@ -70,7 +73,7 @@
 <style>
  html, body
  { position: absolute; padding: 0; margin: 0; overflow: hidden; }
- canvas { background: #222; color: #eee; }
+ canvas { background: #111; color: #eee; }
 </style>
 
 <script type="module">//<![CDATA[
@@ -147,7 +150,10 @@
          result.push(-c / b);
      } else {
          const discriminant = b * b - 4 * a * c;
-         if (discriminant >= 0) {
+
+         if (zeroish(discriminant)) {
+             result.push(-b / (2 * a));
+         } else if (discriminant >= 0) {
              const sqrtdisc = Math.sqrt(discriminant);
              result.push((-b + sqrtdisc) / (2 * a));
              result.push((-b - sqrtdisc) / (2 * a));
@@ -256,7 +262,7 @@
      const direction = Math.random() * Math.PI * 2;
 
      function getSpeed(size, nsplits) {
-         return ((size * (1 + Math.sqrt(playerShip.score) / 1000)) /
+         return (size * (1 + Math.sqrt(playerShip.score) / 1000) /
              (200 * (1 << nsplits)));
      }
      const speed = source ? getSpeed(source.size/2, nsplits) : 0;
@@ -426,7 +432,7 @@
      warp: false, warpCooldown: 0,
 
      // Controls for mobile
-     target: undefined, previous: undefined,
+     target: undefined,
      holding: false, held: undefined,
 
      resize: function(camera) {
@@ -449,7 +455,7 @@
              this.drawShape(ctx);
              ctx.restore();
 
-             if (this.thrust) {
+             if (this.thrust_elapsed) {
                  ctx.save();
                  ctx.translate(this.x, this.y);
                  ctx.rotate(this.direction);
@@ -459,7 +465,8 @@
                                      {x: -1, y: -1/3}]
                      .map(point => ({
                          x: point.x + (Math.random() - 1/2) * 0.33,
-                         y: point.y + (Math.random() - 1/2) * 0.33 })));
+                         y: point.y + (Math.random() - 1/2) * 0.33
+                 })));
                  ctx.restore();
              }
              ctx.stroke();
@@ -508,31 +515,32 @@
              this.direction -= ms / 200;
              this.target = null;
          } else if (this.target) {
-             const desired = this.__desiredDirection();
-             if (!isNaN(desired)) {
-                 let difference = desired - this.direction;
+             if (!isNaN(this.target)) {
+                 let difference = this.target - this.direction;
                  if (difference > Math.PI)
                      difference -= 2 * Math.PI;
                  else if (difference < -Math.PI)
                      difference += 2 * Math.PI;
 
                  if (Math.abs(difference) < ms / 200)
-                     this.direction = desired;
+                     this.direction = this.target;
                  else if (difference < 0)
                      this.direction -= ms / 200;
                  else this.direction += ms / 200;
              }
          }
 
-         if (this.holding) {
+         this.thrust_elapsed =
+             (this.thrust || (this.held > 300)) ? ms :
+             (this.held + ms > 300) ? (this.held + ms - 300) : 0;
+         if (this.holding)
              this.held = isNaN(this.held) ? ms : (this.held + ms);
-             if (this.held > 300) {
-                 this.thrust = true;
-             }
-         }
-         if (this.thrust) {
-             this.dx += Math.cos(this.direction) * ms / 1500;
-             this.dy += Math.sin(this.direction) * ms / 1500;
+
+         if (this.thrust_elapsed) {
+             this.dx += (Math.cos(this.direction) *
+                 this.thrust_elapsed / this.size / 25);
+             this.dy += (Math.sin(this.direction) *
+                 this.thrust_elapsed / this.size / 25);
          }
 
          if (this.warpCooldown > 0) {
@@ -568,15 +576,15 @@
      },
 
      shoot: function() {
-         if ((this.dead > 0) || (this.shots.length >= 8))
+         if ((this.dead > 0) || (this.shots.length >= 9))
              return;
          this.shots.push(createShot(this, this.direction));
      },
 
-     __desiredDirection: function() {
+     __desiredDirection: function(target) {
          let result = undefined;
-         const delta = { x: this.target.x - this.x,
-                         y: this.target.y - this.y };
+         const delta = { x: target.x - this.x,
+                         y: target.y - this.y };
          const quadrance = delta.x * delta.x + delta.y * delta.y;
 
          if (quadrance > this.size * this.size / 4) {
@@ -590,19 +598,10 @@
      },
 
      aim: function(point, camera) {
-         // Signals that the player wants the ship to face a
-         // specified location.  If the ship is already pointing
-         // there or the ship itself is the target we shoot
-         // instead.  This means spam tapping a point will
-         // result in firing at it.
-         this.target = {
+         // Turn the ship toward the specified target.
+         this.target = this.__desiredDirection({
              x: point.x - camera.width / 2,
-             y: camera.height / 2 - point.y };
-
-         const now = Date.now();
-         if (!isNaN(this.previous) && (now - this.previous < 300))
-             this.shoot();
-         this.previous = now;
+             y: camera.height / 2 - point.y });
      },
 
      award: function(npoints) {
@@ -627,7 +626,6 @@
      clear: function() {
          this.direction = Math.PI/2;
          this.target = undefined;
-         this.previous = undefined;
          this.holding = undefined;
          this.warp = false;
          this.warpCooldown = 0;
@@ -714,22 +712,20 @@
          if (this.dead > 0)
              return;
 
-         if (this.turnTimer > 0)
-             this.turnTimer -= elapsed;
-         if (this.turnTimer <= 0) {
+         if (this.turnTimer <= elapsed) {
              // Attempt to bias saucer toward the middle of the
              // screen where it is more visible and threatening
-             this.dy = this.dx * (Math.random() * 2 - 1 -
-                                  2 * this.y / camera.height);
-             this.turnTimer = 3000 * (1 * Math.random());
-         }
-         if (this.shootTimer > 0)
-             this.shootTimer -= elapsed;
-         if (this.shootTimer <= 0) {
+             this.dy = (((Math.abs(2 * this.y / camera.height) >
+                 Math.random()) ? -1 : 1) * ((this.y > 0) ? 1 : -1) *
+                 this.dx * (1 + 2 * Math.random()) / 2);
+             this.turnTimer = 500 + 2500 * Math.random();;
+         } else this.turnTimer -= elapsed;
+
+         if (this.shootTimer <= elapsed) {
              this.shoot();
              this.shootTimer = ((this.small ? 800 : 1600) *
                  (1 + Math.random()));
-         }
+         } else this.shootTimer -= elapsed;
 
          this.shield.update(camera, elapsed);
          moveWrap(this, elapsed, camera);
@@ -936,6 +932,7 @@
              playerShip.right  = false;
              playerShip.left   = false;
              playerShip.thrust = false;
+             playerShip.warp   = false;
          }
          return button;
      }
@@ -943,7 +940,7 @@
 
  const game = {
      active: true, autofill: true, usekeys: true,
-     last: undefined, nextwave: 1000,
+     last: undefined, nextwave: 1000, previousClick: undefined,
      asteroids: [],
 
      resize: function(event, camera) {
@@ -1126,24 +1123,31 @@
          }
      },
 
-     down: function(event, camera) {
+     mousedown: function(event, camera) {
          if (screenButtons.down(event, camera))
              return;
          playerShip.aim(camera.getPoint(event), camera);
          playerShip.holding = true;
-     },
-     mousedown: function(event, camera) { this.down(event, camera); },
-     touchstart: function(event, camera) { this.down(event, camera); },
+         playerShip.held    = 0;
 
-     up: function(event, camera) {
+         const now = Date.now();
+         if (!isNaN(this.previousClick) &&
+             (now - this.previousClick < 300))
+             playerShip.shoot();
+         this.previousClick = now;
+     },
+
+     mouseup: function(event, camera) {
          if (screenButtons.up(event, camera))
              return;
-         playerShip.thrust = false;
          playerShip.holding = false;
-         playerShip.held = undefined;
+         playerShip.held    = undefined;
      },
-     mouseup: function(event, camera) { this.up(event, camera); },
-     touchend: function(event, camera) { this.up(event, camera); },
+
+     mousemove: function(event, camera) {
+         if (playerShip.holding)
+             playerShip.aim(camera.getPoint(event), camera);
+     },
  };
 
  Camera.preload(null, (loaded) => {
