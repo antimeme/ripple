@@ -58,8 +58,8 @@ gizmo_setupSDL(SDL_Renderer **renderer, SDL_Window **window)
     result = EXIT_FAILURE;
   } else if (!(*window = SDL_CreateWindow
                ("Gizmo", SDL_WINDOWPOS_UNDEFINED,
-                SDL_WINDOWPOS_UNDEFINED, mode.w * 9 / 10,
-                mode.h * 4 / 5, 0))) {
+                SDL_WINDOWPOS_UNDEFINED,
+                mode.w * 9 / 10, mode.h * 4 / 5, 0))) {
     fprintf(stderr, "Failed to create window with SDL: %s\n",
             SDL_GetError());
     result = EXIT_FAILURE;
@@ -111,12 +111,9 @@ gizmo_setup_icon(SDL_Window *window, const char *data, unsigned length)
 struct app {
   int width;
   int height;
-  struct app_key_action *key_actions;
-  unsigned n_key_actions;
-  struct app_mouse_action *mouse_actions;
-  unsigned n_mouse_actions;
 
-  int  (*init)(struct app *app);
+  /* Called by Gizmo if not NULL */
+  int  (*init)(struct app *app, void *);
   void (*destroy)(struct app *app);
   void (*resize)(struct app *app, int width, int height);
   int  (*update)(struct app *app, unsigned elapsed);
@@ -152,6 +149,19 @@ struct app_mouse_action {
   void (*action)(struct app *, SDL_Event *);
 };
 
+struct gizmo {
+  SDL_Renderer *renderer;
+  SDL_Window *window;
+  unsigned long long last;
+  struct app *app;
+  unsigned done;
+
+  struct app_key_action *key_actions;
+  unsigned n_key_actions;
+  struct app_mouse_action *mouse_actions;
+  unsigned n_mouse_actions;
+};
+
 /**
  * Copies the supplied structures into the app for use in the Gizmo
  * frame loop.  This is a utility routine intended for use by the init
@@ -160,11 +170,12 @@ struct app_mouse_action {
  * @param app Application into which to copy strucutures. */
 int
 gizmo_app_actions
-(struct app *app,
+(void *context,
  struct app_key_action   *key_actions,   unsigned n_key_actions,
  struct app_mouse_action *mouse_actions, unsigned n_mouse_actions)
 {
   int result = EXIT_SUCCESS;
+  struct gizmo *gizmo = (struct gizmo*)context;
   struct app_key_action   *new_key_actions = NULL;
   struct app_mouse_action *new_mouse_actions = NULL;
 
@@ -182,16 +193,16 @@ gizmo_app_actions
   } else {
     unsigned ii;
 
-    app->n_key_actions = n_key_actions;
-    app->key_actions = new_key_actions;
+    gizmo->n_key_actions = n_key_actions;
+    gizmo->key_actions = new_key_actions;
     for (ii = 0; ii < n_key_actions; ++ii)
-      app->key_actions[ii] = key_actions[ii];
+      gizmo->key_actions[ii] = key_actions[ii];
     new_key_actions = NULL;
 
-    app->n_mouse_actions = n_mouse_actions;
-    app->mouse_actions = new_mouse_actions;
+    gizmo->n_mouse_actions = n_mouse_actions;
+    gizmo->mouse_actions = new_mouse_actions;
     for (ii = 0; ii < n_mouse_actions; ++ii)
-      app->mouse_actions[ii] = mouse_actions[ii];
+      gizmo->mouse_actions[ii] = mouse_actions[ii];
     new_mouse_actions = NULL;
   }
 
@@ -273,6 +284,15 @@ check_collide(float sizeA, struct point *positionA,
   return result;
 }
 
+struct point
+rotate_origin(struct point *point, float dircos, float dirsin)
+{
+  struct point result = {
+    point->x * dircos - point->y * dirsin,
+    point->x * dirsin + point->y * dircos };
+  return result;
+}
+
 /* ------------------------------------------------------------------ */
 /* A simplistic Asteroids clone.  This is a sample to demonstrate
  * basic features of SDL2 with an easy to understand context. */
@@ -351,6 +371,7 @@ struct app_asteroids {
   int warp;
   int turn_left;
   int turn_right;
+  float target;
   unsigned tapshot;
   unsigned thrust_elapsed;
   unsigned holding;
@@ -449,7 +470,11 @@ asteroids__debris_update(struct app_asteroids *self,
 
   for (ii = 0; ii < self->n_debris; ++ii) {
     struct debris *piece = &self->debris[ii];
-    if (piece->duration > elapsed) {
+    if ((piece->duration > elapsed) &&
+        (piece->position.x < (self->app.width + piece->size) / 2) &&
+        (piece->position.x > -(self->app.width + piece->size) / 2) &&
+        (piece->position.y < (self->app.height + piece->size) / 2) &&
+        (piece->position.y > -(self->app.height + piece->size) / 2)) {
       piece->duration -= elapsed;
       piece->position.x += piece->velocity.x * elapsed;
       piece->position.y += piece->velocity.y * elapsed;
@@ -621,18 +646,19 @@ asteroids__ship_shoot(struct ship *ship, float direction, float size) {
 static void
 asteroids__tap(struct app_asteroids *self, SDL_Event *event)
 {
-  float ex = (event->button.x - self->app.width / 2) -
-    self->player.position.x;
-  float ey = (event->button.y - self->app.height / 2) -
-    self->player.position.y;
-  if (ex * ex + ey * ey > 25) {
+  struct point vector = {
+    (event->button.x - self->app.width / 2) - self->player.position.x,
+    (event->button.y - self->app.height / 2) - self->player.position.y
+  };
+  float quadrance = vector.x * vector.x + vector.y * vector.y;
+
+  if (quadrance > self->player.size * self->player.size) {
     float sx = cos(self->player.direction);
     float sy = sin(self->player.direction);
-    float wedge = sx * ey - sy * ex;
-    float angle = ((wedge > 0) ? 1 : -1) *
-      acos((ex * sx + ey * sy) / sqrt((sx * sx + sy * sy) *
-                                      (ex * ex + ey * ey)));
-    self->player.direction += angle;
+    float cosangle = (vector.x * sx + vector.y * sy) / sqrt(quadrance);
+    float angle = ((sx * vector.y - sy * vector.x > 0) ? 1 : -1) *
+      acosf((cosangle > 1) ? 1 : (cosangle < -1) ? -1 : cosangle);
+    self->target = self->player.direction + angle;
   }
 
   if (self->tapshot > 0)
@@ -704,8 +730,9 @@ asteroids__ship_destroy(struct ship *ship)
 }
 
 static void
-asteroids_resize(struct app_asteroids *self, int width, int height)
+asteroids_resize(struct app *app, int width, int height)
 {
+  struct app_asteroids *self = (struct app_asteroids *)app;
   self->size = (width < height) ? width : height;
   self->player.size = self->size * 3 / 100;
 }
@@ -723,6 +750,7 @@ asteroids_reset(struct app_asteroids *self)
   self->player.velocity.y = 0;
   self->player.position.x = 0;
   self->player.position.y = 0;
+  self->target = nan("1");
 
   for (ii = 0; ii < self->n_asteroids; ++ii)
     asteroids__asteroid_destroy(&self->asteroids[ii]);
@@ -734,9 +762,10 @@ asteroids_reset(struct app_asteroids *self)
 }
 
 static int
-asteroids_init(struct app_asteroids *self)
+asteroids_init(struct app *app, void *context)
 {
   int result = EXIT_SUCCESS;
+  struct app_asteroids *self = (struct app_asteroids *)app;
   unsigned ii = 0;
   struct app_mouse_action mouse_actions[] = {
     { SDL_MOUSEBUTTONDOWN,
@@ -771,7 +800,7 @@ asteroids_init(struct app_asteroids *self)
     fprintf(stderr, "Error: missing app structure\n");
     result = EXIT_FAILURE;
   } else if ((result = gizmo_app_actions
-              (&self->app, key_actions, sizeof(key_actions) /
+              (context, key_actions, sizeof(key_actions) /
                sizeof(*key_actions), mouse_actions,
                sizeof(mouse_actions) / sizeof(*mouse_actions)))) {
     /* Already reported */
@@ -780,7 +809,7 @@ asteroids_init(struct app_asteroids *self)
             sizeof(struct point) * n_points);
     result = EXIT_FAILURE;
   } else {
-    asteroids_resize(self, self->app.width, self->app.height);
+    asteroids_resize(&self->app, self->app.width, self->app.height);
 
     self->n_points = n_points;
     self->points = newpoints;
@@ -809,8 +838,9 @@ asteroids_init(struct app_asteroids *self)
 }
 
 static void
-asteroids_destroy(struct app_asteroids *self)
+asteroids_destroy(struct app *app)
 {
+  struct app_asteroids *self = (struct app_asteroids *)app;
   unsigned ii;
 
   for (ii = 0; ii < self->n_debris; ++ii)
@@ -827,8 +857,9 @@ asteroids_destroy(struct app_asteroids *self)
 }
 
 static int
-asteroids_update(struct app_asteroids *self, unsigned elapsed)
+asteroids_update(struct app *app, unsigned elapsed)
 {
+  struct app_asteroids *self = (struct app_asteroids *)app;
   int result = EXIT_SUCCESS;
   int ii;
   int current;
@@ -836,12 +867,10 @@ asteroids_update(struct app_asteroids *self, unsigned elapsed)
   self->report -= (elapsed > self->report) ? self->report : elapsed;
   if (!self->report) {
     self->report = 900;
-    if (1) {
-      printf("REPORT (%d, %d) ship=(%f, %f)[%f] shots=%u\n",
-             self->app.width, self->app.height,
-             self->player.position.x,
-             self->player.position.y, self->player.size,
-             self->player.n_shots);
+    if (0) {
+      printf("REPORT ship=[%.2fpx,d=%u,dir=%.2f]\n",
+             self->player.size, self->player.dead,
+             self->player.direction);
     }
   }
   self->tapshot -= (elapsed > self->tapshot) ? self->tapshot : elapsed;
@@ -864,14 +893,35 @@ asteroids_update(struct app_asteroids *self, unsigned elapsed)
           self->player.position = zero;
           self->player.velocity = zero;
           self->player.direction = -M_PI / 2;
+          self->target = nan("1");
         }
       } else asteroids_reset(self);
     } else self->player.dead -= elapsed;
   } else {
-    if (self->turn_left)
+    if (self->turn_left && self->turn_right) {
+      self->target = nan("1");
+    } else if (self->turn_left) {
+      self->target = nan("1");
       self->player.direction -= (float)elapsed / 200;
-    if (self->turn_right)
+    } else if (self->turn_right) {
+      self->target = nan("1");
       self->player.direction += (float)elapsed / 200;
+    } else if (!isnan(self->target) &&
+               (self->player.direction != self->target)) {
+      float difference = self->target - self->player.direction;
+
+      if (difference > M_PI)
+        difference -= M_PI;
+      else if (difference < -M_PI)
+        difference += M_PI;
+
+      if (fabs(difference) < (float)elapsed / 200) {
+        self->player.direction = self->target;
+        self->target = nan("1");
+      } else if (difference > 0)
+        self->player.direction += (float)elapsed / 200;
+      else self->player.direction -= (float)elapsed / 200;
+    }
 
     self->thrust_elapsed = (self->thrust) ?
       elapsed : (self->held > 300) ? elapsed :
@@ -914,15 +964,6 @@ asteroids_update(struct app_asteroids *self, unsigned elapsed)
   return EXIT_SUCCESS;
 }
 
-struct point
-rotate_origin_2D(struct point *point, float dircos, float dirsin)
-{
-  struct point result = {
-    point->x * dircos - point->y * dirsin,
-    point->x * dirsin + point->y * dircos };
-  return result;
-}
-
 /**
  * Renders a polygon as a closed loop of lines.  The lines are
  * positioned according to the array of points given as the final
@@ -940,8 +981,8 @@ draw_polygon(SDL_Renderer *renderer, float size,
 
   for (ii = 0; (result == EXIT_SUCCESS) && (ii < n_points); ++ii) {
     struct point start = ii ? previous :
-      rotate_origin_2D(&points[ii], dircos, dirsin);
-    struct point end = rotate_origin_2D
+      rotate_origin(&points[ii], dircos, dirsin);
+    struct point end = rotate_origin
       (&points[(ii + 1) % n_points], dircos, dirsin);
     previous = end;
 
@@ -994,8 +1035,9 @@ asteroids__draw_ship(struct ship *ship, SDL_Renderer *renderer,
 }
 
 static int
-asteroids_draw(struct app_asteroids *self, SDL_Renderer *renderer)
+asteroids_draw(struct app *app, SDL_Renderer *renderer)
 {
+  struct app_asteroids *self = (struct app_asteroids *)app;
   int result = EXIT_SUCCESS;
   unsigned ii;
 
@@ -1045,27 +1087,15 @@ static struct app_asteroids app_asteroids;
 
 struct app *
 asteroids_get_app(void) {
-  app_asteroids.app.init = (int (*)(struct app *))asteroids_init;
-  app_asteroids.app.destroy =
-    (void (*)(struct app *))asteroids_destroy;
-  app_asteroids.app.resize =
-    (void (*)(struct app*, int, int))asteroids_resize;
-  app_asteroids.app.update =
-    (int (*)(struct app *, unsigned))asteroids_update;
-  app_asteroids.app.draw =
-    (int (*)(struct app *, SDL_Renderer *))asteroids_draw;
+  app_asteroids.app.init    = asteroids_init;
+  app_asteroids.app.destroy = asteroids_destroy;
+  app_asteroids.app.resize  = asteroids_resize;
+  app_asteroids.app.update  = asteroids_update;
+  app_asteroids.app.draw    = asteroids_draw;
   return &app_asteroids.app;
 }
 
 /* ------------------------------------------------------------------ */
-
-struct gizmo {
-  SDL_Renderer *renderer;
-  SDL_Window *window;
-  unsigned long long last;
-  struct app *app;
-  unsigned done;
-};
 
 int
 gizmo_frame(struct gizmo *gizmo)
@@ -1093,8 +1123,8 @@ gizmo_frame(struct gizmo *gizmo)
       }
       break;
     case SDL_KEYDOWN:
-      for (ii = 0; ii < gizmo->app->n_key_actions; ++ii) {
-        struct app_key_action *action = &gizmo->app->key_actions[ii];
+      for (ii = 0; ii < gizmo->n_key_actions; ++ii) {
+        struct app_key_action *action = &gizmo->key_actions[ii];
         if ((action->scancode == event.key.keysym.scancode) &&
             (!(action->flags & app_key_flag_norepeat) ||
              !event.key.repeat)) {
@@ -1106,8 +1136,8 @@ gizmo_frame(struct gizmo *gizmo)
       }
       break;
     case SDL_KEYUP:
-      for (ii = 0; ii < gizmo->app->n_key_actions; ++ii) {
-        struct app_key_action *action = &gizmo->app->key_actions[ii];
+      for (ii = 0; ii < gizmo->n_key_actions; ++ii) {
+        struct app_key_action *action = &gizmo->key_actions[ii];
         if ((action->scancode == event.key.keysym.scancode) &&
             (!(action->flags & app_key_flag_norepeat) ||
              !event.key.repeat)) {
@@ -1119,17 +1149,15 @@ gizmo_frame(struct gizmo *gizmo)
       }
       break;
     case SDL_MOUSEBUTTONDOWN:
-      for (ii = 0; ii < gizmo->app->n_mouse_actions; ++ii) {
-        struct app_mouse_action *action =
-          &gizmo->app->mouse_actions[ii];
+      for (ii = 0; ii < gizmo->n_mouse_actions; ++ii) {
+        struct app_mouse_action *action = &gizmo->mouse_actions[ii];
         if ((action->type == SDL_MOUSEBUTTONDOWN) && (action->action))
           action->action(gizmo->app, &event);
       }
       break;
     case SDL_MOUSEBUTTONUP:
-      for (ii = 0; ii < gizmo->app->n_mouse_actions; ++ii) {
-        struct app_mouse_action *action =
-          &gizmo->app->mouse_actions[ii];
+      for (ii = 0; ii < gizmo->n_mouse_actions; ++ii) {
+        struct app_mouse_action *action = &gizmo->mouse_actions[ii];
         if ((action->type == SDL_MOUSEBUTTONUP) && (action->action))
           action->action(gizmo->app, &event);
       }
@@ -1174,7 +1202,8 @@ main(int argc, char **argv)
             SDL_GetError());
     result = EXIT_FAILURE;
   } else if (gizmo.app->init &&
-             (EXIT_SUCCESS != (result = gizmo.app->init(gizmo.app)))) {
+             (EXIT_SUCCESS != (result = gizmo.app->init
+                               (gizmo.app, &gizmo)))) {
   } else {
     if (gizmo.app->resize)
       gizmo.app->resize(gizmo.app, gizmo.app->width, gizmo.app->height);
@@ -1202,8 +1231,8 @@ main(int argc, char **argv)
   SDL_Quit();
   if (gizmo.app->destroy)
     gizmo.app->destroy(gizmo.app);
-  free(gizmo.app->key_actions);
-  free(gizmo.app->mouse_actions);
+  free(gizmo.key_actions);
+  free(gizmo.mouse_actions);
 #endif
   return result;
 }
