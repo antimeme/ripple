@@ -68,6 +68,7 @@
 
 # JavaScript
 /node_modules/
+/apps/gizmo.*
 
 # Rust
 /Cargo.toml

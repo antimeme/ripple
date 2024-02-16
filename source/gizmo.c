@@ -22,8 +22,9 @@
 #include <stdlib.h>
 #include <math.h>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
+#include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_image.h>
 
 /* Find an appropriate implementation for a millisecond clock */
 #ifdef __EMSCRIPTEN__
@@ -32,16 +33,8 @@
 unsigned long long now() {
   return (long long)emscripten_get_now();
 }
-#elif defined _WIN32
-#  include <windows.h>
-unsigned long long now() { return GetTickCount64(); }
 #else
-#  include <sys/time.h>
-unsigned long long now() {
-  struct timeval tv;
-  gettimeofday(&tv,NULL);
-  return (long long)tv.tv_sec * 1000 + tv.tv_usec / 1000;
-}
+unsigned long long now() { return SDL_GetTicks(); }
 #endif
 
 int
@@ -70,6 +63,10 @@ gizmo_setupSDL(SDL_Renderer **renderer, SDL_Window **window)
   } else if (!(*renderer = SDL_CreateRenderer
                (*window, -1, SDL_RENDERER_ACCELERATED))) {
     fprintf(stderr, "Failed to create renderer with SDL: %s\n",
+            SDL_GetError());
+    result = EXIT_FAILURE;
+  } else if (TTF_Init() < 0) {
+    fprintf(stderr, "Failed to initialize TTF: %s\n",
             SDL_GetError());
     result = EXIT_FAILURE;
   }
@@ -356,6 +353,7 @@ struct app_asteroids {
   struct app app;
   float size;
 
+  unsigned score;
   struct ship player;
   unsigned lives;
   unsigned nextwave;
@@ -742,6 +740,7 @@ asteroids_reset(struct app_asteroids *self)
 {
   unsigned ii;
 
+  self->score = 0;
   self->lives = 3;
   self->nextwave = 1000;
 
@@ -1045,7 +1044,7 @@ asteroids_draw(struct app *app, SDL_Renderer *renderer)
   SDL_RenderClear(renderer);
   SDL_SetRenderDrawColor(renderer, 224, 224, 224, 255);
 
-  for (ii = 0; ii < self->lives; ++ii) {
+  for (ii = 0; ii < self->lives; ++ii) { /* Draw extra lives */
     struct point position;
     position.x = 15 * self->player.size * (ii + 1) / 8;
     position.y = self->player.size + self->size / 8;
@@ -1097,9 +1096,10 @@ asteroids_get_app(void) {
 
 /* ------------------------------------------------------------------ */
 
-int
-gizmo_frame(struct gizmo *gizmo)
+void
+gizmo_frame(void *context)
 {
+  struct gizmo *gizmo = (struct gizmo *)context;
   int result = EXIT_SUCCESS;
   SDL_Event event;
   unsigned ii;
@@ -1178,7 +1178,6 @@ gizmo_frame(struct gizmo *gizmo)
               (gizmo->app, gizmo->renderer))) {
   }
   gizmo->last = current;
-  return result;
 }
 
 int
@@ -1213,21 +1212,26 @@ main(int argc, char **argv)
     return result;
 
 #ifdef __EMSCRIPTEN__
-  emscripten_set_main_loop_arg((void (*)(void *))gizmo_frame,
-                               &gizmo, 0, 1);
+  emscripten_set_main_loop_arg(gizmo_frame, &gizmo, 0, 1);
 #else
   if (EXIT_SUCCESS != (result = gizmo_setup_icon
                        (gizmo.window, asteroids_icon_svg,
                         sizeof(asteroids_icon_svg))))
     return result;
 
+  unsigned long long frame = now();
   gizmo.done = 0;
   while ((result == EXIT_SUCCESS) && !gizmo.done) {
     gizmo_frame(&gizmo);
-    SDL_Delay(16);
+
+    unsigned long long current = now();
+    if (current - frame < 16)
+      SDL_Delay(16 - (current - frame));
+    frame = current;
   }
   SDL_DestroyRenderer(gizmo.renderer);
   SDL_DestroyWindow(gizmo.window);
+  TTF_Quit();
   SDL_Quit();
   if (gizmo.app->destroy)
     gizmo.app->destroy(gizmo.app);

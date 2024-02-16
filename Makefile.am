@@ -86,16 +86,20 @@ check_@PACKAGE@_SOURCES  = \
 	source/check/juju.c
 
 if HAVE_SDL2
-# apt install -y libsdl2-dev libsdl2-gfx-dev libsdl2-image-dev
+# apt install -y libsdl2-dev \
+#                libsdl2-gfx-dev \
+#                libsdl2-ttf-dev \
+#                libsdl2-image-dev
 bin_PROGRAMS = gizmo
 gizmo_SOURCES = source/gizmo.c
-gizmo_LDADD = -lSDL2 -lSDL2_image -lSDL2_gfx -lm
+gizmo_LDADD = -lSDL2 -lSDL2_gfx -lSDL2_ttf -lSDL2_image -lm
 endif
 
 if HAVE_EMCC
-gizmo.wasm gizmo.js gizmo.html: source/gizmo.c
-	$(EMCC) -o $@ \
-	    -sUSE_SDL=2 -sUSE_SDL_GFX=2 \
+apps/gizmo.wasm apps/gizmo.js apps/gizmo.html apps/gizmo.data: \
+	    source/gizmo.c
+	$(EMCC) -o $@ --preload-file apps/fonts/ \
+	    -sUSE_SDL=2 -sUSE_SDL_GFX=2 -sUSE_SDL_TTF=2 \
 	    -sUSE_SDL_IMAGE=2 -sSDL2_IMAGE_FORMATS='[svg]' \
 	    source/gizmo.c
 endif
