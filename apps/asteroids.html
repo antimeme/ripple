@@ -333,7 +333,7 @@
              moveWrap(this, ms, camera);
          },
 
-         destroy: function(camera, createdAsteroids) {
+         impact: function(camera, createdAsteroids) {
              this.dead = 1;
              new Array(Math.floor(
                  1 + this.nsplits * 2 + 4 * Math.random()))
@@ -611,7 +611,7 @@
          this.score += npoints;
      },
 
-     destroy: function() {
+     impact: function() {
          if (this.shield.absorb())
              return;
          const npieces = Math.floor(4 + 4 * Math.random());
@@ -757,7 +757,7 @@
          this.dead = o_saucer_respawn * (1 + Math.random());
      },
 
-     destroy: function() {
+     impact: function() {
          if (this.shield.absorb())
              return;
          new Array(Math.floor(4 + 4 * Math.random()))
@@ -1026,14 +1026,14 @@
                      if ((asteroid.dead <= 0) &&
                          checkCollide(shot, asteroid, elapsed)) {
                          vessel.award(asteroid.score);
-                         asteroid.destroy(camera, createdAsteroids);
+                         asteroid.impact(camera, createdAsteroids);
                      } else return true;
                  });
 
                  if ((asteroid.dead <= 0) && (vessel.dead <= 0) &&
                      checkCollide(vessel, asteroid, elapsed)) {
-                     vessel.destroy(camera);
-                     asteroid.destroy(camera, createdAsteroids);
+                     vessel.impact(camera);
+                     asteroid.impact(camera, createdAsteroids);
                  }
              });
 
@@ -1071,7 +1071,7 @@
                  return;
              vessel.shots = vessel.shots.filter(shot => {
                  if (checkCollide(shot, enemy, elapsed)) {
-                     enemy.destroy(camera);
+                     enemy.impact(camera);
                      vessel.award(enemy.small ? 1000 : 200);
                  } else return true;
              });
@@ -1081,8 +1081,8 @@
 
          if ((playerShip.dead <= 0) && (saucer.dead <= 0) &&
              checkCollide(playerShip, saucer, elapsed)) {
-             playerShip.destroy(camera);
-             saucer.destroy(camera);
+             playerShip.impact(camera);
+             saucer.impact(camera);
          }
 
          playerShip.update(camera, elapsed, this.asteroids);
