@@ -85,12 +85,13 @@ check_@PACKAGE@_SOURCES  = \
 	source/check/pixie.c \
 	source/check/juju.c
 
+bin_PROGRAMS =
+
 if HAVE_SDL2
-# apt install -y libsdl2-dev \
-#                libsdl2-gfx-dev \
-#                libsdl2-ttf-dev \
+# guix install sdl2 sdl2-ttf sdl2-gfx sdl2-image
+# apt install -y libsdl2-dev libsdl2-gfx-dev libsdl2-ttf-dev \
 #                libsdl2-image-dev
-bin_PROGRAMS = gizmo
+bin_PROGRAMS += gizmo
 gizmo_SOURCES = source/gizmo.c
 gizmo_LDADD = -lSDL2 -lSDL2_gfx -lSDL2_ttf -lSDL2_image -lm
 endif

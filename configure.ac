@@ -29,12 +29,9 @@ AC_PROG_MKDIR_P
 AC_PROG_LN_S
 AC_PATH_PROG(SUDO, sudo, )
 
-AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
-FOUND_SDL2=no
-if test "$PKG_CONFIG" != "no"; then
-  PKG_CHECK_MODULES([SDL2], [sdl2 >= 2.0.0], [FOUND_SDL2=yes])
-fi
-AM_CONDITIONAL([HAVE_SDL2], [test "$FOUND_SDL2" = "yes"])
+PKG_CHECK_MODULES([SDL2], [sdl2],
+                  [HAVE_SDL2=true], [HAVE_SDL2=false])
+AM_CONDITIONAL([HAVE_SDL2], [test "$HAVE_SDL2" = true])
 
 AC_PATH_PROG([EMCC], [emcc], [false])
 AM_CONDITIONAL([HAVE_EMCC], [test "$EMCC" != false])
