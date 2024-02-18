@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <meta charset="utf-8" />
 <!-- :TODO: swipe for hyperspace -- SWIPERSPACE! -->
-<!-- :TODO: don't reset after GAME OVER until user input -->
 <!-- :TODO: use classes -->
 <!-- asteroids.html
      Copyright (C) 2020-2024 by Jeff Gold.
@@ -129,9 +128,6 @@
  const o_vbuttons  = paramBoolean(params, "vbuttons");
  const o_cheats    = paramBoolean(params, "cheats");
 
- let reset = 0;       // Milliseconds until the game resets
- let debris = [];
-
  /**
   * Return true iff the given value is close enough to zero */
  function zeroish(value) {
@@ -193,8 +189,17 @@
  }
 
  /**
+  * Renders a red ring intended to show collision boundaries */
+ function drawRing(ctx, thing) {
+     if (!isNaN(thing.dead) && thing.dead > 0)
+         return;
+     ctx.moveTo(thing.x + thing.size/2, thing.y);
+     ctx.arc(thing.x, thing.y, thing.size/2, 0, Math.PI * 2);
+ }
+
+ /**
   * Connect a ring of points with a closed loop of lines. */
- function drawPointRing(ctx, points) {
+ function drawPointLoop(ctx, points) {
      const last = points[points.length - 1];
      ctx.moveTo(last.x, last.y);
      points.forEach(point => ctx.lineTo(point.x, point.y));
@@ -205,10 +210,12 @@
   * With random numbers this ends up looking like a rock. */
  function drawSpars(ctx, spars) {
      const factor = 2 * Math.PI / spars.length;
-     drawPointRing(ctx, spars.map((spar, index) => ({
+     drawPointLoop(ctx, spars.map((spar, index) => ({
          x: Math.cos(index * factor) * spar,
          y: Math.sin(index * factor) * spar })));
  }
+
+ let debris = [];
 
  function createDebris(source) {
      const direction = Math.random() * Math.PI * 2;
@@ -244,15 +251,6 @@
              ctx.restore();
          }
      };
- }
-
- /**
-  * Renders a red ring intended to show collision boundaries */
- function drawRing(ctx, thing) {
-     if (!isNaN(thing.dead) && thing.dead > 0)
-         return;
-     ctx.moveTo(thing.x + thing.size/2, thing.y);
-     ctx.arc(thing.x, thing.y, thing.size/2, 0, Math.PI * 2);
  }
 
  /**
@@ -354,13 +352,15 @@
          draw: function(ctx, vessel) {
              if (!this.ready || (vessel.dead > 0))
                  return;
-             const factor = 12 / 20;
+             const factor = 6 / 10;
+             const dir = Math.random() * 2 * Math.PI;
+             const x = vessel.x + Math.cos(dir) * vessel.size / 9;
+             const y = vessel.y + Math.sin(dir) * vessel.size / 9;
              ctx.save();
              ctx.beginPath();
-             ctx.strokeStyle = "blue";
-             ctx.moveTo(vessel.x + vessel.size * factor, vessel.y);
-             ctx.arc(vessel.x, vessel.y, vessel.size * factor,
-                     0, Math.PI * 2);
+             ctx.strokeStyle = "#22c";
+             ctx.moveTo(x + vessel.size * factor, y);
+             ctx.arc(x, y, vessel.size * factor, 0, Math.PI * 2);
              ctx.stroke();
              ctx.restore();
          },
@@ -441,7 +441,7 @@
      },
 
      drawShape: function(ctx) {
-         drawPointRing(ctx, [{x: 1, y: 0}, {x: -1, y: 2/3},
+         drawPointLoop(ctx, [{x: 1, y: 0}, {x: -1, y: 2/3},
                              {x: -2/3, y: 0}, {x: -1, y: -2/3}]);
      },
 
@@ -460,10 +460,10 @@
                  ctx.translate(this.x, this.y);
                  ctx.rotate(this.direction);
                  ctx.scale(this.size/2, this.size/2);
-                 drawPointRing(ctx, [{x: -1, y: 1/3},
-                                     {x: -3/ 2, y: 0},
-                                     {x: -1, y: -1/3}]
-                     .map(point => ({
+                 drawPointLoop(ctx, [
+                     {x: -1, y: 1/3},
+                     {x: -3/ 2, y: 0},
+                     {x: -1, y: -1/3}].map(point => ({
                          x: point.x + (Math.random() - 1/2) * 0.33,
                          y: point.y + (Math.random() - 1/2) * 0.33
                  })));
@@ -485,15 +485,13 @@
 
          // A dead ship eventually respawns, but can't interact
          // with anything until then.
-         if (reset > 0)
-             this.dead = reset;
-         else if (this.dead > 0) {
-             this.dead -= ms;
-             if (this.dead <= 0) {
-                 ms += this.dead;
+         if (this.dead > 0) {
+             if (this.lives === 0) {
+                 // Game is over so don't respawn
+             } else if (this.dead <= ms) {
+                 // If an asteroid will immediately smash the player,
+                 // wait a while before respawning
                  this.dead = 0;
-
-                 // Don't respawn if an asteroid is about to smash us
                  if (asteroids.some(asteroid =>
                      checkCollide(asteroid, this, 1500)))
                      this.dead = 500;
@@ -502,7 +500,7 @@
                      this.lives -= 1;
                      this.clear();
                  }
-             }
+             } else this.dead -= ms;
          }
          if (this.dead > 0)
              return;
@@ -510,24 +508,22 @@
          // Respond to user input from keyboard, mouse or touch
          if (this.left) {
              this.direction += ms / 200;
-             this.target = null;
+             this.target = undefined;
          } else if (this.right) {
              this.direction -= ms / 200;
-             this.target = null;
-         } else if (this.target) {
-             if (!isNaN(this.target)) {
-                 let difference = this.target - this.direction;
-                 if (difference > Math.PI)
-                     difference -= 2 * Math.PI;
-                 else if (difference < -Math.PI)
-                     difference += 2 * Math.PI;
+             this.target = undefined;
+         } else if (!isNaN(this.target)) {
+             let difference = this.target - this.direction;
+             if (difference > Math.PI)
+                 difference -= 2 * Math.PI;
+             else if (difference < -Math.PI)
+                 difference += 2 * Math.PI;
 
-                 if (Math.abs(difference) < ms / 200)
-                     this.direction = this.target;
-                 else if (difference < 0)
-                     this.direction -= ms / 200;
-                 else this.direction += ms / 200;
-             }
+             if (Math.abs(difference) < ms / 200)
+                 this.direction = this.target;
+             else if (difference < 0)
+                 this.direction -= ms / 200;
+             else this.direction += ms / 200;
          }
 
          this.thrust_elapsed =
@@ -614,13 +610,10 @@
      impact: function() {
          if (this.shield.absorb())
              return;
-         const npieces = Math.floor(4 + 4 * Math.random());
-         for (var ii = 0; ii < npieces; ++ii)
-             debris.push(createDebris(this));
+         new Array(Math.floor(4 + 4 * Math.random()))
+             .fill().forEach(ignore => debris.push(createDebris(this)));
          this.dead = 3000;
          this.clear();
-         if (this.lives === 0)
-             reset = 5000;
      },
 
      clear: function() {
@@ -940,8 +933,23 @@
 
  const game = {
      active: true, autofill: true, usekeys: true,
-     last: undefined, nextwave: 1000, previousClick: undefined,
+
+     gameover: 0,
+     nextwave: 1000,
+     last: undefined,
+     previousClick: undefined,
      asteroids: [],
+
+     newgame: function() {
+         this.gameover = 0;
+         this.asteroids = [];
+         this.nextwave = 1000;
+         debris = [];
+         saucer.clear();
+         playerShip.score = 0;
+         playerShip.lives = 4;
+         playerShip.dead = 1;
+     },
 
      resize: function(event, camera) {
          camera.setScale(camera.radius);
@@ -973,12 +981,12 @@
              ctx.stroke();
          });
 
-         if (reset > 0) {
+         if (this.gameover > 0) {
              ctx.font = Math.floor(camera.radius / 5) + "px monospace";
-             const gameover = "GAME OVER";
-             const metrics = ctx.measureText(gameover);
+             const message = "GAME OVER";
+             const metrics = ctx.measureText(message);
              ctx.fillText(
-                 gameover, (camera.width - metrics.width) / 2,
+                 message, (camera.width - metrics.width) / 2,
                  (camera.height + metrics.fontBoundingBoxDescent)/2);
          }
          screenButtons.draw(ctx, camera);
@@ -1044,19 +1052,7 @@
          });
          this.asteroids = this.asteroids.concat(createdAsteroids);
 
-         if (reset > 0) {
-             reset -= elapsed;
-             if (reset <= 0) {
-                 reset = 0;
-
-                 playerShip.score = 0;
-                 playerShip.lives = 4;
-                 debris = [];
-                 this.asteroids = [];
-                 this.nextwave = 1000;
-                 saucer.clear();
-             }
-         } else if (this.nextwave > 0) {
+         if (this.nextwave > 0) {
              this.nextwave -= elapsed;
              if (this.nextwave <= 0)
                  this.asteroids = new Array(
@@ -1084,14 +1080,21 @@
              playerShip.impact(camera);
              saucer.impact(camera);
          }
-
-         playerShip.update(camera, elapsed, this.asteroids);
          saucer.update(camera, elapsed);
+
          screenButtons.update(camera, elapsed);
+         playerShip.update(camera, elapsed, this.asteroids);
+         if (this.gameover > 0)
+             this.gameover = Math.max(1, this.gameover - elapsed);
+         else if (playerShip.dead && !playerShip.lives)
+             this.gameover = 2000;
      },
 
      keydown: function(event, camera) {
-         if (event.keyCode === 37 || event.key === 'a') {
+         if (this.gameover > 0) {
+             if (this.gameover === 1)
+                 this.newgame();
+         } else if (event.keyCode === 37 || event.key === 'a') {
              playerShip.left = true;
              playerShip.right = false;
 	 } else if (event.keyCode === 38 || event.key === 'w') {
@@ -1124,7 +1127,11 @@
      },
 
      mousedown: function(event, camera) {
-         if (screenButtons.down(event, camera))
+         if (this.gameover > 0) {
+             if (this.gameover === 1)
+                 this.newgame();
+             return;
+         } else if (screenButtons.down(event, camera))
              return;
          playerShip.aim(camera.getPoint(event), camera);
          playerShip.holding = true;
@@ -1138,8 +1145,7 @@
      },
 
      mouseup: function(event, camera) {
-         if (screenButtons.up(event, camera))
-             return;
+         screenButtons.up(event, camera);
          playerShip.holding = false;
          playerShip.held    = undefined;
      },
