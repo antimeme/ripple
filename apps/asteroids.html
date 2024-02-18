@@ -114,12 +114,16 @@
 
  const o_newlife = paramInteger(params, "newlife", {
      min: 500, default: 10000}); // Score needed for each new life
- const o_nasteroids = paramInteger(params, "nasteroids", {
-     min: 0, default: 8}); // How many big asteroids at wave start
+ const o_startwave = paramInteger(params, "nasteroids", {
+     min: 0, default: 4}); // Number of large asteroids at wave start
+ const o_maxwave = paramInteger(params, "nasteroids", {
+     min: 0, default: 11}); // Maximum wave size
  const o_saucer_respawn = paramInteger(params, "saucer-respawn", {
      min: 1000, default: 8000});
+ const o_large_score    = paramInteger(params, "small-score", {
+     min: 0, default: 10000}); // Always large saucers until this score
  const o_small_score    = paramInteger(params, "small-score", {
-     min: 0, default: 40000}); // Always small saucers at this score
+     min: 0, default: 40000}); // Always small saucers after this score
  const o_messy   = paramBoolean(params, "messy");
  const o_rings   = paramBoolean(params, "rings");
  const o_shields = paramBoolean(params, "shields");
@@ -534,9 +538,9 @@
 
          if (this.thrust_elapsed) {
              this.dx += (Math.cos(this.direction) *
-                 this.thrust_elapsed / this.size / 25);
+                 this.thrust_elapsed * this.size / 20000);
              this.dy += (Math.sin(this.direction) *
-                 this.thrust_elapsed / this.size / 25);
+                 this.thrust_elapsed * this.size / 20000);
          }
 
          if (this.warpCooldown > 0) {
@@ -697,8 +701,9 @@
                  // Large saucers shoot in random directions.
                  // At low scores most saucers are large but
                  // eventually only small saucers can spawn.
-                 this.small = (Math.random() *
-                     o_small_score < playerShip.score);
+                 this.small = (o_large_score > playerShip.score) ?
+                              false : (Math.random() * o_small_score <
+                                  playerShip.score);
                  this.size = this.screen / (this.small ? 20 : 10);
              } else { this.dead -= elapsed; return; }
          }
@@ -936,11 +941,13 @@
 
      gameover: 0,
      nextwave: 1000,
+     wavesize: o_startwave,
      last: undefined,
      previousClick: undefined,
      asteroids: [],
 
      newgame: function() {
+         this.wavesize = o_startwave;
          this.gameover = 0;
          this.asteroids = [];
          this.nextwave = 1000;
@@ -966,20 +973,19 @@
          ctx.lineWidth = camera.radius / 300;
          ctx.font = Math.floor(camera.radius / 10) + "px monospace";
          ctx.fillText(playerShip.score.toLocaleString(),
-                      Math.floor(camera.radius / 18),
-                      Math.floor(camera.radius / 10));
+                      camera.radius / 18, camera.radius / 10);
 
+         ctx.beginPath();
          new Array(playerShip.lives).fill().forEach((z, index) => {
              ctx.save();
              ctx.translate(playerShip.size * (index + 1),
                            camera.radius / 8 + playerShip.size);
              ctx.rotate(-Math.PI / 2);
              ctx.scale(playerShip.size / 2, playerShip.size / 2);
-             ctx.beginPath();
              playerShip.drawShape(ctx);
              ctx.restore();
-             ctx.stroke();
          });
+         ctx.stroke();
 
          if (this.gameover > 0) {
              ctx.font = Math.floor(camera.radius / 5) + "px monospace";
@@ -987,7 +993,10 @@
              const metrics = ctx.measureText(message);
              ctx.fillText(
                  message, (camera.width - metrics.width) / 2,
-                 (camera.height + metrics.fontBoundingBoxDescent)/2);
+                 (camera.height + metrics.actualBoundingBoxDescent) / 2);
+             console.log("DEBUG gameover", this.gameover,
+                         (camera.width - metrics.width) / 2,
+                         (camera.height + metrics.actualBoundingBoxDescent) / 2);
          }
          screenButtons.draw(ctx, camera);
      },
@@ -998,7 +1007,7 @@
 
          ctx.beginPath();
          this.asteroids.forEach(asteroid => asteroid.draw(ctx));
-         debris.forEach(piece => { piece.draw(ctx); });
+         debris.forEach(piece => piece.draw(ctx));
          ctx.stroke();
 
          playerShip.draw(ctx);
@@ -1041,6 +1050,7 @@
                  if ((asteroid.dead <= 0) && (vessel.dead <= 0) &&
                      checkCollide(vessel, asteroid, elapsed)) {
                      vessel.impact(camera);
+                     vessel.award(asteroid.score);
                      asteroid.impact(camera, createdAsteroids);
                  }
              });
@@ -1053,12 +1063,13 @@
          this.asteroids = this.asteroids.concat(createdAsteroids);
 
          if (this.nextwave > 0) {
-             this.nextwave -= elapsed;
-             if (this.nextwave <= 0)
+             if (this.nextwave <= elapsed) {
+                 this.nextwave = 0;
                  this.asteroids = new Array(
-                     (isNaN(o_nasteroids) ? 8 : o_nasteroids) +
-                     Math.floor(Math.sqrt(playerShip.score) / 100))
-                     .fill().map(ignore => createAsteroid());
+                     this.wavesize).fill().map(
+                         ignore => createAsteroid());
+                 this.wavesize = Math.min(o_maxwave, this.wavesize + 2);
+             } else this.nextwave -= elapsed;
          } else if (this.asteroids.length === 0)
              this.nextwave = 5000;
 
@@ -1091,19 +1102,28 @@
      },
 
      keydown: function(event, camera) {
-         if (this.gameover > 0) {
+         if (event.keyCode === 37 || event.key === 'a') {
+             if (this.gameover === 1) {
+                 this.newgame();
+             } else {
+                 playerShip.left = true;
+                 playerShip.right = false;
+             }
+	 } else if (event.keyCode === 38 || event.key === 'w') {
              if (this.gameover === 1)
                  this.newgame();
-         } else if (event.keyCode === 37 || event.key === 'a') {
-             playerShip.left = true;
-             playerShip.right = false;
-	 } else if (event.keyCode === 38 || event.key === 'w') {
-             playerShip.thrust = true;
+             else playerShip.thrust = true;
 	 } else if (event.keyCode === 39 || event.key === 'd') {
-             playerShip.right = true;
-             playerShip.left = false;
+             if (this.gameover === 1) {
+                 this.newgame();
+             } else {
+                 playerShip.right = true;
+                 playerShip.left = false;
+             }
 	 } else if (event.keyCode === 40 || event.key === 's') {
-             playerShip.warp = true;
+             if (this.gameover === 1)
+                 this.newgame();
+             else playerShip.warp = true;
          } else if (event.key === ' ' || event.key === "Enter") {
              if (o_repeat || !event.repeat)
                  playerShip.shoot();
@@ -1127,12 +1147,13 @@
      },
 
      mousedown: function(event, camera) {
-         if (this.gameover > 0) {
-             if (this.gameover === 1)
-                 this.newgame();
+         if (screenButtons.down(event, camera))
              return;
-         } else if (screenButtons.down(event, camera))
+         else if (this.gameover === 1) {
+             this.newgame();
              return;
+         }
+
          playerShip.aim(camera.getPoint(event), camera);
          playerShip.holding = true;
          playerShip.held    = 0;
