@@ -57,8 +57,6 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
 </li><li>
     <a href="#computation">Computation</a>
 </li><li>
-    <a href="#halting">Halting</a>
-</li><li>
     <a href="#instructions">Instructions</a>
 </li><li>
     <a href="#arithmetic">Arithmetic</a>
@@ -196,61 +194,6 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
     expression can be further reduced but it will never make progress
     toward any conclusion.  As a consequence it will never reach a
     normal form.
-</p>
-<h2><a name="halting">Halting Problem</a></h2>
-<p>
-    Let's use the lambda calculus to take on the famous
-    <a href="https://en.wikipedia.org/wiki/Halting_problem">halting
-        problem</a>.  Sometimes we can observe that a program never
-    reaches normal form, as with the double mockingbird example above.
-    Sometimes we can observe that a program does eventually halt by
-    performing enough reductions.  But can we write a program that
-    accepts any program as input and returns <code>TRUE</code>
-    if it has a normal form and <code>FALSE</code> if it doesn't?
-    The answer is no.  Let's use the lambda calculus to understand why.
-</p><p>
-    Suppose we could solve the problem.  Suppose a lambda
-    expression which we'll call <code>HALTS?</code> accepts any
-    program and after a finite number of steps reduces to
-    <code>TRUE</code> if the input has a normal form and
-    <code>FALSE</code> otherwise.  Here is what that might look like:
-</p><blockquote><code>
-      HALTS? p
-</code></blockquote><p>
-    Maybe we aren't clever enough to figure out how to implement this
-    ourselves but it certainly seems like it might be possible.  But
-    we can use the existance of such a program to prove that it's not
-    possible.  Let's start by doing this:
-</p><blockquote><code>
-      (λp.(HALTS? (p p)) ((λm.m m) (λm.m m)) TRUE)
-</code></blockquote><p>
-    Given an input program that can be applied to itself with a normal
-    form this program reduces to the mockingbird applied to itself,
-    which has no normal form.  Given a program which has no normal
-    form when applied to itself -- such as the mockingbird -- this
-    program reduces to <code>TRUE</code> and therefore does have a
-    normal form.  So it does the opposite of the program it has been
-    given.  This may seem silly but it's a valid combination of
-    expressions.  But what happens when we apply this program to
-    itself?
-</p><blockquote><code>
-    (λm.m m) (λp.(HALTS? (p p)) ((λm.m m) (λm.m m)) TRUE)
-</code></blockquote><p>
-    Does it halt?  Let's ask our halting checker:
-</p><blockquote><code>
-    HALTS? ((λm.m m) (λp.(HALTS? (p p)) ((λm.m m) (λm.m m)) TRUE))
-</code></blockquote><p>
-    What does this reduce to?  Well, it can't possibly reduce to
-    <code>TRUE</code>!  If it did that would mean
-    <code>HALTS? (p p)</code> must also reduce to
-    <code>TRUE</code> which means the outer expression reduces to
-    <code>(λm.m m) (λm.m m)</code> which does not halt.  But
-    it also can't reduce to <code>FALSE</code>!  If it did then
-    <code>HALTS? (p p)</code> must also reduce to <code>FALSE</code>
-    and that means the outer expression reduces to <code>TRUE</code>
-    which clearly halts.  Our original assumption that
-    <code>HALTS?</code> always reduces in a finite number of steps
-    to either <code>TRUE</code> or <code>FALSE</code> is impossible!
 </p>
 <h2><a name="instructions">Instructions</a></h2>
 <p>
