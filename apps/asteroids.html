@@ -436,8 +436,8 @@
      warp: false, warpCooldown: 0,
 
      // Controls for mobile
-     target: undefined,
-     holding: false, held: undefined,
+     target: undefined, thrust_elapsed: 0,
+     holding: false, held: 0,
 
      resize: function(camera) {
          this.screen = camera.radius * 2;
@@ -530,11 +530,10 @@
              else this.direction += ms / 200;
          }
 
+         this.held = this.holding ? (this.held + ms) : 0;
          this.thrust_elapsed =
-             (this.thrust || (this.held > 300)) ? ms :
-             (this.held + ms > 300) ? (this.held + ms - 300) : 0;
-         if (this.holding)
-             this.held = isNaN(this.held) ? ms : (this.held + ms);
+             (this.thrust || (this.held > 300 + ms)) ? ms :
+             (this.held > 300) ? (this.held - 300) : 0;
 
          if (this.thrust_elapsed) {
              this.dx += (Math.cos(this.direction) *
@@ -623,11 +622,12 @@
      clear: function() {
          this.direction = Math.PI/2;
          this.target = undefined;
-         this.holding = undefined;
+         this.holding = false;
          this.warp = false;
          this.warpCooldown = 0;
          this.x  = this.y  = 0;
          this.dx = this.dy = 0;
+         this.thrust_elapsed = 0;
          this.shield.reset();
      }
  };
@@ -1156,7 +1156,6 @@
 
          playerShip.aim(camera.getPoint(event), camera);
          playerShip.holding = true;
-         playerShip.held    = 0;
 
          const now = Date.now();
          if (!isNaN(this.previousClick) &&
@@ -1168,7 +1167,6 @@
      mouseup: function(event, camera) {
          screenButtons.up(event, camera);
          playerShip.holding = false;
-         playerShip.held    = undefined;
      },
 
      mousemove: function(event, camera) {
