@@ -1,5 +1,5 @@
 ## Makefile.am
-## Copyright (C) 2006-2023 by Jeff Gold.
+## Copyright (C) 2006-2024 by Jeff Gold.
 ##
 ## This program is free software: you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -88,13 +88,24 @@ check_@PACKAGE@_SOURCES  = \
 bin_PROGRAMS =
 
 if HAVE_SDL2
-# guix install sdl2 sdl2-ttf sdl2-gfx sdl2-image
-# apt install -y libsdl2-dev libsdl2-gfx-dev libsdl2-ttf-dev \
-#                libsdl2-image-dev
+# Before attempting to compile Gizmo, install the necessary
+# libraries so that configure can find them:
+# $ apt install -y libsdl2-dev libsdl2-gfx-dev \
+#                  libsdl2-ttf-dev libsdl2-image-dev
+# $ guix install sdl2 sdl2-ttf sdl2-gfx sdl2-image
 bin_PROGRAMS += gizmo
 gizmo_SOURCES = source/gizmo.c
 gizmo_LDADD = -lSDL2 -lSDL2_gfx -lSDL2_ttf -lSDL2_image -lm
 endif
+
+# Building for Windows on MSYS2:
+# $ pacman -Sy mingw-w64-x86_64-toolchain \
+#              mingw64/mingw-w64-x86_64-SDL2 \
+#              mingw64/mingw-w64-x86_64-SDL2_gfx \
+#              mingw64/mingw-w64-x86_64-SDL2_ttf \
+#              mingw64/mingw-w64-x86_64-SDL2_image
+# $ C:/msys64/mingw64/bin/gcc.exe -o gizmo.exe source/gizmo.c \
+#   `sdl2-config --cflags --libs` -lSDL2_gfx -lSDL2_ttf -lSDL2_image
 
 if HAVE_EMCC
 apps/gizmo.wasm apps/gizmo.js apps/gizmo.html apps/gizmo.data: \
