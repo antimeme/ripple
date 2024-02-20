@@ -475,16 +475,20 @@ class Lambda {
         return result;
     }
 
-    applyLibrary(library, exclude, ignoreCase) {
+    #onceLibrary(library, exclude) {
         let result = this;
-        library = library ? library : Lambda.defaultLibrary;
+        const ignoreCase =
+            (library && (typeof(library.ignoreCase) === "boolean")) ?
+            library.ignoreCase : false;
+
+        library = (library && library.library) ? library.library :
+                  library ? library : Lambda.defaultLibrary;
         exclude = Object.assign({}, exclude, this.#variables.reduce(
             (acc, vv) => { acc[vv] = true; return acc; }, {}));
 
         this.#values.forEach((value, index) => {
             if (value instanceof Lambda) {
-                const current = value.applyLibrary(
-                    library, exclude, ignoreCase);
+                const current = value.#onceLibrary(library, exclude);
                 if (current !== value) {
                     if (result === this)
                         result = new Lambda(this);
@@ -513,6 +517,16 @@ class Lambda {
                 }
             }
         });
+        return result;
+    }
+
+    applyLibrary(library) {
+        let result = this;
+        let previous = undefined;
+        do {
+            previous = result;
+            result = result.#onceLibrary(library);
+        } while (result !== previous);
         return result;
     }
 
@@ -793,6 +807,7 @@ class Lambda {
         const expression = document.createElement("textarea");
         const steps = document.createElement("input");
         const delay = document.createElement("input");
+        let repeatID = 0;
         let repeating = false;
 
         expression.value =
@@ -800,13 +815,11 @@ class Lambda {
             element.dataset.expr.replace(/\s+/g, " ") : "";
 
         function countReduce(expr) {
-            if (expr.isNormal()) {
-                repeating = false;
-            } else {
+            if (!expr.isNormal()) {
                 const value = parseInt(steps.value);
                 steps.value = isNaN(value) ? 1 : (value + 1);
                 expr = expr.reduce().simplify();
-            }
+            } else repeating = false;
             return expr;
         }
 
@@ -830,14 +843,19 @@ class Lambda {
             const button = document.createElement("button");
             button.appendChild(document.createTextNode(name));
             function repeat() {
+                repeatID = 0;
                 try {
-                    const expr = fn(new Lambda(expression.value));
-                    setExpression(expr);
+                    if (!repeating)
+                        return;
+                    const expr = new Lambda(expression.value);
                     if (expr.isNormal()) {
+                        repeating = false;
                         if (post)
                             setExpression(post(expr));
-                    } else if (repeating)
-                        setTimeout(repeat, delay.value);
+                    } else {
+                        setExpression(fn(expr));
+                        repeatID = setTimeout(repeat, delay.value);
+                    }
                 } catch (ex) { console.error(ex); alert(ex); }
             }
             button.addEventListener("click", event => {
@@ -846,7 +864,8 @@ class Lambda {
                     if (pre)
                         setExpression(pre(new Lambda
                             (expression.value)));
-                    setTimeout(repeat, delay.value);
+                    if (!repeatID)
+                        repeatID = setTimeout(repeat, delay.value);
                 } catch (ex) { console.error(ex); alert(ex); }
             });
             element.appendChild(button);
@@ -854,30 +873,41 @@ class Lambda {
 
         createButton("Reduce", countReduce);
         createRepeatButton("Repeat", countReduce);
-        delay.type = "range";
-        delay.min = 5;
-        delay.max = 1000;
-        delay.value = 100
-        delay.style = "text-align: right; width: 5em;";
-        element.appendChild(delay);
         if (typeof(element.dataset.expr) === "string")
             createButton("Reset", expr => {
+                repeating = false;
                 steps.value = 0;
                 return element.dataset.expr.replace(/\s+/g, " ");
             });
+        delay.type = "range";
+        delay.min = 5;
+        delay.max = 1000;
+        delay.value = !isNaN(element.dataset.delay) ?
+                      element.dataset.delay : 100;
+        delay.style = "text-align: right; width: 5em;";
+        element.appendChild(delay);
         if (element.dataset.library) {
-            createButton("Library", expr => expr.applyLibrary());
+            createButton("Library", expr => expr.applyLibrary(
+                {ignoreCase: true, library: Lambda.defaultLibrary}));
             createButton("Discover", expr => expr.reverseLibrary());
             createRepeatButton("Go", countReduce,
-                               expr => expr.applyLibrary(),
+                               expr => expr.applyLibrary({
+                                   ignoreCase: true,
+                                   library: Lambda.defaultLibrary}),
                                expr => expr.reverseLibrary());
         }
+        if (element.dataset.sk)
+            createButton("SKI", expr => expr.toStarlingKestral());
         steps.disabled = true;
         steps.style = "text-align: right; width: 5em;";
         element.appendChild(steps);
         element.appendChild(document.createElement("br"));
-        expression.setAttribute("rows", 3);
-        expression.setAttribute("cols", 80);
+        expression.setAttribute(
+            "rows", !isNaN(element.dataset.rows) ?
+            element.dataset.rows : 3);
+        expression.setAttribute(
+            "cols", !isNaN(element.dataset.cols) ?
+            element.dataset.cols : 80);
         expression.addEventListener("input", event =>
             { repeating = false; steps.value = 0; });
         element.appendChild(expression);

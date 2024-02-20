@@ -4,39 +4,18 @@
 <meta name="viewport" content="initial-scale=1, maximum-scale=1" />
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes" />
-<style>
- input[type=range] { width: 8%; }
- #steps    { text-align: right; width: 6%; }
- #size     { text-align: right; width: 6%; }
- #maxsize  { text-align: right; width: 6%; }
- #previous { text-align: right; width: 50%; }
- .blue { color: blue; }
-</style>
+<link rel="shortcut icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
+           width='80' height='80'%3E
+           %3Ctext x='10' y='64' font-family='Arial' font-size='64'
+           stroke-width='12' stroke='%23eee'%3E&%23955;%3C/text%3E
+           %3Ctext x='10' y='64' font-family='Arial' font-size='64'
+           stroke-width='8' stroke='%23222'%3E&%23955;%3C/text%3E
+           %3C/svg%3E" />
 <title>Lambda Calculus</title>
 <h1>Lambda Calculus</h1>
-<textarea id="expression" rows="12" cols="80">
-</textarea><br />
-<button id="reduce">Reduce</button>
-<button id="repeat">Repeat</button>
-<button id="go">Go</button>
-Delay:
-<input id="delay" type="range" min="5" value="50" max="1000" />
-Steps: <input id="steps" type="text" disabled="disabled" />
-Size: <input id="size" type="text" disabled="disabled" />
-Max Size: <input id="maxsize" type="text" disabled="disabled" />
-<br />
-<button id="library">Library</button>
-<button id="discover">Discover</button>
-<select id="library-expressions">
-    <option></option>
-</select>
-<button id="normal">Normal?</button>
-<button id="freev">Free</button>
-<input id="vdisplay" type="text" disabled="disabled" />
-<br />
-<button id="clear">Clear</button>
-<button id="restore">Restore</button>
-<input id="previous" type="text" disabled="disabled" />
+<div class="lambda" data-library="true" data-sk="true"></div>
+
 
 <p>
     Lambda Calculus is an abstract model of computation.  Other models,
@@ -212,88 +191,93 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
     are possible, if that ever happens.  You can see what happens to a
     program that does not terminate by copying and pasting the
     following:
-</p><blockquote><pre>
-      (lambda n.n n) (lambda m.m m)
-</pre></blockquote><p>
+</p><div class="lambda" data-delay="500"
+         data-expr="(λn.n n) λm.m m">
+</div><p>
     Click <q>Repeat</q> to watch this reduce indefinitely.  Click
-    <q>Reduce</q> to stop the process; it will never stop on its own.
+    <q>Reset</q> to stop the process; it will never stop on its own.
 </p>
 <h2><a name="arithmetic">Arithmetic</a></h2>
 <p>
     Let's explore a computation that does terminate.  We'll use the
-    built in library to add two numbers.  Copy and paste the following
-    into the text area:
-</p><blockquote><pre>
-      ADD TWO THREE
-</pre></blockquote><p>
-    This will not reduce further since all three of the terms here are
-    free variables.  It's one thing to type these words but lambda
-    calculus itself assigns no meaning to numbers like two and three,
-    much less to addition.  We will solve this problem using
+    built in library to add two numbers.
+</p><div class="lambda" data-library="true" data-expr="+ 3 2">
+</div><p>
+    This is a valid expression, but the symbols have no meaning in
+    lambda calculus.  We'll solve this problem by replacing them with
+    expressions from a built in library.  Click the <q>Library</q>
+    button to do this.
+</p><p>
+    Our library replaces numbers with 
     <a href="https://en.wikipedia.org/wiki/Church_encoding">Church
-        Encoding</a>.  Instead of numbers we will use a function that
-    takes two arguments and applies the first to the second a number
-    of times.  This means that <code>TWO</code> can be replaced by
-    <code>λf a.f (f a)</code> and <code>THREE</code> can be replaced
-    by <code>λf a.f (f (f a))</code>.  It's possible to implement
-    addition as well.  We could do this by editing the expression
-    directly but this program contains a library that will do this
-    automatically.
+        Encoded</a> numerals.  A number is represented by a function
+    that accepts two arguments and applies the first to the second
+    that number of times.  This means <code>TWO</code> has been
+    replaced by <code>λf a.f (f a)</code> and <code>THREE</code>
+    has been replaced by <code>λf a.f (f (f a))</code>.  Instead of
+    the addition operator, we have a function that applies the
+    successor repeatedly using one of the numbers.
 </p><p>
-    Click the <q>Library</q> button to replace these free variables
-    with combinators.  (In this case once is enough, but some library
-    functions use other library functions so it will sometimes be
-    necessary to keep clicking to get to a final expression.)  Now
-    that there are no free variables we can click the <q>Repeat</q>
-    to reduce this to a normal form, which takes six steps.  But what
-    did it reduce to?  This is a function that takes two arguments and
-    applies the first to the second five times.  That is the Church
-    Numeral representation of five!
+    Click the <q>Reduce</q> button to perform a single reduction.  This
+    still leaves a complex expression that doesn't directly represent
+    any number.  It will take five more clicks to get to an expression
+    in normal form.  Instead of doing all that clicking, the
+    <q>Repeat</q> button can be used to complete the process
+    automatically.  A small delay (which can be increased or decrased
+    using the slider) is introduced between each reduction.
+    Click the <q>Reset</q> button to restore the original expression
+    and try this a few different ways.
 </p><p>
-    In this case it's easy to count the number of function
-    applications but how can we be sure in other cases?  We can use
-    the library to check.  Change the buffer by prepending so that it
-    looks like this:
-</p><blockquote><pre>
-      EQUAL? FIVE λf a.f (f (f (f (f a))))
-</pre></blockquote><p>
-    Click the <q>Library</q> button until there are no more free
-    variables.  Then click repeat and get comfortable.  This will take
-    134 steps.  But it will return the lambda calculus expression:
-    <code>lambda a b.a</code>  What does that
-    mean?  Click the <q>Discover</q> button to find out which library
-    function this matches.  You should see that it's <code>TRUE</code>.
+    Even after the expression is reduced to normal form, it may not be
+    obvious just what we've computed.  In this case, we can see that
+    the result is a function which takes two arguments and applies the
+    first to the second five times.  That's the Church Numeral
+    representation of five, which is what we should expect from adding
+    three to two.  Use the <q>Discover</q>
+    button to replace the result with a value from the library, if
+    possible.  In this example you should get the number five.
 </p><p>
-    We can check that this result is meaningful by trying an incorrect
-    equation:
-</p><blockquote><pre>
-      EQUAL? SEVEN λf a.f (f (f (f (f a))))
-</pre></blockquote><p>
-    Now after 146 steps this reduces to <code>FALSE</code>.  That makes
-    sense, doesn't it?  Seven is not equal to five.
+    There's one more shortcut to try.  The <q>Go</q> button does
+    evertyhing we've described here in one step: first it replaces
+    symbols with values from the library, then it reduces until a
+    normal form is reached and finally it looks for a library value
+    to replace it with.  Try clicking <q>Reset</q> followed by <q>Go</q>
+    above.  You can also try replacing the numbers to see that you
+    still get a correct answer.
 </p><p>
-    Another way we could have checked is to select <code>FIVE</code>
-    from the drop down box.  This produces the same expression.  We
-    can see that both the answer to or original expression and the
-    library version of <code>FIVE</code> are the same.
+    Consider this:
+</p><div class="lambda" data-library="true"
+         data-expr="EQUAL? 5 λf a.f (f (f (f (f a))))">
+</div><p>
+    Click the <q>Go</q> button.  After 134 steps you should get
+    <code>TRUE</code>.  That makes sense.  We can check that this
+    result is meaningful by trying an incorrect equation:
+</p><div class="lambda" data-library="true"
+         data-expr="EQUAL? 7 λf a.f (f (f (f (f a))))">
+</div><p>
+    Now after 146 steps this reduces to <code>0</code>.  What
+    happened?  As it turns out, in lambda calculus we represent
+    zero and false using the same expression.  This means the
+    program needs to pick one to recognize.  Try putting
+    <code>FALSE</code> in the text area and clicking <q>Library</q>
+    to see that these are the same thing.
 </p><p>
-    We could instead do all of this in one program.  Try this:
-</p><blockquote><pre>
-      EQUAL? FIVE (ADD TWO THREE)
-</pre></blockquote><p>
+    We can build more complicated expressions.  For example:
+</p><div class="lambda" data-library="true"
+         data-expr="EQUAL? 5 (+ 2 3)">
+</div><p>
     After 146 steps this reduces to <code>TRUE</code>.  Replace five
-    with some other number to get <code>FALSE</code>.  Try other numbers
-    in expressions like this to confirm that correct equations reduce
-    to <code>TRUE</code> and incorrect equations reduce to
-    <code>FALSE</code>.
+    with some other number to get <code>0</code> (which is the same
+    as <code>FALSE</code>.  Try other numbers in expressions like this
+    to confirm that the correct results are reached.
 </p><p>
     <code>GREATER?</code>, <code>LESS?</code>, <code>SUBTRACT</code>,
     <code>MULTIPLY</code>, <code>DIVIDE</code> and <code>POWER</code>
     are also available.  Try creating simple arithmetic expressions
     like this one:
-</p><blockquote><pre>
-      GREATER? (SUBTRACT FIVE TWO) TWO
-</pre></blockquote><p>
+</p><div class="lambda" data-library="true"
+         data-expr="GREATER? (- 5 2) 2">
+</div><p>
     This should reduce to <code>TRUE</code> in 63 steps.
 </p>
 <h2><a name="recusion">Recursion</a></h2>
@@ -304,32 +288,21 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
     lambda calculas has no support for recursion.  Even so, our
     library contains a recursive function called <code>FACTORIAL</code>.
     Here is an example of this function you can try running yourself:
-</p><blockquote><pre>
-      FACTORIAL THREE
-</pre></blockquote><p>
+</p><div class="lambda" data-library="true"
+         data-expr="FACTORIAL 3">
+</div><p>
     After 646 steps this arrives at the Church Numeral representation
-    of <code>SIX</code> (because three factorial is three times two
-    times one).  This representation of six looks a little different.
-    because it uses a different variable name.  We can check that this
-    is <code>SIX</code> the same way we compared our earlier
-    result to <code>FIVE</code>.
+    of <code>6</code> (because three factorial is three times two
+    times one).
 </p><p>
-    Computing <code>FACTORIAL FOUR</code> takes 3,873 steps and
-    results in Church Numeral <code>TWENTYFOUR</code>:
-</p><p><code>
-    λc a.c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c (c
-    (c (c (c (c a)))))))))))))))))))))))
-</code></p><p>
-    Computing <code>FACTORIAL FIVE</code> takes 26,899 steps and a
-    long time but it reduces to a function of two variables that
-    applies the first to the second one hundred twenty times
-    (truncated for brevity):
-</p><p><code>
-    λc a.c (c (c (c ... (c a) ...)))
-</code></p><p>
-    5! = 5 &times; 4 &times; 3 &times; 2 &times; 1 =
-    120.  So how does this work?  It makes use of the
-    <code>FIX</code> combinator -- also known as the fixed point or
+    Computing <code>FACTORIAL 4</code> takes 3,873 steps and
+    results in Church Numeral <code>24</code>.  Computing
+    <code>FACTORIAL 5</code> takes 26,899 steps and a long time but it
+    reduces to a function of two variables that applies the first to
+    the second one hundred twenty times.  5! = 5 &times; 4 &times; 3
+    &times; 2 &times; 1 = 120.  So how does this work?  It makes use
+    of the <code>FIX</code> combinator -- also known as the
+    fixed point or
     <a href="https://en.wikipedia.org/wiki/Fixed-point_combinator"
     >Y combinator</a>.  The Y combinator followed by a function
     reduces to that function followed by an application of the Y
@@ -343,181 +316,7 @@ Max Size: <input id="maxsize" type="text" disabled="disabled" />
 
 <script type="module">//<![CDATA[
  import Lambda from "./ripple/lambda.mjs";
- const expression = document.getElementById("expression");
- const reduce     = document.getElementById("reduce");
- const repeat     = document.getElementById("repeat");
- const go         = document.getElementById("go");
- const library    = document.getElementById("library");
- const discover   = document.getElementById("discover");
 
- const clear      = document.getElementById("clear");
- const restore    = document.getElementById("restore");
- const lexprs     = document.getElementById("library-expressions");
- const normal     = document.getElementById("normal");
- const freev      = document.getElementById("freev");
- const vdisplay   = document.getElementById("vdisplay");
- const delay      = document.getElementById("delay");
- const previous   = document.getElementById("previous");
- const size       = document.getElementById("size");
- const maxsize    = document.getElementById("maxsize");
- const steps      = document.getElementById("steps");
- let stepCount = 0;
- let repeating = false;
- let resolving = false;
-
- // Populate library drop down box
- Lambda.eachLibrary((expression, name, entry) => {
-     if (!name || !isNaN(name))
-         return;         
-     const option = document.createElement("option");
-     option.setAttribute("value", expression.toString(
-         {showColor: true}));
-     if (entry.description)
-         option.setAttribute("title", entry.description);
-     option.innerHTML = name;
-     lexprs.appendChild(option);
- });
-
- function getExpression() {
-     var result;
-     try {
-         result = new Lambda(expression.value);
-     } catch(ex) { console.error(ex); alert(ex); }
-     return result;
- }
-
- function setExpression(value) {
-     expression.value = value;
-     size.value = value.length;
-     if (!maxsize.value || isNaN(maxsize.value) ||
-         (parseInt(maxsize.value) < value.length))
-         maxsize.value = value.length;
- }
-
- function continuousReduce() {
-     let expr = getExpression();
-     if (!expr || !repeating)
-         return;
-     try {
-         setExpression((expr = expr.reduce().simplify()).toString());
-         steps.value = (stepCount += 1);
-
-         if (expr.isNormal()) {
-             repeating = false;
-             if (resolving)
-                 expression.value =
-                     (expr = expr.reverseLibrary()).toString();
-         } else setTimeout(continuousReduce, delay.value);
-     } catch (ex) { console.error(ex); alert(ex); repeating = false; }
- }
-
- expression.addEventListener("change", event => {
-     previous.value = expression.value;
-     repeating = false;
-     steps.value = stepCount = 0;
-     lexprs.value = "";
- });
-
- lexprs.addEventListener("change", event => {
-     if (lexprs.value) {
-         previous.value = expression.value;
-         expression.value = lexprs.value;
-         steps.value = stepCount = 0;
-     }
- });
-
- clear.addEventListener("click", event => {
-     previous.value = expression.value;
-     expression.value = "";
-     repeating = false;
-     steps.value = stepCount = 0;
-     lexprs.value = "";
-     size.value = "";
-     maxsize.value = "";
-     vdisplay.value = "";
- });
-
- reduce.addEventListener("click", event => {
-     var expr = getExpression();
-     if (!expr)
-         return;
-
-     if (!previous.value)
-         previous.value = expression.value;
-     try { expr = expr.reduce().simplify(); }
-     catch (ex) { console.error(ex); alert(ex); }
-     if (!expr.isNormal()) {
-         stepCount += 1;
-         steps.value = stepCount;
-     }
-
-     setExpression(expr.toString());
-     repeating = false;
- });
-
- repeat.addEventListener("click", event => {
-     if (!previous.value)
-         previous.value = expression.value;
-     steps.value = stepCount = 0;
-     repeating = true;
-     resolving = false;
-     setTimeout(continuousReduce, delay.value);
- });
-
- restore.addEventListener("click", event => {
-     if (previous.value)
-         expression.value = previous.value;
-     steps.value = stepCount = 0;
-     previous.value = "";
-     repeating = true;
- });
-
- go.addEventListener("click", event => {
-     let previous;
-     let expr = getExpression();
-     if (!expr)
-         return;
-     do {
-         previous = expr;
-         expr = expr.applyLibrary(undefined, undefined, true);
-     } while (expr !== previous);
-     expression.value = expr.toString();
-
-     repeating = true;
-     resolving = true;
-     setTimeout(continuousReduce, delay.value);
- });
-
- library.addEventListener("click", event => {
-     const expr = getExpression();
-     if (!expr)
-         return;
-     expression.value = expr.applyLibrary(
-         undefined, undefined, true).toString();
-     repeating = false;
- });
-
- discover.addEventListener("click", event => {
-     const expr = getExpression();
-     if (!expr)
-         return;
-     expression.value = expr.reverseLibrary().toString();
-     repeating = false;
- });
-
- freev.addEventListener("click", event => {
-     const expr = getExpression();
-     if (!expr)
-         return;
-     vdisplay.value = Object.keys(expr.getFreeVariables()).join(' ');
- });
-
- normal.addEventListener("click", event => {
-     const expr = getExpression();
-     if (!expr)
-         return;
-     vdisplay.value = expr.isNormal().toString();
-     repeating = false;
- });
-
+ document.querySelectorAll(".lambda").forEach(
+     element => Lambda.createInterface(element));
  //]]></script>
