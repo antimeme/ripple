@@ -113,6 +113,7 @@ if HAVE_EMCC
 apps/gizmo.wasm apps/gizmo.js apps/gizmo.html apps/gizmo.data: \
 	    source/gizmo/gizmo.c source/gizmo/asteroids.c
 	$(EMCC) -o $@ --preload-file apps/fonts/ \
+	    -sALLOW_MEMORY_GROWTH \
 	    -sUSE_SDL=2 -sUSE_SDL_GFX=2 -sUSE_SDL_TTF=2 \
 	    -sUSE_SDL_IMAGE=2 -sSDL2_IMAGE_FORMATS='[svg]' \
 	    source/gizmo/gizmo.c \
