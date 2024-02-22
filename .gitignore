@@ -8,8 +8,8 @@
 *.pem
 *.srl
 *.p12
-/source/.deps/
-/source/check/.deps/
+.deps/
+.dirstamp
 /.libs/
 /aclocal.m4
 /autom4te.cache/

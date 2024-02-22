@@ -1,5 +1,5 @@
 /**
- * Gizmo
+ * asteroids.c
  * Copyright (C) 2024 by Jeff Gold.
  *
  * This program is free software: you can redistribute it and/or
@@ -17,282 +17,14 @@
  * <http://www.gnu.org/licenses/>.
  *
  * ---------------------------------------------------------------------
- * Gizmo is a simplistic framework intended to take some of the chore
- * work out of writing SDL2 applications. */
-#include <stdlib.h>
-#include <math.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL2_gfxPrimitives.h>
-#include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_image.h>
-
-/* Find an appropriate implementation for a millisecond clock */
-#ifdef __EMSCRIPTEN__
-#  include <emscripten.h>
-#  include <emscripten/html5.h>
-unsigned long long now() {
-  return (long long)emscripten_get_now();
-}
-#else
-unsigned long long now() { return SDL_GetTicks(); }
-#endif
-
-int
-gizmo_setupSDL(SDL_Renderer **renderer, SDL_Window **window)
-{
-  int result = EXIT_SUCCESS;
-  SDL_DisplayMode mode;
-
-  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-    fprintf(stderr, "Failed to initialize SDL: %s\n", SDL_GetError());
-    result = EXIT_FAILURE;
-  } else if (SDL_GetCurrentDisplayMode(0, &mode) < 0) {
-    fprintf(stderr, "Failed to initialize SDL: %s\n", SDL_GetError());
-    result = EXIT_FAILURE;
-  } else if (!(*window = SDL_CreateWindow
-               ("Gizmo", SDL_WINDOWPOS_UNDEFINED,
-                SDL_WINDOWPOS_UNDEFINED,
-                mode.w * 9 / 10, mode.h * 4 / 5, 0))) {
-    fprintf(stderr, "Failed to create window with SDL: %s\n",
-            SDL_GetError());
-    result = EXIT_FAILURE;
-  } else if (SDL_FALSE == SDL_SetHint
-             (SDL_HINT_RENDER_SCALE_QUALITY, "linear")) {
-    fprintf(stderr, "Failed to set hint SDL: %s\n", SDL_GetError());
-    result = EXIT_FAILURE;
-  } else if (!(*renderer = SDL_CreateRenderer
-               (*window, -1, SDL_RENDERER_ACCELERATED))) {
-    fprintf(stderr, "Failed to create renderer with SDL: %s\n",
-            SDL_GetError());
-    result = EXIT_FAILURE;
-  } else if (TTF_Init() < 0) {
-    fprintf(stderr, "Failed to initialize TTF: %s\n",
-            SDL_GetError());
-    result = EXIT_FAILURE;
-  }
-
-  return result;
-}
-
-int
-gizmo_setup_icon(SDL_Window *window, const char *data, unsigned length)
-{
-  int result = EXIT_SUCCESS;
-  SDL_Surface *icon = NULL;
-  SDL_RWops *image = NULL;
-
-  if ((image = SDL_RWFromConstMem(data, length)) == NULL) {
-    fprintf(stderr, "Failed to create SDL_RWops: %s\n", SDL_GetError());
-    result = EXIT_FAILURE;
-  } else if ((icon = IMG_Load_RW(image, 0)) == NULL) {
-    fprintf(stderr, "Failed to load image: %s\n", SDL_GetError());
-    result = EXIT_FAILURE;
-  } else SDL_SetWindowIcon(window, icon);
-
-  if (image != NULL)
-    SDL_RWclose(image);
-  return result;
-}
-
-/**
- * Represents a complete graphical application.
- * Callbacks may be NULL if not needed.
- * Gizmo promises the following:
- * - init will be called before any other calls
- * - once destroy is called nothing else will be (until another init)
- * - draw will be called to render each frame
- * - width and height will be before init and resize calls
- * - key_actions and mouse_actions will be called at appropriate times
- * - update will be called for each frame before draw
- *  */
-struct app {
-  int width;
-  int height;
-
-  /* Called by Gizmo if not NULL */
-  int  (*init)(struct app *app, void *);
-  void (*destroy)(struct app *app);
-  void (*resize)(struct app *app, int width, int height);
-  int  (*update)(struct app *app, unsigned elapsed);
-  int  (*draw)(struct app *app, SDL_Renderer *rndr);
-};
-
-/**
- * When the norepeat flag is set, key events that have repeat
- * set to any non-zero value are ignored. */
-enum app_key_flags {
-  app_key_flag_norepeat = (1 << 0),
-};
-
-/**
- * Registers steps to be taken in response to keyboard events.
- * When a key is pressed, the action_down callback is called
- * unless it is NULL and value_down is copied into setting if
- * setting is not NULL.  Likewise for action_up and value_up.
- * Using setting is simpler in cases where the application only
- * wants to respond to a key being held down. */
-struct app_key_action {
-  int scancode;
-  unsigned flags;
-  int *setting;
-  int value_down;
-  int value_up;
-  void (*action_down)(struct app *, SDL_Event *);
-  void (*action_up)(struct app *, SDL_Event *);
-};
-
-struct app_mouse_action {
-  int type;
-  void (*action)(struct app *, SDL_Event *);
-};
-
-struct gizmo {
-  SDL_Renderer *renderer;
-  SDL_Window *window;
-  unsigned long long last;
-  struct app *app;
-  unsigned done;
-
-  struct app_key_action *key_actions;
-  unsigned n_key_actions;
-  struct app_mouse_action *mouse_actions;
-  unsigned n_mouse_actions;
-};
-
-/**
- * Copies the supplied structures into the app for use in the Gizmo
- * frame loop.  This is a utility routine intended for use by the init
- * callback of an application.
- *
- * @param app Application into which to copy strucutures. */
-int
-gizmo_app_actions
-(void *context,
- struct app_key_action   *key_actions,   unsigned n_key_actions,
- struct app_mouse_action *mouse_actions, unsigned n_mouse_actions)
-{
-  int result = EXIT_SUCCESS;
-  struct gizmo *gizmo = (struct gizmo*)context;
-  struct app_key_action   *new_key_actions = NULL;
-  struct app_mouse_action *new_mouse_actions = NULL;
-
-  if (!(new_key_actions = malloc
-        (n_key_actions * sizeof(*key_actions)))) {
-    fprintf(stderr, "Failed to allocate %lu bytes for "
-            "key actions\n", n_key_actions * sizeof(*key_actions));
-    result = EXIT_FAILURE;
-  } else if (!(new_mouse_actions = malloc
-               (n_mouse_actions * sizeof(*mouse_actions)))) {
-    fprintf(stderr, "Failed to allocate %lu bytes for "
-            "event actions\n", n_mouse_actions *
-            sizeof(*mouse_actions));
-    result = EXIT_FAILURE;
-  } else {
-    unsigned ii;
-
-    gizmo->n_key_actions = n_key_actions;
-    gizmo->key_actions = new_key_actions;
-    for (ii = 0; ii < n_key_actions; ++ii)
-      gizmo->key_actions[ii] = key_actions[ii];
-    new_key_actions = NULL;
-
-    gizmo->n_mouse_actions = n_mouse_actions;
-    gizmo->mouse_actions = new_mouse_actions;
-    for (ii = 0; ii < n_mouse_actions; ++ii)
-      gizmo->mouse_actions[ii] = mouse_actions[ii];
-    new_mouse_actions = NULL;
-  }
-
-  free(new_key_actions);
-  free(new_mouse_actions);
-  return result;
-}
-
-/* ------------------------------------------------------------------ */
-/* A rudimentary math library */
-
-struct point { float x; float y; };
-
-/**
- * Return a random number between 0 and 1 selected using a
- * uniform distribution. */
-float
-uniform() { return ((float)rand() / (float)RAND_MAX); }
-
-/**
- * Return non-zero iff value is close enough to zero */
-int
-zeroish(float value)
-{
-  const float epsilon = 0.00000000001;
-  return (value <= epsilon) && (value >= -epsilon);
-}
-
-/**
- * Use the quadradic equation to find polynomial roots. */
-void
-quadratic_real_roots(unsigned *n_roots, float *roots,
-                     float c, float b, float a)
-{
-  if (!zeroish(a)) {
-    const float discriminant = b * b - 4 * a * c;
-
-    if (zeroish(discriminant)) {
-      roots[(*n_roots)++] = -b / (2 * a);
-    } else if (discriminant > 0) {
-      const float sqrtdisc = sqrtf(discriminant);
-      roots[(*n_roots)++] = (-b + sqrtdisc) / (2 * a);
-      roots[(*n_roots)++] = (-b - sqrtdisc) / (2 * a);
-    }
-  } else roots[(*n_roots)++] = -c / b;
-}
-
-/**
- * Return non-zero iff the spherical objects represented by given
- * position, velocity and size collide within the elapsed time. */
-int
-check_collide(float sizeA, struct point *positionA,
-              struct point *velocityA,
-              float sizeB, struct point *positionB,
-              struct point *velocityB, unsigned elapsed)
-{
-  int result = 0;
-  const float gap = sizeA + sizeB;
-  struct point dp = {
-    positionA->x - positionB->x,
-    positionA->y - positionB->y };
-  struct point dm = {
-    velocityA->x - velocityB->x,
-    velocityA->y - velocityB->y};
-  
-  if (dp.x * dp.x + dp.y * dp.y > gap * gap) {
-    float roots[2];
-    unsigned n_roots = 0;
-    unsigned ii;
-
-    quadratic_real_roots(&n_roots, roots,
-                         dp.x * dp.x + dp.y * dp.y - gap * gap,
-                         2 * (dp.x * dm.x + dp.y * dm.y),
-                         dm.x * dm.x + dm.y * dm.y);
-    for (ii = 0; ii < n_roots; ++ii)
-      if ((roots[ii] >= 0) && (roots[ii] < elapsed))
-        result = 1;
-  } else result = 1;
-  return result;
-}
-
-struct point
-rotate_origin(struct point *point, float dircos, float dirsin)
-{
-  struct point result = {
-    point->x * dircos - point->y * dirsin,
-    point->x * dirsin + point->y * dircos };
-  return result;
-}
-
-/* ------------------------------------------------------------------ */
-/* A simplistic Asteroids clone.  This is a sample to demonstrate
+ * A simplistic Asteroids clone.  This is a sample to demonstrate
  * basic features of SDL2 with an easy to understand context. */
+#include <math.h>
+#include <locale.h>
+#include "gizmo.h"
+#include "asteroids.h"
+
+/* ------------------------------------------------------------------ */
 
 const char asteroids_icon_svg[] =
   "<svg xmlns='http://www.w3.org/2000/svg' "
@@ -378,6 +110,8 @@ struct app_asteroids {
 
   struct point *points;
   unsigned n_points;
+
+  TTF_Font *font_mono;
 };
 
 static void
@@ -420,8 +154,8 @@ asteroids__debris_create(struct app_asteroids *self,
 
   for (ii = 0; (result == EXIT_SUCCESS) && (ii < count); ++ii) {
     struct debris *piece = &self->debris[self->n_debris];
-    float direction = 2 * M_PI * uniform();
-    float speed = self->size * (uniform() + 1) / 2500;
+    float direction = 2 * M_PI * gizmo_uniform();
+    float speed = self->size * (gizmo_uniform() + 1) / 2500;
 
     memset(piece, 0, sizeof(*piece));
     piece->duration = 900;
@@ -431,13 +165,13 @@ asteroids__debris_create(struct app_asteroids *self,
     piece->velocity.x += cosf(direction) * speed;
     piece->velocity.y += sinf(direction) * speed;
 
-    piece->n_points = 3 * uniform() + 3;
+    piece->n_points = 3 * gizmo_uniform() + 3;
     if ((piece->points = malloc
          (sizeof(struct point) * piece->n_points))) {
       unsigned jj;
 
       for (jj = 0; jj < piece->n_points; ++jj) {
-        float spar = (uniform() + 1) / 2;
+        float spar = (gizmo_uniform() + 1) / 2;
         piece->points[jj].x =
           spar * cosf(M_PI * 2 * jj / piece->n_points);
         piece->points[jj].y =
@@ -519,7 +253,7 @@ asteroids__asteroids_create(struct app_asteroids *self,
     asteroid->n_splits = n_splits;
     asteroid->size = (1 << asteroid->n_splits) * self->size / 40;
     if (!source) {
-      float place = 2 * uniform();
+      float place = 2 * gizmo_uniform();
       if (place > 1) {
         asteroid->position.x = (place - 0.5) * self->app.width;
         asteroid->position.y = (asteroid->size + self->app.height) / 2;
@@ -528,7 +262,7 @@ asteroids__asteroids_create(struct app_asteroids *self,
         asteroid->position.y = (place - 0.5) * self->app.height;
       }
     } else asteroid->position = position;
-    asteroid->direction = 2 * M_PI * uniform();
+    asteroid->direction = 2 * M_PI * gizmo_uniform();
     asteroid->velocity.x = speed * cosf(asteroid->direction);
     asteroid->velocity.y = speed * sinf(asteroid->direction);
 
@@ -538,7 +272,7 @@ asteroids__asteroids_create(struct app_asteroids *self,
       unsigned jj;
 
       for (jj = 0; jj < asteroid->n_points; ++jj) {
-        float spar = (uniform() * 5 + 7) / 12;
+        float spar = (gizmo_uniform() * 5 + 7) / 12;
         asteroid->points[jj].x =
           spar * cosf(M_PI * 2 * jj / asteroid->n_points);
         asteroid->points[jj].y =
@@ -558,6 +292,21 @@ static void
 asteroids__asteroid_destroy(struct asteroid *asteroid)
 {
   free(asteroid->points);
+}
+
+static unsigned
+asteroids__asteroid_impact(struct app_asteroids *self,
+                           struct asteroid *asteroid)
+{
+  unsigned result = !asteroid->n_splits ? 100 :
+    (asteroid->n_splits < 2) ? 50 : 20;
+  asteroids__debris_create
+    (self, &asteroid->position, &asteroid->velocity,
+     1 + asteroid->n_splits * 2 + (int)(4 * gizmo_uniform()));
+  asteroid->dead = 1;
+  if (asteroid->n_splits > 0)
+    asteroids__asteroids_create(self, asteroid, 2);
+  return result;
 }
 
 static void
@@ -587,13 +336,13 @@ asteroids__player_impact(struct app_asteroids *self, struct ship *ship)
 {
   asteroids__debris_create
     (self, &ship->position, &ship->velocity,
-     4 + (unsigned)(4 * uniform()));
+     4 + (unsigned)(4 * gizmo_uniform()));
   ship->dead = 3000;
 }
 
 static void
-asteroids__shots_update(struct ship *ship, int width, int height,
-                        unsigned elapsed)
+asteroids__shots_update(struct ship *ship, unsigned elapsed,
+                        int width, int height)
 {
   int survivors = 0;
   int ii;
@@ -685,40 +434,34 @@ static void
 asteroids__ship_asteroid(struct app_asteroids *self, unsigned aid,
                          struct ship *ship, unsigned elapsed)
 {
+  struct asteroid *asteroid = &self->asteroids[aid];
+  unsigned award = 0;
   unsigned ii;
   for (ii = 0; ii < ship->n_shots; ++ii) {
-    struct asteroid *asteroid = &self->asteroids[aid];
-    if (check_collide
+    if (gizmo_check_collide
       (asteroid->size, &asteroid->position, &asteroid->velocity,
          ship->shots[ii].size, &ship->shots[ii].position,
          &ship->shots[ii].velocity, elapsed)) {
       ship->shots[ii].duration = 0;
-      asteroids__debris_create
-        (self, &asteroid->position, &asteroid->velocity,
-         1 + asteroid->n_splits * 2 + (int)(4 * uniform()));
-      asteroid->dead = 1;
-      if (asteroid->n_splits > 0)
-        asteroids__asteroids_create(self, asteroid, 2);
+      award = asteroids__asteroid_impact(self, asteroid);
       break;
     }
   }
 
   /* Previous block may have reallocated the asteroids array to
    * create new fragments so we have to reaquire the pointer */
-  struct asteroid *asteroid = &self->asteroids[aid];
-  if (!ship->dead && check_collide
+  asteroid = &self->asteroids[aid];
+
+  if (!ship->dead && gizmo_check_collide
       (asteroid->size, &asteroid->position, &asteroid->velocity,
        ship->size, &ship->position, &ship->velocity, elapsed)) {
     if (ship->impact)
       ship->impact(self, ship);
-
-    asteroids__debris_create
-      (self, &asteroid->position, &asteroid->velocity,
-       1 + asteroid->n_splits * 2 + (unsigned)(4 * uniform()));
-    asteroid->dead = 1;
-    if (asteroid->n_splits > 0)
-      asteroids__asteroids_create(self, asteroid, 2);
+    award = asteroids__asteroid_impact(self, asteroid);
   }
+
+  if (ship == &self->player)
+    self->score += award;
 }
 
 static void
@@ -731,8 +474,15 @@ static void
 asteroids_resize(struct app *app, int width, int height)
 {
   struct app_asteroids *self = (struct app_asteroids *)app;
+  unsigned ii;
+
   self->size = (width < height) ? width : height;
   self->player.size = self->size * 3 / 100;
+  for (ii = 0; ii < self->n_asteroids; ++ii)
+    self->asteroids[ii].size =
+      (1 << self->asteroids[ii].n_splits) * self->size / 40;
+
+  gizmo_app_font(&self->font_mono, (unsigned)(self->size / 17));
 }
 
 static void
@@ -830,9 +580,11 @@ asteroids_init(struct app *app, void *context)
     self->n_asteroids = self->m_asteroids = 0;
     self->asteroids = NULL;
 
+    self->font_mono = NULL;
     asteroids_reset(self);
   }
   free(newpoints);
+  setlocale(LC_NUMERIC, ""); /* This puts commas in score */
   return result;
 }
 
@@ -874,14 +626,17 @@ asteroids_update(struct app *app, unsigned elapsed)
   }
   self->tapshot -= (elapsed > self->tapshot) ? self->tapshot : elapsed;
 
-  if (self->player.dead) {
+  if (self->player.dead > 0) {
     if (elapsed > self->player.dead) {
       struct point zero = {0, 0};
+      self->player.position = zero;
+      self->player.velocity = zero;
+      self->player.direction = -M_PI / 2;
       self->player.dead = 0;
 
       if (self->lives) {
         for (ii = 0; ii < self->n_asteroids; ++ii)
-          if (check_collide
+          if (gizmo_check_collide
               (self->asteroids[ii].size,
                &self->asteroids[ii].position,
                &self->asteroids[ii].velocity,
@@ -889,9 +644,6 @@ asteroids_update(struct app *app, unsigned elapsed)
             self->player.dead = 500;
         if (!self->player.dead) {
           self->lives -= 1;
-          self->player.position = zero;
-          self->player.velocity = zero;
-          self->player.direction = -M_PI / 2;
           self->target = nan("1");
         }
       } else asteroids_reset(self);
@@ -946,8 +698,8 @@ asteroids_update(struct app *app, unsigned elapsed)
               self->app.width, self->app.height,
               &self->player.position,
               &self->player.velocity);
-  asteroids__shots_update(&self->player, self->app.width,
-                          self->app.height, elapsed);
+  asteroids__shots_update(&self->player, elapsed,
+                          self->app.width, self->app.height);
 
   asteroids__debris_update
     (self, self->app.width, self->app.height, elapsed);
@@ -963,41 +715,6 @@ asteroids_update(struct app *app, unsigned elapsed)
   return EXIT_SUCCESS;
 }
 
-/**
- * Renders a polygon as a closed loop of lines.  The lines are
- * positioned according to the array of points given as the final
- * parameter.  These points will first be rotated, so the caller must
- * be okay with them changing. */
-static int
-draw_polygon(SDL_Renderer *renderer, float size,
-             struct point *position,
-             float dircos, float dirsin,
-             unsigned n_points, struct point *points)
-{
-  int result = EXIT_SUCCESS;
-  struct point previous = { 0, 0 };
-  unsigned ii;
-
-  for (ii = 0; (result == EXIT_SUCCESS) && (ii < n_points); ++ii) {
-    struct point start = ii ? previous :
-      rotate_origin(&points[ii], dircos, dirsin);
-    struct point end = rotate_origin
-      (&points[(ii + 1) % n_points], dircos, dirsin);
-    previous = end;
-
-    if (SDL_RenderDrawLine(renderer,
-                           (int)(position->x + size * start.x),
-                           (int)(position->y + size * start.y),
-                           (int)(position->x + size * end.x),
-                           (int)(position->y + size * end.y)) < 0) {
-      fprintf(stderr, "Failed to draw line with SDL: %s\n",
-              SDL_GetError());
-      result = EXIT_FAILURE;
-    }
-  }
-  return result;
-}
-
 static int
 asteroids__draw_ship(struct ship *ship, SDL_Renderer *renderer,
                      int width, int height, unsigned thrust)
@@ -1010,19 +727,20 @@ asteroids__draw_ship(struct ship *ship, SDL_Renderer *renderer,
 
   position.x = ship->position.x + width / 2;
   position.y = ship->position.y + height / 2;
-  result = draw_polygon(renderer, ship->size, &position,
-                        dircos, dirsin, ship->n_points, ship->points);
+  result = gizmo_draw_polygon
+    (renderer, ship->size, &position,
+     dircos, dirsin, ship->n_points, ship->points);
 
   if ((result == EXIT_SUCCESS) && thrust) {
     struct point points[] = { { -1, 1./3}, { -3./2, 0}, { -1, -1./3} };
     unsigned n_points = sizeof(points) / sizeof(*points);
 
     for (ii = 0; ii < ship->n_points; ++ii) {
-      points[ii].x += (uniform() - 0.5) * 0.33;
-      points[ii].y += (uniform() - 0.5) * 0.33;
+      points[ii].x += (gizmo_uniform() - 0.5) * 0.33;
+      points[ii].y += (gizmo_uniform() - 0.5) * 0.33;
     }
-    result = draw_polygon(renderer, ship->size, &position,
-                          dircos, dirsin, n_points, points);
+    result = gizmo_draw_polygon(renderer, ship->size, &position,
+                                dircos, dirsin, n_points, points);
   }
 
   for (ii = 0; ii < ship->n_shots; ++ii)
@@ -1044,12 +762,27 @@ asteroids_draw(struct app *app, SDL_Renderer *renderer)
   SDL_RenderClear(renderer);
   SDL_SetRenderDrawColor(renderer, 224, 224, 224, 255);
 
+  if (self->font_mono) {
+    char str_score[256];
+    snprintf(str_score, sizeof(str_score), "%'u", self->score);
+
+    SDL_Color color = { 224, 224, 224 };
+    SDL_Surface *surface =
+      TTF_RenderUTF8_Solid(self->font_mono, str_score, color);
+    SDL_Rect dsrect = {
+      self->player.size, self->player.size,
+      surface->w, surface->h };
+    SDL_Texture *texture = SDL_CreateTextureFromSurface
+      (renderer, surface);
+    SDL_RenderCopy(renderer, texture, NULL, &dsrect);
+  }
+
   for (ii = 0; ii < self->lives; ++ii) { /* Draw extra lives */
     struct point position;
     position.x = 15 * self->player.size * (ii + 1) / 8;
     position.y = self->player.size + self->size / 8;
-    draw_polygon(renderer, self->player.size, &position, 0, -1,
-                 self->player.n_points, self->player.points);
+    gizmo_draw_polygon(renderer, self->player.size, &position, 0, -1,
+                       self->player.n_points, self->player.points);
   }
 
   if (!self->player.dead)
@@ -1063,10 +796,10 @@ asteroids_draw(struct app *app, SDL_Renderer *renderer)
     position.x += self->app.width / 2;
     position.y += self->app.height / 2;
     if (!asteroid->dead)
-      draw_polygon(renderer, asteroid->size, &position,
-                   cosf(asteroid->direction),
-                   sinf(asteroid->direction),
-                   asteroid->n_points, asteroid->points);
+      gizmo_draw_polygon(renderer, asteroid->size, &position,
+                         cosf(asteroid->direction),
+                         sinf(asteroid->direction),
+                         asteroid->n_points, asteroid->points);
   }
 
   for (ii = 0; ii < self->n_debris; ++ii) {
@@ -1074,8 +807,8 @@ asteroids_draw(struct app *app, SDL_Renderer *renderer)
     struct point position = piece->position;
     position.x += self->app.width / 2;
     position.y += self->app.height / 2;
-    draw_polygon(renderer, piece->size, &position, 1, 0,
-                 piece->n_points, piece->points);
+    gizmo_draw_polygon(renderer, piece->size, &position, 1, 0,
+                       piece->n_points, piece->points);
   }
 
   SDL_RenderPresent(renderer);
@@ -1086,157 +819,12 @@ static struct app_asteroids app_asteroids;
 
 struct app *
 asteroids_get_app(void) {
+  app_asteroids.app.icon        = (unsigned char *)asteroids_icon_svg;
+  app_asteroids.app.icon_length = sizeof(asteroids_icon_svg);
   app_asteroids.app.init    = asteroids_init;
   app_asteroids.app.destroy = asteroids_destroy;
   app_asteroids.app.resize  = asteroids_resize;
   app_asteroids.app.update  = asteroids_update;
   app_asteroids.app.draw    = asteroids_draw;
   return &app_asteroids.app;
-}
-
-/* ------------------------------------------------------------------ */
-
-void
-gizmo_frame(void *context)
-{
-  struct gizmo *gizmo = (struct gizmo *)context;
-  int result = EXIT_SUCCESS;
-  SDL_Event event;
-  unsigned ii;
-
-  while (gizmo->app && !gizmo->done && SDL_PollEvent(&event)) {
-    switch (event.type) {
-    case SDL_QUIT:
-    case SDL_WINDOWEVENT_CLOSE:
-      gizmo->done = 1;
-      break;
-    case SDL_WINDOWEVENT:
-      switch (event.window.event) {
-      case SDL_WINDOWEVENT_RESIZED:
-      case SDL_WINDOWEVENT_SIZE_CHANGED:
-        gizmo->app->width  = event.window.data1;
-        gizmo->app->height = event.window.data2;
-        if (gizmo->app->resize)
-          gizmo->app->resize
-            (gizmo->app, gizmo->app->width, gizmo->app->height);
-        break;
-      }
-      break;
-    case SDL_KEYDOWN:
-      for (ii = 0; ii < gizmo->n_key_actions; ++ii) {
-        struct app_key_action *action = &gizmo->key_actions[ii];
-        if ((action->scancode == event.key.keysym.scancode) &&
-            (!(action->flags & app_key_flag_norepeat) ||
-             !event.key.repeat)) {
-          if (action->setting)
-            *action->setting = action->value_down;
-          if (action->action_down)
-            action->action_down(gizmo->app, &event);
-        }
-      }
-      break;
-    case SDL_KEYUP:
-      for (ii = 0; ii < gizmo->n_key_actions; ++ii) {
-        struct app_key_action *action = &gizmo->key_actions[ii];
-        if ((action->scancode == event.key.keysym.scancode) &&
-            (!(action->flags & app_key_flag_norepeat) ||
-             !event.key.repeat)) {
-          if (action->setting)
-            *action->setting = action->value_up;
-          if (action->action_up)
-            action->action_up(gizmo->app, &event);
-        }
-      }
-      break;
-    case SDL_MOUSEBUTTONDOWN:
-      for (ii = 0; ii < gizmo->n_mouse_actions; ++ii) {
-        struct app_mouse_action *action = &gizmo->mouse_actions[ii];
-        if ((action->type == SDL_MOUSEBUTTONDOWN) && (action->action))
-          action->action(gizmo->app, &event);
-      }
-      break;
-    case SDL_MOUSEBUTTONUP:
-      for (ii = 0; ii < gizmo->n_mouse_actions; ++ii) {
-        struct app_mouse_action *action = &gizmo->mouse_actions[ii];
-        if ((action->type == SDL_MOUSEBUTTONUP) && (action->action))
-          action->action(gizmo->app, &event);
-      }
-      break;
-    default:
-      break;
-    }
-  }
-
-  long long current = now();
-  unsigned elapsed = current - gizmo->last;
-
-  if (gizmo->app->update &&
-      (result = gizmo->app->update
-       (gizmo->app, elapsed))) {
-  } else if (gizmo->app->draw &&
-             (result = gizmo->app->draw
-              (gizmo->app, gizmo->renderer))) {
-  }
-  gizmo->last = current;
-}
-
-int
-main(int argc, char **argv)
-{
-  int result = EXIT_SUCCESS;
-  struct gizmo gizmo;
-
-  memset(&gizmo, 0, sizeof(gizmo));
-  gizmo.last = now();
-
-  printf("Gizmo: activating Asteroids\n");
-  gizmo.app = asteroids_get_app();
-
-  if (EXIT_SUCCESS != (result = gizmo_setupSDL
-                       (&gizmo.renderer, &gizmo.window))) {
-  } else if (SDL_GetRendererOutputSize
-             (gizmo.renderer, &gizmo.app->width,
-              &gizmo.app->height) < 0) {
-    fprintf(stderr, "Failed to get output size with SDL: %s\n",
-            SDL_GetError());
-    result = EXIT_FAILURE;
-  } else if (gizmo.app->init &&
-             (EXIT_SUCCESS != (result = gizmo.app->init
-                               (gizmo.app, &gizmo)))) {
-  } else {
-    if (gizmo.app->resize)
-      gizmo.app->resize(gizmo.app, gizmo.app->width, gizmo.app->height);
-  }
-
-  if (result != EXIT_SUCCESS)
-    return result;
-
-#ifdef __EMSCRIPTEN__
-  emscripten_set_main_loop_arg(gizmo_frame, &gizmo, 0, 1);
-#else
-  if (EXIT_SUCCESS != (result = gizmo_setup_icon
-                       (gizmo.window, asteroids_icon_svg,
-                        sizeof(asteroids_icon_svg))))
-    return result;
-
-  unsigned long long frame = now();
-  gizmo.done = 0;
-  while ((result == EXIT_SUCCESS) && !gizmo.done) {
-    gizmo_frame(&gizmo);
-
-    unsigned long long current = now();
-    if (current - frame < 16)
-      SDL_Delay(16 - (current - frame));
-    frame = current;
-  }
-  SDL_DestroyRenderer(gizmo.renderer);
-  SDL_DestroyWindow(gizmo.window);
-  TTF_Quit();
-  SDL_Quit();
-  if (gizmo.app->destroy)
-    gizmo.app->destroy(gizmo.app);
-  free(gizmo.key_actions);
-  free(gizmo.mouse_actions);
-#endif
-  return result;
 }

@@ -94,8 +94,10 @@ if HAVE_SDL2
 #                  libsdl2-ttf-dev libsdl2-image-dev
 # $ guix install sdl2 sdl2-ttf sdl2-gfx sdl2-image
 bin_PROGRAMS += gizmo
-gizmo_SOURCES = source/gizmo.c
 gizmo_LDADD = -lSDL2 -lSDL2_gfx -lSDL2_ttf -lSDL2_image -lm
+gizmo_SOURCES = \
+	source/gizmo/gizmo.c \
+	source/gizmo/asteroids.c
 endif
 
 # Building for Windows on MSYS2:
@@ -109,11 +111,12 @@ endif
 
 if HAVE_EMCC
 apps/gizmo.wasm apps/gizmo.js apps/gizmo.html apps/gizmo.data: \
-	    source/gizmo.c
+	    source/gizmo/gizmo.c source/gizmo/asteroids.c
 	$(EMCC) -o $@ --preload-file apps/fonts/ \
 	    -sUSE_SDL=2 -sUSE_SDL_GFX=2 -sUSE_SDL_TTF=2 \
 	    -sUSE_SDL_IMAGE=2 -sSDL2_IMAGE_FORMATS='[svg]' \
-	    source/gizmo.c
+	    source/gizmo/gizmo.c \
+	    source/gizmo/asteroids.c
 endif
 
 TESTS = $(check_PROGRAMS)
