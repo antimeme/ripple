@@ -338,6 +338,9 @@ asteroids__player_impact(struct app_asteroids *self, struct ship *ship)
     (self, &ship->position, &ship->velocity,
      4 + (unsigned)(4 * gizmo_uniform()));
   ship->dead = 3000;
+  ship->position.x = ship->position.y = 0;
+  ship->velocity.x = ship->velocity.y = 0;
+  ship->direction = -M_PI/2;
 }
 
 static void
@@ -628,10 +631,6 @@ asteroids_update(struct app *app, unsigned elapsed)
 
   if (self->player.dead > 0) {
     if (elapsed > self->player.dead) {
-      struct point zero = {0, 0};
-      self->player.position = zero;
-      self->player.velocity = zero;
-      self->player.direction = -M_PI / 2;
       self->player.dead = 0;
 
       if (self->lives) {
@@ -640,7 +639,8 @@ asteroids_update(struct app *app, unsigned elapsed)
               (self->asteroids[ii].size,
                &self->asteroids[ii].position,
                &self->asteroids[ii].velocity,
-               self->player.size, &zero, &zero, 1500))
+               self->player.size, &self->player.position,
+               &self->player.velocity, 1500))
             self->player.dead = 500;
         if (!self->player.dead) {
           self->lives -= 1;
