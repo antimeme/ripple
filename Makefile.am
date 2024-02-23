@@ -164,14 +164,14 @@ $(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
 	$(MKDIR_P) $(JAR_ROOT)
 	$(JCC) -d $(JAR_ROOT) -source 8 -target 8 \
 	    -Xlint:-options $(JAVA_SRCFILES)
-	touch $@
+	find $(JAR_ROOT) -name \*.class | \
+	   sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
+	   sort -u > $@
 
 .javadoc: $(JAVA_SRCFILES)
 	$(JAVADOC) -docencoding utf-8 -public \
 	    -d javadoc $(JAVA_SRCFILES)
-	find $(JAR_ROOT) -name \*.class | \
-	   sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
-	   sort -u > $@
+	touch $@
 
 @PACKAGE@-@VERSION@.jar: $(srcdir)/META-INF/MANIFEST.MF \
 			 $(JAR_ROOT)/.classes .javadoc
