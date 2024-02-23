@@ -100,14 +100,14 @@ gizmo_SOURCES = \
 	source/gizmo/asteroids.c
 endif
 
-# Building for Windows on MSYS2:
-# $ pacman -Sy mingw-w64-x86_64-toolchain \
-#              mingw64/mingw-w64-x86_64-SDL2 \
-#              mingw64/mingw-w64-x86_64-SDL2_gfx \
-#              mingw64/mingw-w64-x86_64-SDL2_ttf \
-#              mingw64/mingw-w64-x86_64-SDL2_image
-# $ C:/msys64/mingw64/bin/gcc.exe -o gizmo.exe source/gizmo.c \
-#   `sdl2-config --cflags --libs` -lSDL2_gfx -lSDL2_ttf -lSDL2_image
+# Building for Windows on MSYS2.  This works but requires about a
+# hundred DLL files to be bundled unless executing from an MSYS2
+# command prompt.
+#
+# $ pacman --noconfirm -S mingw-w64-x86_64-toolchain \
+#     mingw64/mingw-w64-x86_64-SDL2{,_gfx,_ttf,_image}
+# $ /mingw64/bin/gcc.exe -o gizmo.exe source/gizmo/*.c \
+#     `sdl2-config --cflags --libs` -lSDL2_{gfx,ttf,image}
 
 if HAVE_EMCC
 apps/gizmo.wasm apps/gizmo.js apps/gizmo.html apps/gizmo.data: \

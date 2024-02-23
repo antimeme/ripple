@@ -106,12 +106,14 @@ struct app_asteroids {
   unsigned thrust_elapsed;
   unsigned holding;
   unsigned held;
+  unsigned gameover;
   unsigned report;
 
   struct point *points;
   unsigned n_points;
 
-  TTF_Font *font_mono;
+  TTF_Font *font_score;
+  TTF_Font *font_gameover;
 };
 
 static void
@@ -337,10 +339,13 @@ asteroids__player_impact(struct app_asteroids *self, struct ship *ship)
   asteroids__debris_create
     (self, &ship->position, &ship->velocity,
      4 + (unsigned)(4 * gizmo_uniform()));
-  ship->dead = 3000;
   ship->position.x = ship->position.y = 0;
   ship->velocity.x = ship->velocity.y = 0;
   ship->direction = -M_PI/2;
+  self->target = nan("1");
+  ship->dead = 3000;
+  if (!self->lives)
+    self->gameover = 2000;
 }
 
 static void
@@ -350,6 +355,8 @@ asteroids__shots_update(struct ship *ship, unsigned elapsed,
   int survivors = 0;
   int ii;
 
+  printf("DEBUG shoot m=%u n=%u a=%p\n",
+         ship->m_shots, ship->n_shots, ship->shots);
   for (ii = 0; ii < ship->n_shots; ++ii) {
     struct shot *shot = &ship->shots[ii];
     if (shot->duration > elapsed) {
@@ -368,6 +375,8 @@ static int
 asteroids__ship_shoot(struct ship *ship, float direction, float size) {
   int result = EXIT_SUCCESS;
 
+  printf("DEBUG shoot m=%u n=%u a=%p\n",
+         ship->m_shots, ship->n_shots, ship->shots);
   if (ship->m_shots < ship->n_shots + 1) {
     struct shot *newshots = realloc
       (ship->shots, (ship->n_shots + 1) * sizeof(*ship->shots));
@@ -411,7 +420,7 @@ asteroids__tap(struct app_asteroids *self, SDL_Event *event)
     self->target = self->player.direction + angle;
   }
 
-  if (self->tapshot > 0)
+  if (!self->player.dead && (self->tapshot > 0))
     asteroids__ship_shoot(&self->player, self->player.direction,
                           self->size);
   self->tapshot = 350;
@@ -427,10 +436,54 @@ asteroids__untap(struct app_asteroids *self, SDL_Event *event)
 }
 
 static void
-asteroids__shoot(struct app_asteroids *self, SDL_Event *event)
+asteroids_reset(struct app_asteroids *self)
 {
-  asteroids__ship_shoot(&self->player, self->player.direction,
-                        self->size);
+  unsigned ii;
+
+  self->gameover = 0;
+  self->score = 0;
+  self->lives = 3;
+  self->nextwave = 1000;
+
+  self->target = nan("1");
+  self->thrust = 0;
+  self->warp = 0;
+  self->turn_left = 0;
+  self->turn_right = 0;
+
+  self->player.dead = 0;
+  self->player.direction = -M_PI / 2;
+  self->player.velocity.x = 0;
+  self->player.velocity.y = 0;
+  self->player.position.x = 0;
+  self->player.position.y = 0;
+
+  for (ii = 0; ii < self->n_asteroids; ++ii)
+    asteroids__asteroid_destroy(&self->asteroids[ii]);
+  self->n_asteroids = 0;
+
+  for (ii = 0; ii < self->n_debris; ++ii)
+    asteroids__debris_destroy(&self->debris[ii]);
+  self->n_debris = 0;
+}
+
+static void
+asteroids__keyreset(struct app *app, SDL_Event *event)
+{
+  struct app_asteroids *self = (struct app_asteroids *)app;
+  if (self->gameover == 1)
+    asteroids_reset(self);
+}
+
+static void
+asteroids__shoot(struct app *app, SDL_Event *event)
+{
+  struct app_asteroids *self = (struct app_asteroids *)app;
+  if (self->gameover == 1)
+    asteroids_reset(self);
+  else if (!self->player.dead)
+    asteroids__ship_shoot(&self->player, self->player.direction,
+                          self->size);
 }
 
 static void
@@ -485,32 +538,9 @@ asteroids_resize(struct app *app, int width, int height)
     self->asteroids[ii].size =
       (1 << self->asteroids[ii].n_splits) * self->size / 40;
 
-  gizmo_app_font(&self->font_mono, (unsigned)(self->size / 17));
-}
-
-static void
-asteroids_reset(struct app_asteroids *self)
-{
-  unsigned ii;
-
-  self->score = 0;
-  self->lives = 3;
-  self->nextwave = 1000;
-
-  self->player.direction = -M_PI / 2;
-  self->player.velocity.x = 0;
-  self->player.velocity.y = 0;
-  self->player.position.x = 0;
-  self->player.position.y = 0;
-  self->target = nan("1");
-
-  for (ii = 0; ii < self->n_asteroids; ++ii)
-    asteroids__asteroid_destroy(&self->asteroids[ii]);
-  self->n_asteroids = 0;
-
-  for (ii = 0; ii < self->n_debris; ++ii)
-    asteroids__debris_destroy(&self->debris[ii]);
-  self->n_debris = 0;
+  gizmo_app_font(&self->font_score, (unsigned)(self->size / 17));
+  gizmo_app_font(&self->font_gameover,
+                 (unsigned)(2 * self->size / 17));
 }
 
 static int
@@ -526,16 +556,24 @@ asteroids_init(struct app *app, void *context)
       (void (*)(struct app*, SDL_Event *))asteroids__untap },
   };
   struct app_key_action key_actions[] = {
-    { SDL_SCANCODE_UP,    0, &self->thrust, 1 },
-    { SDL_SCANCODE_DOWN,  0, &self->warp, 1 },
-    { SDL_SCANCODE_LEFT,  0, &self->turn_left, 1 },
-    { SDL_SCANCODE_RIGHT, 0, &self->turn_right, 1 },
-    { SDL_SCANCODE_W,     0, &self->thrust, 1 },
-    { SDL_SCANCODE_A,     0, &self->turn_left, 1 },
-    { SDL_SCANCODE_S,     0, &self->warp, 1 },
-    { SDL_SCANCODE_D,     0, &self->turn_right, 1 },
-    { SDL_SCANCODE_SPACE, app_key_flag_norepeat, NULL, 0, 0,
-      (void (*)(struct app *, SDL_Event *))asteroids__shoot },
+    { SDL_SCANCODE_UP,    0, &self->thrust,
+      1, 0, asteroids__keyreset },
+    { SDL_SCANCODE_DOWN,  0, &self->warp,
+      1, 0, asteroids__keyreset },
+    { SDL_SCANCODE_LEFT,  0, &self->turn_left,
+      1, 0, asteroids__keyreset },
+    { SDL_SCANCODE_RIGHT, 0, &self->turn_right,
+      1, 0, asteroids__keyreset },
+    { SDL_SCANCODE_W,     0, &self->thrust,
+      1, 0, asteroids__keyreset },
+    { SDL_SCANCODE_A,     0, &self->turn_left,
+      1, 0, asteroids__keyreset },
+    { SDL_SCANCODE_S,     0, &self->warp,
+      1, 0, asteroids__keyreset },
+    { SDL_SCANCODE_D,     0, &self->turn_right,
+      1, 0, asteroids__keyreset },
+    { SDL_SCANCODE_SPACE, app_key_flag_norepeat, NULL,
+      0, 0, asteroids__shoot },
   };
   struct point *newpoints = NULL;
   struct point points[] = {
@@ -561,19 +599,19 @@ asteroids_init(struct app *app, void *context)
             sizeof(struct point) * n_points);
     result = EXIT_FAILURE;
   } else {
-    asteroids_resize(&self->app, self->app.width, self->app.height);
-
     self->n_points = n_points;
     self->points = newpoints;
     for (ii = 0; ii < n_points; ++ii)
       self->points[ii] = points[ii];
     newpoints = NULL;
 
+    memset(&self->player, 0, sizeof(self->saucer));
     self->player.impact = asteroids__player_impact;
     self->player.points   = self->points + n_points_used;
     self->player.n_points = n_points_player;
     n_points_used += n_points_player;
 
+    memset(&self->saucer, 0, sizeof(self->saucer));
     self->saucer.points   = self->points + n_points_used;
     self->saucer.n_points = n_points_saucer;
     n_points_used += n_points_saucer;
@@ -583,9 +621,12 @@ asteroids_init(struct app *app, void *context)
     self->n_asteroids = self->m_asteroids = 0;
     self->asteroids = NULL;
 
-    self->font_mono = NULL;
+    self->font_score = NULL;
+    self->font_gameover = NULL;
+    asteroids_resize(&self->app, self->app.width, self->app.height);
     asteroids_reset(self);
   }
+
   free(newpoints);
   setlocale(LC_NUMERIC, ""); /* This puts commas in score */
   return result;
@@ -608,6 +649,11 @@ asteroids_destroy(struct app *app)
   asteroids__ship_destroy(&self->player);
   asteroids__ship_destroy(&self->saucer);
   free(self->points);
+
+  TTF_CloseFont(self->font_score);
+  TTF_CloseFont(self->font_gameover);
+
+  free(self);
 }
 
 static int
@@ -629,7 +675,11 @@ asteroids_update(struct app *app, unsigned elapsed)
   }
   self->tapshot -= (elapsed > self->tapshot) ? self->tapshot : elapsed;
 
-  if (self->player.dead > 0) {
+  if (self->gameover > 0) {
+    if (elapsed >= self->gameover)
+      self->gameover = 1;
+    else self->gameover -= elapsed;
+  } else if (self->player.dead > 0) {
     if (elapsed > self->player.dead) {
       self->player.dead = 0;
 
@@ -646,7 +696,7 @@ asteroids_update(struct app *app, unsigned elapsed)
           self->lives -= 1;
           self->target = nan("1");
         }
-      } else asteroids_reset(self);
+      }
     } else self->player.dead -= elapsed;
   } else {
     if (self->turn_left && self->turn_right) {
@@ -689,7 +739,7 @@ asteroids_update(struct app *app, unsigned elapsed)
   }
 
   for (ii = 0; ii < self->n_asteroids; ++ii)
-    if (!self->asteroids[ii].dead)
+    if (!self->player.dead && !self->asteroids[ii].dead)
       asteroids__ship_asteroid
         (self, ii, &self->player, elapsed);
 
@@ -705,6 +755,7 @@ asteroids_update(struct app *app, unsigned elapsed)
     (self, self->app.width, self->app.height, elapsed);
   asteroids__asteroids_update
     (self, self->app.width, self->app.height, elapsed);
+
   if (self->nextwave > 0) {
     if (elapsed > self->nextwave) {
       self->nextwave = 0;
@@ -712,12 +763,13 @@ asteroids_update(struct app *app, unsigned elapsed)
     } else self->nextwave -= elapsed;
   } else if (self->n_asteroids == 0)
     self->nextwave = 5000;
+
   return EXIT_SUCCESS;
 }
 
 static int
-asteroids__draw_ship(struct ship *ship, SDL_Renderer *renderer,
-                     int width, int height, unsigned thrust)
+asteroids__draw_player(struct ship *ship, SDL_Renderer *renderer,
+                       int width, int height, unsigned thrust)
 {
   int result = EXIT_SUCCESS;
   unsigned ii;
@@ -743,11 +795,6 @@ asteroids__draw_ship(struct ship *ship, SDL_Renderer *renderer,
                                 dircos, dirsin, n_points, points);
   }
 
-  for (ii = 0; ii < ship->n_shots; ++ii)
-    circleColor(renderer,
-                (int)(ship->shots[ii].position.x + width/2),
-                (int)(ship->shots[ii].position.y + height/2),
-                ship->size / 3, 0xffe0e0e0);
   return result;
 }
 
@@ -762,15 +809,29 @@ asteroids_draw(struct app *app, SDL_Renderer *renderer)
   SDL_RenderClear(renderer);
   SDL_SetRenderDrawColor(renderer, 224, 224, 224, 255);
 
-  if (self->font_mono) {
+  if (self->font_score) {
     char str_score[256];
     snprintf(str_score, sizeof(str_score), "%'u", self->score);
 
     SDL_Color color = { 224, 224, 224 };
     SDL_Surface *surface =
-      TTF_RenderUTF8_Solid(self->font_mono, str_score, color);
+      TTF_RenderUTF8_Solid(self->font_score, str_score, color);
     SDL_Rect dsrect = {
       self->player.size, self->player.size,
+      surface->w, surface->h };
+    SDL_Texture *texture = SDL_CreateTextureFromSurface
+      (renderer, surface);
+    SDL_RenderCopy(renderer, texture, NULL, &dsrect);
+  }
+
+  if (self->font_gameover && (self->gameover > 0)) {
+    const char *str_message = "GAME OVER";
+    SDL_Color color = { 224, 224, 224 };
+    SDL_Surface *surface =
+      TTF_RenderUTF8_Solid(self->font_gameover, str_message, color);
+    SDL_Rect dsrect = {
+      (self->app.width - surface->w) / 2,
+      (self->app.height - surface->h) / 2,
       surface->w, surface->h };
     SDL_Texture *texture = SDL_CreateTextureFromSurface
       (renderer, surface);
@@ -786,9 +847,17 @@ asteroids_draw(struct app *app, SDL_Renderer *renderer)
   }
 
   if (!self->player.dead)
-    asteroids__draw_ship(&self->player, renderer,
-                         self->app.width, self->app.height,
-                         self->thrust_elapsed);
+    asteroids__draw_player(&self->player, renderer,
+                           self->app.width, self->app.height,
+                           self->thrust_elapsed);
+
+  for (ii = 0; ii < self->player.n_shots; ++ii)
+    circleColor(renderer,
+                (int)(self->player.shots[ii].position.x +
+                      self->app.width / 2),
+                (int)(self->player.shots[ii].position.y +
+                      self->app.height / 2),
+                self->player.size / 3, 0xffe0e0e0);
 
   for (ii = 0; ii < self->n_asteroids; ++ii) {
     struct asteroid *asteroid = &self->asteroids[ii];
@@ -819,12 +888,16 @@ static struct app_asteroids app_asteroids;
 
 struct app *
 asteroids_get_app(void) {
-  app_asteroids.app.icon        = (unsigned char *)asteroids_icon_svg;
-  app_asteroids.app.icon_length = sizeof(asteroids_icon_svg);
-  app_asteroids.app.init    = asteroids_init;
-  app_asteroids.app.destroy = asteroids_destroy;
-  app_asteroids.app.resize  = asteroids_resize;
-  app_asteroids.app.update  = asteroids_update;
-  app_asteroids.app.draw    = asteroids_draw;
-  return &app_asteroids.app;
+  struct app_asteroids *result = NULL;
+
+  if ((result = malloc(sizeof(*result)))) {
+    result->app.icon        = (unsigned char *)asteroids_icon_svg;
+    result->app.icon_length = sizeof(asteroids_icon_svg);
+    result->app.init    = asteroids_init;
+    result->app.destroy = asteroids_destroy;
+    result->app.resize  = asteroids_resize;
+    result->app.update  = asteroids_update;
+    result->app.draw    = asteroids_draw;
+  }
+  return &result->app;
 }

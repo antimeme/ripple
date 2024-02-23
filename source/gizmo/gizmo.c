@@ -109,6 +109,8 @@ gizmo_app_font(TTF_Font **mono, unsigned size)
 {
   int result = EXIT_SUCCESS;
 
+  TTF_CloseFont(*mono);
+
   /* https://www.fontspace.com/brass-mono-font-f29885 */
   if (mono && !(*mono = TTF_OpenFont
                 ("./apps/fonts/brass-mono.ttf", size))) {
@@ -381,8 +383,9 @@ main(int argc, char **argv)
             SDL_GetError());
     result = EXIT_FAILURE;
   } else if (gizmo.app->init &&
-             (EXIT_SUCCESS != (result = gizmo.app->init
-                               (gizmo.app, &gizmo)))) {
+             (EXIT_SUCCESS !=
+              (result = gizmo.app->init(gizmo.app, &gizmo)))) {
+    fprintf(stderr, "Failed to initialize app\n");
   } else {
     if (gizmo.app->resize)
       gizmo.app->resize(gizmo.app, gizmo.app->width, gizmo.app->height);
@@ -410,14 +413,14 @@ main(int argc, char **argv)
       SDL_Delay(16 - (current - frame));
     frame = current;
   }
-  SDL_DestroyRenderer(gizmo.renderer);
-  SDL_DestroyWindow(gizmo.window);
-  TTF_Quit();
-  SDL_Quit();
   if (gizmo.app->destroy)
     gizmo.app->destroy(gizmo.app);
   free(gizmo.key_actions);
   free(gizmo.mouse_actions);
+  SDL_DestroyRenderer(gizmo.renderer);
+  SDL_DestroyWindow(gizmo.window);
+  TTF_Quit();
+  SDL_Quit();
 #endif
   return result;
 }
