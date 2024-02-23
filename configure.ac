@@ -67,6 +67,9 @@ if test "x$enable_java" = x1; then
         true # Don't question a user supplied JAVA_HOME
     elif test -d /etc/alternatives/java_sdk; then
         JAVA_HOME=/etc/alterntatives/java_sdk
+    elif test -x /etc/alternatives/javac; then
+        JAVA_HOME=`readlink /etc/alternatives/javac | \
+                   sed 's,/bin/javac,,'`
     elif test -x /usr/libexec/java_home; then
         # Apple OSX 10.5 and later have a JAVA_HOME finder:
         # http://developer.apple.com/library/mac/#qa/qa2001/qa1170.html
