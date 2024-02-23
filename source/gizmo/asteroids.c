@@ -88,6 +88,7 @@ struct app_asteroids {
   unsigned score;
   struct ship player;
   unsigned lives;
+  unsigned wavesize;
   unsigned nextwave;
   struct ship saucer;
   struct asteroid *asteroids;
@@ -355,8 +356,6 @@ asteroids__shots_update(struct ship *ship, unsigned elapsed,
   int survivors = 0;
   int ii;
 
-  printf("DEBUG shoot m=%u n=%u a=%p\n",
-         ship->m_shots, ship->n_shots, ship->shots);
   for (ii = 0; ii < ship->n_shots; ++ii) {
     struct shot *shot = &ship->shots[ii];
     if (shot->duration > elapsed) {
@@ -375,8 +374,6 @@ static int
 asteroids__ship_shoot(struct ship *ship, float direction, float size) {
   int result = EXIT_SUCCESS;
 
-  printf("DEBUG shoot m=%u n=%u a=%p\n",
-         ship->m_shots, ship->n_shots, ship->shots);
   if (ship->m_shots < ship->n_shots + 1) {
     struct shot *newshots = realloc
       (ship->shots, (ship->n_shots + 1) * sizeof(*ship->shots));
@@ -403,39 +400,6 @@ asteroids__ship_shoot(struct ship *ship, float direction, float size) {
 }
 
 static void
-asteroids__tap(struct app_asteroids *self, SDL_Event *event)
-{
-  struct point vector = {
-    (event->button.x - self->app.width / 2) - self->player.position.x,
-    (event->button.y - self->app.height / 2) - self->player.position.y
-  };
-  float quadrance = vector.x * vector.x + vector.y * vector.y;
-
-  if (quadrance > self->player.size * self->player.size) {
-    float sx = cos(self->player.direction);
-    float sy = sin(self->player.direction);
-    float cosangle = (vector.x * sx + vector.y * sy) / sqrt(quadrance);
-    float angle = ((sx * vector.y - sy * vector.x > 0) ? 1 : -1) *
-      acosf((cosangle > 1) ? 1 : (cosangle < -1) ? -1 : cosangle);
-    self->target = self->player.direction + angle;
-  }
-
-  if (!self->player.dead && (self->tapshot > 0))
-    asteroids__ship_shoot(&self->player, self->player.direction,
-                          self->size);
-  self->tapshot = 350;
-  self->holding = 1;
-  self->held = 0;
-}
-
-static void
-asteroids__untap(struct app_asteroids *self, SDL_Event *event)
-{
-  self->holding = 0;
-  self->held = 0;
-}
-
-static void
 asteroids_reset(struct app_asteroids *self)
 {
   unsigned ii;
@@ -443,10 +407,15 @@ asteroids_reset(struct app_asteroids *self)
   self->gameover = 0;
   self->score = 0;
   self->lives = 3;
+  self->wavesize = 4;
   self->nextwave = 1000;
 
+  self->tapshot = 0;
   self->target = nan("1");
   self->thrust = 0;
+  self->thrust_elapsed = 0;
+  self->holding = 0;
+  self->held = 0;
   self->warp = 0;
   self->turn_left = 0;
   self->turn_right = 0;
@@ -465,6 +434,46 @@ asteroids_reset(struct app_asteroids *self)
   for (ii = 0; ii < self->n_debris; ++ii)
     asteroids__debris_destroy(&self->debris[ii]);
   self->n_debris = 0;
+}
+
+static void
+asteroids__tap(struct app *app, SDL_Event *event)
+{
+  struct app_asteroids *self = (struct app_asteroids *)app;
+  if (self->gameover == 1)
+    asteroids_reset(self);
+  else {
+    struct point vector = {
+      (event->button.x - self->app.width / 2) - self->player.position.x,
+      (event->button.y - self->app.height / 2) - self->player.position.y
+    };
+    float quadrance = vector.x * vector.x + vector.y * vector.y;
+
+    if (quadrance > self->player.size * self->player.size) {
+      float sx = cos(self->player.direction);
+      float sy = sin(self->player.direction);
+      float cosangle = (vector.x * sx + vector.y * sy) /
+        sqrt(quadrance);
+      float angle = ((sx * vector.y - sy * vector.x > 0) ? 1 : -1) *
+        acosf((cosangle > 1) ? 1 : (cosangle < -1) ? -1 : cosangle);
+      self->target = self->player.direction + angle;
+    }
+
+    if (!self->player.dead && (self->tapshot > 0))
+      asteroids__ship_shoot(&self->player, self->player.direction,
+                            self->size);
+    self->tapshot = 350;
+    self->holding = 1;
+    self->held = 0;
+  }
+}
+
+static void
+asteroids__untap(struct app *app, SDL_Event *event)
+{
+  struct app_asteroids *self = (struct app_asteroids *)app;
+  self->holding = 0;
+  self->held = 0;
 }
 
 static void
@@ -759,7 +768,10 @@ asteroids_update(struct app *app, unsigned elapsed)
   if (self->nextwave > 0) {
     if (elapsed > self->nextwave) {
       self->nextwave = 0;
-      asteroids__asteroids_create(self, NULL, 8);
+      asteroids__asteroids_create(self, NULL, self->wavesize);
+      self->wavesize += 2;
+      if (self->wavesize > 11)
+        self->wavesize = 11;
     } else self->nextwave -= elapsed;
   } else if (self->n_asteroids == 0)
     self->nextwave = 5000;
@@ -798,11 +810,37 @@ asteroids__draw_player(struct ship *ship, SDL_Renderer *renderer,
   return result;
 }
 
+static void
+asteroids__draw_text(SDL_Renderer *renderer, TTF_Font *font,
+                     SDL_Color *color, const char *message,
+                     struct point *start, struct point *center)
+{
+  SDL_Surface *surface = TTF_RenderUTF8_Solid(font, message, *color);
+  if (surface) {
+    SDL_Texture *texture = SDL_CreateTextureFromSurface
+      (renderer, surface);
+    if (texture) {
+      SDL_Rect dsrect = { 0, 0, surface->w, surface->h };
+      if (start) {
+        dsrect.x = start->x;
+        dsrect.y = start->y;
+      } else if (center) {
+        dsrect.x = (center->x - surface->w) / 2;
+        dsrect.y = (center->y - surface->h) / 2;
+      }
+      SDL_RenderCopy(renderer, texture, NULL, &dsrect);
+      SDL_DestroyTexture(texture);
+    }
+    SDL_FreeSurface(surface);
+  }
+}
+
 static int
 asteroids_draw(struct app *app, SDL_Renderer *renderer)
 {
   struct app_asteroids *self = (struct app_asteroids *)app;
   int result = EXIT_SUCCESS;
+  SDL_Color color = { 224, 224, 224 };
   unsigned ii;
 
   SDL_SetRenderDrawColor(renderer, 16, 16, 16, 255);
@@ -810,32 +848,18 @@ asteroids_draw(struct app *app, SDL_Renderer *renderer)
   SDL_SetRenderDrawColor(renderer, 224, 224, 224, 255);
 
   if (self->font_score) {
+    struct point start = { self->player.size, self->player.size };
     char str_score[256];
     snprintf(str_score, sizeof(str_score), "%'u", self->score);
-
-    SDL_Color color = { 224, 224, 224 };
-    SDL_Surface *surface =
-      TTF_RenderUTF8_Solid(self->font_score, str_score, color);
-    SDL_Rect dsrect = {
-      self->player.size, self->player.size,
-      surface->w, surface->h };
-    SDL_Texture *texture = SDL_CreateTextureFromSurface
-      (renderer, surface);
-    SDL_RenderCopy(renderer, texture, NULL, &dsrect);
+    asteroids__draw_text
+      (renderer, self->font_score, &color, str_score, &start, NULL);
   }
 
   if (self->font_gameover && (self->gameover > 0)) {
-    const char *str_message = "GAME OVER";
-    SDL_Color color = { 224, 224, 224 };
-    SDL_Surface *surface =
-      TTF_RenderUTF8_Solid(self->font_gameover, str_message, color);
-    SDL_Rect dsrect = {
-      (self->app.width - surface->w) / 2,
-      (self->app.height - surface->h) / 2,
-      surface->w, surface->h };
-    SDL_Texture *texture = SDL_CreateTextureFromSurface
-      (renderer, surface);
-    SDL_RenderCopy(renderer, texture, NULL, &dsrect);
+    struct point dimensions = { self->app.width, self->app.height };
+    asteroids__draw_text
+      (renderer, self->font_gameover, &color,
+       "GAME OVER", NULL, &dimensions);
   }
 
   for (ii = 0; ii < self->lives; ++ii) { /* Draw extra lives */

@@ -31,8 +31,11 @@ unsigned long long now() {
   return (unsigned long long)emscripten_get_now();
 }
 #else
-unsigned long long now() { return SDL_GetTicks(); }
+unsigned long long now() { return SDL_GetTicks64(); }
 #endif
+
+static int gizmo_sdl_init = 0;
+static int gizmo_ttf_init = 0;
 
 static int
 gizmo_setupSDL(SDL_Renderer **renderer, SDL_Window **window)
@@ -43,6 +46,9 @@ gizmo_setupSDL(SDL_Renderer **renderer, SDL_Window **window)
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     fprintf(stderr, "Failed to initialize SDL: %s\n", SDL_GetError());
     result = EXIT_FAILURE;
+  } else gizmo_sdl_init = 1;
+
+  if (result != EXIT_SUCCESS) {
   } else if (SDL_GetCurrentDisplayMode(0, &mode) < 0) {
     fprintf(stderr, "Failed to initialize SDL: %s\n", SDL_GetError());
     result = EXIT_FAILURE;
@@ -66,7 +72,7 @@ gizmo_setupSDL(SDL_Renderer **renderer, SDL_Window **window)
     fprintf(stderr, "Failed to initialize TTF: %s\n",
             SDL_GetError());
     result = EXIT_FAILURE;
-  }
+  } else gizmo_ttf_init = 1;
 
   return result;
 }
@@ -88,6 +94,7 @@ gizmo_setup_icon(SDL_Window *window, const char *data, unsigned length)
 
   if (image != NULL)
     SDL_RWclose(image);
+  SDL_FreeSurface(icon);
   return result;
 }
 
@@ -419,8 +426,10 @@ main(int argc, char **argv)
   free(gizmo.mouse_actions);
   SDL_DestroyRenderer(gizmo.renderer);
   SDL_DestroyWindow(gizmo.window);
-  TTF_Quit();
-  SDL_Quit();
+  if (gizmo_ttf_init)
+    TTF_Quit();
+  if (gizmo_sdl_init)
+    SDL_Quit();
 #endif
   return result;
 }
