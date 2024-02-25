@@ -562,7 +562,7 @@ public class Asteroids extends Applet
             } else playerShip.dead -= elapsed;
         } else {
             if (turn_left || turn_right)
-                target = Float.isNaN;
+                target = Float.NaN;
             if (turn_left) {
                 playerShip.direction -= (float)elapsed / 200;
             } else if (turn_right) {
@@ -670,7 +670,6 @@ public class Asteroids extends Applet
     @Override
     public void paint(Graphics gfx) {
         NumberFormat nfmt = NumberFormat.getNumberInstance();
-        FontMetrics fm;
         Dimension bounds = getSize();
         Graphics ctx = buffer.getGraphics();
         ctx.setColor(background);
@@ -679,7 +678,6 @@ public class Asteroids extends Applet
         ctx.setColor(foreground);
         String scoreFormatted = nfmt.format(score);
         ctx.setFont(font_score);
-        fm = ctx.getFontMetrics();
         ctx.drawString(scoreFormatted, (int)playerShip.size,
                        (int)(playerShip.size * 5 / 2));
         for (int ii = 0; ii < lives; ++ii)
@@ -689,12 +687,13 @@ public class Asteroids extends Applet
                   playerShip.size + baseSize / 8));
         if (gameover > 0) {
             String message = "GAME OVER";
+            FontMetrics fm;
 
             ctx.setFont(font_gameover);
             fm = ctx.getFontMetrics();
             ctx.drawString(message,
                            (bounds.width - fm.stringWidth(message)) / 2,
-                           bounds.height / 2);
+                           (bounds.height - fm.getHeight()) / 2);
         }
         playerShip.draw(ctx, bounds, thrust_elapsed > 0);
         for (Movable shot : playerShots)
