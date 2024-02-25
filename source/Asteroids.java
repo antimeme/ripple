@@ -205,9 +205,18 @@ public class Asteroids extends Applet
                               size, center, points);
 
                 if (thrusting && (thrust != null) &&
-                    (thrust.length > 0))
+                    (thrust.length > 0)) {
+                    Random random = new Random();
+                    Point[] jitter = new Point[thrust.length];
+                    for (int ii = 0; ii < jitter.length; ++ii)
+                        jitter[ii] = new Point
+                            (thrust[ii].x + (float)
+                             ((random.nextFloat() - 0.5) * 0.33),
+                             thrust[ii].y + (float)
+                             ((random.nextFloat() - 0.5) * 0.33));
                     drawPointLoop(ctx, dircos, dirsin,
-                                  size, center, thrust);
+                                  size, center, jitter);
+                }
             } else ctx.drawOval((int)(position.x + bounds.width / 2),
                                 (int)(position.y + bounds.height / 2),
                                 (int)size, (int)size);
@@ -589,7 +598,7 @@ public class Asteroids extends Applet
             if (holding)
                 held += elapsed;
             if (thrust_elapsed > 0) {
-                float factor = thrust_elapsed * baseSize / 200000;
+                float factor = thrust_elapsed * baseSize / 400000;
                 playerShip.velocity.x +=
                     Math.cos(playerShip.direction) * factor;
                 playerShip.velocity.y +=
