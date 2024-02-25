@@ -257,11 +257,11 @@ asteroids__asteroids_create(struct app_asteroids *self,
     asteroid->size = (1 << asteroid->n_splits) * self->size / 40;
     if (!source) {
       float place = 2 * gizmo_uniform();
-      if (place > 1) {
-        asteroid->position.x = (place - 0.5) * self->app.width;
-        asteroid->position.y = (asteroid->size + self->app.height) / 2;
+      if (place >= 1) {
+        asteroid->position.x = (place - 1.5) * self->app.width;
+        asteroid->position.y = asteroid->size + self->app.height / 2;
       } else {
-        asteroid->position.x = (asteroid->size + self->app.width) / 2;
+        asteroid->position.x = asteroid->size + self->app.width / 2;
         asteroid->position.y = (place - 0.5) * self->app.height;
       }
     } else asteroid->position = position;
@@ -708,16 +708,14 @@ asteroids_update(struct app *app, unsigned elapsed)
       }
     } else self->player.dead -= elapsed;
   } else {
-    if (self->turn_left && self->turn_right) {
+    if (self->turn_left && self->turn_right)
       self->target = nan("1");
-    } else if (self->turn_left) {
-      self->target = nan("1");
+
+    if (self->turn_left) {
       self->player.direction -= (float)elapsed / 200;
     } else if (self->turn_right) {
-      self->target = nan("1");
       self->player.direction += (float)elapsed / 200;
-    } else if (!isnan(self->target) &&
-               (self->player.direction != self->target)) {
+    } else if (!isnan(self->target)) {
       float difference = self->target - self->player.direction;
 
       if (difference > M_PI)
@@ -739,11 +737,10 @@ asteroids_update(struct app *app, unsigned elapsed)
     if (self->holding)
       self->held += elapsed;
 
-    if (self->thrust || (self->holding && (self->held > 300))) {
-      self->player.velocity.x += cosf(self->player.direction) *
-        self->thrust_elapsed / self->size;
-      self->player.velocity.y += sinf(self->player.direction) *
-        self->thrust_elapsed / self->size;
+    if ((self->thrust_elapsed > 0) && (self->size > 0)) {
+      float factor = self->thrust_elapsed * self->size / 200000;
+      self->player.velocity.x += cosf(self->player.direction) * factor;
+      self->player.velocity.y += sinf(self->player.direction) * factor;
     }
   }
 
