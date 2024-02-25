@@ -46,7 +46,8 @@ JAVA_DISTSRC = \
 	$(srcdir)/source/GraphicPlayer.java \
 	$(srcdir)/source/Aqua.java \
 	$(srcdir)/source/HexagonGrid.java \
-	$(srcdir)/source/Octahedron.java
+	$(srcdir)/source/Octahedron.java \
+	$(srcdir)/source/Asteroids.java
 
 J2EE_DISTSRC = \
 	$(srcdir)/source/servlet/RippleServlet.java \
