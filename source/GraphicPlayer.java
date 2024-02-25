@@ -305,9 +305,15 @@ public class GraphicPlayer extends Component
         protected AudioClip sound_move = null;
 
         public void setContext(AppletContext ctx) {
-            sound_move = ctx.getAudioClip
-                (getClass().getClassLoader().getResource
-                 ("sounds/clickclack.wav"));
+            try {
+                sound_move = ctx.getAudioClip
+                    (getClass().getClassLoader().getResource
+                     ("sounds/clickclack.wav"));
+            } catch (IllegalArgumentException ex) {
+                // Some runtime environments may not have sound.
+                System.out.println("ERROR cannot create AudioClip: " +
+                                   ex.getMessage());
+            }
         }
 
         public void beginMove() {
