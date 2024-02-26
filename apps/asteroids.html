@@ -120,17 +120,17 @@
      min: 0, default: 11}); // Maximum wave size
  const o_saucer_respawn = paramInteger(params, "saucer-spawn", {
      min: 1000, default: 8000});
- const o_large_score    = paramInteger(params, "small-score", {
+ const o_large_score = paramInteger(params, "small-score", {
      min: 0, default: 10000}); // Always large saucers until this score
- const o_small_score    = paramInteger(params, "small-score", {
+ const o_small_score = paramInteger(params, "small-score", {
      min: 0, default: 40000}); // Always small saucers after this score
  const o_messy   = paramBoolean(params, "messy");
  const o_rings   = paramBoolean(params, "rings");
  const o_shields = paramBoolean(params, "shields");
  const o_repeat  = paramBoolean(params, "repeat");
  const o_nobuttons = paramBoolean(params, "nobuttons");
- const o_vbuttons  = paramBoolean(params, "vbuttons");
- const o_cheats    = paramBoolean(params, "cheats");
+ const o_vbuttons = paramBoolean(params, "vbuttons");
+ const o_cheats = paramBoolean(params, "cheats");
 
  /**
   * Return true iff the given value is close enough to zero */
@@ -1020,7 +1020,7 @@
          ctx.beginPath();
          new Array(playerShip.lives).fill().forEach((z, index) => {
              ctx.save();
-             ctx.translate(camera.radius * (index + 1) * 4 / 30,
+             ctx.translate(camera.radius / 9 * (index + 1),
                            camera.radius / 4);
              ctx.rotate(-Math.PI / 2);
              ctx.scale(camera.radius * 6 / 100,
