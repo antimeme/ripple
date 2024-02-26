@@ -720,7 +720,9 @@ public class Asteroids extends java.applet.Applet
     }
 
     protected static Image createIcon() {
-        final int size = 32, width = size, height = size;
+        final int size = 32;
+        final float factor = size * 9 / 20;
+        final Point center = new Point(size / 2, size / 2);
         BufferedImage result = new BufferedImage
             (size, size, BufferedImage.TYPE_INT_ARGB);
         Graphics gfx = result.getGraphics();
@@ -728,26 +730,16 @@ public class Asteroids extends java.applet.Applet
         int[] ypoints = new int[wedgeShipPoints.length];
 
         for (int ii = 0; ii < wedgeShipPoints.length; ++ii) {
-            float factor = size * 9 / 20;
-            xpoints[ii] =
-                (int)(size / 2 + wedgeShipPoints[ii].y * factor);
-            ypoints[ii] =
-                (int)(size / 2 - wedgeShipPoints[ii].x * factor);
+            xpoints[ii] = (int)
+                (center.x + wedgeShipPoints[ii].y * factor);
+            ypoints[ii] = (int)
+                (center.y - wedgeShipPoints[ii].x * factor);
         }
-
         gfx.setColor(Asteroids.background);
         gfx.fillPolygon(xpoints, ypoints, wedgeShipPoints.length);
-        //gfx.fillRect(0, 0, width, height);
-        // Movable.drawPointLoop
-        //     (gfx, 0, -1, ((width < height) ? width : height) * 10 / 21,
-        //      new Point(width/2, height/2), wedgeShipPoints);
-        // Movable.drawPointLoop
-        //     (gfx, 0, -1, ((width < height) ? width : height) * 8 / 19,
-        //      new Point(width/2, height/2), wedgeShipPoints);
         gfx.setColor(Asteroids.foreground);
         Movable.drawPointLoop
-            (gfx, 0, -1, size * 9 / 20,
-             new Point(size/2, size/2), wedgeShipPoints);
+            (gfx, 0, -1, factor, center, wedgeShipPoints);
         return result;
     }
 
