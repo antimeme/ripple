@@ -39,6 +39,8 @@
 /check-ripple
 /check-ripple.exe
 /.docker-build
+/gizmo
+/gizmo.exe
 
 # Sqlite
 /expense.db
