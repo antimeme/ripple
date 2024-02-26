@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <meta charset="utf-8" />
 <!-- :TODO: swipe for hyperspace -- SWIPERSPACE! -->
+<!-- :TODO: make screen buttons reset game over condition -->
 <!-- asteroids.html
      Copyright (C) 2020-2024 by Jeff Gold.
 
@@ -192,8 +193,8 @@
   * Base clases for player ship, saucers, asteroids and debris. */
  class Movable {
      constructor(config) {
-         this.screen = (config && !isNaN(config.screen)) ?
-                       config.screen : 0;
+         this.sizeBase = (config && !isNaN(config.sizeBase)) ?
+                         config.sizeBase : 0;
          this.sizeFactor = (config && !isNaN(config.sizeFactor)) ?
                            config.sizeFactor : 0.1;
          this.ageless = config ? (!!config.ageless) : true;
@@ -215,15 +216,15 @@
      }
 
      resize(camera) {
-         this.screen = Math.min(camera.width, camera.height);
+         this.sizeBase = Math.min(camera.width, camera.height);
          this.__refresh();
      }
 
      __refresh() {
-         const factor = this.speed * this.screen;
+         const factor = this.speed * this.sizeBase;
          this.dx = Math.cos(this.direction) * factor;
          this.dy = Math.sin(this.direction) * factor;
-         this.radius = this.sizeFactor * this.screen;
+         this.radius = this.sizeFactor * this.sizeBase;
      }
 
      __pointLoopSpars(spars) {
@@ -339,9 +340,9 @@
  /**
   * A asteroid serves as a hazard that the player can destroy. */
  class Asteroid extends Movable {
-     constructor(source) {
+     constructor(score, source) {
          super(source);
-         const boost = Math.sqrt(playerShip.score) / 1000;
+         const boost = Math.sqrt(score) / 1000;
 
          this.nsplits = source ? (source.nsplits - 1) : 2;
          this.sizeFactor = (1 << this.nsplits) / 33;
@@ -358,7 +359,7 @@
      }
 
      update(camera, elapsed) {
-         if (!this.screen) {
+         if (!this.sizeBase) {
              this.resize(camera);
 
              const place = Math.random() * 2;
@@ -374,10 +375,10 @@
          return this.moveWrap(camera, elapsed);
      }
 
-     impact(fragments) {
+     impact(fragments, score) {
          if (fragments && (this.nsplits > 0)) {
-             fragments.push(new Asteroid(this));
-             fragments.push(new Asteroid(this));
+             fragments.push(new Asteroid(score, this));
+             fragments.push(new Asteroid(score, this));
          }
          Debris.create(this, Math.floor(
              1 + this.nsplits * 2 + 4 * Math.random()));
@@ -401,7 +402,7 @@
              } else this.recharge -= elapsed;
      }
 
-     absorb() {
+     impact() {
          if (this.ready) {
              this.ready = false;
              this.recharge = 5000;
@@ -641,15 +642,8 @@
              y: camera.height / 2 - point.y });
      }
 
-     award(npoints) {
-         if (Math.floor((this.score + npoints) / o_newlife) >
-             Math.floor(this.score / o_newlife))
-             this.lives += 1;
-         this.score += npoints;
-     }
-
      impact() {
-         if (this.shield.absorb())
+         if (this.shield.impact())
              return false;
          Debris.create(this, Math.floor(4 + 4 * Math.random()));
          this.dead = 3000;
@@ -671,6 +665,7 @@
          this.dead = o_saucer_respawn * 2;
          this.shield = new Shield();
          this.small = false;
+         this.score = 0;
          this.reset();
      }
 
@@ -709,7 +704,7 @@
          }
      }
 
-     update(camera, elapsed) {
+     update(camera, elapsed, score, enemy) {
          this.shots = this.shots.filter(
              shot => shot.moveWrap(camera, elapsed));
 
@@ -724,9 +719,9 @@
                  // Large saucers shoot in random directions.
                  // At low scores most saucers are large but
                  // eventually only small saucers can spawn.
-                 this.small = (o_large_score > playerShip.score) ?
-                              false : (Math.random() * o_small_score <
-                                  playerShip.score);
+                 this.small = (o_large_score > score) ? false :
+                              (Math.random() * o_small_score < score);
+                 this.score = this.small ? 1000 : 200;
                  this.sizeFactor = this.small ? 1/50 : 1/25;
                  this.__refresh();
 
@@ -753,7 +748,7 @@
          } else this.turnTimer -= elapsed;
 
          if (this.shootTimer <= elapsed) {
-             this.shoot();
+             this.shoot(enemy);
              this.shootTimer = ((this.small ? 800 : 1600) *
                  (1 + Math.random()));
          } else this.shootTimer -= elapsed;
@@ -762,15 +757,15 @@
          this.moveWrap(camera, elapsed);
      }
 
-     shoot() {
-         if ((this.dead > 0) || (playerShip.dead > 0) ||
+     shoot(enemy) {
+         if (!enemy || (enemy.dead > 0) || (this.dead > 0) ||
              (this.shots.length > 8))
              return;
 
          const velocity = {x: 0, y: 0};
-         if (this.small) { // Small ships target the player
-             velocity.x = playerShip.x - this.x;
-             velocity.y = playerShip.y - this.y;
+         if (this.small) { // Small ships target their enemy
+             velocity.x = enemy.x - this.x;
+             velocity.y = enemy.y - this.y;
              const length = Math.hypot(velocity.x, velocity.y);
              velocity.x /= length;
              velocity.y /= length;
@@ -783,10 +778,8 @@
          this.shots.push(shot);
      }
 
-     award(npoints) { /* Saucers score no points, sadly */ }
-
      impact() {
-         if (this.shield.absorb())
+         if (this.shield.impact())
              return false;
          Debris.create(this, Math.floor(4 + 4 * Math.random()));
          this.reset();
@@ -977,6 +970,7 @@
      autofill = true;
      usekeys = true;
 
+     score = 0;
      gameover = 0;
      nextwave = 0;
      wavesize = undefined;
@@ -985,6 +979,7 @@
      asteroids = undefined;
 
      newgame() {
+         this.score = 0;
          this.wavesize = Math.min(o_startwave, o_maxwave);
          this.gameover = 0;
          this.asteroids = [];
@@ -995,6 +990,13 @@
          playerShip.dead = 0;
          playerShip.score = 0;
          playerShip.lives = 3;
+     }
+
+     award(npoints) {
+         if (Math.floor((this.score + npoints) / o_newlife) >
+             Math.floor(this.score / o_newlife))
+             playerShip.lives += 1;
+         this.score += npoints;
      }
 
      resize(event, camera) {
@@ -1012,7 +1014,7 @@
          ctx.lineCap = "round";
          ctx.lineWidth = camera.radius / 300;
          ctx.font = Math.floor(camera.radius / 10) + "px monospace";
-         ctx.fillText(playerShip.score.toLocaleString(),
+         ctx.fillText(this.score.toLocaleString(),
                       camera.radius / 18, camera.radius / 10);
 
          ctx.beginPath();
@@ -1047,7 +1049,6 @@
          ctx.beginPath();
          this.asteroids.forEach(asteroid => asteroid.draw(ctx));
          Debris.draw(ctx);
-         //debris.forEach(piece => piece.draw(ctx));
          ctx.stroke();
 
          playerShip.draw(ctx);
@@ -1082,16 +1083,18 @@
                  vessel.shots = vessel.shots.filter(shot => {
                      if ((asteroid.dead <= 0) &&
                          asteroid.checkCollide(shot, elapsed)) {
-                         vessel.award(asteroid.score);
-                         asteroid.impact(fragments);
+                         if (vessel === playerShip)
+                             this.award(asteroid.score);
+                         asteroid.impact(fragments, this.score);
                      } else return true;
                  });
 
                  if ((asteroid.dead <= 0) && (vessel.dead <= 0) &&
                      asteroid.checkCollide(vessel, elapsed)) {
                      vessel.impact();
-                     vessel.award(asteroid.score);
-                     asteroid.impact(fragments);
+                     if (vessel === playerShip)
+                         this.award(asteroid.score);
+                     asteroid.impact(fragments, this.score);
                  }
              });
 
@@ -1105,31 +1108,32 @@
              if (this.nextwave <= elapsed) {
                  this.nextwave = 0;
                  this.asteroids = new Array(this.wavesize).fill().map(
-                     ignore => new Asteroid());
+                     ignore => new Asteroid(this.score));
                  this.wavesize = Math.min(o_maxwave, this.wavesize + 2);
              } else this.nextwave -= elapsed;
          } else if (this.asteroids.length === 0)
              this.nextwave = 5000;
 
-         function checkEnemyShots(vessel, enemy) {
+         function checkEnemyShots(game, vessel, enemy) {
              if (enemy.dead > 0)
                  return;
              vessel.shots = vessel.shots.filter(shot => {
                  if (shot.checkCollide(enemy, elapsed)) {
-                     if (enemy.impact())
-                         vessel.award(enemy.small ? 1000 : 200);
+                     if (enemy.impact() && (vessel === playerShip))
+                         game.award(enemy.score);
                  } else return true;
              });
          };
-         checkEnemyShots(playerShip, saucer);
-         checkEnemyShots(saucer, playerShip);
+         checkEnemyShots(this, playerShip, saucer);
+         checkEnemyShots(this, saucer, playerShip);
 
          if ((playerShip.dead <= 0) && (saucer.dead <= 0) &&
              playerShip.checkCollide(saucer, elapsed)) {
+             if (saucer.impact())
+                 this.award(saucer.score)
              playerShip.impact();
-             saucer.impact();
          }
-         saucer.update(camera, elapsed);
+         saucer.update(camera, elapsed, playerShip.score, playerShip);
          playerShip.update(camera, elapsed, this.asteroids);
 
          screenButtons.update(camera, elapsed);
