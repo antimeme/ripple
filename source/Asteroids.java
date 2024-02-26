@@ -15,12 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-// This file is an independent clone of Asteroids, a space-themed
-// arcade game originally designed by Lyle Rains, Ed Logg and
-// Dominic Walsh and released by Atari in 1979.
-// Source: https://en.wikipedia.org/wiki/Asteroids_(video_game)
 package net.antimeme.asteroids;
-import java.applet.Applet;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -39,7 +34,12 @@ import java.util.List;
 import java.util.LinkedList;
 import net.esclat.ripple.Standalone;
 
-public class Asteroids extends Applet
+/**
+ * This file is an independent clone of Asteroids, a space-themed
+ * arcade game originally designed by Lyle Rains, Ed Logg and Dominic
+ * Walsh and released by Atari in 1979.  Source:
+ * https://en.wikipedia.org/wiki/Asteroids_(video_game) */
+public class Asteroids extends java.applet.Applet
     implements Runnable, ComponentListener, KeyListener, MouseListener
 {
 
@@ -89,6 +89,13 @@ public class Asteroids extends Applet
         public Point translate(Point value)
         { return new Point(this.x + value.x, this.y + value.y); }
     }
+
+    static final Point[] wedgeShipPoints = new Point[] {
+        new Point(1, 0),
+        new Point(-1, 2f/3),
+        new Point(-2f/3, 0),
+        new Point(-1, -2f/3),
+    };
 
     /**
      * Return non-zero iff the spherical objects represented by given
@@ -226,8 +233,8 @@ public class Asteroids extends Applet
     protected BufferedImage buffer = null;
     protected Thread updateThread = null;
     protected Random random = new Random();
-    protected final Color background = new Color(16, 16, 16);
-    protected final Color foreground = new Color(224, 224, 224);
+    protected static final Color background = new Color(16, 16, 16);
+    protected static final Color foreground = new Color(224, 224, 224);
     protected final Movable playerShip = new Movable();
     protected final Movable saucer = new Movable();
     protected List<Movable> asteroids = null;
@@ -306,12 +313,7 @@ public class Asteroids extends Applet
 
     @Override
     public void init() {
-        playerShip.points = new Point[] {
-            new Point(1, 0),
-            new Point(-1, 2f/3),
-            new Point(-2f/3, 0),
-            new Point(-1, -2f/3),
-        };
+        playerShip.points = wedgeShipPoints;
         playerShip.thrust = new Point[] {
             new Point(-1, 1f/3),
             new Point(-3f/2, 0),
@@ -702,7 +704,8 @@ public class Asteroids extends Applet
             fm = ctx.getFontMetrics();
             ctx.drawString(message,
                            (bounds.width - fm.stringWidth(message)) / 2,
-                           (bounds.height - fm.getHeight()) / 2);
+                           (bounds.height - fm.getHeight()) / 2 +
+                           fm.getAscent());
         }
         playerShip.draw(ctx, bounds, thrust_elapsed > 0);
         for (Movable shot : playerShots)
@@ -715,6 +718,23 @@ public class Asteroids extends Applet
         gfx.drawImage(buffer, 0, 0, this);
     }
 
-    public static void main(String[] args)
-    { Standalone.app(new Asteroids(), "Asteroids", args); }
+    /**
+     * Entry point to start Asteroids application.
+     * @param args command line arguments */
+    public static void main(String[] args) {
+        int width = 32;;
+        int height = 32;
+        BufferedImage icon = new BufferedImage
+            (width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics gfx = icon.getGraphics();
+        gfx.setColor(Asteroids.background);
+        gfx.fillRect(0, 0, width, height);
+        gfx.setColor(Asteroids.foreground);
+        Movable.drawPointLoop
+            (gfx, 0, -1, ((width < height) ? width : height) * 5 / 12,
+             new Point(width/2, height/2), wedgeShipPoints);
+
+        Standalone.app(new Asteroids(), "Asteroids",
+                       icon, null, args);
+    }
 }
