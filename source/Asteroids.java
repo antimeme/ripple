@@ -21,6 +21,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.event.ComponentListener;
 import java.awt.event.ComponentEvent;
@@ -718,23 +719,43 @@ public class Asteroids extends java.applet.Applet
         gfx.drawImage(buffer, 0, 0, this);
     }
 
+    protected static Image createIcon() {
+        final int size = 32, width = size, height = size;
+        BufferedImage result = new BufferedImage
+            (size, size, BufferedImage.TYPE_INT_ARGB);
+        Graphics gfx = result.getGraphics();
+        int[] xpoints = new int[wedgeShipPoints.length];
+        int[] ypoints = new int[wedgeShipPoints.length];
+
+        for (int ii = 0; ii < wedgeShipPoints.length; ++ii) {
+            float factor = size * 9 / 20;
+            xpoints[ii] =
+                (int)(size / 2 + wedgeShipPoints[ii].y * factor);
+            ypoints[ii] =
+                (int)(size / 2 - wedgeShipPoints[ii].x * factor);
+        }
+
+        gfx.setColor(Asteroids.background);
+        gfx.fillPolygon(xpoints, ypoints, wedgeShipPoints.length);
+        //gfx.fillRect(0, 0, width, height);
+        // Movable.drawPointLoop
+        //     (gfx, 0, -1, ((width < height) ? width : height) * 10 / 21,
+        //      new Point(width/2, height/2), wedgeShipPoints);
+        // Movable.drawPointLoop
+        //     (gfx, 0, -1, ((width < height) ? width : height) * 8 / 19,
+        //      new Point(width/2, height/2), wedgeShipPoints);
+        gfx.setColor(Asteroids.foreground);
+        Movable.drawPointLoop
+            (gfx, 0, -1, size * 9 / 20,
+             new Point(size/2, size/2), wedgeShipPoints);
+        return result;
+    }
+
     /**
      * Entry point to start Asteroids application.
      * @param args command line arguments */
     public static void main(String[] args) {
-        int width = 32;;
-        int height = 32;
-        BufferedImage icon = new BufferedImage
-            (width, height, BufferedImage.TYPE_INT_RGB);
-        Graphics gfx = icon.getGraphics();
-        gfx.setColor(Asteroids.background);
-        gfx.fillRect(0, 0, width, height);
-        gfx.setColor(Asteroids.foreground);
-        Movable.drawPointLoop
-            (gfx, 0, -1, ((width < height) ? width : height) * 5 / 12,
-             new Point(width/2, height/2), wedgeShipPoints);
-
         Standalone.app(new Asteroids(), "Asteroids",
-                       icon, null, args);
+                       Asteroids.createIcon(), null, args);
     }
 }
