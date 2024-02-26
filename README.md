@@ -61,25 +61,25 @@ for most purposes.
 
 #### Upgrade to Next Release
 
-  - # for file in /etc/apt/sources.list /etc/apt/sources.list.d/*; do
+  - \# for file in /etc/apt/sources.list /etc/apt/sources.list.d/*; do
         sed s,\b$old\b,$new,g $file > $file.edited
         mv $file.edited $file
       done
-  - # for target in clean update upgrade full-upgrade autoremove; do \
+  - \# for target in clean update upgrade full-upgrade autoremove; do \
         apt-get $target; done
 
 #### Package Utilities
 
-  - # apt update && apt upgrade -y
+  - \# apt update && apt upgrade -y
   - $ apt list # list installed packages
   - $ apt list $term # list packages that match a search term
   - $ dpkg -L $package # list files owned by package
   - $ dpkg -S /path/to/file # find package that owns a file
-  - # apt remove $package # remove an installed package
+  - \# apt remove $package # remove an installed package
 
 #### Useful Packages
 
-  - # apt install -y \
+  - \# apt install -y \
         emacs firefox curl \
         build-essential git autoconf automake libtool gdb valgrind \
         libsdl2{,-gfx,-ttf,-image}-dev \
@@ -95,19 +95,19 @@ other encumberance.
 
 #### Package Utilities
 
-  - # dnf update -y
+  - \# dnf update -y
   - $ rpm -qa # list installed packages
   - $ rpm -q $term # list packages that match a search term
   - $ rpm -ql $package # list files owned by package
   - $ rpm -qf /path/to/file # find package that owns a file
-  - # rpm -e $package # remove an installed package
+  - \# rpm -e $package # remove an installed package
 
 #### Useful Packages
 
-  - # dnf config-manager --set-enabled crb
-  - # dnf install epel-release
-  - # dnf groupinstall 'Development Tools'
-  - # dnf install -y \
+  - \# dnf config-manager --set-enabled crb
+  - \# dnf install epel-release
+  - \# dnf groupinstall 'Development Tools'
+  - \# dnf install -y \
         emacs firefox curl \
         git autoconf automake libtool gdb valgrind \
         SDL2{,_gfx,_ttf,_image}-devel \
