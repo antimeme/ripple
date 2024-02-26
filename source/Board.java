@@ -28,9 +28,9 @@ import java.util.Enumeration;
  * player will move next.  Objects of this class are immutable. */
 public final class Board implements Cloneable {
     public  static final Object GUTTER = null;
-    public  static final Object EMPTY  = new Integer( 0);
-    public  static final Object BLACK  = new Integer( 1);
-    public  static final Object WHITE  = new Integer(-1);
+    public  static final Object EMPTY  = Integer.valueOf(0);
+    public  static final Object BLACK  = Integer.valueOf(1);
+    public  static final Object WHITE  = Integer.valueOf(-1);
     private static final String STR_EMPTY = "+";
     private static final String STR_BLACK = "b";
     private static final String STR_WHITE = "w";

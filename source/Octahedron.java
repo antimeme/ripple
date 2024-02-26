@@ -1,5 +1,5 @@
 // Octahedron.java
-// Copyright (C) 2010-2015 by Jeff Gold
+// Copyright (C) 2010-2024 by Jeff Gold
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -23,7 +23,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 
-/** An experiment that draws an octahedral net. */
+/**
+ * An experiment that draws an octahedral net. */
 public class Octahedron extends Applet {
     private final double height_factor = Math.sqrt(3) / 2;
 
@@ -50,9 +51,9 @@ public class Octahedron extends Applet {
         }
     }
 
-    public Dimension getPreferredSize() {
-	return new Dimension(320, 240);
-    }
+    public Dimension getPreferredSize()
+    { return new Dimension(320, 240); }
+
     public void paint(Graphics g) {
         int size, offx = 0, offy = 0;
         Dimension d = getSize();
@@ -138,6 +139,10 @@ public class Octahedron extends Applet {
                      offy + (size + height) / 2);
     }
 
+    /**
+     * Entry point for a simple test application.
+     * @param args command line arguments
+     * @throws Exception anything can happen */
     public static void main(String[] args) throws Exception
     { Standalone.app(new Octahedron(), args); }
 }

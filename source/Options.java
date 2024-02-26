@@ -228,8 +228,9 @@ public class Options {
                         }
                     }
                     if (!matched)
-                        throw new Problem("Unknown option",
-                                          new Character(c).toString());
+                        throw new Problem
+                            ("Unknown option",
+                             Character.valueOf(c).toString());
                 }
             } else extra.add(arg);
         }

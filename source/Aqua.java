@@ -3,9 +3,16 @@ import net.esclat.jarbles.abalone.GraphicPlayer;
 import java.awt.*;
 import java.awt.event.*;
 
+/**
+ * A bluish theme for Jarbles. */
 public class Aqua extends GraphicPlayer.Theme {
+    /**
+     * Provides the theme name.
+     * @return the name of this theme */
     public static String getName() { return "Aqua"; }
 
+    /**
+     * Constructs an instance of the Aqua theme. */
     public Aqua() {
         lineOne = "Aqua Jarbles";
         lineTwo = "by Jeff Gold";

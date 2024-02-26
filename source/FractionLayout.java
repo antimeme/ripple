@@ -1,5 +1,5 @@
 // FractionLayout.java
-// Copyright (C) 2006-2015 by Jeff Gold.
+// Copyright (C) 2006-2024 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -15,8 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-// A layout manager that uses decimal fractions between zero and one
-// to create sensible scaling behavior for a user interface container.
 package net.esclat.ripple;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
@@ -26,14 +24,9 @@ import java.awt.LayoutManager;
 import java.awt.Component;
 import java.awt.Container;
 
-// Dependencies needed only for module unit test.
-import java.applet.Applet;
-import java.awt.Button;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-
-/** Positions components according to proportional rules specified
- *  as numbers between zero and one.  */
+/**
+ * A layout manager that uses decimal fractions between zero and one
+ * to create sensible scaling behavior for a container. */
 public final class FractionLayout implements LayoutManager {
     private static class LayoutItem {
         float x, y, width, height;
@@ -130,11 +123,15 @@ public final class FractionLayout implements LayoutManager {
         items.remove(target);
     }
 
+    /**
+     * Entry point for a simple test application.
+     * @param args command line arguments
+     * @throws Exception anything can happen */
     public static void main(String args[]) throws Exception {
-        Applet a = new Applet();
+        java.applet.Applet a = new java.applet.Applet();
         a.setLayout(new FractionLayout());
-        a.add(new Button("one"), "0.05 0.05 0.4 0.4");
-        a.add(new Button("two"), "0.5 0.5 0.25 0.25");
+        a.add(new java.awt.Button("one"), "0.05 0.05 0.4 0.4");
+        a.add(new java.awt.Button("two"), "0.5 0.5 0.25 0.25");
         Standalone.app(a, "FractionLayout", args);
     }
 }

@@ -1,5 +1,5 @@
 // Juju.java
-// Copyright (C) 2014-2019 by Jeff Gold
+// Copyright (C) 2014-2024 by Jeff Gold
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -51,7 +51,12 @@ public class Juju {
 
     /** Reports a parsing problem with line and column of input. */
     public static class ParseException extends RuntimeException {
-        public long line, column;
+        /** Line number where parsing failed */
+        public long line;
+
+        /** Column where parsing failed */
+        public long column;
+
         protected static String process
             (long line, long column, String message)
         {
@@ -153,9 +158,9 @@ public class Juju {
     {
         Object actual = null;
         if ("true".equals(value))
-            actual = new Boolean(true);
+            actual = Boolean.valueOf(true);
         else if ("false".equals(value))
-            actual = new Boolean(false);
+            actual = Boolean.valueOf(false);
         else if ("null".equals(value))
             actual = null;
         else throw new ParseException
@@ -771,6 +776,10 @@ public class Juju {
     public static java.lang.String usageLine()
     { return "Parses JSON and performs lookups."; }
 
+    /**
+     * Performs a parsing test to validate this library.
+     * @return true iff test was successful
+     * @throws Exception anything can happen */
     public static boolean test() throws Exception
     {
         boolean success = true;

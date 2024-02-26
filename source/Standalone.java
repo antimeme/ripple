@@ -66,8 +66,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  *   An application which needs to perform some steps after the frame
  *   has been clsoed can use the {@link #join} on the return value to
  *   block until the user closes the application.
- * </p>
- */
+ * </p> */
 public class Standalone
     implements AudioClip, AppletStub, AppletContext, WindowListener
 {
