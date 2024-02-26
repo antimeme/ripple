@@ -164,7 +164,8 @@ WAR_ROOT = $(top_builddir)/WEB-INF/classes
 $(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
 	$(MKDIR_P) $(JAR_ROOT)
 	$(JCC) -d $(JAR_ROOT) -source 8 -target 8 \
-	    -Xlint:-options $(JAVA_SRCFILES)
+	    -Xlint:-options -Xlint:-removal \
+	    $(JAVA_SRCFILES)
 	find $(JAR_ROOT) -name \*.class | \
 	   sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
 	   sort -u > $@
