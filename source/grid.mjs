@@ -235,7 +235,7 @@ class BaseGrid {
 
     /**
      * Return an identifier for a node with row and col properties */
-    getID(node) { checkCell(node); return pair(node.row, node.col); }
+    getID(node) { checkCell(node); return pair(node.col, node.row); }
 
     /**
      * Set the value of the "id" property on node to an identifier
@@ -320,6 +320,15 @@ class BaseGrid {
         nodeB = this._checkNodeCell(nodeB);
         return this._getNeighbors(nodeA).some(neighbor =>
             ((neighbor.row === nodeB.row) &&
+             (neighbor.col === nodeB.col)));
+    }
+
+    /**
+     * Return truthy iff nodeA and nodeB are diagonal neighbors */
+    isDiagonal(nodeA, nodeB) {
+        nodeB = this._checkNodeCell(nodeB);
+        return this._getNeighbors(nodeA).some(neighbor =>
+            (neighbor.diagonal && (neighbor.row === nodeB.row) &&
              (neighbor.col === nodeB.col)));
     }
 
