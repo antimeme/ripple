@@ -38,65 +38,31 @@ static int gizmo_sdl_init = 0;
 static int gizmo_ttf_init = 0;
 
 static int
-gizmo_setupSDL(SDL_Renderer **renderer, SDL_Window **window)
+gizmo_failmsg(const char *funcname, int status)
 {
-  int result = EXIT_SUCCESS;
-  SDL_DisplayMode mode;
-
-  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-    fprintf(stderr, "Failed to initialize SDL: %s\n", SDL_GetError());
-    result = EXIT_FAILURE;
-  } else gizmo_sdl_init = 1;
-
-  if (result != EXIT_SUCCESS) {
-  } else if (SDL_GetCurrentDisplayMode(0, &mode) < 0) {
-    fprintf(stderr, "Failed to initialize SDL: %s\n", SDL_GetError());
-    result = EXIT_FAILURE;
-  } else if (!(*window = SDL_CreateWindow
-               ("Gizmo", SDL_WINDOWPOS_UNDEFINED,
-                SDL_WINDOWPOS_UNDEFINED,
-                mode.w * 9 / 10, mode.h * 4 / 5, 0))) {
-    fprintf(stderr, "Failed to create window with SDL: %s\n",
-            SDL_GetError());
-    result = EXIT_FAILURE;
-  } else if (SDL_FALSE == SDL_SetHint
-             (SDL_HINT_RENDER_SCALE_QUALITY, "linear")) {
-    fprintf(stderr, "Failed to set hint SDL: %s\n", SDL_GetError());
-    result = EXIT_FAILURE;
-  } else if (!(*renderer = SDL_CreateRenderer
-               (*window, -1, SDL_RENDERER_ACCELERATED))) {
-    fprintf(stderr, "Failed to create renderer with SDL: %s\n",
-            SDL_GetError());
-    result = EXIT_FAILURE;
-  } else if (TTF_Init() < 0) {
-    fprintf(stderr, "Failed to initialize TTF: %s\n",
-            SDL_GetError());
-    result = EXIT_FAILURE;
-  } else gizmo_ttf_init = 1;
-
-  return result;
+  if (status < 0) {
+    SDL_Log("%s: %s\n", funcname, SDL_GetError());
+    SDL_ShowSimpleMessageBox
+      (SDL_MESSAGEBOX_ERROR, funcname, SDL_GetError(), 0);
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
 }
+#define GIZMO_CHECK(fn, args) gizmo_failmsg(#fn, fn args)
 
 static int
-gizmo_setup_icon(SDL_Window *window, const char *data, unsigned length)
+gizmo_chknull(const char *funcname, void *ptr)
 {
-  int result = EXIT_SUCCESS;
-  SDL_Surface *icon = NULL;
-  SDL_RWops *image = NULL;
-
-  if ((image = SDL_RWFromConstMem(data, length)) == NULL) {
-    fprintf(stderr, "Failed to create SDL_RWops: %s\n", SDL_GetError());
-    result = EXIT_FAILURE;
-  } else if ((icon = IMG_Load_RW(image, 0)) == NULL) {
-    fprintf(stderr, "Failed to load image: %s\n", SDL_GetError());
-    result = EXIT_FAILURE;
-  } else SDL_SetWindowIcon(window, icon);
-
-  if (image != NULL)
-    SDL_RWclose(image);
-  SDL_FreeSurface(icon);
-  return result;
+  if (!ptr) {
+    SDL_Log("%s: %s\n", funcname, SDL_GetError());
+    SDL_ShowSimpleMessageBox
+      (SDL_MESSAGEBOX_ERROR, funcname, SDL_GetError(), 0);
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
 }
+#define GIZMO_CHKNULL(fn, ptr, args) \
+  gizmo_chknull(#fn, (ptr = fn args))
 
 struct gizmo {
   SDL_Renderer *renderer;
@@ -111,6 +77,68 @@ struct gizmo {
   unsigned n_mouse_actions;
 };
 
+static int
+gizmo_setup_icon(SDL_Window *window, const unsigned char *data,
+                 unsigned length)
+{
+  int result = EXIT_SUCCESS;
+  SDL_Surface *icon = NULL;
+  SDL_RWops *image = NULL;
+
+#ifndef __EMSCRIPTEN__
+  if ((result = GIZMO_CHKNULL
+       (SDL_RWFromConstMem, image, (data, length)))) {
+  } else if ((result = GIZMO_CHKNULL(IMG_Load_RW, icon, (image, 0)))) {
+  } else SDL_SetWindowIcon(window, icon);
+#endif
+
+  if (image != NULL)
+    SDL_RWclose(image);
+  SDL_FreeSurface(icon);
+  return result;
+}
+
+static int
+gizmo_setup_SDL(struct gizmo *gizmo)
+{
+  int result = EXIT_SUCCESS;
+  SDL_DisplayMode mode;
+
+  /* Only call SDL_Quit() when SDL_Init() has succeded */
+  if (EXIT_SUCCESS == (result = GIZMO_CHECK
+                       (SDL_Init, (SDL_INIT_VIDEO))))
+    gizmo_sdl_init = 1;
+
+  if (result != EXIT_SUCCESS) {
+  } else if ((result = GIZMO_CHECK(SDL_GetCurrentDisplayMode,
+                                   (0, &mode)))) {
+  } else if ((result = GIZMO_CHKNULL
+              (SDL_CreateWindow, gizmo->window,
+               (gizmo->app->title ? gizmo->app->title :"Gizmo",
+                SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                gizmo->app->width, gizmo->app->height,
+                SDL_WINDOW_RESIZABLE)))) {
+  } else if (SDL_FALSE == SDL_SetHint
+             (SDL_HINT_RENDER_SCALE_QUALITY, "linear")) {
+    SDL_Log("SDL_SetHint: %s\n", SDL_GetError());
+    result = EXIT_FAILURE;
+  } else if ((result = GIZMO_CHKNULL
+              (SDL_CreateRenderer, gizmo->renderer,
+               (gizmo->window, -1, SDL_RENDERER_PRESENTVSYNC)))) {
+  } else if ((result = GIZMO_CHECK
+              (SDL_GetRendererOutputSize,
+               (gizmo->renderer, &gizmo->app->width,
+                &gizmo->app->height)))) {
+  } else if (gizmo->app->icon && gizmo->app->icon_length &&
+             (EXIT_SUCCESS != (result = gizmo_setup_icon
+                               (gizmo->window, gizmo->app->icon,
+                                gizmo->app->icon_length)))) {
+  } else if ((result = GIZMO_CHECK(TTF_Init, ()))) {
+  } else gizmo_ttf_init = 1;
+
+  return result;
+}
+
 int
 gizmo_app_font(TTF_Font **mono, unsigned size)
 {
@@ -119,10 +147,10 @@ gizmo_app_font(TTF_Font **mono, unsigned size)
   TTF_CloseFont(*mono);
 
   /* https://www.fontspace.com/brass-mono-font-f29885 */
-  if (mono && !(*mono = TTF_OpenFont
-                ("./apps/fonts/brass-mono.ttf", size))) {
-    result = EXIT_FAILURE;
-    fprintf(stderr, "Failed to open mono font: %s\n", TTF_GetError());
+  if (mono &&
+      ((result = GIZMO_CHKNULL
+        (TTF_OpenFont, *mono,
+         ("./apps/fonts/brass-mono.ttf", size))))) {
   }
 
   /* :TODO: TTF_CloseFont */
@@ -142,14 +170,13 @@ gizmo_app_actions
 
   if (!(new_key_actions = malloc
         (n_key_actions * sizeof(*key_actions)))) {
-    fprintf(stderr, "Failed to allocate %lu bytes for "
-            "key actions\n", n_key_actions * sizeof(*key_actions));
+    SDL_Log("Failed to allocate %lu bytes for key actions\n",
+            n_key_actions * sizeof(*key_actions));
     result = EXIT_FAILURE;
   } else if (!(new_mouse_actions = malloc
                (n_mouse_actions * sizeof(*mouse_actions)))) {
-    fprintf(stderr, "Failed to allocate %lu bytes for "
-            "event actions\n", n_mouse_actions *
-            sizeof(*mouse_actions));
+    SDL_Log("Failed to allocate %lu bytes for event actions\n",
+            n_mouse_actions * sizeof(*mouse_actions));
     result = EXIT_FAILURE;
   } else {
     unsigned ii;
@@ -213,17 +240,17 @@ gizmo_quadratic_real_roots(unsigned *n_roots, float *roots,
  * Return non-zero iff the spherical objects represented by given
  * position, velocity and size collide within the elapsed time. */
 int
-gizmo_check_collide(float sizeA, struct point *positionA,
-                    struct point *velocityA,
-                    float sizeB, struct point *positionB,
-                    struct point *velocityB, unsigned elapsed)
+gizmo_check_collide(float sizeA, SDL_FPoint *positionA,
+                    SDL_FPoint *velocityA,
+                    float sizeB, SDL_FPoint *positionB,
+                    SDL_FPoint *velocityB, unsigned elapsed)
 {
   int result = 0;
   const float gap = sizeA + sizeB;
-  struct point dp = {
+  SDL_FPoint dp = {
     positionA->x - positionB->x,
     positionA->y - positionB->y };
-  struct point dm = {
+  SDL_FPoint dm = {
     velocityA->x - velocityB->x,
     velocityA->y - velocityB->y};
 
@@ -244,41 +271,38 @@ gizmo_check_collide(float sizeA, struct point *positionA,
   return result;
 }
 
-struct point
-gizmo_rotate_origin(struct point *point, float dircos, float dirsin)
+SDL_FPoint
+gizmo_rotate_origin(SDL_FPoint *point, float dircos, float dirsin)
 {
-  struct point result = {
+  SDL_FPoint result = {
     point->x * dircos - point->y * dirsin,
     point->x * dirsin + point->y * dircos };
   return result;
 }
 
 int
-gizmo_draw_polygon(SDL_Renderer *renderer, float size,
-                   struct point *position,
-                   float dircos, float dirsin,
-                   unsigned n_points, struct point *points)
+gizmo_draw_point_loop(SDL_Renderer *renderer, float size,
+                      SDL_FPoint *position,
+                      float dircos, float dirsin,
+                      unsigned n_points, SDL_FPoint *points)
 {
   int result = EXIT_SUCCESS;
-  struct point previous = { 0, 0 };
+  SDL_FPoint previous = { 0, 0 };
   unsigned ii;
 
   for (ii = 0; (result == EXIT_SUCCESS) && (ii < n_points); ++ii) {
-    struct point start = ii ? previous :
+    SDL_FPoint start = ii ? previous :
       gizmo_rotate_origin(&points[ii], dircos, dirsin);
-    struct point end = gizmo_rotate_origin
+    SDL_FPoint end = gizmo_rotate_origin
       (&points[(ii + 1) % n_points], dircos, dirsin);
     previous = end;
 
-    if (SDL_RenderDrawLine(renderer,
-                           (int)(position->x + size * start.x),
-                           (int)(position->y + size * start.y),
-                           (int)(position->x + size * end.x),
-                           (int)(position->y + size * end.y)) < 0) {
-      fprintf(stderr, "Failed to draw line with SDL: %s\n",
-              SDL_GetError());
-      result = EXIT_FAILURE;
-    }
+    result = GIZMO_CHECK
+      (SDL_RenderDrawLine,
+       (renderer, (int)(position->x + size * start.x),
+        (int)(position->y + size * start.y),
+        (int)(position->x + size * end.x),
+        (int)(position->y + size * end.y)));
   }
   return result;
 }
@@ -378,24 +402,19 @@ main(int argc, char **argv)
   memset(&gizmo, 0, sizeof(gizmo));
   gizmo.last = now();
 
-  printf("Gizmo: activating Asteroids\n");
   gizmo.app = asteroids_get_app();
+  if (gizmo.app)
+    SDL_Log("Starting app: %s\n", gizmo.app->title);
+  else SDL_Log("Failed to find app\n");
 
-  if (EXIT_SUCCESS != (result = gizmo_setupSDL
-                       (&gizmo.renderer, &gizmo.window))) {
-  } else if (SDL_GetRendererOutputSize
-             (gizmo.renderer, &gizmo.app->width,
-              &gizmo.app->height) < 0) {
-    fprintf(stderr, "Failed to get output size with SDL: %s\n",
-            SDL_GetError());
-    result = EXIT_FAILURE;
+  if (EXIT_SUCCESS != (result = gizmo_setup_SDL(&gizmo))) {
   } else if (gizmo.app->init &&
              (EXIT_SUCCESS !=
               (result = gizmo.app->init(gizmo.app, &gizmo)))) {
-    fprintf(stderr, "Failed to initialize app\n");
-  } else {
-    if (gizmo.app->resize)
-      gizmo.app->resize(gizmo.app, gizmo.app->width, gizmo.app->height);
+  } else if (gizmo.app->resize &&
+             (EXIT_SUCCESS !=
+              (result = gizmo.app->resize
+               (gizmo.app, gizmo.app->width, gizmo.app->height)))) {
   }
 
   if (result != EXIT_SUCCESS)
@@ -404,11 +423,6 @@ main(int argc, char **argv)
 #ifdef __EMSCRIPTEN__
   emscripten_set_main_loop_arg(gizmo_frame, &gizmo, 0, 1);
 #else
-  if (gizmo.app->icon && gizmo.app->icon_length &&
-      (EXIT_SUCCESS != (result = gizmo_setup_icon
-                        (gizmo.window, gizmo.app->icon,
-                         gizmo.app->icon_length))))
-    return result;
 
   unsigned long long frame = now();
   gizmo.done = 0;

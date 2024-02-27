@@ -22,10 +22,10 @@
 #ifndef GIZMO_H
 #define GIZMO_H
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL2_gfxPrimitives.h>
-#include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_image.h>
+#include "SDL.h"
+#include "SDL2_gfxPrimitives.h"
+#include "SDL_ttf.h"
+#include "SDL_image.h"
 
 /**
  * Represents a complete graphical application.
@@ -39,15 +39,16 @@
  * - update will be called for each frame before draw
  *  */
 struct app {
-  int width;
-  int height;
+  const char *title;
   const unsigned char *icon;
   unsigned icon_length;
+  int width;
+  int height;
 
   /* Called by Gizmo if not NULL */
   int  (*init)(struct app *app, void *);
   void (*destroy)(struct app *app);
-  void (*resize)(struct app *app, int width, int height);
+  int  (*resize)(struct app *app, int width, int height);
   int  (*update)(struct app *app, unsigned elapsed);
   int  (*draw)(struct app *app, SDL_Renderer *rndr);
 };
@@ -100,12 +101,6 @@ gizmo_app_font(TTF_Font **mono, unsigned size);
 /* A rudimentary math library */
 
 /**
- * Represents a point in two dimensional space.
- * Note that SDL_Point exists, but uses integer types which are
- * less convenient for trigonometry operations. */
-struct point { float x; float y; };
-
-/**
  * Return a random number between 0 and 1 selected using a
  * uniform distribution. */
 float
@@ -126,24 +121,25 @@ gizmo_quadratic_real_roots(unsigned *n_roots, float *roots,
  * Return non-zero iff the spherical objects represented by given
  * position, velocity and size collide within the elapsed time. */
 int
-gizmo_check_collide(float sizeA, struct point *positionA,
-              struct point *velocityA,
-              float sizeB, struct point *positionB,
-              struct point *velocityB, unsigned elapsed);
-struct point
-gizmo_rotate_origin(struct point *point, float dircos, float dirsin);
+gizmo_check_collide(float sizeA, SDL_FPoint *positionA,
+                    SDL_FPoint *velocityA,
+                    float sizeB, SDL_FPoint *positionB,
+                    SDL_FPoint *velocityB, unsigned elapsed);
+
+SDL_FPoint
+gizmo_rotate_origin(SDL_FPoint *point, float dircos, float dirsin);
 
 /**
- * Renders a polygon as a closed loop of lines.  The lines are
- * positioned according to the array of points given as the final
- * parameter.  These points will first be rotated according to
- * the cosine and sine values provided.  When in doubt, set
- * dircos to 1.0 and dirsin to 0.0 to leave the points unchanged.
- * Note that the contents of the points array will NOT be modified. */
+ * Renders a closed loop of lines.  The lines are positioned according
+ * to the array of points given as the final parameter.  These points
+ * will first be rotated according to the cosine and sine values
+ * provided.  When in doubt, set dircos to 1.0 and dirsin to 0.0 to
+ * leave the points unchanged.  Note that the contents of the points
+ * array will NOT be modified. */
 int
-gizmo_draw_polygon(SDL_Renderer *renderer, float size,
-                   struct point *position,
-                   float dircos, float dirsin,
-                   unsigned n_points, struct point *points);
+gizmo_draw_point_loop(SDL_Renderer *renderer, float size,
+                      SDL_FPoint *position,
+                      float dircos, float dirsin,
+                      unsigned n_points, SDL_FPoint *points);
 
 #endif /* GIZMO_H */

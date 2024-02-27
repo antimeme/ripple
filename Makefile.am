@@ -95,7 +95,11 @@ if HAVE_SDL2
 #                  libsdl2-ttf-dev libsdl2-image-dev
 # $ guix install sdl2 sdl2-ttf sdl2-gfx sdl2-image
 bin_PROGRAMS += gizmo
-gizmo_LDADD = -lSDL2 -lSDL2_gfx -lSDL2_ttf -lSDL2_image -lm
+gizmo_CFLAGS = `sdl2-config --cflags`
+gizmo_LDFLAGS = `sdl2-config --libs` \
+	-lSDL2_gfx \
+	-lSDL2_ttf \
+	-lSDL2_image -lm
 gizmo_SOURCES = \
 	source/gizmo/gizmo.c \
 	source/gizmo/asteroids.c
@@ -108,15 +112,19 @@ endif
 # $ pacman --noconfirm -S mingw-w64-x86_64-toolchain \
 #     mingw64/mingw-w64-x86_64-SDL2{,_gfx,_ttf,_image}
 # $ /mingw64/bin/gcc.exe -o gizmo.exe source/gizmo/*.c \
-#     `sdl2-config --cflags --libs` -lSDL2_{gfx,ttf,image}
+#     `sdl2-config --cflags --static-libs` -lSDL2_{gfx,ttf,image}
 
 if HAVE_EMCC
+# Emscripten is kinda dumb about its ports.  The following may
+# be necessary to avoid permission errors:
+# $ make gizmo.html EM_CONFIG=$HOME/.emscripten
 apps/gizmo.wasm apps/gizmo.js apps/gizmo.html apps/gizmo.data: \
 	    source/gizmo/gizmo.c source/gizmo/asteroids.c
-	$(EMCC) -o $@ --preload-file apps/fonts/ \
+	$(EMCC) -o $@ \
+	    --preload-file apps/fonts/ \
 	    -sALLOW_MEMORY_GROWTH \
 	    -sUSE_SDL=2 -sUSE_SDL_GFX=2 -sUSE_SDL_TTF=2 \
-	    -sUSE_SDL_IMAGE=2 -sSDL2_IMAGE_FORMATS='[svg]' \
+	    -sUSE_SDL_IMAGE=2 -sSDL2_IMAGE_FORMATS='["svg"]' \
 	    source/gizmo/gizmo.c \
 	    source/gizmo/asteroids.c
 endif

@@ -38,41 +38,41 @@ struct app_asteroids;
 
 struct debris {
   float size;
-  struct point position;
-  struct point velocity;
+  SDL_FPoint position;
+  SDL_FPoint velocity;
   unsigned duration;
 
-  struct point *points;
+  SDL_FPoint *points;
   unsigned n_points;
 };
 
 struct asteroid {
   float size;
-  struct point position;
-  struct point velocity;
+  SDL_FPoint position;
+  SDL_FPoint velocity;
   float direction;
   unsigned dead;
   unsigned n_splits;
 
-  struct point *points;
+  SDL_FPoint *points;
   unsigned n_points;
 };
 
 struct shot {
   float size;
-  struct point position;
-  struct point velocity;
+  SDL_FPoint position;
+  SDL_FPoint velocity;
   unsigned duration;
 };
 
 struct ship {
   float size;
-  struct point position;
-  struct point velocity;
+  SDL_FPoint position;
+  SDL_FPoint velocity;
   float direction;
   unsigned dead;
 
-  struct point *points;
+  SDL_FPoint *points;
   unsigned n_points;
 
   struct shot *shots;
@@ -110,7 +110,7 @@ struct app_asteroids {
   unsigned gameover;
   unsigned report;
 
-  struct point *points;
+  SDL_FPoint *points;
   unsigned n_points;
 
   TTF_Font *font_score;
@@ -119,7 +119,7 @@ struct app_asteroids {
 
 static void
 move_wrap(float size, unsigned elapsed, int width, int height,
-          struct point *position, struct point *velocity)
+          SDL_FPoint *position, SDL_FPoint *velocity)
 {
   position->x += velocity->x * elapsed;
   if (position->x > size + width / 2)
@@ -136,8 +136,8 @@ move_wrap(float size, unsigned elapsed, int width, int height,
 
 static int
 asteroids__debris_create(struct app_asteroids *self,
-                         struct point *position,
-                         struct point *velocity, unsigned count)
+                         SDL_FPoint *position,
+                         SDL_FPoint *velocity, unsigned count)
 {
   int result = EXIT_SUCCESS;
   unsigned ii;
@@ -149,7 +149,7 @@ asteroids__debris_create(struct app_asteroids *self,
       self->debris = newdebris;
       self->m_debris++;
     } else {
-      fprintf(stderr, "Failed to allocate %lu bytes for debris\n",
+      SDL_Log("Failed to allocate %lu bytes for debris\n",
               (self->n_debris + count) * sizeof(*self->debris));
       result = EXIT_FAILURE;
     }
@@ -170,7 +170,7 @@ asteroids__debris_create(struct app_asteroids *self,
 
     piece->n_points = 3 * gizmo_uniform() + 3;
     if ((piece->points = malloc
-         (sizeof(struct point) * piece->n_points))) {
+         (sizeof(SDL_FPoint) * piece->n_points))) {
       unsigned jj;
 
       for (jj = 0; jj < piece->n_points; ++jj) {
@@ -182,8 +182,8 @@ asteroids__debris_create(struct app_asteroids *self,
       }
       self->n_debris++;
     } else {
-      fprintf(stderr, "Failed to allocate %lu bytes for debris\n",
-              sizeof(struct point) * piece->n_points * 2);
+      SDL_Log("Failed to allocate %lu bytes for debris\n",
+              sizeof(SDL_FPoint) * piece->n_points * 2);
       result = EXIT_FAILURE;
     }
   }
@@ -228,8 +228,8 @@ asteroids__asteroids_create(struct app_asteroids *self,
 {
   int result = EXIT_SUCCESS;
   unsigned ii;
-  struct point empty = {0, 0};
-  struct point position = source ? source->position : empty;
+  SDL_FPoint empty = {0, 0};
+  SDL_FPoint position = source ? source->position : empty;
   unsigned n_splits = source ? (source->n_splits - 1) : 2;
 
   if (self->m_asteroids < self->n_asteroids + n_asteroids) {
@@ -240,7 +240,7 @@ asteroids__asteroids_create(struct app_asteroids *self,
       self->asteroids = newasteroids;
       self->m_asteroids = self->n_asteroids + n_asteroids;
     } else {
-      fprintf(stderr, "Failed to allocate %lu bytes for asteroid\n",
+      SDL_Log("Failed to allocate %lu bytes for asteroid\n",
               (self->n_asteroids + n_asteroids) *
               sizeof(*self->asteroids));
       result = EXIT_FAILURE;
@@ -271,7 +271,7 @@ asteroids__asteroids_create(struct app_asteroids *self,
 
     asteroid->n_points = 2 * n_splits + 10;
     if ((asteroid->points = malloc
-         (sizeof(struct point) * asteroid->n_points))) {
+         (sizeof(SDL_FPoint) * asteroid->n_points))) {
       unsigned jj;
 
       for (jj = 0; jj < asteroid->n_points; ++jj) {
@@ -283,8 +283,8 @@ asteroids__asteroids_create(struct app_asteroids *self,
       }
       ++self->n_asteroids;
     } else {
-      fprintf(stderr, "Failed to allocate %lu bytes for asteroids\n",
-              sizeof(struct point) * asteroid->n_points * 2);
+      SDL_Log("Failed to allocate %lu bytes for asteroids\n",
+              sizeof(SDL_FPoint) * asteroid->n_points * 2);
       result = EXIT_FAILURE;
     }
   }
@@ -381,7 +381,7 @@ asteroids__ship_shoot(struct ship *ship, float direction, float size) {
       ship->shots = newshots;
       ship->m_shots = ship->n_shots + 1;
     } else {
-      fprintf(stderr, "Failed to allocate %lu bytes for shot\n",
+      SDL_Log("Failed to allocate %lu bytes for shot\n",
               (ship->n_shots + 1) * sizeof(*ship->shots));
       result = EXIT_FAILURE;
     }
@@ -443,7 +443,7 @@ asteroids__tap(struct app *app, SDL_Event *event)
   if (self->gameover == 1)
     asteroids_reset(self);
   else {
-    struct point vector = {
+    SDL_FPoint vector = {
       (event->button.x - self->app.width / 2) - self->player.position.x,
       (event->button.y - self->app.height / 2) - self->player.position.y
     };
@@ -535,9 +535,10 @@ asteroids__ship_destroy(struct ship *ship)
   free(ship->shots);
 }
 
-static void
+static int
 asteroids_resize(struct app *app, int width, int height)
 {
+  int result = EXIT_SUCCESS;
   struct app_asteroids *self = (struct app_asteroids *)app;
   unsigned ii;
 
@@ -550,6 +551,7 @@ asteroids_resize(struct app *app, int width, int height)
   gizmo_app_font(&self->font_score, (unsigned)(self->size / 17));
   gizmo_app_font(&self->font_gameover,
                  (unsigned)(2 * self->size / 17));
+  return result;
 }
 
 static int
@@ -584,8 +586,8 @@ asteroids_init(struct app *app, void *context)
     { SDL_SCANCODE_SPACE, app_key_flag_norepeat, NULL,
       0, 0, asteroids__shoot },
   };
-  struct point *newpoints = NULL;
-  struct point points[] = {
+  SDL_FPoint *newpoints = NULL;
+  SDL_FPoint points[] = {
     { 1, 0 }, { -1, 2./3 }, { -2./3, 0 }, { -1, -2./3 },
 
     { 1, 0 }, { -1, 2./3 }, { -2./3, 0 }, { -1, -2./3 }
@@ -596,16 +598,16 @@ asteroids_init(struct app *app, void *context)
   unsigned n_points_used = 0;
 
   if (!self) {
-    fprintf(stderr, "Error: missing app structure\n");
+    SDL_Log("Error: missing app structure\n");
     result = EXIT_FAILURE;
   } else if ((result = gizmo_app_actions
               (context, key_actions, sizeof(key_actions) /
                sizeof(*key_actions), mouse_actions,
                sizeof(mouse_actions) / sizeof(*mouse_actions)))) {
     /* Already reported */
-  } else if (!(newpoints = malloc(sizeof(struct point) * n_points))) {
-    fprintf(stderr, "Failed to allocate %lu bytes for points\n",
-            sizeof(struct point) * n_points);
+  } else if (!(newpoints = malloc(sizeof(SDL_FPoint) * n_points))) {
+    SDL_Log("Failed to allocate %lu bytes for points\n",
+            sizeof(SDL_FPoint) * n_points);
     result = EXIT_FAILURE;
   } else {
     self->n_points = n_points;
@@ -677,7 +679,7 @@ asteroids_update(struct app *app, unsigned elapsed)
   if (!self->report) {
     self->report = 900;
     if (0) {
-      printf("REPORT ship=[%.2fpx,d=%u,dir=%.2f]\n",
+      SDL_Log("REPORT ship=[%.2fpx,d=%u,dir=%.2f]\n",
              self->player.size, self->player.dead,
              self->player.direction);
     }
@@ -689,22 +691,25 @@ asteroids_update(struct app *app, unsigned elapsed)
       self->gameover = 1;
     else self->gameover -= elapsed;
   } else if (self->player.dead > 0) {
-    if (elapsed > self->player.dead) {
+    if (elapsed >= self->player.dead) {
       self->player.dead = 0;
 
-      if (self->lives) {
-        for (ii = 0; ii < self->n_asteroids; ++ii)
-          if (gizmo_check_collide
-              (self->asteroids[ii].size,
-               &self->asteroids[ii].position,
-               &self->asteroids[ii].velocity,
-               self->player.size, &self->player.position,
-               &self->player.velocity, 1500))
-            self->player.dead = 500;
-        if (!self->player.dead) {
-          self->lives -= 1;
-          self->target = nan("1");
-        }
+      for (ii = 0; ii < self->n_asteroids; ++ii)
+        if (gizmo_check_collide
+            (self->asteroids[ii].size,
+             &self->asteroids[ii].position,
+             &self->asteroids[ii].velocity,
+             self->player.size, &self->player.position,
+             &self->player.velocity, 1500))
+          self->player.dead = 500;
+      if (!self->player.dead) {
+        self->lives -= 1;
+        self->player.position.x = 0;
+        self->player.position.y = 0;
+        self->player.velocity.x = 0;
+        self->player.velocity.y = 0;
+        self->player.direction = -M_PI/2;
+        self->target = nan("1");
       }
     } else self->player.dead -= elapsed;
   } else {
@@ -782,26 +787,27 @@ asteroids__draw_player(struct ship *ship, SDL_Renderer *renderer,
 {
   int result = EXIT_SUCCESS;
   unsigned ii;
-  struct point position;
+  SDL_FPoint position;
   float dircos = cos(ship->direction);
   float dirsin = sin(ship->direction);
 
   position.x = ship->position.x + width / 2;
   position.y = ship->position.y + height / 2;
-  result = gizmo_draw_polygon
+  result = gizmo_draw_point_loop
     (renderer, ship->size, &position,
      dircos, dirsin, ship->n_points, ship->points);
 
   if ((result == EXIT_SUCCESS) && thrust) {
-    struct point points[] = { { -1, 1./3}, { -3./2, 0}, { -1, -1./3} };
+    SDL_FPoint points[] = { { -1, 1./3}, { -3./2, 0}, { -1, -1./3} };
     unsigned n_points = sizeof(points) / sizeof(*points);
 
     for (ii = 0; ii < ship->n_points; ++ii) {
       points[ii].x += (gizmo_uniform() - 0.5) * 0.33;
       points[ii].y += (gizmo_uniform() - 0.5) * 0.33;
     }
-    result = gizmo_draw_polygon(renderer, ship->size, &position,
-                                dircos, dirsin, n_points, points);
+    result = gizmo_draw_point_loop
+      (renderer, ship->size, &position,
+       dircos, dirsin, n_points, points);
   }
 
   return result;
@@ -810,7 +816,7 @@ asteroids__draw_player(struct ship *ship, SDL_Renderer *renderer,
 static void
 asteroids__draw_text(SDL_Renderer *renderer, TTF_Font *font,
                      SDL_Color *color, const char *message,
-                     struct point *start, struct point *center)
+                     SDL_FPoint *start, SDL_FPoint *center)
 {
   SDL_Surface *surface = TTF_RenderUTF8_Solid(font, message, *color);
   if (surface) {
@@ -845,7 +851,7 @@ asteroids_draw(struct app *app, SDL_Renderer *renderer)
   SDL_SetRenderDrawColor(renderer, 224, 224, 224, 255);
 
   if (self->font_score) {
-    struct point start = { self->player.size, self->player.size };
+    SDL_FPoint start = { self->player.size, self->player.size };
     char str_score[256];
     snprintf(str_score, sizeof(str_score), "%'u", self->score);
     asteroids__draw_text
@@ -853,18 +859,19 @@ asteroids_draw(struct app *app, SDL_Renderer *renderer)
   }
 
   if (self->font_gameover && (self->gameover > 0)) {
-    struct point dimensions = { self->app.width, self->app.height };
+    SDL_FPoint dimensions = { self->app.width, self->app.height };
     asteroids__draw_text
       (renderer, self->font_gameover, &color,
        "GAME OVER", NULL, &dimensions);
   }
 
   for (ii = 0; ii < self->lives; ++ii) { /* Draw extra lives */
-    struct point position;
+    SDL_FPoint position;
     position.x = 15 * self->player.size * (ii + 1) / 8;
     position.y = self->player.size + self->size / 8;
-    gizmo_draw_polygon(renderer, self->player.size, &position, 0, -1,
-                       self->player.n_points, self->player.points);
+    gizmo_draw_point_loop
+      (renderer, self->player.size, &position, 0, -1,
+       self->player.n_points, self->player.points);
   }
 
   if (!self->player.dead)
@@ -882,23 +889,25 @@ asteroids_draw(struct app *app, SDL_Renderer *renderer)
 
   for (ii = 0; ii < self->n_asteroids; ++ii) {
     struct asteroid *asteroid = &self->asteroids[ii];
-    struct point position = asteroid->position;
+    SDL_FPoint position = asteroid->position;
     position.x += self->app.width / 2;
     position.y += self->app.height / 2;
     if (!asteroid->dead)
-      gizmo_draw_polygon(renderer, asteroid->size, &position,
-                         cosf(asteroid->direction),
-                         sinf(asteroid->direction),
-                         asteroid->n_points, asteroid->points);
+      gizmo_draw_point_loop
+        (renderer, asteroid->size, &position,
+         cosf(asteroid->direction),
+         sinf(asteroid->direction),
+         asteroid->n_points, asteroid->points);
   }
 
   for (ii = 0; ii < self->n_debris; ++ii) {
     struct debris *piece = &self->debris[ii];
-    struct point position = piece->position;
+    SDL_FPoint position = piece->position;
     position.x += self->app.width / 2;
     position.y += self->app.height / 2;
-    gizmo_draw_polygon(renderer, piece->size, &position, 1, 0,
-                       piece->n_points, piece->points);
+    gizmo_draw_point_loop
+      (renderer, piece->size, &position, 1, 0,
+       piece->n_points, piece->points);
   }
 
   SDL_RenderPresent(renderer);
@@ -912,6 +921,9 @@ asteroids_get_app(void) {
   struct app_asteroids *result = NULL;
 
   if ((result = malloc(sizeof(*result)))) {
+    result->app.title = "Asteroids";
+    result->app.width  = 640;
+    result->app.height = 480;
     result->app.icon        = (unsigned char *)asteroids_icon_svg;
     result->app.icon_length = sizeof(asteroids_icon_svg);
     result->app.init    = asteroids_init;
