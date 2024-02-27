@@ -298,7 +298,7 @@ ripple_context_logv(struct ripple_context* rctx, unsigned level,
       while (*c) {
         if ((*c == '\n') || (*c == '\r'))
           *c = ' ';
-        else if (!((unsigned char)*c & 0x80) && !isprint(*c))
+        else if (!((unsigned char)*c & 0x80) && !isprint((int)*c))
           *c = '#';
         ++c;
       }
