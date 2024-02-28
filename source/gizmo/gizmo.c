@@ -238,15 +238,15 @@ gizmo_quadratic_real_roots(unsigned *n_roots, float *roots,
 
 /**
  * Return non-zero iff the spherical objects represented by given
- * position, velocity and size collide within the elapsed time. */
+ * position, velocity and radius collide within the elapsed time. */
 int
-gizmo_check_collide(float sizeA, SDL_FPoint *positionA,
+gizmo_check_collide(float radiusA, SDL_FPoint *positionA,
                     SDL_FPoint *velocityA,
-                    float sizeB, SDL_FPoint *positionB,
+                    float radiusB, SDL_FPoint *positionB,
                     SDL_FPoint *velocityB, unsigned elapsed)
 {
   int result = 0;
-  const float gap = sizeA + sizeB;
+  const float gap = radiusA + radiusB;
   SDL_FPoint dp = {
     positionA->x - positionB->x,
     positionA->y - positionB->y };

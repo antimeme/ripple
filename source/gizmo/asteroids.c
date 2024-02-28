@@ -37,7 +37,7 @@ const char asteroids_icon_svg[] =
 struct app_asteroids;
 
 struct debris {
-  float size;
+  float radius;
   SDL_FPoint position;
   SDL_FPoint velocity;
   unsigned duration;
@@ -47,7 +47,7 @@ struct debris {
 };
 
 struct asteroid {
-  float size;
+  float radius;
   SDL_FPoint position;
   SDL_FPoint velocity;
   float direction;
@@ -59,14 +59,14 @@ struct asteroid {
 };
 
 struct shot {
-  float size;
+  float radius;
   SDL_FPoint position;
   SDL_FPoint velocity;
   unsigned duration;
 };
 
 struct ship {
-  float size;
+  float radius;
   SDL_FPoint position;
   SDL_FPoint velocity;
   float direction;
@@ -162,7 +162,7 @@ asteroids__debris_create(struct app_asteroids *self,
 
     memset(piece, 0, sizeof(*piece));
     piece->duration = 900;
-    piece->size = self->size / 100;
+    piece->radius = self->size / 100;
     piece->position = *position;
     piece->velocity = *velocity;
     piece->velocity.x += cosf(direction) * speed;
@@ -206,10 +206,10 @@ asteroids__debris_update(struct app_asteroids *self,
   for (ii = 0; ii < self->n_debris; ++ii) {
     struct debris *piece = &self->debris[ii];
     if ((piece->duration > elapsed) &&
-        (piece->position.x < (self->app.width + piece->size) / 2) &&
-        (piece->position.x > -(self->app.width + piece->size) / 2) &&
-        (piece->position.y < (self->app.height + piece->size) / 2) &&
-        (piece->position.y > -(self->app.height + piece->size) / 2)) {
+        (piece->position.x < (self->app.width + piece->radius) / 2) &&
+        (piece->position.x > -(self->app.width + piece->radius) / 2) &&
+        (piece->position.y < (self->app.height + piece->radius) / 2) &&
+        (piece->position.y > -(self->app.height + piece->radius) / 2)) {
       piece->duration -= elapsed;
       piece->position.x += piece->velocity.x * elapsed;
       piece->position.y += piece->velocity.y * elapsed;
@@ -254,14 +254,14 @@ asteroids__asteroids_create(struct app_asteroids *self,
     memset(asteroid, 0, sizeof(*asteroid));
     asteroid->dead = 0;
     asteroid->n_splits = n_splits;
-    asteroid->size = (1 << asteroid->n_splits) * self->size / 40;
+    asteroid->radius = (1 << asteroid->n_splits) * self->size / 40;
     if (!source) {
       float place = 2 * gizmo_uniform();
       if (place >= 1) {
         asteroid->position.x = (place - 1.5) * self->app.width;
-        asteroid->position.y = asteroid->size + self->app.height / 2;
+        asteroid->position.y = asteroid->radius + self->app.height / 2;
       } else {
-        asteroid->position.x = asteroid->size + self->app.width / 2;
+        asteroid->position.x = asteroid->radius + self->app.width / 2;
         asteroid->position.y = (place - 0.5) * self->app.height;
       }
     } else asteroid->position = position;
@@ -322,14 +322,14 @@ asteroids__asteroids_update(struct app_asteroids *self,
   for (ii = 0; ii < self->n_asteroids; ++ii) {
     struct asteroid *asteroid = &self->asteroids[ii];
     if (!asteroid->dead) {
-      move_wrap(asteroid->size, elapsed, width, height,
+      move_wrap(asteroid->radius, elapsed, width, height,
                 &asteroid->position, &asteroid->velocity);
       if (ii > survivors)
         self->asteroids[survivors] = *asteroid;
       survivors++;
     } else asteroids__asteroid_destroy(asteroid);
     self->asteroids[ii].direction += elapsed * M_PI /
-      (self->asteroids[ii].size * 30);
+      (self->asteroids[ii].radius * 30);
   }
   self->n_asteroids = survivors;
 }
@@ -360,7 +360,7 @@ asteroids__shots_update(struct ship *ship, unsigned elapsed,
     struct shot *shot = &ship->shots[ii];
     if (shot->duration > elapsed) {
       shot->duration -= elapsed;
-      move_wrap(shot->size, elapsed, width, height,
+      move_wrap(shot->radius, elapsed, width, height,
                 &shot->position, &shot->velocity);
       if (ii > survivors)
         ship->shots[survivors] = *shot;
@@ -389,7 +389,7 @@ asteroids__ship_shoot(struct ship *ship, float direction, float size) {
 
   if ((result == EXIT_SUCCESS) && (ship->n_shots < 9)) {
     struct shot *shot = &ship->shots[ship->n_shots++];
-    shot->size = ship->size;
+    shot->radius = ship->radius;
     shot->duration = 350;
     shot->position = ship->position;
     shot->velocity = ship->velocity;
@@ -449,7 +449,7 @@ asteroids__tap(struct app *app, SDL_Event *event)
     };
     float quadrance = vector.x * vector.x + vector.y * vector.y;
 
-    if (quadrance > self->player.size * self->player.size) {
+    if (quadrance > self->player.radius * self->player.radius) {
       float sx = cos(self->player.direction);
       float sy = sin(self->player.direction);
       float cosangle = (vector.x * sx + vector.y * sy) /
@@ -496,6 +496,15 @@ asteroids__shoot(struct app *app, SDL_Event *event)
 }
 
 static void
+asteroids__award(struct app_asteroids *self, unsigned npoints)
+{
+  const unsigned newlife = 10000;
+  if (((self->score + npoints) / newlife) > (self->score / newlife))
+    self->lives += 1;
+  self->score += npoints;
+}
+
+static void
 asteroids__ship_asteroid(struct app_asteroids *self, unsigned aid,
                          struct ship *ship, unsigned elapsed)
 {
@@ -504,8 +513,8 @@ asteroids__ship_asteroid(struct app_asteroids *self, unsigned aid,
   unsigned ii;
   for (ii = 0; ii < ship->n_shots; ++ii) {
     if (gizmo_check_collide
-      (asteroid->size, &asteroid->position, &asteroid->velocity,
-         ship->shots[ii].size, &ship->shots[ii].position,
+      (asteroid->radius, &asteroid->position, &asteroid->velocity,
+         ship->shots[ii].radius, &ship->shots[ii].position,
          &ship->shots[ii].velocity, elapsed)) {
       ship->shots[ii].duration = 0;
       award = asteroids__asteroid_impact(self, asteroid);
@@ -518,15 +527,15 @@ asteroids__ship_asteroid(struct app_asteroids *self, unsigned aid,
   asteroid = &self->asteroids[aid];
 
   if (!ship->dead && gizmo_check_collide
-      (asteroid->size, &asteroid->position, &asteroid->velocity,
-       ship->size, &ship->position, &ship->velocity, elapsed)) {
+      (asteroid->radius, &asteroid->position, &asteroid->velocity,
+       ship->radius, &ship->position, &ship->velocity, elapsed)) {
     if (ship->impact)
       ship->impact(self, ship);
     award = asteroids__asteroid_impact(self, asteroid);
   }
 
-  if (ship == &self->player)
-    self->score += award;
+  if (award && (ship == &self->player))
+    asteroids__award(self, award);
 }
 
 static void
@@ -543,9 +552,9 @@ asteroids_resize(struct app *app, int width, int height)
   unsigned ii;
 
   self->size = (width < height) ? width : height;
-  self->player.size = self->size * 3 / 100;
+  self->player.radius = self->size * 3 / 100;
   for (ii = 0; ii < self->n_asteroids; ++ii)
-    self->asteroids[ii].size =
+    self->asteroids[ii].radius =
       (1 << self->asteroids[ii].n_splits) * self->size / 40;
 
   gizmo_app_font(&self->font_score, (unsigned)(self->size / 17));
@@ -680,7 +689,7 @@ asteroids_update(struct app *app, unsigned elapsed)
     self->report = 900;
     if (0) {
       SDL_Log("REPORT ship=[%.2fpx,d=%u,dir=%.2f]\n",
-             self->player.size, self->player.dead,
+             self->player.radius, self->player.dead,
              self->player.direction);
     }
   }
@@ -696,10 +705,10 @@ asteroids_update(struct app *app, unsigned elapsed)
 
       for (ii = 0; ii < self->n_asteroids; ++ii)
         if (gizmo_check_collide
-            (self->asteroids[ii].size,
+            (self->asteroids[ii].radius,
              &self->asteroids[ii].position,
              &self->asteroids[ii].velocity,
-             self->player.size, &self->player.position,
+             self->player.radius, &self->player.position,
              &self->player.velocity, 1500))
           self->player.dead = 500;
       if (!self->player.dead) {
@@ -755,7 +764,7 @@ asteroids_update(struct app *app, unsigned elapsed)
         (self, ii, &self->player, elapsed);
 
   if (!self->player.dead)
-    move_wrap(self->player.size, elapsed,
+    move_wrap(self->player.radius, elapsed,
               self->app.width, self->app.height,
               &self->player.position,
               &self->player.velocity);
@@ -794,7 +803,7 @@ asteroids__draw_player(struct ship *ship, SDL_Renderer *renderer,
   position.x = ship->position.x + width / 2;
   position.y = ship->position.y + height / 2;
   result = gizmo_draw_point_loop
-    (renderer, ship->size, &position,
+    (renderer, ship->radius, &position,
      dircos, dirsin, ship->n_points, ship->points);
 
   if ((result == EXIT_SUCCESS) && thrust) {
@@ -806,7 +815,7 @@ asteroids__draw_player(struct ship *ship, SDL_Renderer *renderer,
       points[ii].y += (gizmo_uniform() - 0.5) * 0.33;
     }
     result = gizmo_draw_point_loop
-      (renderer, ship->size, &position,
+      (renderer, ship->radius, &position,
        dircos, dirsin, n_points, points);
   }
 
@@ -851,7 +860,7 @@ asteroids_draw(struct app *app, SDL_Renderer *renderer)
   SDL_SetRenderDrawColor(renderer, 224, 224, 224, 255);
 
   if (self->font_score) {
-    SDL_FPoint start = { self->player.size, self->player.size };
+    SDL_FPoint start = { self->player.radius, self->player.radius };
     char str_score[256];
     snprintf(str_score, sizeof(str_score), "%'u", self->score);
     asteroids__draw_text
@@ -867,10 +876,10 @@ asteroids_draw(struct app *app, SDL_Renderer *renderer)
 
   for (ii = 0; ii < self->lives; ++ii) { /* Draw extra lives */
     SDL_FPoint position;
-    position.x = 15 * self->player.size * (ii + 1) / 8;
-    position.y = self->player.size + self->size / 8;
+    position.x = 15 * self->player.radius * (ii + 1) / 8;
+    position.y = self->player.radius + self->size / 8;
     gizmo_draw_point_loop
-      (renderer, self->player.size, &position, 0, -1,
+      (renderer, self->player.radius, &position, 0, -1,
        self->player.n_points, self->player.points);
   }
 
@@ -885,7 +894,7 @@ asteroids_draw(struct app *app, SDL_Renderer *renderer)
                       self->app.width / 2),
                 (int)(self->player.shots[ii].position.y +
                       self->app.height / 2),
-                self->player.size / 3, 0xffe0e0e0);
+                self->player.radius / 3, 0xffe0e0e0);
 
   for (ii = 0; ii < self->n_asteroids; ++ii) {
     struct asteroid *asteroid = &self->asteroids[ii];
@@ -894,7 +903,7 @@ asteroids_draw(struct app *app, SDL_Renderer *renderer)
     position.y += self->app.height / 2;
     if (!asteroid->dead)
       gizmo_draw_point_loop
-        (renderer, asteroid->size, &position,
+        (renderer, asteroid->radius, &position,
          cosf(asteroid->direction),
          sinf(asteroid->direction),
          asteroid->n_points, asteroid->points);
@@ -906,7 +915,7 @@ asteroids_draw(struct app *app, SDL_Renderer *renderer)
     position.x += self->app.width / 2;
     position.y += self->app.height / 2;
     gizmo_draw_point_loop
-      (renderer, piece->size, &position, 1, 0,
+      (renderer, piece->radius, &position, 1, 0,
        piece->n_points, piece->points);
   }
 
