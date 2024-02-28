@@ -236,6 +236,7 @@ public class Asteroids extends java.applet.Applet
     protected Random random = new Random();
     protected static final Color background = new Color(16, 16, 16);
     protected static final Color foreground = new Color(224, 224, 224);
+    protected final int newlife = 10000;
     protected final Movable playerShip = new Movable();
     protected final Movable saucer = new Movable();
     protected List<Movable> asteroids = null;
@@ -548,9 +549,15 @@ public class Asteroids extends java.applet.Applet
         shots.add(shot);
     }
 
-    protected int award(Movable asteroid) {
-        return (asteroid.nsplits > 1) ? 20 :
-            (asteroid.nsplits == 1) ? 50 : 100;
+    protected void award(int npoints) {
+        if (((score + npoints) / newlife) > (score / npoints))
+            lives += 1;
+        score += npoints;
+    }
+
+    protected void award(Movable asteroid) {
+        award((asteroid.nsplits > 1) ? 20 :
+              (asteroid.nsplits == 1) ? 50 : 100);
     }
 
     protected void updateGame(long elapsed) {
@@ -624,7 +631,7 @@ public class Asteroids extends java.applet.Applet
             for (Movable shot : playerShots)
                 if (shot.checkCollide(asteroid, elapsed)) {
                     shot.duration = 0;
-                    score += award(asteroid);
+                    award(asteroid);
 
                     createDebris(asteroid);
                     asteroid.dead = 1;
@@ -633,7 +640,7 @@ public class Asteroids extends java.applet.Applet
                 }
             if (playerShip.checkCollide(asteroid, elapsed)) {
                 createDebris(playerShip);
-                score += award(asteroid);
+                award(asteroid);
                 playerShip.dead = 3000;
                 if (lives <= 0)
                     gameover = 2000;
