@@ -19,6 +19,7 @@
     "scripts": {
         "serve": "node source/server.js",
         "mocha": "mocha source/mocha",
+        "asteroids": "electron apps/asteroids.html",
         "streya": "electron apps/streya/index.html"
     }
 }
