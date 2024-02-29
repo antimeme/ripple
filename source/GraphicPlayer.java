@@ -19,8 +19,8 @@
 //
 // A lightweight component that provides a complete user interface for
 // playing Abalone.
-package net.esclat.jarbles.abalone;
-import net.esclat.ripple.HexagonGrid;
+package net.antimeme.jarbles.abalone;
+import net.antimeme.ripple.HexagonGrid;
 import java.applet.AppletContext;
 import java.applet.AudioClip;
 import java.awt.Color;

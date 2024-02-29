@@ -16,6 +16,7 @@
 //
 // ---------------------------------------------------------------------
 package net.antimeme.asteroids;
+import net.antimeme.ripple.Standalone;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -33,7 +34,6 @@ import java.text.NumberFormat;
 import java.util.Random;
 import java.util.List;
 import java.util.LinkedList;
-import net.esclat.ripple.Standalone;
 
 /**
  * This file is an independent clone of Asteroids, a space-themed

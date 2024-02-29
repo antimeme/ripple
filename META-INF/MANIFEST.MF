@@ -1,4 +1,4 @@
 Manifest-Version: 1.0
-Main-Class: net.esclat.ripple.Ripple
+Main-Class: net.antimeme.ripple.Ripple
 Application-Name: Ripple
 Permissions: sandbox

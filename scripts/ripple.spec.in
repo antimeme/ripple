@@ -23,8 +23,8 @@ Release:   %{release}
 License:   GNU GPLv3+
 Group:     System Environment/Libraries
 Summary:   Common abstractions for software development.
-URL:       http://esclat.net/software/%{name}/
-Source0:   http://esclat.net/software/%{name}/%{name}-%{version}.tar.gz
+URL:       http://antimeme.net/%{name}/
+Source0:   http://antimeme.net/%{name}/%{name}-%{version}.tar.gz
 Packager:  @PACKAGE_BUGREPORT@
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
@@ -116,5 +116,5 @@ Install this package to use ripple Java modules.
 %endif
 
 %changelog
-* Sun 1 July 2007 Jeff Gold <jgold@esclat.net> - 0.0-1
+* Sun 1 July 2007 Jeff Gold <jgold@antimeme.net> - 0.0-1
 - Created specification for RPM based distributions.

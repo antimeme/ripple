@@ -1,5 +1,5 @@
-package net.esclat.jarbles.abalone;
-import net.esclat.jarbles.abalone.GraphicPlayer;
+package net.antimeme.jarbles.abalone;
+import net.antimeme.jarbles.abalone.GraphicPlayer;
 import java.awt.*;
 import java.awt.event.*;
 

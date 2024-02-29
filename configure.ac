@@ -1,5 +1,5 @@
 dnl configure.ac
-dnl Copyright (C) 2006-2020 by Jeff Gold.
+dnl Copyright (C) 2006-2024 by Jeff Gold.
 dnl 
 dnl This program is free software: you can redistribute it and/or
 dnl modify it under the terms of the GNU General Public License as
@@ -16,7 +16,7 @@ dnl along with this program.  If not, see
 dnl <http://www.gnu.org/licenses/>.
 dnl 
 dnl --------------------------------------------------------------------
-AC_INIT([ripple], [0.1.1], [Jeff Gold <ripple@esclat.net>])
+AC_INIT([ripple], [0.1.1], [Jeff Gold <ripple@antimeme.net>])
 AC_CANONICAL_HOST
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_HEADER([include/ripple/config.h])

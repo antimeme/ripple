@@ -255,7 +255,7 @@ mostlyclean-local: mostlyclean-local-java
 OPENSSL = openssl
 KEYTOOL = $(JAVA_HOME)/bin/keytool
 STOREPASS = 123456
-COMMON_NAME = /C=US/O=esclat.net/OU=CA/CN=
+COMMON_NAME = /C=US/O=antimeme.net/OU=CA/CN=
 
 ca-key.pem:
 	$(OPENSSL) genrsa -out $@ $(KEYSIZE)

@@ -1,7 +1,7 @@
 {
     "name": "@PACKAGE@",
     "version": "@VERSION@",
-    "author": "Jeff Gold <ripple@esclat.net>",
+    "author": "Jeff Gold <@PACKAGE@@antimeme.net>",
     "license": "GPL-3.0+",
     "repository": "https://github.com/antimeme/ripple.git",
     "description": "Ripple is an eclectic set of tools and libraries",
@@ -9,7 +9,7 @@
         "Ripple"
     ],
     "dependencies": {
-        "electron": "*",
+        "electron": "^29.1.0",
         "sqlite": "*"
     },
     "devDependencies": {
@@ -17,10 +17,8 @@
     },
     "main": "source/server.js",
     "scripts": {
-        "start": "node source/server.js",
+        "serve": "node source/server.js",
         "mocha": "mocha source/mocha",
-        "streya": "electron apps/streya.html",
-        "habitat": "electron apps/habitat.html",
-        "whiplash": "electron apps/whiplash.html"
+        "streya": "electron apps/streya/index.html"
     }
 }

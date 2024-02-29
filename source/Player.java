@@ -18,7 +18,7 @@
 // ---------------------------------------------------------------------
 //
 // Player represents anything that can play a game of Abalone.
-package net.esclat.jarbles.abalone;
+package net.antimeme.jarbles.abalone;
 
 /**
  * Represents anything that can play a game of Abalone.  This might

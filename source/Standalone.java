@@ -18,7 +18,7 @@
 // Simulates the context of an applet so that the same code can
 // operate outside an embedded environment without the complexity of
 // an applet viewer application or an HTML file.
-package net.esclat.ripple;
+package net.antimeme.ripple;
 import java.applet.Applet;
 import java.applet.AppletStub;
 import java.applet.AppletContext;
@@ -53,7 +53,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  *
  *  <pre>
  *      // ...
- *      import net.esclat.ripple.Standalone;
+ *      import net.antimeme.ripple.Standalone;
  *
  *      public class ExampleApplet extends Applet {
  *          // ...

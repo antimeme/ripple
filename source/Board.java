@@ -18,7 +18,7 @@
 // ---------------------------------------------------------------------
 //
 // An immutable snapshot of an abalone game.
-package net.esclat.jarbles.abalone;
+package net.antimeme.jarbles.abalone;
 import java.util.StringTokenizer;
 import java.util.ArrayList;
 import java.util.Enumeration;

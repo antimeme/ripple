@@ -16,12 +16,12 @@
 // <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-package net.esclat.jarbles;
-import net.esclat.ripple.Standalone;
-import net.esclat.jarbles.abalone.Player;
-import net.esclat.jarbles.abalone.Board;
-import net.esclat.jarbles.abalone.GraphicPlayer;
-import net.esclat.jarbles.abalone.Aqua;
+package net.antimeme.jarbles;
+import net.antimeme.ripple.Standalone;
+import net.antimeme.jarbles.abalone.Player;
+import net.antimeme.jarbles.abalone.Board;
+import net.antimeme.jarbles.abalone.GraphicPlayer;
+import net.antimeme.jarbles.abalone.Aqua;
 import java.util.List;
 import java.util.LinkedList;
 import java.net.URL;

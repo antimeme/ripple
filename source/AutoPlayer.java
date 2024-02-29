@@ -18,7 +18,7 @@
 // ---------------------------------------------------------------------
 //
 // A simple automatic player for abalone.
-package net.esclat.jarbles.abalone;
+package net.antimeme.jarbles.abalone;
 import java.util.ArrayList;
 
 /** A simple computer controlled player. */

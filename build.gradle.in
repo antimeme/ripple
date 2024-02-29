@@ -12,12 +12,12 @@ war {
     from("apps/expense.html") { into("") }
     manifest {
         attributes(
-            "Main-Class": "net.esclat.ripple.Ripple",
+            "Main-Class": "net.antimeme.ripple.Ripple",
             "Application-Name": "Ripple",
             "Permissions": "sandbox",
-            "Implementation-Title": "net.esclat.ripple",
+            "Implementation-Title": "net.antimeme.ripple",
             "Implementation-Version": "@VERSION@",
-            "Implementation-Vendor": "@PACKAGE@@esclat.net")
+            "Implementation-Vendor": "@PACKAGE@@antimeme.net")
     }
 }
 

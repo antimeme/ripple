@@ -39,7 +39,7 @@ mv ./dpkgbroot$datadir/doc/$PACKAGE-$VERSION \
    ./dpkgbroot$datadir/doc/$PACKAGE
 rm ./dpkgbroot$datadir/doc/$PACKAGE/LICENSE
 cat > ./dpkgbroot$datadir/doc/$PACKAGE/copyright <<EOF
-Ripple sources are available at http://esclat.net/software/ripple/
+Ripple sources are available at http://antimeme.net/ripple/
 This package is distributed under the terms of the GNU General Public
 License, version 3 or later.  See /usr/share/common-licenses/GPL-3
 for further details.

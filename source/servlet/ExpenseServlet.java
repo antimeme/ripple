@@ -1,4 +1,4 @@
-package net.esclat.ripple.expense;
+package net.antimeme.ripple.expense;
 
 import java.io.IOException;
 import java.io.PrintWriter;

@@ -1,4 +1,4 @@
-package net.esclat.ripple.servlet;
+package net.antimeme.ripple.servlet;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.IOException;

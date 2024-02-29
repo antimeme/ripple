@@ -16,8 +16,8 @@
 // <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-package net.esclat.ripple;
-import net.esclat.ripple.Matrix;
+package net.antimeme.ripple;
+import net.antimeme.ripple.Matrix;
 
 /**
  * Represents a one-dimensional vector of floating point values. */

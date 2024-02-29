@@ -15,8 +15,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-package net.esclat.ripple;
-import net.esclat.ripple.Standalone;
+package net.antimeme.ripple;
+import net.antimeme.ripple.Standalone;
 import java.applet.Applet;
 import java.awt.Graphics;
 import java.awt.Color;

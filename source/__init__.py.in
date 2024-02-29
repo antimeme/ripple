@@ -24,4 +24,4 @@ if __name__ == '__main__':
     setup(name='@PACKAGE@', version='@VERSION@', description=__doc__,
           package_dir={'@PACKAGE@': '@srcdir@/source'},
           packages=['@PACKAGE@'], author_email='@PACKAGE_BUGREPORT@',
-          license='GPLv3+', url='http://esclat.net/@PACKAGE@/')
+          license='GPLv3+', url='http://antimeme.net/@PACKAGE@/')

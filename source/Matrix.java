@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-package net.esclat.ripple;
+package net.antimeme.ripple;
 import java.io.Serializable;
 
 /**

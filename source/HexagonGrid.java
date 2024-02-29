@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-package net.esclat.ripple;
+package net.antimeme.ripple;
 import java.awt.Rectangle;
 import java.awt.Point;
 

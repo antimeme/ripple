@@ -15,7 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-package net.esclat.ripple;
+package net.antimeme.ripple;
 import java.math.BigInteger;
 import java.math.BigDecimal;
 import java.io.Reader;
