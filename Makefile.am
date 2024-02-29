@@ -167,7 +167,6 @@ JAR     = "$(JAVA_HOME)/bin/jar"
 
 JAVA_SRCFILES = $(JAVA_DISTSRC) $(top_builddir)/source/Ripple.java
 JAR_ROOT = $(top_builddir)/classes
-WAR_ROOT = $(top_builddir)/WEB-INF/classes
 
 $(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
 	$(MKDIR_P) $(JAR_ROOT)
@@ -195,58 +194,28 @@ $(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
 	rm -f $@
 	$(LN_S) @PACKAGE@-@VERSION@.jar $@
 
-MVN_REPO_URL = https://repo1.maven.org/maven2
-SERVLET_DIR = javax/servlet/javax.servlet-api/4.0.1
-SERVLET_URL = $(MVN_REPO_URL)/$(SERVLET_DIR)/javax.servlet-api-4.0.1.jar
-JACKSON_DIR = com/fasterxml/jackson/core/jackson-core/2.9.9/
-JACKSON_URL = $(MVN_REPO_URL)/$(JACKSON_DIR)/jackson-core-2.9.9.jar
-SQLITE_DIR = org/xerial/sqlite-jdbc/3.40.1.0
-SQLITE_URL = $(MVN_REPO_URL)/$(SQLITE_DIR)/sqlite-jdbc-3.40.1.0.jar
+if HAVE_GRADLE
+build/libs/@PACKAGE@-@VERSION@.war: build.gradle $(JAR_ROOT)/.classes
+	$(GRADLE) -b $< war
 
-lib/servlet-api.jar:
-	$(MKDIR_P) lib && curl -o $@ $(SERVLET_URL)
-
-lib/jackson-core.jar:
-	$(MKDIR_P) lib && curl -o $@ $(JACKSON_URL)
-
-lib/sqlite-jdbc.jar:
-	$(MKDIR_P) lib && curl -o $@ $(SQLITE_URL)
-
-J2EE_LIBS = $(wildcard lib/*.jar)
-J2EE_CLASSPATH = $(subst $(SPACE),$(SEPARATOR),$(J2EE_LIBS))
-
-$(WAR_ROOT)/.classes: $(J2EE_DISTSRC) lib/servlet-api.jar
-	$(MKDIR_P) $(WAR_ROOT)
-	$(JCC) -cp "$(J2EE_CLASSPATH)" -d $(WAR_ROOT) \
-	       -source 8 -target 8 -Xlint:-options $(J2EE_DISTSRC)
-	touch $@
-
-@PACKAGE@-@VERSION@.war: $(srcdir)/META-INF/MANIFEST.MF \
-			 $(JAR_ROOT)/.classes \
-	                 $(WAR_ROOT)/.classes \
-	                 $(top_builddir)/.javadoc \
-	                 $(srcdir)/source/servlet/index.html \
-	                 $(srcdir)/apps/expense.html
-	$(JAR) cvfm $@ $(srcdir)/META-INF/MANIFEST.MF \
-	    -C $(srcdir)/resources sounds \
-	    -C $(srcdir)/resources images \
-	    -C $(srcdir) WEB-INF/web.xml \
-	    -C $(srcdir)/source/servlet index.html \
-	    -C $(srcdir)/apps expense.html \
-	    -C $(top_builddir) javadoc WEB-INF/classes/ \
-	    -C $(JAR_ROOT) .
-	chmod +x $@
+@PACKAGE@-@VERSION@.war: build/libs/@PACKAGE@-@VERSION@.war
+	cp $< $@
 
 @PACKAGE@.war: @PACKAGE@-@VERSION@.war
 	@rm -f $@
-	$(LN_S) @PACKAGE@-@VERSION@.war $@
+	$(LN_S) $< $@
 
 deploy: @PACKAGE@.war
-	@if [ -n "$(CATALINA_BASE)" ]; then \
+	@if [ -n "$(JETTY_HOME)" ]; then \
+	    $(SUDO) cp $< $(JETTY_HOME)/webapps; \
+	elif [ -n "$(CATALINA_BASE)" ]; then \
 	    $(SUDO) cp $< $(CATALINA_BASE)/webapps; \
 	elif [ -n "$(CATALINA_HOME)" ]; then \
 	    $(SUDO) cp $< $(CATALINA_HOME)/webapps; \
-	else echo ERROR: no CATALINA_BASE or CATALINA_HOME; fi
+	else echo ERROR: no Java server container detected; fi
+else
+
+endif
 
 install-data-local: javadoc
 	$(MKDIR_P) $(DESTDIR)$(docdir)
@@ -266,10 +235,10 @@ CLEANFILES += \
 	scripts/check-java.sh
 
 clean-local-java:
-	-rm -rf .javadoc javadoc *.jar *.war
+	-rm -rf .gradle/ .javadoc javadoc *.jar *.war
 
 mostlyclean-local-java:
-	-rm -rf $(JAR_ROOT) $(WAR_ROOT)
+	-rm -rf $(JAR_ROOT) build/
 
 else
 clean-local-java:

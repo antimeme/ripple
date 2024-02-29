@@ -81,12 +81,17 @@ if test "x$enable_java" = x1; then
         AC_MSG_RESULT([$JAVA_HOME])
     else AC_MSG_RESULT([missing]); fi
     AM_CONDITIONAL([HAVE_JAVA], [test -n "$JAVA_HOME"])
+
+    AC_PATH_PROG([GRADLE], [gradle], [no])
+    AM_CONDITIONAL([HAVE_GRADLE], [test "x$GRADLE" != "xno"])
 else
     AM_CONDITIONAL([HAVE_JAVA], [false])
+    AM_CONDITIONAL([HAVE_GRADLE], [false])
 fi
 
 AC_CONFIG_FILES([
     Makefile
+    build.gradle
     Cargo.toml
     package.json
     source/__init__.py

@@ -1,0 +1,30 @@
+plugins { id("war") }
+repositories { mavenCentral() }
+sourceSets { main { java { srcDirs = ["source/servlet"] } } }
+
+war {
+    archiveName = "@PACKAGE@-@VERSION@.war"
+    webXml = file("./WEB-INF/web.xml")
+    from("classes") { into("") }
+    from("resources/images") { into("images") }
+    from("resources/sounds") { into("sounds") }
+    from("source/servlet/index.html") { into("") }
+    from("apps/expense.html") { into("") }
+    manifest {
+        attributes(
+            "Main-Class": "net.esclat.ripple.Ripple",
+            "Application-Name": "Ripple",
+            "Permissions": "sandbox",
+            "Implementation-Title": "net.esclat.ripple",
+            "Implementation-Version": "@VERSION@",
+            "Implementation-Vendor": "@PACKAGE@@esclat.net")
+    }
+}
+
+dependencies {
+    providedCompile("javax.servlet:javax.servlet-api:4.0.1")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.13.0")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.0")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.13.0")
+    implementation("org.xerial:sqlite-jdbc:3.36.0.1")
+}

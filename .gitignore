@@ -55,6 +55,9 @@
 /source/__init__.py
 
 # Java
+/build.gradle
+/build/
+/.gradle/
 /classes/
 /lib/
 /javadoc/
@@ -65,7 +68,6 @@
 /ripple-*.war
 /ripple.war
 /servlet-api.jar
-/WEB-INF/classes/
 /scripts/check-java.sh
 
 # JavaScript
