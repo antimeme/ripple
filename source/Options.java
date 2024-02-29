@@ -33,22 +33,44 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-/** Generic option parsing with support for command line arguments,
- *  dynamic help text, confuration files and system properties.
- *  Because all of these mechanisms use the same object structure
- *  consistent applications are easier to create. */
+/**
+ * Generic option parsing with support for command line arguments,
+ * dynamic help text, confuration files and system properties.
+ * Because all of these mechanisms use the same object structure
+ * consistent applications are easier to create. */
 public class Options {
 
     /** Exception for option parsing problems. */
     public static class Problem extends RuntimeException {
+        /** Option that caused this problem */
         java.lang.String opt = null;
+
+        /** Argument to option that caused this problem */
         java.lang.String arg = null;
 
+        /**
+         * Creates a problem
+         * @param cause what caused the problem */
         public Problem(Throwable cause) { super(cause); }
+
+        /**
+         * Creates a problem
+         * @param msg message to describe problem */
         public Problem(java.lang.String msg) { super(msg); }
+
+        /**
+         * Creates a problem
+         * @param msg message to describe problem
+         * @param opt option to which the problem applies */
         public Problem(java.lang.String msg,
                        java.lang.String opt)
         { super(msg + " " + opt); this.opt = opt; }
+
+        /**
+         * Creates a problem
+         * @param msg message to describe problem
+         * @param opt option to which the problem applies
+         * @param arg argument given to option that caused problem */
         public Problem(java.lang.String msg,
                        java.lang.String opt,
                        java.lang.String arg) {
@@ -117,7 +139,17 @@ public class Options {
     }
 
     private ArrayList<Option> opts = new ArrayList<Option>();
+
+    /**
+     * Creates an empty option collection.
+     * Populate this by calling {@link #add}. */
     public Options() {}
+
+    /**
+     * Add an option subclass to the collection.
+     * @param <T> a subclass of Option
+     * @param s option to be added
+     * @return the option that was added for chaining */
     public <T extends Option> T add(T s) { opts.add(s); return s; }
 
     protected static java.lang.String tagArg = "=";
@@ -132,6 +164,11 @@ public class Options {
         { this.o = o;  this.name = name; }
     }
 
+    /**
+     * Match arguments to options and set values appropriately.
+     * @param args iterable set of arguments to consider
+     * @return an iterable containing all values which do not
+     *         qualify as option arguments */
     public Iterable<java.lang.String> parseArgs
         (Iterable<java.lang.String> args)
     {
@@ -240,10 +277,19 @@ public class Options {
         return extra;
     }
 
+    /**
+     * Match arguments to options and set values appropriately.
+     * @param args array of arguments to consider
+     * @return an iterable containing all values which do not
+     *         qualify as option arguments */
     public Iterable<java.lang.String> parseArgs
         (java.lang.String[] args)
     { return parseArgs(Arrays.asList(args)); }
 
+    /**
+     * Read configuration to set default values for options.
+     * @param reader source of configuration data
+     * @throws IOException when stream does */
     public void parseConfig(BufferedReader reader) throws IOException {
         java.lang.String line;
         while ((line = reader.readLine()) != null) {
@@ -285,9 +331,16 @@ public class Options {
         }
     }
 
+    /**
+     * Read a configuration stream to set default values for options.
+     * @param stream source of configuration data
+     * @throws IOException when stream does */
     public void parseConfig(InputStream stream) throws IOException
     { parseConfig(new BufferedReader(new InputStreamReader(stream))); }
 
+    /**
+     * Read a configuration from a named file.
+     * @param fname name of file to open and read */
     public void parseConfig(java.lang.String fname) {
         try {
             parseConfig(new FileInputStream(fname));
@@ -300,6 +353,9 @@ public class Options {
         }
     }
 
+    /**
+     * Explain each option on the provided stream.
+     * @param stream destination for help text */
     public void help(java.io.PrintStream stream) {
         int maxlen = 0;
         for (Option o : opts)
@@ -320,6 +376,10 @@ public class Options {
             }
     }
 
+    /**
+     * Search system properties to find values for each option
+     * in this group.
+     * @param prefix Prepended to option name to make system property */
     public void getProperties(java.lang.String prefix) {
         for (Option o : opts)
             for (java.lang.String opt : o.names(true)) {
@@ -331,7 +391,8 @@ public class Options {
             }
     }
 
-    /** Common resources for supporting familiar option types. */
+    /**
+     * Common resources for supporting familiar option types. */
     public static class Base implements Option {
         protected java.lang.String opt;
         protected char             shr;
@@ -339,7 +400,6 @@ public class Options {
         
         /**
          * Creates an option.
-         *
          * @param opt Canonical name for option
          * @param shr Short name for option
          * @param help Description of option for users */
@@ -371,6 +431,11 @@ public class Options {
         public java.lang.String help(java.lang.String opt)
         { return hlp; }
 
+        /**
+         * Associate the argument with the named option.
+         *
+         * @param opt Name of option to convert.
+         * @param arg Argument to supply to option. */
         public void convert(java.lang.String opt,
                             java.lang.String arg)
         { throw new Problem("Unnecessary argument", opt, arg); }
@@ -383,24 +448,66 @@ public class Options {
      * A simple switch setting.  A public <code>value</code> field
      * permits access to the parsed result. */
     public static class Switch extends Base {
+        /**
+         * Current value of switch option. */
         public boolean value = false;
+
         protected char negshr = '\0';
         protected java.lang.String negpre = "no-";
+
+        /**
+         * Create a new switch option
+         * @param opt long name for option (such as --option)
+         * @param shr short name for option (such as -o)
+         * @param negshr short name to disable option (such as -i)
+         * @param defl default value
+         * @param help description of option for users */
         public Switch(java.lang.String opt, char shr, char negshr,
                       boolean defl, java.lang.String help)
         { super(opt, shr, help); this.negshr = negshr; value = defl; }
+
+        /**
+         * Create a new switch option
+         * @param opt long name for option (such as --option)
+         * @param shr short name for option (such as -o)
+         * @param defl default value
+         * @param help description of option for users */
         public Switch(java.lang.String opt, char shr, boolean defl,
                       java.lang.String help)
         { super(opt, shr, help); value = defl; }
+
+        /**
+         * Create a new switch option
+         * @param opt long name for option (such as --option)
+         * @param shr short name for option (such as -o)
+         * @param negshr short name to disable option (such as -i)
+         * @param help description of option for users */
         public Switch(java.lang.String opt, char shr, char negshr,
                       java.lang.String help)
         { super(opt, shr, help); this.negshr = negshr; }
+
+        /**
+         * Create a new switch option
+         * @param opt long name for option (such as --option)
+         * @param shr short name for option (such as -o)
+         * @param help description of option for users */
         public Switch(java.lang.String opt, char shr,
                       java.lang.String help)
         { super(opt, shr, help); }
+
+        /**
+         * Create a new switch option
+         * @param opt long name for option (such as --option)
+         * @param defl default value
+         * @param help description of option for users */
         public Switch(java.lang.String opt, boolean defl,
                       java.lang.String help)
         { super(opt, '\0', help); value = defl; }
+
+        /**
+         * Create a new switch option
+         * @param opt long name for option (such as --option)
+         * @param help description of option for users */
         public Switch(java.lang.String opt, java.lang.String help)
         { super(opt, '\0', help); }
 
@@ -426,6 +533,7 @@ public class Options {
             }
             return null;
         }
+
         public boolean apply(java.lang.String opt) {
             value = this.opt.equals(opt);
             return true;
@@ -438,21 +546,56 @@ public class Options {
      * A simple counter setting.  A public <code>value</code> field
      * permits access to the parsed result. */
     public static class Counter extends Base {
+        /**
+         * Current value of counter. */
         public int value;
+
+        /**
+         * Create a new counter option
+         * @param opt long name for option (such as --option)
+         * @param shr short name for option (such as -o)
+         * @param defl default value
+         * @param help description of option for users */
         public Counter(java.lang.String opt, char shr, int defl,
                        java.lang.String help)
         { super(opt, shr, help); value = defl; }
+
+        /**
+         * Create a new counter option
+         * @param opt long name for option (such as --option)
+         * @param shr short name for option (such as -o)
+         * @param help description of option for users */
         public Counter(java.lang.String opt, char shr,
                        java.lang.String help)
         { super(opt, shr, help); }
+
+        /**
+         * Create a new counter option
+         * @param opt long name for option (such as --option)
+         * @param defl default value
+         * @param help description of option for users */
         public Counter(java.lang.String opt, int defl,
                        java.lang.String help)
         { super(opt, '\0', help);  value = defl; }
+
+        /**
+         * Create a new counter option
+         * @param opt long name for option (such as --option)
+         * @param help description of option for users */
         public Counter(java.lang.String opt,
                        java.lang.String help)
         { super(opt, '\0', help); }
+
+        /**
+         * Called when option is given
+         * @param opt that was found
+         * @return always true */
         public boolean apply(java.lang.String opt)
         { value++; return true; }
+
+        /**
+         * Return representation of option value
+         * @return representation of option value */
         public java.lang.String toString()
         { return java.lang.Integer.toString(value); }
     }
@@ -461,20 +604,56 @@ public class Options {
      * A simple string setting.  A public <code>value</code> field
      * permits access to the parsed result. */
     public static class String extends Base {
+        /**
+         * Current value of string option. */
         public java.lang.String value = null;
+
+        /**
+         * Create a new string option
+         * @param opt long name for option (such as --option)
+         * @param shr short name for option (such as -o)
+         * @param defl default value
+         * @param help description of option for users */
         public String(java.lang.String opt, char shr,
                       java.lang.String defl, java.lang.String help)
         { super(opt, shr, help);  value = defl; }
+
+        /**
+         * Create a new string option
+         * @param opt long name for option (such as --option)
+         * @param defl default value
+         * @param help description of option for users */
         public String(java.lang.String opt, java.lang.String defl,
                       java.lang.String help)
         { super(opt, '\0', help);  value = defl; }
+
+        /**
+         * Create a new string option
+         * @param opt long name for option (such as --option)
+         * @param shr short name for option (such as -o)
+         * @param help description of option for users */
         public String(java.lang.String opt, char shr,
                       java.lang.String help)
         { super(opt, shr, help); }
+
+        /**
+         * Create a new string option
+         * @param opt long name for option (such as --option)
+         * @param help description of option for users */
         public String(java.lang.String opt, java.lang.String help)
         { super(opt, '\0', help); }
+
+        /**
+         * Associate the argument with the named option.
+         *
+         * @param opt Name of option to convert.
+         * @param arg Argument to supply to option. */
         public void convert(java.lang.String opt,
                             java.lang.String arg) { value = arg; }
+
+        /**
+         * Return representation of option value
+         * @return representation of option value */
         public java.lang.String toString() { return value; }
     }
 
@@ -482,27 +661,68 @@ public class Options {
      * A simple integer setting.  A public <code>value</code> field
      * permits access to the parsed result. */
     public static class Integer extends Base {
+        /**
+         * Current value of integer. */
         public int value;
+
+        /**
+         * Create a new integer option
+         * @param opt long name for option (such as --option)
+         * @param shr short name for option (such as -o)
+         * @param defl default value
+         * @param help description of option for users */
         public Integer(java.lang.String opt, char shr, int defl,
                        java.lang.String help)
         { super(opt, shr, help); value = defl; }
+
+        /**
+         * Create a new integer option
+         * @param opt long name for option (such as --option)
+         * @param shr short name for option (such as -o)
+         * @param help description of option for users */
         public Integer(java.lang.String opt, char shr,
                        java.lang.String help)
         { super(opt, shr, help); }
+
+        /**
+         * Create a new integer option
+         * @param opt long name for option (such as --option)
+         * @param defl default value
+         * @param help description of option for users */
         public Integer(java.lang.String opt, int defl,
                        java.lang.String help)
         { super(opt, '\0', help); value = defl; }
+
+        /**
+         * Create a new integer option
+         * @param opt long name for option (such as --option)
+         * @param help description of option for users */
         public Integer(java.lang.String opt,
                        java.lang.String help)
         { super(opt, '\0', help); }
+
+        /**
+         * Associate the argument with the named option.
+         *
+         * @param opt Name of option to convert.
+         * @param arg Argument to supply to option. */
         public void convert(java.lang.String opt,
                             java.lang.String arg)
         { value = check(opt, arg); }
+
+        /**
+         * Return representation of option value
+         * @return representation of option value */
         public java.lang.String toString()
         { return java.lang.Integer.toString(value); }
 
+        /**
+         * Convert argument to integer if possible.
+         * @param opt option for which this is being done
+         * @param arg argument to convert'
+         * @return converted argument */
         public static int check(java.lang.String opt,
-                            java.lang.String arg) {
+                                java.lang.String arg) {
             try { return java.lang.Integer.parseInt(arg); }
             catch (NumberFormatException ex) {
                 throw new Problem("Argument must be an integer",
@@ -515,24 +735,65 @@ public class Options {
      * A long integer setting.  A public <code>value</code> field
      * permits access to the parsed result. */
     public static class Long extends Base {
+        /**
+         * Current value of long integer. */
         public long value;
+
+        /**
+         * Create a new long integer option
+         * @param opt long name for option (such as --option)
+         * @param shr short name for option (such as -o)
+         * @param defl default value
+         * @param help description of option for users */
         public Long(java.lang.String opt, char shr, long defl,
                     java.lang.String help)
         { super(opt, shr, help); value = defl; }
+
+        /**
+         * Create a new long integer option
+         * @param opt long name for option (such as --option)
+         * @param shr short name for option (such as -o)
+         * @param help description of option for users */
         public Long(java.lang.String opt, char shr,
                     java.lang.String help)
         { super(opt, shr, help); }
+
+        /**
+         * Create a new long integer option
+         * @param opt long name for option (such as --option)
+         * @param defl default value
+         * @param help description of option for users */
         public Long(java.lang.String opt, long defl,
                     java.lang.String help)
         { super(opt, '\0', help);  value = defl; }
+
+        /**
+         * Create a new long integer option
+         * @param opt long name for option (such as --option)
+         * @param help description of option for users */
         public Long(java.lang.String opt, java.lang.String help)
         { super(opt, '\0', help); }
+
+        /**
+         * Associate the argument with the named option.
+         *
+         * @param opt Name of option to convert.
+         * @param arg Argument to supply to option. */
         public void convert(java.lang.String opt,
                             java.lang.String arg)
         { value = check(opt, arg); }
+
+        /**
+         * Return representation of option value
+         * @return representation of option value */
         public java.lang.String toString()
         { return java.lang.Long.toString(value); }
 
+        /**
+         * Convert argument to long integer if possible.
+         * @param opt option for which this is being done
+         * @param arg argument to convert
+         * @return converted value */
         public static long check(java.lang.String opt,
                                  java.lang.String arg) {
             try { return java.lang.Long.parseLong(arg); }
@@ -547,24 +808,65 @@ public class Options {
      * A simple floating point setting.  A public <code>value</code>
      * field permits access to the parsed result. */
     public static class Float extends Base {
+        /**
+         * Current value of single precision floating point number. */
         public float value;
+
+        /**
+         * Create a new single precision floating point option
+         * @param opt long name for option (such as --option)
+         * @param shr short name for option (such as -o)
+         * @param defl default value
+         * @param help description of option for users */
         public Float(java.lang.String opt, char shr, float defl,
                      java.lang.String help)
         { super(opt, shr, help); value = defl; }
+
+        /**
+         * Create a new single precision floating point option
+         * @param opt long name for option (such as --option)
+         * @param shr short name for option (such as -o)
+         * @param help description of option for users */
         public Float(java.lang.String opt, char shr,
                      java.lang.String help)
         { super(opt, shr, help); }
+
+        /**
+         * Create a new single precision floating point option
+         * @param opt long name for option (such as --option)
+         * @param defl default value
+         * @param help description of option for users */
         public Float(java.lang.String opt, float defl,
                      java.lang.String help)
         { super(opt, '\0', help);  value = defl; }
+
+        /**
+         * Create a new single precision floating point option
+         * @param opt long name for option (such as --option)
+         * @param help description of option for users */
         public Float(java.lang.String opt, java.lang.String help)
         { super(opt, '\0', help); }
+
+        /**
+         * Associate the argument with the named option.
+         *
+         * @param opt Name of option to convert.
+         * @param arg Argument to supply to option. */
         public void convert(java.lang.String opt,
                             java.lang.String arg)
         { value = check(opt, arg); }
+
+        /**
+         * Return representation of option value
+         * @return representation of option value */
         public java.lang.String toString()
         { return java.lang.Float.toString(value); }
 
+        /**
+         * Convert argument to single precision float if possible.
+         * @param opt option for which this is being done
+         * @param arg argument to convert
+         * @return converted value */
         public static float check(java.lang.String opt,
                                   java.lang.String arg) {
             try { return java.lang.Float.parseFloat(arg); }
@@ -579,24 +881,66 @@ public class Options {
      * A double precision floating point setting.  A public
      * <code>value</code> field permits access to the parsed result. */
     public static class Double extends Base {
+
+        /**
+         * Current value of double precision floating point number. */
         public double value;
+
+        /**
+         * Create a new double precision floating point option
+         * @param opt long name for option (such as --option)
+         * @param shr short name for option (such as -o)
+         * @param defl default value
+         * @param help description of option for users */
         public Double(java.lang.String opt, char shr, double defl,
                      java.lang.String help)
         { super(opt, shr, help); value = defl; }
+
+        /**
+         * Create a new double precision floating point option
+         * @param opt long name for option (such as --option)
+         * @param shr short name for option (such as -o)
+         * @param help description of option for users */
         public Double(java.lang.String opt, char shr,
                      java.lang.String help)
         { super(opt, shr, help); }
+
+        /**
+         * Create a new double precision floating point option
+         * @param opt long name for option (such as --option)
+         * @param defl default value
+         * @param help description of option for users */
         public Double(java.lang.String opt, double defl,
                      java.lang.String help)
         { super(opt, '\0', help);  value = defl; }
+
+        /**
+         * Create a new double precision floating point option
+         * @param opt long name for option (such as --option)
+         * @param help description of option for users */
         public Double(java.lang.String opt, java.lang.String help)
         { super(opt, '\0', help); }
+
+        /**
+         * Associate the argument with the named option.
+         *
+         * @param opt Name of option to convert.
+         * @param arg Argument to supply to option. */
         public void convert(java.lang.String opt,
                             java.lang.String arg)
         { value = check(opt, arg); }
+
+        /**
+         * Return representation of option value
+         * @return representation of option value */
         public java.lang.String toString()
         { return java.lang.Double.toString(value); }
 
+        /**
+         * Convert argument to double precision float if possible.
+         * @param opt option for which this is being done
+         * @param arg argument to convert
+         * @return converted value */
         public static double check(java.lang.String opt,
                                   java.lang.String arg) {
             try { return java.lang.Double.parseDouble(arg); }
@@ -611,25 +955,66 @@ public class Options {
      * An internet address setting.  A public <code>value</code> field
      * permits access to the parsed result. */
     public static class InetAddress extends Base {
+        /**
+         * Current value of internt address. */
         public java.net.InetAddress value;
+
+        /**
+         * Create a new internet address option
+         * @param opt long name for option (such as --option)
+         * @param shr short name for option (such as -o)
+         * @param defl default value
+         * @param help description of option for users */
         public InetAddress(java.lang.String opt, char shr,
                            java.net.InetAddress defl,
                            java.lang.String help)
         { super(opt, shr, help); value = defl; }
+
+        /**
+         * Create a new internet address option
+         * @param opt long name for option (such as --option)
+         * @param shr short name for option (such as -o)
+         * @param help description of option for users */
         public InetAddress(java.lang.String opt, char shr,
                            java.lang.String help)
         { super(opt, shr, help); }
+
+        /**
+         * Create a new internet address option
+         * @param opt long name for option (such as --option)
+         * @param defl default value
+         * @param help description of option for users */
         public InetAddress(java.lang.String opt,
                            java.net.InetAddress defl,
                            java.lang.String help)
         { super(opt, '\0', help); value = defl; }
+
+        /**
+         * Create a new internet address option
+         * @param opt long name for option (such as --option)
+         * @param help description of option for users */
         public InetAddress(java.lang.String opt, java.lang.String help)
         { super(opt, '\0', help); }
+
+        /**
+         * Associate the argument with the named option.
+         *
+         * @param opt Name of option to convert.
+         * @param arg Argument to supply to option. */
         public void convert(java.lang.String opt, java.lang.String arg)
         { value = check(opt, arg); }
+
+        /**
+         * Return representation of option value
+         * @return representation of option value */
         public java.lang.String toString()
         { return (value != null) ? value.toString() : null; }
 
+        /**
+         * Convert argument to an internet address if possible.
+         * @param opt option for which this is being done
+         * @param arg argument to convert
+         * @return converted value */
         public static java.net.InetAddress check(java.lang.String opt,
                                                  java.lang.String arg) {
             try {
@@ -644,27 +1029,68 @@ public class Options {
      * A print stream setting.  A public <code>value</code> field
      * permits access to the parsed result. */
     public static class PrintStream extends Base {
+        /**
+         * Current value of print stream. */
         public java.io.PrintStream value;
+
+        /**
+         * Create a new print stream option
+         * @param opt long name for option (such as --option)
+         * @param shr short name for option (such as -o)
+         * @param defl default value
+         * @param help description of option for users */
         public PrintStream(java.lang.String opt, char shr,
                            java.io.PrintStream defl,
                            java.lang.String help)
         { super(opt, shr, help);  value = defl; }
+
+        /**
+         * Create a new print stream option
+         * @param opt long name for option (such as --option)
+         * @param shr short name for option (such as -o)
+         * @param help description of option for users */
         public PrintStream(java.lang.String opt, char shr,
                            java.lang.String help)
         { super(opt, shr, help); }
+
+        /**
+         * Create a new print stream option
+         * @param opt long name for option (such as --option)
+         * @param defl default value
+         * @param help description of option for users */
         public PrintStream(java.lang.String opt,
                            java.io.PrintStream defl,
                            java.lang.String help)
         { super(opt, '\0', help);  value = defl; }
+
+        /**
+         * Create a new print stream option
+         * @param opt long name for option (such as --option)
+         * @param help description of option for users */
         public PrintStream(java.lang.String opt,
                            java.lang.String help)
         { super(opt, '\0', help); }
+
+        /**
+         * Associate the argument with the named option.
+         *
+         * @param opt Name of option to convert.
+         * @param arg Argument to supply to option. */
         public void convert(java.lang.String opt,
                             java.lang.String arg)
         { value = check(opt, arg); }
+
+        /**
+         * Return representation of option value
+         * @return representation of option value */
         public java.lang.String toString()
         { return (value != null) ? value.toString() : null; }
 
+        /**
+         * Convert argument to a print stream if possible.
+         * @param opt option for which this is being done
+         * @param arg argument to convert
+         * @return converted value */
         public static java.io.PrintStream check(java.lang.String opt,
                                                 java.lang.String arg) {
             try {
@@ -683,13 +1109,29 @@ public class Options {
     public static class Config extends Base {
         private Options opts;
 
+        /**
+         * Create a configuration option
+         * @param opts option collection to populate
+         * @param opt long form option to process (such as --option)
+         * @param shr short form option to process (such as -o)
+         * @param help text describing this option */
         public Config(Options opts, java.lang.String opt, char shr,
                       java.lang.String help)
         { super(opt, shr, help); this.opts = opts; }
+
+        /**
+         * Create a configuration option
+         * @param opts option collection to populate
+         * @param opt long form option to process (such as --option)
+         * @param help text describing this option */
         public Config(Options opts, java.lang.String opt,
                       java.lang.String help)
         { super(opt, '\0', help); this.opts = opts; }
 
+        /**
+         * Accept an argument for this option
+         * @param opt name of option being processed
+         * @param arg value to set option to */
         public void convert(java.lang.String opt,
                             java.lang.String arg)
         { opts.parseConfig(arg); }
@@ -702,10 +1144,12 @@ public class Options {
         protected static java.lang.String pre_apply   = "apply_";
         protected static java.lang.String pre_convert = "convert_";
 
-        /** Creates a degenerate Group suitable for subclass use. */
+        /**
+         * Creates a degenerate Group suitable for subclass use. */
         protected Group() {}
 
-        /** Returns an option specific apply method or null.. */
+        /**
+         * Returns an option specific apply method or null.. */
         private Method getApply(java.lang.String opt) {
             Method result = null;
             try { return getClass().getMethod(pre_apply + opt); }
@@ -803,7 +1247,10 @@ public class Options {
             throw new Problem("Unnecessary argument", opt, arg);
         }
 
-        /** Implements Option. */
+        /**
+         * Called when option is given
+         * @param opt option that was found
+         * @return always true */
         public boolean apply(java.lang.String opt) {
             Method m = getApply(opt);
             if (m != null)

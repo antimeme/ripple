@@ -104,12 +104,29 @@ public class HexagonGrid {
                                (cellEdge * 3 * row / 2.0)));
     }
 
+    /**
+     * Represents a sinle cell in the grid */
     public static class Location {
+        /** Vertical position in grid */
         public int row;
+
+        /** Horizontal position in grid */
         public int col;
 
+        /**
+         * Create a new location at the center of the grid */
         public Location() { row = col = 0; }
+
+        /**
+         * Create a new location
+         * @param r vertical position
+         * @param c horizontal position */
         public Location(int r, int c) { row = r; col = c; }
+
+        /**
+         * Returns true iff object is equivalent to this
+         * @param that object to compare
+         * @return result of comparison */
         public boolean equals(Object that) {
             if (this == that)
                 return true;

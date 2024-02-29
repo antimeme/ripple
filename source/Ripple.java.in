@@ -394,6 +394,10 @@ public class Ripple {
         return 0;
     }
 
+    /**
+     * Performs tests of this library
+     * @return result of running tests
+     * @throws Exception anything can happen */
     public static boolean test() throws Exception
     {
         boolean result = true;

@@ -27,10 +27,18 @@ import java.util.Enumeration;
  * Represents the complete state of an abalone board including which
  * player will move next.  Objects of this class are immutable. */
 public final class Board implements Cloneable {
-    public  static final Object GUTTER = null;
-    public  static final Object EMPTY  = Integer.valueOf(0);
-    public  static final Object BLACK  = Integer.valueOf(1);
-    public  static final Object WHITE  = Integer.valueOf(-1);
+    /** Represents a position not on the board */
+    public static final Object GUTTER = null;
+
+    /** Represents an empty position on the board */
+    public static final Object EMPTY  = Integer.valueOf(0);
+
+    /** Represents a black piece */
+    public static final Object BLACK  = Integer.valueOf(1);
+
+    /** Represents a white piece */
+    public static final Object WHITE  = Integer.valueOf(-1);
+
     private static final String STR_EMPTY = "+";
     private static final String STR_BLACK = "b";
     private static final String STR_WHITE = "w";
@@ -38,9 +46,15 @@ public final class Board implements Cloneable {
 
     /** Indicates a specific location on a board. */
     public static class Location {
+        /** Vertical position of this location */
         public byte row;
+        /** Horizontal position of this location */
         public byte col;
 
+        /**
+         * Create a location
+         * @param row vertical position of created location
+         * @param col horizontal position of created location */
         public Location(byte row, byte col)
         { this.row = row; this.col = col; }
     }
@@ -105,13 +119,44 @@ public final class Board implements Cloneable {
             colD = (byte)(cT - cE);
         }
         
+        /**
+         * Get row of starting position
+         * @return row of starting position */
         public byte getRowS() { return rowS; }
+
+        /**
+         * Get column of starting position
+         * @return column of starting position */
         public byte getColS() { return colS; }
+
+        /**
+         * Get row of ending position
+         * @return row of ending position */
         public byte getRowE() { return rowE; }
+
+        /**
+         * Get column of ending position
+         * @return column of ending position */
         public byte getColE() { return colE; }
+
+        /**
+         * Get row of direction
+         * @return row of direction */
         public byte getRowD() { return rowD; }
+
+        /**
+         * Get column of direction
+         * @return column of direction */
         public byte getColD() { return colD; }
+
+        /**
+         * Get row of target position
+         * @return row of target position */
         public byte getRowT() { return (byte)(rowD + rowE); }
+
+        /**
+         * Get column of target position
+         * @return column of target position */
         public byte getColT() { return (byte)(colD + rowE); }
         
         /**
@@ -337,6 +382,9 @@ public final class Board implements Cloneable {
             return true;    
         }
 
+        /**
+         * Entry point for test program
+         * @param args command line arguments */
         public static void main(String args[]) {
             Move m, n;
 	

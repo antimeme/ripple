@@ -26,14 +26,19 @@ import java.io.Serializable;
 public class Matrix implements Serializable {
     static final long serialVersionUID = 0;
     static final float EPSILON = 0.000001f;
+
+    /** Dimensions of matrix */
     protected int rows, cols;
+
+    /** Contents of matrix */
     protected float elements[];
 
     /** Base class for matrix related exceptions, useful for catching
      *  the entire category. */
     public static class MatrixException extends RuntimeException {
         /**
-         * Returns one of these */
+         * Returns one of these
+         * @param message should explain what the problem is */
         public MatrixException(String message) { super(message); }
     }
 

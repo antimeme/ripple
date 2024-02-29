@@ -26,6 +26,7 @@ import java.awt.FontMetrics;
 /**
  * An experiment that draws an octahedral net. */
 public class Octahedron extends Applet {
+    /** Ratio between height of center and edge length */
     private final double height_factor = Math.sqrt(3) / 2;
 
     private void drawTriangle(Graphics g, int depth, int x1, int y1,

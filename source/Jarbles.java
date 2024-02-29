@@ -16,10 +16,6 @@
 // <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-//
-// An applet for containing a GraphicPlayer.  At some point this should
-// evolve to support theme selection, artificial opponents, network play
-// and so on.
 package net.esclat.jarbles;
 import net.esclat.ripple.Standalone;
 import net.esclat.jarbles.abalone.Player;
@@ -47,14 +43,29 @@ import java.awt.Container;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
+/**
+ * An applet that facilitates playing Abalone.  A graphical player
+ * accepts user input.  An automatic player provides an opponent.  In
+ * addition there is limited support for themes.  At some point this
+ * network play. */
 public class Jarbles extends Applet
     implements Runnable, ActionListener {
     static final long serialVersionUID = 0;
-    protected final String ptheme = "theme:";
-    Thread gameThread = null;
-    GraphicPlayer gpb = new GraphicPlayer();
-    GraphicPlayer gpw = gpb;
-    long time = 0;
+
+    /** Prefix for parsing actions related to theme */
+    private final String ptheme = "theme:";
+
+    /** Processes timers in the background */
+    protected Thread gameThread = null;
+
+    /** Display for black player */
+    protected GraphicPlayer gpb = new GraphicPlayer();
+
+    /** Display for white player */
+    protected GraphicPlayer gpw = gpb;
+
+    /** Amount of time allowed for each player */
+    protected long time = 0;
 
     /** Implements java.awt.Applet */
     public void init() {

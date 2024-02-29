@@ -39,6 +39,11 @@ public class AutoPlayer implements Player {
     protected double[] ringFriend;
     protected double[] ringEnemy;
 
+    /**
+     * Create an automatic player
+     * @param lambda depth to search move tree
+     * @param ringFriend weights for friendly pieces by ring
+     * @param ringEnemy weights for enemy pieces by ring */
     public AutoPlayer(int lambda, double[] ringFriend,
                       double[] ringEnemy) {
         b = new Board();
@@ -46,19 +51,43 @@ public class AutoPlayer implements Player {
         this.ringFriend = ringFriend;
         this.ringEnemy  = ringEnemy;
     }
+
+    /**
+     * Create an automatic player
+     * @param lambda depth to search move tree */
     public AutoPlayer(int lambda)
     { this(lambda, deflFriend, deflEnemy); }
+
+    /**
+     * Create an automatic player with default settings */
     public AutoPlayer() { this(3, deflFriend, deflEnemy); }
 
+    /**
+     * Change the current board
+     * @param start current state of game board
+     * @param timeBlack milliseconds remaining for black player
+     * @param timeWhite milliseconds remaining for white player */
     public void setBoard(Board start, long timeBlack, long timeWhite) {
         b = start;
     }
+
+    /**
+     * Update board state based on a single move
+     * @param move applied to current state of game board
+     * @param timeBlack milliseconds remaining for black player
+     * @param timeWhite milliseconds remaining for white player */
     public void noteMove(Board.Move move, long timeBlack,
                          long timeWhite) {
         Board change = b.makeMove(move);
         if (change != null)
             b = change;
     }
+
+    /**
+     * Requests a calculated move from this player
+     * @param last previous move made by opponent
+     * @param timeBlack milliseconds remaining for black player
+     * @param timeWhite milliseconds remaining for white player */
     public Board.Move makeMove(Board.Move last, long timeBlack,
                                long timeWhite) {
         noteMove(last, timeBlack, timeWhite);
@@ -139,6 +168,9 @@ public class AutoPlayer implements Player {
         } else return new WeightedMove(null, evaluate(root));
     }
 
+    /**
+     * Display board with weights in place of pieces
+     * @param b board state to display */
     public void ringTest(Board b) {
         StringBuffer buffer = new StringBuffer();
         for (int row = 1; row < 10; row++) {
@@ -169,6 +201,9 @@ public class AutoPlayer implements Player {
         System.out.println(buffer.toString());
     }
     
+    /**
+     * Entry point for test program
+     * @param args command line arguments */
     public static void main(String args[]) {
         Board b = new Board();
         Player t = new AutoPlayer();

@@ -19,16 +19,27 @@
 package net.esclat.ripple;
 import net.esclat.ripple.Matrix;
 
+/**
+ * Represents a one-dimensional vector of floating point values. */
 public class Vector extends Matrix {
     static final long serialVersionUID = 0;
 
+    /**
+     * Create a vector from an array of values
+     * @param elements values to use */
     public Vector(float elements[]) {
         super(elements.length, 1, elements);
     }
+
+    /**
+     * Create a copy of this vector
+     * @param source vector to copy */
     public Vector(Vector source) {
         super(source);
     }
 
+    /**
+     * Multiply each member of this vector by a scalar */
     public Vector multiply(float value) {
         Vector result = new Vector(this);
         for (int i = 0; i < result.elements.length; i++)
@@ -36,6 +47,10 @@ public class Vector extends Matrix {
         return result;
     }
 
+    /**
+     * Create a translation matrix from this vector
+     * @param homogeneous add an extra unit dimension when true
+     * @return a translation matrix */
     public Matrix translate(boolean homogeneous) {
         int length = elements.length + (homogeneous ? 0 : 1);
         Matrix result = new Matrix(length, length);
@@ -51,8 +66,17 @@ public class Vector extends Matrix {
             }
         return result;
     }
+
+    /**
+     * Create a translation matrix from this vector
+     * @return a translation matrix */
     public Matrix translate() { return translate(false); }
 
+    /**
+     * Creates a matrix that scales a vector by the components of
+     * this one.
+     * @param homogeneous add an extra unit dimension when true
+     * @return matrix that does the scaling */
     public Matrix scale(boolean homogeneous) {
         int length = elements.length + (homogeneous ? 0 : 1);
         Matrix result = new Matrix(length, length);
@@ -68,15 +92,29 @@ public class Vector extends Matrix {
             }
         return result;
     }
+
+    /**
+     * Creates a matrix that scales a vector by the components of
+     * this one.
+     * @return matrix that does the scaling */
     public Matrix scale() { return scale(false); }
 
+    /**
+     * Create a matrix that rotates around an axis created by
+     * this vector and the origin.
+     * @param radians angle by which to rotate
+     * @return the matrix result */
     public Matrix rotate(float radians) {
         // :TODO: how to create an arbitrary rotation around a vector?
         // I have a hunch that the exterior product may be part of the
         // solution here, as with the cross product
-        return null;
+        throw new UnsupportedOperationException();
     }
 
+    /**
+     * Return a vector with the same orientation as this one but
+     * with unit length.
+     * @return a unit vector with the same orientation as this one */
     public Vector normalize() {
         Vector result = new Vector(elements);
         double magnitude = Math.sqrt(this.dotProduct(this));
@@ -85,6 +123,10 @@ public class Vector extends Matrix {
         return result;
     }
 
+    /**
+     * Compute the dot product of this vector with another
+     * @param other peer vector with with to compute
+     * @return value of dot product */
     public float dotProduct(Vector other) {
         if (other.elements.length != elements.length)
             throw new WrongSizeException();
@@ -94,6 +136,10 @@ public class Vector extends Matrix {
         return result;
     }
 
+    /**
+     * Compute a matrix that applies the cross product to this
+     * vector and whatever the matrix multiples.
+     * @return matrix result */
     public Matrix crossProduct() {
         // :TODO: this would be simple if confined to three
         // dimensions, but I want a generalized version.  That means
@@ -102,9 +148,12 @@ public class Vector extends Matrix {
         // just as soon as I figure out what any of it means.
         // http://en.wikipedia.org/wiki/Exterior_product
         // http://en.wikipedia.org/wiki/Hodge_dual
-        return null;
+        throw new UnsupportedOperationException();
     }
 
+    /**
+     * Entry point for a command line test program
+     * @param args command line arguments */
     public static void main(String[] args) {
         Vector v;
         if (args.length > 0) {

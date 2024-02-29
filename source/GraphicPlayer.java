@@ -265,6 +265,9 @@ public class GraphicPlayer extends Component
 
     /** An engine for customizing the appearance of a GraphicPlayer. */
     public static class Theme {
+        /**
+         * Name of theme for display purposes
+         * @return theme name */
         public static String getName() { return "Default"; }
 
         protected long duration   =  500; // millisecond animation time
@@ -304,11 +307,18 @@ public class GraphicPlayer extends Component
         // Sounds
         protected AudioClip sound_move = null;
 
+        /**
+         * Provide an applet context
+         * @param ctx applet context */
         public void setContext(AppletContext ctx) {
             try {
-                sound_move = ctx.getAudioClip
-                    (getClass().getClassLoader().getResource
-                     ("sounds/clickclack.wav"));
+                java.net.URL clickclack =
+                    getClass().getClassLoader().getResource
+                    ("sounds/clickclack.wav");
+                if (clickclack == null)
+                    throw new IllegalArgumentException
+                        ("failed to load sounds/clickclack.wav");
+                sound_move = ctx.getAudioClip(clickclack);
             } catch (IllegalArgumentException ex) {
                 // Some runtime environments may not have sound.
                 System.out.println("ERROR cannot create AudioClip: " +
@@ -316,6 +326,8 @@ public class GraphicPlayer extends Component
             }
         }
 
+        /**
+         * Start the process of moving */
         public void beginMove() {
             if (sound_move != null)
                 sound_move.play();
@@ -345,8 +357,20 @@ public class GraphicPlayer extends Component
                             Math.min(scoreR.height / 12, 
                                      scoreR.width / 7));
         }
+
+        /**
+         * Get bounding rectangle for display board
+         * @return bounding rectangle for display board */
         public Rectangle getBoardR() { return boardR; }
+
+        /**
+         * Get bounding rectangle for move control
+         * @return bounding rectangle for move control */
         public Rectangle getMoveR()  { return moveR;  }
+
+        /**
+         * Get bounding rectangle for score display
+         * @return bounding rectangle for score display */
         public Rectangle getScoreR() { return scoreR; }
 
         /**
@@ -404,8 +428,11 @@ public class GraphicPlayer extends Component
             g.drawLine(p3.x, p3.y, p4.x, p4.y);
         }
 
-        /** Draws a grid of cells with specified number of cells along
-         *  each edge. */
+        /**
+         * Draws a grid of cells with specified number of cells along
+         * each edge.
+         * @param g graphics to use for drawing
+         * @param q grid to determine cell positions */
         protected void drawGrid(Graphics g, HexagonGrid q) {
             // Draw each cell.
             int size = q.getGridEdge();
@@ -471,11 +498,21 @@ public class GraphicPlayer extends Component
             drawPiece(g, p, boardQ.getCellEdge(), isBlack, false);
         }
 
+        /**
+         * Find the move control location that includes the
+         * provided point
+         * @param p point to map to a location
+         * @return location indicated by input point */
         public Board.Location getMoveLocation(Point p) {
             HexagonGrid.Location qloc = moveQ.getLocation(p, true);
             if (qloc == null) return null;
             return new Board.Location((byte)qloc.row, (byte)qloc.col);
         }
+
+        /**
+         * Find the board location that includes the provided point
+         * @param p point to map to a location
+         * @return location indicated by input point */
         public Board.Location getBoardLocation(Point p) {
             HexagonGrid.Location qloc = boardQ.getLocation(p, true);
             if (qloc == null) return null;
@@ -573,18 +610,35 @@ public class GraphicPlayer extends Component
             result.height = Math.abs(q.y - p.y) + (2 * size);
             return result;
         }
+
+        /**
+         * Returns a rectangle that encloses selection
+         *
+         * @param s selection to enclose
+         * @return bounding rectangle for selection */
         public Rectangle getBounds(Selection s) {
             return getBounds(s.getRowL(), s.getColL(),
                              s.getRowH(), s.getColH());
         }
+
+        /**
+         * Returns a rectangle that encloses animation
+         *
+         * @param a animation to enclose
+         * @return bounding rectangle for animation */
         public Rectangle getBounds(Animation a) {
             return getBounds(a.getRowL(), a.getColL(),
                              a.getRowH(), a.getColH());
         }
 
+        /**
+         * Draw pieces and empty cells of the board */
         protected void drawBoardGrid(Graphics g, boolean enabled) {
             drawGrid(g, boardQ);         
         }
+
+        /**
+         * Draw a single piece on the board */
         protected void drawBoardPiece(Graphics g, boolean enabled, 
                                       int row, int col,
                                       Selection s, Animation a,
@@ -667,21 +721,35 @@ public class GraphicPlayer extends Component
         }
     }
 
-    private Board      board;    // board state to display
-    private Board.Move lastMove; // most recently posted move
-    private long  timeBlack; // milliseconds left for black player
-    private long  timeWhite; // milliseconds left for white player
-    private long  timeLast;  // timestamp when elapsed() last called
+    /** board state to display */
+    private Board board;
+    /** most recently posted move */
+    private Board.Move lastMove;
+    /** milliseconds left for black player */
+    private long timeBlack;
+    /** milliseconds left for white player */
+    private long timeWhite;
+    /** timestamp when elapsed() last called */
+    private long timeLast;
 
-    private boolean   enabled;   // player can make a move when true
-    private boolean   animated;  // pieces move gradually when true
-    private Animation animation; // represents current animation state
-    private Selection selection; // represents currently selected pieces
+    /** player can make a move when true */
+    private boolean enabled;
+    /** pieces move gradually when true */
+    private boolean animated;
+    /** represents current animation state */
+    private Animation animation;
 
-    private Image     buffer;  // backing store for double buffering
-    private Theme     theme;   // implements visual details
-    private Theme     retheme; // replace theme with this one
-    private AppletContext ctx; // context for getting sounds
+    /** represents currently selected pieces */
+    private Selection selection;
+
+    /** backing store for double buffering */
+    private Image     buffer;
+    /** implements visual details */
+    private Theme     theme;
+    /** replace theme with this one */
+    private Theme     retheme;
+    /** context for getting sounds */
+    private AppletContext ctx;
 
     /**
      * Creates a graphic player.
@@ -721,10 +789,26 @@ public class GraphicPlayer extends Component
      * @return this GraphicPlayer for chained calls */
     public GraphicPlayer setContext(AppletContext ctx)
     { this.ctx = ctx; theme.setContext(ctx); return this; }
-
+    
+    /**
+     * Get current animation state
+     * @return current animation state */
     public boolean getAnimated() { return animated; }
-    public void    setAnimated(boolean value) { animated = value; }
-    public Theme   getTheme() { return theme; }
+
+    /**
+     * Change state of animation
+     * @param value true to animate and false to stop */
+    public void setAnimated(boolean value) { animated = value; }
+
+    /**
+     * Get current active theme
+     * @return current active theme */
+    public Theme getTheme() { return theme; }
+
+    /**
+     * Active a chosen theme
+     * @param t theme to activate
+     * @return this GraphicalPlayer for chaining */
     public GraphicPlayer setTheme(Theme t) {
         retheme = t;
         if (ctx != null)

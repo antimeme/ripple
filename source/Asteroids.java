@@ -231,35 +231,65 @@ public class Asteroids extends java.applet.Applet
         }
     }
 
+    /** backing store for double buffering */
     protected BufferedImage buffer = null;
-    protected Thread updateThread = null;
-    protected Random random = new Random();
+    /** color to draw background */
     protected static final Color background = new Color(16, 16, 16);
+    /** color to draw asteroids, debris and ships in foreground */
     protected static final Color foreground = new Color(224, 224, 224);
+    /** continuously updates game state in the background */
+    protected Thread updateThread = null;
+    /** a source of random numbers */
+    protected Random random = new Random();
+    /** number of points needed to earn another extra life */
     protected final int newlife = 10000;
+    /** ship controlled by the player */
     protected final Movable playerShip = new Movable();
+    /** flying saucer antagonist */
     protected final Movable saucer = new Movable();
+    /** asteroids that have not been destroyed */
     protected List<Movable> asteroids = null;
+    /** pieces of debris that haven't yet timed out */
     protected List<Movable> debris = null;
+    /** player shots that have not yet timed out or hit something */
     protected List<Movable> playerShots = null;
+    /** reference unit for sizes that is updated on resize */
     protected float baseSize = 0;
+    /** true when player is pressing key to thrust */
     protected boolean thrust      = false;
-    protected boolean turn_left   = false;
+    /** true when player is pressing key to turn left */
+    protected boolean turn_left   = false;    
+    /** true when player is pressing key to turn right */
     protected boolean turn_right  = false;
+    /** true when player is pressing key to warp */
     protected boolean warp        = false;
+    /** when true the shoot key has not been releases since last shot */
     protected boolean shootRepeat = false;
+    /** true when mouse button is being held down */
     protected boolean holding = false;
+    /** milliseconds the mouse button has been held down */
     protected long held = 0;
+    /** milliseconds during which next click will shoot */
     protected long tapshot = 0;
+    /** direction player should point (if not NaN) */
     protected float target = Float.NaN;
+    /** number of milliseconds of unprocessed thrust */
     protected float thrust_elapsed = 0;
+    /** current player score */
     protected int score;
+    /** number of extra lives remaining for player */
     protected int lives;
+    /** how many large rocks in next wave */
     protected int wavesize = 0;
+    /** milliseconds until next wave begins */
     protected long nextwave = 0;
+    /** set to non-zero when player runs out of lives */
     protected long gameover = 0;
+    /** milliseconds when last update occured */
     protected long lastUpdate = 0;
+    /** font to use for rendering "game over" text */
     protected Font font_gameover = null;
+    /** font to use for rendering score */
     protected Font font_score = null;
 
     protected void resetPlayerShip() {
