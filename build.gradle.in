@@ -1,15 +1,14 @@
+// Gradle configuration for Ripple                  -*- mode: groovy -*-
 plugins { id("war") }
 repositories { mavenCentral() }
 sourceSets { main { java { srcDirs = ["source/servlet"] } } }
 
 war {
     archiveName = "@PACKAGE@-@VERSION@.war"
-    webXml = file("./WEB-INF/web.xml")
+    webXml = file("WEB-INF/web.xml")
+        from("WEB-INF/urlrewrite.xml") { into("WEB-INF/") }
     from("classes") { into("") }
-    from("resources/images") { into("images") }
-    from("resources/sounds") { into("sounds") }
-    from("source/servlet/index.html") { into("") }
-    from("apps/expense.html") { into("") }
+    from("apps") { into("") }
     manifest {
         attributes(
             "Main-Class": "net.antimeme.ripple.Ripple",
@@ -22,9 +21,11 @@ war {
 }
 
 dependencies {
+    //providedCompile("jakarta.platform:jakarta.jakartaee-web-api:8.0.0")
     providedCompile("javax.servlet:javax.servlet-api:4.0.1")
+
+    implementation("org.xerial:sqlite-jdbc:3.36.0.1")
     implementation("com.fasterxml.jackson.core:jackson-core:2.13.0")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.0")
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.13.0")
-    implementation("org.xerial:sqlite-jdbc:3.36.0.1")
 }

@@ -185,8 +185,8 @@ $(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
 @PACKAGE@-@VERSION@.jar: $(srcdir)/META-INF/MANIFEST.MF \
 			 $(JAR_ROOT)/.classes .javadoc
 	$(JAR) cvfm $@ $(srcdir)/META-INF/MANIFEST.MF \
-	    -C $(srcdir)/resources sounds \
-	    -C $(srcdir)/resources images \
+	    -C $(srcdir)/apps/sounds sounds \
+	    -C $(srcdir)/apps/images images \
 	    -C $(top_builddir) javadoc -C $(JAR_ROOT) .
 	chmod +x $@
 
@@ -195,7 +195,11 @@ $(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
 	$(LN_S) @PACKAGE@-@VERSION@.jar $@
 
 if HAVE_GRADLE
-build/libs/@PACKAGE@-@VERSION@.war: build.gradle $(JAR_ROOT)/.classes
+build/libs/@PACKAGE@-@VERSION@.war: \
+	    build.gradle \
+	    WEB-INF/web.xml \
+	    $(JAR_ROOT)/.classes \
+	    source/servlet/*.java
 	$(GRADLE) -b $< war
 
 @PACKAGE@-@VERSION@.war: build/libs/@PACKAGE@-@VERSION@.war
