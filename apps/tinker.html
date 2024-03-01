@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<!-- tinker.html
+     Copyright (C) 2024 by Jeff Gold.
+
+     This program is free software: you can redistribute it and/or
+     modify it under the terms of the GNU General Public License as
+     published by the Free Software Foundation, either version 3 of the
+     License, or (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful, but
+     WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see
+     <http://www.gnu.org/licenses/>.
+
+   -------------------------------------------------------------------
+     Tinker is tool for experimenting with JSON communication with a
+     back end service, which might be implemented in almost any
+     programming language.  Examples: Node.js, Rust,
+     Java/Jetty, Java/Tomcat and so on.
+-->
+<title>Tinker</title>
+<h2>Tinker</h2>
+<button id="send">Send</button>
+<select id="ctype">
+    <option value="application/json">JSON</option>
+    <option value="text/plain">text</option>
+</select>
+<br />
+<textarea id="request" rows="6" cols="60">
+{
+  "number": 12,
+  "label": "purple",
+  "list": [ 2, 3, 4 ],
+  "setting": false
+}
+</textarea>
+<br />
+<input id="status" type="text" size="5" disabled="true" />
+<input id="rspctype" type="text" size="60" disabled="true" />
+<br />
+<textarea id="response" rows="6" cols="60" disabled="true">
+</textarea>
+<script>
+ const request  = document.getElementById("request");
+ const response = document.getElementById("response");
+ const ctype    = document.getElementById("ctype");
+ const status   = document.getElementById("status");
+ const rspctype = document.getElementById("rspctype");
+ const send     = document.getElementById("send");
+
+ send.addEventListener("click", async event => {
+     response.value = "Sending...";
+     try {
+         const outcome = await fetch("tinkerService", {
+             method: "POST",
+             headers: { "Content-Type": ctype.value },
+             body: request.value
+         });
+
+         status.value = outcome.status;
+         rspctype.value = outcome.headers.get("content-type");
+         response.value = await outcome.text();
+     } catch (error) { response.value = error; }
+ });
+ 
+</script>
