@@ -734,14 +734,16 @@
          }
      }
 
-     update(camera, elapsed, score, enemy) {
+     update(camera, elapsed, gameover, score, enemy) {
          this.shots = this.shots.filter(
              shot => shot.moveWrap(camera, elapsed));
 
          // A dead saucer eventually respawns, but can't interact
          // with anything or shoot until then.
          if (this.dead > 0) {
-             if (elapsed >= this.dead) {
+             if (gameover && (elapsed >= this.dead)) {
+                 this.reset();
+             } else if (elapsed >= this.dead) {
                  this.dead = 0;
 
                  // Small saucers are more challenging because
@@ -1168,7 +1170,8 @@
                  this.award(saucer.score)
              playerShip.impact();
          }
-         saucer.update(camera, elapsed, playerShip.score, playerShip);
+         saucer.update(camera, elapsed, this.gameover,
+                       playerShip.score, playerShip);
          playerShip.update(camera, elapsed, this.asteroids);
 
          screenButtons.update(camera, elapsed);
