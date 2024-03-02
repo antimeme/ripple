@@ -34,6 +34,7 @@ import java.text.NumberFormat;
 import java.util.Random;
 import java.util.List;
 import java.util.LinkedList;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 /**
  * This file is an independent clone of Asteroids, a space-themed
@@ -43,7 +44,6 @@ import java.util.LinkedList;
 public class Asteroids extends java.applet.Applet
     implements Runnable, ComponentListener, KeyListener, MouseListener
 {
-
     protected static boolean zeroish(float value) {
         final float epsilon = 0.00000000001f;
         return (value <= epsilon) && (value >= -epsilon);
@@ -292,6 +292,36 @@ public class Asteroids extends java.applet.Applet
     /** font to use for rendering score */
     protected Font font_score = null;
 
+    /** https://freesound.org/people/ElevatorProductions/sounds/69944/ */
+    protected java.applet.AudioClip soundShootBeam;
+    /** https://freesound.org/people/magnuswaker/sounds/523089/ */
+    protected java.applet.AudioClip soundSmashShip;
+    /** https://freesound.org/people/magnuswaker/sounds/522099/ */
+    protected java.applet.AudioClip soundSmashRock;
+    /** https://freesound.org/people/drewsimko/sounds/682866/ */
+    protected java.applet.AudioClip soundSaucerSiren;
+
+    protected java.applet.AudioClip fetchSound(String resource) {
+        java.applet.AudioClip result = null;
+        try {
+            java.net.URL url = getClass()
+                .getClassLoader().getResource(resource);
+            result = getAudioClip(url);
+        } catch (IllegalArgumentException ex) {
+            System.out.println("ERROR fetching AudioClip(" +
+                               resource + "): " +
+                               ex.getMessage());
+        } catch (RuntimeException ex) {
+            if (ex.getCause() instanceof
+                UnsupportedAudioFileException) {
+                System.out.println("ERROR fetching AudioClip(" +
+                                   resource + "): " +
+                                   ex.getCause().getMessage());
+            } else throw ex;
+        }
+        return result;
+    }
+
     protected void resetPlayerShip() {
         lives -= 1;
         playerShip.position = new Point(0, 0);
@@ -345,6 +375,11 @@ public class Asteroids extends java.applet.Applet
 
     @Override
     public void init() {
+        soundShootBeam = fetchSound("sounds/shoot-beam.ogg");
+        soundSmashShip = fetchSound("sounds/smash-ship.ogg");
+        soundSmashRock = fetchSound("sounds/smash-rock.ogg");
+        soundSaucerSiren = fetchSound("sounds/saucer-siren.ogg");
+
         playerShip.points = wedgeShipPoints;
         playerShip.thrust = new Point[] {
             new Point(-1, 1f/3),
@@ -577,6 +612,8 @@ public class Asteroids extends java.applet.Applet
         shot.velocity.x += Math.cos(source.direction) * baseSize / 700;
         shot.velocity.y += Math.sin(source.direction) * baseSize / 700;
         shots.add(shot);
+        if (soundShootBeam != null)
+            soundShootBeam.play();
     }
 
     protected void award(int npoints) {
@@ -665,20 +702,28 @@ public class Asteroids extends java.applet.Applet
 
                     createDebris(asteroid);
                     asteroid.dead = 1;
-                    if (asteroid.nsplits > 0)
+                    if (asteroid.nsplits > 0) {
                         createAsteroids(asteroid, 2, fragments);
+                        if (soundSmashRock != null)
+                            soundSmashRock.play();
+                    }
                 }
             if (playerShip.checkCollide(asteroid, elapsed)) {
                 createDebris(playerShip);
                 award(asteroid);
                 playerShip.dead = 3000;
+                if (soundSmashShip != null)
+                    soundSmashShip.play();
                 if (lives <= 0)
                     gameover = 2000;
 
                 createDebris(asteroid);
                 asteroid.dead = 1;
-                if (asteroid.nsplits > 0)
+                if (asteroid.nsplits > 0) {
                     createAsteroids(asteroid, 2, fragments);
+                    if (soundSmashRock != null)
+                        soundSmashRock.play();
+                }
             }
         }
         asteroids.addAll(fragments);
