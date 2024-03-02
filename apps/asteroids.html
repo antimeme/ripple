@@ -75,8 +75,35 @@
  canvas { background: #111; color: #eee; }
 </style>
 
+<!-- https://freesound.org/people/ElevatorProductions/sounds/69944/ -->
+<audio id="shoot-beam">
+    <source src="sounds/shoot-beam.ogg" type="audio/ogg" />
+</audio>
+<!-- https://freesound.org/people/magnuswaker/sounds/523089/ -->
+<audio id="smash-ship">
+    <source src="sounds/smash-ship.ogg" type="audio/ogg" />
+</audio>
+<!-- https://freesound.org/people/magnuswaker/sounds/522099/ -->
+<audio id="smash-rock">
+    <source src="sounds/smash-rock.ogg" type="audio/ogg" />
+</audio>
+<!-- https://freesound.org/people/drewsimko/sounds/682866/ -->
+<audio id="saucer-siren" loop="true">
+    <source src="sounds/saucer-siren.ogg" type="audio/ogg" />
+</audio>
+
 <script type="module">//<![CDATA[
  import Camera from "./ripple/camera.mjs";
+ const soundShootBeam = document.getElementById("shoot-beam");
+ const soundSmashShip = document.getElementById("smash-ship");
+ const soundSmashRock = document.getElementById("smash-rock");
+ const soundSaucerSiren = document.getElementById("saucer-siren");
+
+ function startSound(sound) {
+     if (!sound.paused)
+         sound.currentTime = 0;
+     sound.play();
+ }
 
  /**
   * Convert query parameters from URL to a dictionary */
@@ -383,6 +410,7 @@
          Debris.create(this, Math.floor(
              1 + this.nsplits * 2 + 4 * Math.random()));
          this.dead = 1;
+         startSound(soundSmashRock);
      }
  }
 
@@ -435,9 +463,9 @@
          this.ageless = false;
 
          const vector = (isNaN(this.direction) || (this.speed == 0)) ?
-                         {x: 0, y: 0} :
-                         {x: Math.cos(this.direction) * this.speed,
-                          y: Math.sin(this.direction) * this.speed};
+                        {x: 0, y: 0} :
+                        {x: Math.cos(this.direction) * this.speed,
+                         y: Math.sin(this.direction) * this.speed};
          if (!isNaN(direction)) {
              vector.x += Math.cos(direction) / 650;
              vector.y += Math.sin(direction) / 650;
@@ -617,6 +645,7 @@
          if ((this.dead > 0) || (this.shots.length >= 9))
              return;
          this.shots.push(new Shot(this, this.direction));
+         startSound(soundShootBeam);
      }
 
      #desiredDirection(target) {
@@ -648,6 +677,7 @@
          Debris.create(this, Math.floor(4 + 4 * Math.random()));
          this.dead = 3000;
          this.reset();
+         startSound(soundSmashShip);
          return true;
      }
  }
@@ -733,6 +763,7 @@
                  this.dy = 0;
                  this.turnTimer = 1000;
                  this.shootTimer = 2000;
+                 startSound(soundSaucerSiren);
              } else this.dead -= elapsed;
          }
          if (this.dead > 0)
@@ -776,6 +807,7 @@
          }
          const shot = new Shot(this, velocity);
          this.shots.push(shot);
+         startSound(soundShootBeam);
      }
 
      impact() {
@@ -783,6 +815,9 @@
              return false;
          Debris.create(this, Math.floor(4 + 4 * Math.random()));
          this.reset();
+         soundSaucerSiren.pause();
+         soundSaucerSiren.currentTime = 0;
+         startSound(soundSmashShip);
          return true;
      }
  }
@@ -924,7 +959,7 @@
                  return;
              const quadrance = (
                  (point.x - current.x) * (point.x - current.x) +
-                 (point.y - current.y) * (point.y - current.y));
+                    (point.y - current.y) * (point.y - current.y));
 
              if (quadrance < this.size * this.size / 4) {
                  result = button;
