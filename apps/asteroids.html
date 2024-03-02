@@ -85,12 +85,16 @@
 <audio id="smash-rock">
     <source src="sounds/smash-rock.ogg" type="audio/ogg" />
 </audio>
+<audio id="thruster" loop="true">
+    <source src="sounds/thruster.ogg" type="audio/ogg" />
+</audio>
 <audio id="saucer-siren" loop="true">
     <source src="sounds/saucer-siren.ogg" type="audio/ogg" />
 </audio>
 
 <script type="module">//<![CDATA[
  import Camera from "./ripple/camera.mjs";
+ const soundThruster = document.getElementById("thruster");
  const soundShootBeam = document.getElementById("shoot-beam");
  const soundSmashShip = document.getElementById("smash-ship");
  const soundSmashRock = document.getElementById("smash-rock");
@@ -514,6 +518,8 @@
          this.x = this.y = 0;
          this.dx = this.dy = 0;
          this.shield.reset();
+         soundThruster.pause();
+         soundThruster.currentTime = 0;
      }
 
      draw(ctx) {
@@ -605,6 +611,12 @@
                  this.thrust_elapsed * this.radius / 20000);
              this.dy += (Math.sin(this.direction) *
                  this.thrust_elapsed * this.radius / 20000);
+
+             if (soundThruster.paused)
+                 soundThruster.play();
+         } else {
+             soundThruster.pause();
+             soundThruster.currentTime = 0;
          }
 
          if (this.warpCooldown > 0) {
