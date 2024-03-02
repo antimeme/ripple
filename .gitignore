@@ -67,7 +67,7 @@
 /ripple.jar
 /ripple-*.war
 /ripple.war
-/servlet-api.jar
+/ripple.ks
 /scripts/check-java.sh
 
 # JavaScript
