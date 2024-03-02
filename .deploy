@@ -1,3 +1,2 @@
-./bootstrap
-npm install
-make ripple.war
+./bootstrap && make ripple.war
+rm -rf build

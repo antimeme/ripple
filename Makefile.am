@@ -21,9 +21,9 @@ EXTRA_DIST = \
 	scripts/@PACKAGE@.spec \
 	scripts/@PACKAGE@.dpkg \
 	META-INF/MANIFEST.MF \
-	WEB-INF/web.xml \
+	WEB-INF/web.xml WEB-INF/jetty-env.xml \
 	$(JAVA_DISTSRC) \
-	$(J2EE_DISTSRC) \
+	$(SERVLET_DISTSRC) \
 	source/random.py \
 	source/match.py
 docdir        = $(datadir)/doc/@PACKAGE@-@VERSION@
@@ -49,7 +49,7 @@ JAVA_DISTSRC = \
 	$(srcdir)/source/Octahedron.java \
 	$(srcdir)/source/Asteroids.java
 
-J2EE_DISTSRC = \
+SERVLET_DISTSRC = \
 	$(srcdir)/source/servlet/RippleServlet.java \
 	$(srcdir)/source/servlet/ExpenseServlet.java
 
@@ -164,7 +164,7 @@ java_DATA = @PACKAGE@-@VERSION@.jar
 JCC     = "$(JAVA_HOME)/bin/javac"
 JAVADOC = "$(JAVA_HOME)/bin/javadoc"
 JAR     = "$(JAVA_HOME)/bin/jar"
-KTOOL   = "$(JAVA_HOME)/bin/keytool"
+KEYTOOL = "$(JAVA_HOME)/bin/keytool"
 
 JAVA_SRCFILES = $(JAVA_DISTSRC) $(top_builddir)/source/Ripple.java
 JAR_ROOT = $(top_builddir)/classes
@@ -257,7 +257,7 @@ endif
 #   </Connector>
 
 localhost.ks:
-	$(KTOOL) -keystore $@ -storetype pkcs12 \
+	$(KEYTOOL) -keystore $@ -storetype pkcs12 \
 	    -genkey -keyalg RSA -keysize 2048 -sigalg SHA256withRSA \
 	    -alias localhost -dname CN=localhost -validity 3650 \
 	    -ext "SAN=dns:$$HOSTNAME,dns:*.$$HOSTNAME"
@@ -298,7 +298,6 @@ mostlyclean-local: mostlyclean-local-java
 
 ## Certificates ========================================================
 OPENSSL = openssl
-KEYTOOL = $(JAVA_HOME)/bin/keytool
 STOREPASS = 123456
 COMMON_NAME = /C=US/O=antimeme.net/OU=CA/CN=
 
