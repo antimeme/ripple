@@ -115,6 +115,10 @@ struct app_asteroids {
 
   TTF_Font *font_score;
   TTF_Font *font_gameover;
+  Mix_Chunk *sound_shoot_beam;
+  Mix_Chunk *sound_smash_ship;
+  Mix_Chunk *sound_smash_rock;
+  Mix_Chunk *sound_saucer_siren;
 };
 
 static void
@@ -309,6 +313,8 @@ asteroids__asteroid_impact(struct app_asteroids *self,
   asteroid->dead = 1;
   if (asteroid->n_splits > 0)
     asteroids__asteroids_create(self, asteroid, 2);
+  if (self->sound_smash_rock)
+    Mix_PlayChannel(-1, self->sound_smash_rock, 0);
   return result;
 }
 
@@ -347,6 +353,8 @@ asteroids__player_impact(struct app_asteroids *self, struct ship *ship)
   ship->dead = 3000;
   if (!self->lives)
     self->gameover = 2000;
+  if (self->sound_smash_ship)
+    Mix_PlayChannel(-1, self->sound_smash_ship, 0);
 }
 
 static void
@@ -459,9 +467,12 @@ asteroids__tap(struct app *app, SDL_Event *event)
       self->target = self->player.direction + angle;
     }
 
-    if (!self->player.dead && (self->tapshot > 0))
+    if (!self->player.dead && (self->tapshot > 0)) {
       asteroids__ship_shoot(&self->player, self->player.direction,
                             self->size);
+      if (self->sound_shoot_beam)
+        Mix_PlayChannel(-1, self->sound_shoot_beam, 0);
+    }
     self->tapshot = 350;
     self->holding = 1;
     self->held = 0;
@@ -490,9 +501,12 @@ asteroids__shoot(struct app *app, SDL_Event *event)
   struct app_asteroids *self = (struct app_asteroids *)app;
   if (self->gameover == 1)
     asteroids_reset(self);
-  else if (!self->player.dead)
+  else if (!self->player.dead) {
     asteroids__ship_shoot(&self->player, self->player.direction,
                           self->size);
+    if (self->sound_shoot_beam)
+      Mix_PlayChannel(-1, self->sound_shoot_beam, 0);
+  }
 }
 
 static void
@@ -557,9 +571,12 @@ asteroids_resize(struct app *app, int width, int height)
     self->asteroids[ii].radius =
       (1 << self->asteroids[ii].n_splits) * self->size / 40;
 
-  gizmo_app_font(&self->font_score, (unsigned)(self->size / 17));
+  /* https://www.fontspace.com/brass-mono-font-f29885 */
+  gizmo_app_font(&self->font_score, (unsigned)(self->size / 17),
+                 "./apps/fonts/brass-mono.ttf");
   gizmo_app_font(&self->font_gameover,
-                 (unsigned)(2 * self->size / 17));
+                 (unsigned)(2 * self->size / 17),
+                 "./apps/fonts/brass-mono.ttf");
   return result;
 }
 
@@ -643,12 +660,20 @@ asteroids_init(struct app *app, void *context)
 
     self->font_score = NULL;
     self->font_gameover = NULL;
+    gizmo_app_sound(&self->sound_shoot_beam,
+                    "./apps/sounds/shoot-beam.ogg");
+    gizmo_app_sound(&self->sound_smash_ship,
+                    "./apps/sounds/smash-ship.ogg");
+    gizmo_app_sound(&self->sound_smash_rock,
+                    "./apps/sounds/smash-rock.ogg");
+    gizmo_app_sound(&self->sound_saucer_siren,
+                    "./apps/sounds/saucer-siren.ogg");
     asteroids_resize(&self->app, self->app.width, self->app.height);
     asteroids_reset(self);
   }
 
   free(newpoints);
-  setlocale(LC_NUMERIC, ""); /* This puts commas in score */
+  setlocale(LC_NUMERIC, ""); /* This usually puts commas in score */
   return result;
 }
 
@@ -672,6 +697,10 @@ asteroids_destroy(struct app *app)
 
   TTF_CloseFont(self->font_score);
   TTF_CloseFont(self->font_gameover);
+  Mix_FreeChunk(self->sound_shoot_beam);
+  Mix_FreeChunk(self->sound_smash_ship);
+  Mix_FreeChunk(self->sound_smash_rock);
+  Mix_FreeChunk(self->sound_saucer_siren);
 
   free(self);
 }

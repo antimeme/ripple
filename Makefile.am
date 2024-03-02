@@ -97,12 +97,16 @@ if HAVE_SDL2
 bin_PROGRAMS += gizmo
 gizmo_CFLAGS = `sdl2-config --cflags`
 gizmo_LDFLAGS = `sdl2-config --libs` \
-	-lSDL2_gfx \
+	-lSDL2_mixer \
 	-lSDL2_ttf \
+	-lSDL2_gfx \
 	-lSDL2_image -lm
 gizmo_SOURCES = \
 	source/gizmo/gizmo.c \
 	source/gizmo/asteroids.c
+
+play-sdl-asteroids: gizmo
+	./gizmo
 endif
 
 # Building for Windows on MSYS2.  This works but requires about a
@@ -110,9 +114,10 @@ endif
 # command prompt.
 #
 # $ pacman --noconfirm -S mingw-w64-x86_64-toolchain \
-#     mingw64/mingw-w64-x86_64-SDL2{,_gfx,_ttf,_image}
+#     mingw64/mingw-w64-x86_64-SDL2 \
+#     mingw64/mingw-w64-x86_64-SDL2_{mixer,ttf,gfx,image}
 # $ /mingw64/bin/gcc.exe -o gizmo.exe source/gizmo/*.c \
-#     `sdl2-config --cflags --static-libs` -lSDL2_{gfx,ttf,image}
+#     `sdl2-config --cflags --static-libs` -lSDL2_{mixer,ttf,gfx,image}
 
 if HAVE_EMCC
 # Emscripten is kinda dumb about its ports.  The following may
@@ -121,9 +126,13 @@ if HAVE_EMCC
 apps/gizmo.wasm apps/gizmo.js apps/gizmo.html apps/gizmo.data: \
 	    source/gizmo/gizmo.c source/gizmo/asteroids.c
 	$(EMCC) -o $@ \
-	    --preload-file apps/fonts/ \
 	    -sALLOW_MEMORY_GROWTH \
-	    -sUSE_SDL=2 -sUSE_SDL_GFX=2 -sUSE_SDL_TTF=2 \
+	    --preload-file apps/fonts/ \
+	    --preload-file apps/sounds/ \
+	    -sUSE_SDL=2 \
+	    -sUSE_SDL_MIXER=2 \
+	    -sUSE_SDL_TTF=2 \
+	    -sUSE_SDL_GFX=2 \
 	    -sUSE_SDL_IMAGE=2 -sSDL2_IMAGE_FORMATS='["svg"]' \
 	    source/gizmo/gizmo.c \
 	    source/gizmo/asteroids.c
@@ -186,9 +195,9 @@ $(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
 @PACKAGE@-@VERSION@.jar: $(srcdir)/META-INF/MANIFEST.MF \
 			 $(JAR_ROOT)/.classes .javadoc
 	$(JAR) cvfm $@ $(srcdir)/META-INF/MANIFEST.MF \
-	    -C $(srcdir)/apps/sounds sounds \
-	    -C $(srcdir)/apps/images images \
-	    -C $(srcdir)/apps/fonts  fonts \
+	    -C $(srcdir)/apps fonts \
+	    -C $(srcdir)/apps images \
+	    -C $(srcdir)/apps sounds \
 	    -C $(top_builddir) javadoc -C $(JAR_ROOT) .
 	chmod +x $@
 
@@ -196,7 +205,12 @@ $(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
 	rm -f $@
 	$(LN_S) @PACKAGE@-@VERSION@.jar $@
 
+play-java-asteroids: @PACKAGE@.jar
+	$(JAVA_HOME)/bin/java -jar $< asteroids
+
 if HAVE_GRADLE
+java_DATA += @PACKAGE@-@VERSION@.war
+
 build/libs/@PACKAGE@-@VERSION@.war: \
 	    build.gradle \
 	    WEB-INF/web.xml \
@@ -277,10 +291,11 @@ MOSTLYCLEANFILES += \
 	@PACKAGE@-@VERSION@.jar @PACKAGE@.jar \
 	@PACKAGE@-@VERSION@.war @PACKAGE@.war
 CLEANFILES += \
-	scripts/check-java.sh
+	scripts/check-java.sh \
+	.javadoc @PACKAGE@.ks
 
 clean-local-java:
-	-rm -rf .gradle/ .javadoc javadoc *.jar *.war *.ks
+	-rm -rf .gradle/ javadoc
 
 mostlyclean-local-java:
 	-rm -rf $(JAR_ROOT) build/

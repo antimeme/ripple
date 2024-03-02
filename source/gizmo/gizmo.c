@@ -36,33 +36,45 @@ unsigned long long now() { return SDL_GetTicks64(); }
 
 static int gizmo_sdl_init = 0;
 static int gizmo_ttf_init = 0;
+static int gizmo_mix_init = 0;
 
 static int
-gizmo_failmsg(const char *funcname, int status)
+gizmo_failmsg(const char *funcname, int status,
+              const char *(errfn)(void))
 {
   if (status < 0) {
-    SDL_Log("%s: %s\n", funcname, SDL_GetError());
+    SDL_Log("%s: %s\n", funcname, errfn());
     SDL_ShowSimpleMessageBox
-      (SDL_MESSAGEBOX_ERROR, funcname, SDL_GetError(), 0);
+      (SDL_MESSAGEBOX_ERROR, funcname, errfn(), 0);
     return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;
 }
-#define GIZMO_CHECK(fn, args) gizmo_failmsg(#fn, fn args)
+#define GIZMO_SDL_CHECK(fn, args) \
+  gizmo_failmsg(#fn, fn args, SDL_GetError)
+#define GIZMO_TTF_CHECK(fn, args) \
+  gizmo_failmsg(#fn, fn args, SDL_GetError)
+#define GIZMO_MIX_CHECK(fn, args) \
+  gizmo_failmsg(#fn, fn args, Mix_GetError)
 
 static int
-gizmo_chknull(const char *funcname, void *ptr)
+gizmo_chknull(const char *funcname, void *ptr,
+              const char *(errfn)(void))
 {
   if (!ptr) {
-    SDL_Log("%s: %s\n", funcname, SDL_GetError());
+    SDL_Log("%s: %s\n", funcname, errfn());
     SDL_ShowSimpleMessageBox
-      (SDL_MESSAGEBOX_ERROR, funcname, SDL_GetError(), 0);
+      (SDL_MESSAGEBOX_ERROR, funcname, errfn(), 0);
     return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;
 }
-#define GIZMO_CHKNULL(fn, ptr, args) \
-  gizmo_chknull(#fn, (ptr = fn args))
+#define GIZMO_SDL_CHKNULL(fn, ptr, args) \
+  gizmo_chknull(#fn, (ptr = fn args), SDL_GetError)
+#define GIZMO_TTF_CHKNULL(fn, ptr, args) \
+  gizmo_chknull(#fn, (ptr = fn args), TTF_GetError)
+#define GIZMO_MIX_CHKNULL(fn, ptr, args) \
+  gizmo_chknull(#fn, (ptr = fn args), Mix_GetError)
 
 struct gizmo {
   SDL_Renderer *renderer;
@@ -86,9 +98,10 @@ gizmo_setup_icon(SDL_Window *window, const unsigned char *data,
   SDL_RWops *image = NULL;
 
 #ifndef __EMSCRIPTEN__
-  if ((result = GIZMO_CHKNULL
+  if ((result = GIZMO_SDL_CHKNULL
        (SDL_RWFromConstMem, image, (data, length)))) {
-  } else if ((result = GIZMO_CHKNULL(IMG_Load_RW, icon, (image, 0)))) {
+  } else if ((result = GIZMO_SDL_CHKNULL
+              (IMG_Load_RW, icon, (image, 0)))) {
   } else SDL_SetWindowIcon(window, icon);
 #endif
 
@@ -104,15 +117,24 @@ gizmo_setup_SDL(struct gizmo *gizmo)
   int result = EXIT_SUCCESS;
   SDL_DisplayMode mode;
 
-  /* Only call SDL_Quit() when SDL_Init() has succeded */
-  if (EXIT_SUCCESS == (result = GIZMO_CHECK
-                       (SDL_Init, (SDL_INIT_VIDEO))))
+  if ((result == EXIT_SUCCESS) && EXIT_SUCCESS ==
+      (result = GIZMO_SDL_CHECK
+       (SDL_Init, (SDL_INIT_VIDEO | SDL_INIT_AUDIO))))
     gizmo_sdl_init = 1;
 
+  if ((result == EXIT_SUCCESS) && EXIT_SUCCESS ==
+      (result = GIZMO_MIX_CHECK
+       (Mix_OpenAudio, (96000, MIX_DEFAULT_FORMAT, 2, 2048))))
+    gizmo_mix_init = 1;
+
+  if ((result == EXIT_SUCCESS) && EXIT_SUCCESS ==
+      (result = GIZMO_TTF_CHECK(TTF_Init, ())))
+    gizmo_ttf_init = 1;
+
   if (result != EXIT_SUCCESS) {
-  } else if ((result = GIZMO_CHECK(SDL_GetCurrentDisplayMode,
-                                   (0, &mode)))) {
-  } else if ((result = GIZMO_CHKNULL
+  } else if ((result = GIZMO_SDL_CHECK
+              (SDL_GetCurrentDisplayMode, (0, &mode)))) {
+  } else if ((result = GIZMO_SDL_CHKNULL
               (SDL_CreateWindow, gizmo->window,
                (gizmo->app->title ? gizmo->app->title :"Gizmo",
                 SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -122,10 +144,10 @@ gizmo_setup_SDL(struct gizmo *gizmo)
              (SDL_HINT_RENDER_SCALE_QUALITY, "linear")) {
     SDL_Log("SDL_SetHint: %s\n", SDL_GetError());
     result = EXIT_FAILURE;
-  } else if ((result = GIZMO_CHKNULL
+  } else if ((result = GIZMO_SDL_CHKNULL
               (SDL_CreateRenderer, gizmo->renderer,
                (gizmo->window, -1, SDL_RENDERER_PRESENTVSYNC)))) {
-  } else if ((result = GIZMO_CHECK
+  } else if ((result = GIZMO_SDL_CHECK
               (SDL_GetRendererOutputSize,
                (gizmo->renderer, &gizmo->app->width,
                 &gizmo->app->height)))) {
@@ -133,27 +155,29 @@ gizmo_setup_SDL(struct gizmo *gizmo)
              (EXIT_SUCCESS != (result = gizmo_setup_icon
                                (gizmo->window, gizmo->app->icon,
                                 gizmo->app->icon_length)))) {
-  } else if ((result = GIZMO_CHECK(TTF_Init, ()))) {
-  } else gizmo_ttf_init = 1;
+  }
 
   return result;
 }
 
 int
-gizmo_app_font(TTF_Font **mono, unsigned size)
+gizmo_app_sound(Mix_Chunk **chunk, const char *filename)
 {
   int result = EXIT_SUCCESS;
 
-  TTF_CloseFont(*mono);
+  if (chunk)
+    result = GIZMO_MIX_CHKNULL(Mix_LoadWAV, *chunk, (filename));
+  return result;
+}
 
-  /* https://www.fontspace.com/brass-mono-font-f29885 */
-  if (mono &&
-      ((result = GIZMO_CHKNULL
-        (TTF_OpenFont, *mono,
-         ("./apps/fonts/brass-mono.ttf", size))))) {
-  }
+int
+gizmo_app_font(TTF_Font **font, unsigned size, const char *filename)
+{
+  int result = EXIT_SUCCESS;
 
-  /* :TODO: TTF_CloseFont */
+  TTF_CloseFont(*font);
+  if (font)
+    result = GIZMO_TTF_CHKNULL(TTF_OpenFont, *font, (filename, size));
   return result;
 }
 
@@ -297,7 +321,7 @@ gizmo_draw_point_loop(SDL_Renderer *renderer, float size,
       (&points[(ii + 1) % n_points], dircos, dirsin);
     previous = end;
 
-    result = GIZMO_CHECK
+    result = GIZMO_SDL_CHECK
       (SDL_RenderDrawLine,
        (renderer, (int)(position->x + size * start.x),
         (int)(position->y + size * start.y),
@@ -440,6 +464,8 @@ main(int argc, char **argv)
   free(gizmo.mouse_actions);
   SDL_DestroyRenderer(gizmo.renderer);
   SDL_DestroyWindow(gizmo.window);
+  if (gizmo_mix_init)
+    Mix_CloseAudio();
   if (gizmo_ttf_init)
     TTF_Quit();
   if (gizmo_sdl_init)

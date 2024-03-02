@@ -23,8 +23,9 @@
 #define GIZMO_H
 
 #include "SDL.h"
-#include "SDL2_gfxPrimitives.h"
+#include "SDL_mixer.h"
 #include "SDL_ttf.h"
+#include "SDL2_gfxPrimitives.h"
 #include "SDL_image.h"
 
 /**
@@ -94,8 +95,22 @@ gizmo_app_actions
  struct app_key_action   *key_actions,   unsigned n_key_actions,
  struct app_mouse_action *mouse_actions, unsigned n_mouse_actions);
 
+/**
+ * Fetches a sound clip from the file system.
+ * @param chunk destination into which sound gets loaded
+ * @param filename specifies file system path to load from
+ * @return EXIT_SUCCESS unless something went wrong */
 int
-gizmo_app_font(TTF_Font **mono, unsigned size);
+gizmo_app_sound(Mix_Chunk **chunk, const char *filename);
+
+/**
+ * Fetches a true-type font from the file system.
+ * @param font destination into which font gets loaded
+ * @param size point size of font
+ * @param filename specifies file system path to load from
+ * @return EXIT_SUCCESS unless something went wrong */
+int
+gizmo_app_font(TTF_Font **font, unsigned size, const char *filename);
 
 /* ------------------------------------------------------------------ */
 /* A rudimentary math library */

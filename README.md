@@ -24,7 +24,7 @@ not desired.  This is an attempt to capture everything:
 
   - Autotools: libtool autoconf automake make
   - C Development: gcc gdb valgrind
-    + SDL: libsdl2{,-gfx,-ttf,-image}-dev
+    + SDL: libsdl2-dev libsdl2-{mixer,ttf,gfx,image}-dev
   - Python Development: python2 (code needs updating)
   - Java Development: default-jdk
     + Servlets: gradle jetty9 tomcat10
@@ -80,7 +80,7 @@ for most purposes.
   - \# apt install -y emacs curl \
            build-essential gdb valgrind git \
            autoconf automake libtool \
-           libsdl2{,-gfx,-ttf,-image}-dev \
+           libsdl2{,-mixer,-ttf,-gfx,-image}-dev \
            nodejs npm emscripten \
            default-jdk gradle
   - \# apt install -y apache2 jetty9 tomcat10
@@ -109,7 +109,7 @@ other encumberance.
   - \# dnf install -y emacs curl \
            gcc make gdb valgrind git \
            autoconf automake libtool \
-           SDL2{,_gfx,_ttf,_image}-devel \
+           SDL2{,_mixer,_ttf,_gfx,_image}-devel \
            nodejs npm emscripten \
            java-latest-openjdk gradle
   - \# dnf install -y httpd jetty tomcat
@@ -136,7 +136,7 @@ from Arch Linux so the instructions below may be applicable there.
              gcc make git \
              autoconf automake libtool \
              mingw-w64-x86_64-toolchain \
-             mingw-w64-x86_64-SDL2{,_gfx,_ttf,_image}
+             mingw-w64-x86_64-SDL2{,_mixer,_ttf,_gfx,_image}
 
 ## License
 
