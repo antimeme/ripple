@@ -16,6 +16,21 @@ applications and associated resources.
 
 ### Build
 
+Before attempting to build be sure to install dependencies.  Ripple
+attempts to be robust in the face of missing dependencies, which
+means it should be possible to build any outputs for which all
+dependencies are present.  It's usually safe to leave out anything
+not desired.  This is an attempt to capture everything:
+
+  - Autotools: libtool autoconf automake make
+  - C Development: gcc gdb valgrind
+    + SDL: libsdl2{,-gfx,-ttf,-image}-dev
+  - Python Development: python2 (code needs updating)
+  - Java Development: default-jdk
+    + Servlets: gradle jetty9 tomcat10
+  - JavaScript Development: nodejs npm emscripten
+  - Rust Development: rustc cargo
+
 If you've checked ripple out of a source repository (such as git)
 execute `./bootstrap` to begin the build process.  If you've
 downloaded this package as a tar file run `./configure` instead.
@@ -62,12 +77,13 @@ for most purposes.
 
 #### Useful Packages
 
-  - \# apt install -y \
-        emacs firefox curl \
-        build-essential git autoconf automake libtool gdb valgrind \
-        libsdl2{,-gfx,-ttf,-image}-dev \
-        nodejs emscripten \
-        default-jdk
+  - \# apt install -y emacs curl \
+           build-essential gdb valgrind git \
+           autoconf automake libtool \
+           libsdl2{,-gfx,-ttf,-image}-dev \
+           nodejs npm emscripten \
+           default-jdk gradle
+  - \# apt install -y apache2 jetty9 tomcat10
 
 ## RedHat Enterprise Linux
 
@@ -90,12 +106,13 @@ other encumberance.
   - \# dnf config-manager --set-enabled crb
   - \# dnf install epel-release
   - \# dnf groupinstall 'Development Tools'
-  - \# dnf install -y \
-        emacs firefox curl \
-        git autoconf automake libtool gdb valgrind \
-        SDL2{,_gfx,_ttf,_image}-devel \
-        nodejs \
-        java-latest-openjdk
+  - \# dnf install -y emacs curl \
+           gcc make gdb valgrind git \
+           autoconf automake libtool \
+           SDL2{,_gfx,_ttf,_image}-devel \
+           nodejs npm emscripten \
+           java-latest-openjdk gradle
+  - \# dnf install -y httpd jetty tomcat
 
 ## MSYS2
 
@@ -115,10 +132,11 @@ from Arch Linux so the instructions below may be applicable there.
 #### Useful Packages
 
   - $ pacman --noconfirm -S \
-        git autoconf automake libtool make \
-        mingw-w64-x86_64-emacs curl \
-        mingw-w64-x86_64-toolchain \
-        mingw-w64-x86_64-SDL2{,_gfx,_ttf,_image}
+             mingw-w64-x86_64-emacs curl \
+             gcc make git \
+             autoconf automake libtool \
+             mingw-w64-x86_64-toolchain \
+             mingw-w64-x86_64-SDL2{,_gfx,_ttf,_image}
 
 ## License
 
