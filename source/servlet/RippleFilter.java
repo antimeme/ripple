@@ -1,4 +1,5 @@
 package net.antimeme.ripple.servlet;
+import java.util.Enumeration;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -27,8 +28,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
-@WebFilter(filterName = "RippleFilter", urlPatterns = "/*")
-public class RippleDispatch extends HttpServlet implements Filter
+/**
+ * This component causes URIs that don't match any servlet or file
+ * name to be served when a corresponding file with a .html extension
+ * is found.  For example, /ripple/poke is redirected to
+ * /ripple/poke.html since the latter exists in the WAR file. */
+@WebFilter(urlPatterns = "/*")
+public class RippleFilter extends HttpServlet implements Filter
 {
     private static final long serialVersionUID = 1L;
     protected ServletContext ctx  = null;
@@ -37,28 +43,49 @@ public class RippleDispatch extends HttpServlet implements Filter
      * Pretends to be a ServletOutputStream but doesn't send
      * data to any client.  Depending on what happens in a filter
      * this data may either be discarded or resolved by sending
-     * it to the actual response output stream. */
+     * it to the actual response output stream.
+     *
+     * A DelayedOutputStream is always and immediately writable
+     * without blocking, since the data is collected in memory. */
     public static class DelayedOutputStream
         extends ServletOutputStream
     {
         protected ByteArrayOutputStream baos =
             new ByteArrayOutputStream();
+        protected WriteListener listener = null;
         
         @Override
         public void write(int b) { baos.write(b); }
 
         @Override
-        public void setWriteListener(WriteListener listener)
-        { /* :FIXME: response.setWriteListener(listener); */ }
+        public void setWriteListener(WriteListener listener) {
+            if (this.listener != null)
+                throw new IllegalStateException
+                    ("Repeating setWriteListener is not allowed");
+            this.listener = listener;
+            try { this.listener.onWritePossible(); }
+            catch (IOException ex) { throw new RuntimeException(ex); }
+        }
 
+        /**
+         * Because this captures output for potential replay later
+         * we are always ready.
+         * @return always true */
         @Override
-        public boolean isReady() { return true; /* :FIXME: */ }
+        public boolean isReady() { return true; }
 
+        /**
+         * Allows the DelayedResponse to implement
+         * {@link DelayedResponse#reset} */
         public void reset() { baos.reset(); }
 
-        public ServletOutputStream resolve(ServletOutputStream out)
-            throws IOException
-        { out.write(baos.toByteArray()); return out; }
+        /**
+         * Transfer the contents of this output stream to another.
+         * This is used to send a delayed response.
+         * @param out actual output stream for response
+         * @return the same stream provided for chaining */
+        public void resolve(ServletOutputStream out) throws IOException
+        { out.write(baos.toByteArray()); out.flush(); }
     }
 
     /**
@@ -67,7 +94,7 @@ public class RippleDispatch extends HttpServlet implements Filter
      * If it becomes desirable to commit the response the
      * {@link #resolve} method can be called.  Otherwise interact
      * directly with the original response to discard data but
-     * keep settings. */
+     * keep settings such as status and headers. */
     public static class DelayedResponse
         extends HttpServletResponseWrapper
     {
@@ -121,7 +148,7 @@ public class RippleDispatch extends HttpServlet implements Filter
                 else response.sendError(errorSC);
             } else if (redirected != null)
                 response.sendRedirect(redirected);
-            else dout.resolve(response.getOutputStream()).flush();
+            else dout.resolve(response.getOutputStream());
         }
     }
 
@@ -136,7 +163,7 @@ public class RippleDispatch extends HttpServlet implements Filter
                               HttpServletResponse response)
         throws ServletException, IOException
     {
-        File tempdir = tempdir = (File)ctx.getAttribute
+        File tempdir = (File)ctx.getAttribute
             ("javax.servlet.context.tempdir");
 
         response.setContentType("text/html");
@@ -192,6 +219,17 @@ public class RippleDispatch extends HttpServlet implements Filter
                          FilterChain chain)
         throws IOException, ServletException
     {
+        //for (Enumeration<String> en = ctx.getInitParameterNames();
+        //     en.hasMoreElements();)
+        //    System.out.println("DEBUG-initparam: " + en.nextElement());
+        //for (Enumeration<String> en = ctx.getAttributeNames();
+        //     en.hasMoreElements();)
+        //    System.out.println("DEBUG-initparam: " + en.nextElement());
+
+        // This filter attempts to avoid interfering with servlets
+        // or static files.  Action is taken only if the request
+        // would have indicated a resource that does not exist.  In
+        // that case we add a ".html" to the path and try again.
         if ((request instanceof HttpServletRequest)) {
             HttpServletRequest httpRequest =
                 (HttpServletRequest)request;
@@ -205,8 +243,10 @@ public class RippleDispatch extends HttpServlet implements Filter
                 !httpRequest.getServletPath().endsWith(".html")) {
                 String path = httpRequest.getServletPath() + ".html";
                 if (ctx.getResource(path) != null)
-                    httpResponse.sendRedirect
-                        (httpRequest.getRequestURI() + ".html");
+                    httpRequest.getRequestDispatcher(path)
+                        .forward(request, response);
+                    //httpResponse.sendRedirect
+                    //    (httpRequest.getRequestURI() + ".html");
                 else delayed.resolve();
             } else delayed.resolve();
         } else chain.doFilter(request, response);

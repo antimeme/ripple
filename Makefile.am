@@ -164,6 +164,7 @@ java_DATA = @PACKAGE@-@VERSION@.jar
 JCC     = "$(JAVA_HOME)/bin/javac"
 JAVADOC = "$(JAVA_HOME)/bin/javadoc"
 JAR     = "$(JAVA_HOME)/bin/jar"
+KTOOL   = "$(JAVA_HOME)/bin/keytool"
 
 JAVA_SRCFILES = $(JAVA_DISTSRC) $(top_builddir)/source/Ripple.java
 JAR_ROOT = $(top_builddir)/classes
@@ -187,6 +188,7 @@ $(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
 	$(JAR) cvfm $@ $(srcdir)/META-INF/MANIFEST.MF \
 	    -C $(srcdir)/apps/sounds sounds \
 	    -C $(srcdir)/apps/images images \
+	    -C $(srcdir)/apps/fonts  fonts \
 	    -C $(top_builddir) javadoc -C $(JAR_ROOT) .
 	chmod +x $@
 
@@ -198,6 +200,7 @@ if HAVE_GRADLE
 build/libs/@PACKAGE@-@VERSION@.war: \
 	    build.gradle \
 	    WEB-INF/web.xml \
+	    WEB-INF/jetty-env.xml \
 	    $(JAR_ROOT)/.classes \
 	    source/servlet/*.java
 	$(GRADLE) -b $< war
@@ -217,9 +220,47 @@ deploy: @PACKAGE@.war
 	elif [ -n "$(CATALINA_HOME)" ]; then \
 	    $(SUDO) cp $< $(CATALINA_HOME)/webapps; \
 	else echo ERROR: no Java server container detected; fi
-else
-
 endif
+
+# Configure Jetty for TLS:
+# - Copy ripple.ks to $JETTY_HOME/etc/localhost.ks
+# - Edit $JETTY_HOME/etc/jetty-ssl-context.xml
+#   <Set name="CertAlias">
+#     <Property name="jetty.keystore.alias" default="localhost"/>
+#   </Set>
+# - Edit $JETTY_HOME/start.ini
+#   --module=[...],https,[...]
+#   jetty.ssl.port=8443
+#   jetty.sslContext.keyStorePath=etc/localhost.ks
+#   jetty.sslContext.keyStoreType=pkcs12
+#   jetty.sslContext.keyStorePassword=secret
+#   jetty.sslContext.wantClientAuth=true
+#   jetty.sslContext.trustStorePath=etc/localhost.ks
+#   jetty.sslContext.trustStoreType=pkcs12
+#   jetty.sslContext.trustStorePassword=secret
+
+# Configure Tomcat for TLS:
+# - Copy ripple.ks to $CATALINA_HOME/etc/localhost.ks
+# - Edit $CATALINA_HOME/etc/server.xml
+#   <Connector port="8443" maxThreads="150" SSLEnabled="true"
+#              protocol="org.apache.coyote.http11.Http11NioProtocol">
+#     <SSLHostConfig certificateVerification="optional"
+#                    truststoreFile="etc/localhost.ks"
+#                    truststoreType="pkcs12"
+#                    truststorePassword="secret">
+#       <Certificate certificateKeystoreFile="etc/localhost.ks"
+#                    certificateKeystoreType="pkcs12"
+#                    certificateKeyAlias="localhost"
+#                    certificateKeystorePassword="secret"
+#                    type="RSA" />
+#     </SSLHostConfig>
+#   </Connector>
+
+localhost.ks:
+	$(KTOOL) -keystore $@ -storetype pkcs12 \
+	    -genkey -keyalg RSA -keysize 2048 -sigalg SHA256withRSA \
+	    -alias localhost -dname CN=localhost -validity 3650 \
+	    -ext "SAN=dns:$$HOSTNAME,dns:*.$$HOSTNAME"
 
 install-data-local: javadoc
 	$(MKDIR_P) $(DESTDIR)$(docdir)
@@ -239,7 +280,7 @@ CLEANFILES += \
 	scripts/check-java.sh
 
 clean-local-java:
-	-rm -rf .gradle/ .javadoc javadoc *.jar *.war
+	-rm -rf .gradle/ .javadoc javadoc *.jar *.war *.ks
 
 mostlyclean-local-java:
 	-rm -rf $(JAR_ROOT) build/

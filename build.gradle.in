@@ -6,7 +6,7 @@ sourceSets { main { java { srcDirs = ["source/servlet"] } } }
 war {
     archiveName = "@PACKAGE@-@VERSION@.war"
     webXml = file("WEB-INF/web.xml")
-        from("WEB-INF/urlrewrite.xml") { into("WEB-INF/") }
+    from("WEB-INF/jetty-env.xml") { into("WEB-INF") }
     from("classes") { into("") }
     from("apps") { into("") }
     manifest {
@@ -23,8 +23,8 @@ war {
 dependencies {
     //providedCompile("jakarta.platform:jakarta.jakartaee-web-api:8.0.0")
     providedCompile("javax.servlet:javax.servlet-api:4.0.1")
-
-    implementation("org.xerial:sqlite-jdbc:3.36.0.1")
+    runtimeOnly("org.xerial:sqlite-jdbc:3.36.0.1")
+    //runtimeOnly("org.postgresql:postgresql")
     implementation("com.fasterxml.jackson.core:jackson-core:2.13.0")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.0")
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.13.0")

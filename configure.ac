@@ -81,7 +81,7 @@ if test "x$enable_java" = x1; then
         AC_MSG_RESULT([$JAVA_HOME])
     else AC_MSG_RESULT([missing]); fi
     AM_CONDITIONAL([HAVE_JAVA], [test -n "$JAVA_HOME"])
-
+    AM_COND_IF([HAVE_JAVA], AC_SUBST([JAVA_HOME], [$JAVA_HOME]))
     AC_PATH_PROG([GRADLE], [gradle], [no])
     AM_CONDITIONAL([HAVE_GRADLE], [test "x$GRADLE" != "xno"])
 else

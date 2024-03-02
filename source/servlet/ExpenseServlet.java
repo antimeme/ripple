@@ -11,6 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -32,19 +36,20 @@ public class ExpenseServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-
-        String dbPath = getServletContext().getInitParameter("dbPath");
-        if (dbPath == null)
-            dbPath = "expense.db";
-
         try {
-            conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
+            Context ctx = new InitialContext();
+            DataSource ds = (DataSource)
+                ctx.lookup("java:comp/env/jdbc/ExpenseDB");
+            Connection conn = ds.getConnection();
+
 
             conn.setAutoCommit(false);
             PreparedStatement pstmt = conn.prepareStatement(SETUP_SQL);
             pstmt.executeUpdate();
             conn.commit();
             conn.setAutoCommit(true);
+        } catch (NamingException ex) {
+            throw new ServletException("Naming failed", ex);
         } catch (SQLException ex) {
             throw new ServletException("Error initializing database", ex);
         }
