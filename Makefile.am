@@ -293,6 +293,7 @@ mostlyclean-local-java:
 endif
 
 clean-local: clean-local-java
+	rm -rf target/
 
 mostlyclean-local: mostlyclean-local-java
 
