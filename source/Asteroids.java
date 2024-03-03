@@ -275,6 +275,8 @@ public class Asteroids extends java.applet.Applet
     protected float target = Float.NaN;
     /** number of milliseconds of unprocessed thrust */
     protected float thrust_elapsed = 0;
+    /** true iff the thruster sound is playing */
+    protected boolean thrusterChannel = false;
     /** current player score */
     protected int score;
     /** number of extra lives remaining for player */
@@ -292,13 +294,15 @@ public class Asteroids extends java.applet.Applet
     /** font to use for rendering score */
     protected Font font_score = null;
 
-    /** https://freesound.org/people/ElevatorProductions/sounds/69944/ */
+    /** See ../apps/credits.html for details on sounds */
     protected java.applet.AudioClip soundShootBeam;
-    /** https://freesound.org/people/magnuswaker/sounds/523089/ */
+    /** See ../apps/credits.html for details on sounds */
     protected java.applet.AudioClip soundSmashShip;
-    /** https://freesound.org/people/magnuswaker/sounds/522099/ */
+    /** See ../apps/credits.html for details on sounds */
     protected java.applet.AudioClip soundSmashRock;
-    /** https://freesound.org/people/drewsimko/sounds/682866/ */
+    /** See ../apps/credits.html for details on sounds */
+    protected java.applet.AudioClip soundThruster;
+    /** See ../apps/credits.html for details on sounds */
     protected java.applet.AudioClip soundSaucerSiren;
 
     protected java.applet.AudioClip fetchSound(String resource) {
@@ -375,9 +379,10 @@ public class Asteroids extends java.applet.Applet
 
     @Override
     public void init() {
-        soundShootBeam = fetchSound("sounds/shoot-beam.ogg");
-        soundSmashShip = fetchSound("sounds/smash-ship.ogg");
-        soundSmashRock = fetchSound("sounds/smash-rock.ogg");
+        soundShootBeam   = fetchSound("sounds/shoot-beam.ogg");
+        soundSmashShip   = fetchSound("sounds/smash-ship.ogg");
+        soundSmashRock   = fetchSound("sounds/smash-rock.ogg");
+        soundThruster    = fetchSound("sounds/thruster.ogg");
         soundSaucerSiren = fetchSound("sounds/saucer-siren.ogg");
 
         playerShip.points = wedgeShipPoints;
@@ -680,6 +685,14 @@ public class Asteroids extends java.applet.Applet
                     Math.cos(playerShip.direction) * factor;
                 playerShip.velocity.y +=
                     Math.sin(playerShip.direction) * factor;
+
+                if ((soundThruster != null) && !thrusterChannel) {
+                    soundThruster.loop();
+                    thrusterChannel = true;
+                }
+            } else if ((soundThruster != null) && thrusterChannel) {
+                soundThruster.stop();
+                thrusterChannel = false;
             }
         }
 
