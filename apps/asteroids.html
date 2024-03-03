@@ -729,17 +729,16 @@
              ctx.scale(this.radius, this.radius);
              ctx.beginPath();
 
-             // Saucer dome
              ctx.moveTo(2/3, 0);
              ctx.arc(0, 0, 2/3, 0, Math.PI, 0);
              ctx.lineTo(2/3, 0);
-
-             // Saucer body
-             ctx.lineTo(1, -1/3);
-             ctx.lineTo(2/3, -2/3);
-             ctx.lineTo(-2/3, -2/3);
-             ctx.lineTo(-1, -1/3);
-             ctx.lineTo(-2/3, 0);
+             drawPointLoop(ctx, [
+                 {x: 2/3, y: 0},
+                 {x: 1, y: -1/3},
+                 {x: 2/3, y: -2/3},
+                 {x: -2/3, y: -2/3},
+                 {x: -1, y: -1/3},
+                 {x: -2/3, y: 0}]);
 
              ctx.restore();
              ctx.stroke();
