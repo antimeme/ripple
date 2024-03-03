@@ -89,6 +89,12 @@ public class Asteroids extends java.applet.Applet
 
         public Point translate(Point value)
         { return new Point(this.x + value.x, this.y + value.y); }
+
+        
+        public String toString() {
+            return "(" + String.format("%.2f", x) +
+                ", " + String.format("%.2f", y) + ")";
+        }
     }
 
     static final Point[] wedgeShipPoints = new Point[] {
@@ -102,11 +108,12 @@ public class Asteroids extends java.applet.Applet
      * Return non-zero iff the spherical objects represented by given
      * position, velocity and size collide within the elapsed time. */
     protected static int checkCollidePoints
-        (float sizeA, Point positionA, Point velocityA,
-         float sizeB, Point positionB, Point velocityB, long elapsed)
+        (float radiusA, Point positionA, Point velocityA,
+         float radiusB, Point positionB, Point velocityB,
+         long elapsed)
     {
         int result = 0;
-        final float gap = sizeA + sizeB;
+        final float gap = radiusA + radiusB;
         Point dp = new Point(positionA.x - positionB.x,
                              positionA.y - positionB.y);
 
@@ -131,7 +138,7 @@ public class Asteroids extends java.applet.Applet
      * Anything in the game that must move can be represented by an
      * instance of this class. */
     protected static class Movable {
-        public float size;
+        public float radius;
         public Point position;
         public Point velocity;
         public float direction;
@@ -139,6 +146,7 @@ public class Asteroids extends java.applet.Applet
         public int   dead;
         public Point[] points = null;
         public Point[] thrust = null;
+        public float dome = 0;
         public int nsplits;
         public int ndebris;
 
@@ -148,24 +156,24 @@ public class Asteroids extends java.applet.Applet
 
             duration = (duration > elapsed) ? (duration - elapsed) : 0;
             return (duration > 0) &&
-                (this.position.x < this.size + bounds.width / 2) &&
-                (this.position.x > -(this.size + bounds.width / 2)) &&
-                (this.position.y < this.size + bounds.height / 2) &&
-                (this.position.x > -(this.size + bounds.height / 2));
+                (this.position.x < this.radius + bounds.width / 2) &&
+                (this.position.x > -(this.radius + bounds.width / 2)) &&
+                (this.position.y < this.radius + bounds.height / 2) &&
+                (this.position.x > -(this.radius + bounds.height / 2));
         }
 
         public boolean moveWrap(float elapsed, Dimension bounds) {
             position.x += velocity.x * elapsed;
-            if (position.x > size + bounds.width / 2)
-                position.x = -(size + bounds.width / 2);
-            if (position.x < -(size + bounds.width / 2))
-                position.x = size + bounds.width / 2;
+            if (position.x > radius + bounds.width / 2)
+                position.x = -(radius + bounds.width / 2);
+            if (position.x < -(radius + bounds.width / 2))
+                position.x = radius + bounds.width / 2;
 
             position.y += velocity.y * elapsed;
-            if (position.y > size + bounds.height / 2)
-                position.y = -(size + bounds.height / 2);
-            if (position.y < -(size + bounds.height / 2))
-                position.y = size + bounds.height / 2;
+            if (position.y > radius + bounds.height / 2)
+                position.y = -(radius + bounds.height / 2);
+            if (position.y < -(radius + bounds.height / 2))
+                position.y = radius + bounds.height / 2;
 
             duration = (duration > elapsed) ? (duration - elapsed) : 0;
             return duration > 0;
@@ -174,20 +182,20 @@ public class Asteroids extends java.applet.Applet
         public boolean checkCollide(Movable other, long elapsed) {
             return (dead == 0) && (other.dead == 0) &&
                 (checkCollidePoints
-                 (size, position, velocity, other.size,
+                 (radius, position, velocity, other.radius,
                   other.position, other.velocity, elapsed) > 0);
         }
 
         public static void drawPointLoop
-            (Graphics ctx, float dircos, float dirsin, float size,
+            (Graphics ctx, float dircos, float dirsin, float radius,
              Point center, Point[] loop) {
             Point last = loop[loop.length - 1]
-                .rotate(dircos, dirsin).scale(size)
+                .rotate(dircos, dirsin).scale(radius)
                 .translate(center);
 
             for (Point current : loop) {
                 current = current
-                    .rotate(dircos, dirsin).scale(size)
+                    .rotate(dircos, dirsin).scale(radius)
                     .translate(center);
                 ctx.drawLine((int)(last.x), (int)(last.y),
                              (int)(current.x), (int)(current.y));
@@ -196,7 +204,7 @@ public class Asteroids extends java.applet.Applet
         }
 
         public void drawAt(Graphics ctx, Point position) {
-            drawPointLoop(ctx, 0, -1, size, position, points);
+            drawPointLoop(ctx, 0, -1, radius, position, points);
         }
 
         public void draw(Graphics ctx, Dimension bounds,
@@ -210,7 +218,7 @@ public class Asteroids extends java.applet.Applet
                 final float dircos = (float)Math.cos(direction);
                 final float dirsin = (float)Math.sin(direction);
                 drawPointLoop(ctx, dircos, dirsin,
-                              size, center, points);
+                              radius, center, points);
 
                 if (thrusting && (thrust != null) &&
                     (thrust.length > 0)) {
@@ -223,11 +231,20 @@ public class Asteroids extends java.applet.Applet
                              thrust[ii].y + (float)
                              ((random.nextFloat() - 0.5) * 0.33));
                     drawPointLoop(ctx, dircos, dirsin,
-                                  size, center, jitter);
+                                  radius, center, jitter);
                 }
+
+                if (dome > 0)
+                    ctx.drawArc
+                        ((int)(position.x - radius * dome +
+                               bounds.width / 2),
+                         (int)(position.y - radius * dome +
+                               bounds.height / 2),
+                         (int)(radius * dome * 2),
+                         (int)(radius * dome * 2), 0, 180);
             } else ctx.drawOval((int)(position.x + bounds.width / 2),
                                 (int)(position.y + bounds.height / 2),
-                                (int)size, (int)size);
+                                (int)radius, (int)radius);
         }
     }
 
@@ -245,14 +262,24 @@ public class Asteroids extends java.applet.Applet
     protected final int newlife = 10000;
     /** ship controlled by the player */
     protected final Movable playerShip = new Movable();
+    /** player shots that have not yet timed out or hit something */
+    protected List<Movable> playerShots = new LinkedList<Movable>();
+    /** determines whether saucer is large (easy) or small (hard) */
+    protected boolean saucerSmall = false;
+
+    /** counts down until it's time for saucer to change direction */
+    protected int saucerTurn = 0;
+    /** counts down until it's time for saucer to shoot */
+    protected int saucerShoot = 0;
+
     /** flying saucer antagonist */
     protected final Movable saucer = new Movable();
+    /** saucer shots that have not yet timed out or hit something */
+    protected List<Movable> saucerShots = new LinkedList<Movable>();
     /** asteroids that have not been destroyed */
-    protected List<Movable> asteroids = null;
+    protected List<Movable> asteroids = new LinkedList<Movable>();
     /** pieces of debris that haven't yet timed out */
-    protected List<Movable> debris = null;
-    /** player shots that have not yet timed out or hit something */
-    protected List<Movable> playerShots = null;
+    protected List<Movable> debris = new LinkedList<Movable>();
     /** reference unit for sizes that is updated on resize */
     protected float baseSize = 0;
     /** true when player is pressing key to thrust */
@@ -274,7 +301,7 @@ public class Asteroids extends java.applet.Applet
     /** direction player should point (if not NaN) */
     protected float target = Float.NaN;
     /** number of milliseconds of unprocessed thrust */
-    protected float thrust_elapsed = 0;
+    protected float thrustElapsed = 0;
     /** true iff the thruster sound is playing */
     protected boolean thrusterChannel = false;
     /** current player score */
@@ -289,10 +316,13 @@ public class Asteroids extends java.applet.Applet
     protected long gameover = 0;
     /** milliseconds when last update occured */
     protected long lastUpdate = 0;
+
+    /** Starting point from which to derive fonts */
+    protected Font fontBase = null;
     /** font to use for rendering "game over" text */
-    protected Font font_gameover = null;
+    protected Font fontGameOver = null;
     /** font to use for rendering score */
-    protected Font font_score = null;
+    protected Font fontScore = null;
 
     /** See ../apps/credits.html for details on sounds */
     protected java.applet.AudioClip soundShootBeam;
@@ -308,8 +338,7 @@ public class Asteroids extends java.applet.Applet
     protected java.applet.AudioClip fetchSound(String resource) {
         java.applet.AudioClip result = null;
         try {
-            java.net.URL url = getClass()
-                .getClassLoader().getResource(resource);
+            java.net.URL url = getClass().getResource(resource);
             result = getAudioClip(url);
         } catch (IllegalArgumentException ex) {
             System.out.println("ERROR fetching AudioClip(" +
@@ -318,7 +347,7 @@ public class Asteroids extends java.applet.Applet
         } catch (RuntimeException ex) {
             if (ex.getCause() instanceof
                 UnsupportedAudioFileException) {
-                System.out.println("ERROR fetching AudioClip(" +
+                System.out.println("ERROR unsupported AudioClip(" +
                                    resource + "): " +
                                    ex.getCause().getMessage());
             } else throw ex;
@@ -326,12 +355,67 @@ public class Asteroids extends java.applet.Applet
         return result;
     }
 
+    protected Font fetchFont(String resource, String fallback) {
+        Font result = null;
+        java.io.InputStream fontStream = getClass()
+            .getResourceAsStream(resource);
+        if (fontStream != null) {
+            try {
+                result = Font.createFont
+                    (Font.TRUETYPE_FONT, fontStream);
+            } catch (java.io.IOException ex) {
+                ex.printStackTrace();
+            } catch (java.awt.FontFormatException ex) {
+                ex.printStackTrace();
+            }
+        }
+        if ((result == null) && (fallback != null))
+            result = new Font(fallback, Font.PLAIN, 12);
+        return result;
+    }
+
+    protected void impactAsteroid(Movable asteroid,
+                                  List<Movable> fragments) {
+        createDebris(asteroid);
+        asteroid.dead = 1;
+        if (asteroid.nsplits > 0) {
+            createAsteroids(asteroid, 2, fragments);
+            if (soundSmashRock != null)
+                soundSmashRock.play();
+        }
+    }
+
+    protected void impactSaucer() {
+        createDebris(saucer);
+        resetSaucer();
+        if (soundSmashShip != null)
+            soundSmashShip.play();
+        if (soundSaucerSiren != null)
+            soundSmashShip.stop();
+    }
+
+    protected void resetSaucer() {
+        saucer.dead = (int)(8000 * (1 + random.nextFloat()));
+        saucer.position = new Point(0, 0);
+        saucer.velocity = new Point(0, 0);
+        saucer.direction = (float)Math.PI;
+        saucer.ndebris = 4 + (int)(4 * random.nextFloat());
+    }
+
+    protected void impactPlayerShip() {
+        playerShip.dead = 3000;
+        createDebris(playerShip);
+        resetPlayerShip();
+        if (soundSmashShip != null)
+            soundSmashShip.play();
+        if (lives <= 0)
+            gameover = 2000;
+    }
+
     protected void resetPlayerShip() {
-        lives -= 1;
         playerShip.position = new Point(0, 0);
         playerShip.velocity = new Point(0, 0);
         playerShip.direction = (float)-Math.PI/2;
-        playerShip.dead = 0;
         playerShip.nsplits = 0;
         playerShip.ndebris = 4 + (int)(4 * random.nextFloat());
         target = Float.NaN;
@@ -341,12 +425,15 @@ public class Asteroids extends java.applet.Applet
         gameover = 0;
         wavesize = 4;
         nextwave = 1000;
-        lives = 4;
+        lives = 3;
         score = 0;
+        resetSaucer();
         resetPlayerShip();
-        asteroids = new LinkedList<Movable>();
-        debris = new LinkedList<Movable>();
-        playerShots = new LinkedList<Movable>();
+        playerShip.dead = 0;
+        asteroids.clear();
+        debris.clear();
+        playerShots.clear();
+        saucerShots.clear();
     }
 
     /** Implements java.awt.event.ComponentListener */
@@ -359,27 +446,13 @@ public class Asteroids extends java.applet.Applet
                                    BufferedImage.TYPE_INT_RGB);
         baseSize = (size.width < size.height) ?
             size.width : size.height;
-        playerShip.size = baseSize * 3 / 100;
+        playerShip.radius = baseSize * 3 / 100;
+        saucer.radius = baseSize / (saucerSmall ? 50 : 25);
         for (Movable asteroid : asteroids)
-            asteroid.size = (1 << asteroid.nsplits) * baseSize / 40;
+            asteroid.radius = (1 << asteroid.nsplits) * baseSize / 40;
 
-        Font baseFont = null;
-        java.io.InputStream fontStream =
-            getClass().getResourceAsStream("/fonts/brass-mono.ttf");
-        if (fontStream != null) {
-            try {
-                baseFont = Font.createFont
-                    (Font.TRUETYPE_FONT, fontStream);
-            } catch (java.io.IOException ex) {
-                ex.printStackTrace();
-            } catch (java.awt.FontFormatException ex) {
-                ex.printStackTrace();
-            }
-        }
-        if (baseFont == null)
-            baseFont = new Font("SansSerif", Font.PLAIN, 12);
-        font_score = baseFont.deriveFont(baseSize / 17);
-        font_gameover = baseFont.deriveFont(baseSize * 2 / 17);
+        fontScore = fontBase.deriveFont(baseSize / 17);
+        fontGameOver = fontBase.deriveFont(baseSize * 2 / 17);
     }
 
     @Override
@@ -392,20 +465,28 @@ public class Asteroids extends java.applet.Applet
 
     @Override
     public void init() {
-        soundShootBeam   = fetchSound("sounds/shoot-beam.ogg");
-        soundSmashShip   = fetchSound("sounds/smash-ship.ogg");
-        soundSmashRock   = fetchSound("sounds/smash-rock.ogg");
-        soundThruster    = fetchSound("sounds/thruster.ogg");
-        soundSaucerSiren = fetchSound("sounds/saucer-siren.ogg");
+        soundShootBeam   = fetchSound("/sounds/shoot-beam.ogg");
+        soundSmashShip   = fetchSound("/sounds/smash-ship.ogg");
+        soundSmashRock   = fetchSound("/sounds/smash-rock.ogg");
+        soundThruster    = fetchSound("/sounds/thruster.ogg");
+        soundSaucerSiren = fetchSound("/sounds/saucer-siren.ogg");
+        fontBase = fetchFont("/fonts/brass-mono.ttf", "SansSerif");
 
         playerShip.points = wedgeShipPoints;
         playerShip.thrust = new Point[] {
             new Point(-1, 1f/3),
             new Point(-3f/2, 0),
+            new Point(-1, -1f/3), };
+        saucer.points = new Point[] {
+            new Point(2f/3, 0),
+            new Point(1, -1f/3),
+            new Point(2f/3, -2f/3),
+            new Point(-2f/3, -2f/3),
             new Point(-1, -1f/3),
-        };
-
+            new Point(-2f/3, 0), };
+        saucer.dome = 2f / 3;
         resetGame();
+
         addComponentListener(this);
         addKeyListener(this);
         addMouseListener(this);
@@ -472,7 +553,7 @@ public class Asteroids extends java.applet.Applet
             if (gameover == 1)
                 resetGame();
             else if (!shootRepeat && (playerShip.dead == 0))
-                shoot(playerShip, playerShots);
+                shoot(playerShip, playerShip.direction, playerShots);
             shootRepeat = true;
             break;
         }
@@ -517,7 +598,7 @@ public class Asteroids extends java.applet.Applet
                  playerShip.position.y);
             float quadrance = vector.x * vector.x + vector.y * vector.y;
 
-            if (quadrance > playerShip.size * playerShip.size) {
+            if (quadrance > playerShip.radius * playerShip.radius) {
                 float sx = (float)Math.cos(playerShip.direction);
                 float sy = (float)Math.sin(playerShip.direction);
                 float cosangle = (vector.x * sx + vector.y * sy) /
@@ -530,7 +611,7 @@ public class Asteroids extends java.applet.Applet
             }
 
             if ((playerShip.dead == 0) && (tapshot > 0))
-                shoot(playerShip, playerShots);
+                shoot(playerShip, playerShip.direction, playerShots);
             tapshot = 350;
             holding = true;
             held = 0;
@@ -547,7 +628,7 @@ public class Asteroids extends java.applet.Applet
             Movable piece = new Movable();
             piece.dead = 0;
             piece.duration = 900;
-            piece.size = baseSize / 333;
+            piece.radius = baseSize / 333;
             piece.position = new Point(source.position);
 
             float speed = baseSize * (random.nextFloat() + 1) / 2500;
@@ -581,7 +662,7 @@ public class Asteroids extends java.applet.Applet
             asteroid.nsplits = (source == null) ? 2 :
                 (source.nsplits - 1);
             asteroid.dead = 0;
-            asteroid.size = (1 << asteroid.nsplits) * baseSize / 40;
+            asteroid.radius = (1 << asteroid.nsplits) * baseSize / 40;
             asteroid.ndebris = 1 + asteroid.nsplits * 2 +
                 (int)(4 * random.nextFloat());
             if (source == null) {
@@ -591,9 +672,9 @@ public class Asteroids extends java.applet.Applet
                 asteroid.position = (place > 1) ?
                     new Point
                     ((float)((place - 1.5) * bounds.width),
-                     (float)(asteroid.size + bounds.height / 2)) :
+                     (float)(asteroid.radius + bounds.height / 2)) :
                     new Point
-                    ((float)(asteroid.size + bounds.width / 2),
+                    ((float)(asteroid.radius + bounds.width / 2),
                      (float)((place - 0.5) * bounds.height));
             } else asteroid.position = new Point(source.position);
 
@@ -617,18 +698,19 @@ public class Asteroids extends java.applet.Applet
         }
     }
 
-    protected void shoot(Movable source, List<Movable> shots) {
+    protected void shoot(Movable source, float direction,
+                         List<Movable> shots) {
         if (shots.size() >= 9)
             return;
         Movable shot = new Movable();
-        shot.size = baseSize / 50;
+        shot.radius = baseSize / 50;
         shot.duration = 350;
         shot.ndebris = 0;
         shot.nsplits = 0;
         shot.position = new Point(source.position);
         shot.velocity = new Point(source.velocity);
-        shot.velocity.x += Math.cos(source.direction) * baseSize / 700;
-        shot.velocity.y += Math.sin(source.direction) * baseSize / 700;
+        shot.velocity.x += Math.cos(direction) * baseSize / 700;
+        shot.velocity.y += Math.sin(direction) * baseSize / 700;
         shots.add(shot);
         if (soundShootBeam != null)
             soundShootBeam.play();
@@ -655,14 +737,17 @@ public class Asteroids extends java.applet.Applet
                 Movable sentinel = new Movable();
                 sentinel.position = new Point(0, 0);
                 sentinel.velocity = new Point(0, 0);
-                sentinel.size = playerShip.size;
+                sentinel.radius = playerShip.radius;
                 sentinel.dead = 0;
                 for (Movable asteroid : asteroids)
                     if (sentinel.checkCollide(asteroid, 1500))
                         playerShip.dead = 500;
 
-                if (elapsed >= playerShip.dead)
+                if (elapsed >= playerShip.dead) {
+                    playerShip.dead = 0;
                     resetPlayerShip();
+                    lives -= 1;
+                }
             } else playerShip.dead -= elapsed;
         } else {
             if (turn_left || turn_right)
@@ -687,17 +772,18 @@ public class Asteroids extends java.applet.Applet
                 else playerShip.direction -= (float)elapsed / 200;
             }
 
-            thrust_elapsed = thrust ? elapsed :
+            thrustElapsed = thrust ? elapsed :
                 (held > 300) ? elapsed : (held + elapsed > 300) ?
                 held + elapsed - 300 : 0;
             if (holding)
                 held += elapsed;
-            if (thrust_elapsed > 0) {
-                float factor = thrust_elapsed * baseSize / 400000;
-                playerShip.velocity.x +=
-                    Math.cos(playerShip.direction) * factor;
-                playerShip.velocity.y +=
-                    Math.sin(playerShip.direction) * factor;
+            if (thrustElapsed > 0) {
+                float factor = thrustElapsed *
+                    playerShip.radius / 20000;
+                playerShip.velocity.x += factor *
+                    Math.cos(playerShip.direction);
+                playerShip.velocity.y += factor *
+                    Math.sin(playerShip.direction);
 
                 if ((soundThruster != null) && !thrusterChannel) {
                     soundThruster.loop();
@@ -721,56 +807,116 @@ public class Asteroids extends java.applet.Applet
 
         List<Movable> fragments = new LinkedList<Movable>();
         for (Movable asteroid : asteroids) {
+            for (Movable shot : saucerShots)
+                if (shot.checkCollide(asteroid, elapsed)) {
+                    shot.duration = 0;
+                    impactAsteroid(asteroid, fragments);
+                }
             for (Movable shot : playerShots)
                 if (shot.checkCollide(asteroid, elapsed)) {
                     shot.duration = 0;
+                    impactAsteroid(asteroid, fragments);
                     award(asteroid);
-
-                    createDebris(asteroid);
-                    asteroid.dead = 1;
-                    if (asteroid.nsplits > 0) {
-                        createAsteroids(asteroid, 2, fragments);
-                        if (soundSmashRock != null)
-                            soundSmashRock.play();
-                    }
                 }
             if (playerShip.checkCollide(asteroid, elapsed)) {
-                createDebris(playerShip);
+                impactPlayerShip();
+                impactAsteroid(asteroid, fragments);
                 award(asteroid);
-                playerShip.dead = 3000;
-                if (soundSmashShip != null)
-                    soundSmashShip.play();
-                if (lives <= 0)
-                    gameover = 2000;
-
-                createDebris(asteroid);
-                asteroid.dead = 1;
-                if (asteroid.nsplits > 0) {
-                    createAsteroids(asteroid, 2, fragments);
-                    if (soundSmashRock != null)
-                        soundSmashRock.play();
-                }
+            } else if (saucer.checkCollide(asteroid, elapsed)) {
+                impactSaucer();
+                impactAsteroid(asteroid, fragments);
             }
         }
         asteroids.addAll(fragments);
 
-        Dimension bounds = getSize();
-        List<Movable> survivors;
+        for (Movable shot : playerShots)
+            if (shot.checkCollide(saucer, elapsed)) {
+                shot.duration = 0;
+                impactSaucer();
+                award(saucerSmall ? 1000 : 200);
+            }
+        for (Movable shot : saucerShots)
+            if (shot.checkCollide(playerShip, elapsed)) {
+                shot.duration = 0;
+                impactPlayerShip();
+            }
+        if (playerShip.checkCollide(saucer, elapsed)) {
+            impactPlayerShip();
+            impactSaucer();
+            award(saucerSmall ? 1000 : 200);
+        }
 
-        playerShip.moveWrap(elapsed, bounds);
+        Dimension bounds = getSize();
+        List<Movable> survivors = null;
+
+        if (saucer.dead > 0) {
+            if ((gameover > 0) && (elapsed >= saucer.dead)) {
+                resetSaucer();
+            } else if (elapsed >= saucer.dead) {
+                saucer.dead = 0;
+
+                saucerSmall = (10000 > score) ? false :
+                    (random.nextFloat() * 40000 < score);
+                saucer.position.x = saucer.radius + bounds.width / 2;
+                saucer.position.y = saucer.radius + bounds.height / 2;
+                saucer.velocity.x =
+                    (((random.nextFloat() * 2 > 1) ? 1 : -1) *
+                     saucer.radius / (saucerSmall ? 400 : 800));
+                saucer.velocity.y = 0;
+                saucerTurn = 1000;
+                saucerShoot = 2000;
+                if (soundSaucerSiren != null)
+                    soundSaucerSiren.loop();
+            } else saucer.dead -= elapsed;
+        }
+
         survivors = new LinkedList<Movable>();
         for (Movable shot : playerShots)
             if (shot.moveWrap(elapsed, bounds))
                 survivors.add(shot);
         playerShots = survivors;
 
-        // :TODO: update saucer and its shots
+        survivors = new LinkedList<Movable>();
+        for (Movable shot : saucerShots)
+            if (shot.moveWrap(elapsed, bounds))
+                survivors.add(shot);
+        saucerShots = survivors;
+
+        if (playerShip.dead <= 0)
+            playerShip.moveWrap(elapsed, bounds);
+
+        if (saucer.dead <= 0) {
+            if (saucerTurn <= elapsed) {
+                final int which =
+                    (((saucer.position.y < 0) ? -1 : 1) *
+                     ((random.nextFloat() > 0.125) ? -1 : 1));
+                saucer.velocity.y =
+                    Math.abs(saucer.velocity.x) *
+                    (random.nextFloat() + 1) * which;
+                saucerTurn = (int)(500 + 2500 * random.nextFloat());
+            } else saucerTurn -= elapsed;
+
+            if (saucerShoot <= elapsed) {
+                float direction = 0;
+                if (saucerSmall) {
+                    Point vector = new Point(playerShip.position);
+                    vector.x -= saucer.position.x;
+                    vector.y -= saucer.position.y;
+                    direction = (float)Math.atan2(vector.y, vector.x);
+                } else direction = (float)
+                           (Math.PI * 2 * random.nextFloat());
+                shoot(saucer, direction, saucerShots);
+                saucerShoot = (int)((saucerSmall ? 800 : 1600) *
+                                    (1 + random.nextFloat()));
+            } else saucerShoot -= elapsed;
+            saucer.moveWrap(elapsed, bounds);
+        }
 
         survivors = new LinkedList<Movable>();
         for (Movable asteroid : asteroids) {
             if (asteroid.dead == 0) {
                 asteroid.direction += elapsed * Math.PI /
-                    (asteroid.size * 30);
+                    (asteroid.radius * 30);
                 asteroid.moveWrap(elapsed, bounds);
                 survivors.add(asteroid);
             }
@@ -797,29 +943,34 @@ public class Asteroids extends java.applet.Applet
 
         ctx.setColor(foreground);
         String scoreFormatted = nfmt.format(score);
-        ctx.setFont(font_score);
-        ctx.drawString(scoreFormatted, (int)playerShip.size,
-                       (int)(playerShip.size * 5 / 2));
+        ctx.setFont(fontScore);
+        ctx.drawString(scoreFormatted, (int)playerShip.radius,
+                       (int)(playerShip.radius * 5 / 2));
         for (int ii = 0; ii < lives; ++ii)
             playerShip.drawAt
                 (ctx, new Point
-                 (15 * playerShip.size * (ii + 1) / 8,
-                  playerShip.size + baseSize / 8));
+                 (15 * playerShip.radius * (ii + 1) / 8,
+                  playerShip.radius + baseSize / 8));
         if (gameover > 0) {
             String message = "GAME OVER";
             FontMetrics fm;
 
-            ctx.setFont(font_gameover);
+            ctx.setFont(fontGameOver);
             fm = ctx.getFontMetrics();
             ctx.drawString(message,
                            (bounds.width - fm.stringWidth(message)) / 2,
                            (bounds.height - fm.getHeight()) / 2 +
                            fm.getAscent());
         }
-        playerShip.draw(ctx, bounds, thrust_elapsed > 0);
+
+        playerShip.draw(ctx, bounds, thrustElapsed > 0);
         for (Movable shot : playerShots)
             shot.draw(ctx, bounds, false);
-        // :TODO: draw saucer
+
+        saucer.draw(ctx, bounds, false);
+        for (Movable shot : saucerShots)
+            shot.draw(ctx, bounds, false);
+
         for (Movable asteroid : asteroids)
             asteroid.draw(ctx, bounds, false);
         for (Movable piece : debris)
