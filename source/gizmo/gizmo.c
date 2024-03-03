@@ -124,7 +124,7 @@ gizmo_setup_SDL(struct gizmo *gizmo)
 
   if ((result == EXIT_SUCCESS) && EXIT_SUCCESS ==
       (result = GIZMO_MIX_CHECK
-       (Mix_OpenAudio, (96000, MIX_DEFAULT_FORMAT, 2, 2048))))
+       (Mix_OpenAudio, (96000, MIX_DEFAULT_FORMAT, 4, 2048))))
     gizmo_mix_init = 1;
 
   if ((result == EXIT_SUCCESS) && EXIT_SUCCESS ==

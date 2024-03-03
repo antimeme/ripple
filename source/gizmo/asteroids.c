@@ -78,11 +78,11 @@ struct ship {
   struct shot *shots;
   unsigned n_shots;
   unsigned m_shots;
-  void (*impact)(struct app_asteroids *, struct ship *);
+  int (*impact)(struct app_asteroids *, void *);
 };
 
 struct app_asteroids {
-  struct app app;
+  struct app app; /* must be first due to pointer shenanigans */
   float size;
 
   unsigned score;
@@ -90,6 +90,10 @@ struct app_asteroids {
   unsigned lives;
   unsigned wavesize;
   unsigned nextwave;
+  int saucer_small;
+  int saucer_channel;
+  unsigned saucer_turn;
+  unsigned saucer_shoot;
   struct ship saucer;
   struct asteroid *asteroids;
   unsigned n_asteroids;
@@ -303,11 +307,11 @@ asteroids__asteroid_destroy(struct asteroid *asteroid)
   free(asteroid->points);
 }
 
-static unsigned
-asteroids__asteroid_impact(struct app_asteroids *self,
-                           struct asteroid *asteroid)
+static int
+asteroids__asteroid_impact(struct app_asteroids *self, void *target)
 {
-  unsigned result = !asteroid->n_splits ? 100 :
+  struct asteroid *asteroid = target;
+  int result = !asteroid->n_splits ? 100 :
     (asteroid->n_splits < 2) ? 50 : 20;
   asteroids__debris_create
     (self, &asteroid->position, &asteroid->velocity,
@@ -342,9 +346,10 @@ asteroids__asteroids_update(struct app_asteroids *self,
   self->n_asteroids = survivors;
 }
 
-static void
-asteroids__player_impact(struct app_asteroids *self, struct ship *ship)
+static int
+asteroids__player_impact(struct app_asteroids *self, void *target)
 {
+  struct ship *ship = target;
   asteroids__debris_create
     (self, &ship->position, &ship->velocity,
      4 + (unsigned)(4 * gizmo_uniform()));
@@ -362,6 +367,54 @@ asteroids__player_impact(struct app_asteroids *self, struct ship *ship)
     Mix_HaltChannel(self->thruster_channel);
     self->thruster_channel = -1;
   }
+  return 0;
+}
+
+static void
+asteroids__saucer_reset(struct app_asteroids *self, struct ship *ship)
+{
+  ship->dead = (unsigned)(8000 * (1 + gizmo_uniform()));
+  ship->position.x = ship->position.y = 0;
+  ship->velocity.x = ship->velocity.y = 0;
+
+  self->saucer_turn = 0;
+  self->saucer_shoot = 0;
+
+  if ((self->saucer_channel >= 0) && Mix_Playing(self->saucer_channel))
+    Mix_HaltChannel(self->saucer_channel);
+  self->saucer_channel = -1;
+}
+
+static int
+asteroids__saucer_draw(SDL_Renderer *renderer, struct ship *ship,
+                       int width, int height, int small)
+{
+  int result = EXIT_SUCCESS;
+  SDL_FPoint position;
+  float dircos = -1;
+  float dirsin = 0;
+
+  position.x = ship->position.x + width / 2;
+  position.y = ship->position.y + height / 2;
+  result = gizmo_draw_point_loop
+    (renderer, ship->radius, &position, dircos, dirsin,
+     ship->n_points, ship->points);
+  arcColor(renderer, position.x, position.y,
+           ship->radius * 2 / 3, 180, 0, 0xffe0e0e0);
+  return result;
+}
+
+static int
+asteroids__saucer_impact(struct app_asteroids *self, void *target)
+{
+  struct ship *ship = target;
+  asteroids__debris_create
+    (self, &ship->position, &ship->velocity,
+     4 + (unsigned)(4 * gizmo_uniform()));
+  asteroids__saucer_reset(self, ship);
+  if (self->sound_smash_ship)
+    Mix_PlayChannel(-1, self->sound_smash_ship, 0);
+  return self->saucer_small ? 1000 : 200;
 }
 
 static void
@@ -441,6 +494,11 @@ asteroids_reset(struct app_asteroids *self)
   self->player.velocity.y = 0;
   self->player.position.x = 0;
   self->player.position.y = 0;
+  self->player.n_shots = 0;
+
+  self->saucer_small = 0;
+  self->saucer.n_shots = 0;
+  asteroids__saucer_reset(self, &self->saucer);
 
   for (ii = 0; ii < self->n_asteroids; ++ii)
     asteroids__asteroid_destroy(&self->asteroids[ii]);
@@ -525,29 +583,47 @@ asteroids__award(struct app_asteroids *self, unsigned npoints)
   self->score += npoints;
 }
 
-static void
-asteroids__ship_asteroid(struct app_asteroids *self, unsigned aid,
-                         struct ship *ship, unsigned elapsed)
+static int
+asteroids__shots_check(struct app_asteroids *self, struct ship *ship,
+                       unsigned elapsed, void *other, float radius,
+                       SDL_FPoint *position, SDL_FPoint *velocity,
+                       int (*impact)(struct app_asteroids *, void *))
 {
-  struct asteroid *asteroid = &self->asteroids[aid];
   unsigned award = 0;
   unsigned ii;
   for (ii = 0; ii < ship->n_shots; ++ii) {
     if (gizmo_check_collide
-      (asteroid->radius, &asteroid->position, &asteroid->velocity,
+        (radius, position, velocity,
          ship->shots[ii].radius, &ship->shots[ii].position,
          &ship->shots[ii].velocity, elapsed)) {
       ship->shots[ii].duration = 0;
-      award = asteroids__asteroid_impact(self, asteroid);
+      if (impact)
+        award = impact(self, other);
       break;
     }
   }
+  return award;
+}
+
+static void
+asteroids__ship_asteroid(struct app_asteroids *self, unsigned aid,
+                         struct ship *ship, unsigned elapsed)
+{
+  struct asteroid *asteroid;
+  unsigned award = 0;
+
+  asteroid = &self->asteroids[aid];
+  if (!asteroid->dead)
+    award = asteroids__shots_check
+      (self, ship, elapsed, asteroid, asteroid->radius,
+       &asteroid->position, &asteroid->velocity,
+       asteroids__asteroid_impact);
 
   /* Previous block may have reallocated the asteroids array to
    * create new fragments so we have to reaquire the pointer */
   asteroid = &self->asteroids[aid];
-
-  if (!ship->dead && gizmo_check_collide
+  if (!ship->dead && !asteroid->dead &&
+      gizmo_check_collide
       (asteroid->radius, &asteroid->position, &asteroid->velocity,
        ship->radius, &ship->position, &ship->velocity, elapsed)) {
     if (ship->impact)
@@ -574,6 +650,7 @@ asteroids_resize(struct app *app, int width, int height)
 
   self->size = (width < height) ? width : height;
   self->player.radius = self->size * 3 / 100;
+  self->saucer.radius = self->size / (self->saucer_small ? 50 : 25);
   for (ii = 0; ii < self->n_asteroids; ++ii)
     self->asteroids[ii].radius =
       (1 << self->asteroids[ii].n_splits) * self->size / 40;
@@ -621,13 +698,14 @@ asteroids_init(struct app *app, void *context)
   };
   SDL_FPoint *newpoints = NULL;
   SDL_FPoint points[] = {
-    { 1, 0 }, { -1, 2./3 }, { -2./3, 0 }, { -1, -2./3 },
+    {1, 0}, {-1, 2./3}, {-2./3, 0}, {-1, -2./3},
 
-    { 1, 0 }, { -1, 2./3 }, { -2./3, 0 }, { -1, -2./3 }
+    {2./3, 0}, {1, -1./3}, {2./3, -2./3},
+    {-2./3, -2./3}, {-1, -1./3}, {-2./3, 0},
   };
   const unsigned n_points = sizeof(points) / sizeof(*points);
   const unsigned n_points_player = 4;
-  const unsigned n_points_saucer = 4;
+  const unsigned n_points_saucer = 6;
   unsigned n_points_used = 0;
 
   if (!self) {
@@ -656,9 +734,12 @@ asteroids_init(struct app *app, void *context)
     n_points_used += n_points_player;
 
     memset(&self->saucer, 0, sizeof(self->saucer));
+    self->saucer.impact = asteroids__saucer_impact;
     self->saucer.points   = self->points + n_points_used;
     self->saucer.n_points = n_points_saucer;
     n_points_used += n_points_saucer;
+
+    self->saucer_channel = -1;
 
     self->n_debris = self->m_debris = 0;
     self->debris = NULL;
@@ -727,9 +808,11 @@ asteroids_update(struct app *app, unsigned elapsed)
   if (!self->report) {
     self->report = 900;
     if (0) {
-      SDL_Log("REPORT ship=[%.2fpx,d=%u,dir=%.2f]\n",
-             self->player.radius, self->player.dead,
-             self->player.direction);
+      SDL_Log("REPORT saucer=[%u]\n", self->saucer.n_points);
+      for (ii = 0; ii < self->saucer.n_points; ++ii)
+        SDL_Log("  {x: %.2f, y: %.2f}\n",
+                self->saucer.points[ii].x,
+                self->saucer.points[ii].y);
     }
   }
   self->tapshot -= (elapsed > self->tapshot) ? self->tapshot : elapsed;
@@ -807,17 +890,103 @@ asteroids_update(struct app *app, unsigned elapsed)
     }
   }
 
+  if (self->saucer.dead) {
+    if (self->gameover && (elapsed >= self->saucer.dead)) {
+      asteroids__saucer_reset(self, &self->saucer);
+    } else if (elapsed >= self->saucer.dead) { /* Respawn */
+      self->saucer.dead = 0;
+
+      self->saucer_small = (10000 > self->score) ? 0 :
+        (gizmo_uniform() * 40000 < self->score);
+      self->saucer.radius = self->size /
+        (self->saucer_small ? 50 : 25);
+
+      self->saucer.position.x = (self->size + self->app.width) / 2;
+      self->saucer.position.y = (self->size + self->app.height) / 2;
+      self->saucer.velocity.x =
+        (((gizmo_uniform() * 2 > 1) ? 1 : -1) *
+         self->saucer.radius / (self->saucer_small ? 400 : 800));
+      self->saucer.velocity.y = 0;
+      self->saucer_turn = 1000;
+      self->saucer_shoot = 2000;
+      if ((self->saucer_channel < 0) ||
+          !Mix_Playing(self->saucer_channel))
+        self->saucer_channel = Mix_PlayChannel
+          (-1, self->sound_saucer_siren, -1);
+    } else self->saucer.dead -= elapsed;
+  }
+
   for (ii = 0; ii < self->n_asteroids; ++ii)
     if (!self->player.dead && !self->asteroids[ii].dead)
       asteroids__ship_asteroid
         (self, ii, &self->player, elapsed);
 
+  for (ii = 0; ii < self->n_asteroids; ++ii)
+    if (!self->saucer.dead && !self->asteroids[ii].dead)
+      asteroids__ship_asteroid
+        (self, ii, &self->saucer, elapsed);
+
+  if (!self->player.dead && !self->saucer.dead &&
+      gizmo_check_collide
+      (self->player.radius, &self->player.position,
+       &self->player.velocity, self->saucer.radius,
+       &self->saucer.position, &self->saucer.velocity, elapsed)) {
+    self->player.impact(self, &self->player);
+    self->score += self->saucer.impact(self, &self->saucer);
+  }
+
+  if (!self->player.dead)
+    asteroids__shots_check
+      (self, &self->saucer, elapsed, &self->player,
+       self->player.radius, &self->player.position,
+       &self->player.velocity, asteroids__player_impact);
+  if (!self->saucer.dead)
+    self->score += asteroids__shots_check
+      (self, &self->player, elapsed, &self->saucer,
+       self->saucer.radius, &self->saucer.position,
+       &self->saucer.velocity, asteroids__saucer_impact);
+
+  if (!self->saucer.dead) {
+    move_wrap(self->saucer.radius, elapsed,
+              self->app.width, self->app.height,
+              &self->saucer.position, &self->saucer.velocity);
+    if (self->saucer_turn <= elapsed) {
+      int which = (((self->saucer.position.y < 0) ? -1 : 1) *
+                   (gizmo_uniform() > 0.125) ? -1 : 1);
+      self->saucer.velocity.y =
+        ((self->saucer.velocity.x > 0) ? 1 : -1) *
+        self->saucer.velocity.x * (gizmo_uniform() + 1) * which;
+      self->saucer_turn = 500 + 2500 * gizmo_uniform();
+    } else self->saucer_turn -= elapsed;
+
+    if (self->saucer_shoot <= elapsed) {
+      if (!self->player.dead) {
+        float direction = 0;
+
+        if (self->saucer_small) {
+          SDL_FPoint vector = self->player.position;
+          vector.x -= self->saucer.position.x;
+          vector.y -= self->saucer.position.y;
+          direction = atan2f(vector.y, vector.x);
+        } else direction = M_PI * 2 * gizmo_uniform();
+
+        asteroids__ship_shoot(&self->saucer, direction, self->size);
+        if (self->sound_shoot_beam)
+          Mix_PlayChannel(-1, self->sound_shoot_beam, 0);
+      }
+      self->saucer_shoot =
+        ((self->saucer_small ? 800 : 1600) * (1 + gizmo_uniform()));
+    } else self->saucer_shoot -= elapsed;
+  }
+
   if (!self->player.dead)
     move_wrap(self->player.radius, elapsed,
               self->app.width, self->app.height,
-              &self->player.position,
-              &self->player.velocity);
+              &self->player.position, &self->player.velocity);
+
   asteroids__shots_update(&self->player, elapsed,
+                          self->app.width, self->app.height);
+  asteroids__shots_update(&self->saucer, elapsed,
                           self->app.width, self->app.height);
 
   asteroids__debris_update
@@ -840,7 +1009,7 @@ asteroids_update(struct app *app, unsigned elapsed)
 }
 
 static int
-asteroids__draw_player(struct ship *ship, SDL_Renderer *renderer,
+asteroids__player_draw(SDL_Renderer *renderer, struct ship *ship,
                        int width, int height, unsigned thrust)
 {
   int result = EXIT_SUCCESS;
@@ -933,7 +1102,7 @@ asteroids_draw(struct app *app, SDL_Renderer *renderer)
   }
 
   if (!self->player.dead)
-    asteroids__draw_player(&self->player, renderer,
+    asteroids__player_draw(renderer, &self->player,
                            self->app.width, self->app.height,
                            self->thrust_elapsed);
 
@@ -943,7 +1112,20 @@ asteroids_draw(struct app *app, SDL_Renderer *renderer)
                       self->app.width / 2),
                 (int)(self->player.shots[ii].position.y +
                       self->app.height / 2),
-                self->player.radius / 3, 0xffe0e0e0);
+                self->size / 100, 0xffe0e0e0);
+
+  if (!self->saucer.dead)
+    asteroids__saucer_draw(renderer, &self->saucer,
+                           self->app.width, self->app.height,
+                           self->saucer_small);
+
+  for (ii = 0; ii < self->saucer.n_shots; ++ii)
+    circleColor(renderer,
+                (int)(self->saucer.shots[ii].position.x +
+                      self->app.width / 2),
+                (int)(self->saucer.shots[ii].position.y +
+                      self->app.height / 2),
+                self->size / 100, 0xffe0e0e0);
 
   for (ii = 0; ii < self->n_asteroids; ++ii) {
     struct asteroid *asteroid = &self->asteroids[ii];
