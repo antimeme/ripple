@@ -357,6 +357,11 @@ asteroids__player_impact(struct app_asteroids *self, struct ship *ship)
     self->gameover = 2000;
   if (self->sound_smash_ship)
     Mix_PlayChannel(-1, self->sound_smash_ship, 0);
+  if ((self->thruster_channel >= 0) &&
+      Mix_Playing(self->thruster_channel)) {
+    Mix_HaltChannel(self->thruster_channel);
+    self->thruster_channel = -1;
+  }
 }
 
 static void
@@ -786,7 +791,8 @@ asteroids_update(struct app *app, unsigned elapsed)
       self->held += elapsed;
 
     if ((self->thrust_elapsed > 0) && (self->size > 0)) {
-      float factor = self->thrust_elapsed * self->size / 200000;
+      float factor = self->thrust_elapsed *
+        self->player.radius / 20000;
       self->player.velocity.x += cosf(self->player.direction) * factor;
       self->player.velocity.y += sinf(self->player.direction) * factor;
 
