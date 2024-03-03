@@ -363,10 +363,23 @@ public class Asteroids extends java.applet.Applet
         for (Movable asteroid : asteroids)
             asteroid.size = (1 << asteroid.nsplits) * baseSize / 40;
 
-        font_score = new Font("SansSerif", Font.PLAIN,
-                              (int)(baseSize / 17));
-        font_gameover = new Font("SansSerif", Font.PLAIN,
-                                 (int)(baseSize * 2 / 17));
+        Font baseFont = null;
+        java.io.InputStream fontStream =
+            getClass().getResourceAsStream("/fonts/brass-mono.ttf");
+        if (fontStream != null) {
+            try {
+                baseFont = Font.createFont
+                    (Font.TRUETYPE_FONT, fontStream);
+            } catch (java.io.IOException ex) {
+                ex.printStackTrace();
+            } catch (java.awt.FontFormatException ex) {
+                ex.printStackTrace();
+            }
+        }
+        if (baseFont == null)
+            baseFont = new Font("SansSerif", Font.PLAIN, 12);
+        font_score = baseFont.deriveFont(baseSize / 17);
+        font_gameover = baseFont.deriveFont(baseSize * 2 / 17);
     }
 
     @Override
