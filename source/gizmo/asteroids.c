@@ -103,8 +103,9 @@ struct app_asteroids {
   int turn_left;
   int turn_right;
   float target;
-  unsigned tapshot;
+  int thruster_channel;
   unsigned thrust_elapsed;
+  unsigned tapshot;
   unsigned holding;
   unsigned held;
   unsigned gameover;
@@ -118,6 +119,7 @@ struct app_asteroids {
   Mix_Chunk *sound_shoot_beam;
   Mix_Chunk *sound_smash_ship;
   Mix_Chunk *sound_smash_rock;
+  Mix_Chunk *sound_thruster;
   Mix_Chunk *sound_saucer_siren;
 };
 
@@ -666,8 +668,11 @@ asteroids_init(struct app *app, void *context)
                     "./apps/sounds/smash-ship.ogg");
     gizmo_app_sound(&self->sound_smash_rock,
                     "./apps/sounds/smash-rock.ogg");
+    gizmo_app_sound(&self->sound_thruster,
+                    "./apps/sounds/thruster.ogg");
     gizmo_app_sound(&self->sound_saucer_siren,
                     "./apps/sounds/saucer-siren.ogg");
+    self->thruster_channel = -1;
     asteroids_resize(&self->app, self->app.width, self->app.height);
     asteroids_reset(self);
   }
@@ -784,6 +789,15 @@ asteroids_update(struct app *app, unsigned elapsed)
       float factor = self->thrust_elapsed * self->size / 200000;
       self->player.velocity.x += cosf(self->player.direction) * factor;
       self->player.velocity.y += sinf(self->player.direction) * factor;
+
+      if ((self->thruster_channel < 0) ||
+          !Mix_Playing(self->thruster_channel))
+        self->thruster_channel = Mix_PlayChannel
+          (-1, self->sound_thruster, -1);
+    } else if ((self->thruster_channel >= 0) &&
+               Mix_Playing(self->thruster_channel)) {
+      Mix_HaltChannel(self->thruster_channel);
+      self->thruster_channel = -1;
     }
   }
 
