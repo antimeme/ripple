@@ -57,6 +57,10 @@
 <meta name="viewport" content="initial-scale=1, maximum-scale=1" />
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes" />
+<style>
+ @font-face
+ { font-family: "BrassMono"; src: url("fonts/brass-mono.ttf"); }
+</style>
 <!-- This is an embedded SVG icon using the same pattern used to
      draw the player ship.  No external file is loaded. -->
 <link rel="shortcut icon"
@@ -511,7 +515,7 @@
          this.held = 0;
          this.warpCooldown = 0;
 
-         this.thrust_elapsed = 0;
+         this.thrustElapsed = 0;
          this.shots = [];
 
          this.direction = Math.PI/2;
@@ -536,7 +540,7 @@
              drawWedgeShip(ctx);
              ctx.restore();
 
-             if (this.thrust_elapsed) {
+             if (this.thrustElapsed) {
                  ctx.save();
                  ctx.translate(this.x, this.y);
                  ctx.rotate(this.direction);
@@ -602,15 +606,15 @@
          }
 
          this.held = this.holding ? (this.held + elapsed) : 0;
-         this.thrust_elapsed =
+         this.thrustElapsed =
              (this.thrust || (this.held > 300 + elapsed)) ? elapsed :
              (this.held > 300) ? (this.held - 300) : 0;
 
-         if (this.thrust_elapsed) {
+         if (this.thrustElapsed) {
              this.dx += (Math.cos(this.direction) *
-                 this.thrust_elapsed * this.radius / 20000);
+                 this.thrustElapsed * this.radius / 20000);
              this.dy += (Math.sin(this.direction) *
-                 this.thrust_elapsed * this.radius / 20000);
+                 this.thrustElapsed * this.radius / 20000);
 
              if (soundThruster.paused)
                  soundThruster.play();
@@ -1059,7 +1063,8 @@
      drawBefore(ctx, camera) {
          ctx.lineCap = "round";
          ctx.lineWidth = camera.radius / 300;
-         ctx.font = Math.floor(camera.radius / 10) + "px monospace";
+         ctx.font = Math.floor(camera.radius / 10) +
+                    "px BrassMono, monospace";
          ctx.fillText(this.score.toLocaleString(),
                       camera.radius / 18, camera.radius / 10);
 
@@ -1077,7 +1082,8 @@
          ctx.stroke();
 
          if (this.gameover > 0) {
-             ctx.font = Math.floor(camera.radius / 5) + "px monospace";
+             ctx.font = Math.floor(camera.radius / 5) +
+                        "px BrassMono, monospace";
              const message = "GAME OVER";
              const metrics = ctx.measureText(message);
              ctx.fillText(
