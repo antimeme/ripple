@@ -391,7 +391,7 @@ public class Asteroids extends java.applet.Applet
         if (soundSmashShip != null)
             soundSmashShip.play();
         if (soundSaucerSiren != null)
-            soundSmashShip.stop();
+            soundSaucerSiren.stop();
     }
 
     protected void resetSaucer() {
@@ -406,6 +406,9 @@ public class Asteroids extends java.applet.Applet
         playerShip.dead = 3000;
         createDebris(playerShip);
         resetPlayerShip();
+        if ((soundThruster != null) && thrusterChannel)
+            soundThruster.stop();
+        thrusterChannel = false;
         if (soundSmashShip != null)
             soundSmashShip.play();
         if (lives <= 0)
@@ -465,11 +468,11 @@ public class Asteroids extends java.applet.Applet
 
     @Override
     public void init() {
-        soundShootBeam   = fetchSound("/sounds/shoot-beam.ogg");
-        soundSmashShip   = fetchSound("/sounds/smash-ship.ogg");
-        soundSmashRock   = fetchSound("/sounds/smash-rock.ogg");
-        soundThruster    = fetchSound("/sounds/thruster.ogg");
-        soundSaucerSiren = fetchSound("/sounds/saucer-siren.ogg");
+        soundShootBeam   = fetchSound("/sounds/shoot-beam.wav");
+        soundSmashShip   = fetchSound("/sounds/smash-ship.wav");
+        soundSmashRock   = fetchSound("/sounds/smash-rock.wav");
+        soundThruster    = fetchSound("/sounds/thruster.wav");
+        soundSaucerSiren = fetchSound("/sounds/saucer-siren.wav");
         fontBase = fetchFont("/fonts/brass-mono.ttf", "SansSerif");
 
         playerShip.points = wedgeShipPoints;
