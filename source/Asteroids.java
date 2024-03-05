@@ -338,7 +338,8 @@ public class Asteroids extends java.applet.Applet
     protected java.applet.AudioClip fetchSound(String resource) {
         java.applet.AudioClip result = null;
         try {
-            java.net.URL url = getClass().getResource(resource);
+            java.net.URL url =
+                getClass().getClassLoader().getResource(resource);
             result = getAudioClip(url);
         } catch (IllegalArgumentException ex) {
             System.out.println("ERROR fetching AudioClip(" +
@@ -468,12 +469,14 @@ public class Asteroids extends java.applet.Applet
 
     @Override
     public void init() {
-        soundShootBeam   = fetchSound("/sounds/shoot-beam.wav");
-        soundSmashShip   = fetchSound("/sounds/smash-ship.wav");
-        soundSmashRock   = fetchSound("/sounds/smash-rock.wav");
-        soundThruster    = fetchSound("/sounds/thruster.wav");
-        soundSaucerSiren = fetchSound("/sounds/saucer-siren.wav");
-        fontBase = fetchFont("/fonts/brass-mono.ttf", "SansSerif");
+        String sfmt = System.getProperty
+            ("asteroids.soundFormat", ".ogg");
+        soundShootBeam   = fetchSound("sounds/shoot-beam" + sfmt);
+        soundSmashShip   = fetchSound("sounds/smash-ship" + sfmt);
+        soundSmashRock   = fetchSound("sounds/smash-rock" + sfmt);
+        soundThruster    = fetchSound("sounds/thruster" + sfmt);
+        soundSaucerSiren = fetchSound("sounds/saucer-siren" + sfmt);
+        fontBase = fetchFont("fonts/brass-mono.ttf", "SansSerif");
 
         playerShip.points = wedgeShipPoints;
         playerShip.thrust = new Point[] {
@@ -701,8 +704,9 @@ public class Asteroids extends java.applet.Applet
         }
     }
 
-    protected void shoot(Movable source, float direction,
-                         List<Movable> shots) {
+    protected synchronized void shoot
+        (Movable source, float direction, List<Movable> shots)
+    {
         if (shots.size() >= 9)
             return;
         Movable shot = new Movable();
@@ -730,7 +734,7 @@ public class Asteroids extends java.applet.Applet
               (asteroid.nsplits == 1) ? 50 : 100);
     }
 
-    protected void updateGame(long elapsed) {
+    protected synchronized void updateGame(long elapsed) {
         if (gameover > 0) {
             if (elapsed >= gameover)
                 gameover = 1;
@@ -934,52 +938,60 @@ public class Asteroids extends java.applet.Applet
     }
 
     @Override
-    public void update(Graphics gfx) { paint(gfx); }
-
-    @Override
     public void paint(Graphics gfx) {
         NumberFormat nfmt = NumberFormat.getNumberInstance();
         Dimension bounds = getSize();
         Graphics ctx = buffer.getGraphics();
         ctx.setColor(background);
         ctx.fillRect(0, 0, bounds.width, bounds.height);
-
         ctx.setColor(foreground);
-        String scoreFormatted = nfmt.format(score);
-        ctx.setFont(fontScore);
-        ctx.drawString(scoreFormatted, (int)playerShip.radius,
-                       (int)(playerShip.radius * 5 / 2));
-        for (int ii = 0; ii < lives; ++ii)
-            playerShip.drawAt
-                (ctx, new Point
-                 (15 * playerShip.radius * (ii + 1) / 8,
-                  playerShip.radius + baseSize / 8));
-        if (gameover > 0) {
-            String message = "GAME OVER";
-            FontMetrics fm;
 
-            ctx.setFont(fontGameOver);
-            fm = ctx.getFontMetrics();
-            ctx.drawString(message,
-                           (bounds.width - fm.stringWidth(message)) / 2,
-                           (bounds.height - fm.getHeight()) / 2 +
-                           fm.getAscent());
+        synchronized(this) {
+            if (gameover > 0) {
+                String message = "GAME OVER";
+                FontMetrics fm;
+
+                ctx.setFont(fontGameOver);
+                fm = ctx.getFontMetrics();
+                ctx.drawString
+                    (message,
+                     (bounds.width - fm.stringWidth(message)) / 2,
+                     (bounds.height - fm.getHeight()) / 2 +
+                     fm.getAscent());
+            }
+
+            String scoreFormatted = nfmt.format(score);
+            ctx.setFont(fontScore);
+            ctx.drawString(scoreFormatted, (int)playerShip.radius,
+                           (int)(playerShip.radius * 5 / 2));
+            for (int ii = 0; ii < lives; ++ii)
+                playerShip.drawAt
+                    (ctx, new Point
+                     (15 * playerShip.radius * (ii + 1) / 8,
+                      playerShip.radius + baseSize / 8));
+
+            playerShip.draw(ctx, bounds, thrustElapsed > 0);
+            for (Movable shot : playerShots)
+                shot.draw(ctx, bounds, false);
+
+            saucer.draw(ctx, bounds, false);
+            for (Movable shot : saucerShots)
+                shot.draw(ctx, bounds, false);
+
+            for (Movable asteroid : asteroids)
+                asteroid.draw(ctx, bounds, false);
+            for (Movable piece : debris)
+                piece.draw(ctx, bounds, false);
         }
-
-        playerShip.draw(ctx, bounds, thrustElapsed > 0);
-        for (Movable shot : playerShots)
-            shot.draw(ctx, bounds, false);
-
-        saucer.draw(ctx, bounds, false);
-        for (Movable shot : saucerShots)
-            shot.draw(ctx, bounds, false);
-
-        for (Movable asteroid : asteroids)
-            asteroid.draw(ctx, bounds, false);
-        for (Movable piece : debris)
-            piece.draw(ctx, bounds, false);
         gfx.drawImage(buffer, 0, 0, this);
     }
+
+    /**
+     * Because this application uses double buffering, paint and
+     * update need to do the same thing.  Otherwise update calls
+     * clear the screen which causes intense flickering. */
+    @Override
+    public void update(Graphics gfx) { paint(gfx); }
 
     protected static Image createIcon() {
         final int size = 32;
