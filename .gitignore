@@ -59,16 +59,14 @@
 /build/
 /.gradle/
 /classes/
-/lib/
 /javadoc/
 /.javadoc
 /source/Ripple.java
-/ripple-*.jar
-/ripple.jar
-/ripple-*.war
-/ripple.war
+/ripple*.jar
+/ripple*.war
 /ripple.ks
 /scripts/check-java.sh
+/*.ks
 
 # JavaScript
 /node_modules/

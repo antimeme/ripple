@@ -1,14 +1,80 @@
 // Gradle configuration for Ripple                  -*- mode: groovy -*-
-plugins { id("war") }
+plugins {
+  id "java-library"
+  id "war"
+}
+description = "Creates a WAR file with servlets and applications"
+version = "@VERSION@"
 repositories { mavenCentral() }
-sourceSets { main { java { srcDirs = ["source/servlet"] } } }
+sourceSets {
+    application {
+        java {
+            srcDirs = ["source"]
+            exclude "servlet"
+        }
+    }
+    servlet { java { srcDirs = ["source/servlet"] } }
+}
+
+dependencies {
+    applicationRuntime "dev.mccue:vorbisspi:0.0.7"
+
+    //servletCompileOnly("jakarta.platform:jakarta.jakartaee-web-api:8.0.0")
+    servletCompileOnly "javax.servlet:javax.servlet-api:4.0.1"
+    servletRuntime("org.xerial:sqlite-jdbc:3.36.0.1")
+    servletCompile(
+        "com.fasterxml.jackson.core:jackson-core:2.13.0")
+    servletCompile(
+        "com.fasterxml.jackson.core:jackson-databind:2.13.0")
+    servletCompile(
+        "com.fasterxml.jackson.core:jackson-annotations:2.13.0")
+}
+
+task generateClassList(type: Copy) {
+    def sourceSet = sourceSets.application
+    def outputFile = file("$buildDir/.classes")
+
+    doLast {
+        outputFile.text = ''
+        sourceSet.output.classesDirs.each { dir ->
+            dir.eachFileRecurse { classFile ->
+                if (classFile.isFile() &&
+                    classFile.name.endsWith('.class') &&
+                    !classFile.name.contains('$')) {
+                    def className = classFile.absolutePath
+                        .replaceAll("^$dir", '').replaceAll("^/", '')
+                        .replaceAll('\\\\', '/')
+                        .replaceAll('\\.class$', '')
+                        .replaceAll('/', '.')
+                    outputFile.append("$className\n")
+                }
+            }
+        }
+    }
+}
+
+jar {
+    archiveName = "@PACKAGE@-@VERSION@.jar"
+    generateClassList
+    from "$buildDir/.classes"
+    from sourceSets.application.output
+    from("apps/images") { into "images" }
+    from("apps/fonts") { into "fonts" }
+    from("apps/sounds") { into "sounds" }
+    manifest { from("META-INF/MANIFEST.MF") }
+}
 
 war {
     archiveName = "@PACKAGE@-@VERSION@.war"
-    webXml = file("WEB-INF/web.xml")
-    from("WEB-INF/jetty-env.xml") { into("WEB-INF") }
-    from("classes") { into("") }
-    from("apps") { into("") }
+    classpath = configurations.servletCompile
+    classpath configurations.servletRuntime
+    webXml = file "WEB-INF/web.xml"
+    into("WEB-INF") { from("WEB-INF/jetty-env.xml") }
+    into("WEB-INF/classes") { from sourceSets.servlet.output }
+    generateClassList
+    from "$buildDir/.classes"
+    from sourceSets.application.output
+    from "apps"
     manifest {
         attributes(
             "Main-Class": "net.antimeme.ripple.Ripple",
@@ -18,14 +84,4 @@ war {
             "Implementation-Version": "@VERSION@",
             "Implementation-Vendor": "@PACKAGE@@antimeme.net")
     }
-}
-
-dependencies {
-    //providedCompile("jakarta.platform:jakarta.jakartaee-web-api:8.0.0")
-    providedCompile("javax.servlet:javax.servlet-api:4.0.1")
-    runtimeOnly("org.xerial:sqlite-jdbc:3.36.0.1")
-    //runtimeOnly("org.postgresql:postgresql")
-    implementation("com.fasterxml.jackson.core:jackson-core:2.13.0")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.0")
-    implementation("com.fasterxml.jackson.core:jackson-annotations:2.13.0")
 }

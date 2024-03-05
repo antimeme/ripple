@@ -50,12 +50,15 @@ JAVA_DISTSRC = \
 	$(srcdir)/source/Asteroids.java
 
 SERVLET_DISTSRC = \
-	$(srcdir)/source/servlet/RippleServlet.java \
+	$(srcdir)/source/servlet/RippleFilter.java \
+	$(srcdir)/source/servlet/Tinker.java \
 	$(srcdir)/source/servlet/ExpenseServlet.java
 
 EMPTY =
 SPACE = $(EMPTY) $(EMPTY)
 SEPARATOR = :
+HOSTNAME  = localhost
+STOREPASS = 123456
 
 ## C ===================================================================
 lib_LTLIBRARIES = lib@PACKAGE@.la
@@ -176,47 +179,32 @@ JAR     = "$(JAVA_HOME)/bin/jar"
 KEYTOOL = "$(JAVA_HOME)/bin/keytool"
 
 JAVA_SRCFILES = $(JAVA_DISTSRC) $(top_builddir)/source/Ripple.java
-JAR_ROOT = $(top_builddir)/classes
-
-$(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
-	$(MKDIR_P) $(JAR_ROOT)
-	$(JCC) -d $(JAR_ROOT) -source 8 -target 8 \
-	    -Xlint:-options -Xlint:-removal \
-	    $(JAVA_SRCFILES)
-	find $(JAR_ROOT) -name \*.class | \
-	   sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
-	   sort -u > $@
 
 .javadoc: $(JAVA_SRCFILES)
 	$(JAVADOC) -docencoding utf-8 -public \
 	    -d javadoc $(JAVA_SRCFILES)
 	touch $@
 
-@PACKAGE@-@VERSION@.jar: $(srcdir)/META-INF/MANIFEST.MF \
-			 $(JAR_ROOT)/.classes .javadoc
-	$(JAR) cvfm $@ $(srcdir)/META-INF/MANIFEST.MF \
-	    -C $(srcdir)/apps fonts \
-	    -C $(srcdir)/apps images \
-	    -C $(srcdir)/apps sounds \
-	    -C $(top_builddir) javadoc -C $(JAR_ROOT) .
-	chmod +x $@
+if HAVE_GRADLE
+build/libs/@PACKAGE@-@VERSION@.jar: \
+	    build.gradle $(JAVA_SRCFILES) \
+            $(srcdir)/META-INF/MANIFEST.MF
+	$(GRADLE) -b $< jar
+
+@PACKAGE@-@VERSION@.jar: build/libs/@PACKAGE@-@VERSION@.jar
+	cp $< $@
 
 @PACKAGE@.jar: @PACKAGE@-@VERSION@.jar
-	rm -f $@
-	$(LN_S) @PACKAGE@-@VERSION@.jar $@
+	@rm -f $@
+	$(LN_S) $< $@
 
-play-java-asteroids: @PACKAGE@.jar
-	$(JAVA_HOME)/bin/java -jar $< asteroids
-
-if HAVE_GRADLE
 java_DATA += @PACKAGE@-@VERSION@.war
 
 build/libs/@PACKAGE@-@VERSION@.war: \
 	    build.gradle \
 	    WEB-INF/web.xml \
 	    WEB-INF/jetty-env.xml \
-	    $(JAR_ROOT)/.classes \
-	    source/servlet/*.java
+	    $(SERVLET_DISTSRC) $(JAVA_SRCFILES)
 	$(GRADLE) -b $< war
 
 @PACKAGE@-@VERSION@.war: build/libs/@PACKAGE@-@VERSION@.war
@@ -225,16 +213,6 @@ build/libs/@PACKAGE@-@VERSION@.war: \
 @PACKAGE@.war: @PACKAGE@-@VERSION@.war
 	@rm -f $@
 	$(LN_S) $< $@
-
-deploy: @PACKAGE@.war
-	@if [ -n "$(JETTY_HOME)" ]; then \
-	    $(SUDO) cp $< $(JETTY_HOME)/webapps; \
-	elif [ -n "$(CATALINA_BASE)" ]; then \
-	    $(SUDO) cp $< $(CATALINA_BASE)/webapps; \
-	elif [ -n "$(CATALINA_HOME)" ]; then \
-	    $(SUDO) cp $< $(CATALINA_HOME)/webapps; \
-	else echo ERROR: no Java server container detected; fi
-endif
 
 # Configure Jetty for TLS:
 # - Copy ripple.ks to $JETTY_HOME/etc/localhost.ks
@@ -270,11 +248,71 @@ endif
 #     </SSLHostConfig>
 #   </Connector>
 
-localhost.ks:
+deploy: @PACKAGE@.war
+	@if [ -n "$(JETTY_HOME)" ]; then \
+	    $(SUDO) cp $< $(JETTY_HOME)/webapps; \
+	    echo Deployed to Jetty: $(JETTY_HOME); \
+	    if [ -n "$(CATALINA_BASE)" ]; then \
+	        $(SUDO) cp $< $(CATALINA_BASE)/webapps; \
+	        echo Deployed to Tomcat: $(CATALINA_BASE); \
+	    elif [ -n "$(CATALINA_HOME)" ]; then \
+	        $(SUDO) cp $< $(CATALINA_HOME)/webapps; \
+	        echo Deployed to Tomcat: $(CATALINA_HOME); \
+	    fi; \
+	elif [ -n "$(CATALINA_BASE)" ]; then \
+	    $(SUDO) cp $< $(CATALINA_BASE)/webapps; \
+	    echo Deployed to Tomcat: $(CATALINA_BASE); \
+	elif [ -n "$(CATALINA_HOME)" ]; then \
+	    $(SUDO) cp $< $(CATALINA_HOME)/webapps; \
+	    echo Deployed to Tomcat: $(CATALINA_HOME); \
+	else echo ERROR: no Java server container detected; fi
+else
+JAR_ROOT = $(top_builddir)/classes
+
+$(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
+	$(MKDIR_P) $(JAR_ROOT)
+	$(JCC) -d $(JAR_ROOT) -source 8 -target 8 \
+	    -Xlint:-options -Xlint:-removal \
+	    $(JAVA_SRCFILES)
+	find $(JAR_ROOT) -name \*.class | \
+	   sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
+	   sort -u > $@
+
+@PACKAGE@-@VERSION@.jar: $(srcdir)/META-INF/MANIFEST.MF \
+			 $(JAR_ROOT)/.classes .javadoc
+	$(JAR) cvfm $@ $(srcdir)/META-INF/MANIFEST.MF \
+	    -C $(srcdir)/apps fonts \
+	    -C $(srcdir)/apps images \
+	    -C $(srcdir)/apps sounds \
+	    -C $(top_builddir) javadoc -C $(JAR_ROOT) .
+	chmod +x $@
+
+@PACKAGE@.jar: @PACKAGE@-@VERSION@.jar
+	rm -f $@
+	$(LN_S) @PACKAGE@-@VERSION@.jar $@
+endif
+
+play-java-asteroids: @PACKAGE@.jar
+	$(JAVA_HOME)/bin/java -jar $< asteroids
+
+play-java-jarbles: @PACKAGE@.jar
+	$(JAVA_HOME)/bin/java -jar $< jarbles
+
+$(HOSTNAME).ks:
 	$(KEYTOOL) -keystore $@ -storetype pkcs12 \
 	    -genkey -keyalg RSA -keysize 2048 -sigalg SHA256withRSA \
-	    -alias localhost -dname CN=localhost -validity 3650 \
-	    -ext "SAN=dns:$$HOSTNAME,dns:*.$$HOSTNAME"
+	    -alias $(HOSTNAME) -dname CN=$(HOSTNAME) -validity 3650 \
+	    -ext "SAN=dns:$(HOSTNAME),dns:*.$(HOSTNAME)" \
+	    -storepass "$(STOREPASS)"
+
+$(HOSTNAME)-req.pem: $(HOSTNAME).ks
+	$(KEYTOOL) -certreq -alias $(HOSTNAME) -file $@ \
+	    -keystore $(HOSTNAME).ks -storepass $(STOREPASS)
+
+$(HOSTNAME)-cert.pem: $(HOSTNAME).ks
+	$(KEYTOOL) -export -alias $(HOSTNAME) -keystore $(HOSTNAME).ks \
+	    -storepass $(STOREPASS) | \
+	    $(OPENSSL) x509 -inform der -out $@
 
 install-data-local: javadoc
 	$(MKDIR_P) $(DESTDIR)$(docdir)
@@ -314,7 +352,6 @@ mostlyclean-local: mostlyclean-local-java
 
 ## Certificates ========================================================
 OPENSSL = openssl
-STOREPASS = 123456
 COMMON_NAME = /C=US/O=antimeme.net/OU=CA/CN=
 
 ca-key.pem:
