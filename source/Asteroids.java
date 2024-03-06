@@ -34,7 +34,6 @@ import java.text.NumberFormat;
 import java.util.Random;
 import java.util.List;
 import java.util.LinkedList;
-import javax.sound.sampled.UnsupportedAudioFileException;
 
 /**
  * This file is an independent clone of Asteroids, a space-themed
@@ -151,31 +150,27 @@ public class Asteroids extends java.applet.Applet
         public int ndebris;
 
         public boolean moveDrop(float elapsed, Dimension bounds) {
-            this.position.x += this.velocity.x * elapsed;
-            this.position.y += this.velocity.y * elapsed;
+            position.x += velocity.x * elapsed;
+            position.y += velocity.y * elapsed;
 
             duration = (duration > elapsed) ? (duration - elapsed) : 0;
             return (duration > 0) &&
-                (this.position.x < this.radius + bounds.width / 2) &&
-                (this.position.x > -(this.radius + bounds.width / 2)) &&
-                (this.position.y < this.radius + bounds.height / 2) &&
-                (this.position.x > -(this.radius + bounds.height / 2));
+                (position.x < radius + bounds.width / 2) &&
+                (position.x > -(radius + bounds.width / 2)) &&
+                (position.y < radius + bounds.height / 2) &&
+                (position.x > -(radius + bounds.height / 2));
         }
 
         public boolean moveWrap(float elapsed, Dimension bounds) {
-            position.x += velocity.x * elapsed;
+            moveDrop(elapsed, bounds);
             if (position.x > radius + bounds.width / 2)
                 position.x = -(radius + bounds.width / 2);
             if (position.x < -(radius + bounds.width / 2))
                 position.x = radius + bounds.width / 2;
-
-            position.y += velocity.y * elapsed;
             if (position.y > radius + bounds.height / 2)
                 position.y = -(radius + bounds.height / 2);
             if (position.y < -(radius + bounds.height / 2))
                 position.y = radius + bounds.height / 2;
-
-            duration = (duration > elapsed) ? (duration - elapsed) : 0;
             return duration > 0;
         }
 
@@ -342,12 +337,11 @@ public class Asteroids extends java.applet.Applet
                 getClass().getClassLoader().getResource(resource);
             result = getAudioClip(url);
         } catch (IllegalArgumentException ex) {
-            System.out.println("ERROR fetching AudioClip(" +
-                               resource + "): " +
-                               ex.getMessage());
+            // ...            
+            throw ex;
         } catch (RuntimeException ex) {
             if (ex.getCause() instanceof
-                UnsupportedAudioFileException) {
+                javax.sound.sampled.UnsupportedAudioFileException) {
                 System.out.println("ERROR unsupported AudioClip(" +
                                    resource + "): " +
                                    ex.getCause().getMessage());
@@ -358,7 +352,7 @@ public class Asteroids extends java.applet.Applet
 
     protected Font fetchFont(String resource, String fallback) {
         Font result = null;
-        java.io.InputStream fontStream = getClass()
+        java.io.InputStream fontStream = getClass().getClassLoader()
             .getResourceAsStream(resource);
         if (fontStream != null) {
             try {
@@ -381,9 +375,9 @@ public class Asteroids extends java.applet.Applet
         asteroid.dead = 1;
         if (asteroid.nsplits > 0) {
             createAsteroids(asteroid, 2, fragments);
-            if (soundSmashRock != null)
-                soundSmashRock.play();
         }
+        if (soundSmashRock != null)
+            soundSmashRock.play();
     }
 
     protected void impactSaucer() {
@@ -469,13 +463,11 @@ public class Asteroids extends java.applet.Applet
 
     @Override
     public void init() {
-        String sfmt = System.getProperty
-            ("asteroids.soundFormat", ".ogg");
-        soundShootBeam   = fetchSound("sounds/shoot-beam" + sfmt);
-        soundSmashShip   = fetchSound("sounds/smash-ship" + sfmt);
-        soundSmashRock   = fetchSound("sounds/smash-rock" + sfmt);
-        soundThruster    = fetchSound("sounds/thruster" + sfmt);
-        soundSaucerSiren = fetchSound("sounds/saucer-siren" + sfmt);
+        soundShootBeam   = fetchSound("sounds/shoot-beam.ogg");
+        soundSmashShip   = fetchSound("sounds/smash-ship.ogg");
+        soundSmashRock   = fetchSound("sounds/smash-rock.ogg");
+        soundThruster    = fetchSound("sounds/thruster.ogg");
+        soundSaucerSiren = fetchSound("sounds/saucer-siren.ogg");
         fontBase = fetchFont("fonts/brass-mono.ttf", "SansSerif");
 
         playerShip.points = wedgeShipPoints;
@@ -746,12 +738,12 @@ public class Asteroids extends java.applet.Applet
                 sentinel.velocity = new Point(0, 0);
                 sentinel.radius = playerShip.radius;
                 sentinel.dead = 0;
+                playerShip.dead = 0;
                 for (Movable asteroid : asteroids)
                     if (sentinel.checkCollide(asteroid, 1500))
                         playerShip.dead = 500;
 
-                if (elapsed >= playerShip.dead) {
-                    playerShip.dead = 0;
+                if (playerShip.dead <= 0) {
                     resetPlayerShip();
                     lives -= 1;
                 }
@@ -858,7 +850,7 @@ public class Asteroids extends java.applet.Applet
 
         if (saucer.dead > 0) {
             if ((gameover > 0) && (elapsed >= saucer.dead)) {
-                resetSaucer();
+                saucer.dead = 1000;
             } else if (elapsed >= saucer.dead) {
                 saucer.dead = 0;
 
@@ -923,7 +915,7 @@ public class Asteroids extends java.applet.Applet
         for (Movable asteroid : asteroids) {
             if (asteroid.dead == 0) {
                 asteroid.direction += elapsed * Math.PI /
-                    (asteroid.radius * 30);
+                    (1 << asteroid.nsplits) / 1000;
                 asteroid.moveWrap(elapsed, bounds);
                 survivors.add(asteroid);
             }
