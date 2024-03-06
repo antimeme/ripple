@@ -572,13 +572,14 @@
              } else if (elapsed >= this.dead) {
                  this.dead = 0;
 
-                 // If an asteroid will immediately smash the player,
-                 // wait a while before respawning
+                 // Avoid respawing player into an immediate crash
                  if (asteroids.some(asteroid =>
                      asteroid.checkCollide(this, 1500)))
                      this.dead = 500;
-                 if (this.dead === 0)
+                 if (this.dead === 0) {
+                     this.reset();
                      this.lives -= 1;
+                 }
              } else this.dead -= elapsed;
          }
          if (this.dead > 0)
@@ -754,7 +755,7 @@
          // with anything or shoot until then.
          if (this.dead > 0) {
              if (gameover && (elapsed >= this.dead)) {
-                 this.reset();
+                 this.dead = 1000;
              } else if (elapsed >= this.dead) {
                  this.dead = 0;
 
