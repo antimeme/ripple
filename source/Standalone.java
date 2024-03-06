@@ -142,9 +142,17 @@ public class Standalone
     public AudioClip getAudioClip(URL url)
     {
         try {
-            Standalone result = new Standalone(AudioSystem.getClip());
-            result.clip.open(AudioSystem.getAudioInputStream(url));
-            return result;
+            javax.sound.sampled.Clip clip = AudioSystem.getClip();
+            javax.sound.sampled.AudioInputStream stream =
+                javax.sound.sampled.AudioSystem.
+                getAudioInputStream(url);
+            javax.sound.sampled.AudioFormat format = stream.getFormat();
+            stream = javax.sound.sampled.AudioSystem.getAudioInputStream
+                (new javax.sound.sampled.AudioFormat
+                 (format.getSampleRate(), 16, format.getChannels(),
+                  true, format.isBigEndian()), stream);
+            clip.open(stream);
+            return new Standalone(clip);
         } catch (LineUnavailableException ex) {
             throw new RuntimeException(ex);
         } catch (UnsupportedAudioFileException ex) {
