@@ -17,7 +17,8 @@ sourceSets {
 }
 
 dependencies {
-    applicationRuntime "dev.mccue:vorbisspi:0.0.7"
+    applicationRuntime "com.googlecode.soundlibs:vorbisspi:1.0.3.3"
+    //applicationRuntime "dev.mccue:vorbisspi:0.0.7"
 
     //servletCompileOnly("jakarta.platform:jakarta.jakartaee-web-api:8.0.0")
     servletCompileOnly "javax.servlet:javax.servlet-api:4.0.1"
@@ -30,7 +31,7 @@ dependencies {
         "com.fasterxml.jackson.core:jackson-annotations:2.13.0")
 }
 
-task generateClassList(type: Copy) {
+task generateClassList {
     def sourceSet = sourceSets.application
     def outputFile = file("$buildDir/.classes")
 
@@ -66,8 +67,8 @@ jar {
 
 war {
     archiveName = "@PACKAGE@-@VERSION@.war"
-    classpath = configurations.servletCompile
-    classpath configurations.servletRuntime
+    classpath(configurations.servletCompile,
+              configurations.servletRuntime)
     webXml = file "WEB-INF/web.xml"
     into("WEB-INF") { from("WEB-INF/jetty-env.xml") }
     into("WEB-INF/classes") { from sourceSets.servlet.output }
