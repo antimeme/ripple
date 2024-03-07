@@ -3,25 +3,24 @@ plugins {
   id "java-library"
   id "war"
 }
-description = "Creates a WAR file with servlets and applications"
-version = "@VERSION@"
 repositories { mavenCentral() }
 sourceSets {
     application {
         java {
-            srcDirs = ["source"]
+            srcDirs = ["@srcdir@/source", "source"]
             exclude "servlet"
         }
     }
-    servlet { java { srcDirs = ["source/servlet"] } }
+    servlet { java { srcDirs = ["@srcdir@/source/servlet"] } }
 }
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
-    applicationRuntime "com.googlecode.soundlibs:vorbisspi:1.0.3.3"
-    //applicationRuntime "dev.mccue:vorbisspi:0.0.7"
+    applicationRuntime("com.googlecode.soundlibs:vorbisspi:1.0.3.3")
 
     //servletCompileOnly("jakarta.platform:jakarta.jakartaee-web-api:8.0.0")
-    servletCompileOnly "javax.servlet:javax.servlet-api:4.0.1"
+    servletCompileOnly("javax.servlet:javax.servlet-api:4.0.1")
     servletRuntime("org.xerial:sqlite-jdbc:3.36.0.1")
     servletCompile(
         "com.fasterxml.jackson.core:jackson-core:2.13.0")
@@ -32,11 +31,12 @@ dependencies {
 }
 
 task generateClassList {
-    def sourceSet = sourceSets.application
-    def outputFile = file("$buildDir/.classes")
-
+    dependsOn compileApplicationJava
     doLast {
-        outputFile.text = ''
+        def sourceSet = sourceSets.application
+        def outputFile = file("$projectDir/build/.classes")
+
+        outputFile.text = ""
         sourceSet.output.classesDirs.each { dir ->
             dir.eachFileRecurse { classFile ->
                 if (classFile.isFile() &&
@@ -56,33 +56,31 @@ task generateClassList {
 
 jar {
     archiveName = "@PACKAGE@-@VERSION@.jar"
-    generateClassList
-    from "$buildDir/.classes"
-    from sourceSets.application.output
-    from("apps/images") { into "images" }
-    from("apps/fonts") { into "fonts" }
-    from("apps/sounds") { into "sounds" }
-    manifest { from("META-INF/MANIFEST.MF") }
+    dependsOn generateClassList
+    from(sourceSets.application.output)
+    from("@srcdir@/apps/images") { into "images" }
+    from("@srcdir@/apps/fonts") { into "fonts" }
+    from("@srcdir@/apps/sounds") { into "sounds" }
+    from("$projectDir/build/.classes")
+    manifest { from("@srcdir@/META-INF/MANIFEST.MF") }
 }
 
 war {
     archiveName = "@PACKAGE@-@VERSION@.war"
+    dependsOn generateClassList
     classpath(configurations.servletCompile,
               configurations.servletRuntime)
-    webXml = file "WEB-INF/web.xml"
-    into("WEB-INF") { from("WEB-INF/jetty-env.xml") }
+    webXml = file "@srcdir@/WEB-INF/web.xml"
+    into("WEB-INF") { from("@srcdir@/WEB-INF/jetty-env.xml") }
     into("WEB-INF/classes") { from sourceSets.servlet.output }
-    generateClassList
-    from "$buildDir/.classes"
-    from sourceSets.application.output
-    from "apps"
-    manifest {
-        attributes(
-            "Main-Class": "net.antimeme.ripple.Ripple",
-            "Application-Name": "Ripple",
-            "Permissions": "sandbox",
-            "Implementation-Title": "net.antimeme.ripple",
-            "Implementation-Version": "@VERSION@",
-            "Implementation-Vendor": "@PACKAGE@@antimeme.net")
-    }
+    from(sourceSets.application.output)
+    from("@srcdir@/apps")
+    from("$buildDir/classList.txt")
+    manifest { attributes(
+        "Application-Name": "Ripple",
+        "Main-Class": "net.antimeme.ripple.Ripple",
+        "Permissions": "sandbox",
+        "Implementation-Title":   "Ripple Web Application",
+        "Implementation-Version": "@VERSION@",
+        "Implementation-Vendor":  "@PACKAGE@@antimeme.net" ) }
 }
