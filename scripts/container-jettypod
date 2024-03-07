@@ -1,0 +1,9 @@
+FROM debian:latest
+LABEL maintainer="Jeff Gold (ripple@antimeme.net)"
+EXPOSE 8080/tcp
+RUN apt update && apt install -y jetty9
+RUN rm -rf /usr/share/jetty9/webapps/root
+COPY ripple.war /usr/share/jetty9/webapps/root.war
+CMD ["java", "-jar", "/usr/share/jetty9/start.jar", \
+     "jetty.home=/usr/share/jetty9", \
+     "jetty.base=/usr/share/jetty9"]

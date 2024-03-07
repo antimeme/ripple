@@ -16,21 +16,33 @@
 ##
 ## ---------------------------------------------------------------------
 EXTRA_DIST = \
-	bootstrap resources \
-	Dockerfile \
+	bootstrap \
+	resources \
+	apps/images/ \
+	apps/fonts/ \
+	apps/sounds/ \
 	scripts/@PACKAGE@.spec \
 	scripts/@PACKAGE@.dpkg \
 	META-INF/MANIFEST.MF \
-	WEB-INF/web.xml WEB-INF/jetty-env.xml \
 	$(JAVA_DISTSRC) \
+	WEB-INF/web.xml \
+	WEB-INF/jetty-env.xml \
 	$(SERVLET_DISTSRC) \
-	source/random.py \
-	source/match.py
+	source/gizmo/gizmo.h \
+	source/gizmo/asteroids.h \
+	$(PYTHON_DISTSRC) \
+	Containerfile
+
+dist-hook:
+	-rm -f `find $(distdir)/apps -name \*~`
+
 docdir        = $(datadir)/doc/@PACKAGE@-@VERSION@
 dist_doc_DATA = README.md LICENSE
 
 uninstall-local:
 	rm -rf $(DESTDIR)$(docdir)
+
+PYTHON_DISTSRC = source/random.py source/match.py
 
 JAVA_DISTSRC = \
 	$(srcdir)/source/Options.java \
@@ -142,12 +154,17 @@ apps/gizmo.wasm apps/gizmo.js apps/gizmo.html apps/gizmo.data: \
 endif
 
 TESTS = $(check_PROGRAMS)
-MOSTLYCLEANFILES =
-DISTCLEANFILES   =
-CLEANFILES       = *.pem .docker-build
+MAINTAINERCLEANFILES =
+MOSTLYCLEANFILES     =
+DISTCLEANFILES       =
+CLEANFILES           = *.pem
 
 ## Python ==============================================================
 if HAVE_PYTHON
+# Python support is well out of date.  Until everything can be brought
+# up to date with Python 3 tests are disabled
+#TESTS += source/random.py source/match.py
+
 pkgpython_PYTHON = source/__init__.py $(tests_python)
 
 dist/@PACKAGE@-@VERSION@-py@PYTHON_VERSION@.egg: $(pkgpython_PYTHON)
@@ -156,7 +173,6 @@ dist/@PACKAGE@-@VERSION@-py@PYTHON_VERSION@.egg: $(pkgpython_PYTHON)
 # :TODO: make this part of "make dist" somehow...
 egg: dist/@PACKAGE@-@VERSION@-py@PYTHON_VERSION@.egg
 
-TESTS += source/random.py source/match.py
 endif
 
 ## Rust ================================================================
@@ -166,8 +182,9 @@ rs-serve: Cargo.toml server-cert.pem
 
 ## Java ================================================================
 # Names of macros such as JCC, JAR_ROOT and JAVA_SRCFILES have been
-# chosen to avoid the broken and unmaintained autoconf support for
-# Java.  Possible improvement:
+# chosen to avoid the broken and unmaintained autoconf Java support.
+#
+# Possible improvement:
 # http://www.freesoftwaremagazine.com/articles/autotools_example
 if HAVE_JAVA
 javadir = $(datadir)/@PACKAGE@
@@ -178,7 +195,7 @@ JAVADOC = "$(JAVA_HOME)/bin/javadoc"
 JAR     = "$(JAVA_HOME)/bin/jar"
 KEYTOOL = "$(JAVA_HOME)/bin/keytool"
 
-JAVA_SRCFILES = $(JAVA_DISTSRC) $(top_builddir)/source/Ripple.java
+JAVA_SRCFILES = $(JAVA_DISTSRC) $(builddir)/source/Ripple.java
 
 .javadoc: $(JAVA_SRCFILES)
 	$(JAVADOC) -docencoding utf-8 -public \
@@ -186,10 +203,11 @@ JAVA_SRCFILES = $(JAVA_DISTSRC) $(top_builddir)/source/Ripple.java
 	touch $@
 
 if HAVE_GRADLE
+
 build/libs/@PACKAGE@-@VERSION@.jar: \
 	    build.gradle $(JAVA_SRCFILES) \
             $(srcdir)/META-INF/MANIFEST.MF
-	$(GRADLE) -b $< jar
+	$(GRADLE) jar
 
 @PACKAGE@-@VERSION@.jar: build/libs/@PACKAGE@-@VERSION@.jar
 	cp $< $@
@@ -202,10 +220,11 @@ java_DATA += @PACKAGE@-@VERSION@.war
 
 build/libs/@PACKAGE@-@VERSION@.war: \
 	    build.gradle \
+	    $(JAVA_SRCFILES) \
 	    WEB-INF/web.xml \
 	    WEB-INF/jetty-env.xml \
-	    $(SERVLET_DISTSRC) $(JAVA_SRCFILES)
-	$(GRADLE) -b $< war
+	    $(SERVLET_DISTSRC)
+	$(GRADLE) war
 
 @PACKAGE@-@VERSION@.war: build/libs/@PACKAGE@-@VERSION@.war
 	cp $< $@
@@ -248,26 +267,58 @@ build/libs/@PACKAGE@-@VERSION@.war: \
 #     </SSLHostConfig>
 #   </Connector>
 
-deploy: @PACKAGE@.war
+deploy-jetty: @PACKAGE@.war
 	@if [ -n "$(JETTY_HOME)" ]; then \
 	    $(SUDO) cp $< $(JETTY_HOME)/webapps; \
-	    echo Deployed to Jetty: $(JETTY_HOME); \
-	    if [ -n "$(CATALINA_BASE)" ]; then \
-	        $(SUDO) cp $< $(CATALINA_BASE)/webapps; \
-	        echo Deployed to Tomcat: $(CATALINA_BASE); \
-	    elif [ -n "$(CATALINA_HOME)" ]; then \
-	        $(SUDO) cp $< $(CATALINA_HOME)/webapps; \
-	        echo Deployed to Tomcat: $(CATALINA_HOME); \
-	    fi; \
-	elif [ -n "$(CATALINA_BASE)" ]; then \
+	    echo Jetty: deployed to $(JETTY_HOME); \
+	else echo Jetty: missing \$$JETTY_HOME; fi
+
+deploy-tomcat: @PACKAGE@.war
+	@if [ -n "$(CATALINA_BASE)" ]; then \
 	    $(SUDO) cp $< $(CATALINA_BASE)/webapps; \
-	    echo Deployed to Tomcat: $(CATALINA_BASE); \
+	    echo Tomcat: deployed to $(CATALINA_BASE); \
 	elif [ -n "$(CATALINA_HOME)" ]; then \
 	    $(SUDO) cp $< $(CATALINA_HOME)/webapps; \
-	    echo Deployed to Tomcat: $(CATALINA_HOME); \
-	else echo ERROR: no Java server container detected; fi
-else
-JAR_ROOT = $(top_builddir)/classes
+	    echo Tomcat: deployed to $(CATALINA_HOME); \
+	else \
+	    echo $(ECHO_N) Tomcat: missing ""; \
+	    echo \$$CATALINA_BASE and \$$CATALINA_HOME; \
+	fi
+
+deploy: deploy-jetty deploy-tomcat
+
+if HAVE_PODMAN
+
+JETTYPOD_IMAGE = @PACKAGE@-jettypod
+JETTYPOD_NAME  = @PACKAGE@-jettypod
+
+.jettypod-image: scripts/container-jettypod @PACKAGE@.war
+	podman build -f $< -t $(JETTYPOD_IMAGE) .
+	@echo > $@
+
+jettypod-interact: .jettypod-image
+	podman run -it --rm $(JETTYPOD_IMAGE) bash
+
+.jettypod-container: .jettypod-image
+	podman run -d -p 9080:8080/tcp \
+	    --name $(JETTYPOD_NAME) $(JETTYPOD_IMAGE)
+	@echo > $@
+
+jettypod-start: .jettypod-container
+	@if ! podman inspect --format '{{.State.Running}}' \
+	    "$(JETTYPOD_NAME)" >/dev/null 2>&1; then \
+	    podman start $(JETTYPOD_NAME); fi
+
+jettypod-stop:
+	podman stop $(JETTYPOD_NAME); fi
+
+MAINTAINERCLEANFILES += .jettypod-image
+
+endif # HAVE_PODMAN
+
+else # !HAVE_GRADLE
+
+JAR_ROOT = $(builddir)/classes
 
 $(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
 	$(MKDIR_P) $(JAR_ROOT)
@@ -284,13 +335,15 @@ $(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
 	    -C $(srcdir)/apps fonts \
 	    -C $(srcdir)/apps images \
 	    -C $(srcdir)/apps sounds \
-	    -C $(top_builddir) javadoc -C $(JAR_ROOT) .
+	    -C $(builddir) javadoc \
+	    -C $(JAR_ROOT) .
 	chmod +x $@
 
 @PACKAGE@.jar: @PACKAGE@-@VERSION@.jar
 	rm -f $@
 	$(LN_S) @PACKAGE@-@VERSION@.jar $@
-endif
+
+endif # HAVE_GRADLE
 
 play-java-asteroids: @PACKAGE@.jar
 	$(JAVA_HOME)/bin/java -jar $< asteroids
@@ -314,7 +367,7 @@ $(HOSTNAME)-cert.pem: $(HOSTNAME).ks
 	    -storepass $(STOREPASS) | \
 	    $(OPENSSL) x509 -inform der -out $@
 
-install-data-local: javadoc
+install-data-local: .javadoc
 	$(MKDIR_P) $(DESTDIR)$(docdir)
 	cp -R javadoc $(DESTDIR)$(docdir)
 
@@ -338,12 +391,13 @@ clean-local-java:
 mostlyclean-local-java:
 	-rm -rf $(JAR_ROOT) build/
 
-else
+else # !HAVE_JAVA
+
 clean-local-java:
 
 mostlyclean-local-java:
 
-endif
+endif # HAVE_JAVA
 
 clean-local: clean-local-java
 	rm -rf target/
@@ -412,19 +466,14 @@ tomcat.p12: tomcat-key.pem tomcat-chain.pem
 	    -passout pass:"$(STOREPASS)" \
 	    -in tomcat-chain.pem -chain -CAfile ca-cert.pem
 
-## Docker ==============================================================
+## Podman ==============================================================
 
-.docker-build: Dockerfile ca-cert.pem server-chain.pem server-key.pem
-	docker build -t @PACKAGE@ .
-	@echo > $@
+if HAVE_PODMAN
 
-docker: .docker-build
-	docker run -d -p 9443:8443/tcp @PACKAGE@
-
-docker-interact: .docker-build
-	docker run -ti @PACKAGE@ bash
+endif
 
 ## Other ===============================================================
 
-.PHONY: clean-local-java mostlyclean-local-java deploy \
-	docker docker-interact
+.PHONY: clean-local-java mostlyclean-local-java \
+	deploy deploy-jetty deploy-tomcat \
+	jettypod-interact jettypod-start jettypod-stop

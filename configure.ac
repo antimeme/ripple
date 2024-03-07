@@ -89,6 +89,9 @@ else
     AM_CONDITIONAL([HAVE_GRADLE], [false])
 fi
 
+AC_PATH_PROG([PODMAN], [podman], [no])
+AM_CONDITIONAL([HAVE_PODMAN], [test "x$PODMAN" != "xno"])
+
 AC_CONFIG_FILES([
     Makefile
     build.gradle

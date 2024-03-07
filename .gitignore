@@ -38,7 +38,6 @@
 /ripple-*.tar.gz
 /check-ripple
 /check-ripple.exe
-/.docker-build
 /gizmo
 /gizmo.exe
 
@@ -67,6 +66,8 @@
 /ripple.ks
 /scripts/check-java.sh
 /*.ks
+/.jettypod-image
+/.jettypod-container
 
 # JavaScript
 /node_modules/
