@@ -952,7 +952,7 @@ asteroids_update(struct app *app, unsigned elapsed)
               &self->saucer.position, &self->saucer.velocity);
     if (self->saucer_turn <= elapsed) {
       int which = (((self->saucer.position.y < 0) ? -1 : 1) *
-                   (gizmo_uniform() > 0.125) ? -1 : 1);
+                   ((gizmo_uniform() > 0.125) ? -1 : 1));
       self->saucer.velocity.y =
         ((self->saucer.velocity.x > 0) ? 1 : -1) *
         self->saucer.velocity.x * (gizmo_uniform() + 1) * which;
