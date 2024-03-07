@@ -1,4 +1,4 @@
 ./bootstrap && \
   make ripple.jar .javadoc \
-       apps/gizmo.html EN_CONFIG=$HOME/.emscripten
+       apps/gizmo.html EM_CONFIG=$HOME/.emscripten
 rm -rf build
