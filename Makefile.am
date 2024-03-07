@@ -70,6 +70,7 @@ EMPTY =
 SPACE = $(EMPTY) $(EMPTY)
 SEPARATOR = :
 HOSTNAME  = localhost
+ALIAS     = $(HOSTNAME)
 STOREPASS = 123456
 
 ## C ===================================================================
@@ -157,7 +158,69 @@ TESTS = $(check_PROGRAMS)
 MAINTAINERCLEANFILES =
 MOSTLYCLEANFILES     =
 DISTCLEANFILES       =
-CLEANFILES           = *.pem
+CLEANFILES           = *.der *.pem
+
+## Certificates ========================================================
+OPENSSL = openssl
+COMMON_NAME = /C=US/O=antimeme.net/OU=CA/CN=
+
+ca-key.pem:
+	$(OPENSSL) genrsa -out $@ $(KEYSIZE)
+
+ca-cert.pem: ca-key.pem
+	$(OPENSSL) req -sha256 -x509 -key $< -out $@ \
+	    -days 3650 -subj "$(COMMON_NAME)Root CA"
+
+server-key.pem:
+	$(OPENSSL) genrsa -out $@ $(KEYSIZE)
+
+server-req.pem: server-key.pem
+	$(OPENSSL) req -new -key server-key.pem \
+	    -subj "$(COMMON_NAME)server" -sha256 -out $@
+
+server-cert.pem: server-req.pem ca-key.pem ca-cert.pem
+	$(OPENSSL) x509 -CA ca-cert.pem -CAkey ca-key.pem \
+	  -extfile @srcdir@/scripts/ca.conf \
+	  -extensions server_role_ext -req -sha256 -days 730 \
+	  -CAcreateserial -CAserial ca.srl -in $< -out $@
+
+server-cert.der: server-cert.pem
+	$(OPENSSL) x509 -in server-cert.pem -out $@ -outform der
+
+server-chain.pem: server-cert.pem ca-cert.pem
+	if [ ! -e $@ ]; then \
+	    cp server-cert.pem $@; cat ca-cert.pem >>$@; \
+	else touch $@; fi
+
+serve: source/server.js server-key.pem server-chain.pem ca-cert.pem
+	node $<
+
+tomcat-key.pem:
+	$(OPENSSL) genrsa -out $@ $(KEYSIZE)
+
+tomcat-req.pem: tomcat-key.pem
+	$(OPENSSL) req -new -key tomcat-key.pem \
+	    -subj "$(COMMON_NAME)tomcat" -sha256 -out $@
+
+tomcat-cert.pem: tomcat-req.pem ca-key.pem ca-cert.pem
+	$(OPENSSL) x509 -CA ca-cert.pem -CAkey ca-key.pem \
+	  -extfile @srcdir@/scripts/ca.conf \
+	  -extensions tomcat_role_ext -req -sha256 -days 730 \
+	  -CAcreateserial -CAserial ca.srl -in $< -out $@
+
+tomcat-cert.der: tomcat-cert.pem
+	$(OPENSSL) x509 -in tomcat-cert.pem -out $@ -outform der
+
+tomcat-chain.pem: tomcat-cert.pem ca-cert.pem
+	if [ ! -e $@ ]; then \
+	    cp tomcat-cert.pem $@; cat ca-cert.pem >>$@; \
+	else touch $@; fi
+
+tomcat.p12: tomcat-key.pem tomcat-chain.pem
+	$(OPENSSL) pkcs12 -export -name tomcat \
+            -out $@ -inkey tomcat-key.pem -keyex \
+	    -passout pass:"$(STOREPASS)" \
+	    -in tomcat-chain.pem -chain -CAfile ca-cert.pem
 
 ## Python ==============================================================
 if HAVE_PYTHON
@@ -233,23 +296,6 @@ build/libs/@PACKAGE@-@VERSION@.war: \
 	@rm -f $@
 	$(LN_S) $< $@
 
-# Configure Jetty for TLS:
-# - Copy ripple.ks to $JETTY_HOME/etc/localhost.ks
-# - Edit $JETTY_HOME/etc/jetty-ssl-context.xml
-#   <Set name="CertAlias">
-#     <Property name="jetty.keystore.alias" default="localhost"/>
-#   </Set>
-# - Edit $JETTY_HOME/start.ini
-#   --module=[...],https,[...]
-#   jetty.ssl.port=8443
-#   jetty.sslContext.keyStorePath=etc/localhost.ks
-#   jetty.sslContext.keyStoreType=pkcs12
-#   jetty.sslContext.keyStorePassword=secret
-#   jetty.sslContext.wantClientAuth=true
-#   jetty.sslContext.trustStorePath=etc/localhost.ks
-#   jetty.sslContext.trustStoreType=pkcs12
-#   jetty.sslContext.trustStorePassword=secret
-
 # Configure Tomcat for TLS:
 # - Copy ripple.ks to $CATALINA_HOME/etc/localhost.ks
 # - Edit $CATALINA_HOME/etc/server.xml
@@ -288,19 +334,34 @@ deploy-tomcat: @PACKAGE@.war
 deploy: deploy-jetty deploy-tomcat
 
 if HAVE_PODMAN
-
+# Create an OCI container running Jetty with the package WAR file
+# installed in the root context.
 JETTYPOD_IMAGE = @PACKAGE@-jettypod
 JETTYPOD_NAME  = @PACKAGE@-jettypod
 
-.jettypod-image: scripts/container-jettypod @PACKAGE@.war
-	podman build -f $< -t $(JETTYPOD_IMAGE) .
+@PACKAGE@-jetty.ini:
+	@echo \#\# @PACKAGE@ configuration >$@
+	@echo --module=https >>$@
+	@echo jetty.ssl.port=8443 >>$@
+	@echo jetty.sslContext.keyStorePath=etc/container.p12 >>$@
+	@echo jetty.sslContext.keyStoreType=pkcs12 >>$@
+	@echo jetty.sslContext.keyStorePassword=$(STOREPASS) >>$@
+	@echo jetty.sslContext.keyManagerPassword=$(STOREPASS) >>$@
+	@echo jetty.sslContext.wantClientAuth=true >>$@
+	@echo jetty.sslContext.trustStorePath=etc/container.p12 >>$@
+	@echo jetty.sslContext.trustStoreType=pkcs12 >>$@
+	@echo jetty.sslContext.trustStorePassword=$(STOREPASS) >>$@
+
+.jettypod-image: scripts/container-jettypod @PACKAGE@-jetty.ini \
+	         @PACKAGE@.war container.p12
+	podman build -f $< --target @PACKAGE@ -t $(JETTYPOD_IMAGE) .
 	@echo > $@
 
 jettypod-interact: .jettypod-image
 	podman run -it --rm $(JETTYPOD_IMAGE) bash
 
 .jettypod-container: .jettypod-image
-	podman run -d -p 9080:8080/tcp \
+	podman run -d -p 9443:8443/tcp \
 	    --name $(JETTYPOD_NAME) $(JETTYPOD_IMAGE)
 	@echo > $@
 
@@ -310,9 +371,9 @@ jettypod-start: .jettypod-container
 	    podman start $(JETTYPOD_NAME); fi
 
 jettypod-stop:
-	podman stop $(JETTYPOD_NAME); fi
+	podman stop $(JETTYPOD_NAME)
 
-MAINTAINERCLEANFILES += .jettypod-image
+MAINTAINERCLEANFILES += .jettypod-image .jettypod-container
 
 endif # HAVE_PODMAN
 
@@ -351,21 +412,32 @@ play-java-asteroids: @PACKAGE@.jar
 play-java-jarbles: @PACKAGE@.jar
 	$(JAVA_HOME)/bin/java -jar $< jarbles
 
-$(HOSTNAME).ks:
+container-self.p12:
 	$(KEYTOOL) -keystore $@ -storetype pkcs12 \
 	    -genkey -keyalg RSA -keysize 2048 -sigalg SHA256withRSA \
-	    -alias $(HOSTNAME) -dname CN=$(HOSTNAME) -validity 3650 \
+	    -alias $(ALIAS) -dname CN=$(ALIAS) -validity 3650 \
 	    -ext "SAN=dns:$(HOSTNAME),dns:*.$(HOSTNAME)" \
 	    -storepass "$(STOREPASS)"
 
-$(HOSTNAME)-req.pem: $(HOSTNAME).ks
-	$(KEYTOOL) -certreq -alias $(HOSTNAME) -file $@ \
-	    -keystore $(HOSTNAME).ks -storepass $(STOREPASS)
+container-req.pem: container-self.p12
+	$(KEYTOOL) -certreq -alias $(ALIAS) \
+	    -file $@ -keystore $< -storepass $(STOREPASS)
 
-$(HOSTNAME)-cert.pem: $(HOSTNAME).ks
-	$(KEYTOOL) -export -alias $(HOSTNAME) -keystore $(HOSTNAME).ks \
-	    -storepass $(STOREPASS) | \
-	    $(OPENSSL) x509 -inform der -out $@
+container-cert.pem: container-req.pem ca-cert.pem ca-key.pem
+	$(OPENSSL) x509 -CA ca-cert.pem -CAkey ca-key.pem \
+	  -extfile @srcdir@/scripts/ca.conf \
+	  -extensions container_role_ext -req -sha256 -days 730 \
+	  -CAcreateserial -CAserial ca.srl -in $< -out $@
+
+container.p12: container-self.p12 container-cert.pem ca-cert.pem
+	cp $< $@.partial
+	$(KEYTOOL) -importcert -alias cacert \
+	    -file ca-cert.pem -noprompt \
+	    -keystore $@.partial -storepass $(STOREPASS)
+	$(KEYTOOL) -importcert -alias $(ALIAS) \
+	    -file container-cert.pem -noprompt \
+	    -keystore $@.partial -storepass $(STOREPASS)
+	mv $@.partial $@
 
 install-data-local: .javadoc
 	$(MKDIR_P) $(DESTDIR)$(docdir)
@@ -378,12 +450,15 @@ scripts/check-java.sh: @PACKAGE@.jar
 	chmod +x $@
 
 TESTS += scripts/check-java.sh
-MOSTLYCLEANFILES += \
+MAINTAINERCLEANFILES += \
+	container-self.p12 container.p12
+CLEANFILES += \
+	scripts/check-java.sh .javadoc \
 	@PACKAGE@-@VERSION@.jar @PACKAGE@.jar \
 	@PACKAGE@-@VERSION@.war @PACKAGE@.war
-CLEANFILES += \
-	scripts/check-java.sh \
-	.javadoc @PACKAGE@.ks
+MOSTLYCLEANFILES += \
+	@PACKAGE@-jetty.ini \
+	container.p12.partial
 
 clean-local-java:
 	-rm -rf .gradle/ javadoc
@@ -403,68 +478,6 @@ clean-local: clean-local-java
 	rm -rf target/
 
 mostlyclean-local: mostlyclean-local-java
-
-## Certificates ========================================================
-OPENSSL = openssl
-COMMON_NAME = /C=US/O=antimeme.net/OU=CA/CN=
-
-ca-key.pem:
-	$(OPENSSL) genrsa -out $@ $(KEYSIZE)
-
-ca-cert.pem: ca-key.pem
-	$(OPENSSL) req -sha256 -x509 -key $< -out $@ \
-	    -days 3650 -subj "$(COMMON_NAME)Root CA"
-
-server-key.pem:
-	$(OPENSSL) genrsa -out $@ $(KEYSIZE)
-
-server-req.pem: server-key.pem
-	$(OPENSSL) req -new -key server-key.pem \
-	    -subj "$(COMMON_NAME)server" -sha256 -out $@
-
-server-cert.pem: server-req.pem ca-key.pem ca-cert.pem
-	$(OPENSSL) x509 -CA ca-cert.pem -CAkey ca-key.pem \
-	  -req -sha256 -days 730 -extfile resources/ca.conf \
-	  -extensions server_role_ext \
-	  -CAcreateserial -CAserial ca.srl -in server-req.pem -out $@
-
-server-cert.der: server-cert.pem
-	$(OPENSSL) x509 -in server-cert.pem -out $@ -outform der
-
-server-chain.pem: server-cert.pem ca-cert.pem
-	if [ ! -e $@ ]; then \
-	    cp server-cert.pem $@; cat ca-cert.pem >>$@; \
-	else touch $@; fi
-
-serve: source/server.js server-key.pem server-chain.pem ca-cert.pem
-	node $<
-
-tomcat-key.pem:
-	$(OPENSSL) genrsa -out $@ $(KEYSIZE)
-
-tomcat-req.pem: tomcat-key.pem
-	$(OPENSSL) req -new -key tomcat-key.pem \
-	    -subj "$(COMMON_NAME)tomcat" -sha256 -out $@
-
-tomcat-cert.pem: tomcat-req.pem ca-key.pem ca-cert.pem
-	$(OPENSSL) x509 -CA ca-cert.pem -CAkey ca-key.pem \
-	  -req -sha256 -days 730 -extfile resources/ca.conf \
-	  -extensions tomcat_role_ext \
-	  -CAcreateserial -CAserial ca.srl -in tomcat-req.pem -out $@
-
-tomcat-cert.der: tomcat-cert.pem
-	$(OPENSSL) x509 -in tomcat-cert.pem -out $@ -outform der
-
-tomcat-chain.pem: tomcat-cert.pem ca-cert.pem
-	if [ ! -e $@ ]; then \
-	    cp tomcat-cert.pem $@; cat ca-cert.pem >>$@; \
-	else touch $@; fi
-
-tomcat.p12: tomcat-key.pem tomcat-chain.pem
-	$(OPENSSL) pkcs12 -export -name tomcat \
-            -out $@ -inkey tomcat-key.pem -keyex \
-	    -passout pass:"$(STOREPASS)" \
-	    -in tomcat-chain.pem -chain -CAfile ca-cert.pem
 
 ## Podman ==============================================================
 

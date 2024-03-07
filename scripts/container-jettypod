@@ -1,9 +1,18 @@
-FROM debian:latest
+FROM debian:latest AS base
+RUN apt update && apt install -y jetty9
+
+FROM base AS ripple
 LABEL maintainer="Jeff Gold (ripple@antimeme.net)"
 EXPOSE 8080/tcp
-RUN apt update && apt install -y jetty9
-RUN rm -rf /usr/share/jetty9/webapps/root
+EXPOSE 8443/tcp
+
 COPY ripple.war /usr/share/jetty9/webapps/root.war
+COPY container.p12 /usr/share/jetty9/etc/
+COPY ripple-jetty.ini /usr/share/jetty9/etc/start.d/
+RUN chown jetty:adm /usr/share/jetty9/etc/container.p12
+RUN chmod go-w,o-r /usr/share/jetty9/etc/container.p12
+RUN rm -rf /usr/share/jetty9/webapps/root
+
 CMD ["java", "-jar", "/usr/share/jetty9/start.jar", \
      "jetty.home=/usr/share/jetty9", \
      "jetty.base=/usr/share/jetty9"]
