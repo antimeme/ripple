@@ -75,7 +75,7 @@ war {
     into("WEB-INF/classes") { from sourceSets.servlet.output }
     from(sourceSets.application.output)
     from("@srcdir@/apps")
-    from("$buildDir/classList.txt")
+    from("$buildDir/.classes")
     manifest { attributes(
         "Application-Name": "Ripple",
         "Main-Class": "net.antimeme.ripple.Ripple",
