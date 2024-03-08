@@ -1352,12 +1352,39 @@
             </p>
         </section>
     </section></div></div>
-    <script src="lib/reveal/head.min.js"></script>
-    <script src="lib/reveal/reveal.js"></script>
+    <script src="reveal/reveal.js"></script>
     <script src="ripple/polyfill.js"></script>
     <script src="ripple/ripple.js"></script>
     <script src="ripple/logic.js"></script>
     <script src="ripple/multivec.js"></script>
     <script src="ripple/triggy.js"></script>
-    <script src="lib/slides.js"></script>
+    <script>
+     Reveal.initialize({
+         slideNumber: 'h.v',
+         transition: 'convex', history: true,
+         dependencies: [
+	     { src: 'reveal/plugin/search/search.js', async: true },
+	     { src: 'reveal/plugin/notes/notes.js', async: true }
+         ]
+     });
+
+     Reveal.addEventListener('ready', function(event) {
+         triggy.setup('canvas.triggy', function(value) {
+             if (typeof(value) === 'object') {
+                 value.x /= Reveal.getScale();
+                 value.y /= Reveal.getScale();
+             } else if (typeof(value) === 'number') {
+                 value /= Reveal.getScale();
+             }
+             return value;
+         });
+         triggy.update('canvas.triggy', Reveal.getCurrentSlide());
+     });
+
+     Reveal.addEventListener('slidechanged', function(event) {
+         triggy.update('canvas.triggy', event.currentSlide);
+     });
+
+     logic.go();
+    </script>
 </html>

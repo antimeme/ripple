@@ -1,9 +1,11 @@
-<!doctype html>
+<!--
+	NOTE: You need to build the notes plugin after making changes to this file.
+-->
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
 
-		<title>reveal.js - Slide Notes</title>
+		<title>reveal.js - Speaker View</title>
 
 		<style>
 			body {
@@ -32,6 +34,22 @@
 				top: 10px;
 				left: 10px;
 				z-index: 2;
+			}
+
+			#connection-status {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				z-index: 20;
+				padding: 30% 20% 20% 20%;
+				font-size: 18px;
+				color: #222;
+				background: #fff;
+				text-align: center;
+				box-sizing: border-box;
+				line-height: 1.4;
 			}
 
 			.overlay-element {
@@ -288,6 +306,8 @@
 
 	<body>
 
+		<div id="connection-status">Loading speaker view...</div>
+
 		<div id="current-slide"></div>
 		<div id="upcoming-slide"><span class="overlay-element label">Upcoming</span></div>
 		<div id="speaker-controls">
@@ -317,7 +337,6 @@
 			<select class="speaker-layout-dropdown"></select>
 		</div>
 
-		<script src="../../plugin/markdown/marked.js"></script>
 		<script>
 
 			(function() {
@@ -329,7 +348,11 @@
 					upcomingSlide,
 					layoutLabel,
 					layoutDropdown,
-					connected = false;
+					pendingCalls = {},
+					lastRevealApiCallId = 0,
+					connected = false
+
+				var connectionStatus = document.querySelector( '#connection-status' );
 
 				var SPEAKER_LAYOUTS = {
 					'default': 'Default',
@@ -340,7 +363,35 @@
 
 				setupLayout();
 
+				let openerOrigin;
+
+				try {
+					openerOrigin = window.opener.location.origin;
+				}
+				catch ( error ) { console.warn( error ) }
+
+				// In order to prevent XSS, the speaker view will only run if its
+				// opener has the same origin as itself
+				if( window.location.origin !== openerOrigin ) {
+					connectionStatus.innerHTML = 'Cross origin error.<br>The speaker window can only be opened from the same origin.';
+					return;
+				}
+
+				var connectionTimeout = setTimeout( function() {
+					connectionStatus.innerHTML = 'Error connecting to main window.<br>Please try closing and reopening the speaker view.';
+				}, 5000 );
+
 				window.addEventListener( 'message', function( event ) {
+
+					// Validate the origin of all messages to avoid parsing messages
+					// that aren't meant for us. Ignore when running off file:// so
+					// that the speaker view continues to work without a web server.
+					if( window.location.origin !== event.origin && window.location.origin !== 'file://' ) {
+						return
+					}
+
+					clearTimeout( connectionTimeout );
+					connectionStatus.style.display = 'none';
 
 					var data = JSON.parse( event.data );
 
@@ -356,6 +407,10 @@
 						else if( data.type === 'state' ) {
 							handleStateMessage( data );
 						}
+						else if( data.type === 'return' ) {
+							pendingCalls[data.callId](data.result);
+							delete pendingCalls[data.callId];
+						}
 					}
 					// Messages sent by the reveal.js inside of the current slide preview
 					else if( data && data.namespace === 'reveal' ) {
@@ -365,12 +420,37 @@
 						}
 						else if( /slidechanged|fragmentshown|fragmenthidden|paused|resumed/.test( data.eventName ) && currentState !== JSON.stringify( data.state ) ) {
 
-							window.opener.postMessage( JSON.stringify({ method: 'setState', args: [ data.state ]} ), '*' );
+							dispatchStateToMainWindow( data.state );
 
 						}
 					}
 
 				} );
+
+				/**
+				 * Updates the presentation in the main window to match the state
+				 * of the presentation in the notes window.
+				 */
+				const dispatchStateToMainWindow = debounce(( state ) => {
+					window.opener.postMessage( JSON.stringify({ method: 'setState', args: [ state ]} ), '*' );
+				}, 500);
+
+				/**
+				 * Asynchronously calls the Reveal.js API of the main frame.
+				 */
+				function callRevealApi( methodName, methodArguments, callback ) {
+
+					var callId = ++lastRevealApiCallId;
+					pendingCalls[callId] = callback;
+					window.opener.postMessage( JSON.stringify( {
+						namespace: 'reveal-notes',
+						type: 'call',
+						callId: callId,
+						methodName: methodName,
+						arguments: methodArguments
+					} ), '*' );
+
+				}
 
 				/**
 				 * Called when the main window is trying to establish a
@@ -385,6 +465,7 @@
 						setupKeyboard();
 						setupNotes();
 						setupTimer();
+						setupHeartbeat();
 					}
 
 				}
@@ -427,10 +508,17 @@
 				 * Forward keyboard events to the current slide window.
 				 * This enables keyboard events to work even if focus
 				 * isn't set on the current slide iframe.
+				 *
+				 * Block F5 default handling, it reloads and disconnects
+				 * the speaker notes window.
 				 */
 				function setupKeyboard() {
 
 					document.addEventListener( 'keydown', function( event ) {
+						if( event.keyCode === 116 || ( event.metaKey && event.keyCode === 82 ) ) {
+							event.preventDefault();
+							return false;
+						}
 						currentSlide.contentWindow.postMessage( JSON.stringify({ method: 'triggerKey', args: [ event.keyCode ] }), '*' );
 					} );
 
@@ -452,8 +540,8 @@
 
 					var urlSeparator = /\?/.test(data.url) ? '&' : '?';
 					var hash = '#/' + data.state.indexh + '/' + data.state.indexv;
-					var currentURL = data.url + urlSeparator + params + '&postMessageEvents=true' + hash;
-					var upcomingURL = data.url + urlSeparator + params + '&controls=false' + hash;
+					var currentURL = data.url + urlSeparator + params + '&scrollActivationWidth=false&postMessageEvents=true' + hash;
+					var upcomingURL = data.url + urlSeparator + params + '&scrollActivationWidth=false&controls=false' + hash;
 
 					currentSlide = document.createElement( 'iframe' );
 					currentSlide.setAttribute( 'width', 1280 );
@@ -479,28 +567,66 @@
 
 				}
 
-				function getTimings() {
+				/**
+				 * We send out a heartbeat at all times to ensure we can
+				 * reconnect with the main presentation window after reloads.
+				 */
+				function setupHeartbeat() {
 
-					var slides = Reveal.getSlides();
-					var defaultTiming = Reveal.getConfig().defaultTiming;
-					if (defaultTiming == null) {
-						return null;
-					}
-					var timings = [];
-					for ( var i in slides ) {
-						var slide = slides[i];
-						var timing = defaultTiming;
-						if( slide.hasAttribute( 'data-timing' )) {
-							var t = slide.getAttribute( 'data-timing' );
-							timing = parseInt(t);
-							if( isNaN(timing) ) {
-								console.warn("Could not parse timing '" + t + "' of slide " + i + "; using default of " + defaultTiming);
-								timing = defaultTiming;
+					setInterval( () => {
+						window.opener.postMessage( JSON.stringify({ namespace: 'reveal-notes', type: 'heartbeat'} ), '*' );
+					}, 1000 );
+
+				}
+
+				function getTimings( callback ) {
+
+					callRevealApi( 'getSlidesAttributes', [], function ( slideAttributes ) {
+						callRevealApi( 'getConfig', [], function ( config ) {
+							var totalTime = config.totalTime;
+							var minTimePerSlide = config.minimumTimePerSlide || 0;
+							var defaultTiming = config.defaultTiming;
+							if ((defaultTiming == null) && (totalTime == null)) {
+								callback(null);
+								return;
 							}
-						}
-						timings.push(timing);
-					}
-					return timings;
+							// Setting totalTime overrides defaultTiming
+							if (totalTime) {
+								defaultTiming = 0;
+							}
+							var timings = [];
+							for ( var i in slideAttributes ) {
+								var slide = slideAttributes[ i ];
+								var timing = defaultTiming;
+								if( slide.hasOwnProperty( 'data-timing' )) {
+									var t = slide[ 'data-timing' ];
+									timing = parseInt(t);
+									if( isNaN(timing) ) {
+										console.warn("Could not parse timing '" + t + "' of slide " + i + "; using default of " + defaultTiming);
+										timing = defaultTiming;
+									}
+								}
+								timings.push(timing);
+							}
+							if ( totalTime ) {
+								// After we've allocated time to individual slides, we summarize it and
+								// subtract it from the total time
+								var remainingTime = totalTime - timings.reduce( function(a, b) { return a + b; }, 0 );
+								// The remaining time is divided by the number of slides that have 0 seconds
+								// allocated at the moment, giving the average time-per-slide on the remaining slides
+								var remainingSlides = (timings.filter( function(x) { return x == 0 }) ).length
+								var timePerSlide = Math.round( remainingTime / remainingSlides, 0 )
+								// And now we replace every zero-value timing with that average
+								timings = timings.map( function(x) { return (x==0 ? timePerSlide : x) } );
+							}
+							var slidesUnderMinimum = timings.filter( function(x) { return (x < minTimePerSlide) } ).length
+							if ( slidesUnderMinimum ) {
+								message = "The pacing time for " + slidesUnderMinimum + " slide(s) is under the configured minimum of " + minTimePerSlide + " seconds. Check the data-timing attribute on individual slides, or consider increasing the totalTime or minimumTimePerSlide configuration options (or removing some slides).";
+								alert(message);
+							}
+							callback( timings );
+						} );
+					} );
 
 				}
 
@@ -508,15 +634,15 @@
 				 * Return the number of seconds allocated for presenting
 				 * all slides up to and including this one.
 				 */
-				function getTimeAllocated(timings) {
+				function getTimeAllocated( timings, callback ) {
 
-					var slides = Reveal.getSlides();
-					var allocated = 0;
-					var currentSlide = Reveal.getSlidePastCount();
-					for (var i in slides.slice(0, currentSlide + 1)) {
-						allocated += timings[i];
-					}
-					return allocated;
+					callRevealApi( 'getSlidePastCount', [], function ( currentSlide ) {
+						var allocated = 0;
+						for (var i in timings.slice(0, currentSlide + 1)) {
+							allocated += timings[i];
+						}
+						callback( allocated );
+					} );
 
 				}
 
@@ -538,11 +664,50 @@
 					pacingMinutesEl = pacingEl.querySelector( '.minutes-value' ),
 					pacingSecondsEl = pacingEl.querySelector( '.seconds-value' );
 
-					var timings = getTimings();
-					if (timings !== null) {
-						pacingTitleEl.style.removeProperty('display');
-						pacingEl.style.removeProperty('display');
+					var timings = null;
+					getTimings( function ( _timings ) {
+
+						timings = _timings;
+						if (_timings !== null) {
+							pacingTitleEl.style.removeProperty('display');
+							pacingEl.style.removeProperty('display');
+						}
+
+						// Update once directly
+						_updateTimer();
+
+						// Then update every second
+						setInterval( _updateTimer, 1000 );
+
+					} );
+
+
+					function _resetTimer() {
+
+						if (timings == null) {
+							start = new Date();
+							_updateTimer();
+						}
+						else {
+							// Reset timer to beginning of current slide
+							getTimeAllocated( timings, function ( slideEndTimingSeconds ) {
+								var slideEndTiming = slideEndTimingSeconds * 1000;
+								callRevealApi( 'getSlidePastCount', [], function ( currentSlide ) {
+									var currentSlideTiming = timings[currentSlide] * 1000;
+									var previousSlidesTiming = slideEndTiming - currentSlideTiming;
+									var now = new Date();
+									start = new Date(now.getTime() - previousSlidesTiming);
+									_updateTimer();
+								} );
+							} );
+						}
+
 					}
+
+					timeEl.addEventListener( 'click', function() {
+						_resetTimer();
+						return false;
+					} );
 
 					function _displayTime( hrEl, minEl, secEl, time) {
 
@@ -585,51 +750,25 @@
 
 					function _updatePacing(diff) {
 
-						var slideEndTiming = getTimeAllocated(timings) * 1000;
-						var currentSlide = Reveal.getSlidePastCount();
-						var currentSlideTiming = timings[currentSlide] * 1000;
-						var timeLeftCurrentSlide = slideEndTiming - diff;
-						if (timeLeftCurrentSlide < 0) {
-							pacingEl.className = 'pacing behind';
-						}
-						else if (timeLeftCurrentSlide < currentSlideTiming) {
-							pacingEl.className = 'pacing on-track';
-						}
-						else {
-							pacingEl.className = 'pacing ahead';
-						}
-						_displayTime( pacingHoursEl, pacingMinutesEl, pacingSecondsEl, timeLeftCurrentSlide );
+						getTimeAllocated( timings, function ( slideEndTimingSeconds ) {
+							var slideEndTiming = slideEndTimingSeconds * 1000;
 
+							callRevealApi( 'getSlidePastCount', [], function ( currentSlide ) {
+								var currentSlideTiming = timings[currentSlide] * 1000;
+								var timeLeftCurrentSlide = slideEndTiming - diff;
+								if (timeLeftCurrentSlide < 0) {
+									pacingEl.className = 'pacing behind';
+								}
+								else if (timeLeftCurrentSlide < currentSlideTiming) {
+									pacingEl.className = 'pacing on-track';
+								}
+								else {
+									pacingEl.className = 'pacing ahead';
+								}
+								_displayTime( pacingHoursEl, pacingMinutesEl, pacingSecondsEl, timeLeftCurrentSlide );
+							} );
+						} );
 					}
-
-					// Update once directly
-					_updateTimer();
-
-					// Then update every second
-					setInterval( _updateTimer, 1000 );
-
-					function _resetTimer() {
-
-						if (timings == null) {
-							start = new Date();
-						}
-						else {
-							// Reset timer to beginning of current slide
-							var slideEndTiming = getTimeAllocated(timings) * 1000;
-							var currentSlide = Reveal.getSlidePastCount();
-							var currentSlideTiming = timings[currentSlide] * 1000;
-							var previousSlidesTiming = slideEndTiming - currentSlideTiming;
-							var now = new Date();
-							start = new Date(now.getTime() - previousSlidesTiming);
-						}
-						_updateTimer();
-
-					}
-
-					timeEl.addEventListener( 'click', function() {
-						_resetTimer();
-						return false;
-					} );
 
 				}
 

@@ -3,8 +3,8 @@
     <title>Mathematics of Rendering</title>
     <!-- Copyright (C) 2018-2020 by Jeff Gold.  All rights reserved. -->
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="lib/reveal/reveal.css">
-    <link rel="stylesheet" href="lib/reveal/sky.css">
+    <link rel="stylesheet" href="reveal/reveal.css">
+    <link rel="stylesheet" href="reveal/theme/sky.css">
     <style>
      canvas.triggy { width: 100%; height: 100%; }
      .intro { color: blue; }
@@ -3996,42 +3996,19 @@
         </section>
     </section>
     </div></div>
-    <script src="lib/reveal/head.min.js"></script>
-    <script src="lib/reveal/reveal.js"></script>
+    <script src="reveal/reveal.js"></script>
     <script src="ripple/polyfill.js"></script>
     <script src="ripple/ripple.js"></script>
     <script src="ripple/logic.js"></script>
     <script src="ripple/multivec.js"></script>
     <script src="ripple/triggy.js"></script>
     <script>
-     var link = document.createElement('link');
-     link.rel = 'stylesheet';
-     link.type = 'text/css';
-     link.href = window.location.search.match(/document/gi) ?
-                 'lib/reveal/pdf.css' : 'lib/reveal/paper.css';
-     document.getElementsByTagName('head')[0].appendChild( link );
      Reveal.initialize({
          slideNumber: 'h.v',
          transition: 'convex', history: true,
-         showNotes: window.location.search.match(/shownotes/gi) ?
-                    true : false,
          dependencies: [
-	     /* { src: 'lib/js/classList.js',
-              *   condition: function() { return !document.body.classList; } },
-	        { src: 'plugin/markdown/marked.js',
-              *   condition: function() {
-              *       return !!document.querySelector( '[data-markdown]' );
-              *   } },
-	        { src: 'plugin/markdown/markdown.js',
-              *   condition: function() {
-              *       return !!document.querySelector( '[data-markdown]' );
-              *   } },
-	        { src: 'plugin/highlight/highlight.js',
-              *   async: true, callback: function() {
-              *       hljs.initHighlightingOnLoad(); } },
-	        { src: 'plugin/zoom-js/zoom.js', async: true },*/
-	     { src: 'lib/reveal/search.js', async: true },
-	     { src: 'lib/reveal/notes.js', async: true }
+	     { src: 'reveal/plugin/search/search.js', async: true },
+	     { src: 'reveal/plugin/notes/notes.js', async: true }
          ]
      });
 
