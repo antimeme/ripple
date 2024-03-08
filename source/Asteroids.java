@@ -16,7 +16,7 @@
 //
 // ---------------------------------------------------------------------
 package net.antimeme.asteroids;
-import net.antimeme.ripple.Standalone;
+import net.antimeme.ripple.Applet;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -24,8 +24,6 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.awt.event.ComponentListener;
-import java.awt.event.ComponentEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseListener;
@@ -40,8 +38,8 @@ import java.util.LinkedList;
  * arcade game originally designed by Lyle Rains, Ed Logg and Dominic
  * Walsh and released by Atari in 1979.  Source:
  * https://en.wikipedia.org/wiki/Asteroids_(video_game) */
-public class Asteroids extends java.applet.Applet
-    implements Runnable, ComponentListener, KeyListener, MouseListener
+public class Asteroids extends net.antimeme.ripple.Applet
+    implements Runnable, KeyListener, MouseListener
 {
     protected static boolean zeroish(float value) {
         final float epsilon = 0.00000000001f;
@@ -320,18 +318,18 @@ public class Asteroids extends java.applet.Applet
     protected Font fontScore = null;
 
     /** See ../apps/credits.html for details on sounds */
-    protected java.applet.AudioClip soundShootBeam;
+    protected Applet.AudioClip soundShootBeam;
     /** See ../apps/credits.html for details on sounds */
-    protected java.applet.AudioClip soundSmashShip;
+    protected Applet.AudioClip soundSmashShip;
     /** See ../apps/credits.html for details on sounds */
-    protected java.applet.AudioClip soundSmashRock;
+    protected Applet.AudioClip soundSmashRock;
     /** See ../apps/credits.html for details on sounds */
-    protected java.applet.AudioClip soundThruster;
+    protected Applet.AudioClip soundThruster;
     /** See ../apps/credits.html for details on sounds */
-    protected java.applet.AudioClip soundSaucerSiren;
+    protected Applet.AudioClip soundSaucerSiren;
 
-    protected java.applet.AudioClip fetchSound(String resource) {
-        java.applet.AudioClip result = null;
+    protected Applet.AudioClip fetchSound(String resource) {
+        Applet.AudioClip result = null;
         try {
             java.net.URL url =
                 getClass().getClassLoader().getResource(resource);
@@ -434,12 +432,8 @@ public class Asteroids extends java.applet.Applet
         saucerShots.clear();
     }
 
-    /** Implements java.awt.event.ComponentListener */
-    public void componentMoved(ComponentEvent e) {}
-    public void componentHidden(ComponentEvent e) {}
-    public void componentShown(ComponentEvent e) {}
-    public void componentResized(ComponentEvent e) {
-        Dimension size = getSize();
+    @Override
+    public void resize(Dimension size) {
         buffer = new BufferedImage(size.width, size.height,
                                    BufferedImage.TYPE_INT_RGB);
         baseSize = (size.width < size.height) ?
@@ -485,7 +479,6 @@ public class Asteroids extends java.applet.Applet
         saucer.dome = 2f / 3;
         resetGame();
 
-        addComponentListener(this);
         addKeyListener(this);
         addMouseListener(this);
     }
@@ -975,6 +968,7 @@ public class Asteroids extends java.applet.Applet
             for (Movable piece : debris)
                 piece.draw(ctx, bounds, false);
         }
+
         gfx.drawImage(buffer, 0, 0, this);
     }
 
@@ -985,7 +979,8 @@ public class Asteroids extends java.applet.Applet
     @Override
     public void update(Graphics gfx) { paint(gfx); }
 
-    protected static Image createIcon() {
+    @Override
+    public Image getIcon() {
         final int size = 32;
         final float factor = size * 9 / 20;
         final Point center = new Point(size / 2, size / 2);
@@ -1012,8 +1007,6 @@ public class Asteroids extends java.applet.Applet
     /**
      * Entry point to start Asteroids application.
      * @param args command line arguments */
-    public static void main(String[] args) {
-        Standalone.app(new Asteroids(), "Asteroids",
-                       Asteroids.createIcon(), null, args);
-    }
+    public static void main(String[] args)
+    { new Asteroids().standalone(args); }
 }

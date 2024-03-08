@@ -128,10 +128,10 @@ public final class FractionLayout implements LayoutManager {
      * @param args command line arguments
      * @throws Exception anything can happen */
     public static void main(String args[]) throws Exception {
-        java.applet.Applet a = new java.applet.Applet();
+        net.antimeme.ripple.Applet a = new net.antimeme.ripple.Applet();
         a.setLayout(new FractionLayout());
         a.add(new java.awt.Button("one"), "0.05 0.05 0.4 0.4");
         a.add(new java.awt.Button("two"), "0.5 0.5 0.25 0.25");
-        Standalone.app(a, "FractionLayout", args);
+        a.standalone(args);
     }
 }

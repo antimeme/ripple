@@ -17,7 +17,6 @@
 // ---------------------------------------------------------------------
 package net.antimeme.ripple;
 import net.antimeme.ripple.Standalone;
-import java.applet.Applet;
 import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -25,7 +24,7 @@ import java.awt.FontMetrics;
 
 /**
  * An experiment that draws an octahedral net. */
-public class Octahedron extends Applet {
+public class Octahedron extends net.antimeme.ripple.Applet {
     /** Ratio between height of center and edge length */
     private final double height_factor = Math.sqrt(3) / 2;
 
@@ -145,5 +144,5 @@ public class Octahedron extends Applet {
      * @param args command line arguments
      * @throws Exception anything can happen */
     public static void main(String[] args) throws Exception
-    { Standalone.app(new Octahedron(), args); }
+    { new Octahedron().standalone(args); }
 }

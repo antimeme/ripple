@@ -31,8 +31,6 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
-import java.applet.Applet;
-import java.applet.AudioClip;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Dimension;
@@ -48,7 +46,7 @@ import java.awt.event.ActionEvent;
  * accepts user input.  An automatic player provides an opponent.  In
  * addition there is limited support for themes.  At some point this
  * network play. */
-public class Jarbles extends Applet
+public class Jarbles extends net.antimeme.ripple.Applet
     implements Runnable, ActionListener {
     static final long serialVersionUID = 0;
 
@@ -59,10 +57,10 @@ public class Jarbles extends Applet
     protected Thread gameThread = null;
 
     /** Display for black player */
-    protected GraphicPlayer gpb = new GraphicPlayer();
+    protected GraphicPlayer gpb = null;
 
     /** Display for white player */
-    protected GraphicPlayer gpw = gpb;
+    protected GraphicPlayer gpw = null;
 
     /** Amount of time allowed for each player */
     protected long time = 0;
@@ -70,13 +68,25 @@ public class Jarbles extends Applet
     /** Implements java.awt.Applet */
     public void init() {
         setLayout(new GridLayout());
-        gpb.setContext(getAppletContext());
+
+        net.antimeme.ripple.Applet.AudioClip soundMove = null;
+        try {
+            soundMove = getAudioClip
+                (getClass().getClassLoader().getResource
+                 ("sounds/clickclack.wav"));
+        } catch (IllegalArgumentException ex) {
+            // Continue with game even if we can't get the sound
+            System.out.println("ERROR cannot create AudioClip: " +
+                               ex.getMessage());
+        }
+        gpb = gpw = new GraphicPlayer();
+        gpb.setSoundMove(soundMove);
         add(gpb);
 
         try {
             if (Boolean.parseBoolean(getParameter("duel"))) {
                 gpw = new GraphicPlayer();
-                gpw.setContext(getAppletContext());
+                gpw.setSoundMove(soundMove);
                 add(gpw);
             }
         } catch (NumberFormatException ex) { /* ignored */ }
@@ -268,19 +278,25 @@ public class Jarbles extends Applet
         return result;
     }
 
+    public String getIconPath() { return "images/jarbles.png"; }
+
+    protected MenuBar mb;
+
+    @Override
+    public MenuBar getMenuBar() { return mb; }
+
     /**
      * Jarbles application entry point
      * @param args command line arguments
      * @throws Exception anything can happen */
     public static void main(String args[]) throws Exception {
         Jarbles jarbles = new Jarbles();
-        MenuBar mb = new MenuBar();
+        jarbles.mb = new MenuBar();
         Menu menuTheme = new Menu("Theme");
         menuTheme.add(jarbles.setupTheme(GraphicPlayer.Theme.class));
         for (Class clazz : jarbles.getThemes())
             menuTheme.add(jarbles.setupTheme(clazz));
-        mb.add(menuTheme);
-
-        Standalone.app(jarbles, null, "images/jarbles.png", mb, args);
+        jarbles.mb.add(menuTheme);
+        jarbles.standalone(args);
     }
 }

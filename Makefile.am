@@ -17,12 +17,13 @@
 ## ---------------------------------------------------------------------
 EXTRA_DIST = \
 	bootstrap \
-	resources \
 	apps/images/ \
 	apps/fonts/ \
 	apps/sounds/ \
 	scripts/@PACKAGE@.spec \
 	scripts/@PACKAGE@.dpkg \
+	scripts/ca.conf \
+	scripts/container-jettypod \
 	META-INF/MANIFEST.MF \
 	$(JAVA_DISTSRC) \
 	WEB-INF/web.xml \
@@ -30,8 +31,7 @@ EXTRA_DIST = \
 	$(SERVLET_DISTSRC) \
 	source/gizmo/gizmo.h \
 	source/gizmo/asteroids.h \
-	$(PYTHON_DISTSRC) \
-	Containerfile
+	$(PYTHON_DISTSRC)
 
 dist-hook:
 	-rm -f `find $(distdir)/apps -name \*~`
@@ -45,10 +45,10 @@ uninstall-local:
 PYTHON_DISTSRC = source/random.py source/match.py
 
 JAVA_DISTSRC = \
-	$(srcdir)/source/Options.java \
+	$(srcdir)/source/Applet.java \
 	$(srcdir)/source/FractionLayout.java \
+	$(srcdir)/source/Options.java \
 	$(srcdir)/source/Juju.java \
-	$(srcdir)/source/Standalone.java \
 	$(srcdir)/source/Matrix.java \
 	$(srcdir)/source/Vector.java \
 	$(srcdir)/source/Jarbles.java \

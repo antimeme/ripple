@@ -21,8 +21,6 @@
 // playing Abalone.
 package net.antimeme.jarbles.abalone;
 import net.antimeme.ripple.HexagonGrid;
-import java.applet.AppletContext;
-import java.applet.AudioClip;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -305,32 +303,19 @@ public class GraphicPlayer extends Component
         protected Font font = null;
 
         // Sounds
-        protected AudioClip sound_move = null;
+        protected net.antimeme.ripple.Applet.AudioClip soundMove = null;
 
         /**
-         * Provide an applet context
-         * @param ctx applet context */
-        public void setContext(AppletContext ctx) {
-            try {
-                java.net.URL clickclack =
-                    getClass().getClassLoader().getResource
-                    ("sounds/clickclack.wav");
-                if (clickclack == null)
-                    throw new IllegalArgumentException
-                        ("failed to load sounds/clickclack.wav");
-                sound_move = ctx.getAudioClip(clickclack);
-            } catch (IllegalArgumentException ex) {
-                // Some runtime environments may not have sound.
-                System.out.println("ERROR cannot create AudioClip: " +
-                                   ex.getMessage());
-            }
-        }
+         * Provide sound to play when a player moves */
+        public void setSoundMove
+            (net.antimeme.ripple.Applet.AudioClip soundMove)
+        { this.soundMove = soundMove; }
 
         /**
          * Start the process of moving */
         public void beginMove() {
-            if (sound_move != null)
-                sound_move.play();
+            if (soundMove != null)
+                soundMove.play();
         }
 
         /**
@@ -748,8 +733,9 @@ public class GraphicPlayer extends Component
     private Theme     theme;
     /** replace theme with this one */
     private Theme     retheme;
-    /** context for getting sounds */
-    private AppletContext ctx;
+
+    /** sound to play when player moves */
+    protected net.antimeme.ripple.Applet.AudioClip soundMove = null;
 
     /**
      * Creates a graphic player.
@@ -782,13 +768,6 @@ public class GraphicPlayer extends Component
     /** Creates a graphic player with default theme and board. */
     public GraphicPlayer()
     { this(new Theme(), new Board()); }
-
-    /**
-     * Configures themes with any necessary sound clips.
-     * @param ctx applet context to use for sound clips
-     * @return this GraphicPlayer for chained calls */
-    public GraphicPlayer setContext(AppletContext ctx)
-    { this.ctx = ctx; theme.setContext(ctx); return this; }
     
     /**
      * Get current animation state
@@ -805,14 +784,20 @@ public class GraphicPlayer extends Component
      * @return current active theme */
     public Theme getTheme() { return theme; }
 
+    public void setSoundMove
+        (net.antimeme.ripple.Applet.AudioClip soundMove) {
+        this.soundMove = soundMove;
+        theme.setSoundMove(soundMove);
+    }
+
     /**
      * Active a chosen theme
      * @param t theme to activate
      * @return this GraphicalPlayer for chaining */
     public GraphicPlayer setTheme(Theme t) {
         retheme = t;
-        if (ctx != null)
-            retheme.setContext(ctx);
+        if (soundMove != null)
+            retheme.setSoundMove(soundMove);
         repaint();
         return this;
     }
