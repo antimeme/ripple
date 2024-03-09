@@ -15,63 +15,6 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ## ---------------------------------------------------------------------
-EXTRA_DIST = \
-	bootstrap \
-	apps/images/ \
-	apps/fonts/ \
-	apps/sounds/ \
-	scripts/@PACKAGE@.spec \
-	scripts/@PACKAGE@.dpkg \
-	scripts/ca.conf \
-	scripts/container-jettypod \
-	META-INF/MANIFEST.MF \
-	$(JAVA_DISTSRC) \
-	WEB-INF/web.xml \
-	WEB-INF/jetty-env.xml \
-	$(SERVLET_DISTSRC) \
-	source/gizmo/gizmo.h \
-	source/gizmo/asteroids.h \
-	$(PYTHON_DISTSRC)
-
-dist-hook:
-	-rm -f `find $(distdir)/apps -name \*~`
-
-docdir        = $(datadir)/doc/@PACKAGE@-@VERSION@
-dist_doc_DATA = README.md LICENSE
-
-uninstall-local:
-	rm -rf $(DESTDIR)$(docdir)
-
-PYTHON_DISTSRC = source/random.py source/match.py
-
-JAVA_DISTSRC = \
-	$(srcdir)/source/Applet.java \
-	$(srcdir)/source/FractionLayout.java \
-	$(srcdir)/source/Options.java \
-	$(srcdir)/source/Juju.java \
-	$(srcdir)/source/Matrix.java \
-	$(srcdir)/source/Vector.java \
-	$(srcdir)/source/Jarbles.java \
-	$(srcdir)/source/Board.java \
-	$(srcdir)/source/Player.java \
-	$(srcdir)/source/AutoPlayer.java \
-	$(srcdir)/source/GraphicPlayer.java \
-	$(srcdir)/source/Aqua.java \
-	$(srcdir)/source/HexagonGrid.java \
-	$(srcdir)/source/Octahedron.java \
-	$(srcdir)/source/Asteroids.java
-
-SERVLET_DISTSRC = \
-	$(srcdir)/source/servlet/RippleFilter.java \
-	$(srcdir)/source/servlet/Tinker.java \
-	$(srcdir)/source/servlet/ExpenseServlet.java
-
-EMPTY =
-SPACE = $(EMPTY) $(EMPTY)
-SEPARATOR = :
-HOSTNAME  = localhost
-ALIAS     = $(HOSTNAME)
-STOREPASS = 123456
 
 ## C ===================================================================
 lib_LTLIBRARIES = lib@PACKAGE@.la
@@ -195,33 +138,6 @@ server-chain.pem: server-cert.pem ca-cert.pem
 serve: source/server.js server-key.pem server-chain.pem ca-cert.pem
 	node $<
 
-tomcat-key.pem:
-	$(OPENSSL) genrsa -out $@ $(KEYSIZE)
-
-tomcat-req.pem: tomcat-key.pem
-	$(OPENSSL) req -new -key tomcat-key.pem \
-	    -subj "$(COMMON_NAME)tomcat" -sha256 -out $@
-
-tomcat-cert.pem: tomcat-req.pem ca-key.pem ca-cert.pem
-	$(OPENSSL) x509 -CA ca-cert.pem -CAkey ca-key.pem \
-	  -extfile @srcdir@/scripts/ca.conf \
-	  -extensions tomcat_role_ext -req -sha256 -days 730 \
-	  -CAcreateserial -CAserial ca.srl -in $< -out $@
-
-tomcat-cert.der: tomcat-cert.pem
-	$(OPENSSL) x509 -in tomcat-cert.pem -out $@ -outform der
-
-tomcat-chain.pem: tomcat-cert.pem ca-cert.pem
-	if [ ! -e $@ ]; then \
-	    cp tomcat-cert.pem $@; cat ca-cert.pem >>$@; \
-	else touch $@; fi
-
-tomcat.p12: tomcat-key.pem tomcat-chain.pem
-	$(OPENSSL) pkcs12 -export -name tomcat \
-            -out $@ -inkey tomcat-key.pem -keyex \
-	    -passout pass:"$(STOREPASS)" \
-	    -in tomcat-chain.pem -chain -CAfile ca-cert.pem
-
 ## Python ==============================================================
 if HAVE_PYTHON
 # Python support is well out of date.  Until everything can be brought
@@ -240,15 +156,34 @@ endif
 
 ## Rust ================================================================
 
-rs-serve: Cargo.toml server-cert.pem
+rs-serve: Cargo.toml server-key.pem server-chain.pem ca-cert.pem
 	cargo run server
 
 ## Java ================================================================
 # Names of macros such as JCC, JAR_ROOT and JAVA_SRCFILES have been
 # chosen to avoid the broken and unmaintained autoconf Java support.
-#
-# Possible improvement:
-# http://www.freesoftwaremagazine.com/articles/autotools_example
+JAVA_DISTSRC = \
+	$(srcdir)/source/Applet.java \
+	$(srcdir)/source/FractionLayout.java \
+	$(srcdir)/source/Options.java \
+	$(srcdir)/source/Juju.java \
+	$(srcdir)/source/Matrix.java \
+	$(srcdir)/source/Vector.java \
+	$(srcdir)/source/Jarbles.java \
+	$(srcdir)/source/Board.java \
+	$(srcdir)/source/Player.java \
+	$(srcdir)/source/AutoPlayer.java \
+	$(srcdir)/source/GraphicPlayer.java \
+	$(srcdir)/source/Aqua.java \
+	$(srcdir)/source/HexagonGrid.java \
+	$(srcdir)/source/Octahedron.java \
+	$(srcdir)/source/Asteroids.java
+
+SERVLET_DISTSRC = \
+	$(srcdir)/source/servlet/RippleFilter.java \
+	$(srcdir)/source/servlet/Tinker.java \
+	$(srcdir)/source/servlet/ExpenseServlet.java
+
 if HAVE_JAVA
 javadir = $(datadir)/@PACKAGE@
 java_DATA = @PACKAGE@-@VERSION@.jar
@@ -373,6 +308,12 @@ jettypod-start: .jettypod-container
 jettypod-stop:
 	podman stop $(JETTYPOD_NAME)
 
+jettypod-destroy: jettypod-stop
+	podman rm $(JETTYPOD_NAME)
+
+jettpod-purge: jettypod-destroy
+	podman image rm $(JETTPOD_IMAGE)
+
 MAINTAINERCLEANFILES += .jettypod-image .jettypod-container
 
 endif # HAVE_PODMAN
@@ -479,14 +420,44 @@ clean-local: clean-local-java
 
 mostlyclean-local: mostlyclean-local-java
 
-## Podman ==============================================================
-
-if HAVE_PODMAN
-
-endif
-
 ## Other ===============================================================
+
+## System ==============================================================
+
+dist-hook:
+	-rm -f `find $(distdir)/apps -name \*~`
+
+docdir        = $(datadir)/doc/@PACKAGE@-@VERSION@
+dist_doc_DATA = README.md LICENSE
+
+uninstall-local:
+	rm -rf $(DESTDIR)$(docdir)
+
+PYTHON_DISTSRC = source/random.py source/match.py
+
+HOSTNAME  = localhost
+ALIAS     = $(HOSTNAME)
+STOREPASS = 123456
+
+EXTRA_DIST = \
+	bootstrap \
+	apps/images/ \
+	apps/fonts/ \
+	apps/sounds/ \
+	scripts/@PACKAGE@.spec \
+	scripts/@PACKAGE@.dpkg \
+	scripts/ca.conf \
+	scripts/container-jettypod \
+	META-INF/MANIFEST.MF \
+	$(JAVA_DISTSRC) \
+	WEB-INF/web.xml \
+	WEB-INF/jetty-env.xml \
+	$(SERVLET_DISTSRC) \
+	source/gizmo/gizmo.h \
+	source/gizmo/asteroids.h \
+	$(PYTHON_DISTSRC)
 
 .PHONY: clean-local-java mostlyclean-local-java \
 	deploy deploy-jetty deploy-tomcat \
-	jettypod-interact jettypod-start jettypod-stop
+	jettypod-interact jettypod-start jettypod-stop \
+	jettypod-destroy jettypod-purge
