@@ -1,8 +1,6 @@
 // Gradle configuration for Ripple                  -*- mode: groovy -*-
-plugins {
-  id "java-library"
-  id "war"
-}
+// :TODO: bundle and install vorbisspi JAR
+plugins { id "java-library"; id "war" }
 repositories { mavenCentral() }
 sourceSets {
     application {
@@ -21,7 +19,7 @@ dependencies {
 
     //servletCompileOnly("jakarta.platform:jakarta.jakartaee-web-api:8.0.0")
     servletCompileOnly("javax.servlet:javax.servlet-api:4.0.1")
-    servletRuntime("org.xerial:sqlite-jdbc:3.36.0.1")
+    servletRuntime("org.xerial:sqlite-jdbc:3.40.1.0")
     servletCompile(
         "com.fasterxml.jackson.core:jackson-core:2.13.0")
     servletCompile(

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<meta charset=\"utf-8\" />
+<meta charset="utf-8" />
 <style>
  fieldset { float: left; clear: both; }
  label { display: block; }
@@ -39,13 +39,14 @@
 </fieldset>
 <fieldset><legend>List</legend><div id="list"></div></fieldset>
 <script>//<![CDATA[
- var list = document.getElementById("list");
- var send = function(task, method, data, success, waiting) {
+ const list = document.getElementById("list");
+
+ function send(task, method, data, success, waiting) {
      if (waiting)
          waiting(task, method);
 
-     var base = window.location.href;
-     var xhr = new XMLHttpRequest();
+     const base = window.location.href;
+     const xhr = new XMLHttpRequest();
      xhr.addEventListener('load', success);
      xhr.open(method || "GET", base + (
          base.endsWith('/') ? "" : "/") + task);
@@ -53,34 +54,36 @@
      xhr.send(JSON.stringify(data));
  };
 
- var createTextNode = function(tag, text) {
-     var result = document.createElement(tag);
+ function createTextNode(tag, text) {
+     const result = document.createElement(tag);
      result.innerHTML = text;
      return result;
  };
- var listPopulate = function() {
-     var rows = JSON.parse(this.responseText);
+
+ function listPopulate() {
+     const rows = JSON.parse(this.responseText);
      if (!rows || (typeof(rows) !== "object") ||
          !rows.expenses || !Array.isArray(rows.expenses)) {
          response.value = "Error: " + this.responseText;
          return;
      }
-     var formatter = new Intl.NumberFormat('en-US', {
+     const formatter = new Intl.NumberFormat('en-US', {
          style: 'currency',
          currency: 'USD' });
-     var table = document.createElement("table");
-     var tr = document.createElement("tr");
+     const table = document.createElement("table");
+     let tr = document.createElement("tr");
      tr.appendChild(createTextNode("th", "Reason"));
      tr.appendChild(createTextNode("th", "Amount"));
      tr.appendChild(createTextNode("th", "Date"));
      table.appendChild(tr);
-     rows.expenses.forEach(function(row) {
+     rows.expenses.forEach(row => {
+         const stamp = new Date(isNaN(row["date"]) ?
+                                Date.parse(row["date"]) : row["date"]);
          tr = document.createElement("tr");
          tr.appendChild(createTextNode("td", row["reason"]));
          tr.appendChild(createTextNode(
              "td", formatter.format(row["amount"])));
-         tr.appendChild(createTextNode(
-             "td", new Date(Date.parse(row["date"])).toLocaleString()));
+         tr.appendChild(createTextNode("td", stamp.toLocaleString()));
          table.appendChild(tr);
      });
      list.innerHTML = "";
@@ -88,13 +91,13 @@
  };
  send("list", "GET", {}, listPopulate);
 
- var addForm   = document.getElementById("addForm");
- var addClear  = document.getElementById("addClear");
- var addSubmit = document.getElementById("addSubmit");
- var addReason = document.getElementById("addReason");
- var addAmount = document.getElementById("addAmount");
- var addDate   = document.getElementById("addDate");
- var addTags   = document.getElementById("addTags");
+ const addForm   = document.getElementById("addForm");
+ const addClear  = document.getElementById("addClear");
+ const addSubmit = document.getElementById("addSubmit");
+ const addReason = document.getElementById("addReason");
+ const addAmount = document.getElementById("addAmount");
+ const addDate   = document.getElementById("addDate");
+ const addTags   = document.getElementById("addTags");
 
  addClear.addEventListener("click", function(event) {
      event.preventDefault();
