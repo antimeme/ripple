@@ -16,7 +16,6 @@
 //
 // ---------------------------------------------------------------------
 package net.antimeme.ripple;
-import net.antimeme.ripple.Standalone;
 import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.Dimension;

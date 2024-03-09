@@ -17,7 +17,6 @@
 //
 // ---------------------------------------------------------------------
 package net.antimeme.jarbles;
-import net.antimeme.ripple.Standalone;
 import net.antimeme.jarbles.abalone.Player;
 import net.antimeme.jarbles.abalone.Board;
 import net.antimeme.jarbles.abalone.GraphicPlayer;
