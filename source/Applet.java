@@ -19,6 +19,7 @@
 // has been scheduled for removal from the JDK.
 package net.antimeme.ripple;
 import java.awt.Frame;
+import java.awt.Window;
 import java.awt.Panel;
 import java.awt.Dimension;
 import java.awt.Image;
@@ -115,21 +116,21 @@ public class Applet extends Panel
 
     /**
      * Override to take action when application is revealed */
-    public void componentShown(ComponentEvent ev) {}
+    public void componentShown(ComponentEvent event) {}
 
     /**
      * Override to take action when application is hidden */
-    public void componentHidden(ComponentEvent ev) {}
+    public void componentHidden(ComponentEvent event) {}
 
     /**
      * Override to take action when application is hidden */
-    public void componentMoved(ComponentEvent ev) {}
+    public void componentMoved(ComponentEvent event) {}
 
     /**
      * Override to take action when application is resized.
      * Default is to call {@link #resize(Dimension)} and
      * {@link #resize(int, int)} */
-    public void componentResized(ComponentEvent ev) {
+    public void componentResized(ComponentEvent event) {
         Dimension size = getSize();
         resize(size);
         resize(size.width, size.height);
@@ -137,29 +138,29 @@ public class Applet extends Panel
 
     /**
      * Override to take action when application is activated */
-    public void windowActivated(WindowEvent e) {}
+    public void windowActivated(WindowEvent event) {}
 
     /**
      * Override to take action when application is deactivated */
-    public void windowDeactivated(WindowEvent e) {}
+    public void windowDeactivated(WindowEvent event) {}
     /**
      * Override to take action when application is de-iconified */
-    public void windowDeiconified(WindowEvent e) {}
+    public void windowDeiconified(WindowEvent event) {}
     /**
      * Override to take action when application is iconified */
-    public void windowIconified(WindowEvent e) {}
+    public void windowIconified(WindowEvent event) {}
     /**
      * Override to take action when application is opened */
-    public void windowOpened(WindowEvent e) {}
+    public void windowOpened(WindowEvent event) {}
     /**
      * Override to take action when application is closed */
-    public void windowClosed(WindowEvent e) {}
+    public void windowClosed(WindowEvent event) {}
 
     /**
      * Override to take action when application is closing.
      * Default is to terminate the application. */
-    public void windowClosing(WindowEvent e)
-    { terminate(); }
+    public void windowClosing(WindowEvent event)
+    { terminate(event.getWindow()); }
 
     /**
      * Override this to change the location from which
@@ -246,17 +247,12 @@ public class Applet extends Panel
 
     /**
      * An internal signal to shut down the application. */
-    protected Applet terminate() {
+    protected Applet terminate(Window target) {
+        target.setVisible(false);
         stop();
         destroy();
-        if (standaloneFrame != null) {
-            standaloneFrame.setVisible(false);
-            synchronized(standaloneFrame) {
-                standaloneFrame.notifyAll();
-            }
-            standaloneFrame.dispose();
-            standaloneFrame = null;
-        }
+        synchronized(target) { target.notifyAll(); }
+        target.dispose();
         return this;
     }
 
