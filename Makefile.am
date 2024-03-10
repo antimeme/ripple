@@ -163,10 +163,12 @@ rs-serve: Cargo.toml server-key.pem server-chain.pem ca-cert.pem
 # Names of macros such as JCC, JAR_ROOT and JAVA_SRCFILES have been
 # chosen to avoid the broken and unmaintained autoconf Java support.
 JAVA_DISTSRC = \
+	$(srcdir)/source/Asteroids.java \
 	$(srcdir)/source/Applet.java \
-	$(srcdir)/source/FractionLayout.java \
+	$(srcdir)/source/Camera.java \
 	$(srcdir)/source/Options.java \
 	$(srcdir)/source/Juju.java \
+	$(srcdir)/source/FractionLayout.java \
 	$(srcdir)/source/Matrix.java \
 	$(srcdir)/source/Vector.java \
 	$(srcdir)/source/Jarbles.java \
@@ -176,8 +178,7 @@ JAVA_DISTSRC = \
 	$(srcdir)/source/GraphicPlayer.java \
 	$(srcdir)/source/Aqua.java \
 	$(srcdir)/source/HexagonGrid.java \
-	$(srcdir)/source/Octahedron.java \
-	$(srcdir)/source/Asteroids.java
+	$(srcdir)/source/Octahedron.java
 
 SERVLET_DISTSRC = \
 	$(srcdir)/source/servlet/RippleFilter.java \
