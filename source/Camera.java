@@ -15,7 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-package net.antimeme.ripple.Camera;
+package net.antimeme.ripple;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Dimension;
@@ -30,10 +30,13 @@ import java.awt.event.WindowEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.awt.event.WindowListener;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelListener;
 import java.util.Deque;
 import java.util.LinkedList;
 
@@ -41,40 +44,66 @@ import java.util.LinkedList;
  * Creates and maintains a distinct world space in two dimensions. */
 public class Camera {
 
-    public interface App {
-        public void init();
-        public void start();
-        public void stop();
+    public static interface App {
+        public void init(Camera camera);
+        public void start(Camera camera);
+        public void stop(Camera camera);
         public void destroy();
-        public void resize(Dimension size);
+        public void resize(Camera camera, Dimension size);
+        public boolean isActive();
+        public boolean useMouseMove();
 
-        public void update(Camera camera, int elapsed);
+        public void update(Camera camera, long elapsed);
         public void draw(Camera camera, Graphics2D gfx);
+        public void drawBefore(Camera camera, Graphics2D gfx);
+        public void drawAfter(Camera camera, Graphics2D gfx);
+
         public void keyPressed(Camera camera, KeyEvent event);
         public void keyReleased(Camera camera, KeyEvent event);
         public void mousePressed(Camera camera, MouseEvent event);
         public void mouseReleased(Camera camera, MouseEvent event);
         public void mouseMoved(Camera camera, MouseEvent event);
+        public void mouseDragged(Camera camera, MouseEvent event);
+        public void mouseWheelMoved
+            (Camera camera, MouseWheelEvent event);
 
         public MenuBar getMenuBar();
         public Image   getIcon();
         public String  getTitle();
     }
 
-    public class Application implements App {
-        public void init() {}
-        public void start() {}
-        public void stop() {}
+    public static class Application implements App {
+        public void init(Camera camera) {}
+        public void start(Camera camera) {}
+        public void stop(Camera camera) {}
         public void destroy() {}
-        public void resize(Dimension size) {}
+        public void resize(Camera camera, Dimension size) {}
+        public boolean isActive() { return true; }
+        public boolean useMouseMove() { return false; }
+        protected boolean useAutoZoom() { return false; }
+        protected float getMinZoom() { return 1f; }
+        protected float getMaxZoom() { return 25f; }
 
-        public void update(Camera camera, int elapsed) {}
+        public void update(Camera camera, long elapsed) {}
         public void draw(Camera camera, Graphics2D gfx) {}
+        public void drawBefore(Camera camera, Graphics2D gfx) {}
+        public void drawAfter(Camera camera, Graphics2D gfx) {}
+
         public void keyPressed(Camera camera, KeyEvent event) {}
         public void keyReleased(Camera camera, KeyEvent event) {}
         public void mousePressed(Camera camera, MouseEvent event) {}
         public void mouseReleased(Camera camera, MouseEvent event) {}
         public void mouseMoved(Camera camera, MouseEvent event) {}
+        public void mouseDragged(Camera camera, MouseEvent event) {}
+        public void mouseWheelMoved
+            (Camera camera, MouseWheelEvent event) {
+            if (useAutoZoom()) {
+                final float factor =
+                    (event.getPreciseWheelRotation() > 0) ?
+                    1.1f : 0.9f;
+                camera.zoom(factor, getMinZoom(), getMaxZoom());
+            }
+        }
 
         public MenuBar getMenuBar() { return null; }
         public Image   getIcon() { return null; }
@@ -87,9 +116,9 @@ public class Camera {
 
     /**
      * Represents a point using floating points values. */
-    protected static class Point {
-        public float x;
-        public float y;
+    public static class Point {
+        public final float x;
+        public final float y;
 
         public Point(float x, float y) { this.x = x; this.y = y; }
         public Point(Point p) { this.x = p.x; this.y = p.y; }
@@ -107,6 +136,18 @@ public class Camera {
 
         public Point translate(float x, float y)
         { return new Point(this.x + x, this.y + y); }
+
+        public Point difference(Point other)
+        { return new Point(this.x - other.x, this.y - other.y); }
+
+        public float dot(Point other)
+        { return this.x * other.x + this.y * other.y; }
+
+        public float quadrance() { return dot(this); }
+
+        public float length() { return (float)Math.sqrt(quadrance()); }
+
+        public Point normalize() { return scale(1/length()); }
 
         public String toString() {
             return "(" + String.format("%.2f", x) +
@@ -154,16 +195,27 @@ public class Camera {
         return this;
     }
 
+    public Dimension getSize() { return bounds; }
+
+    public float getWidth() { return bounds.width; }
+
+    public float getHeight() { return bounds.height; }
+
     public float getRadius() {
         return Math.min(bounds.width, bounds.height) / 2;
     }
 
+    public Point getPosition() { return position; }
+
     /**
      * Move the camera to the world space position provided. */
     public Camera setPosition(Point point) {
-        position = position.translate(point.scale(-1));
+        position = point.scale(-1);
         return this;
     }
+
+    public Camera setPosition(float x, float y)
+    { return setPosition(new Camera.Point(x, y)); }
 
     /**
      * Slide the camera along the world space vector. */
@@ -178,7 +230,7 @@ public class Camera {
     { scale = getRadius(); return this; }
 
     public Camera setScale(float value)
-    { value = scale; return this; }
+    { scale = value; return this; }
 
     public Camera setScale(float factor, float min, float max) {
         if (!Float.isNaN(factor)) {
@@ -203,9 +255,8 @@ public class Camera {
     public Point toWorld(Point target) {
         Point point = target.translate
             (-bounds.width / 2, -bounds.height / 2);
-        point.x *= scale / getRadius();
-        point.y *= -scale / getRadius();
-
+        point = new Point(point.x * scale / getRadius(),
+                          point.y * -scale / getRadius());
         if (spin != 0f) {
             final float cos = (float)Math.cos(spin);
             final float sin = (float)Math.sin(spin);
@@ -230,14 +281,16 @@ public class Camera {
                               point.x * sin + point.y * cos);
         }
 
-        point.x *= getRadius() / scale;
-        point.y *= -getRadius() / scale;
+        point = new Point(point.x * getRadius() / scale,
+                          point.y * -getRadius() / scale);
         return point.translate(bounds.width / 2, bounds.height / 2);
     }
 
-    protected class Screen extends Panel
-        implements WindowListener, ComponentListener,
-                   KeyListener, MouseListener
+    protected static class Screen extends Panel
+        implements Runnable, WindowListener,
+                   ComponentListener, KeyListener,
+                   MouseListener, MouseWheelListener,
+                   MouseMotionListener
     {
         protected Camera camera;
         protected App app;
@@ -261,19 +314,34 @@ public class Camera {
 
             this.addKeyListener(this);
             this.addMouseListener(this);
+            this.addMouseWheelListener(this);
+            if (app.useMouseMove())
+                this.addMouseMotionListener(this);
             frame.add(this);
-            app.init();
+            app.init(camera);
             frame.addComponentListener(this);
             frame.addWindowListener(this);
             frame.pack(); // after init so that parameters matter
             frame.setLocationRelativeTo(null); // center on screen
             frame.setVisible(true);
-            app.start();
+            app.start(camera);
+
+            Thread th = new Thread(this);
+            th.setDaemon(true);
+            th.start();
+        }
+
+        public Dimension getPreferredSize() {
+            return camera.getSize();
         }
 
         public void paint(Graphics gfx) {
-            Graphics ctx = buffer.getGraphics();
-            app.draw(camera, (Graphics2D)ctx);
+            Graphics2D ctx = (Graphics2D)buffer.getGraphics();
+            app.drawBefore(camera, ctx);
+            camera.configure(ctx);
+            app.draw(camera, ctx);
+            camera.restore(ctx);
+            app.drawAfter(camera, ctx);
             gfx.drawImage(buffer, 0, 0, this);
         }
 
@@ -281,8 +349,9 @@ public class Camera {
 
         public void terminate(Window target) {
             target.setVisible(false);
-            app.stop();
+            app.stop(camera);
             app.destroy();
+            app = null;
             target.dispose();
         }
 
@@ -303,22 +372,52 @@ public class Camera {
             buffer = new BufferedImage(size.width, size.height,
                                        BufferedImage.TYPE_INT_RGB);
             camera.resize(size);
-            app.resize(size);
+            if (app != null)
+                app.resize(camera, size);
         }
 
         public void keyTyped(KeyEvent event) {}
         public void keyPressed(KeyEvent event)
-        { app.keyPressed(camera, event); }
+        { if (app != null) app.keyPressed(camera, event); }
         public void keyReleased(KeyEvent event)
-        { app.keyReleased(camera, event); }
+        { if (app != null) app.keyReleased(camera, event); }
 
         public void mouseClicked(MouseEvent event) {}
         public void mouseEntered(MouseEvent event) {}
         public void mouseExited(MouseEvent event) {}
         public void mousePressed(MouseEvent event)
-        { app.mousePressed(camera, event); }
+        { if (app != null) app.mousePressed(camera, event); }
         public void mouseReleased(MouseEvent event)
-        { app.mouseReleased(camera, event); }
+        { if (app != null) app.mouseReleased(camera, event); }
+
+        public void mouseMoved(MouseEvent event)
+        { if (app != null) app.mouseMoved(camera, event); }
+        public void mouseDragged(MouseEvent event)
+        { if (app != null) app.mouseDragged(camera, event); }
+        public void mouseWheelMoved(MouseWheelEvent event)
+        { if (app != null) app.mouseWheelMoved(camera, event); }
+
+        public void run() {
+            long lastUpdate = 0;
+
+            while ((app != null) && !Thread.interrupted()) {
+                long now = System.currentTimeMillis();
+                long elapsed = (lastUpdate == 0) ? 0 :
+                    (now - lastUpdate);
+
+                app.update(camera, elapsed);
+                lastUpdate = now;
+                repaint();
+
+                // Limit frame rate to approximately 60 Hz
+                long consumed = System.currentTimeMillis() - now;
+                if (consumed < 16)
+                    try {
+                        Thread.sleep(16 - consumed);
+                    } catch (InterruptedException ex)
+                        { ex.printStackTrace(); }
+            }
+        }
     }
 
     public Camera manage(App app) {
