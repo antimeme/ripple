@@ -139,6 +139,8 @@ serve: source/server.js server-key.pem server-chain.pem ca-cert.pem
 	node $<
 
 ## Python ==============================================================
+PYTHON_DISTSRC = source/random.py source/match.py
+
 if HAVE_PYTHON
 # Python support is well out of date.  Until everything can be brought
 # up to date with Python 3 tests are disabled
@@ -445,7 +447,11 @@ dist_doc_DATA = README.md LICENSE
 uninstall-local:
 	rm -rf $(DESTDIR)$(docdir)
 
-PYTHON_DISTSRC = source/random.py source/match.py
+# Notes on Apache2 HTTPD installation
+# /etc/apache2/mods-available/userdir.conf:
+#    AllowOverride ... Options=ExecCGI,MultiViews
+# a2enmod userdir auth_digest authn_socache authn_dbd
+# systemctl restart apache2
 
 HOSTNAME  = localhost
 ALIAS     = $(HOSTNAME)
