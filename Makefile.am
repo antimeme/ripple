@@ -250,28 +250,6 @@ build/libs/@PACKAGE@-@VERSION@.war: \
 #     </SSLHostConfig>
 #   </Connector>
 
-@PACKAGE@-jetty.ini:
-	@echo \#\# @PACKAGE@ configuration >$@
-	@echo --module=https >>$@
-	@echo jetty.ssl.port=8443 >>$@
-	@echo jetty.sslContext.keyStorePath=etc/container.p12 >>$@
-	@echo jetty.sslContext.keyStoreType=pkcs12 >>$@
-	@echo jetty.sslContext.keyStorePassword=$(STOREPASS) >>$@
-	@echo jetty.sslContext.keyManagerPassword=$(STOREPASS) >>$@
-	@echo jetty.sslContext.wantClientAuth=true >>$@
-	@echo jetty.sslContext.trustStorePath=etc/container.p12 >>$@
-	@echo jetty.sslContext.trustStoreType=pkcs12 >>$@
-	@echo jetty.sslContext.trustStorePassword=$(STOREPASS) >>$@
-
-jetty-https: container.p12 @PACKAGE@-jetty.ini
-	@if [ -n "$(JETTY_HOME)" ]; then \
-	    $(SUDO) cp $< $(JETTY_HOME)/etc/ && \
-	    $(SUDO) cp @PACKAGE@-jetty.ini $(JETTY_HOME)/etc/start.d/ && \
-	    $(SUDO) chown jetty $(JETTY_HOME)/etc/container.p12 && \
-	    $(SUDO) chmod go= $(JETTY_HOME)/etc/container.p12 && \
-	    $(SUDO) systemctl restart jetty9; \
-	else echo Jetty: missing \$$JETTY_HOME; fi
-
 deploy-jetty: @PACKAGE@.war
 	@if [ -n "$(JETTY_HOME)" ]; then \
 	    $(SUDO) cp $< $(JETTY_HOME)/webapps; \
@@ -291,6 +269,31 @@ deploy-tomcat: @PACKAGE@.war
 	fi
 
 deploy: deploy-jetty deploy-tomcat
+
+@PACKAGE@-jetty.ini:
+	@echo \#\# @PACKAGE@ configuration >$@
+	@echo --module=https >>$@
+	@echo jetty.ssl.port=8443 >>$@
+	@echo jetty.sslContext.keyStorePath=etc/container.p12 >>$@
+	@echo jetty.sslContext.keyStoreType=pkcs12 >>$@
+	@echo jetty.sslContext.keyStorePassword=$(STOREPASS) >>$@
+	@echo jetty.sslContext.keyManagerPassword=$(STOREPASS) >>$@
+	@echo jetty.sslContext.wantClientAuth=true >>$@
+	@echo jetty.sslContext.trustStorePath=etc/container.p12 >>$@
+	@echo jetty.sslContext.trustStoreType=pkcs12 >>$@
+	@echo jetty.sslContext.trustStorePassword=$(STOREPASS) >>$@
+
+install-jetty-https: container.p12 @PACKAGE@-jetty.ini
+	@if [ -n "$(JETTY_HOME)" ]; then \
+	    chmod go= $^ && \
+	    $(SUDO) cp container.p12 $(JETTY_HOME)/etc/ && \
+	    $(SUDO) chown jetty:adm $(JETTY_HOME)/etc/container.p12 && \
+	    $(SUDO) cp @PACKAGE@-jetty.ini \
+	        $(JETTY_HOME)/etc/start.d/ && \
+	    $(SUDO) chown jetty:adm \
+	        $(JETTY_HOME)/etc/start.d/@PACKAGE@-jetty.ini && \
+	    $(SUDO) systemctl restart jetty9; \
+	else echo Jetty: missing \$$JETTY_HOME; fi
 
 if HAVE_PODMAN
 # Create an OCI container running Jetty with the package WAR file
@@ -426,14 +429,12 @@ mostlyclean-local-java:
 
 endif # HAVE_JAVA
 
+## System ==============================================================
+
 clean-local: clean-local-java
 	rm -rf target/
 
 mostlyclean-local: mostlyclean-local-java
-
-## Other ===============================================================
-
-## System ==============================================================
 
 dist-hook:
 	-rm -f `find $(distdir)/apps -name \*~`
@@ -470,5 +471,6 @@ EXTRA_DIST = \
 
 .PHONY: clean-local-java mostlyclean-local-java \
 	deploy deploy-jetty deploy-tomcat \
+	install-jetty-https \
 	jettypod-interact jettypod-start jettypod-stop \
-	jettypod-destroy jettypod-purge jetty-https
+	jettypod-destroy jettypod-purge
