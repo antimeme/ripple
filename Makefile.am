@@ -250,6 +250,28 @@ build/libs/@PACKAGE@-@VERSION@.war: \
 #     </SSLHostConfig>
 #   </Connector>
 
+@PACKAGE@-jetty.ini:
+	@echo \#\# @PACKAGE@ configuration >$@
+	@echo --module=https >>$@
+	@echo jetty.ssl.port=8443 >>$@
+	@echo jetty.sslContext.keyStorePath=etc/container.p12 >>$@
+	@echo jetty.sslContext.keyStoreType=pkcs12 >>$@
+	@echo jetty.sslContext.keyStorePassword=$(STOREPASS) >>$@
+	@echo jetty.sslContext.keyManagerPassword=$(STOREPASS) >>$@
+	@echo jetty.sslContext.wantClientAuth=true >>$@
+	@echo jetty.sslContext.trustStorePath=etc/container.p12 >>$@
+	@echo jetty.sslContext.trustStoreType=pkcs12 >>$@
+	@echo jetty.sslContext.trustStorePassword=$(STOREPASS) >>$@
+
+jetty-https: container.p12 @PACKAGE@-jetty.ini
+	@if [ -n "$(JETTY_HOME)" ]; then \
+	    $(SUDO) cp $< $(JETTY_HOME)/etc/ && \
+	    $(SUDO) cp @PACKAGE@-jetty.ini $(JETTY_HOME)/etc/start.d/ && \
+	    $(SUDO) chown jetty $(JETTY_HOME)/etc/container.p12 && \
+	    $(SUDO) chmod go= $(JETTY_HOME)/etc/container.p12 && \
+	    $(SUDO) systemctl restart jetty9; \
+	else echo Jetty: missing \$$JETTY_HOME; fi
+
 deploy-jetty: @PACKAGE@.war
 	@if [ -n "$(JETTY_HOME)" ]; then \
 	    $(SUDO) cp $< $(JETTY_HOME)/webapps; \
@@ -275,19 +297,6 @@ if HAVE_PODMAN
 # installed in the root context.
 JETTYPOD_IMAGE = @PACKAGE@-jettypod
 JETTYPOD_NAME  = @PACKAGE@-jettypod
-
-@PACKAGE@-jetty.ini:
-	@echo \#\# @PACKAGE@ configuration >$@
-	@echo --module=https >>$@
-	@echo jetty.ssl.port=8443 >>$@
-	@echo jetty.sslContext.keyStorePath=etc/container.p12 >>$@
-	@echo jetty.sslContext.keyStoreType=pkcs12 >>$@
-	@echo jetty.sslContext.keyStorePassword=$(STOREPASS) >>$@
-	@echo jetty.sslContext.keyManagerPassword=$(STOREPASS) >>$@
-	@echo jetty.sslContext.wantClientAuth=true >>$@
-	@echo jetty.sslContext.trustStorePath=etc/container.p12 >>$@
-	@echo jetty.sslContext.trustStoreType=pkcs12 >>$@
-	@echo jetty.sslContext.trustStorePassword=$(STOREPASS) >>$@
 
 .jettypod-image: scripts/container-jettypod @PACKAGE@-jetty.ini \
 	         @PACKAGE@.war container.p12
@@ -462,4 +471,4 @@ EXTRA_DIST = \
 .PHONY: clean-local-java mostlyclean-local-java \
 	deploy deploy-jetty deploy-tomcat \
 	jettypod-interact jettypod-start jettypod-stop \
-	jettypod-destroy jettypod-purge
+	jettypod-destroy jettypod-purge jetty-https

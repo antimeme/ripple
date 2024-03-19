@@ -68,6 +68,7 @@
 /*.ks
 /.jettypod-image
 /.jettypod-container
+/ripple-jetty.ini
 
 # JavaScript
 /node_modules/
