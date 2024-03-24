@@ -448,10 +448,11 @@ uninstall-local:
 	rm -rf $(DESTDIR)$(docdir)
 
 # Notes on Apache2 HTTPD installation
-# /etc/apache2/mods-available/userdir.conf:
-#    AllowOverride ... Options=ExecCGI,MultiViews
-# a2enmod userdir auth_digest authn_socache authn_dbd
-# systemctl restart apache2
+#   apt install -y apache2
+#   a2enmod userdir auth_digest authn_socache authn_dbd
+#   vi /etc/apache2/mods-available/userdir.conf
+#       AllowOverride ... Options=ExecCGI,MultiViews
+#   systemctl restart apache2
 
 HOSTNAME  = localhost
 ALIAS     = $(HOSTNAME)
