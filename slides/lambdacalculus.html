@@ -70,11 +70,11 @@
                 Expressions:
                 <span class="expression">E</span> :=
                 <span class="variable">v</span> |
+                (<span class="expression">E</span>) |
                 &#x03bb;<span class="variable"
                         >v</span>.<span class="expression">E</span> |
                 <span class="expression">E</span>
-                <span class="expression">E</span> |
-                (<span class="expression">E</span>)
+                <span class="expression">E</span>
             </li><li class="fragment">
                 Free Variables: FV[<span class="expression">E</span>]
                 &#x2282; <span class="variable">v</span>
@@ -126,13 +126,15 @@
             <p>
                 <span class="expression">E</span> :=
                 <span class="variable">v</span> |
+                (<span class="expression">E</span>) |
                 &#x03bb;<span class="variable"
                         >v</span>.<span class="expression">E</span> |
                 <span class="expression">E</span>
-                <span class="expression">E</span> |
-                (<span class="expression">E</span>)
+                <span class="expression">E</span>
             </p><ul><li class="fragment">
                 Variable: <span class="variable">v</span>
+            </li><li class="fragment">
+                Grouping: (<span class="expression">E</span>)
             </li><li class="fragment">
                 Abstraction:
                 &#x03bb;<span class="variable"
@@ -140,8 +142,6 @@
             </li><li class="fragment">
                 Application: <span class="expression">E</span>
                 <span class="expression">E</span>
-            </li><li class="fragment">
-                Grouping: (<span class="expression">E</span>)
             </li></ul><p class="fragment">
                 Application is conventionally left associative.
                 <span class="fragment">
@@ -172,6 +172,9 @@
                 FV[<span class="variable">a</span>] &#x225d;
                 {<span class="variable">a</span>}
             </li><li class="fragment">
+                FV[(<span class="expression">E</span>)] &#x225d;
+                FV[<span class="expression">E</span>]
+            </li><li class="fragment">
                 FV[&#x03bb;<span class="variable"
                 >a</span>.<span class="expression">E</span>] &#x225d;
                 FV[<span class="expression">E</span>] -
@@ -181,9 +184,6 @@
                 <span class="expression">F</span>] &#x225d;
                 FV[<span class="expression">E</span>] &cup;
                 FV[<span class="expression">F</span>]
-            </li><li class="fragment">
-                FV[(<span class="expression">E</span>)] &#x225d;
-                FV[<span class="expression">E</span>]
             </li></ul><p class="fragment">
                 Every expression is associated with exactly one
                 set of free variables, which may be empty.
@@ -241,6 +241,13 @@
                     &#x225d; b
                 </span>
             </li><li class="fragment">
+                (<span class="expression">E</span>)
+                [<span class="variable">a</span> :=
+                <span class="expression">G</span>] &#x225d;
+                (<span class="expression">E</span>
+                [<span class="variable">a</span> :=
+                <span class="expression">G</span>])
+            </li><li class="fragment">
                 <span class="expression">E</span>
                 <span class="expression">F</span>
                 [<span class="variable">a</span> :=
@@ -249,13 +256,6 @@
                 [<span class="variable">a</span> :=
                 <span class="expression">G</span>])
                 (<span class="expression">F</span>
-                [<span class="variable">a</span> :=
-                <span class="expression">G</span>])
-            </li><li class="fragment">
-                (<span class="expression">E</span>)
-                [<span class="variable">a</span> :=
-                <span class="expression">G</span>] &#x225d;
-                (<span class="expression">E</span>
                 [<span class="variable">a</span> :=
                 <span class="expression">G</span>])
             </li><li class="fragment">
@@ -688,11 +688,11 @@
                 Expressions:
                 <span class="expression">E</span> :=
                 <span class="variable">v</span> |
+                (<span class="expression">E</span>) |
                 &#x03bb;<span class="variable"
                         >v</span>.<span class="expression">E</span> |
                 <span class="expression">E</span>
-                <span class="expression">E</span> |
-                (<span class="expression">E</span>)
+                <span class="expression">E</span>
             </li><li>
                 Free Variables: FV[<span class="expression">E</span>]
                 &#x2282; <span class="variable">v</span>
@@ -771,10 +771,10 @@
             </p>
             <ul><li class="fragment">
                 <span class="true">TRUE</span> &#x225d;
-                &#x03bb;a b.a [Kestral]
+                &#x03bb;a b.a
             </li><li class="fragment">
                 <span class="false">FALSE</span> &#x225d;
-                &#x03bb;a b.b [Kite]
+                &#x03bb;a b.b
             </li></ul>
         </section><section>
             <h3>Conditionals</h3>
@@ -805,7 +805,7 @@
         </section><section>
             <h3>Accentuate the Negative</h3>
             <p>
-                NOT: &#x03bb;p a b.p b a [Cardinal]
+                NOT: &#x03bb;p a b.p b a
             </p><table><tr><td><ul><li class="fragment">
                 NOT TRUE
             </li><li class="fragment">
@@ -913,11 +913,11 @@
         </section><section>
             <h3>Review: Boolean Logic</h3>
             <ul><li>
-                TRUE: &#x03bb;a b.a [Kestral]
+                TRUE: &#x03bb;a b.a
             </li><li>
-                FALSE: &#x03bb;a b.b [Kite]
+                FALSE: &#x03bb;a b.b
             </li><li>
-                NOT: &#x03bb;p a b.p b a [Cardinal]
+                NOT: &#x03bb;p a b.p b a
             </li><li>
                 AND: &#x03bb;p q.p q p
             </li><li>
@@ -952,7 +952,7 @@
                 Natural numbers consist of zero and its successors.
             </p><p class="fragment">
                 ZERO: &#x03bb;f a.a
-                <span class="fragment">[Kite/FALSE]</span>
+                <span class="fragment">[FALSE]</span>
             </p><p class="fragment">
                 SUCCESSOR: &#x03bb;n f a.f (n f a)
             </p><aside class="notes">
@@ -1010,7 +1010,7 @@
             <p>
                 Compose numbers to multiply:
             </p><p>
-                MULTIPLY: &#x03bb;m n f.m (n f) [Bluebird]
+                MULTIPLY: &#x03bb;m n f.m (n f)
             </p><ul><li class="fragment">
                 MULTIPLY THREE TWO
             </li><li class="fragment">
@@ -1033,7 +1033,7 @@
             <p>
                 Raise one number to the power of another:
             </p><p>
-                POWER: &#x03bb;n m.m n [Thrush]
+                POWER: &#x03bb;n m.m n
             </p><ul><li class="fragment">
                 POWER THREE TWO
             </li><li class="fragment">
@@ -1055,15 +1055,15 @@
         </section><section>
             <h3>Review: Numbers and Arithmetic</h3>
             <ul><li>
-                ZERO: &#x03bb;f a.a [Kite/FALSE]
+                ZERO: &#x03bb;f a.a [FALSE]
             </li><li>
                 SUCCESSOR: &#x03bb;n f a.f (n f a)
             </li><li>
                 ADD: &#x03bb;m n.n SUCCESSOR m
             </li><li>
-                MULTIPLY: &#x03bb;m n f.m (n f) [Bluebird]
+                MULTIPLY: &#x03bb;m n f.m (n f)
             </li><li>
-                POWER: &#x03bb;n m.m n [Thrush]
+                POWER: &#x03bb;n m.m n
             </li></ul>
         </section><section>
             <h3>Subtraction</h3>
@@ -1359,7 +1359,7 @@
             <p>
                 We can take advantage of closure to store values.
             </p><ul><li class="fragment">
-                PAIR: &#x03bb;a b f.f a b [Verio]
+                PAIR: &#x03bb;a b f.f a b
             </li><li class="fragment">
                 HEAD: &#x03bb;p.p TRUE
             </li><li class="fragment">
@@ -1515,7 +1515,7 @@
         </section><section>
             <h3>Review: Data Structures</h3>
             <ul><li>
-                PAIR: &#x03bb;a b f.f a b [Verio]
+                PAIR: &#x03bb;a b f.f a b
             </li><li>
                 HEAD: &#x03bb;p.p TRUE
             </li><li>
