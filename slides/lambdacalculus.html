@@ -65,14 +65,15 @@
                 A brief overview (notation will be explained later)
             </p><ul><li class="fragment">
                 Variables: <span class="variable">v</span> :=
-                "[^&#x03bb;.()\s]+"
+                <q>[^&#x03bb;.()\s]+</q>
             </li><li class="fragment">
                 Expressions:
                 <span class="expression">E</span> :=
                 <span class="variable">v</span> |
-                (<span class="expression">E</span>) |
-                &#x03bb;<span class="variable"
-                        >v</span>.<span class="expression">E</span> |
+                <q>(</q> <span class="expression">E</span> <q>)</q> |
+                <q>&#x03bb;</q>
+                <span class="variable">v</span>
+                <q>.</q> <span class="expression">E</span> |
                 <span class="expression">E</span>
                 <span class="expression">E</span>
             </li><li class="fragment">
@@ -92,7 +93,7 @@
                 Reduction:
                 (&#x03bb;<span class="variable"
                 >a</span>.<span class="expression">E</span>)
-                <span class="expression">F</span> ... &#x25b7;
+                <span class="expression">F</span> ... &#x21fe;
                 <span class="expression">E</span>
                 [<span class="variable">a</span> :=
                 <span class="expression">F</span>] ...
@@ -102,7 +103,8 @@
         </section><section>
             <h3>Variables</h3>
             <p>
-                <span class="variable">v</span> := "[^&#x03bb;.()\s]+"
+                <span class="variable">v</span> :=
+                <q>[^&#x03bb;.()\s]+</q>
             </p><p>
                 A variable is a sequence of characters excluding
                 <q class="intro">&#x03bb;</q>, <q class="intro">.</q>,
@@ -126,9 +128,10 @@
             <p>
                 <span class="expression">E</span> :=
                 <span class="variable">v</span> |
-                (<span class="expression">E</span>) |
-                &#x03bb;<span class="variable"
-                        >v</span>.<span class="expression">E</span> |
+                <q>(</q> <span class="expression">E</span> <q>)</q> |
+                <q>&#x03bb;</q>
+                <span class="variable">v</span>
+                <q>.</q> <span class="expression">E</span> |
                 <span class="expression">E</span>
                 <span class="expression">E</span>
             </p><ul><li class="fragment">
@@ -229,7 +232,9 @@
         </section><section>
             <h3>Substitution</h3>
             <p>
-                Replaces a free variable with an expression.
+                Replaces free variable with expression:
+                [<span class="variable">a</span> :=
+                <span class="expression">G</span>]
             </p><ul><li class="fragment">
                 <span class="variable">a</span>
                 [<span class="variable">a</span> :=
@@ -302,27 +307,27 @@
             <ul><li class="fragment">
                 a b (a b) [a := c]
                 <span class="fragment">
-                    &#x2aa2; c b (c b)
+                    &#x21dd; c b (c b)
                 </span>
             </li><li class="fragment">
                 a b (a b) [a := &#x03bb;b.b]
                 <span class="fragment">
-                    &#x2aa2; (&#x03bb;b.b) b ((&#x03bb;b.b) b)
+                    &#x21dd; (&#x03bb;b.b) b ((&#x03bb;b.b) b)
                 </span>
             </li><li class="fragment">
                 (&#x03bb;a.a b) &#x03bb;b.a b [a := c]
                 <span class="fragment">
-                    &#x2aa2; (&#x03bb;a.a b) &#x03bb;b.c b
+                    &#x21dd; (&#x03bb;a.a b) &#x03bb;b.c b
                 </span>
             </li><li class="fragment">
                 (&#x03bb;a.a b) &#x03bb;b.a b [a := b]
                 <span class="fragment">
-                    &#x2aa2; (&#x03bb;a.a b) &#x03bb;c.b c
+                    &#x21dd; (&#x03bb;a.a b) &#x03bb;c.b c
                 </span>
             </li><li class="fragment">
                 (&#x03bb;a.a b) &#x03bb;b.a b [a := &#x03bb;a.b]
                 <span class="fragment">
-                    &#x2aa2; (&#x03bb;a.a b) &#x03bb;c.(&#x03bb;a.b) c
+                    &#x21dd; (&#x03bb;a.a b) &#x03bb;c.(&#x03bb;a.b) c
                 </span>
             </li></ul><aside class="notes">
                 Let's see some examples of substitution.
@@ -387,7 +392,7 @@
                 (&#x03bb;a.<span class="expression">E</span>)
                 <span class="expression">F</span> ...
                 <span class="fragment">
-                    &#x2aa2; <span class="expression">E</span>
+                    &#x21dd; <span class="expression">E</span>
                     [a := <span class="expression">F</span>] ...
                 </span>
             </p>
@@ -396,23 +401,23 @@
             <ul><li class="fragment">
                 (&#x03bb;a.a) b
                 <span class="fragment">
-                    &#x2aa2; a [a := b]
+                    &#x21dd; a [a := b]
                 </span><span class="fragment">
-                    &#x25b7; b
+                    &#x21fe; b
                 </span>
             </li><li class="fragment">
                 (&#x03bb;a.a a) b c
                 <span class="fragment">
-                    &#x2aa2; (a a [a := b]) c
+                    &#x21dd; (a a [a := b]) c
                 </span><span class="fragment">
-                    &#x25b7; b b c
+                    &#x21fe; b b c
                 </span>
             </li><li class="fragment">
                 &#x03bb;a.(&#x03bb;b.b a) c
                 <span class="fragment">
-                    &#x2aa2; &#x03bb;a.(b a [b := c])
+                    &#x21dd; &#x03bb;a.(b a [b := c])
                 </span><span class="fragment">
-                    &#x25b7; &#x03bb;a.c a
+                    &#x21fe; &#x03bb;a.c a
                 </span>
             </li></ul>
         </section><section>
@@ -423,23 +428,23 @@
             </p><p class="fragment">
                 (&#x03bb;a.b) b
                 <span class="fragment">
-                    &#x2aa2; b [a := b]
+                    &#x21dd; b [a := b]
                 </span><span class="fragment">
-                    &#x25b7; b
+                    &#x21fe; b
                 </span>
             </p><p class="fragment">
                 (&#x03bb;a.&#x03bb;b.a) b
                 <span class="fragment false">
-                    &#x2aa2; &#x03bb;b.a [a := b]
+                    &#x21dd; &#x03bb;b.a [a := b]
                 </span><span class="fragment false">
-                    &#x25b7; &#x03bb;b.b
+                    &#x21fe; &#x03bb;b.b
                 </span>
             </p><p class="fragment">
                 (&#x03bb;a.&#x03bb;c.a) b    
                 <span class="fragment true">
-                    &#x2aa2; &#x03bb;c.a [a := b]
+                    &#x21dd; &#x03bb;c.a [a := b]
                 </span><span class="fragment true">
-                    &#x25b7; &#x03bb;c.b
+                    &#x21fe; &#x03bb;c.b
                 </span>
             </p><p class="fragment">
                 We must rename bound variables sometimes.
@@ -467,20 +472,20 @@
             </li><li class="fragment">
                 (&#x03bb;a.a) &#x03bb;b.&#x03bb;c.b
                 <span class="fragment">
-                    &#x2aa2; a [a := &#x03bb;b.&#x03bb;c.b]
+                    &#x21dd; a [a := &#x03bb;b.&#x03bb;c.b]
                 </span><span class="fragment">
-                    &#x25b7; &#x03bb;b.&#x03bb;c.b
+                    &#x21fe; &#x03bb;b.&#x03bb;c.b
                 </span><span class="fragment">&#10003;</span>
             </li><li class="fragment">
                 (&#x03bb;a.a) ((&#x03bb;b.b) &#x03bb;c.c)
                 <span class="fragment">
-                    &#x2aa2; a [a := (&#x03bb;b.b) &#x03bb;c.c]
+                    &#x21dd; a [a := (&#x03bb;b.b) &#x03bb;c.c]
                 </span><span class="fragment">
-                    &#x25b7; <br />(&#x03bb;b.b) &#x03bb;c.c
+                    &#x21fe; <br />(&#x03bb;b.b) &#x03bb;c.c
                 </span><span class="fragment">
-                    &#x2aa2; b [b := &#x03bb;c.c]
+                    &#x21dd; b [b := &#x03bb;c.c]
                 </span><span class="fragment">
-                    &#x25b7; &#x03bb;c.c
+                    &#x21fe; &#x03bb;c.c
                 </span><span class="fragment">&#10003;</span>
             </li></ul><aside class="notes">
                 Let's look at some examples of expressions in normal
@@ -493,14 +498,14 @@
             </p><p class="fragment">
                 (&#x03bb;a.a a) &#x03bb;a.a a
                 <span class="fragment">
-                    &#x2aa2; a a [a := &#x03bb;a.a a]
+                    &#x21dd; a a [a := &#x03bb;a.a a]
                 </span><span class="fragment">
-                    &#x25b7; <br /> (&#x03bb;a.a a) &#x03bb;a.a a
+                    &#x21fe; <br /> (&#x03bb;a.a a) &#x03bb;a.a a
                 </span><span class="fragment">
-                    &#x25b7; (&#x03bb;a.a a) &#x03bb;a.a a
+                    &#x21fe; (&#x03bb;a.a a) &#x03bb;a.a a
                 </span><span class="fragment">
-                    &#x25b7; <br /> (&#x03bb;a.a a) &#x03bb;a.a a
-                </span><span class="fragment">&#x25b7; ...</span>
+                    &#x21fe; <br /> (&#x03bb;a.a a) &#x03bb;a.a a
+                </span><span class="fragment">&#x21fe; ...</span>
             </p><p class="fragment">
                 This is a simple example, but there could be cycles
                 or complex sequences that don't terminate.
@@ -513,17 +518,17 @@
             <p class="fragment">
                 (&#x03bb;a.a a) ((&#x03bb;b.b) c)
                 <span class="fragment">
-                    &#x2aa2; a a [a := ((&#x03bb;b.b) c)]
+                    &#x21dd; a a [a := ((&#x03bb;b.b) c)]
                 </span><span class="fragment">
-                    &#x25b7; <br />((&#x03bb;b.b) c) ((&#x03bb;b.b) c)
+                    &#x21fe; <br />((&#x03bb;b.b) c) ((&#x03bb;b.b) c)
                 </span><span class="fragment">
-                    &#x2aa2; b [b := c] ((&#x03bb;b.b) c)
+                    &#x21dd; b [b := c] ((&#x03bb;b.b) c)
                 </span><span class="fragment">
-                    &#x25b7; <br /> c ((&#x03bb;b.b) c)
+                    &#x21fe; <br /> c ((&#x03bb;b.b) c)
                 </span><span class="fragment">
-                    &#x2aa2; c (b [b := c])
+                    &#x21dd; c (b [b := c])
                 </span><span class="fragment">
-                    &#x25b7; c c
+                    &#x21fe; c c
                 </span><span class="fragment">&#10003;</span>
             </li></ul><p class="fragment">
                 Normal order is guaranteed to reach a normal form
@@ -538,13 +543,13 @@
             </p><p class="fragment">
                 (&#x03bb;a.a a) ((&#x03bb;b.b) c)
                 <span class="fragment">
-                    &#x2aa2; (&#x03bb;a.a a) (b [b := c])
+                    &#x21dd; (&#x03bb;a.a a) (b [b := c])
                 </span><span class="fragment">
-                    &#x25b7; <br /> (&#x03bb;a.a a) c
+                    &#x21fe; <br /> (&#x03bb;a.a a) c
                 </span><span class="fragment">
-                    &#x2aa2; a a [a := c]
+                    &#x21dd; a a [a := c]
                 </span><span class="fragment">
-                    &#x25b7; c c
+                    &#x21fe; c c
                 </span><span class="fragment">&#10003;</span>
             </li></ul><p class="fragment">
                 Only two reductions were necessary.
@@ -559,21 +564,21 @@
             </p><table class="order"><tr><td><ul class="fragment">
                 Normal Order                
                 <li class="fragment">
-                    &#x25b7; (&#x03bb;b.c) ((&#x03bb;d.d d)
+                    &#x21fe; (&#x03bb;b.c) ((&#x03bb;d.d d)
                     &#x03bb;d.d d)
                 </li><li class="fragment">
-                    &#x25b7; c <span class="fragment">&#10003;</span>
+                    &#x21fe; c <span class="fragment">&#10003;</span>
                 </li></ul>
             </td><td><ul class="fragment">
                 Applicative Order
                 <li class="fragment">
-                    &#x25b7; (&#x03bb;a.&#x03bb;b.a) c
+                    &#x21fe; (&#x03bb;a.&#x03bb;b.a) c
                     ((&#x03bb;d.d d) &#x03bb;d.d d)
                 </li><li class="fragment">
-                    &#x25b7; (&#x03bb;a.&#x03bb;b.a) c
+                    &#x21fe; (&#x03bb;a.&#x03bb;b.a) c
                     ((&#x03bb;d.d d) &#x03bb;d.d d)
                 </li><li class="fragment">
-                    &#x25b7; (&#x03bb;a.&#x03bb;b.a) c
+                    &#x21fe; (&#x03bb;a.&#x03bb;b.a) c
                     ((&#x03bb;d.d d) &#x03bb;d.d d)
                 </li><li class="fragment">
                     ...
@@ -589,12 +594,12 @@
             </p><ul><li class="fragment">
                 (&#x03bb;a.a a) ((&#x03bb;b.b) c)
                 <span class="fragment">
-                    &#x2aa2; a a [a := ((&#x03bb;b.b) c)]
+                    &#x21dd; a a [a := ((&#x03bb;b.b) c)]
                 </span><span class="fragment">
-                    &#x25b7; <br />
+                    &#x21fe; <br />
                     (<span class="intro">(&#x03bb;b.b) c</span>)
                     (<span class="intro">(&#x03bb;b.b) c</span>)
-                <span class="fragment">&#x25b7; c c</span>
+                <span class="fragment">&#x21fe; c c</span>
                 <span class="fragment">&#10003;</span>
             </li></ul><p class="fragment">
                 Stable, efficient... and tricky to implement.
@@ -609,12 +614,12 @@
                 <span class="expression">F</span>
                 <span class="expression">G</span>
                 <span class="fragment">
-                    &#x25b7;
+                    &#x21fe;
                     (&#x03bb;b.(<span class="expression">E</span>
                     [a := <span class="expression">F</span>]))
                     <span class="expression">G</span>
                 </span><span class="fragment">
-                    &#x25b7; <span class="expression">E</span>
+                    &#x21fe; <span class="expression">E</span>
                     [a := <span class="expression">F</span>,
                     b := <span class="expression">G</span>]
                 </span>
@@ -625,20 +630,20 @@
                 <span class="expression">G</span>
                 <span class="expression">H</span>
                 <span class="fragment">
-                    &#x25b7;
+                    &#x21fe;
                     (&#x03bb;b.&#x03bb;c.(<span
                     class="expression">E</span>
                     [a := <span class="expression">F</span>]))
                     <span class="expression">G</span>
                     <span class="expression">H</span>
                 </span><span class="fragment">
-                    &#x25b7; <br />
+                    &#x21fe; <br />
                     (&#x03bb;c.(<span class="expression">E</span>
                     [a := <span class="expression">F</span>,
                     b := <span class="expression">G</span>]))
                     <span class="expression">H</span>
                 </span><span class="fragment">
-                    &#x25b7; <span class="expression">E</span>
+                    &#x21fe; <span class="expression">E</span>
                     [a := <span class="expression">F</span>,
                     b := <span class="expression">G</span>,
                     c := <span class="expression">H</span>]
@@ -647,7 +652,7 @@
                 (&#x03bb;a.&#x03bb;b.<span class="expression">E</span>)
                 <span class="expression">F</span>
                 <span class="fragment">
-                    &#x25b7;
+                    &#x21fe;
                     &#x03bb;b.(<span class="expression">E</span>
                     [a := <span class="expression">F</span>])
                 </span>
@@ -710,7 +715,7 @@
                 Reduction:
                 (&#x03bb;<span class="variable"
                 >a</span>.<span class="expression">E</span>)
-                <span class="expression">F</span> ... &#x25b7;
+                <span class="expression">F</span> ... &#x21fe;
                 <span class="expression">E</span>
                 [<span class="variable">a</span> :=
                 <span class="expression">F</span>] ...
@@ -782,22 +787,22 @@
                 IF p THEN ELSE
             </p><ul><li class="fragment">
                 (&#x03bb;p a b.p a b) p THEN ELSE
-                <span class="fragment">&#x25b7;
+                <span class="fragment">&#x21fe;
                     p THEN ELSE
                 </span>
             </li><li class="fragment">
                 TRUE THEN ELSE
                 <span class="fragment">
-                    &#x25b7; (&#x03bb;a b.a) THEN ELSE
+                    &#x21fe; (&#x03bb;a b.a) THEN ELSE
                 </span><span class="fragment">
-                    &#x25b7; THEN
+                    &#x21fe; THEN
                 </span>
             </li><li class="fragment">
                 FALSE THEN ELSE
                 <span class="fragment">
-                    &#x25b7; (&#x03bb;a b.b) THEN ELSE
+                    &#x21fe; (&#x03bb;a b.b) THEN ELSE
                 </span><span class="fragment">
-                    &#x25b7; ELSE
+                    &#x21fe; ELSE
                 </span>
             </li></ul><p class="fragment">
                 We don't need a conditional operator.
@@ -812,14 +817,14 @@
                 &#x03bb;a b.TRUE b a
             </li><li class="fragment">
                 &#x03bb;a b.b
-                <span class="fragment">&#x25b7; FALSE</span>
+                <span class="fragment">&#x21fe; FALSE</span>
             </li></ul></td><td><ul><li class="fragment">
                 NOT FALSE
             </li><li class="fragment">
                 &#x03bb;a b.FALSE b a
             </li><li class="fragment">
                 &#x03bb;a b.a
-                <span class="fragment">&#x25b7; TRUE</span>
+                <span class="fragment">&#x21fe; TRUE</span>
             </li></ul></td></tr></table>
         </section><section>
             <h3>Conjunction Junction</h3>
@@ -901,14 +906,14 @@
                 FALSE TRUE (NOT TRUE)
             </li><li class="fragment">
                 NOT TRUE
-                <span class="fragment">&#x25b7; FALSE</span>
+                <span class="fragment">&#x21fe; FALSE</span>
             </li></ul></td><td><ul><li class="fragment">
                 BOOLEQ? FALSE FALSE
             </li><li class="fragment">
                 FALSE FALSE (NOT FALSE)
             </li><li class="fragment">
                 NOT FALSE
-                <span class="fragment">&#x25b7; TRUE</span>
+                <span class="fragment">&#x21fe; TRUE</span>
             </li></ul></td></tr></table>
         </section><section>
             <h3>Review: Boolean Logic</h3>
@@ -1100,7 +1105,7 @@
             </li><li class="fragment">
                 &#x03bb;f a.f ((&#x03bb;c.a) f)
                 <span class="fragment">
-                    &#x25b7; &#x03bb;f a.f a
+                    &#x21fe; &#x03bb;f a.f a
                 </span><span class="fragment">[ONE]</span>
             </li></ul>
         </section><section>
@@ -1122,7 +1127,7 @@
             </li><li class="fragment">
                 &#x03bb;f a.((&#x03bb;c.a) f)
                 <span class="fragment">
-                    &#x25b7; &#x03bb;f a.a
+                    &#x21fe; &#x03bb;f a.a
                 </span><span class="fragment">[ZERO]</span>
             </li></ul>
         </section><section>
@@ -1136,7 +1141,7 @@
             </li><li class="fragment">
                 &#x03bb;f a.(&#x03bb;c.a) &#x03bb;b.b
                 <span class="fragment">
-                    &#x25b7; &#x03bb;f a.a
+                    &#x21fe; &#x03bb;f a.a
                 </span><span class="fragment">[ZERO]</span>
             </li></ul><p class="fragment">
                 Zero has no predecessor but our operator reduces to
@@ -1266,19 +1271,19 @@
             </p><p class="fragment">
                 FIX g
                 <span class="fragment">
-                    &#x25b7; (&#x03bb;a.g (a a))
+                    &#x21fe; (&#x03bb;a.g (a a))
                     &#x03bb;a.g (a a)
                 </span><span class="fragment">
-                    &#x25b7; <br />
+                    &#x21fe; <br />
                     g ((&#x03bb;a.g (a a)) &#x03bb;a.g (a a))
                 </span><span class="fragment">
                     &#x2251; g (FIX g)
                 </span><span class="fragment">
-                    &#x25b7; <br /> g (g (FIX g))
+                    &#x21fe; <br /> g (g (FIX g))
                 </span><span class="fragment">
-                    &#x25b7; g (g (g (FIX g)))
+                    &#x21fe; g (g (g (FIX g)))
                 </span><span class="fragment">
-                    &#x25b7; ...
+                    &#x21fe; ...
                 </span>
             </p><p class="fragment">
                 Forever? Normal order reduces outer most first.
@@ -1298,7 +1303,7 @@
                 <span class="fragment"> &#x225d; FIX FSTEP ONE</span>
             </p>
             <ul class="examples"><li class="fragment">
-                FIX FSTEP ONE &#x25b7; FSTEP (FIX FSTEP) ONE
+                FIX FSTEP ONE &#x21fe; FSTEP (FIX FSTEP) ONE
             </li><li class="fragment">
                 <span class="false">IS-ZERO? ONE</span> ONE
                 (MULTIPLY ...)
@@ -1315,7 +1320,7 @@
                 ZERO</span> ONE (...))
             </li><li class="fragment">
                 MULTIPLY ONE ONE
-                <span class="fragment">&#x25b7; ONE</span>
+                <span class="fragment">&#x21fe; ONE</span>
             </li></ul>
         </section><section>
             <h3>Factorial: Demo</h3>
@@ -1374,30 +1379,30 @@
             </p><ul><li class="fragment">
                 PAIR FIRST LAST
                 <span class="fragment">
-                    &#x25b7; (&#x03bb;a b f.f a b) FIRST LAST
+                    &#x21fe; (&#x03bb;a b f.f a b) FIRST LAST
                 </span><span class="fragment">
-                    &#x25b7; <br />(&#x03bb;b f.f FIRST b) LAST
+                    &#x21fe; <br />(&#x03bb;b f.f FIRST b) LAST
                 </span><span class="fragment">
-                    &#x25b7; &#x03bb;f.f FIRST LAST
+                    &#x21fe; &#x03bb;f.f FIRST LAST
                 </span>
             </li><li class="fragment">
                 HEAD (PAIR FIRST LAST)
                 <span class="fragment">
-                    &#x25b7; <br />
+                    &#x21fe; <br />
                     (&#x03bb;p.p TRUE) &#x03bb;f.f FIRST LAST
                 </span><span class="fragment">
-                    &#x25b7; <br />(&#x03bb;f.f FIRST LAST) TRUE
+                    &#x21fe; <br />(&#x03bb;f.f FIRST LAST) TRUE
                 </span><span class="fragment">
-                    &#x25b7; <br />TRUE FIRST LAST
+                    &#x21fe; <br />TRUE FIRST LAST
                 </span><span class="fragment">
-                    &#x25b7; FIRST
+                    &#x21fe; FIRST
                 </span>
             </li><li class="fragment">
                 TAIL (PAIR FIRST LAST)
                 <span class="fragment">
-                    &#x25b7; ... &#x25b7; <br />FALSE FIRST LAST
+                    &#x21fe; ... &#x21fe; <br />FALSE FIRST LAST
                 </span><span class="fragment">
-                    &#x25b7; LAST
+                    &#x21fe; LAST
                 </span>
             </li></ul>
         </section><section>
@@ -1418,7 +1423,7 @@
                 (&#x03bb;p.p &#x03bb;a b.FALSE) &#x03bb;f.TRUE
             </li><li class="fragment">
                 (&#x03bb;f.TRUE) &#x03bb;a b.FALSE
-                <span class="fragment">&#x25b7; TRUE</span>
+                <span class="fragment">&#x21fe; TRUE</span>
             </li></ul>
         </section><section>
             <h3>Lists</h3>
@@ -1432,7 +1437,7 @@
                 (&#x03bb;f.f FIRST LAST) &#x03bb;a b.FALSE
             </li><li class="fragment">
                 (&#x03bb;a b.FALSE) FIRST LAST
-                <span class="fragment">&#x25b7; FALSE</span>
+                <span class="fragment">&#x21fe; FALSE</span>
             </li></ul>
         </section><section>
             <h3>Lists</h3>
@@ -1459,18 +1464,18 @@
             </p><ul><li class="fragment">
                 NTH ONE (PAIR a (PAIR b (PAIR c NIL)))
             </li><li class="fragment">
-                &#x25b7; ONE (&#x03bb; l.IS-NIL? l
+                &#x21fe; ONE (&#x03bb; l.IS-NIL? l
                 NIL (TAIL l)) (PAIR ...)
             </li><li class="fragment">
-                &#x25b7; (&#x03bb; l.IS-NIL? l
+                &#x21fe; (&#x03bb; l.IS-NIL? l
                 NIL (TAIL l)) (PAIR ...)
             </li><li class="fragment">
-                &#x25b7; IS-NIL? (PAIR ...)
+                &#x21fe; IS-NIL? (PAIR ...)
                 NIL (TAIL (PAIR ...))
             </li><li class="fragment">
-                &#x25b7; TAIL (PAIR a (PAIR b (PAIR c NIL)))
+                &#x21fe; TAIL (PAIR a (PAIR b (PAIR c NIL)))
             </li><li class="fragment">
-                    &#x25b7; PAIR b (PAIR c NIL)
+                    &#x21fe; PAIR b (PAIR c NIL)
             </li></ul><p class="fragment">
                 An index beyond the end of the list will give NIL
             </p>
@@ -1486,7 +1491,7 @@
             </li><li class="fragment">
                 ADD ONE (ADD TWO (ADD THREE ZERO))
                 <span class="fragment">
-                    &#x25b7; SIX
+                    &#x21fe; SIX
                 </span>
             </li></ul>
         </section><section>
@@ -1689,18 +1694,18 @@
             </p><ul><li class="fragment">
                 S K X
                 <span class="fragment">
-                    &#x2aa2; (&#x03bb;a b c.a c (b c)) K X
+                    &#x21dd; (&#x03bb;a b c.a c (b c)) K X
                 </span><span class="fragment">
-                    &#x25b7; <br /> (&#x03bb;b c.K c (b c)) X
+                    &#x21fe; <br /> (&#x03bb;b c.K c (b c)) X
                 </span><span class="fragment">
-                    &#x25b7; &#x03bb;c.K c (X c)
+                    &#x21fe; &#x03bb;c.K c (X c)
                 </span><span class="fragment">
-                    &#x2aa2; <br /> &#x03bb;c.(&#x03bb;a b.a) c
+                    &#x21dd; <br /> &#x03bb;c.(&#x03bb;a b.a) c
                     <span class="false">(X c)</span>
                 </span><span class="fragment">
-                    &#x25b7; &#x03bb;c.c
+                    &#x21fe; &#x03bb;c.c
                 </span><span class="fragment">
-                    &#x2aa2; I
+                    &#x21dd; I
                 </span>
             </li></ul><p class="fragment">
                 S K K
@@ -1721,23 +1726,23 @@
             </p><p class="fragment">
                 (&#x03bb;a b c.a c (b c)) (K K) I
                 <span class="fragment">
-                    &#x25b7; (&#x03bb;b c.(K K) c (b c)) I
+                    &#x21fe; (&#x03bb;b c.(K K) c (b c)) I
                 </span><span class="fragment">
-                    &#x25b7; <br /> &#x03bb;c.(K K) c
+                    &#x21fe; <br /> &#x03bb;c.(K K) c
                     (<span class="intro">I c</span>)
                 </span><span class="fragment">
-                    &#x25b7; &#x03bb;c.<span class="intro">K
+                    &#x21fe; &#x03bb;c.<span class="intro">K
                     K c</span> c
                 </span><span class="fragment">
-                    &#x25b7; &#x03bb;c.K c
+                    &#x21fe; &#x03bb;c.K c
                 </span><span class="fragment">
-                    &#x2aa2; &#x03bb;c.(&#x03bb;a b.a) c
+                    &#x21dd; &#x03bb;c.(&#x03bb;a b.a) c
                 </span><span class="fragment">
-                    &#x25b7; &#x03bb;c.&#x03bb;b.c
+                    &#x21fe; &#x03bb;c.&#x03bb;b.c
                 </span><span class="fragment">
-                    &#x2aa2; &#x03bb;c b.c
+                    &#x21dd; &#x03bb;c b.c
                 </span><span class="fragment">
-                    &#x2aa2; K
+                    &#x21dd; K
                 </span>
             </p>
         </section><section>
@@ -1837,15 +1842,15 @@
             <ul><li class="fragment">
                 Ibis: I = S K K = S K S
             </li><li class="fragment">
-                Mockingbird: M = S I I
-            </li><li class="fragment">
                 Kite: Ki = K I
             </li><li class="fragment">
-                Cardinal: C = S ((S (K ((S (K S)) K))) S) (K K)
+                Mockingbird: M = S I I
             </li><li class="fragment">
                 Bluebird: B = S (K S) K
             </li><li class="fragment">
                 Thrush: Th = S (K (S I)) K
+            </li><li class="fragment">
+                Cardinal: C = S ((S (K ((S (K S)) K))) S) (K K)
             </li><li class="fragment">
                 Vireo: V =  S (K (S (S (K (S (K S) K)) S) (K K)))
                 <br />(S (K (S I)) K)
@@ -1866,37 +1871,37 @@
                 <span class="fragment">
                     = (&#x03bb;f.f S K) &#x03bb;f.f S K
                 </span><span class="fragment">
-                    &#x25b7; (&#x03bb;f.f S K) S K
+                    &#x21fe; (&#x03bb;f.f S K) S K
                 </span><span class="fragment">
-                    &#x25b7; <br />S S K K
+                    &#x21fe; <br />S S K K
                 </span><span class="fragment">
-                    &#x25b7; S K (K K)
+                    &#x21fe; S K (K K)
                 </span><span class="fragment">
-                    &#x25b7; I
+                    &#x21fe; I
                 </span>
             </li><li class="fragment">
                 i (i (i i))
                 <span class="fragment">
                     = (&#x03bb;f.f S K) ((&#x03bb;f.f S K) I)
                 </span><span class="fragment">
-                    &#x25b7; (&#x03bb;f.f S K) I S K
+                    &#x21fe; (&#x03bb;f.f S K) I S K
                 </span><span class="fragment">
-                    &#x25b7; <br />I S K S K
+                    &#x21fe; <br />I S K S K
                 </span><span class="fragment">
-                    &#x25b7; S K S K
+                    &#x21fe; S K S K
                 </span><span class="fragment">
-                    &#x25b7; I K
+                    &#x21fe; I K
                 </span><span class="fragment">
-                    &#x25b7; K
+                    &#x21fe; K
                 </span>
             </li><li class="fragment">
                 i (i (i (i i)))
                 <span class="fragment">
                     = (&#x03bb;f.f S K) K
                 </span><span class="fragment">
-                    &#x25b7; K S K
+                    &#x21fe; K S K
                 </span><span class="fragment">
-                    &#x25b7; S
+                    &#x21fe; S
                 </span>
             </li></ul>
         </section><section>
