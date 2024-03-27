@@ -60,7 +60,7 @@ async fn main() {
         SocketAddr::from(([0, 0, 0, 0], port)),
         axum_server::tls_rustls::RustlsConfig::from_pem_file(
             PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                .join("server-cert.pem"),
+                .join("server-chain.pem"),
             PathBuf::from(env!("CARGO_MANIFEST_DIR"))
                 .join("server-key.pem")).await.unwrap())
         .serve(app

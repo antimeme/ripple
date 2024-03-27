@@ -80,7 +80,7 @@
     https.createServer({
         key: fs.readFileSync('server-key.pem'),
         cert: fs.readFileSync('server-chain.pem'),
-        ca: fs.readFileSync('ca-cert.pem'),
+        ca: fs.readFileSync('rootca-cert.pem'),
         requestCert: true, rejectUnauthorized: false,
         minVersion: "TLSv1.3"
     }, (request, response) => {

@@ -98,45 +98,139 @@ apps/gizmo.wasm apps/gizmo.js apps/gizmo.html apps/gizmo.data: \
 endif
 
 TESTS = $(check_PROGRAMS)
-MAINTAINERCLEANFILES =
+MAINTAINERCLEANFILES = *.p12 *.der *.pem *.srl .passwd
 MOSTLYCLEANFILES     =
 DISTCLEANFILES       =
-CLEANFILES           = *.der *.pem
+CLEANFILES           =
 
 ## Certificates ========================================================
+# Public Key Infrastructure (PKI) using OpenSSL.
+# To the extend possible, generic rules are used to reduce repetition.
+# Many things can be done this way, but the shape of the PKI has to
+# be defined explicitly.
 OPENSSL = openssl
-COMMON_NAME = /C=US/O=antimeme.net/OU=CA/CN=
+DN_BASE = C=US/O=antimeme.net
 
-ca-key.pem:
+.passwd:
+	umask 077; echo "$(STOREPASS)" > $@
+
+%-key.pem:
 	$(OPENSSL) genrsa -out $@ $(KEYSIZE)
 
-ca-cert.pem: ca-key.pem
-	$(OPENSSL) req -sha256 -x509 -key $< -out $@ \
-	    -days 3650 -subj "$(COMMON_NAME)Root CA"
+%-cert.der: %-cert.pem
+	$(OPENSSL) x509 -in $< -out $@ -outform der
 
-server-key.pem:
-	$(OPENSSL) genrsa -out $@ $(KEYSIZE)
+%.p12: %-key.pem %-chain.pem .passwd
+	LABEL=`echo $@ | sed 's,.p12$$,,'`; \
+	$(OPENSSL) pkcs12 -export -out $@ -inkey $< \
+	    -in "$$LABEL-chain.pem" -name "$$LABEL" \
+	    -passout file:.passwd
 
-server-req.pem: server-key.pem
-	$(OPENSSL) req -new -key server-key.pem \
-	    -subj "$(COMMON_NAME)server" -sha256 -out $@
+# Root certificate authority signs itself.  There's no higher
+# authority to vouch for it but it's useful to have a certificate in
+# X.509 format to use when referencing it.  This authority is
+# intended primarily for signing issuing certificates, which come
+# in two forms:
+#     *-ca-cert.pem: issuing CAs that can have subordinate authorities
+#     *-ca1-cert.pem: issuing CAs that only sign end use certificates
+rootca-cert.pem: rootca-key.pem
+	$(OPENSSL) req -x509 -key $< -out $@ -sha256 -days 3650 \
+	    -subj "/$(DN_BASE)/OU=CA/CN=Root CA"
 
-server-cert.pem: server-req.pem ca-key.pem ca-cert.pem
-	$(OPENSSL) x509 -CA ca-cert.pem -CAkey ca-key.pem \
+%-ca-req.pem: %-key.pem
+	LABEL=`echo $@ | sed 's,-ca-req.pem$$,,'`; \
+	$(OPENSSL) req -new -key $< -out $@ -sha256 \
+	    -subj "/$(DN_BASE)/OU=CA/CN=$$LABEL"
+
+%-ca-cert.pem: %-ca-req.pem rootca-key.pem rootca-cert.pem
+	$(OPENSSL) x509 -CA rootca-cert.pem -CAkey rootca-key.pem \
 	  -extfile @srcdir@/scripts/ca.conf \
-	  -extensions server_role_ext -req -sha256 -days 730 \
+	  -extensions ca_role_ext -req -sha256 -days 730 \
 	  -CAcreateserial -CAserial ca.srl -in $< -out $@
 
-server-cert.der: server-cert.pem
-	$(OPENSSL) x509 -in server-cert.pem -out $@ -outform der
+%-ca1-cert.pem: %-ca-req.pem rootca-key.pem rootca-cert.pem
+	$(OPENSSL) x509 -CA rootca-cert.pem -CAkey rootca-key.pem \
+	  -extfile @srcdir@/scripts/ca.conf \
+	  -extensions ca1_role_ext -req -sha256 -days 730 \
+	  -CAcreateserial -CAserial ca.srl -in $< -out $@
 
-server-chain.pem: server-cert.pem ca-cert.pem
-	if [ ! -e $@ ]; then \
-	    cp server-cert.pem $@; cat ca-cert.pem >>$@; \
-	else touch $@; fi
+# ServerCA is responsible for signing individual servers.
+# This CA is signed but the root, but not authorized to delegate
+# to subordinate CAs.
+serviceCA-chain.pem: serviceCA-ca1-cert.pem rootca-cert.pem
+	cat $^ >$@
 
-serve: source/server.js server-key.pem server-chain.pem ca-cert.pem
+%-service-req.pem: %-key.pem
+	LABEL=`echo $@ | sed 's,-service-req.pem$$,,'`; \
+	$(OPENSSL) req -new -key $< -out $@ -sha256 \
+	    -subj "/$(DN_BASE)/OU=Services/CN=$$LABEL" \
+	    -addext "subjectAltName = DNS:$$LABEL, DNS:www.$$LABEL"
+
+%-service-cert.pem: %-service-req.pem serviceCA-ca1-cert.pem \
+	            serviceCA-key.pem
+	LABEL=`echo $< | sed 's,-service-req.pem$$,,'`; \
+	$(OPENSSL) x509 -extfile @srcdir@/scripts/ca.conf \
+	    -CA serviceCA-ca1-cert.pem -CAkey serviceCA-key.pem \
+	    -CAcreateserial -CAserial serviceCA.srl \
+	    -copy_extensions copy \
+	    -extensions server_role_ext -req -sha256 -days 730 \
+	    -in $< -out $@
+
+# A generic server without a particular purpose.
+# A copy of this rule with "server" replaced could be used to
+# create a particular server.
+server-chain.pem: server-service-cert.pem serviceCA-chain.pem
+	cat $^ >$@
+
+antimeme.net-chain.pem: antimeme.net-service-cert.pem \
+	                serviceCA-chain.pem
+	cat $^ >$@
+
+# ClientCA is responsible for signing certificates for users,
+# such as those that might be installed in a web browser.
+# This CA is signed but the root, but not authorized to delegate
+# to subordinate CAs.
+clientCA-chain.pem: clientCA-ca1-cert.pem rootca-cert.pem
+	cat $^ >$@
+
+%-client-req.pem: %-key.pem
+	LABEL=`echo $@ | sed 's,-client-req.pem$$,,'`; \
+	$(OPENSSL) req -new -key $< -out $@ -sha256 \
+	    -subj "/$(DN_BASE)/OU=Users/CN=$$LABEL"
+
+%-client-cert.pem: %-client-req.pem clientCA-ca1-cert.pem \
+	           clientCA-key.pem
+	$(OPENSSL) x509 -extfile @srcdir@/scripts/ca.conf \
+	    -CA clientCA-ca1-cert.pem -CAkey clientCA-key.pem \
+	    -extensions client_role_ext -req -sha256 -days 730 \
+	    -CAcreateserial -CAserial clientCA.srl -in $< -out $@
+
+# A generic user certificate without a particular purpose.  A copy of
+# this rule with "username" replaced can make distinct artifacts (such
+# as PKCS#12 files with "make username.p12") for each user.
+username-chain.pem: username-client-cert.pem clientCA-chain.pem
+	cat $^ >$@
+
+antimeme-chain.pem: antimeme-client-cert.pem clientCA-chain.pem
+	cat $^ >$@
+
+## Node.js =============================================================
+
+node-serve: source/js/server.js \
+	    server-key.pem server-chain.pem \
+	    rootca-cert.pem
 	node $<
+
+## Rust ================================================================
+RUST_DISTSRC = \
+	source/ripple.rs \
+	source/expense.rs \
+	source/server.rs
+
+rs-serve: Cargo.toml $(RUST_DISTSRC) \
+	  server-key.pem server-chain.pem \
+	  rootca-cert.pem
+	cargo run server
 
 ## Python ==============================================================
 PYTHON_DISTSRC = source/random.py source/match.py
@@ -155,11 +249,6 @@ dist/@PACKAGE@-@VERSION@-py@PYTHON_VERSION@.egg: $(pkgpython_PYTHON)
 egg: dist/@PACKAGE@-@VERSION@-py@PYTHON_VERSION@.egg
 
 endif
-
-## Rust ================================================================
-
-rs-serve: Cargo.toml server-key.pem server-chain.pem ca-cert.pem
-	cargo run server
 
 ## Java ================================================================
 # Names of macros such as JCC, JAR_ROOT and JAVA_SRCFILES have been
@@ -370,29 +459,25 @@ play-java-jarbles: @PACKAGE@.jar
 	$(JAVA_HOME)/bin/java -jar $< jarbles
 
 container-self.p12:
+	DNAME="`echo $(DN_BASE) | sed 's|/|,|g'`"; \
 	$(KEYTOOL) -keystore $@ -storetype pkcs12 \
 	    -genkey -keyalg RSA -keysize 2048 -sigalg SHA256withRSA \
-	    -alias $(ALIAS) -dname CN=$(ALIAS) -validity 3650 \
-	    -ext "SAN=dns:$(HOSTNAME),dns:*.$(HOSTNAME)" \
+	    -alias "$(ALIAS)" -validity 3650 \
+	    -dname "$${DNAME},OU=Service,CN=$(ALIAS)" \
+	    -ext "SAN=dns:$(HOSTNAME),dns:www.$(HOSTNAME)" \
 	    -storepass "$(STOREPASS)"
 
-container-req.pem: container-self.p12
+container-service-req.pem: container-self.p12
 	$(KEYTOOL) -certreq -alias $(ALIAS) \
 	    -file $@ -keystore $< -storepass $(STOREPASS)
 
-container-cert.pem: container-req.pem ca-cert.pem ca-key.pem
-	$(OPENSSL) x509 -CA ca-cert.pem -CAkey ca-key.pem \
-	  -extfile @srcdir@/scripts/ca.conf \
-	  -extensions container_role_ext -req -sha256 -days 730 \
-	  -CAcreateserial -CAserial ca.srl -in $< -out $@
+container-chain.pem: container-service-cert.pem serviceCA-chain.pem
+	cat $^ > $@
 
-container.p12: container-self.p12 container-cert.pem ca-cert.pem
+container.p12: container-self.p12 container-chain.pem
 	cp $< $@.partial
-	$(KEYTOOL) -importcert -alias cacert \
-	    -file ca-cert.pem -noprompt \
-	    -keystore $@.partial -storepass $(STOREPASS)
 	$(KEYTOOL) -importcert -alias $(ALIAS) \
-	    -file container-cert.pem -noprompt \
+	    -file container-chain.pem -noprompt \
 	    -keystore $@.partial -storepass $(STOREPASS)
 	mv $@.partial $@
 
@@ -407,15 +492,13 @@ scripts/check-java.sh: @PACKAGE@.jar
 	chmod +x $@
 
 TESTS += scripts/check-java.sh
-MAINTAINERCLEANFILES += \
-	container-self.p12 container.p12
 CLEANFILES += \
 	scripts/check-java.sh .javadoc \
 	@PACKAGE@-@VERSION@.jar @PACKAGE@.jar \
 	@PACKAGE@-@VERSION@.war @PACKAGE@.war
 MOSTLYCLEANFILES += \
 	@PACKAGE@-jetty.ini \
-	container.p12.partial
+	*.p12.partial
 
 clean-local-java:
 	-rm -rf .gradle/ javadoc
@@ -467,17 +550,22 @@ EXTRA_DIST = \
 	scripts/@PACKAGE@.dpkg \
 	scripts/ca.conf \
 	scripts/container-jettypod \
-	META-INF/MANIFEST.MF \
-	$(JAVA_DISTSRC) \
-	WEB-INF/web.xml \
-	WEB-INF/jetty-env.xml \
-	$(SERVLET_DISTSRC) \
 	source/gizmo/gizmo.h \
 	source/gizmo/asteroids.h \
+	META-INF/MANIFEST.MF \
+	WEB-INF/web.xml \
+	WEB-INF/jetty-env.xml \
+	$(JAVA_DISTSRC) \
+	$(SERVLET_DISTSRC) \
+	$(RUST_DISTSRC)
 	$(PYTHON_DISTSRC)
 
+.SECONDARY: serviceCA-key.pem clientCA-key.pem
+
 .PHONY: clean-local-java mostlyclean-local-java \
+	node-serve rs-serve \
 	deploy deploy-jetty deploy-tomcat \
 	install-jetty-https \
-	jettypod-interact jettypod-start jettypod-stop \
+	jettypod-interact \
+	jettypod-start jettypod-stop \
 	jettypod-destroy jettypod-purge
