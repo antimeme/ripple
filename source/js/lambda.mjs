@@ -696,8 +696,8 @@ class Lambda {
         PAIR: { value: "\\h t f.f h t" },
         HEAD: { value: "\\p.p TRUE" },
         TAIL: { value: "\\p.p FALSE" },
-        "IS-NIL?": { value: "\\p.p (\\a b.FALSE)" },
-        NIL: { value: "\\a.TRUE" },
+        "IS-NIL?": { value: "\\p.p (\\h t.FALSE)" },
+        NIL: { value: "\\f.TRUE" },
 
         SUCCESSOR: { description: "Adds one to a Church numerals",
                      value: "\\n f a.f (n f a)" },
@@ -773,6 +773,10 @@ class Lambda {
                          "all of its predecessors",
             value: "FIX \\f n.IS-ZERO? n ZERO " +
                    "(ADD n (f (PREDECESSOR n)))" },
+        COUNT: {
+            description: "Return the number of elements in a list",
+            value: "FIX \\c l.IS-NIL? l ZERO " +
+                   "(ADD ONE (c (TAIL l)))" },
         SUM: {
             description: "Reduce to the sum of all numbers in a list",
             value: "FIX \\f l.IS-NIL? l ZERO " +

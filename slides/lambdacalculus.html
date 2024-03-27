@@ -11,6 +11,9 @@
      .order { font-size: 75%; }
      .examples { font-size: 90%; }
      li.extra { list-style-type: circle; }
+     .starling { color: purple; }
+     .kestral { color: orangered; }
+     .identity { color: navy; }
     </style>
     <div class="reveal"><div class="slides"><section id="lambdacalculus">
         <section>
@@ -558,7 +561,7 @@
             <h3>A Little Too Eager</h3>
             <p>
                 Sometimes applicative order fails...
-            </p><p>
+            </p><p class="fragment">
                 (&#x03bb;a.&#x03bb;b.a) c
                 ((&#x03bb;d.d d) &#x03bb;d.d d)
             </p><table class="order"><tr><td><ul class="fragment">
@@ -688,14 +691,14 @@
             <h3>Lambda Calculus</h3>
             <ul><li>
                 Variables: <span class="variable">v</span> :=
-                "[^&#x03bb;.()\s]+"
+                <q>[^&#x03bb;.()\s]+</q>
             </li><li>
                 Expressions:
                 <span class="expression">E</span> :=
                 <span class="variable">v</span> |
-                (<span class="expression">E</span>) |
-                &#x03bb;<span class="variable"
-                        >v</span>.<span class="expression">E</span> |
+                <q>(</q> <span class="expression">E</span> <q>)</q> |
+                <q>&#x03bb;</q> <span class="variable">v</span>
+                <q>.</q> <span class="expression">E</span> |
                 <span class="expression">E</span>
                 <span class="expression">E</span>
             </li><li>
@@ -1364,7 +1367,7 @@
             <p>
                 We can take advantage of closure to store values.
             </p><ul><li class="fragment">
-                PAIR: &#x03bb;a b f.f a b
+                PAIR: &#x03bb;h t f.f h t
             </li><li class="fragment">
                 HEAD: &#x03bb;p.p TRUE
             </li><li class="fragment">
@@ -1379,9 +1382,9 @@
             </p><ul><li class="fragment">
                 PAIR FIRST LAST
                 <span class="fragment">
-                    &#x21fe; (&#x03bb;a b f.f a b) FIRST LAST
+                    &#x21fe; (&#x03bb;h t f.f h t) FIRST LAST
                 </span><span class="fragment">
-                    &#x21fe; <br />(&#x03bb;b f.f FIRST b) LAST
+                    &#x21fe; <br />(&#x03bb;b f.f FIRST t) LAST
                 </span><span class="fragment">
                     &#x21fe; &#x03bb;f.f FIRST LAST
                 </span>
@@ -1411,7 +1414,7 @@
                 Chaining ordered pairs together to make lists requires
                 a way to find the end.
             </p><ul><li class="fragment">
-                IS-NIL?: &#x03bb;p.p &#x03bb;a b.FALSE
+                IS-NIL?: &#x03bb;p.p &#x03bb;h t.FALSE
             </li><li class="fragment">
                 NIL: &#x03bb;f.TRUE
             </li></ul>
@@ -1420,25 +1423,29 @@
             <p>
                 IS-NIL? NIL
             </p><ul><li class="fragment">
-                (&#x03bb;p.p &#x03bb;a b.FALSE) &#x03bb;f.TRUE
+                (&#x03bb;p.p &#x03bb;h t.FALSE) &#x03bb;f.TRUE
             </li><li class="fragment">
-                (&#x03bb;f.TRUE) &#x03bb;a b.FALSE
+                (&#x03bb;f.TRUE) &#x03bb;h t.FALSE
                 <span class="fragment">&#x21fe; TRUE</span>
-            </li></ul>
+            </li></ul><p class="fragment">
+                NIL acts like a pair but ignores the function
+            </p>
         </section><section>
             <h3>Lists</h3>
             <p>
                 IS-NIL? (PAIR FIRST LAST)
             </p><ul><li class="fragment">
-                (&#x03bb;p.p &#x03bb;a b.FALSE) (PAIR FIRST LAST)
+                (&#x03bb;p.p &#x03bb;h t.FALSE) (PAIR FIRST LAST)
             </li><li class="fragment">
-                (PAIR FIRST LAST) &#x03bb;a b.FALSE
+                (PAIR FIRST LAST) &#x03bb;h t.FALSE
             </li><li class="fragment">
-                (&#x03bb;f.f FIRST LAST) &#x03bb;a b.FALSE
+                (&#x03bb;f.f FIRST LAST) &#x03bb;h t.FALSE
             </li><li class="fragment">
-                (&#x03bb;a b.FALSE) FIRST LAST
+                (&#x03bb;h t.FALSE) FIRST LAST
                 <span class="fragment">&#x21fe; FALSE</span>
-            </li></ul>
+            </li></ul><p class="fragment">
+                Pairs are not NIL regardless of contents
+            </p>
         </section><section>
             <h3>Lists</h3>
             <p>
@@ -1480,14 +1487,33 @@
                 An index beyond the end of the list will give NIL
             </p>
         </section><section>
+            <h3>Count</h3>
+            <p>
+                How many elements are in our list?
+            </p><ul><li class="fragment">
+                COUNT &#x225d; FIX (&#x03bb;c l.IS-NIL? l ZERO <br />
+                (ADD ONE (c (TAIL l)))
+            </li><li class="fragment">
+                COUNT (PAIR ONE (PAIR TWO <br /> (PAIR THREE NIL)))
+            </li><li class="fragment">
+                ADD ONE (ADD ONE (ADD ONE ZERO))
+            </li><li class="fragment">
+                THREE
+            </li></ul>
+        </section><section>
+            <h3>Count: Demo</h3>
+            <div class="lambda" data-library="true"
+                 data-expr="COUNT (PAIR ONE (PAIR TWO 
+                        (PAIR THREE NIL)))"></div>
+        </section><section>
             <h3>Sums</h3>
             <p>
                 Let's add up a list of numbers.
             </p><ul><li class="fragment">
-                SUM (PAIR ONE (PAIR TWO (PAIR THREE NIL)))
-            </li><li class="fragment">
                 SUM &#x225d; FIX (&#x03bb;f l.IS-NIL? l ZERO <br />
                 (ADD (HEAD l) (f (TAIL l))))
+            </li><li class="fragment">
+                SUM (PAIR ONE (PAIR TWO (PAIR THREE NIL)))
             </li><li class="fragment">
                 ADD ONE (ADD TWO (ADD THREE ZERO))
                 <span class="fragment">
@@ -1498,7 +1524,16 @@
             <h3>Sums: Demo</h3>
             <div class="lambda" data-library="true"
                  data-expr="SUM (PAIR ONE (PAIR TWO 
-                           (PAIR THREE NIL)))"></div>
+                        (PAIR THREE NIL)))"></div>
+        </section><section>
+            <h3>Average</h3>
+            <p>Almost too easy:</p>
+            <p class="fragment">
+                AVERAGE &#x225d; (&#x03bb;l.DIVIDE (SUM l) (COUNT l))
+            </p><p class="fragment">
+                This will round down to the nearest natural number,
+                which is not ideal.
+            </p>
         </section><section>
             <h3>Map</h3>
             <p>
@@ -1528,7 +1563,7 @@
             </li><li>
                 NIL: &#x03bb;f.TRUE
             </li><li>
-                IS-NIL?: &#x03bb;p.p &#x03bb;a b.FALSE
+                IS-NIL?: &#x03bb;p.p &#x03bb;h t.FALSE
             </li></ul>
         </section><section>
             <h3>Integers</h3>
@@ -1623,7 +1658,7 @@
                 Flow Control: &#x03bb;f.(&#x03bb;a.f (a a))
                 &#x03bb;a.f (a a)
             </li><li>
-                Data Structures: &#x03bb;a b f.f a b
+                Data Structures: &#x03bb;h t f.f h t
             </li></ul><p>
                 Lambda calculus simple, compact and universal.
             </p>            
@@ -1644,16 +1679,9 @@
         </section><section>
             <h3>Combinators</h3>
             <p>
-                A combinator is an abstraction that has no
-                free variables.
-                <span class="fragment">
-                    FV[&#x03bb;<span class="variable"
-                    >v</span>.<span class="expression">E</span>]
-                    = {}
-                </span>
-            </p><p class="fragment">
-                As a consequence they have no state or external
-                interactions.
+                A combinator is an abstraction that has no free
+                variables.  As a consequence they have no state or
+                external interactions.
             </p>
         </section><section>
             <h3>Combinator Birds</h3>
@@ -1688,24 +1716,27 @@
                 Starling (Fusion): &#x03bb;a b c.a c (b c)
             </li></ul>
         </section><section>
-            <h3>Simplification: Identity</h3>
+            <h3>S K: Identity</h3>
             <p>
                 The identity has many Starling and Kestral forms:
             </p><ul><li class="fragment">
                 S K X
                 <span class="fragment">
-                    &#x21dd; (&#x03bb;a b c.a c (b c)) K X
-                </span><span class="fragment">
-                    &#x21fe; <br /> (&#x03bb;b c.K c (b c)) X
-                </span><span class="fragment">
-                    &#x21fe; &#x03bb;c.K c (X c)
-                </span><span class="fragment">
-                    &#x21dd; <br /> &#x03bb;c.(&#x03bb;a b.a) c
-                    <span class="false">(X c)</span>
-                </span><span class="fragment">
+                    &#x2251; (&#x03bb;a b c.a c (b c)) K X
+                </span>
+            </li><li class="fragment">
+                &#x21fe; (&#x03bb;b c.K c (b c)) X
+            </li><li class="fragment">
+                &#x21fe; &#x03bb;c.K c (X c)
+                <span class="fragment">
+                    &#x2251; &#x03bb;c.(&#x03bb;a b.a) c (X c)
+                </span>
+            </li><li class="fragment">
+                &#x21fe; &#x03bb;c.(&#x03bb;b.c) (X c)
+                <span class="fragment">
                     &#x21fe; &#x03bb;c.c
                 </span><span class="fragment">
-                    &#x21dd; I
+                    &#x2251; I
                 </span>
             </li></ul><p class="fragment">
                 S K K
@@ -1718,49 +1749,137 @@
                 </span>
             </p>
         </section><section>
-            <h3>Simplification: Kestral</h3>
+            <h3>S K: Kestral</h3>
             <p>
                 A common pattern reduces to the Kestral:
-            </p><p class="fragment">
-                S (K K) I <span class="fragment">&#x2251; K</span>
-            </p><p class="fragment">
-                (&#x03bb;a b c.a c (b c)) (K K) I
+            </p><ul><li class="fragment">
+                S (K K) I
                 <span class="fragment">
-                    &#x21fe; (&#x03bb;b c.(K K) c (b c)) I
-                </span><span class="fragment">
-                    &#x21fe; <br /> &#x03bb;c.(K K) c
-                    (<span class="intro">I c</span>)
-                </span><span class="fragment">
-                    &#x21fe; &#x03bb;c.<span class="intro">K
-                    K c</span> c
-                </span><span class="fragment">
-                    &#x21fe; &#x03bb;c.K c
-                </span><span class="fragment">
-                    &#x21dd; &#x03bb;c.(&#x03bb;a b.a) c
-                </span><span class="fragment">
-                    &#x21fe; &#x03bb;c.&#x03bb;b.c
-                </span><span class="fragment">
-                    &#x21dd; &#x03bb;c b.c
-                </span><span class="fragment">
-                    &#x21dd; K
+                    &#x2251; (&#x03bb;a b c.a c (b c)) (K K) I
                 </span>
+            </li><li class="fragment">
+                &#x21fe; (&#x03bb;b c.(K K) c (b c)) I
+            </li><li class="fragment">
+                &#x21fe; (&#x03bb;c.(K K) c (I c))
+                <span class="fragment">
+                    &#x2251; (&#x03bb;c.(&#x03bb;a b.a) K c
+                    ((&#x03bb;a.a) c))
+                </span>
+            </li><li class="fragment">
+                &#x21fe; (&#x03bb;c.(&#x03bb;b.K) c
+                ((&#x03bb;a.a) c))
+                <span class="fragment">
+                    &#x21fe; &#x03bb;c.K ((&#x03bb;a.a) c)
+                </span>
+            </li><li class="fragment">
+                &#x21fe; (&#x03bb;c.K c)
+                <span class="fragment">
+                    &#x2251; &#x03bb;c.(&#x03bb;a b.a) c
+                </span>
+            </li><li class="fragment">
+                &#x21fe; &#x03bb;c.&#x03bb;b.c
+                <span class="fragment">
+                    &#x2251; &#x03bb;c b.c
+                </span>
+                <span class="fragment">
+                    &#x2251; K
+                </span>
+            </li></ul><p class="fragment">
+                S (K K) I <span class="fragment">&#x2251; K</span>
+            </p>
+        </section><section>
+            <h3>S K: Kite</h3>
+            <p>
+                The Kite is the Kestral followed by Identity:
+            </p><ul><li class="fragment">
+                K I <span class="fragment">
+                &#x2251; (&#x03bb;a b.a) &#x03bb;a.a </span>
+            </li><li class="fragment">
+                &#x21fe; &#x03bb;b.&#x03bb;a.a
+                <span class="fragment">
+                    &#x2251; &#x03bb;b a.a
+                </span><span class="fragment">
+                    &#x2251; Ki
+                </span>
+            </li></ul>
+        </section><section>
+            <h3>S K: Mockingbird</h3>
+            <p>
+                Mockingbird is easy to make with Starling and Ibis
+            </p><ul><li class="fragment">
+                S I I
+                <span class="fragment">
+                    &#x2251; (&#x03bb;a b c.a c (b c))
+                    (&#x03bb;a.a) (&#x03bb;a.a)
+            </li><li class="fragment">
+                &#x21fe; (&#x03bb;b c.(&#x03bb;a.a) c (b c))
+                (&#x03bb;a.a)
+            </li><li class="fragment">
+                &#x21fe; &#x03bb;c.(&#x03bb;a.a) c ((&#x03bb;a.a) c)
+            </li><li class="fragment">
+                &#x21fe; &#x03bb;c.c ((&#x03bb;a.a) c)
+                <span class="fragment">
+                    &#x21fe; &#x03bb;c.c c
+                </span><span class="fragment">
+                    &#x2251; M
+                </span>
+            </li></ul><p class="fragment">
+                M &#x2251; S I I
+            </p>
+        </section><section>
+            <h3>S K: Bluebird</h3>
+            <p>
+                Bluebird is easy to make with Starling and Ibis
+            </p><ul><li class="fragment">
+                S (K S) K
+                <span class="fragment">
+                    &#x2251; (&#x03bb;a b c.a c (b c))
+                    (K S) K
+            </li><li class="fragment">
+                &#x21fe; (&#x03bb;b c.(K S) c (b c)) K
+                <span class="fragment">
+                    &#x21fe; &#x03bb;c.K S c (K c)
+                </span>
+            </li><li class="fragment">
+                &#x21fe; &#x03bb;c.(&#x03bb;a b.a) S c (K c)
+            </li><li class="fragment">
+                &#x21fe; &#x03bb;c.(&#x03bb;b.S) c (K c)
+                <span class="fragment">
+                    &#x21fe; &#x03bb;c.S (K c)
+                </span>
+            </li><li class="fragment">
+                &#x21fe; &#x03bb;c.(&#x03bb;a b d.a d (b d)) (K c)
+            </li><li class="fragment">
+                &#x21fe; &#x03bb;c b
+                d.<span class="kestral">K c d</span> (b d)
+                <span class="fragment">
+                    &#x21fe; &#x03bb;c b d.c (b d)
+                </span>
+            </li><li class="fragment">
+                &#x03bb;c b d.c (b d)
+                <span class="fragment">
+                    &#x2251; &#x03bb;a b c.a (b c)
+                </span><span class="fragment">
+                    &#x2251; B
+                </span>
+            </li></ul><p class="fragment">
+                B &#x2251; S (K S) K
             </p>
         </section><section>
             <h3>Converting Lambda</h3>
             <p>
-                Any lambda term
-                <a href="https://en.wikipedia.org/wiki/Combinatory_logic">
-                    can be converted</a>.
+                Any lambda term can be converted to S K:
             </p><ul><li class="fragment">
-                T[a] &#x27f9;  a
-            </li><li class="fragment">
-                T[<span class="expression">E</span>
-                <span class="expression">F</span>] &#x27f9;
-                T[<span class="expression">E</span>]
-                T[<span class="expression">F</span>]
-            </li><li class="fragment">
-                T[(<span class="expression">E</span>)] &#x27f9;
-                (T[<span class="expression">E</span>])
+                T[a] &#x27f9; a
+                <span class="fragment">
+                    &and; T[(<span class="expression">E</span>)]
+                    &#x27f9; (T[<span class="expression">E</span>])
+                </span><span class="fragment">
+                    &and; T[<span class="expression">E</span>
+                    <span class="expression">F</span>] &#x27f9;
+                    T[<span class="expression">E</span>]
+                    T[<span class="expression">F</span>]
+                </span>
             </li><li class="fragment">
                 T[&#x03bb;a.<span class="expression">E</span>]
                 &and; a&#x2209;FV[<span class="expression">E</span>]
@@ -1781,7 +1900,12 @@
                 FV[<span class="expression">F</span>]) &#x27f9; <br />
                 S T[&#x03bb;a.<span class="expression">E</span>]
                 T[&#x03bb;a.<span class="expression">F</span>]]
-            </li></ul>
+            </li></ul><p class="fragment">
+                These rules cover all cases
+                (Source:
+                <a href="https://en.wikipedia.org/wiki/Combinatory_logic"
+                >Wikipedia</a>)
+            </p>
         </section><section>
             <h3>Conversion: Thrush</h3>
             <p>
@@ -1789,55 +1913,72 @@
             </p><ul><li class="fragment">
                 T[&#x03bb;a b.b a]
                 <span class="fragment">
+                    &#x27f9; T[&#x03bb;a.T[<span class="starling"
+                                           >&#x03bb;b.b a</span>]]
+                </span>
+            </li><li class="fragment">
+                T[&#x03bb;a.S
+                T[<span class="identity">&#x03bb;b.b</span>]
+                T[<span class="kestral">&#x03bb;b.a</span>]]
+                <span class="fragment">
+                    &#x27f9; T[<span class="starling"
+                               >&#x03bb;a.S I (K a)</span>]
+                </span>
+            </li><li class="fragment">
+                S T[<span class="kestral">&#x03bb;a.(S I)</span>]
+                T[<span class="starling">&#x03bb;a.K a</span>]
+            </li><li class="fragment">
+                S (K (S I)) (S
+                T[<span class="kestral">&#x03bb;a.K</span>]
+                T[<span class="identity">&#x03bb;a.a</span>])
+            </li><li class="fragment">
+                S (K (S I)) (<span class="kestral">S (K K) I</span>)
+                <span class="fragment">
+                    &#x2251; <span class="qed"> S (K (S I)) K</span>
+                </span>
+            </li></ul>
+        </section><!-- section>
+            <h3>Conversion: Bluebird</h3>
+            <p>
+                Bluebird: &#x03bb;a b c.a (b c)
+            </p><ul><li class="fragment">
+                T[&#x03bb;a b c.a (b c)]
+                <span class="fragment">
                     &#x27f9;
-                    T[&#x03bb;a.T[&#x03bb;b.b a]]
+                    T[&#x03bb;a.T[&#x03bb;b c.a (b c)]]
+                </span><span class="fragment">
+                    &#x27f9; <br />
+                    T[&#x03bb;a.T[&#x03bb;b.T[<span class="starling"
+                    >&#x03bb;c.a (b c)</span>]]]
                 </span>
             </li><li class="fragment">
-                T[&#x03bb;a.S T[&#x03bb;b.b] T[&#x03bb;b.a]]
+                T[&#x03bb;a.T[&#x03bb;b.S
+                T[<span class="kestral">&#x03bb;c.a</span>]
+                T[<span class="starling">&#x03bb;c.b c</span>]]]
             </li><li class="fragment">
-                T[&#x03bb;a.S I (K a)]
+                T[&#x03bb;a.T[&#x03bb;b.S (K a)
+                (S T[<span class="kestral">&#x03bb;c.b</span>]
+                T[<span class="identity">&#x03bb;c.c</span>])]]
             </li><li class="fragment">
-                S T[&#x03bb;a.(S I)] T[&#x03bb;a.K a]
+                T[&#x03bb;a.T[<span class="starling">&#x03bb;b.S
+                (K a) (S (K b) I)</span>]]
             </li><li class="fragment">
-                S (K (S I)) (S T[&#x03bb;a.K] T[&#x03bb;a.a])
+                T[&#x03bb;a.S T[<span class="kestral">&#x03bb;b.S
+                (K a)</span>] T[<span class="starling">&#x03bb;b.S
+                (K b) I</span>]]
             </li><li class="fragment">
-                S (K (S I)) (S (K K) I)
+                T[&#x03bb;a.S (K (S (K a)))
+                (S T[<span class="starling">&#x03bb;b.S (K b)</span>]
+                <span class="identity">T[I]</span>)]
             </li><li class="fragment">
-                S (K (S I)) K
+                T[&#x03bb;a.S (K (S (K a))) (S (S
+                T[<span class="kestral">&#x03bb;b.S</span>]
+                T[<span class="starling">&#x03bb;b.K b</span>]) I)]
+            </li><li class="fragment">
+                T[&#x03bb;a.S (K (S (K a))) (S (S (K S)
+                <span class="kestral">(S (K K) I)</span>) I)]
             </li></ul>
-        </section><section>
-            <h3>Conversion: Kite</h3>
-            <p>
-                The Kite is the Kestral followed by Identity:
-            </p><p>
-                Ki = K I
-            </p><ul><li class="fragment">
-                (&#x03bb;a b.a) &#x03bb;a.a
-            </li><li class="fragment">
-                &#x03bb;b.&#x03bb;a.a
-            </li><li class="fragment">
-                &#x03bb;b a.a
-                <span class="fragment">
-                    &#x2251; &#x03bb;a b.b
-                </span>
-            </li></ul>
-        </section><section>
-            <h3>Conversion: Mockingbird</h3>
-            <p>
-                Mockingbird is easy to make with Starling and Ibis
-            </p><p>
-                M = S I I
-            </p><ul><li class="fragment">
-                (&#x03bb;a b c.a c (b c)) (&#x03bb;a.a) (&#x03bb;a.a)
-            </li><li class="fragment">
-                &#x03bb;c.(&#x03bb;a.a) c ((&#x03bb;a.a) c)
-            </li><li class="fragment">
-                &#x03bb;c.c c
-                <span class="fragment">
-                    &#x2251; &#x03bb;a.a a
-                </span>
-            </li></ul>
-        </section><section>
+        </section --><section>
             <h3>S K Combinators</h3>
             <ul><li class="fragment">
                 Ibis: I = S K K = S K S
@@ -1850,7 +1991,7 @@
             </li><li class="fragment">
                 Thrush: Th = S (K (S I)) K
             </li><li class="fragment">
-                Cardinal: C = S ((S (K ((S (K S)) K))) S) (K K)
+                Cardinal: C = S (S (K (S (K S) K)) S) (K K)
             </li><li class="fragment">
                 Vireo: V =  S (K (S (S (K (S (K S) K)) S) (K K)))
                 <br />(S (K (S I)) K)
@@ -1858,14 +1999,19 @@
                 FIX = S (K (S I I)) (S (S (K S) K) (K (S I I)))
             </li></ul>
         </section><section>
+            <h3>S K: Convert Anything</h3>
+            <div class="lambda" data-library="true" data-sk="true"
+                 data-expr="&#x03bb;a b.b a"></div>
+        </section><section>
             <h3>There Can Be Only One</h3>
             <p>
                 Chris Barker 2001 CE:
                 <a href="https://en.wikipedia.org/wiki/Iota_and_Jot"
                 >iota</a> combinator is universal
             </p><p class="fragment">
-                i &#x225d; &#x03bb;f.f (&#x03bb;a b c.a c (b c))
-                &#x03bb;d e.d
+                i &#x225d; &#x03bb;f.f
+                (<span class="starling">&#x03bb;a b c.a c (b c)</span>)
+                <span class="kestral">&#x03bb;d e.d</span>
             </p><ul><li class="fragment">
                 i i
                 <span class="fragment">
@@ -1903,7 +2049,9 @@
                 </span><span class="fragment">
                     &#x21fe; S
                 </span>
-            </li></ul>
+            </li></ul><p class="fragment">
+                Any combinator can be a bewildering set of iotas
+            </p>
         </section><section>
             <h3>Binary Iota</h3>
             <p>
@@ -1917,7 +2065,7 @@
             </li><li class="fragment">
                 0101011 = i (i (i i)) = K
             </li><li class="fragment">
-                010101011 = i (i (i i)) = S
+                010101011 = i (i (i (i i))) = S
             </li></ul><p class="fragment">
                 But remember... just because you can stick peas up
                 your nose doesn't mean you should.
@@ -1943,10 +2091,11 @@
                     possible inputs.
                 </span>
             </p><p class="fragment">
-                Example: the <a href="https://en.wikipedia.org/wiki/Halting_problem">Halting
-                Problem</a>.  No algorithm can determine whether any
-                possible computation halts in a finite number of
-                steps.
+                Example: the
+                <a href="https://en.wikipedia.org/wiki/Halting_problem"
+                >Halting Problem</a>.  No algorithm can determine
+                whether any possible computation halts in a finite
+                number of steps.
             </p>
         </section><section>
             <h3>Let's get Functional</h3>
