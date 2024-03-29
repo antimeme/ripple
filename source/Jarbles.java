@@ -279,6 +279,7 @@ public class Jarbles extends net.antimeme.ripple.Applet
 
     public String getIconPath() { return "images/jarbles.png"; }
 
+    /** Menu bar to show when operating in stand alone mode */
     protected MenuBar mb;
 
     @Override

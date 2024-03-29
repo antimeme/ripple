@@ -399,6 +399,9 @@ public class Dungeon extends Camera.Application {
             ((float)Math.min(size.width, size.height) / 17);
     }
 
+    /**
+     * Entry point for this App
+     * @param args command line arguments */
     public static void main(String[] args)
     { new Camera(640, 480).manage(new Dungeon()); }
 }

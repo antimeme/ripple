@@ -77,7 +77,13 @@ public class Applet extends Panel
     implements WindowListener, ComponentListener, ImageObserver
 {
     static final long serialVersionUID = 0;
+
+    /**
+     * Frame used when running a standalone applet. */
     protected Frame standaloneFrame = null;
+
+    /**
+     * Lookup table containing applet parameters. */
     protected Map<String,String> argmap = new TreeMap<String, String>();
 
     /**
@@ -105,31 +111,37 @@ public class Applet extends Panel
 
     /**
      * Override this to be notified when the application is resized
+     *
      * @param width updated width of the application
      * @param height updated heigh of the application */
     public void resize(int width, int height) {}
 
     /**
      * Override this to be notified when the application is resized
+     *
      * @param size updated size of the application */
-    public void resize(Dimension dm) {}
+    public void resize(Dimension size) {}
 
     /**
      * Override to take action when application is revealed */
+    @Override
     public void componentShown(ComponentEvent event) {}
 
     /**
      * Override to take action when application is hidden */
+    @Override
     public void componentHidden(ComponentEvent event) {}
 
     /**
      * Override to take action when application is hidden */
+    @Override
     public void componentMoved(ComponentEvent event) {}
 
     /**
      * Override to take action when application is resized.
      * Default is to call {@link #resize(Dimension)} and
      * {@link #resize(int, int)} */
+    @Override
     public void componentResized(ComponentEvent event) {
         Dimension size = getSize();
         resize(size);
@@ -197,12 +209,24 @@ public class Applet extends Panel
      * Override to document parameters recognized by this application.
      * Each entry should be an array containing three strings.
      * The first is the name of the parameter.  The second describes
-     * the type.  The third should be a description of the parameter. */
+     * the type.  The third should be a description of the parameter.
+     *
+     * <p>Example:</p>
+     * <pre><code>
+     *   return new String[][] {
+     *      {"nthreads", "1+",      "number of threads to spawn"},
+     *      {"shields",  "boolean", "if true ships have shields"}
+     *   };
+     * </code></pre>
+     *
+     * @return array of parameter description string arrays */
     public String[][] getParameterInfo()
     { return null; }
 
     /**
-     * Call to create an application window
+     * Call to create a stand alone application window running this
+     * applet by itself.
+     *
      * @return this application for chaining */
     public Applet standalone() {
         standaloneFrame = new Frame();
@@ -233,6 +257,13 @@ public class Applet extends Panel
         return this;
     }
 
+    /**
+     * all to create a stand alone application window running this
+     * applet by itself.  Arguments are converted into applet
+     * parameters.
+     *
+     * @param args source of applet parameters
+     * @return this applet for chaining */
     public Applet standalone(String[] args) {
         for (int index = 0; index < args.length; ++index) {
             String arg = args[index];
@@ -293,26 +324,47 @@ public class Applet extends Panel
      * to ease the transition from Java Applets. */
     public static class AudioClip {
         protected Clip clip;
+
+        /**
+         * Creates an audio clip for an applet to play as needed
+         *
+         * @param clip javax.sound.sampled clip to wrap */
         public AudioClip(Clip clip) { this.clip = clip; }
+
+        /**
+         * Play this clip */
         public void play() { clip.setFramePosition(0); clip.start(); }
+
+        /**
+         * Play this clip continuously */
         public void loop() { clip.loop(clip.LOOP_CONTINUOUSLY); }
+
+        /**
+         * Stop playing this clip */
         public void stop() { clip.stop(); }
     }
 
     /**
      * Attempts to create an audio clip from sound data at the
-     * specified URL. */
-    public AudioClip getAudioClip(URL url, String spec) {
+     * specified URL.
+     *
+     * @param url base location to fetch audio clip from
+     * @param name specifies audio clip relative to URL
+     * @return an audio clip fetched from specified location */
+    public AudioClip getAudioClip(URL url, String name) {
         AudioClip result = null;
         try {
-            result = getAudioClip(new URL(url, spec));
+            result = getAudioClip(new URL(url, name));
         } catch (MalformedURLException ex) {}
         return result;
     }
 
     /**
      * Attempts to create an audio clip from sound data at the
-     * specified URL. */
+     * specified URL.
+     *
+     * @param url location to fetch audio clip from
+     * @return an audio clip fetched from specified location */
     public AudioClip getAudioClip(URL url)
     {
         try {
@@ -338,7 +390,9 @@ public class Applet extends Panel
 
     /**
      * Gets the URL base for documents associated with this
-     * application. */
+     * application.
+     *
+     * @return URL of document containing this applet */
     public URL getDocumentBase() {
         try {
             return (new File(System.getProperty
@@ -347,12 +401,16 @@ public class Applet extends Panel
     }
 
     /**
-     * Gets the base URL that describes this application. */
+     * Gets the base URL that describes this application.
+     *
+     * @return URL of the compiled code for this applet */
     public URL getCodeBase() { return getDocumentBase(); }
 
     /**
      * Override to provide status of Applet activity.
-     * Default is to always return true; */
+     * Default is to always return true;
+     *
+     * @return true if and only if this applet is running */
     public boolean isActive() { return true; }
 
     /**
@@ -363,16 +421,23 @@ public class Applet extends Panel
      * method will return null, just as if no applet parameter with
      * that name had been specified. Note that a command line
      * parameter without an '=' character yields an empty string
-     * instead of null. */
+     * instead of null.
+     *
+     * @param name specifies which parameter to query
+     * @return value of specified parameter or null */
     public String getParameter(String name)
     { return argmap.containsKey(name) ? argmap.get(name) : null; }
 
     /**
      * Provides a description of this applet.  Default is to
-     * return null. */
+     * return null.
+     *
+     * @return a description of this applet */
     public String getAppletInfo() { return null; }
 
     /**
-     * Requests a status message to be displayed for user viewing. */
+     * Requests a status message to be displayed for user viewing.
+     *
+     * @param status message describing current applet status */
     public void showStatus(String status) { /* ignored */ }
 }

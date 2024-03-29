@@ -306,7 +306,8 @@ public class GraphicPlayer extends Component
         protected net.antimeme.ripple.Applet.AudioClip soundMove = null;
 
         /**
-         * Provide sound to play when a player moves */
+         * Provide sound to play when a player moves
+         * @param soundMove sound to play when a piece moves */
         public void setSoundMove
             (net.antimeme.ripple.Applet.AudioClip soundMove)
         { this.soundMove = soundMove; }
@@ -784,6 +785,9 @@ public class GraphicPlayer extends Component
      * @return current active theme */
     public Theme getTheme() { return theme; }
 
+    /**
+     * Set the sound to play when a move is made
+     * @param soundMove sound to play when a move is made */
     public void setSoundMove
         (net.antimeme.ripple.Applet.AudioClip soundMove) {
         this.soundMove = soundMove;
