@@ -1008,26 +1008,5 @@ public class Asteroids extends net.antimeme.ripple.Applet
      * Entry point to start Asteroids application.
      * @param args command line arguments */
     public static void main(String[] args)
-    {
-        ClassLoader parent = Asteroids.class.getClassLoader();
-        java.net.URL resource = parent.getResource
-            ("vorbisspi-1.0.3.3.jar");
-        java.net.URLClassLoader urlcl =
-            new java.net.URLClassLoader(new java.net.URL[]
-                { resource }, parent);
-        try (java.util.jar.JarFile jarfile = new java.util.jar.JarFile
-             (new java.io.File(resource.getPath()))) {
-            java.util.Enumeration<java.util.jar.JarEntry> entries =
-                jarfile.entries();
-            while (entries.hasMoreElements()) {
-                java.util.jar.JarEntry entry = entries.nextElement();
-                if (!entry.isDirectory() &&
-                    entry.getName().startsWith
-                    ("META-INF/services/"))
-                    System.out.println("ENTRY: " + entry.getName());
-            }
-        } catch (java.io.IOException ex) { ex.printStackTrace(); }
-
-        new Asteroids().standalone(args);
-    }
+    { new Asteroids().standalone(args); }
 }
