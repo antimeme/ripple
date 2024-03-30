@@ -436,13 +436,17 @@ $(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
 	   sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
 	   sort -u > $@
 
+$(JAR_ROOT)/.libs: $(JAR_ROOT)/.classes
+	$(MKDIR_P) $(JAR_ROOT)/lib
+	cp lib/*.jar $(JAR_ROOT)/lib
+	find lib -type f -name \*.jar >$@
+
 @PACKAGE@-@VERSION@.jar: $(srcdir)/META-INF/MANIFEST.MF \
-			 $(JAR_ROOT)/.classes .javadoc
+			 $(JAR_ROOT)/.libs $(JAR_ROOT)/.classes
 	$(JAR) cvfm $@ $(srcdir)/META-INF/MANIFEST.MF \
 	    -C $(srcdir)/apps fonts \
 	    -C $(srcdir)/apps images \
 	    -C $(srcdir)/apps sounds \
-	    -C $(builddir) javadoc \
 	    -C $(JAR_ROOT) .
 	chmod +x $@
 

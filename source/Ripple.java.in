@@ -50,7 +50,7 @@ public class Ripple {
         String line;
         while ((line = in.readLine()) != null) {
             line = line.trim();
-            if (line.length() == 0)
+            if ((line.length() == 0) || line.startsWith("#"))
                 continue;
             try {
                 Class<?> c = Class.forName(line);
@@ -300,6 +300,45 @@ public class Ripple {
     }
 
     /**
+     * Load all services provided by a single JAR file.
+     * @param jarPath location of JAR within current class loader */
+    public static void loadJARServices(String jarPath) {
+        try {
+            java.util.jar.JarInputStream stream =
+                new java.util.jar.JarInputStream
+                (Ripple.class.getResourceAsStream("/" + jarPath));
+            java.util.jar.JarEntry entry;
+            while ((entry = stream.getNextJarEntry()) != null) {
+                if (entry.getName().startsWith("META-INF/services/")) {
+                    String serviceName = entry.getName()
+                        .substring("META-INF/services/".length())
+                        .replace("/", ".");
+                    System.out.println("SERVICE: " + serviceName);
+                }
+            }
+        } catch (java.io.IOException ex) { ex.printStackTrace(); }
+    }
+
+    /**
+     * Retrieve JAR libraries and attempt to register services */
+    public static void loadJARLibraries() {
+        try {
+            ClassLoader loader = Ripple.class.getClassLoader();
+            BufferedReader in = new BufferedReader
+                (new InputStreamReader
+                 (Ripple.class.getClassLoader().getResource
+                  (".libs").openStream()));
+            String line;
+            while ((line = in.readLine()) != null) {
+                line = line.trim();
+                if ((line.length() == 0) || line.startsWith("#"))
+                    continue;
+                loadJARServices(line);
+            }
+        } catch (java.io.IOException ex) { ex.printStackTrace(); }
+    }
+
+    /**
      * Collects information about the current process.  This includes
      * the process identifier in most Java implementations, but that's
      * not guaranteed.
@@ -495,6 +534,7 @@ public class Ripple {
     public static void main(String[] args) throws Throwable
     {
         int result = 0;
+        loadJARLibraries();
         System.out.println("Ripple " + VERSION + " - Copyright (C) " +
                            "2007-2024 by Jeff Gold.");
         if (args.length == 0)
