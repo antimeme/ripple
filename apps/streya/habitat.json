@@ -1,0 +1,157 @@
+{
+    "schema": {
+        "version": "0.1"
+        "comments": [
+            "This document attempts to capture the habitat logic ",
+            "of Streya."
+        ]
+    },
+    "cargo": {
+        "common-ore": {
+            "examples": ["iron"]},
+        "rare-ore": {
+            "examples": ["alumnium"]},
+        "exotic-ore": {
+            "examples": ["cobalt"]},
+        "dirty-ice": {
+            "comments": ["Don't put this stuff in your drink"]},
+        "hydrogen": {},
+
+        "common-ingots": {},
+        "rare-ingots": {},
+        "exotic-ingots": {},
+        "water": {},
+        "oxygen": {},
+        "carbon": {},
+        "vegetables": {},
+        "fruits": {},
+        "seeds/nuts": {},
+        "synthetic-meat": {},
+
+        "basic-fusion-fuel": {
+            "comments": ["Deuterium and hydrogen"]},
+        "advanced-fusion-fuel": {
+            "comments": ["Deuterium and light helium mixture"]},
+        "contruction-materials": {},
+        "consumer-goods": {},
+        "amenities": {},
+        "algae-mush": {
+            "comments": [
+                "Keeps you alive but makes you wish you were dead"]},
+        "dry-provisions": {
+            "comments": ["Long shelf life -- best left there"]},
+        "decent-meal": {
+            "comments": ["Recognizable as food"]},
+        "excellent-meal": {
+            "comments": ["Fine cuisine"]},
+
+        "electronic-waste": {},
+        "plastic-waste": {},
+        "organic-waste": {},
+        "grey-water": {},
+        "black-water": {},
+        "carbon-dioxide": {},
+        "helium": {},
+        "gray-slag": {},
+        "black-slag": {}
+    },
+    "processes": {
+        "energy-reactor": {
+            "comments": [
+                "Everything needs energy.  This is how to get some."]
+            "maintenance": 1,
+            "time": 1,
+            "energy": 1000,
+            "inputs": { "fusion-fuel": 1 },
+            "outputs": { "energy": 1000 }
+        },
+        "basic=fuel-refinement": {
+            "comments": [
+                "There's no such thing as a free lunch."]
+            "maintenance": 1,
+            "time": 1,
+            "energy": 1000,
+            "inputs": { "hydrogen": 1 }
+            "outputs": { "basic-fusion-fuel": 1 }
+        },
+        "advanced-fuel-refinement": {
+            "comments": [
+                "There's no such thing as a free lunch."]
+            "maintenance": 1,
+            "time": 1,
+            "energy": 1000,
+            "inputs": { "basic-fusion-fuel": 1 }
+            "outputs": { "advanced-fusion-fuel": 1 }
+        },
+        "cpmmon-ore-refinement": {
+            "comments": [
+                "Refnining converts ore into ingots and slag."],
+            "properties": { "efficiency": 0.05 }
+            "maintenance": 1,
+            "time": 1,
+            "energy": 1000,
+            "inputs": { "common-ore": 1 },
+            "outputs": {
+                "common-ingots": [
+                    "*", "efficiency", "common-ore"],
+                "gray-slag": ["*",
+                    ["-", 1, "efficiency"],
+                    "efficiency", "common-ore"],
+                "black-slag": [
+                    "*", "efficiency", "efficiency", "common-ore"]
+            }
+        },
+        "electrolysis": {
+            "maintenance": 1,
+            "time": 1,
+            "energy": 1000,
+            "inputs": { "water": 10 },
+            "outputs": { "hydrogen": 2, "oxygen": 16 }
+        },
+        "basic-bioreactor": {
+            "comments": [],
+            "maintenance": 1,
+            "time": 1,
+            "energy": 1000,
+            "inputs": {"carbon-dioxide": 1},
+            "outputs": {"algae-mush": 1}
+        }
+        "engine": {
+            "comments": [
+                "Engines convert fusion fuel into thrust."
+                "This allows ships to move through space, which "
+                "is useful for bringing in resources."],
+            "maintenance": 1,
+            "time": 1,
+            "energy": 1000,
+            "inputs": {"fusion-fuel": 1},
+            "outputs": {"thrust": 1}
+        }
+    },
+    "ship-features": {
+        "thrust": {},
+        "cargo": {},
+        "mining": {},
+        "sensors": {},
+        "shields": {}
+        "weapons": {},
+    },
+    "ship-designs": {
+        "GX4 BumbleBee": {
+            "comments": [
+                "Designed and manufactured by the Rhekov ",
+                "Corporation on Neptune, this ship has been the ",
+                "work horse of the Kuiper.  While not the best ",
+                "place to be in a fight, the BumbleBee does sting ",
+                "using a small compliment of missiles.  Most of ",
+                "its mass is devoted to mining gear and enginges ",
+                "for hauling minerals to stations."]
+        },
+        "Cobra MKIII": {
+            "comments": [
+                "Favored by privateers, the Cobra MKIII is a ",
+                "combat oriented ship with some flexibility for ",
+                "limited use as a hauler or mining ship."]
+        }
+    }
+}
