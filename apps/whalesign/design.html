@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<title>Whalesign: Design</title>
+<h1>Whalesign: Design</h1>
+<p>
+    Whalesign is a turn based game about hunting demon whales in a
+    fictional world with late-nineteenth century technology.  The
+    player controls the crew of a well armed steam ship and must kill
+    their prey, but demon whales fight back.
+</p><p>
+    The game has two modes.  First is port mode, where the player can
+    make choices about how to equip their ship and consider rumors
+    about what kinds of demon whales are in various regions.  These
+    rumors are usually true but not entirely reliable.  The second is
+    battle mode where the player gives orders to the crew.  Battle
+    mode ends when the demon whale dies, when the ship runs out of
+    hull points and capsizes or when the of the crew is incapacitated.
+</p>
+<h2>Demon Whales</h2>
+<p>
+    A demon whale is a ferocious beast but it can be killed.  Each
+    whale has a unique combination of traits and abilities.  All of
+    them can wreck a ship by battering it to pieces or capsizing it
+    and most have at least one special attack.  They can be small,
+    medium or large.  At any moment the demon whale is in one of a
+    small number of states, which deterines which kinds of attacks and
+    defenses it can use.
+</p><ul><li>
+    Surfaced: partially above the waves.  Demon whales must enter
+    this state every so often in order to breathe.  Some can hold
+    their breath longer than others.
+</li><li>
+    Submerged: visible below the surface.  Demon whales in this state
+    can usually be seen but are resistant to cannon shells and harder
+    to target.
+</li><li>
+    Deep: far below the surface.  Direct targetting is impossible
+    against whales in this state, but tow lines and reackoning may
+    make it possible to harm one using depth charges.  Demon whales
+    start the battle in this state.
+</li><li>
+    Dead: getting them to this state takes a work but that's the job.
+</li></ul>
+<p>
+    Demon whales have a variety of potential attacks:
+</p><ul><li>
+    Ram: all demon whales can do this when surfaced or submerged, but
+    not when deep.  This does moderate damage to the ship and creates
+    strong tremmors that can knock over crew members.
+</li><li>
+    Bite: demon whales with especially sharp teeth can bite into
+    ships, causing heavy damage and mild tremmors that might knock
+    crew members over.
+</li><li>
+    Pull: a whale tethered to a ship may move deep in an attempt to
+    damage the ship.
+</li><li>
+    Spikes: some demon whales can shoot spikes when surfaced that
+    act as a powerful anti-personel weapon.
+</li><li>
+    Summon: some demon whales can call upon mermen to climb onto
+    ships to kill or at least distract the crew.
+</li><li>
+    Tentacle: long protrusions that can act on the deck of the ship.
+    These can attack crew, slam the deck or grab the ship in an
+    attempt to drag it to Davy Jones' locker.
+</li></ul>
+<p>
+    Every whale has one of the following sizes:
+</p>
+<ul><li>
+    Small: 500 - 1500 hits.  Can be dragged by the ship when tethered.
+</li><li>
+    Medium: 1000 - 3000 hits.  Can't be dragged when tethered, but
+    suffers reduced movement speed.
+</li><li>
+    Large: 2000 - 6000 hits.  Drags the ship when tethered at a reduced
+    movement speed.
+</li><li>
+    Huge: 4000 - 12000 hits.  Drags the ship when tethered at full
+    movement speed.
+</li></ul>
+<h2>Ships</h2>
+<p>
+    Each ship consists of a top deck and a bridge.  There are
+    several stations that the crew can use.
+</p><ul><li>
+    Hardpoint: here crew can operate mounted weapons such as
+    explosive harpoon guns, cannons and the like.
+</li><li>
+    Bollard: protrusions with ropes or chains that crew can use to
+    lash deck items like cannons or ammuniction barrels in place.
+</li><li>
+    Locker: here crew can retrieve a life preservers, cutlasses,
+    rifles or other items.
+</li><li>
+    Stairs: here a crew member can go below deck to be relatively
+    safe -- assuming the ship survives.  Incapacitated crew members
+    can be dragged here.
+</li><li>
+    Bridge: here the ships wheel can be used to steer.
+</li></ul>
+<p>
+    Ships bring a variety of mounted weapons.
+</p><ul><li>
+    Cannon: fires shells that do heavy damage (50 - 100 hits).  These
+    are most effective against surfaced whales but can still do some
+    harm to submerged whales.
+</li><li>
+    Harpoon Gun: launches sharp spears into the body of a demon
+    whale to weaken (and eventually kill) it.  (10 - 15 hits)
+</li><li>
+    Tethered Harpoon Gun: like the harpoon gun, but with a rope that
+    can reel in smaller demon whales.  Larger ones can pull the
+    ship by the rope, though it might snap.  Tethers can be released
+    by reloading or cut with a cutlass.  (5 - 10 hits)
+</li><li>
+    Chain Harpoon Gun: much slower to reel in than the harpoon rope
+    gun but also much less likely to break.  Chains can be released
+    by reloading but are not practical to cut. (10 - 15 hits)
+</li></ul>
+<h2>Crew</h2>
+<p>
+    The player controls ten to twelve crew members.
+</p><p>
+    Crew members get 5 - 10 hits depending on stats.
+</p><p>
+    A crew member has a stability score that can be affected by some
+    actions, but is reduced by shocks such as whales ramming the ship.
+    When stability is low there is a chance the crew member will slip
+    and even fall overboard.  Crew members can lash themselves to the
+    deck but this limits their movement range.
+</p><p>
+    Each round a crew member gets 10 to 20 action points to be spent
+    each round:
+</p><ul><li>
+    Move (2ap standing): repositions the crew member on the deck or
+    bridge.  Not available to prone crew members.
+</li><li>
+    Stand (10ap prone):  This changes the state
+    of the crew member to standing.
+</li><li>
+    Drop (1ap standing):  This changes the state
+    of the crew member to prone.
+</li><li>
+    Grab/discard (1ap): collects or discards a personal item, such as
+    a cutlass or rifle.
+</li><li>
+    Cut (5ap standing): draws a knife and deals slashing damage
+    to a creature or object adjacent to the crew member. Automatically
+    cuts ropes.
+</li><li>
+    Slash (4ap standing sword): deals slashing damage to a creature or
+    object adjacent to the crew member.  Automatically cuts ropes.
+</li><li>
+    Stab (4ap standing sword): deals piercing damage to a creature
+    or object adjacent to the crew member.
+</li><li>
+    Fire (4ap standing firearm): diels ballistic damage to a creature
+    or object targetted by the crew member.
+</li><li>
+    Activate (3ap standing system): provides effort to and adjacent
+    ship system, such as a cannon.
+</li><li>
+    Drag (3ap standing deckitem): moves a deck item or disabled crew
+    member at a reduced movement speed.
+</li><li>
+    Brace (5ap standing deckitem): recover some stability.
+</li></ul>
+<p>
+    
+</p>
+<p>
+    Crew members can have a variety of roles:
+</p><ul><li>
+    Captain: gives a large boost to morale when active
+</li><li>
+    First Mate: gives a small boost to morale when active
+</li><li>
+    Quartermaster: manages provisions
+</li><li>
+</li></ul>
+<p>
+    Crew members have attributes and stats.  Attributes are immutable
+    and determined when the crew member is created.  Stats can improve
+    with experience as the crew member develops skills.
+</p><p>
+    Let's start with attributes:
+</p><ul><li>
+    Brawn: affects damage output
+</li><li>
+    Agility: affects stability
+</li><li>
+    Will: affects morale
+</li><li>
+    Sight: affects accuracy
+</li></ul>
