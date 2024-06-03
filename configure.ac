@@ -66,7 +66,7 @@ if test "x$enable_java" = x1; then
     if test "x$JAVA_HOME" != x; then
         true # Don't question a user supplied JAVA_HOME
     elif test -d /etc/alternatives/java_sdk; then
-        JAVA_HOME=/etc/alterntatives/java_sdk
+        JAVA_HOME=/etc/alternatives/java_sdk
     elif test -x /etc/alternatives/javac; then
         JAVA_HOME=`readlink /etc/alternatives/javac | \
                    sed 's,/bin/javac,,'`
