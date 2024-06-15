@@ -539,6 +539,7 @@ uninstall-local:
 #   a2enmod userdir auth_digest authn_socache authn_dbd
 #   vi /etc/apache2/mods-available/userdir.conf
 #       AllowOverride ... Options=ExecCGI,MultiViews
+#   systemctl enable apache2
 #   systemctl restart apache2
 
 HOSTNAME  = localhost

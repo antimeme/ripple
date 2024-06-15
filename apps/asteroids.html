@@ -176,7 +176,7 @@
   * constant term should come first, followed by the linear term
   * and finally the quadratic term.  This returns an array which
   * may have zero, one or two values. */
- function quadraticRealRoots(c, b, a) {
+ function computeRealRoots(c, b, a) {
      const result = [];
      if (isNaN(a) || zeroish(a)) {
          result.push(-c / b);
@@ -185,10 +185,14 @@
 
          if (zeroish(discriminant)) {
              result.push(-b / (2 * a));
-         } else if (discriminant >= 0) {
+         } else if (discriminant > 0) {
+             // Avoid catestrophic cancellation by calculating the
+             // largest root and computing the other by division
              const sqrtdisc = Math.sqrt(discriminant);
-             result.push((-b + sqrtdisc) / (2 * a));
-             result.push((-b - sqrtdisc) / (2 * a));
+             const qq = ((b >= 0) ? (b + sqrtdisc) :
+                         (b - sqrtdisc)) * -0.5;
+             result.push(qq / a);
+             result.push(c / qq);
          }
      }
      return result;
@@ -273,7 +277,7 @@
          const ddx    = this.dx - other.dx;
          const ddy    = this.dy - other.dy;
          return (dx * dx + dy * dy <= radius * radius) ||
-                quadraticRealRoots(
+                computeRealRoots(
                     dx * dx + dy * dy - radius * radius,
                     2 * (dx * ddx + dy * ddy),
                     ddx * ddx + ddy * ddy).some(
