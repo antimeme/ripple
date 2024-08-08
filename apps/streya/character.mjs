@@ -136,7 +136,6 @@ class Race {
                 (step.blink > Math.floor((
                     now + step.period * phase) %
                     step.period) / step.period)) {
-                console.log("DEBUG", phase);
             } else if ((step.op === "ellipse") &&
                        !isNaN(step.x)  && !isNaN(step.y) &&
                        !isNaN(step.rx) && !isNaN(step.ry)) {

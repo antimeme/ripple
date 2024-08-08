@@ -5,13 +5,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <link rel="icon" href="streya.svg?serial=ENUjMO" />
 <link rel="stylesheet" href="app.css" />
-<title>Streya Vanguard</title>
+<title>Streya</title>
 <script type="module">//<![CDATA[
  import Camera from "../ripple/camera.mjs";
- import Gestalt from "./gestalt.mjs";
+ import App from "./app.mjs";
 
  Camera.preload("./setting.json", (loaded) => {
      const camera = new Camera(document.body.appendChild(
          document.createElement("canvas"))).setScale(4).manage(
-             new Gestalt(loaded["./setting.json"]));
+             new App(loaded["./setting.json"]));
  }); //]]></script>

@@ -289,7 +289,7 @@ class BaseGrid {
      *
      *     fn(neighbor, index, grid, node)
      *
-     * Each neighbors has the following properties:
+     * Each neighbor is an object with the following properties:
      *
      *     row: integer position within grid
      *     col: integer position within grid

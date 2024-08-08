@@ -85,3 +85,6 @@
 /raspi/initrd.img*
 /raspi/*.dtb
 /raspi/image/
+
+# Streya
+apps/streya/data.html

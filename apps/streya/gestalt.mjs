@@ -1,6 +1,6 @@
 import Character from "./character.mjs";
 import Inventory from "./inventory.mjs";
-import Structure from "./structure.mjs";
+import Structure from "./oldstruct.mjs";
 
 class Panel {
     constructor() {

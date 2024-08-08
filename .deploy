@@ -2,3 +2,5 @@
   make ripple.jar .javadoc \
        apps/gizmo.html EM_CONFIG=$HOME/.emscripten
 rm -rf build
+
+make -C apps/streya

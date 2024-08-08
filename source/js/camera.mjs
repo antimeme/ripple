@@ -1,5 +1,5 @@
 // camera.mjs
-// Copyright (C) 2023 by Jeff Gold.
+// Copyright (C) 2023-2024 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -16,11 +16,12 @@
 // <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
-// A simple two-dimensional camera abstraction for HTML canvas.
-// Camera provides a world space where the origin (0, 0) starts at
-// the center of the screen and uses chalkboard coordinates (so
-// positive x goes to the right and positive y goes up).
 
+/**
+ * A simple two-dimensional camera abstraction for HTML canvas.
+ * Camera provides a world space where the origin (0, 0) starts at
+ * the center of the screen and uses chalkboard coordinates (so
+ * positive x goes to the right and positive y goes up). */
 class Camera {
     constructor(screen) {
         if (!(screen instanceof HTMLElement))
@@ -192,11 +193,12 @@ class Camera {
 
         if (!this.#listeners) {
             let pinchScale = undefined;
-            const pinchDistance = (event) => Math.hypot(
-                event.targetTouches[0].clientX -
-                event.targetTouches[1].clientX,
-                event.targetTouches[0].clientY -
-                event.targetTouches[1].clientY);
+            function pinchDistance(event) {
+                return Math.hypot(
+                    event.targetTouches[0].clientX -
+                    event.targetTouches[1].clientX,
+                    event.targetTouches[0].clientY -
+                    event.targetTouches[1].clientY); }
 
             let dragStart = undefined;
             let dragTouch = undefined;
