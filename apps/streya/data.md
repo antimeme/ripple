@@ -7,9 +7,13 @@ abstract: |
   Streya stores data.  It is organized in a manner parallel to the
   structure expected in the JSON input format.  Expectations about
   type are encoded in the section headings.
+comments: |
+  This is a Markdown document in GitHub format intended to be
+  processed using pandoc.  `sudo apt install -y pandoc &&
+  pandoc -s -f gfm+smart --css data.css --toc --toc-depth=4 data.md`
 ---
 
-## schema: object
+## schema: object{object}
 
 A schema section provided metadata intended to clarify the way other
 data is to be interpreted.
@@ -22,7 +26,7 @@ support reading data in older formats for backward compatability.
 
 At the moment, only one version string is supported: 0.0.1
 
-## icondefs: object[object]
+## icons: array[object]
 
 Describes vector drawing icons for user interface purposes.
 
@@ -65,7 +69,7 @@ extents of the icon and must not be exceeded.
 Horizontal coordinate of this vertex.  One and minus one are the
 extents of the icon and must not be exceeded.
 
-## itemdefs: object[object]
+## items: object{object}
 
 Streya has many personal items that can be worn, weilded or carried
 by characters.  Each of these items requires a definition.  Note
@@ -103,7 +107,7 @@ items with a bulk up to and including the value.
 When present indicates that the item can store a number of items
 with up to `storageBulk` bulk equal to the value.
 
-### storeSlots: object[number(non-negative-integer))]
+### storeSlots: object{number(non-negative-integer))}
 
 When present indicates that the item can accept items with a
 particular slot value.  For example, a `scabbard` item might have `{
@@ -122,13 +126,23 @@ than five cannot be carried without assistance.
   - `3`: Easy to wield with two hands, but possible to use with one
   - `4`: Requires two hands to wield
   - `5`: Requires two hands to wield and carry
-  
-### attacks: object[object]
+
+### attacks: object{object}
 
 Some items can be used as weapons.  These have one or more attacks
 specified in this object.
 
-#### damage: required object[positive-integer]
+Attacks begin at some point in time and land after the windup expires.
+After this the attacking character must continue until the cooldown
+expires or until they are incapacitated in some other way.
+
+#### difficulty: number(positive-integer)
+
+This number is the target for an attack to hit an inanimate object
+about the size of a person.  Attacks that don't reach this number
+are effectively fumbles.
+
+#### damage: required object{positive-integer}
 
 Each key in damage object specifies a damage type.  Possible damage
 types are:
@@ -176,13 +190,63 @@ removed when resolving the attack.
 
 :TODO: some ammo is destroyed upon use -- how to represent this?
 
+### defense: number(non-negative-integer)
+
+When truthy this item can be used to block or parry attacks.
+
 ### ignore: boolean
 
-When present and truthy, this item is rendered invisible to players
-and most algorithms that select items.  It can still be present in
-inventories.
+When present and truthy, this item is rendered invisible to players.
+It can still be used for existing content.
 
-## gestalt: object
+## races: object{object}
+
+Each character has a race.  The default is `human` but there may be
+other options.
+
+### slots: object{???}
+
+:TODO: expand
+
+### ignore: boolean
+
+When present and truthy, this race is rendered invisible to players.
+It can still be used for existing content.
+
+## cultures: object{object}
+
+A culture comprises customs, language and the way things are named.
+
+:TODO: expand
+
+### ignore: boolean
+
+When present and truthy, this culture is rendered invisible to players.
+It can still be used for existing content.
+
+## backgrounds: object{object}
+
+A culture comprises customs, language and the way things are named.
+
+:TODO: expand
+
+### ignore: boolean
+
+When present and truthy, this background is rendered invisible to
+players.  It can still be used for existing content.
+
+## facilities: object{object}
+
+A facility is a static structure that can be placed in a building or
+a ship.  These can be used by characters to meet needs, excercise
+skills or influence ship activities.
+
+### ignore: boolean
+
+When present and truthy, this facility is rendered invisible to players.
+It can still be used for existing content.
+
+## gestalt: object{object}
 
 Each instance of Streya is called a gestalt.  No single program should
 concern itself with more than one gestalt at a time.  Whether gestalts
@@ -199,11 +263,17 @@ When present, this indicates that the gestalt is actually a reference
 to something else, which should be looked up and used instead.  This is
 like a symbolic link.
 
-### itemdefs: object
+### items: object
 
 A gestalt may have its own optional item definition object.  If present
 the definitions in it override those found in the top level instance.
-All fields from the top level `itemdefs` object apply here.
+All fields from the top level `items` object apply here.
+
+### races: object
+
+A gestalt may have its own optional race definition object.  If present
+the definitions in it override those found in the top level instance.
+All fields from the top level `races` object apply here.
 
 ### stations: object
 
@@ -212,10 +282,6 @@ rotation for gravity to support populations.  Stations almost never
 move, since this would require massive engines and economically
 ruinious quantities of fuel.  Instead, resources are brought to them
 by mining and trade ships, which can purchase refined supplies.
-
-#### name: string
-
-A pronouncable name used to refer to this station.
 
 #### districtRows: number(positive-integer)
 
