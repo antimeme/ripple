@@ -50,16 +50,12 @@ bin_PROGRAMS =
 if HAVE_SDL2
 # Before attempting to compile Gizmo, install the necessary
 # libraries so that configure can find them:
-# $ apt install -y libsdl2-dev libsdl2-gfx-dev \
-#                  libsdl2-ttf-dev libsdl2-image-dev
+# $ apt install -y libsdl2-dev libsdl2-{gfx,ttf,image,mixer}-dev
 # $ guix install sdl2 sdl2-ttf sdl2-gfx sdl2-image
 bin_PROGRAMS += gizmo
 gizmo_CFLAGS = `sdl2-config --cflags`
 gizmo_LDFLAGS = `sdl2-config --libs` \
-	-lSDL2_mixer \
-	-lSDL2_ttf \
-	-lSDL2_gfx \
-	-lSDL2_image -lm
+	-lSDL2_mixer -lSDL2_ttf -lSDL2_gfx -lSDL2_image -lm
 gizmo_SOURCES = \
 	source/gizmo/gizmo.c \
 	source/gizmo/asteroids.c
