@@ -8,10 +8,10 @@
 <title>Streya Vanguard</title>
 <script type="module">//<![CDATA[
  import Camera from "../ripple/camera.mjs";
- import Gestalt from "./gestalt.mjs";
+ import Vanguard from "./vanguard.mjs";
 
- Camera.preload("./setting.json", (loaded) => {
+ Camera.preload("./vanguard.json", (loaded) => {
      const camera = new Camera(document.body.appendChild(
          document.createElement("canvas"))).setScale(4).manage(
-             new Gestalt(loaded["./setting.json"]));
+             new Vanguard(loaded["./vanguard.json"]));
  }); //]]></script>

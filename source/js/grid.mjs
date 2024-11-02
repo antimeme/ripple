@@ -227,11 +227,11 @@ class BaseGrid {
 
     /**
      * Returns the radius of a single cell */
-    getRadius() { return this._radius; }
+    get radius() { return this._radius; }
 
     /**
      * Returns the length of a cell edge */
-    getEdge() { return this._edge; }
+    get edge() { return this._edge; }
 
     /**
      * Return an identifier for a node with row and col properties */
@@ -485,7 +485,7 @@ class BaseGrid {
             });
             ctx.closePath();
         } else if (points.length === 1) {
-            const radius = this.getRadius();
+            const radius = this.radius;
             ctx.moveTo(points[0].x + radius / 2,
                        points[0].y);
             ctx.arc(points[0].x, points[0].y,
@@ -901,7 +901,7 @@ class WedgeGrid extends BaseGrid {
 class AdapterGrid extends BaseGrid {
     constructor(underlying, toWorld, fromWorld)
     { super({
-        radius: underlying.getRadius(),
+        radius: underlying.radius,
         underlying, toWorld, fromWorld }); }
     _setup(config) {
         this.underlying = config.underlying;

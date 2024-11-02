@@ -1,0 +1,69 @@
+{
+    "version": "0.0.1",
+
+    "playerFaction": "Sparrow",
+
+    "characters": [{
+        "name": "Alice", "surname": "Smith",
+        "faction": "Sparrow", "colors":
+        { "body": "orangered", "head": "red", "eyes": "orange" },
+        "wearing": ["Shirt", "Pants", "Boots", "Gunbelt", "Revolver"],
+        "position": { "row": 0, "col": 0 }
+    }, {
+        "name": "Bob", "codename": "Bluebird", "surname": "Barker",
+        "faction": "Sparrow", "colors":
+        { "body": "darkblue", "head": "blue", "eyes": "skyblue" },
+        "wearing": ["Shirt", "Pants", "Shoes",
+            "Gunbelt", "PlasmaPistol"],
+        "position": { "row": 0, "col": 2 }
+    }, {
+        "name": "Charlie", "codename": "Canary", "surname": "Jones",
+        "faction": "Sparrow", "colors":
+        { "body": "darkgreen", "head": "green", "eyes": "skyblue" },
+        "wearing": ["Shirt", "Pants"], 
+        "position": { "row": -2, "col": 0 }
+    }, {
+        "name": "Eve", "faction": "Vulture", "colors":
+        { "body": "#222", "head": "#8b8", "eyes": "#333" },
+        "wearing": ["Shirt", "Pants", "FashionableShoes",
+            "Gunbelt", "Coilgun"],
+        "position": { "row": 2, "col": 0 }
+    }, {
+        "name": "Mallory", "faction": "Vulture", "colors":
+        { "body": "#222", "head": "#8b8", "eyes": "#333" },
+        "wearing": ["Shirt", "Pants", "Shoes", "Gunbelt", "Coilgun"],
+        "position": { "row": 0, "col": -2 }
+    }],
+
+    "structures": [{
+        "name": "platform",
+        "floorColor": "darkslategray",
+        "cellData": [{
+            "row": 0, "col": 0
+        }, {
+            "row": 0, "col": 1
+        }, {
+            "row": 0, "col": -1
+        }, {
+            "row": 1, "col": 0
+        }, {
+            "row": 1, "col": 1
+        }, {
+            "row": 1, "col": -1, "floorColor": "#475"
+        }, {
+            "row": -1, "col": 0
+        }, {
+            "row": -1, "col": 1
+        }, {
+            "row": -1, "col": -1
+        }, {
+            "row": 0, "col": -2
+        }, {
+            "row": 0, "col": 2
+        }, {
+            "row": -2, "col": 0
+        }, {
+            "row": 2, "col": 0
+        }]
+    }]
+}

@@ -1,422 +1,58 @@
 {
-    "schema": { "version": 0.1 },
-    "places": {
-        "Stratchi": {
-            "comments": [
-                "Stratchi Station is a prosperous trade hub.  ",
-                "Society is stratified into three social classes ",
-                "with considerable unrest."],
-            "population": {
-                "Sartan": 177,
-                "Pellarnik": 5
-            }
-        },
-        "Galarga": {
-            "comments": [
-                "Galarga Station is a industrial power. ",
-                "Society is disciplined and organized."],
-            "population": { "Pellarnik": 112 }
-        },
-        "Vendimire": {
-            "comments": [
-                "Vendimire Station is a military dictatorship. ",
-                "Society is hierarchical and controled by a ",
-                "collection of powerful guilds."],
-            "population": { "Karbic": 112 }
-        }
-    },
-    "cultures": {
-        "Sartan": {
-            "namegen": {
-                "surname": [
-                    "Naigud",
-                    "Vuteg",
-                    "Nirin",
-                    "Hugit",
-                    "Amux",
-                    "Itit",
-                    "Vaajok",
-                    "Mutug",
-                    "Virok",
-                    "Runin",
-                    "Dazek",
-                    "Ettax",
-                    "Aagix",
-                    "Airrek",
-                    "Memix",
-                    "Haathed",
-                    "Rugid",
-                    "Avak",
-                    "Vottid",
-                    "Gunag"],
-                "fname_male": [
-                    "Nurrit",
-                    "Gathit",
-                    "Rathin",
-                    "Rimax",
-                    "Vegun",
-                    "Inax",
-                    "Mattag",
-                    "Zaitit",
-                    "Huthid",
-                    "Zanag",
-                    "Hanuk",
-                    "Damix",
-                    "Vujix",
-                    "Nugin",
-                    "Zuttix",
-                    "Hottud",
-                    "Aijak",
-                    "Hinox",
-                    "Hagod",
-                    "Arrek"],
-                "fname_female": [
-                    "Chenihi",
-                    "Rhaaji",
-                    "Frari",
-                    "Avi",
-                    "Fraizi",
-                    "Yeni",
-                    "Edi",
-                    "Raari",
-                    "Daigi",
-                    "Aazani",
-                    "Hogi",
-                    "Ceki",
-                    "Lori",
-                    "Hevi",
-                    "Ori",
-                    "Dajili",
-                    "Chadi",
-                    "Edi",
-                    "Nozi",
-                    "Shanegi"]
-            }
-        },
-        "Pellarnik": {
-            "namegen": {
-                "surname": [
-                    "Pirnat",
-                    "Jesenko",
-                    "Dolar",
-                    "Vranik",
-                    "Bele",
-                    "Bauman",
-                    "Stropnik",
-                    "Dvoršak",
-                    "Skirl",
-                    "Hribersek",
-                    "Lenareie",
-                    "Divjak",
-                    "Mernik",
-                    "Kalan",
-                    "Rebernik",
-                    "Oman",
-                    "Bevc",
-                    "Jagodie",
-                    "Udovie",
-                    "Urbanija"],
-                "fname_male": [
-                    "Edis",
-                    "Jovo",
-                    "Valent",
-                    "Vojo",
-                    "Ludovik",
-                    "Aco",
-                    "Frenk",
-                    "Dejvid",
-                    "Tej",
-                    "Natan",
-                    "Gustav",
-                    "Ratko",
-                    "Manfred",
-                    "Erazem",
-                    "Esmir",
-                    "Antonio",
-                    "Elmin",
-                    "David",
-                    "Zdenko",
-                    "Shaban"],
-                "fname_female": [
-                    "Merisa",
-                    "Zofija",
-                    "Hilda",
-                    "Bosiljka",
-                    "Stela",
-                    "Hema",
-                    "Brankica",
-                    "Rafaela",
-                    "Irina",
-                    "Nicole",
-                    "Lena",
-                    "Elina",
-                    "Ela",
-                    "Ines",
-                    "Amna",
-                    "Anela",
-                    "Esma",
-                    "Smiljana",
-                    "Stanka",
-                    "Valentina"]
-            }
-        },
-        "Karbic": {
-            "namegen": {
-                "surname": [
-                    "Reginard",
-                    "Chlodomer",
-                    "Cyricus",
-                    "Ratold",
-                    "Haldemarus",
-                    "Atacinus",
-                    "Enurchus",
-                    "Chlodowig",
-                    "Medard",
-                    "Huebald",
-                    "Willibrord",
-                    "Chlodmer",
-                    "Sinopus",
-                    "Marellus",
-                    "Magneric",
-                    "Gedalcaus",
-                    "Gaudulfus",
-                    "Pippin",
-                    "Chararic",
-                    "Ingalbertus"],
-                "fname_male": [
-                    "Anthonis",
-                    "Maddax",
-                    "Grald",
-                    "Bentlix",
-                    "Jayedn",
-                    "Aris",
-                    "Traze",
-                    "Malakye",
-                    "Camren",
-                    "Justan",
-                    "Calwin",
-                    "Horrison",
-                    "Damiran",
-                    "Ryder",
-                    "Camden",
-                    "Larris",
-                    "Aldon",
-                    "Harlin",
-                    "Malcalm",
-                    "Adryel"],
-                "fname_female": [
-                    "Riya",
-                    "Allany",
-                    "Sabrya",
-                    "Kaelyn",
-                    "Cathrise",
-                    "Byenca",
-                    "Rianara",
-                    "Celethe",
-                    "Renette",
-                    "Braealyn",
-                    "Jexica",
-                    "Catlea",
-                    "Jennix",
-                    "Dlaney",
-                    "Giana",
-                    "Diyana",
-                    "Adley",
-                    "Idelle",
-                    "Jordyna",
-                    "Kimbr"]
-            }
-        }
-    },
-    "backgrounds": {
-        "Marine": {
-            "recruit": true,
-            "stage": "adult",
-            "skills": {
-                "Marksman": { "min": 3, "range": 3 },
-                "Discipline": { "min": 3, "range": 3 } },
-            "previous": {
-                "Navy Crewman": { "reason": "Dishonorably discharged" },
-                "Mechanic": { "reason": "Restless" },
-                "Security Guard": { "reason": "Low pay" },
-                "Police Officer": { "reason": "Excessive use of force" }
-            }
-        },
-        "Pilot": {
-            "recruit": true,
-            "stage": "adult",
-            "skills": {
-                "Pilot": { "min": 3, "range": 4 },
-                "Navigation": { "min": 1, "range": 3 },
-                "Gunnery": { "min": 1, "range": 3 }
-            }
-        },
-        "Navigator": {
-            "recruit": true,
-            "stage": "adult",
-            "skills": {
-                "Navigation": { "min": 3, "range": 4 },
-                "Pilot": { "min": 1, "range": 3 }
-            }
-        },
-        "Gunner": {
-            "recruit": true,
-            "stage": "adult",
-            "skills": {
-                "Gunnery": { "min": 3, "range": 4 },
-                "Pilot": { "min": 1, "range": 3 }
-            }
-        },
-        "Mechanic": {
-            "recruit": true,
-            "stage": "adult",
-            "skills": {
-                "Mechanic": { "min": 3, "range": 4 },
-                "Engineering": { "min": 1, "range": 3 },
-                "Gunnery": { "min": 1, "range": 3 }
-            }
-        },
-        "Engineer": {
-            "recruit": true,
-            "stage": "adult",
-            "skills": {
-                "Engineering": { "min": 3, "range": 4 },
-                "Mechanic": { "min": 1, "range": 3 }
-            }
-        },
-        "Researcher": {
-            "recruit": true,
-            "stage": "adult",
-            "skills": {
-                "Research": { "min": 3, "range": 3 }
-            },
-            "previous": {
-                "Academy Graduate": { "reason": "No prospects" },
-                "Research Assistant": { "reason": "Scandal" }
-            }
-        },
-        "Smuggler": {
-            "recruit": true,
-            "stage": "adult",
-            "skills": {
-                "Pilot": { "min": 2, "range": 2 },
-                "Navigation": { "min": 2, "range": 2 },
-                "Gunnery": { "min": 2, "range": 2 },
-                "Marksman": { "min": 2, "range": 2 },
-                "Mechanic": { "min": 2, "range": 2 }
-            }
-        },
-        "Miner": {
-            "recruit": true,
-            "stage": "adult",
-            "skills": {
-                "Mining": { "min": 3, "range": 3 }
-            }
-        },
-        "Navy Crewman": {
-            "stage": "adult",
-            "skills": {
-                "Marksman": { "min": 2, "range": 2 },
-                "Mechanic": { "min": 2, "range": 2 }
-            }
-        },
-        "Security Guard": {
-            "stage": "adult",
-            "skills": {
-                "Marksman": { "min": 2, "range": 3 },
-                "Discipline": { "min": 1, "range": 2 }
-            }
-        },
-        "Police Officer": {
-            "stage": "adult",
-            "skills": {
-                "Marksman": { "min": 3, "range": 2 },
-                "Discipline": { "min": 2, "range": 2 }
-            }
-        },
-        "Scholar": {
-            "stage": "adult",
-            "skills": {
-                "Research": { "min": 3, "range": 4 }
-            },
-            "previous": {
-                "Academy Graduate": { "reason": "Advanced degree" },
-                "Research Assistant": { "reason": "Return to academia" }
-            }
-        },
-        "Academy Graduate": {
-            "stage": "adolescent",
-            "skills": {
-                "Research": { "min": 2, "range": 3 },
-                "Engineering": { "min": 0, "range": 3 },
-                "Navigation": { "min": 0, "range": 3 }
-            }
-        },
-        "Academy Dropout": {
-            "stage": "adolescent",
-            "skills": {
-                "Charm": { "min": 1, "range": 3 },
-                "Discipline": { "min": 0, "range": 2 }
-            }
-        },
-        "Student": {
-            "stage": "childhood",
-            "skills": {
-                "Discipline": { "min": 1, "range": 2 }
-            }
-        },
-        "Dropout": {
-            "stage": "childhood",
-            "skills": {
-                "Streetwise": { "min": 1, "range": 2 }
-            }
-        },
-        "Research Assistant": {
-            "stage": "adult",
-            "skills": {
-                "Research": { "min": 1, "range": 3 }
-            },
-            "previous": {
-                "Academy Graduate": { "reason": "Recruited by lab" }
-            }
-        },
-        "Research Director": {
-            "stage": "adult",
-            "skills": {
-                "Research": { "min": 4, "range": 3 }
-            },
-            "previous": {
-                "Research Assistant": { "reason": "Promotion" }
-            }
-        },
-        "Gambler": {
-            "stage": "adult",
-            "skills": {
-                "Streetwise": { "min": 1, "range": 5 },
-                "Charm": { "min": 1, "range": 3 },
-                "Gambling": { "min": 1, "range": 5 }
-            }
-        },
-        "Fence": {
-            "stage": "adult",
-            "skills": {
-                "Streetwise": { "min": 2, "range": 4 },
-                "Stealth": { "min": 1, "range": 4 },
-                "Gambling": { "min": 1, "range": 4 },
-                "Marksman": { "min": 0, "range": 3 }
-            }
-        },
-        "Ganster": {
-            "stage": "adult",
-            "skills": {
-                "Streetwise": { "min": 2, "range": 4 },
-                "Gambling": { "min": 2, "range": 4 },
-                "Marksman": { "min": 2, "range": 4 }
-            }
-        }
-    },
+    "version": "0.0.1",
+    "comments": [
+        "This file contains the data necessary to define a role ",
+        "playing game with a character and inventory system.",
+        "Comments are provided for each section explaining what ",
+        "fields to expect and what they are intended to mean.",
+        "Empty strings in a comments array are intended to indicate ",
+        "paragraph breaks."],
+
+    "raceComments": [
+        "Each character has a race, which is usually human but can ",
+        "vary based on the setting.  A fantasy setting might have ",
+        "elves and dwarves.  Science fiction settings might have ",
+        "aliens and androids.  And so on.  A race has a set of limbs ",
+        "with certain attributes. Some limbs are prehensile, which ",
+        "means they can hold any solid object, subject to bulk ",
+        "restrictions.  Limbs that are not prehensile can wear a ",
+        "single item that specifically fits on that kind of limb.  ",
+        "For example, a character with a head limb can wear one item ",
+        "defined to fit a head, such as a helmet.",
+        "",
+        "Each limb has a hitweight, which when divided by the sum ",
+        "of all limb hitweights is the probability that a ",
+        "successful attack will strike this limb.  Attacks can ",
+        "target a limb (unless that limb has zero hitweight) by ",
+        "witholding one or more skill ranks.  Each rank withheld adds ",
+        "hitweight equal to one quarter of the total hitweight of ",
+        "that character (rounded down) to the desired limb.  ",
+        "Limbs with a truthy lowCover attribute have zero ",
+        "hitweight when the character is affected by low cover.",
+        "",
+        "Limbs with truthy alwaysCover attributes cannot have worn ",
+        "items removed -- though they can be replaced."],
     "races": {
-        "Human": {
+        "Humanoid": {
+            "ignore": true,
+            "limbs": {
+                "head": { "hitweight": 2 },
+                "torso": { "hitweight": 9, "alwaysCover": true },
+                "legs": {
+                    "hitweight": 8, "lowCover": true,
+                    "alwaysCover": true,
+                    "walk": 1.0, "swim": 0.5
+                },
+                "feet": { "hitweight": 0, "lowCover": true },
+                "rhand": {
+                    "prehensile": true, "hitweight": 3,
+                    "crawl": 0.2, "swim": 0.5
+                },
+                "lhand": {
+                    "prehensile": true, "hitweight": 3,
+                    "crawl": 0.2, "swim": 0.5
+                }
+            },
             "draw": {
                 "colors": {
                     "body": ["blue", "green", "cyan", "yellow"],
@@ -437,30 +73,327 @@
                     "op": "circle", "x": -0.1, "y": 0.1,
                     "r": 0.05, "fill": "eyes",
                     "period": 4500, "blink": 0.075 }]
+            }
+        },
+        "Human": { "parent": "Humanoid", "default": true }
+    },
+
+    "itemComments": [
+        "A collection of item definitions are provided. ",
+        "- parent: string indicates which item to inherit from",
+        "- mass: required number amount in grams",
+        "- contains: string indicating item time this item stores",
+        "- capacity: integer indicating contained item count",
+        "- wear: limb on which item can be worn",
+        "- cover: array of additional limbs affected by this item",
+        "- applies: array of properties applied to wearer",
+        "- slots: array of slots that can hold items",
+        "- startState: string starting state for item",
+        "- uses: object with descriptions of actions",
+        "",
+        "Some items have one or more uses. ",
+        "- damage: integer damage done if target is hit",
+        "- pierce: integer armor value ignored if target is hit",
+        "- shred: integer reduction to armor if target is hit",
+        "- bleed: integer causes this much bleeding if target is hit",
+        "- ammo: indicates ammunition required to perform this use",
+        "- setState: string item state set to this on use"],
+    "itemdefs": {
+        "Shoes": {
+            "mass": 700, "wear": "feet",
+            "comments": ["A sturdy pair of shoes."]
+        },
+        "Boots": {
+            "mass": 1400, "parent": "Shoes", "wear": "feet",
+            "comments": ["A sturdy pair of boots."]
+        },
+        "Pants": {
+            "mass": 200, "wear": "legs", "slots": ["belt"],
+            "comments": ["Sturdy linen pants and that ensure decency"]
+        },
+        "Belt": { "mass": 100, "wear": "belt" },
+        "Shirt": {
+            "mass": 200, "wear": "torso", "cover": ["rhand", "lhand"],
+            "slots": ["backpack"],
+            "comments": ["Sturdy linen shirt that ensures decency"]
+        },
+        "Undershirt": {
+            "mass": 100, "parent": "Shirt", "cover": [],
+            "comments": ["A light but still decent torso cover"]
+        },
+        "FashionablePants": {
+            "mass": 220, "parent": "Pants",
+            "comments": ["Aesthetically pleasing apparel"]
+        },
+        "FashionableShirt": {
+            "mass": 220, "parent": "Shirt",
+            "comments": ["Aesthetically pleasing apparel"]
+        },
+        "FashionableBelt": { "mass": 90, "parent": "Belt" },
+        "FashionableShoes": {
+            "mass": 500, "parent": "Shoes",
+            "comments": ["Aesthetically pleasing apparel"]
+        },
+        "UtilityPants": {
+            "mass": 300, "parent": "Pants",
+            "slots": ["belt", "pocket", "pocket"]
+        },
+        "UtilityShirt": {
+            "mass": 300, "parent": "Shirt",
+            "slots": ["backpack", "pocket", "pocket"]
+        },
+        "MagneticBoots": {
+            "mass": 1600, "parent": "Shoes",
+            "applies": ["MagnetWalk"], "slots": ["pocket"],
+            "comments": [
+                "Lined with magnetic strips that make stick to the ",
+                "deck plates of ships.  Perfect for casual ",
+                "zero-gravity cruises."]
+        },
+        "MagneticShoes": {
+            "mass": 900, "parent": "Shoes",
+            "applies": ["MagnetWalk"],
+            "comments": [
+                "Lined with magnetic strips that make stick to the ",
+                "deck plates of ships.  Perfect for casual ",
+                "zero-gravity cruises."]
+        },
+        "Coverall": {
+            "mass": 500,
+            "wear": ["legs", "torso"], "cover": ["rhand", "lhand"],
+            "slots": ["backpack", "pocket", "pocket"]
+        },
+        "CruiseBoots": {
+            "comments": [
+                "Rugged boots with active magnetic lining that ",
+                "responds to deck plates.  Gives ideal"],
+            "mass": 1800, "parent": "Shoes",
+            "applies": ["MagnetWalk", "MagnetRun"]
+        },
+        "PressureSuit": {
+            "comments": [],
+            "mass": 20000, "wear": ["torso", "legs"],
+            "cover": ["rhand", "lhand"],
+            "applies": ["VacuumSafe"]
+        },
+        "PressureHelmet": {
+            "comments": [],
+            "mass": 3000, "wear": "head",
+            "slot": ["EnergyCell", "OxygenCandle"],
+            "applies": ["VacuumSafe", "Breathe"]
+        },
+        "OxygenCandle": {
+            "comments": [
+                "Chemical mixture that produces breathable oxygen for ",
+                "about six hours."],
+            "mass": 1200, "bulk": 1
+        },
+        "SpentOxygenCandle": {
+            "comments": ["Leftover packaging and residue"],
+            "mass": 200, "bulk": 1
+        },
+        "FlakPants":
+        { "mass": 1200, "parent": "Pants", "armor": 15 },
+        "FlackVest":
+        { "mass": 900, "wear": "torso", "armor": 15 },
+        "FlackJacket":
+        { "mass": 1200, "parent": "Shirt", "armor": 15 },
+        "Gunbelt":
+        { "mass": 250, "parent": "Belt", "slots": ["holster"] },
+        "BulletCasing": {
+            "comments": ["Spent cartridge from a firearm."],
+            "mass": 3, "bulk": 0
+        },
+        "BulletCartridge": {
+            "comments": [
+                "An enclosed bullet with explosive charge and ",
+                "center-fired primer.  Can be fired in vacuum ",
+                "because gunpowder includes oxidizer."],
+            "mass": 10, "bulk": 0,
+            "damage": 60, "shred": 2, "pierce": 8, "bleed": 10
+        },
+        "RevolverCylinder": {
+            "mass": 150, "bulk": 1,
+            "contains": "BulletCartridge",
+            "containCapacity": 6
+        },
+        "PistolMagazine": {
+            "mass": 100, "bulk": 1,
+            "contains": "BulletCartridge", "capacity": 9
+        },
+        "Revolver": {
+            "comments": [
+                "Dependable and flexible hand gun.  Normally less ",
+                "accurate than a semi-automatic pistol due to the ",
+                "double action trigger but can be prepared and fired ",
+                "as single action for improved accuracy."],
+            "mass": 600, "bulk": 2, "wear": "holster",
+            "slots": ["RevolverCylinder"],
+            "uses": {
+                "SnapShot": {
+                    "action": 1, "ammo": "BulletCartridge",
+                    "range": 20, "accuracy": 6
+                },
+                "AimedShot": {
+                    "action": 2, "ammo": "BulletCartridge",
+                    "range": 25, "accuracy": 9
+                }
+            }
+        },
+        "SemiAutomaticPistol": {
+            "comments": [
+                "Lightweight pistol that exploits recoil to chamber ",
+                "the next round using a slide."],
+            "mass": 500, "bulk": 2,
+            "wear": "holster",
+            "slots": ["PistolMagazine"],
+            "uses": {
+                "SnapShot": {
+                    "action": 1, "ammo": "BulletCartridge",
+                    "range": 20, "accuracy": 7
+                },
+                "AimedShot": {
+                    "action": 2, "ammo": "BulletCartridge",
+                    "range": 25, "accuracy": 8
+                }
+            }
+        },
+        "CoilgunSlug": {
+            "mass": 9, "bulk": 0,
+            "damage": 50, "shred": 1, "pierce": 15, "bleed": 8,
+            "comments": [
+                "Slightly cheaper to make than bullet cartridges due ",
+                "to lack of gunpowder but only slightly because most ",
+                "of the cost comes from the bullet itself."]
+        },
+        "CoilgunMagazine": {
+            "mass": 120, "bulk": 1,
+            "contains": "CoilgunSlug", "capacity": 15
+        },
+        "Coilgun": {
+            "comments": [
+                "A coilgun uses powerful electromagnets to accelerate ",
+                "metal slugs without gunpowder.  Due to the higher ",
+                "muzzle velocity these weapons are better at piercing ",
+                "armor but do less damage to unarmored targets."],
+            "mass": 800, "bulk": 3, "wear": "holster",
+            "slots": ["CoilgunMagazine", "EnergyCell"],
+            "uses": {
+                "SnapShot": {
+                    "ammo": "CoilgunSlug", "energy": 10,
+                    "range": 30, "accuracy": 7
+                },
+                "AimedShot": {
+                    "ammo": "CoilgunSlug", "energy": 10,
+                    "range": 35, "accuracy": 8
+                }
+            }
+        },
+        "LaserPistol": {
+            "comments": [
+                "Fires focused photon beams that do not require ",
+                "ammunition but do consume energy.  Can be countered ",
+                "by personal electromagnetic shields."
+            ],
+            "mass": 700, "bulk": 2,
+            "slots": ["EnergyCell"],
+            "uses": {
+                "SnapShot": {
+                    "energy": 8, "damage": 50, "pierce": 20,
+                    "range": 40, "accuracy": 8
+                },
+                "AimedShot": {
+                    "energy": 8, "damage": 50, "pierce": 20,
+                    "range": 45, "accuracy": 9
+                }
+            }
+        },
+        "PlasmaPistol": {
+            "comments": [
+                "Fires packets of ionized gas.  Consumes a gas charge ",
+                "when fired in vacuum but not otherwise.  Can be ",
+                "countered by personal electromagnetic shields."
+            ],
+            "mass": 700, "bulk": 2,
+            "slots": ["EnergyCell", "GasPack"],
+            "uses": {
+                "SnapShot": {
+                    "ammo": "GasCharge", "energy": 8,
+                    "damage": 50, "shred": 5,
+                    "range": 35, "accuracy": 7
+                },
+                "AimedShot": {
+                    "ammo": "GasCharge", "energy": 8,
+                    "damage": 50, "shred": 5,
+                    "range": 40, "accuracy": 8
+                }
+            }
+        },
+        "EnergyCell": {
+            "comments": [
+                "Rechargable hydrogen fuel cell suitable for ",
+                "powering personal items and equipment."],
+            "mass": 150, "bulk": 1, "energyCapacity": 100
+        },
+        "Medkit": {
+            "mass": 2500, "bulk": 3,
+            "slots": ["EnergyCell"],
+            "uses": {
+                "TreatWounds": {},
+                "TreatBleeding": {}
+            }
+        },
+        "TraumaKit": {
+            "mass": 2500, "bulk": 3,
+            "slots": ["EnergyCell"],
+            "uses": {
+                "TreatTrauma": {}
+            }
+        },
+        "RepairKit": {
+            "mass": 4100, "bulk": 3,
+            "uses": {
+                "FixMachine": {}
             },
-            "slots": { "feet": true, "neck": true }
+            "comments": [
+                "A collection of tools for fixing machinery"]
         }
     },
-    "itemtypes": {
-        "Magboots": {"mass": 1200},
-        "Coverall": {"mass": 3200, "wear": "fullbody"},
-        "Pressure Suit": {"mass": 8000, "wear": "fullbody"},
-        "Pressure Helmet": {
-            "mass": 1500, "wear": "head",
-            "accept": "Respirator Charge"},
-        "Emergency Respirator": {
-            "mass": 750, "wear": "face",
-            "accept": "Respirator Charge"},
-        "Respirator Charge": {
-            "comments": "About 5 hours of breathing",
-            "mass": 900, "wear": "face"},
-        "Medkit": {"mass": 2200},
-        "Fire Extinguisher": {"mass": 2500},
-        "Thrust Belt": {"mass": 3300, "accept": "Propellant Pack"},
-        "Propellant Pack": {
-            "comments": "About 32m/s deltaV",
-            "mass": 2100, "exhaust": 1800 },
-        "Coil Pistol": {"mass": 825, "accept": "Slug Magazine"},
-        "Slug Magazine": {"mass": 250}
+
+    "faciltyComments": [
+        "Facilities are large machines that perform functions ",
+        "necessary for a building or machine to do its job."
+    ],
+    "facilities": {
+        "Reactor": {
+            "comments": [
+                "Converts advanced fusion fuel into helium and ",
+                "energy to provide power to other facilities."]
+        },
+        "Generator": {
+            "comments": [
+                "Collects energy from the decay of radioactive ",
+                "to provide power to facilities.  These are ",
+                "expensive but are sometimes used as fail safe ",
+                "mechanisms in an emergency"]
+        },
+        "Battery": {
+            "comments": [
+                "Stores energy to provide to other facilities. ",
+                "These are usually charged by a reactor for use ",
+                "during maintenance or when fuel is exhausted."]
+        },
+        "Engine": {},
+        "Mainframe": {},
+        "Console": {},
+        "Locker": {},
+        "Hardpoint": {},
+        "Cargo": {},
+        "Podbay": {},
+        "Head": {},
+        "Galley": {},
+        "Bed": {},
+        "Bunk": {},
+        "Airlock": {}
     }
 }

@@ -1,6 +1,6 @@
 {
     "schema": {
-        "version": "0.1"
+        "version": "0.1",
         "comments": [
             "This document attempts to capture the habitat logic ",
             "of Streya."
@@ -59,7 +59,7 @@
     "processes": {
         "energy-reactor": {
             "comments": [
-                "Everything needs energy.  This is how to get some."]
+                "Everything needs energy.  This is how to get some."],
             "maintenance": 1,
             "time": 1,
             "energy": 1000,
@@ -68,26 +68,26 @@
         },
         "basic=fuel-refinement": {
             "comments": [
-                "There's no such thing as a free lunch."]
+                "There's no such thing as a free lunch."],
             "maintenance": 1,
             "time": 1,
             "energy": 1000,
-            "inputs": { "hydrogen": 1 }
+            "inputs": { "hydrogen": 1 },
             "outputs": { "basic-fusion-fuel": 1 }
         },
         "advanced-fuel-refinement": {
             "comments": [
-                "There's no such thing as a free lunch."]
+                "There's no such thing as a free lunch."],
             "maintenance": 1,
             "time": 1,
             "energy": 1000,
-            "inputs": { "basic-fusion-fuel": 1 }
+            "inputs": { "basic-fusion-fuel": 1 },
             "outputs": { "advanced-fusion-fuel": 1 }
         },
         "cpmmon-ore-refinement": {
             "comments": [
                 "Refnining converts ore into ingots and slag."],
-            "properties": { "efficiency": 0.05 }
+            "properties": { "efficiency": 0.05 },
             "maintenance": 1,
             "time": 1,
             "energy": 1000,
@@ -116,11 +116,11 @@
             "energy": 1000,
             "inputs": {"carbon-dioxide": 1},
             "outputs": {"algae-mush": 1}
-        }
+        },
         "engine": {
             "comments": [
-                "Engines convert fusion fuel into thrust."
-                "This allows ships to move through space, which "
+                "Engines convert fusion fuel into thrust.",
+                "This allows ships to move through space, which ",
                 "is useful for bringing in resources."],
             "maintenance": 1,
             "time": 1,
@@ -134,8 +134,8 @@
         "cargo": {},
         "mining": {},
         "sensors": {},
-        "shields": {}
-        "weapons": {},
+        "shields": {},
+        "weapons": {}
     },
     "ship-designs": {
         "GX4 BumbleBee": {

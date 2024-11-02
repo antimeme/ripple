@@ -13,7 +13,7 @@ comments: |
   pandoc -s -f gfm+smart --css data.css --toc --toc-depth=4 data.md`
 ---
 
-## schema: object{object}
+## schema: object{...}
 
 A schema section provided metadata intended to clarify the way other
 data is to be interpreted.
@@ -26,48 +26,21 @@ support reading data in older formats for backward compatability.
 
 At the moment, only one version string is supported: 0.0.1
 
-## icons: array[object]
+## icons: object{object}
 
 Describes vector drawing icons for user interface purposes.
 
 ### type: string
 
 Indicates which drawing operation will be used.  Drawing operations
-are:
+are listed below, each with peer parameters expected:
 
   - `polygon`: a closed shape following vertices
+    - `vertices`: array of `x` and `y` coordinate objects (-1 to 1)
   - `circle`: all points a given distance from a center
-  
-### radius: number(non-negative-float)
-
-This supports the `circle` type.  This is the radius.  It must be
-between zero and one, inclusive.
-
-### x: number(float-one-minus-one)
-
-This supports the `circle` type.  Horizontal coordinate of this shape.
-One and minus one are the extents of the icon and must not be
-exceeded.
-
-### y: number(float-one-minus-one)
-
-This supports the `circle` type.  Vertical coordinate of this shape.
-One and minus one are the extents of the icon and must not be
-exceeded.
-
-### vertices: array[object]
-
-This supports the `polygon` type.
-
-#### x: number(float-one-minus-one)
-
-Horizontal coordinate of this vertex.  One and minus one are the
-extents of the icon and must not be exceeded.
-
-#### y: number(float-one-minus-one)
-
-Horizontal coordinate of this vertex.  One and minus one are the
-extents of the icon and must not be exceeded.
+    - `radius`: distance from center (0+)
+    - `x`: vertical coordinate (-1 to 1)
+    - `y`: horizontal coordinate (-1 to 1)
 
 ## items: object{object}
 
@@ -202,16 +175,27 @@ It can still be used for existing content.
 ## races: object{object}
 
 Each character has a race.  The default is `human` but there may be
-other options.
-
-### slots: object{???}
-
-:TODO: expand
+other options depending on the setting.  A science fiction setting
+might include robots, uplifted animals or aliens.  A fantasy setting
+may include elves, dwarves or orcs.
 
 ### ignore: boolean
 
 When present and truthy, this race is rendered invisible to players.
 It can still be used for existing content.
+
+### base: string
+
+Inherit characteristics from another race to avoid repitition.
+
+### slots: object{object}
+
+A slot represents a place that a character can wear items of a
+particular kind.  For example, hats are worn on heads.
+
+### needs: object{object}
+
+Represents things characters need.
 
 ## cultures: object{object}
 
@@ -223,6 +207,10 @@ A culture comprises customs, language and the way things are named.
 
 When present and truthy, this culture is rendered invisible to players.
 It can still be used for existing content.
+
+### generator: object{object}
+
+A collection of rules that can be used to generate names.
 
 ## backgrounds: object{object}
 
@@ -241,10 +229,29 @@ A facility is a static structure that can be placed in a building or
 a ship.  These can be used by characters to meet needs, excercise
 skills or influence ship activities.
 
+Here are some things facilities need to do that need to be figured out:
+
+  - Provide or draw power
+  - Advertise impact on character needs
+  - 
+
+### comments: array[string]
+
+Describes the facility.
+
 ### ignore: boolean
 
 When present and truthy, this facility is rendered invisible to players.
 It can still be used for existing content.
+
+### cells: object{object}
+
+Indexed by a pair of integers.
+
+#### flags: number(bits)
+
+ - obstructed: 0x01
+ - access:
 
 ## gestalt: object{object}
 

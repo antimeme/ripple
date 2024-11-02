@@ -4,14 +4,21 @@
 <meta name="viewport" content="initial-scale=1, maximum-scale=1" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <link rel="icon" href="streya.svg?serial=ENUjMO" />
-<link rel="stylesheet" href="app.css" />
+<style>
+ html, body
+ { position: absolute; padding: 0; margin: 0; overflow: hidden; }
+ canvas { background-color: #111; }
+ .selected { background-color: #8080f9; }
+ .dragging { opacity: 0.4; color: #f92020; background-color: #f98080; }
+</style>
 <title>Streya</title>
 <script type="module">//<![CDATA[
  import Camera from "../ripple/camera.mjs";
  import App from "./app.mjs";
 
- Camera.preload("./setting.json", (loaded) => {
+ Camera.preload(["./setting.json", "./scenario.json"], (loaded) => {
      const camera = new Camera(document.body.appendChild(
          document.createElement("canvas"))).setScale(4).manage(
-             new App(loaded["./setting.json"]));
+             new App(loaded["./setting.json"],
+                     loaded["./scenario.json"]));
  }); //]]></script>
