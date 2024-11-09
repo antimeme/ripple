@@ -17,12 +17,10 @@
 //
 // ---------------------------------------------------------------------
 // Streya is a character based role playing game engine.
-// :TODO: make player exist
-// :TODO: path finding when click
-// :TODO: create button menu
-// :TODO: create end turn button
-// :TODO: create inventory button
+// :TODO: give floor cells an optional inventory
 // :TODO: create interactable locker with stuff in it
+// :TODO: draw items in character hands
+// :TODO: path finding when click
 // :TODO: create structure editor
 import Ripple   from "../ripple/ripple.mjs";
 import Grid     from "../ripple/grid.mjs";
@@ -78,15 +76,17 @@ function chooseKey(object, getWeight = (o, k) => 1) {
  * @param colors map from string to color values */
 function drawSteps(ctx, steps, now, phase, colors) {
 
+    function getColor(colors, tag) {
+        return (colors && (tag in colors)) ? colors[tag] : tag;
+    }
+
     function finishStep(ctx, step, colors) {
         if (step.fill) {
-            ctx.fillStyle = (colors && (step.fill in colors)) ?
-                            colors[step.fill] : step.fill;
+            ctx.fillStyle = getColor(colors, step.fill);
             ctx.fill();
         }
         if (step.stroke) {
-            ctx.strokeStyle = (colors && (step.stroke in colors)) ?
-                              colors[step.stroke] : step.stroke;
+            ctx.strokeStyle = getColor(colors, step.stroke);
             ctx.stroke();
         }
     }
@@ -124,16 +124,45 @@ function drawSteps(ctx, steps, now, phase, colors) {
 }
 
 /**
+ * Creates a temporary message to explain a result to the player. */
+function setToast(message) {
+    const toast = document.createElement("div");
+    toast.classList.add("toast");
+    toast.innerText = message;
+    document.body.append(toast);
+    setTimeout(() => toast.classList.add("fade-out"), 2000);
+    toast.addEventListener("transitionend", () => toast.remove());
+    console.log(message);
+}
+
+class Icon {
+    #draw;
+
+    constructor(icon) {
+        this.#draw = icon.draw;
+    }
+
+    connect(setting) {}
+
+    toJSON() {
+        const result = {};
+        if (this.#draw)
+            result.draw = this.#draw;
+        return result;
+    }
+
+    toString() { return JSON.stringify(this.toJSON()); }
+}
+
+/**
  * A race is a kind of creature that a character can be.
  * Race defines what limbs a character has and how to determine
- * which has been hit on a successful attack. */
+ * which has been hit on a successful attack.  It also defines
+ * what items a character can wear.  Each limb is also a slot
+ * to which a single item can be attached.  Items can introduce
+ * additional slots. */
 class Race {
-    #inherit = null;
-    #parent;
-    #ignore;
-    #limbs;
-    #draw;
-    #default;
+    #inherit; #parent; #ignore; #default; #limbs; #draw;
 
     static defaultRace = null;
 
@@ -147,10 +176,9 @@ class Race {
             Race.defaultRace = this;
     }
 
-    connect(races)
-    {
+    connect(setting) {
         if (typeof(this.#parent) === "string")
-            this.#inherit = races[this.#parent];
+            this.#inherit = setting.findRace(this.#parent);
     }
 
     get ignore() { return this.#ignore; }
@@ -167,20 +195,149 @@ class Race {
         return result;
     }
 
+    /**
+     * Determine which limb is hit by an attack.  Cover should be
+     * falsy if no cover applies.  Target is normally falsy but
+     * can specify a limb that the attacker is attempting to hit. */
+    hitLimb(cover, target) {
+        let result = null;
+        const totalWeight = Object.keys(this.#limbs).reduce(
+            (total, limbName) =>
+                total + (this.#limbs[limbName].hitweight || 0), 0);
+        let weight = Math.random() * totalWeight;
+
+        Object.keys(this.#limbs).forEach(limbName => {
+            const limb = this.#limbs[limbName];
+            if (!result && !isNaN(limb.hitWeight)) {
+                if (limb.hitWeight < weight) {
+                    result = limbName;
+                } else weight -= limb.hitWeight;
+            }
+        });
+        return result;
+    }
+
+    /**
+     * Modify character inventories to enforce game rules specified
+     * by limb definitions.  This ensures that:
+     * - characters can only wear items for limbs they have
+     * - characters can't remove items from alwaysCover limbs
+     * - characters can't carry more bulk than allowed */
+    inventoryConstrain(wearing, carrying) {
+        function getSlots(race) {
+            const result = {};
+            Object.keys(race.limbs).forEach(limbName => {
+                if (limbName in result)
+                    result[limbName].available++;
+                else result[limbName] = {
+                    available: 1, evict: 0, items: [] };
+            });
+            wearing.forEach(item => {
+                if (item.wear) {
+                    if (item.wear in result) {
+                        const slot = result[item.wear];
+                        slot.available--;
+                        slot.items.push(item);
+                    } else result[item.wear] = {
+                        available: -1, evict: 0, items: [item] };
+                } else {
+                    // TODO: allow low bulk items to fit in pockets
+                }
+
+                if (item.slots)
+                    item.slots.forEach(slotName => {
+                        if (slotName in result)
+                            result[slotName].available++;
+                        else result[slotName] = {
+                            available: 1, evict: 0, items: [] };
+                    });
+            });
+            return result;
+        }
+
+        wearing.constrain((wearing, other, index) => {
+            const evict = wearing.canGive(other.getItem(index));
+            if (Array.isArray(evict) &&
+                !evict.every(item => other.canGive(item)))
+                throw new Error("No way to dispose of items: " +
+                                evict.filter(
+                                    item => !other.canGive(item))
+                                     .map(item => item.name)
+                                     .join(", "));
+            else if ((evict instanceof Item) &&
+                     !other.canGive(item))
+                throw new Error("No way to dispose of item: " +
+                                item.name);
+            return !!evict;
+        }, (wearing, item) => {
+            if (!item.wear)
+                throw new Error("Item is not wearable: " + item.name);
+
+            const slots = getSlots(this);
+            const slot = slots[item.wear];
+            if (!slot)
+                throw new Error("No way to wear item: " + item.name);
+            if (!slot.available && slot.items.length) {
+                const evict = [];
+                const replace = slot.items[slot.evict++];
+
+                evict.push(replace);
+                if (replace.slots)
+                    replace.slots.forEach(slotName => {
+                        const oslot = slots[slotName];
+                        if (!oslot.available)
+                            evict.push(oslot.items[oslot.evict++]);
+                    });
+                return evict;
+            } else return (slot.available > 0);
+        }, (wearing, index) => {
+            // Some limbs must always be covered (usually for
+            // decency).  Taking items from this limb is not allowed
+            // but giving items for the same slot will replace it.
+            const item = wearing.getItem(index);
+
+            if (item.wear && (item.wear in this.limbs) &&
+                this.limbs[item.wear].alwaysCover)
+                throw new Error("Cannot expose " + item.wear);
+
+            if (item.slots) {
+                const slots = getSlots(this);
+                item.slots.forEach(slotName => {
+                    if ((slotName in slots) &&
+                        !slots[slotName].available)
+                        throw new Error("Need " + item.name +
+                                        " for " + slotName); });
+            }
+
+            return true;
+        });
+
+        carrying.constrain((carrying, other, index) => {
+            // :TODO: implement bulk constraints based on
+            //        prehensile limbs
+            return true;
+        }, (carrying, item) => {
+            // :TODO: implement bulk constraints based on
+            //        prehensile limbs
+            return true;
+        }, (carrying, index) => true);
+    }
+
     toJSON() {
         const result = {};
+        if (this.#default)
+            result["default"] = true;
         if (this.#parent)
             result.parent = this.#parent;
         if (this.#ignore)
             result.ignore = true;
-        if (this.#default)
-            result["default"] = true;
         if (this.#limbs)
             result.limbs = this.#limbs;
         if (this.#draw)
             result.draw = this.#draw;
         return result;
     }
+
     toString() { return JSON.stringify(this.toJSON()); }
 
     drawTopDown(ctx, now, phase, colors) {
@@ -196,22 +353,31 @@ class Race {
  * Item definitions are used to determine properties of items that
  * characters might wear or use. */
 class ItemDefinition {
-    #inherit = null;
-    #parent;
-    #mass;
-    #ignore;
-    #uses;
+    #inherit; #default; #parent; #ignore; #draw;
+    #mass; #bulk; #wear; #slots; #uses;
+
+    static defaultItem = null;
 
     constructor(itemdef) {
-        this.#parent = itemdef.parent;
-        this.#mass   = itemdef.mass;
-        this.#ignore = itemdef.ignore;
-        this.#uses   = itemdef.uses;
+        this.#parent  = itemdef.parent;
+        this.#ignore  = itemdef.ignore;
+        this.#mass    = itemdef.mass;
+        this.#bulk    = itemdef.bulk;
+        this.#uses    = itemdef.uses;
+        this.#draw    = itemdef.draw;
+        this.#wear    = itemdef.wear;
+        this.#slots   = Array.isArray(itemdef.slots) ?
+                        itemdef.slots.slice() : [];
+        this.#default = itemdef["default"];
+        if (this.#default)
+            ItemDefintion.defaultItem = this;
     }
 
-    connect(itemdefs) {
+    connect(setting) {
         if (this.#parent && (typeof(this.#parent) === "string"))
-            this.#inherit = itemdefs[this.#parent];
+            this.#inherit = setting.findItemDefinition(this.#parent);
+        if (!this.#inherit && (this !== ItemDefinition.defaultItem))
+            this.#inherit = ItemDefinition.defaultItem;
     }
 
     get mass() {
@@ -219,16 +385,51 @@ class ItemDefinition {
                this.#inherit.mass : 0;
     }
 
+    get bulk() {
+        return (this.#bulk) ? this.#bulk : this.#inherit ?
+               this.#inherit.bulk : 0;
+    }
+
+    get wear() {
+        return (this.#wear) ? this.#wear :
+               this.#inherit ? this.#inherit.wear : 0;
+    }
+
+    get slots() {
+        return (this.#slots) ? this.#slots :
+               this.#inherit ? this.#inherit.slots : [];
+    }
+
+    drawTopDown(ctx, now, phase) {
+        if (this.#draw && this.#draw.topDown)
+            drawSteps(ctx, this.#draw.topDown,
+                      now, phase, this.#draw.colors);
+        else if (this.#inherit)
+            this.#inherit.drawTopDown(ctx, now, phase);
+        else throw new Error("No way to draw item type");
+    }
+
     toJSON() {
         const result = {};
         if (this.#parent)
-            result["parent"] = this.#parent;
+            result.parent = this.#parent;
         if (this.#ignore)
-            result["ignore"] = this.#ignore;
+            result.ignore = this.#ignore;
+        if (this.#mass)
+            result.mass = this.#parent;
+        if (this.#bulk)
+            result.bulk = this.#parent;
         if (this.#uses)
-            result["uses"] = this.#uses;
+            result.uses = this.#uses;
+        if (this.#draw)
+            result.draw = this.#draw;
+        if (this.#wear)
+            result.wear = this.#wear;
+        if (this.#slots.length)
+            result.wear = this.#slots.slice();
         return result;
     }
+
     toString() { return JSON.stringify(this.toJSON()); }
 }
 
@@ -249,9 +450,9 @@ class Facility {
         this.#uses   = facility.uses;
     }
 
-    connect(facilities) {
+    connect(setting) {
         if (this.#parent && (typeof(this.#parent) === "string"))
-            this.#inherit = facilities[this.#parent];
+            this.#inherit = setting.findFacility(this.#parent);
     }
 
     get mass() {
@@ -262,45 +463,44 @@ class Facility {
     toJSON() {
         const result = {};
         if (this.#parent)
-            result["parent"] = this.#parent;
+            result.parent = this.#parent;
         if (this.#ignore)
-            result["ignore"] = this.#ignore;
+            result.ignore = this.#ignore;
         if (this.#uses)
-            result["uses"] = this.#uses;
+            result.uses = this.#uses;
         return result;
     }
+
     toString() { return JSON.stringify(this.toJSON()); }
 }
 
 class Setting {
-    #races;
-    #itemdefs;
-    #facilities;
+    #icons; #races; #itemdefs; #facilities;
 
     constructor(setting) {
-        // Set up character race definitions
-        this.#races = Object.fromEntries(
-            Object.keys(setting.races).map(
-                race => [race, new Race(setting.races[race])]));
-        Object.entries(this.#races).forEach(
-            ([name, race]) => { race.connect(this.#races); });
-
-        // Set up item definitions
-        this.#itemdefs = Object.fromEntries(
-            Object.keys(setting.itemdefs).map(
-                item => [item, new ItemDefinition(
-                    setting.itemdefs[item])]));
-        Object.entries(this.#itemdefs).forEach(
-            ([name, itemdef]) => { itemdef.connect(this.#itemdefs); });
-
-        // Set up facility definitions
+        this.#icons = setting.icons ? Object.fromEntries(
+            Object.keys(setting.icons).map(iconName =>
+                [iconName, new Icon(setting.icons[iconName])])) : {};
+        this.#races = setting.races ? Object.fromEntries(
+            Object.keys(setting.races).map(raceName =>
+                [raceName, new Race(setting.races[raceName])])) : {};
+        this.#itemdefs = setting.itemdefs ? Object.fromEntries(
+            Object.keys(setting.itemdefs).map(itemName =>
+                [itemName, new ItemDefinition(
+                    setting.itemdefs[itemName])])) : {};
         this.#facilities = Object.fromEntries(
             Object.keys(setting.facilities).map(
                 facility => [facility, new Facility(
                     setting.facilities[facility])]));
-        Object.entries(this.#facilities).forEach(
-            ([name, facility]) => {
-                facility.connect(this.#facilities); });
+
+        Object.keys(this.#icons).forEach(iconName =>
+            this.#icons[iconName].connect(this));
+        Object.keys(this.#races).forEach(raceName =>
+            this.#races[raceName].connect(this));
+        Object.keys(this.#itemdefs).forEach(itemName =>
+            this.#itemdefs[itemName].connect(this));
+        Object.keys(this.#facilities).forEach(facilityName =>
+            this.#facilities[facilityName].connect(this));
     }
 
     findRace(raceName) { return this.#races[raceName]; }
@@ -313,7 +513,7 @@ class Setting {
     }
 
     findItemDefinition(name) { return this.#itemdefs[name]; }
-    
+
     eachItemDefinition(fn, context) {
         Object.entries(this.#itemdefs).forEach(([name, itemdef]) => {
             if (!itemdef.ignore)
@@ -321,20 +521,25 @@ class Setting {
         });
     }
 
+    findFacility(name) { return this.#facilities[name]; }
+
 }
 
 class Item {
-    #name;
-    #mass = undefined;
-    #definition = null;
+    #name; #mass; #bulk; #definition;
+    #uses; #draw; #wear; #slots;
 
     constructor(item, setting) {
         if (typeof(item) === "string") {
             this.#name = item;
         } else if (item && (typeof(item) === "object")) {
-            this.#name = item.name;
-            this.#mass = item.mass;
-            // :TODO: allow custom properties
+            this.#name  = item.name;
+            this.#mass  = item.mass;
+            this.#bulk  = item.bulk;
+            this.#uses  = item.uses;
+            this.#draw  = item.draw;
+            this.#wear  = item.wear;
+            this.#slots = item.slots;
         } else throw new TypeError("Invalid type for item");
 
         if (setting instanceof Setting)
@@ -352,16 +557,169 @@ class Item {
                this.#definition ? this.#definition.mass : 0;
     }
 
+    get bulk() {
+        return !isNaN(this.#bulk) ? this.#bulk :
+               this.#definition ? this.#definition.bulk : 0;
+    }
+
+    get wear() {
+        return this.#wear ? this.#wear :
+               this.#definition ? this.#definition.wear : null;
+    }
+
+    get slots() {
+        return this.#slots ? this.#slots :
+               this.#definition ? this.#definition.slots : [];
+    }
+
+    get uses() {
+        return this.#uses ? this.#uses :
+               this.#definition ? this.#definition.uses : [];
+    }
+
+    drawTopDown(ctx, now, phase) {
+        if (this.#draw && this.#draw.topDown)
+            drawSteps(ctx, this.#draw.topDown,
+                      now, phase, this.#draw.colors);
+        else if (this.#definition)
+            this.#definition.drawTopDown(ctx);
+        else throw Error("No way to draw " + this.#name);
+    }
+
     toJSON() {
-        // :TODO: reduce to a string if apporpriate
         const result = { "name": this.#name };
         if (!isNaN(this.#mass))
             result.mass = this.#mass;
+        if (!isNaN(this.#bulk))
+            result.bulk = this.#bulk;
+        if (!isNaN(this.#uses))
+            result.uses = this.#uses;
+        if (!isNaN(this.#draw))
+            result.draw = this.#draw;
+        if (!isNaN(this.#wear))
+            result.wear = this.#wear;
+        if (!isNaN(this.#slots))
+            result.slots = this.#slots;
         return result;
     }
+
     toString() { return JSON.stringify(this.toJSON()); }
+
+    static inflate(item, setting)
+    { return (item instanceof(Item)) ? item : new Item(item, setting); }
 }
 
+/**
+ * An inventory is more or less an array of items that may have
+ * additional contraints. */
+class Inventory {
+    #contents;
+    #constrainTransfer;
+    #constrainGive;
+    #constrainTake;
+    #element;
+
+    constructor(inventory, setting) {
+        if (Array.isArray(inventory))
+            this.#contents = inventory.map(
+                item => Item.inflate(item, setting));
+        else this.#contents = [];
+        this.#element = null;
+    }
+
+    connect(setting) { this.#contents.forEach(
+        item => { item.connect(setting); }); }
+
+    constrain(transfer, give, take) {
+        this.#constrainTransfer = transfer;
+        this.#constrainGive     = give;
+        this.#constrainTake     = take;
+    }
+
+    forEach(fn, context) {
+        this.#contents.forEach((item, index) =>
+            fn.call(context, item, index, this));
+    }
+
+    getItem(index) { return this.#contents[index]; }
+
+    /**
+     * Similar to @ref{canGive}, but will fail if the opposing
+     * inventory cannot accept the items without eviction. */
+    canTransfer(inventory, index) {
+        return ((typeof(this.#constrainTransfer) !== "function") ||
+                this.#constrainTransfer(this, inventory, index));
+    }
+
+    /**
+     * Transfers items from the given inventory to this one.
+     * In contrast to give, any items evicted from this inventory
+     * are placed in the other. */
+    transfer(inventory, index) {
+        const evicted = this.canTransfer(inventory, index);
+        if (Array.isArray(evicted)) {
+            this.#contents = this.#contents.filter(
+                item => !evicted.includes(item));
+            evicted.forEach(item => inventory.give(item));
+        } else if (evicted instanceof Item) {
+            this.#contents = this.#contents.filter(
+                item => evicted !== item);
+            inventory.give(evicted);
+        }
+        if (evicted)
+            this.#contents.push(inventory.take(index));
+        return !!evicted;
+    }
+
+    /**
+     * Returns true or an item if this inventory can accept the
+     * item specified and false otherwise.  When an item is
+     * returned, that item has been ejected from the inventory
+     * and should be stored somewhere. */
+    canGive(item) {
+        return ((typeof(this.#constrainGive) !== "function") ||
+                this.#constrainGive(this, item));
+    }
+
+    give(inventory, index) {
+        const replaced = this.canGive(item);
+        if (Array.isArray(replaced)) {
+            this.#contents = this.#contents.filter(
+                thing => !replaced.includes(thing));
+            this.#contents.push(item);
+        } else if (replaced instanceof Item) {
+            this.#contents = this.#contents.filter(
+                thing => thing !== replaced);
+            this.#contents.push(item);
+        } else if (replaced)
+            this.#contents.push(item);
+        return replaced;
+    }
+
+    /**
+     * Returns truthy iff the item at the given index an be
+     * removed from this inventory. */
+    canTake(index) {
+        return ((index >= 0) && (index < this.#contents.length) &&
+                ((typeof(this.#constrainTake) !== "function") ||
+                 this.#constrainTake(this, index)));
+    }
+
+    take(index) {
+        if (this.canTake(index)) {
+            const item = this.#contents[index];
+            this.#contents.splice(index, 1);
+            return item;
+        } else return null;
+    }
+
+    toJSON() { return this.#contents.map(item => item.toJSON()); }
+
+    toString() { return JSON.stringify(this.toJSON()); }
+};
+
+/**
+ * Represents a person of some sort in the game world. */
 class Character {
     #name;
     #surname;
@@ -383,12 +741,8 @@ class Character {
         this.#raceName  = character.race;
         this.#colors    = character.colors || {};
         this.#position  = character.position;
-        this.#wearing   = Array.isArray(character.wearing) ?
-                          character.wearing.map(
-                              item => new Item(item)) : [];
-        this.#carrying  = Array.isArray(character.carrying) ?
-                          character.wearing.map(
-                              item => new Item(item)) : [];
+        this.#wearing   = new Inventory(character.wearing);
+        this.#carrying  = new Inventory(character.carrying);
 
         this.#phase = Math.random();
 
@@ -397,11 +751,15 @@ class Character {
     }
 
     connect(setting) {
+        this.#wearing.connect(setting);
+        this.#carrying.connect(setting);
+
         this.#race = setting.findRace(this.#raceName);
         if (!this.#race)
             this.#race = Race.defaultRace;
-        this.#wearing.forEach(item => item.connect(setting));
-        this.#carrying.forEach(item => item.connect(setting));
+        if (this.#race)
+            this.#race.inventoryConstrain(
+                this.#wearing, this.#carrying);
     }
 
     toJSON() {
@@ -426,6 +784,7 @@ class Character {
             result.position = this.#position;
         return result;
     }
+
     toString() { return JSON.stringify(this.toJSON()); }
 
     get displayname() {
@@ -458,6 +817,7 @@ class Character {
 
 class Structure {
     #name;
+    #offset;
     #defaultLevel = 0;
     #cellData;
     #floorColor;
@@ -466,6 +826,7 @@ class Structure {
     constructor(structure, grid) {
         this.#grid = grid;
         this.#name = structure.name;
+        this.#offset = structure.offset;
         this.#floorColor = structure.floorColor;
 
         this.#cellData = {};
@@ -476,6 +837,8 @@ class Structure {
 
     toJSON() {
         const result = {};
+        if (this.#offset)
+            result.offset = this.#offset;
         if (this.#floorColor)
             result.floorColor = this.#floorColor;
         if (this.#cellData) {
@@ -491,7 +854,12 @@ class Structure {
         }
         return result;
     }
+
     toString() { return JSON.stringify(this.toJSON()); }    
+
+    get floorColor() { return this.#floorColor; }
+
+    get offset() { return this.#offset; }
 
     /**
      * Retrieves the contents of a specified node. */
@@ -522,46 +890,6 @@ class Structure {
         else this.#cellData[level][index] = value;
         return this;
     }
-
-    drawTopDown(ctx, camera, now) {
-        ctx.fillStyle = this.#floorColor ? this.#floorColor : "gray";
-        ctx.beginPath();
-
-        this.#grid.mapRectangle(
-            camera.toWorld({x: 0, y: 0}),
-            camera.toWorld({x: camera.width, y: camera.height}),
-            (node, index, grid) => {
-                const cell = this.getCell(node);
-                if (cell && !cell.hull) {
-                    if (cell.floorColor) {
-                        ctx.fill();
-                        ctx.beginPath();
-                        grid.drawNode(ctx, node);
-                        ctx.fillStyle = cell.floorColor;
-                        ctx.fill();
-
-                        ctx.fillStyle = this.#floorColor ?
-                                        this.#floorColor : "gray";
-                        ctx.beginPath();
-                    } else grid.drawNode(ctx, node);
-                }
-            }, this);
-        ctx.fill();
-
-        // :TODO: draw walls
-        // :TODO: draw hull
-
-        this.#grid.mapRectangle(
-            camera.toWorld({x: 0, y: 0}),
-            camera.toWorld({x: camera.width, y: camera.height}),
-            (node, index, grid) => {
-                const cell = this.getCell(node);
-                if (cell) {
-                    // :TODO:
-                }
-            }, this);
-        ctx.fill();
-    }
 }
 
 class Scenario {
@@ -588,6 +916,8 @@ class Scenario {
 
     get characters() { return this.#characters; }
 
+    get playerFaction() { return this.#playerFaction; }
+
     toJSON() {
         const result = {};
         if (this.#gridConfig)
@@ -601,11 +931,55 @@ class Scenario {
                 character => character.toJSON());
         return result;
     }
+
     toString() { return JSON.stringify(this.toJSON()); }
 
-    draw(ctx, camera, now) {
+    drawTopDown(ctx, camera, now) {
         this.#structures.forEach(structure => {
-            structure.drawTopDown(ctx, camera, now); });
+            const floorColor = structure.floorColor || "gray";
+            ctx.fillStyle = floorColor;
+            ctx.beginPath();
+            this.#grid.mapRectangle(
+                camera.toWorld({x: 0, y: 0}),
+                camera.toWorld({x: camera.width, y: camera.height}),
+                (node, index, grid) => {
+                    const offsetNode = {
+                        row: node.row + structure.offset.row,
+                        col: node.col + structure.offset.col };
+                    const cell = structure.getCell(offsetNode);
+                    if (cell && !cell.hull) {
+                        if (cell.floorColor) {
+                            ctx.fill();
+
+                            ctx.beginPath();
+                            this.#grid.drawNode(ctx, node);
+                            ctx.fillStyle = cell.floorColor;
+                            ctx.fill();
+
+                            ctx.fillStyle = floorColor;
+                            ctx.beginPath();1
+                        } else this.#grid.drawNode(ctx, node);
+                    }
+                    ctx.fill();
+                });
+        });
+
+        // :TODO: draw walls
+        // :TODO: draw hull
+
+        this.#structures.forEach(structure => {
+            this.#grid.mapRectangle(
+                camera.toWorld({x: 0, y: 0}),
+                camera.toWorld({x: camera.width, y: camera.height}),
+                (node, index, grid) => {
+                    const cell = structure.getCell(node);
+                    if (cell) {
+                        // :TODO:
+                    }
+                }, this);
+            ctx.fill();
+        });
+
         this.#characters.forEach(character => {
             if (character.position &&
                 !isNaN(character.position.row) &&
@@ -621,6 +995,10 @@ class Scenario {
                 ctx.restore();
             }
         });
+    }
+
+    draw(ctx, camera, now) {
+        this.drawTopDown(ctx, camera, now);
     }
 
     getCharacter(point) {
@@ -646,11 +1024,7 @@ class ButtonBar {
 
     constructor(buttons) {
         this.#element = document.createElement("div");
-        this.#element.style.position = "absolute";
-        this.#element.style.bottom = "10px";
-        this.#element.style.left = "50%";
-        this.#element.style.transform = "translateX(-50%)";
-        this.#element.style.zIndex = "5";
+        this.#element.classList.add("buttonbar");
 
         this.setButtons(buttons);
         document.body.appendChild(this.#element);
@@ -662,17 +1036,16 @@ class ButtonBar {
             buttons.forEach(({ text, onClick }) => {
                 const button = document.createElement("button");
                 button.textContent = text;
-                button.style.margin = "0 5px";
-                button.style.padding = "10px 15px";
-                button.style.cursor = "pointer";
                 button.addEventListener("click", onClick);
                 this.#element.appendChild(button);
             });
     }
 }
 
-function createFieldSet(legend, contents) {
+function createFieldSet(legend, contents, styleClass) {
     const result = document.createElement("fieldset");
+    if (styleClass)
+        result.classList.add(styleClass);
     if (legend) {
         const legendElement = document.createElement("legend");
         if (Array.isArray(legend))
@@ -687,34 +1060,20 @@ function createFieldSet(legend, contents) {
 }
 
 class Panel {
-    #fieldset;
-    #legend;
-    #body;
-    #close;
+    #fieldset; #legend; #body; #close;
 
     constructor(buttons) {
         this.#fieldset = document.createElement("fieldset");
-        this.#fieldset.style.position = "absolute";
-        this.#fieldset.style.top = "50%";
-        this.#fieldset.style.left = "50%";
-        this.#fieldset.style.transform = "translate(-50%, -50%)";
-        this.#fieldset.style.zIndex = "7";
-        this.#fieldset.style.border = "2px solid #ccc";
-        this.#fieldset.style.borderRadius = "10px";
-        this.#fieldset.style.background = "#aaa";
+        this.#fieldset.classList.add("panel");
 
         this.#close = document.createElement("button");
         this.#close.append("x");
         this.#close.addEventListener("click", () => this.hide());
 
+        this.#body = document.createElement("div");
         this.#fieldset.appendChild(
             this.#legend = document.createElement("legend"));
-        this.#legend.style.padding = ".3em";
-        this.#legend.style.background = "#aaa";
-        this.#legend.style.border = "2px solid #eee";
-        this.#legend.style.borderRadius = "9px";
-        this.#fieldset.appendChild(
-            this.#body = document.createElement("div"));
+        this.#fieldset.appendChild(this.#body);
         this.hide();
         document.body.appendChild(this.#fieldset);
     }
@@ -756,63 +1115,116 @@ class App {
         this.#selectedCharacter = null;
     }
 
-    createCharacterPane(character) {
-        function createDraggableItems(view, items) {
-            view.innerHTML = "";
-            items.forEach((item, index) => {
-                const itemdiv = document.createElement("div");
-                itemdiv.setAttribute("draggable", true);
-                itemdiv.setAttribute("data-index", index);
-                itemdiv.append(item.name);
-                itemdiv.addEventListener("dragstart", event => {
-                    // :TODO:
-                    event.dataTransfer.effectAllowed = "move";
-                    event.target.classList.add("dragging");
-                });
-                itemdiv.addEventListener("dragend", event => {
-                    // :TODO:
-                    console.log("DEBUG dragend");
-                    event.target.classList.remove("dragging");
-                });
-                itemdiv.addEventListener("click", event => {
-                    itemdiv.classList.toggle("selected");
-                })
-                view.appendChild(itemdiv);
+    showCharacter(character) {
+        const stats = document.createElement("fieldset");
+        stats.append("Faction: " + character.faction,
+                     document.createElement("br"),
+                     "Teeth: blue",
+                     document.createElement("br"),
+                     "Hair: pickles");
+
+        let sourceWidget = null;
+        const carryWidget = {
+            view: document.createElement("div"),
+            inventory: character.carrying };
+        const otherWidget = {
+            view: document.createElement("div"),
+            inventory: character.wearing };
+        [carryWidget, otherWidget].forEach(widget => {
+            widget.view.classList.add("container");
+            widget.view.addEventListener("dragenter", event => {
+                if (sourceWidget && (sourceWidget !== widget)) {
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = "move";
+                    widget.view.classList.add("over");
+                }
+            });
+            widget.view.addEventListener("dragover", event => {
+                if (sourceWidget && (sourceWidget !== widget)) {
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = "move";
+                }
+            });
+            widget.view.addEventListener("dragleave", event => {
+                widget.view.classList.remove("over");
+            });
+            widget.view.addEventListener("drop", event => {
+                widget.view.classList.remove("over");
+                if (sourceWidget && (sourceWidget !== widget)) {
+
+                    const index = parseInt(
+                        event.dataTransfer.getData("text/plain"));
+                    try {
+                        widget.inventory.transfer(
+                            sourceWidget.inventory, index);
+                        populate(widget);
+                        populate(sourceWidget);
+                        sourceWidget = null;
+                    } catch (err) { setToast(err); }
+                }
+            });
+        });
+
+        const playerFaction = this.#scenario.playerFaction;
+        function populate(widget) {
+            widget.view.innerHTML = "";
+            widget.inventory.forEach((item, index) => {
+                const itemWidget = document.createElement("div");
+                itemWidget.classList.add("item");
+                itemWidget.append(item.name);
+                widget.view.append(itemWidget);
+
+                if (character.faction === playerFaction) {
+                    itemWidget.classList.add("itemActive");
+                    itemWidget.setAttribute("data-index", index);
+                    itemWidget.setAttribute("draggable", true);
+                    itemWidget.addEventListener("dragstart", event => {
+                        try {
+                            widget.inventory.canTake(index);
+                            sourceWidget = widget;
+                            event.dataTransfer.effectAllowed = "move";
+                            event.target.classList.add("dragging");
+                            event.dataTransfer.setData(
+                                "text/plain", index.toString());
+                        } catch (err) {
+                            setToast(err);
+                            event.preventDefault();
+                        }
+                    });
+                    itemWidget.addEventListener("dragend", event => {
+                        sourceWidget = null;
+                        event.target.classList.remove("dragging");
+                    });
+                    itemWidget.addEventListener("click", event => {
+                        event.target.classList.toggle("selected");
+                    });
+                }
             });
         }
+        populate(carryWidget);
 
-        const stats = document.createElement("fieldset");
-        // :TODO: put stats here
-
-        const carrying = document.createElement("div");
-        createDraggableItems(carrying, character.carrying);
-
-        const otherContents = document.createElement("div");
+        // Create a drop down allowing the player to select an
+        // inventory to manipulate.
         const otherSelect = document.createElement("select");
-        const otherActions = {};
-        [{
-            name: "Wearing",
-            onChange: () => createDraggableItems(
-                otherContents, character.wearing)
-        }, {
-            name: "Floor", onChange: () => {
-                otherContents.innerHTML = ""; /* FIXME */ }
-        }].forEach(inventory => {
+        const otherOptions = {
+            wearing: {label: "Wearing", inventory: character.wearing},
+            floor: {label: "Floor", inventory: new Inventory() } };
+        Object.keys(otherOptions).forEach(name => {
             const option = document.createElement("option");
-            option.value = inventory.name;
-            option.append(inventory.name);
-            otherActions[inventory.name] = inventory.onChange;
+            option.value = name;
+            option.append(otherOptions[name].label);
             otherSelect.append(option);
         });
         otherSelect.addEventListener("change", event => {
-            const action = otherActions[event.target.value];
-            if (typeof(action) === "function")
-                action.call();
+            otherWidget.inventory = otherOptions[
+                event.target.value].inventory;
+            populate(otherWidget);
         });
         otherSelect.dispatchEvent(new Event("change"));
-        return [
-            stats, createFieldSet("Carrying", carrying),
-            createFieldSet(otherSelect, otherContents)];
+
+        this.#panel.show(this.#selectedCharacter.fullname, stats,
+                         createFieldSet("Carrying", carryWidget.view),
+                         createFieldSet(otherSelect, otherWidget.view));
     }
 
     setButtons() {
@@ -826,10 +1238,7 @@ class App {
             [{
                 text: this.#selectedCharacter.displayname,
                 onClick: () => {
-                    this.#panel.show(
-                        this.#selectedCharacter.fullname,
-                        ...this.createCharacterPane(
-                            this.#selectedCharacter));
+                    this.showCharacter(this.#selectedCharacter);
             }}].concat(buttons) : buttons);
     }
 
@@ -860,10 +1269,7 @@ class App {
         const selected = this.#scenario.getCharacter(
             camera.toWorld(camera.getPoint(event)));
         if (selected && (selected === this.#selectedCharacter))
-            this.#panel.show(
-                this.#selectedCharacter.fullname,
-                ...this.createCharacterPane(
-                    this.#selectedCharacter));
+            this.showCharacter(this.#selectedCharacter);
     }
 
     mousedown(event, camera) {

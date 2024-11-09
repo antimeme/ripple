@@ -8,6 +8,37 @@
         "Empty strings in a comments array are intended to indicate ",
         "paragraph breaks."],
 
+    "iconComments": [
+        "An icon is a drawing that can be referenced from other ",
+        "places, including items."],
+    "icons": {
+        "genericItem": {
+            "topDown": [{
+                "op": "polygon", "points": [
+                    { "x":  0.5, "y":  0.5 },
+                    { "x":  0.5, "y": -0.5 },
+                    { "x": -0.5, "y": -0.5 },
+                    { "x": -0.5, "y":  0.5 } ],
+                "fill": "#ccc"
+            }, {
+                "op": "polygon", "points": [
+                    { "x":  0.05, "y":  0.55 },
+                    { "x":  0.05, "y":  0.05 },
+                    { "x":  0.55, "y":  0.05 },
+                    { "x":  0.55, "y": -0.05 },
+                    { "x":  0.05, "y": -0.05 },
+                    { "x":  0.05, "y": -0.55 },
+                    { "x": -0.05, "y": -0.55 },
+                    { "x": -0.05, "y": -0.05 },
+                    { "x": -0.55, "y": -0.05 },
+                    { "x": -0.55, "y":  0.05 },
+                    { "x": -0.05, "y":  0.05 },
+                    { "x": -0.05, "y":  0.55 } ],
+                "fill": "#333"
+            }]
+        }
+    },
+
     "raceComments": [
         "Each character has a race, which is usually human but can ",
         "vary based on the setting.  A fantasy setting might have ",
@@ -36,20 +67,20 @@
         "Humanoid": {
             "ignore": true,
             "limbs": {
-                "head": { "hitweight": 2 },
-                "torso": { "hitweight": 9, "alwaysCover": true },
+                "head": { "hitWeight": 2 },
+                "torso": { "hitWeight": 9, "alwaysCover": true },
                 "legs": {
-                    "hitweight": 8, "lowCover": true,
+                    "hitWeight": 8, "lowCover": true,
                     "alwaysCover": true,
                     "walk": 1.0, "swim": 0.5
                 },
-                "feet": { "hitweight": 0, "lowCover": true },
+                "feet": { "hitWeight": 0, "lowCover": true },
                 "rhand": {
-                    "prehensile": true, "hitweight": 3,
+                    "prehensile": true, "hitWeight": 3,
                     "crawl": 0.2, "swim": 0.5
                 },
                 "lhand": {
-                    "prehensile": true, "hitweight": 3,
+                    "prehensile": true, "hitWeight": 3,
                     "crawl": 0.2, "swim": 0.5
                 }
             },
@@ -200,6 +231,13 @@
         { "mass": 1200, "parent": "Shirt", "armor": 15 },
         "Gunbelt":
         { "mass": 250, "parent": "Belt", "slots": ["holster"] },
+        "_Pistol": {
+            "ignore": true, "bulk": 2, "wear": "holster",
+            "draw": {
+                "topDown": [
+                ]
+            }
+        },
         "BulletCasing": {
             "comments": ["Spent cartridge from a firearm."],
             "mass": 3, "bulk": 0
@@ -227,7 +265,7 @@
                 "accurate than a semi-automatic pistol due to the ",
                 "double action trigger but can be prepared and fired ",
                 "as single action for improved accuracy."],
-            "mass": 600, "bulk": 2, "wear": "holster",
+            "mass": 600, "parent": "_Pistol",
             "slots": ["RevolverCylinder"],
             "uses": {
                 "SnapShot": {
@@ -244,8 +282,7 @@
             "comments": [
                 "Lightweight pistol that exploits recoil to chamber ",
                 "the next round using a slide."],
-            "mass": 500, "bulk": 2,
-            "wear": "holster",
+            "mass": 500, "parent": "_Pistol",
             "slots": ["PistolMagazine"],
             "uses": {
                 "SnapShot": {
@@ -276,7 +313,7 @@
                 "metal slugs without gunpowder.  Due to the higher ",
                 "muzzle velocity these weapons are better at piercing ",
                 "armor but do less damage to unarmored targets."],
-            "mass": 800, "bulk": 3, "wear": "holster",
+            "mass": 800, "parent": "_Pistol",
             "slots": ["CoilgunMagazine", "EnergyCell"],
             "uses": {
                 "SnapShot": {
@@ -308,13 +345,13 @@
                 }
             }
         },
-        "PlasmaPistol": {
+        "ParticlePistol": {
             "comments": [
                 "Fires packets of ionized gas.  Consumes a gas charge ",
                 "when fired in vacuum but not otherwise.  Can be ",
                 "countered by personal electromagnetic shields."
             ],
-            "mass": 700, "bulk": 2,
+            "mass": 700, "parent": "_Pistol",
             "slots": ["EnergyCell", "GasPack"],
             "uses": {
                 "SnapShot": {

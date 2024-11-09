@@ -8,8 +8,54 @@
  html, body
  { position: absolute; padding: 0; margin: 0; overflow: hidden; }
  canvas { background-color: #111; }
+ fieldset { border: none; }
+
+ .buttonbar {
+     position: absolute; bottom: 10px; left: 50%;
+     transform: translateX(-50%); z-index: 5;
+ }
+ .buttonbar > button {
+     margin: 0 5px; padding: 10px 15px; cursor: pointer;
+ }
+ .panel {
+     position: absolute; top: 50%; left: 50%; width: 80%; height: 80%;
+     transform: translate(-50%, -50%); z-index: 8;
+     border: 2px solid #ccc;
+     border-radius: 10px;
+     background: #aaa;
+ }
+ .panel > legend {
+     padding: .3em;
+     background: #aaa;
+     border: 1px solid #eee;
+     border-radius: 9px;
+ }
+ .panel > div { display: flex; flex-direction: row; }
+ .container {
+     border: 1px solid #ccc;
+     padding: 10px;
+     width: 200px;
+     min-height: 20%;
+     margin: 10px;
+ }
+ .item {
+     background-color: #eee;
+     border: 1px solid #eee;
+     padding: 2px;
+     margin: 2px;
+ }
+ .itemActive { cursor: grab; }
  .selected { background-color: #8080f9; }
- .dragging { opacity: 0.4; color: #f92020; background-color: #f98080; }
+ .over { background-color: #80f980; }
+ .dragging { opacity: 0.4; color: #116; background-color: #88e; }
+ .toast {
+     position: fixed; bottom: 20px; right: 20px;
+     background-color: #644; color: #fdd;
+     padding: 10px 15px; border-radius: 5px;
+     font-size: 14px; z-index: 1000;
+     opacity: 0.9; transition: opacity 2s ease;
+ }
+ .fade-out { opacity: 0; }
 </style>
 <title>Streya</title>
 <script type="module">//<![CDATA[
