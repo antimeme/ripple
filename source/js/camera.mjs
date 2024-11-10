@@ -212,10 +212,10 @@ class Camera {
 
             if (this.#app && this.#app.usekeys) {
                 this.#screen.tabIndex = 1;
-                this.#screen.addEventListener("keydown", event => {
+                document.addEventListener("keydown", event => {
                     return this.#delegate(event);
                 });
-                this.#screen.addEventListener("keyup", event => {
+                document.addEventListener("keyup", event => {
                     return this.#delegate(event);
                 });
             }

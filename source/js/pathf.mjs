@@ -131,14 +131,14 @@ export class Heap {
  * A pathatble must override eachNeighbor and getNodeIndex.  It should
  * also override getHeuristic and possibly also getCost and isSameNode
  * to account for characteristics of the graph.  Note that leaving
- * getHeuristic unmodified results in using Dijkstra's algorithm
+ * pathHeuristic unmodified results in using Dijkstra's algorithm
  * instead of A* for path finding. */
 export class Pathable {
     // Overriding these is required
     pathNeighbor(node, fn, context)
-    { throw new Error("Must override Pathable pathNeighbor"); }
+    { throw new Error("Must override Pathable.pathNeighbor"); }
     pathNodeIndex(node)
-    { throw new Error("Must override Pathable pathNodeIndex"); }
+    { throw new Error("Must override Pathable.pathNodeIndex"); }
 
     // Consider overriding these
     pathSameNode(a, b) { return a === b; }

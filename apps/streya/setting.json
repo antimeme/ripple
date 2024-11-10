@@ -10,34 +10,8 @@
 
     "iconComments": [
         "An icon is a drawing that can be referenced from other ",
-        "places, including items."],
-    "icons": {
-        "genericItem": {
-            "topDown": [{
-                "op": "polygon", "points": [
-                    { "x":  0.5, "y":  0.5 },
-                    { "x":  0.5, "y": -0.5 },
-                    { "x": -0.5, "y": -0.5 },
-                    { "x": -0.5, "y":  0.5 } ],
-                "fill": "#ccc"
-            }, {
-                "op": "polygon", "points": [
-                    { "x":  0.05, "y":  0.55 },
-                    { "x":  0.05, "y":  0.05 },
-                    { "x":  0.55, "y":  0.05 },
-                    { "x":  0.55, "y": -0.05 },
-                    { "x":  0.05, "y": -0.05 },
-                    { "x":  0.05, "y": -0.55 },
-                    { "x": -0.05, "y": -0.55 },
-                    { "x": -0.05, "y": -0.05 },
-                    { "x": -0.55, "y": -0.05 },
-                    { "x": -0.55, "y":  0.05 },
-                    { "x": -0.05, "y":  0.05 },
-                    { "x": -0.05, "y":  0.55 } ],
-                "fill": "#333"
-            }]
-        }
-    },
+        "places, including items.  (Not yet implemented.)"],
+    "icons": { },
 
     "raceComments": [
         "Each character has a race, which is usually human but can ",
@@ -113,23 +87,49 @@
         "A collection of item definitions are provided. ",
         "- parent: string indicates which item to inherit from",
         "- mass: required number amount in grams",
-        "- contains: string indicating item time this item stores",
-        "- capacity: integer indicating contained item count",
         "- wear: limb on which item can be worn",
-        "- cover: array of additional limbs affected by this item",
-        "- applies: array of properties applied to wearer",
         "- slots: array of slots that can hold items",
-        "- startState: string starting state for item",
         "- uses: object with descriptions of actions",
+        "x contains: string indicating item time this item stores",
+        "x capacity: integer indicating contained item count",
+        "x cover: array of additional limbs affected by this item",
+        "x applies: array of properties applied to wearer",
+        "x startState: string starting state for item",
         "",
         "Some items have one or more uses. ",
-        "- damage: integer damage done if target is hit",
-        "- pierce: integer armor value ignored if target is hit",
-        "- shred: integer reduction to armor if target is hit",
-        "- bleed: integer causes this much bleeding if target is hit",
-        "- ammo: indicates ammunition required to perform this use",
-        "- setState: string item state set to this on use"],
+        "x damage: integer damage done if target is hit",
+        "x pierce: integer armor value ignored if target is hit",
+        "x shred: integer reduction to armor if target is hit",
+        "x bleed: integer causes this much bleeding if target is hit",
+        "x ammo: indicates ammunition required to perform this use",
+        "x setState: string item state set to this on use"],
     "itemdefs": {
+        "_Default": {
+            "default": true, "ignore": true,
+            "draw": {
+                "topDown": [{
+                    "op": "polygon", "points": [
+                        { "x":  0.4, "y":  0.4 },
+                        { "x":  0.4, "y": -0.4 },
+                        { "x": -0.4, "y": -0.4 },
+                        { "x": -0.4, "y":  0.4 } ],
+                    "fill": "#ccc"
+                }, {
+                    "op": "polygon", "points": [
+                        { "x":  0.05, "y":  0.45 },
+                        { "x":  0.05, "y":  0.05 },
+                        { "x":  0.45, "y":  0.05 },
+                        { "x":  0.45, "y": -0.05 },
+                        { "x":  0.05, "y": -0.05 },
+                        { "x":  0.05, "y": -0.45 },
+                        { "x": -0.05, "y": -0.45 },
+                        { "x": -0.05, "y": -0.05 },
+                        { "x": -0.45, "y": -0.05 },
+                        { "x": -0.45, "y":  0.05 },
+                        { "x": -0.05, "y":  0.05 },
+                        { "x": -0.05, "y":  0.45 } ],
+                    "fill": "#333" }]}
+        },
         "Shoes": {
             "mass": 700, "wear": "feet",
             "comments": ["A sturdy pair of shoes."]
@@ -225,18 +225,35 @@
         },
         "FlakPants":
         { "mass": 1200, "parent": "Pants", "armor": 15 },
-        "FlackVest":
+        "FlakVest":
         { "mass": 900, "wear": "torso", "armor": 15 },
-        "FlackJacket":
-        { "mass": 1200, "parent": "Shirt", "armor": 15 },
+        "FlakJacket":
+        { "mass": 1200, "wear": "torso", "armor": 15 },
         "Gunbelt":
         { "mass": 250, "parent": "Belt", "slots": ["holster"] },
         "_Pistol": {
             "ignore": true, "bulk": 2, "wear": "holster",
-            "draw": {
-                "topDown": [
-                ]
-            }
+            "draw": { "topDown": [
+                {"op": "polygon", "fill": "#225",
+                    "points": [
+                        {"x": -0.08, "y":  0.4},
+                        {"x": -0.1, "y":  0.35},
+                        {"x": -0.1, "y": -0.2},
+                        {"x":  0.1, "y": -0.2},
+                        {"x":  0.1, "y":  0.35},
+                        {"x":  0.08, "y":  0.4}]},
+                {"op": "circle", "fill": "#225",
+                    "r": 0.1, "x": 0, "y": -0.2},
+                {"op": "polygon", "fill": "#118",
+                    "points": [
+                        {"x":  0.15, "y":  0.2},
+                        {"x": -0.15, "y":  0.2},
+                        {"x": -0.15, "y": -0.1},
+                        {"x": -0.05, "y": -0.1},
+                        {"x": -0.05, "y": -0.2},
+                        {"x":  0.05, "y": -0.2},
+                        {"x":  0.05, "y": -0.1},
+                        {"x":  0.15, "y": -0.1}]} ]}
         },
         "BulletCasing": {
             "comments": ["Spent cartridge from a firearm."],

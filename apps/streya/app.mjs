@@ -31,7 +31,55 @@ import Omnivore from "../ripple/omnivore.mjs";
  * Convert a node with numeric row and col fields into a single
  * integer suitable for use as an object key. */
 function getNodeIndex(node)
-{ return Ripple.pair(node.col, node.row); };
+{ return Ripple.pair(node.col, node.row); }
+
+function getIndexNode(index) {
+    const pair = Ripple.unpair(index);
+    return { col: node.x, row: node.y };
+}
+
+function metricPrefix(amount) {
+    return (amount >= 1e30)  ? {name: "quetta", symbol: "Q",  e:  30} :
+           (amount >= 1e27)  ? {name:  "ronna", symbol: "R",  e:  27} :
+           (amount >= 1e24)  ? {name:  "yotta", symbol: "Y",  e:  24} :
+           (amount >= 1e21)  ? {name:  "zetta", symbol: "Z",  e:  21} :
+           (amount >= 1e18)  ? {name:    "exa", symbol: "E",  e:  18} :
+           (amount >= 1e15)  ? {name:   "peta", symbol: "P",  e:  15} :
+           (amount >= 1e12)  ? {name:   "tera", symbol: "T",  e:  12} :
+           (amount >= 1e9)   ? {name:   "giga", symbol: "G",  e:   9} :
+           (amount >= 1e6)   ? {name:   "mega", symbol: "M",  e:   6} :
+           (amount >= 1e3)   ? {name:   "kilo", symbol: "k",  e:   3} :
+           (amount >= 1e2)   ? {name:  "hecto", symbol: "h",  e:   2} :
+           (amount >= 1e1)   ? {name:   "deka", symbol: "da", e:   1} :
+           (amount >= 1e0)   ? {name:       "", symbol:  "",  e:   0} :
+           (amount >= 1e-1)  ? {name:   "deci", symbol: "d",  e:  -1} :
+           (amount >= 1e-2)  ? {name:  "centi", symbol: "c",  e:  -2} :
+           (amount >= 1e-3)  ? {name:  "milli", symbol: "m",  e:  -3} :
+           (amount >= 1e-6)  ? {
+               name: "micro", symbol: "\u00b5", e: -6} :
+           (amount >= 1e-9)  ? {name:   "nano", symbol: "n",  e:  -9} :
+           (amount >= 1e-12) ? {name:   "pico", symbol: "p",  e: -12} :
+           (amount >= 1e-15) ? {name:  "femto", symbol: "f",  e: -15} :
+           (amount >= 1e-18) ? {name:   "atto", symbol: "a",  e: -18} :
+           (amount >= 1e-21) ? {name:  "zepto", symbol: "z",  e: -21} :
+           (amount >= 1e-24) ? {name:  "yocto", symbol: "y",  e: -24} :
+           (amount >= 1e-27) ? {name:  "ronto", symbol: "r",  e: -27} :
+           {name: "quecto", symbol: "q", e: -30};
+}
+
+function displayMetric(value, unit, digits) {
+    const details = metricPrefix(value);
+    const exp = (details.e % 3) ? 0 : details.e;
+    const suffix = (details.e % 3) ? unit : (details.symbol + unit);
+    let number = (value / (10 ** exp)).toString();
+
+    if (!isNaN(digits)) {
+        const parts = number.split(".");
+        if ((parts.length === 2) && (parts[1].length > digits))
+            number = (value / (10 ** exp)).toFixed(digits);
+    }
+    return number + " " + suffix;
+}
 
 /**
  * Given an object, choose one of its keys,  Without a second argument
@@ -163,6 +211,7 @@ class Icon {
  * additional slots. */
 class Race {
     #inherit; #parent; #ignore; #default; #limbs; #draw;
+    #actionPoints;
 
     static defaultRace = null;
 
@@ -174,14 +223,38 @@ class Race {
         this.#default = race.default;
         if (this.#default)
             Race.defaultRace = this;
+        this.#actionPoints = race.actionPoints;
     }
 
     connect(setting) {
         if (typeof(this.#parent) === "string")
             this.#inherit = setting.findRace(this.#parent);
+        if (isNaN(this.#actionPoints))
+            this.#actionPoints = setting.actionPoints;
     }
 
+    toJSON() {
+        const result = {};
+        if (this.#default)
+            result["default"] = true;
+        if (this.#parent)
+            result.parent = this.#parent;
+        if (this.#ignore)
+            result.ignore = true;
+        if (this.#limbs)
+            result.limbs = this.#limbs;
+        if (this.#draw)
+            result.draw = this.#draw;
+        if (this.#actionPoints)
+            result.actionPoints = this.#actionPoints;
+        return result;
+    }
+
+    toString() { return JSON.stringify(this.toJSON()); }
+
     get ignore() { return this.#ignore; }
+
+    get actionPoints() { return this.#actionPoints; }
 
     get limbs() {
         const result = Object.assign(
@@ -268,7 +341,7 @@ class Race {
                      !other.canGive(item))
                 throw new Error("No way to dispose of item: " +
                                 item.name);
-            return !!evict;
+            return evict;
         }, (wearing, item) => {
             if (!item.wear)
                 throw new Error("Item is not wearable: " + item.name);
@@ -295,19 +368,19 @@ class Race {
             // decency).  Taking items from this limb is not allowed
             // but giving items for the same slot will replace it.
             const item = wearing.getItem(index);
+            const slots = getSlots(this);
 
             if (item.wear && (item.wear in this.limbs) &&
-                this.limbs[item.wear].alwaysCover)
+                this.limbs[item.wear].alwaysCover &&
+                (slots[item.wear].available === 0))
                 throw new Error("Cannot expose " + item.wear);
 
-            if (item.slots) {
-                const slots = getSlots(this);
+            if (item.slots)
                 item.slots.forEach(slotName => {
                     if ((slotName in slots) &&
                         !slots[slotName].available)
                         throw new Error("Need " + item.name +
                                         " for " + slotName); });
-            }
 
             return true;
         });
@@ -322,23 +395,6 @@ class Race {
             return true;
         }, (carrying, index) => true);
     }
-
-    toJSON() {
-        const result = {};
-        if (this.#default)
-            result["default"] = true;
-        if (this.#parent)
-            result.parent = this.#parent;
-        if (this.#ignore)
-            result.ignore = true;
-        if (this.#limbs)
-            result.limbs = this.#limbs;
-        if (this.#draw)
-            result.draw = this.#draw;
-        return result;
-    }
-
-    toString() { return JSON.stringify(this.toJSON()); }
 
     drawTopDown(ctx, now, phase, colors) {
         if (this.#draw && this.#draw.topDown)
@@ -355,6 +411,7 @@ class Race {
 class ItemDefinition {
     #inherit; #default; #parent; #ignore; #draw;
     #mass; #bulk; #wear; #slots; #uses;
+    #armor;
 
     static defaultItem = null;
 
@@ -365,12 +422,13 @@ class ItemDefinition {
         this.#bulk    = itemdef.bulk;
         this.#uses    = itemdef.uses;
         this.#draw    = itemdef.draw;
+        this.#armor   = itemdef.armor;
         this.#wear    = itemdef.wear;
         this.#slots   = Array.isArray(itemdef.slots) ?
                         itemdef.slots.slice() : [];
         this.#default = itemdef["default"];
         if (this.#default)
-            ItemDefintion.defaultItem = this;
+            ItemDefinition.defaultItem = this;
     }
 
     connect(setting) {
@@ -416,11 +474,13 @@ class ItemDefinition {
         if (this.#ignore)
             result.ignore = this.#ignore;
         if (this.#mass)
-            result.mass = this.#parent;
+            result.mass = this.#mass;
         if (this.#bulk)
-            result.bulk = this.#parent;
+            result.bulk = this.#bulk;
         if (this.#uses)
             result.uses = this.#uses;
+        if (this.#armor)
+            result.armor = this.#armor;
         if (this.#draw)
             result.draw = this.#draw;
         if (this.#wear)
@@ -476,8 +536,11 @@ class Facility {
 
 class Setting {
     #icons; #races; #itemdefs; #facilities;
+    #actionPoints;
 
     constructor(setting) {
+        this.#actionPoints = setting.actionPoints;
+
         this.#icons = setting.icons ? Object.fromEntries(
             Object.keys(setting.icons).map(iconName =>
                 [iconName, new Icon(setting.icons[iconName])])) : {};
@@ -502,6 +565,35 @@ class Setting {
         Object.keys(this.#facilities).forEach(facilityName =>
             this.#facilities[facilityName].connect(this));
     }
+
+    toJSON() {
+        const result = {};
+        if (!isNaN(this.#actionPoints))
+            result.actionPoints = this.#actionPoints;
+        if (this.#icons && Object.keys(this.#icons))
+            result.icons = Object.fromEntries(
+                Object.entries(this.#icons).map(
+                    ([iconName, icon]) => [iconName, icon.toJSON()]));
+        if (this.#races && Object.keys(this.#races))
+            result.races = Object.fromEntries(
+                Object.entries(this.#races).map(
+                    ([raceName, race]) => [raceName, race.toJSON()]));
+        if (this.#itemdefs && Object.keys(this.#itemdefs))
+            result.itemdefs = Object.fromEntries(
+                Object.entries(this.#itemdefs).map(
+                    ([itemName, itemdef]) =>
+                        [itemName, itemdef.toJSON()]));
+        if (this.#facilities && Object.keys(this.#facilities))
+            result.facilities = Object.fromEntries(
+                Object.entries(this.#facilities).map(
+                    ([facilityName, facility]) =>
+                        [facilityName, facility.toJSON()]));
+        return result;
+    }
+
+    toString() { return JSON.stringify(this.toJSON()); }
+
+    get actionPoints() { return this.#actionPoints; }
 
     findRace(raceName) { return this.#races[raceName]; }
 
@@ -577,6 +669,8 @@ class Item {
                this.#definition ? this.#definition.uses : [];
     }
 
+    get definition() { return this.#definition; }
+
     drawTopDown(ctx, now, phase) {
         if (this.#draw && this.#draw.topDown)
             drawSteps(ctx, this.#draw.topDown,
@@ -610,31 +704,48 @@ class Item {
 }
 
 /**
- * An inventory is more or less an array of items that may have
- * additional contraints. */
+ * An inventory is more or less an array of items.
+ *
+ * An inventory may have constraints.  A take constraint returns
+ * true if the item at the given index can be removed from the
+ * inventory.  A give constraint is similar except that when it
+ * succeeds it may return one or more items that must be evicted
+ * for the item to be accepted.  A transfer constraint builds on
+ * a give constraint by returning true only if destination
+ * inventory can accept the item while putting any evicted items
+ * in the source inventory.  These contraint throw an error when
+ * they cannot succeed, which facilitates explaining the problem
+ * to players. */
 class Inventory {
     #contents;
     #constrainTransfer;
     #constrainGive;
     #constrainTake;
-    #element;
 
     constructor(inventory, setting) {
         if (Array.isArray(inventory))
             this.#contents = inventory.map(
                 item => Item.inflate(item, setting));
         else this.#contents = [];
-        this.#element = null;
     }
 
     connect(setting) { this.#contents.forEach(
         item => { item.connect(setting); }); }
+
+    toJSON() { return this.#contents.map(item => item.toJSON()); }
+
+    toString() { return JSON.stringify(this.toJSON()); }
 
     constrain(transfer, give, take) {
         this.#constrainTransfer = transfer;
         this.#constrainGive     = give;
         this.#constrainTake     = take;
     }
+
+    get mass() { return this.#contents.reduce(
+        (mass, item) => mass + item.mass, 0); }
+
+    get length() { return this.#contents.length; }
 
     forEach(fn, context) {
         this.#contents.forEach((item, index) =>
@@ -664,7 +775,7 @@ class Inventory {
         } else if (evicted instanceof Item) {
             this.#contents = this.#contents.filter(
                 item => evicted !== item);
-            inventory.give(evicted);
+            this.give(evicted);
         }
         if (evicted)
             this.#contents.push(inventory.take(index));
@@ -681,8 +792,15 @@ class Inventory {
                 this.#constrainGive(this, item));
     }
 
-    give(inventory, index) {
+    #throwError(message) { throw new Error(message); }
+
+    give(thing, index) {
+        const item = (
+            (thing instanceof Inventory) ? thing.getItem(index) :
+            (thing instanceof Item) ? thing :
+            this.#throwError("Cannot accept type " + typeof(thing)));
         const replaced = this.canGive(item);
+
         if (Array.isArray(replaced)) {
             this.#contents = this.#contents.filter(
                 thing => !replaced.includes(thing));
@@ -712,37 +830,28 @@ class Inventory {
             return item;
         } else return null;
     }
-
-    toJSON() { return this.#contents.map(item => item.toJSON()); }
-
-    toString() { return JSON.stringify(this.toJSON()); }
 };
 
 /**
  * Represents a person of some sort in the game world. */
 class Character {
-    #name;
-    #surname;
-    #codename;
-    #faction;
-    #raceName;
-    #race;
-    #colors;
-    #wearing;
-    #carrying;
-    #phase;
-    #position;
+    #name; #surname; #codename; #raceName; #race;
+    #wearing; #carrying; #faction; #colors; #phase;
+    #position; #speed; #movement; #action;
 
     constructor(character, setting) {
-        this.#name      = character.name;
-        this.#surname   = character.surname;
-        this.#codename  = character.codename;
-        this.#faction   = character.faction;
-        this.#raceName  = character.race;
-        this.#colors    = character.colors || {};
-        this.#position  = character.position;
-        this.#wearing   = new Inventory(character.wearing);
-        this.#carrying  = new Inventory(character.carrying);
+        this.#name     = character.name;
+        this.#surname  = character.surname;
+        this.#codename = character.codename;
+        this.#raceName = character.race;
+        this.#colors   = character.colors || {};
+        this.#position = character.position;
+        this.#speed    = character.speed;
+        this.#movement = character.movement;
+        this.#action   = character.action;
+        this.#wearing  = new Inventory(character.wearing);
+        this.#carrying = new Inventory(character.carrying);
+        this.#faction  = character.faction;
 
         this.#phase = Math.random();
 
@@ -776,12 +885,18 @@ class Character {
             result.race = this.#raceName;
         if (this.#colors)
             result.colors = this.#colors;
+        if (this.#position)
+            result.position = this.#position;
+        if (this.#speed)
+            result.speed = this.#speed;
+        if (this.#movement)
+            result.movement = this.#movement;
+        if (this.#action)
+            result.action = this.#action;
         if (this.#wearing && this.#wearing.length)
             result.wearing = this.#wearing.map(item => item.toJSON());
         if (this.#carrying && this.#carrying.length)
             result.carrying = this.#carrying.map(item => item.toJSON());
-        if (this.#position)
-            result.position = this.#position;
         return result;
     }
 
@@ -796,8 +911,8 @@ class Character {
 
     get fullname() {
         return [this.#name, this.#codename ?
-                ('"' + this.#codename + '"') :
-                "", this.#surname].filter(word => word).join(" ");
+                ('"' + this.#codename + '"') : "",
+                this.#surname].filter(word => word).join(" ");
     }
 
     get faction() { return this.#faction; }
@@ -808,10 +923,33 @@ class Character {
 
     get carrying() { return this.#carrying; }
 
+    get movement() { return this.#movement; }
+    set movement(value) { this.#movement = value; }
+
+    get action() { return this.#action; }
+    set action(value) { this.#action = value; }
+
     drawTopDown(ctx, camera, now) {
-        if (this.#race)
+        if (this.#race) {
             this.#race.drawTopDown(
                 ctx, now, this.#phase, this.#colors);
+            if (this.#carrying.length >= 1) {
+                ctx.save();
+                ctx.translate(0.3, 0.3);
+                ctx.scale(0.4, 0.4);
+                this.#carrying.getItem(0)
+                    .drawTopDown(ctx, now, 0 /* phase */);
+                ctx.restore();
+            }
+            if (this.#carrying.length >= 2) {
+                ctx.save();
+                ctx.translate(-0.3, 0.3);
+                ctx.scale(0.4, 0.4);
+                this.#carrying.getItem(1)
+                    .drawTopDown(ctx, now, 0 /* phase */);
+                ctx.restore();
+            }
+        } else throw new Error("No way to draw " + this.displayname);
     }
 }
 
@@ -821,18 +959,25 @@ class Structure {
     #defaultLevel = 0;
     #cellData;
     #floorColor;
-    #grid;
 
-    constructor(structure, grid) {
-        this.#grid = grid;
-        this.#name = structure.name;
-        this.#offset = structure.offset;
+    constructor(structure, setting) {
+        this.#name       = structure.name;
+        this.#offset     = structure.offset;
         this.#floorColor = structure.floorColor;
-
-        this.#cellData = {};
+        this.#cellData   = {};
         if (Array.isArray(structure.cellData))
-            structure.cellData.forEach(
-                node => this.setCell(node, node));
+            structure.cellData.forEach(node =>
+                this.setCell(node, {
+                    floorColor: node.floorColor,
+                    inventory: new Inventory(
+                        node.inventory, setting) }));
+    }
+
+    connect(setting) {
+        Object.keys(this.#cellData).forEach(level =>
+            Object.keys(this.#cellData[level]).forEach(index =>
+                this.#cellData[level][index]
+                    .inventory.connect(setting)));
     }
 
     toJSON() {
@@ -845,10 +990,13 @@ class Structure {
             result.cellData = [];
             Object.keys(this.#cellData).forEach(level => {
                 Object.keys(this.#cellData[level]).forEach(index => {
-                    // :TODO: sanitize cell so it contains
-                    //        no pointers
                     const cell = this.#cellData[level][index];
-                    result.cellData.push(cell);
+                    const node = getIndexNode(index);
+                    if (cell.inventory && cell.inventory.length)
+                        node.inventory = cell.inventory.toJSON();
+                    if (cell.floorColor)
+                        node.floorColor = cell.floorColor;
+                    result.cellData.push(node);
                 });
             });
         }
@@ -892,31 +1040,37 @@ class Structure {
     }
 }
 
-class Scenario {
+class Scenario extends Pathf.Pathable {
     #playerFaction;
     #structures;
     #characters;
     #grid;
     #gridConfig;
+    #path;
+    #pathCharacter;
 
     constructor(scenario, setting) {
+        super();
         this.#gridConfig = scenario.grid;
         if (!this.#gridConfig || // Give grid a default size
             (!this.#gridConfig.radius && !this.#gridConfig.edge))
             this.#gridConfig = Object.assign(
-                {}, this.#gridConfig, {edge: 1.0});
+                {}, this.#gridConfig, {edge: 1.0, diagonal: true});
         this.#grid = Grid.create(this.#gridConfig);
 
         this.#playerFaction = scenario.playerFaction;
         this.#structures = scenario.structures.map(
-            structure => new Structure(structure, this.#grid));
+            structure => new Structure(structure, setting));
         this.#characters = scenario.characters.map(
             character => new Character(character, setting));
     }
 
-    get characters() { return this.#characters; }
-
-    get playerFaction() { return this.#playerFaction; }
+    connect(setting) {
+        this.#characters.forEach(character =>
+            character.connect(setting));
+        this.#structures.forEach(character =>
+            structure.connect(setting));
+    }
 
     toJSON() {
         const result = {};
@@ -934,10 +1088,75 @@ class Scenario {
 
     toString() { return JSON.stringify(this.toJSON()); }
 
-    drawTopDown(ctx, camera, now) {
+    // === Implementaiton of path finding interface
+
+    pathNeighbor(node, fn, context) {
+        this.#grid.eachNeighbor(node, neighbor => {
+            if (this.getCell(neighbor))
+                fn.call(context, neighbor);
+        }, context);
+    }
+
+    pathNodeIndex(node) { return Ripple.pair(node.col, node.row); }
+
+    pathHeuristic(node, goal)
+    { return Math.hypot(node.row - goal.row, node.col - goal.col); }
+
+    pathCost(node, previous) { return node.cost; }
+
+    pathSameNode(nodeA, nodeB) // TODO: deal with levels
+    { return (nodeA.row === nodeB.row) && (nodeA.col === nodeB.col); }
+
+    // === Public attributes
+
+    get grid() { return this.#grid; }
+
+    get characters() { return this.#characters; }
+
+    get playerFaction() { return this.#playerFaction; }
+
+    #checkNode(node) {
+        if (isNaN(node.row) || isNaN(node.col)) {
+            if (!isNaN(node.x) && !isNaN(node.y))
+                node = this.#grid.getCell(node);
+            else throw new Error("Argument must provide a location");
+        }
+        return node;
+    }
+
+    getCell(node) {
+        node = this.#checkNode(node);
+        return this.#structures.reduce((current, structure) =>
+            structure.getCell(node) || current, null);
+    }
+
+    getCharacter(node) {
+        let result = null;
+        node = this.#checkNode(node);
+        this.#characters.forEach(character => {
+            if (character.position &&
+                (character.position.row === node.row) &&
+                (character.position.col === node.col))
+                result = character;
+        });
+        return result;
+    }
+
+    getFactionCharacters(faction) {
+        return this.#characters.filter(
+            character => character.faction === this.#playerFaction);
+    }
+
+    setPath(character, node) {
+        this.#pathCharacter = character ? character : null;
+        this.#path = character ? this.createPath(
+            character.position, this.#checkNode(node)) : null;
+    }
+
+    drawTopDown(ctx, camera, now, character) {
         this.#structures.forEach(structure => {
+            const floorColors = {};
             const floorColor = structure.floorColor || "gray";
-            ctx.fillStyle = floorColor;
             ctx.beginPath();
             this.#grid.mapRectangle(
                 camera.toWorld({x: 0, y: 0}),
@@ -949,20 +1168,36 @@ class Scenario {
                     const cell = structure.getCell(offsetNode);
                     if (cell && !cell.hull) {
                         if (cell.floorColor) {
-                            ctx.fill();
-
-                            ctx.beginPath();
-                            this.#grid.drawNode(ctx, node);
-                            ctx.fillStyle = cell.floorColor;
-                            ctx.fill();
-
-                            ctx.fillStyle = floorColor;
-                            ctx.beginPath();1
-                        } else this.#grid.drawNode(ctx, node);
+                            if (cell.floorColor in floorColors)
+                                floorColors[cell.floorColor].push(node);
+                            else floorColors[cell.floorColor] = [node];
+                        } else grid.drawNode(ctx, node);
                     }
-                    ctx.fill();
-                });
+            });
+            ctx.fillStyle = floorColor;
+            ctx.fill();
+
+            Object.keys(floorColors).forEach(color => {
+                ctx.beginPath();
+                floorColors[color].forEach(node =>
+                    this.#grid.drawNode(ctx, node));
+                ctx.fillStyle = color;
+                ctx.fill();
+            });
         });
+
+        if (this.#path) {
+            const start = this.#checkNode(this.#pathCharacter.position);
+            ctx.beginPath();
+            ctx.moveTo(start.x, start.y);
+            this.#path.forEach(node => {
+                node = this.#grid.getCenter(node);
+                ctx.lineTo(node.x, node.y);
+            });
+            ctx.lineWidth = 0.15;
+            ctx.strokeStyle = "#993";
+            ctx.stroke();
+        }
 
         // :TODO: draw walls
         // :TODO: draw hull
@@ -972,13 +1207,35 @@ class Scenario {
                 camera.toWorld({x: 0, y: 0}),
                 camera.toWorld({x: camera.width, y: camera.height}),
                 (node, index, grid) => {
-                    const cell = structure.getCell(node);
+                    const offsetNode = {
+                        row: node.row + structure.offset.row,
+                        col: node.col + structure.offset.col };
+                    const cell = structure.getCell(offsetNode);
                     if (cell) {
-                        // :TODO:
+                        cell.inventory.forEach((item, index) => {
+                            const angle = (
+                                index / cell.inventory.length *
+                                2 * Math.PI) + Math.PI * 3 / 4;
+                            const ray = {
+                                x: Math.sin(angle),
+                                y: Math.cos(angle) };
+                            ctx.save();
+                            ctx.translate(node.x + ray.x * 0.25,
+                                          node.y + ray.y * 0.25);
+                            ctx.scale(0.25, 0.25);
+                            item.drawTopDown(ctx, now, 0 /* phase */);
+                            ctx.restore();
+
+                            // :TODO: draw facilities if present
+                        });
                     }
                 }, this);
-            ctx.fill();
         });
+
+        if (character && character.movement &&
+            (character.faction === this.#playerFaction)) {
+            // TODO: draw movement options
+        }
 
         this.#characters.forEach(character => {
             if (character.position &&
@@ -995,27 +1252,6 @@ class Scenario {
                 ctx.restore();
             }
         });
-    }
-
-    draw(ctx, camera, now) {
-        this.drawTopDown(ctx, camera, now);
-    }
-
-    getCharacter(point) {
-        let result = null;
-        const node = this.#grid.getCell(point);
-        this.#characters.forEach(character => {
-            if (character.position &&
-                (character.position.row === node.row) &&
-                (character.position.col === node.col))
-                result = character;
-        });
-        return result;
-    }
-
-    getPlayerFaction() {
-        return this.#characters.filter(
-            character => character.faction === this.#playerFaction);
     }
 }
 
@@ -1111,7 +1347,8 @@ class App {
         this.#scenario = (scenario instanceof Scenario) ?
                          scenario : new Scenario(
                              scenario, this.#setting);
-        this.#activeCharacters = this.#scenario.getPlayerFaction();
+        this.#activeCharacters = this.#scenario.getFactionCharacters(
+            this.#scenario.playerFaction);
         this.#selectedCharacter = null;
     }
 
@@ -1197,6 +1434,8 @@ class App {
                     });
                     itemWidget.addEventListener("click", event => {
                         event.target.classList.toggle("selected");
+                        console.log("DEBUG item", item.toString(),
+                                    item.definition.toString());
                     });
                 }
             });
@@ -1207,8 +1446,11 @@ class App {
         // inventory to manipulate.
         const otherSelect = document.createElement("select");
         const otherOptions = {
-            wearing: {label: "Wearing", inventory: character.wearing},
-            floor: {label: "Floor", inventory: new Inventory() } };
+            wearing: {label: "Wearing", inventory: character.wearing} };
+        const floor = this.#scenario.getCell(character.position);
+        if (floor)
+            otherOptions.floor = {
+                label: "Floor", inventory: floor.inventory };
         Object.keys(otherOptions).forEach(name => {
             const option = document.createElement("option");
             option.value = name;
@@ -1243,7 +1485,8 @@ class App {
     }
 
     endTurn() {
-        this.#activeCharacters = this.#scenario.getPlayerFaction();
+        this.#activeCharacters = this.#scenario.getFactionCharacters(
+            this.#scenario.playerFaction);
         this.#selectedCharacter = null;
         this.setButtons();
     }
@@ -1277,12 +1520,20 @@ class App {
     }
 
     mouseup(event, camera) {
-        const selected = this.#scenario.getCharacter(
-            camera.toWorld(camera.getPoint(event)));
+        const point = camera.toWorld(camera.getPoint(event));
+        const selected = this.#scenario.getCharacter(point);
         if (selected && (selected !== this.#selectedCharacter)) {
             this.#selectedCharacter = selected;
+            this.#scenario.setPath();
             this.setButtons();
-        }
+        } else if (!selected && this.#selectedCharacter)
+            this.#scenario.setPath(this.#selectedCharacter, point);
+    }
+
+    usekeys = true;
+    keydown(event, camera) {
+        if (event.keyCode === 27)
+            this.#panel.hide();
     }
 
     #lastUpdate = undefined;
@@ -1290,7 +1541,7 @@ class App {
     update(now, camera) { this.#lastUpdate = now; }
 
     draw(ctx, camera)
-    { this.#scenario.draw(ctx, camera, this.#lastUpdate); }
+    { this.#scenario.drawTopDown(ctx, camera, this.#lastUpdate); }
 
 }
 export default App;
