@@ -523,7 +523,7 @@ class Structure extends Pathf.Pathable {
             const wall = this.getWall(node, neighbor);
             if (wall && !wall.door)
                 return;
-            fn.call(context, neighbor);
+            fn.call(context, neighbor, neighbor.cost);
         });
     }
     pathNodeIndex(node) { return getNodeIndex(node); }
@@ -531,8 +531,6 @@ class Structure extends Pathf.Pathable {
         if (this.pathDebug)
             this.pathDebug.push(a);
         return (a.row === b.row) && (a.col === b.col); }
-    pathCost(node, previous)
-    { return isNaN(node.cost) ? 1 : node.cost; }
     pathHeuristic(node, goal)
     { return Math.hypot(goal.row - node.row, goal.col - node.col); }
     pathDebug = undefined;

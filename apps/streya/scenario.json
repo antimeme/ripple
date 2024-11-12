@@ -5,7 +5,7 @@
 
     "characters": [{
         "name": "Alice", "surname": "Smith",
-        "faction": "Sparrow", "colors":
+        "faction": "Sparrow", "southpaw": true, "colors":
         { "body": "orangered", "head": "red", "eyes": "orange" },
         "wearing": ["Shirt", "Pants", "Boots", "Gunbelt"],
         "carrying": ["Revolver"],

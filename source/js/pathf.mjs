@@ -134,15 +134,23 @@ export class Heap {
  * pathHeuristic unmodified results in using Dijkstra's algorithm
  * instead of A* for path finding. */
 export class Pathable {
-    // Overriding these is required
+    /**
+     * Subclasses MUST override this.  Should call the given
+     * function with the specified context with at least two
+     * parameters: first a connected node and second a numeric
+     * cost to travel to that neighbor. */
     pathNeighbor(node, fn, context)
     { throw new Error("Must override Pathable.pathNeighbor"); }
+
+    /**
+     * Subclasses MUST override this.  Should return an integer
+     * index that can be used to uniquely identify the given node. */
     pathNodeIndex(node)
     { throw new Error("Must override Pathable.pathNodeIndex"); }
 
-    // Consider overriding these
+    // Consider overriding these:
+
     pathSameNode(a, b) { return a === b; }
-    pathCost(node, previous) { return 1; }
     pathHeuristic(node, goal) { return 0; } // Dijkstra's Algorithm
 
     // Returns the heuristic of the cheapest goal
@@ -169,17 +177,20 @@ export class Pathable {
     /**
      * Builds a path from a start node to the closest of one or more
      * goal nodes using the A* path finding algorithm. See:
-     *     http://en.wikipedia.org/wiki/A*_search_algorithm */
-    createPath(start, goal) {
+     *     http://en.wikipedia.org/wiki/A*_search_algorithm
+     *
+     * @param start node from which to begin search
+     * @param goal node or array of nodes to reach */
+    createPath(start, goal, limit) {
         let found = undefined;
         const goals = Array.isArray(goal) ? goal : [goal];
-        const frontier = new Heap((a, b) => Heap.cmp(a.total, b.total));
+        const frontier = new Heap((a, b) =>
+            Heap.cmp(a.estimate, b.estimate));
         const visited = {};
-        const bundle = {node: start, previous: null,
-                        cost: 0, total: this.#getBest(start, goals)};
 
-        visited[this.pathNodeIndex(start)] = bundle;
-        frontier.push(bundle);
+        frontier.push({ node: start, previous: null, cost: 0,
+                        estimate: this.#getBest(start, goals) });
+        visited[this.pathNodeIndex(start)] = frontier.peek();
 
         while (!found && (frontier.size() > 0)) {
             const current = frontier.pop();
@@ -187,21 +198,57 @@ export class Pathable {
             if (goals.some((goal) =>
                 this.pathSameNode(current.node, goal))) {
                 found = current;
-            } else this.pathNeighbor(current.node, (neighbor) => {
-                const cost = current.cost + this.pathCost(
-                    neighbor, current.node);
-                const index = this.pathNodeIndex(neighbor);
-                if (!(index in visited) ||
-                    (visited[index].cost > cost)) {
-                    visited[index] = {
-                        node: neighbor, previous: current,
-                        cost: cost, total: cost + this.#getBest(
-                            neighbor, goals) };
-                    frontier.push(visited[index]);
+            } else this.pathNeighbor(current.node, (neighbor, cost) => {
+                const totalCost = current.cost + cost;
+                if (isNaN(limit) || (totalCost <= limit)) {
+                    const index = this.pathNodeIndex(neighbor);
+                    if (!(index in visited) ||
+                        (visited[index].cost > totalCost)) {
+                        visited[index] = {
+                            node: neighbor, previous: current,
+                            cost: totalCost,
+                            estimate: totalCost + this.#getBest(
+                                neighbor, goals) };
+                        frontier.push(visited[index]);
+                    }
                 }
             });
         }
         return found ? Pathable.#unwind(found) : found;
+    }
+
+    /**
+     * Return a set of nodes which can be reached with the budget
+     * implied by the limit parameter (or all reachable nodes if
+     * limit is undefined). */
+    reachable(start, limit, fn, context) {
+        const frontier = new Heap((a, b) => Heap.cmp(a.cost, b.cost));
+        const visited = {};
+
+        frontier.push({ node: start, previous: null, cost: 0 });
+        visited[this.pathNodeIndex(start)] = frontier.peek();
+
+        while (frontier.size() > 0) {
+            const current = frontier.pop();
+            this.pathNeighbor(current.node, (neighbor, cost) => {
+                const totalCost = current.cost + cost;
+                if (isNaN(limit) || (totalCost <= limit)) {
+                    const index = this.pathNodeIndex(neighbor);
+                    if (!(index in visited) ||
+                        (visited[index].cost > totalCost)) {
+                        visited[index] = {
+                            node: neighbor, previous: current,
+                            cost: totalCost };
+                        frontier.push(visited[index]);
+                    }
+                }
+            });
+        }
+
+        Object.entries(visited).forEach(([index, visit]) =>
+            fn.call(context, visit.node, visit.cost,
+                    visit.previous, index));
+        return context;
     }
 }
 

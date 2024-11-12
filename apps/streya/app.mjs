@@ -106,6 +106,33 @@ function chooseKey(object, getWeight = (o, k) => 1) {
 }
 
 /**
+ * Draws an arrow from the start point to the end point.  An arrow
+ * has a width and a depth, both relative to the length of the
+ * line.  To make these absolute, multiply by the desired length
+ * and divide by the line length. */
+function drawArrow(ctx, start, end, config) {
+    const length = Math.hypot(end.x - start.x, end.y - start.y);
+    const depth = config && config.depth || 0.1;
+    const width = config && config.width || 0.15;
+    const slide = config && config.slide || 1.0;
+
+    const perp = { x: (end.y - start.y) * width,
+                   y: (start.x - end.x) * width };
+    const top = {
+        x: start.x + (end.x - start.x) *
+        (depth + slide * (1 - depth)),
+        y: start.y + (end.y - start.y) *
+        (depth + slide * (1 - depth)) };
+    const bottom = {
+        x: start.x + (end.x - start.x) * slide * (1 - depth),
+        y: start.y + (end.y - start.y) * slide * (1 - depth) };
+    ctx.moveTo(top.x, top.y);
+    ctx.lineTo(bottom.x + perp.x, bottom.y + perp.y);
+    ctx.lineTo(bottom.x - perp.x, bottom.y - perp.y);
+    ctx.lineTo(top.x, top.y);
+}
+
+/**
  * Carry out instructions encoded as JSON objects.
  *
  * @param ctx a drawing context of the sort provided by canvas
@@ -122,28 +149,38 @@ function chooseKey(object, getWeight = (o, k) => 1) {
  * @param now current time in milliseconds
  * @param phase number between zero and one
  * @param colors map from string to color values */
-function drawSteps(ctx, steps, now, phase, colors) {
+function drawSteps(ctx, steps, config) {
+    const now   = (config && !isNaN(config.now)) ? config.now : 0;
+    const phase = (config && !isNaN(config.phase)) ? config.phase : 0;
+    const colors = (config && config.colors &&
+                    (typeof(config) === "object")) ?
+                   config.colors : {};
+    const conditions = (config && config.conditions) ?
+                       config.conditions : {};
 
-    function getColor(colors, tag) {
-        return (colors && (tag in colors)) ? colors[tag] : tag;
+    function getColor(tag) {
+        return (tag in colors) ? colors[tag] : tag;
     }
 
     function finishStep(ctx, step, colors) {
         if (step.fill) {
-            ctx.fillStyle = getColor(colors, step.fill);
+            ctx.fillStyle = getColor(step.fill);
             ctx.fill();
         }
         if (step.stroke) {
-            ctx.strokeStyle = getColor(colors, step.stroke);
+            ctx.strokeStyle = getColor(step.stroke);
             ctx.stroke();
         }
     }
 
     steps.forEach(step => {
-        if (!isNaN(step.period) && !isNaN(step.blink) &&
-            (step.blink > Math.floor((
-                now + step.period * phase) %
-                step.period) / step.period)) {
+        if (step.condition && !conditions[step.condition]) {
+            // Skip step due to condition not being met
+        } else if (!isNaN(step.period) && !isNaN(step.blink) &&
+                   (step.blink > Math.floor((
+                       now + step.period * phase) %
+                       step.period) / step.period)) {
+            // Skip step because blink is active
         } else if ((step.op === "ellipse") &&
                    !isNaN(step.x)  && !isNaN(step.y) &&
                    !isNaN(step.rx) && !isNaN(step.ry)) {
@@ -210,14 +247,16 @@ class Icon {
  * to which a single item can be attached.  Items can introduce
  * additional slots. */
 class Race {
-    #inherit; #parent; #ignore; #default; #limbs; #draw;
-    #actionPoints;
+    #inherit; #parent; #ignore; #default;
+    #limbs; #draw;
+    #speed; #actionPoints;
 
     static defaultRace = null;
 
     constructor(race) {
         this.#parent  = race.parent;
         this.#ignore  = race.ignore;
+        this.#speed   = race.speed;
         this.#limbs   = race.limbs;
         this.#draw    = race.draw;
         this.#default = race.default;
@@ -240,7 +279,9 @@ class Race {
         if (this.#parent)
             result.parent = this.#parent;
         if (this.#ignore)
-            result.ignore = true;
+            result.ignore = !!this.#ignore;
+        if (this.#speed)
+            result.speed = this.#speed;
         if (this.#limbs)
             result.limbs = this.#limbs;
         if (this.#draw)
@@ -255,6 +296,11 @@ class Race {
     get ignore() { return this.#ignore; }
 
     get actionPoints() { return this.#actionPoints; }
+
+    get speed() {
+        return !isNaN(this.#speed) ? this.#speed :
+               this.#inherit ? this.#inherit.speed : 0;
+    }
 
     get limbs() {
         const result = Object.assign(
@@ -396,11 +442,41 @@ class Race {
         }, (carrying, index) => true);
     }
 
-    drawTopDown(ctx, now, phase, colors) {
-        if (this.#draw && this.#draw.topDown)
-            drawSteps(ctx, this.#draw.topDown, now, phase, colors);
-        else if (this.#inherit)
-            this.#inherit.drawTopDown(ctx, now, phase, colors);
+    drawTopDown(ctx, character, now) {
+        if (this.#draw && this.#draw.topDown) {
+            const conditions = {};
+            const placedItems = [];
+            Object.entries(this.#limbs).forEach(([limbName, limb]) => {
+                if (limb.prehensile && limb.display &&
+                    !isNaN(limb.display.x) && !isNaN(limb.display.y) &&
+                    !isNaN(limb.display.priority)) {
+                    const priority = (!isNaN(limb.display.southpaw) &&
+                                      character.southpaw) ?
+                                     limb.display.southpaw :
+                                     limb.display.priority;
+                    if (character.carrying.length >= priority) {
+                        conditions[limbName] = true;
+                        placedItems.push({
+                            x: limb.display.x, y: limb.display.y,
+                            item: character.carrying.getItem(
+                                priority - 1) });
+                    }
+                }
+            });
+
+            drawSteps(ctx, this.#draw.topDown, {
+                now: now, phase: character.phase,
+                colors: character.colors,
+                conditions: conditions });
+            placedItems.forEach(descriptor => {
+                ctx.save();
+                ctx.translate(descriptor.x, descriptor.y);
+                ctx.scale(0.25, 0.25);
+                descriptor.item.drawTopDown(ctx, now);
+                ctx.restore();
+            });
+        } else if (this.#inherit)
+            this.#inherit.drawTopDown(ctx, character, now);
         else throw new Error("No instructions for top down drawing");
     }
 }
@@ -461,7 +537,8 @@ class ItemDefinition {
     drawTopDown(ctx, now, phase) {
         if (this.#draw && this.#draw.topDown)
             drawSteps(ctx, this.#draw.topDown,
-                      now, phase, this.#draw.colors);
+                      { now: now, phase: phase,
+                        colors: this.#draw.colors });
         else if (this.#inherit)
             this.#inherit.drawTopDown(ctx, now, phase);
         else throw new Error("No way to draw item type");
@@ -619,7 +696,7 @@ class Setting {
 
 class Item {
     #name; #mass; #bulk; #definition;
-    #uses; #draw; #wear; #slots;
+    #uses; #draw; #wear; #slots; #phase;
 
     constructor(item, setting) {
         if (typeof(item) === "string") {
@@ -632,6 +709,7 @@ class Item {
             this.#draw  = item.draw;
             this.#wear  = item.wear;
             this.#slots = item.slots;
+            this.#phase = Math.random();
         } else throw new TypeError("Invalid type for item");
 
         if (setting instanceof Setting)
@@ -671,12 +749,15 @@ class Item {
 
     get definition() { return this.#definition; }
 
-    drawTopDown(ctx, now, phase) {
+    get phase() { return this.#phase; }
+
+    drawTopDown(ctx, now) {
         if (this.#draw && this.#draw.topDown)
             drawSteps(ctx, this.#draw.topDown,
-                      now, phase, this.#draw.colors);
+                      { now: now, phase: this.#phase,
+                        colors: this.#draw.colors });
         else if (this.#definition)
-            this.#definition.drawTopDown(ctx);
+            this.#definition.drawTopDown(ctx, this.#phase);
         else throw Error("No way to draw " + this.#name);
     }
 
@@ -837,7 +918,7 @@ class Inventory {
 class Character {
     #name; #surname; #codename; #raceName; #race;
     #wearing; #carrying; #faction; #colors; #phase;
-    #position; #speed; #movement; #action;
+    #position; #speed; #movement; #action; #southpaw;
 
     constructor(character, setting) {
         this.#name     = character.name;
@@ -846,9 +927,15 @@ class Character {
         this.#raceName = character.race;
         this.#colors   = character.colors || {};
         this.#position = character.position;
+        if (!this.#position || isNaN(this.#position.row) ||
+            isNaN(this.#position.col))
+            throw new Error("Invalid position for character " +
+                            this.displayname + ": " +
+                            JSON.stringify(this.#position));
         this.#speed    = character.speed;
         this.#movement = character.movement;
         this.#action   = character.action;
+        this.#southpaw = !!character.southpaw;
         this.#wearing  = new Inventory(character.wearing);
         this.#carrying = new Inventory(character.carrying);
         this.#faction  = character.faction;
@@ -893,10 +980,12 @@ class Character {
             result.movement = this.#movement;
         if (this.#action)
             result.action = this.#action;
+        if (this.#southpaw)
+            result.southpaw = !!this.#southpaw;
         if (this.#wearing && this.#wearing.length)
-            result.wearing = this.#wearing.map(item => item.toJSON());
+            result.wearing = this.#wearing.toJSON();
         if (this.#carrying && this.#carrying.length)
-            result.carrying = this.#carrying.map(item => item.toJSON());
+            result.carrying = this.#carrying.toJSON();
         return result;
     }
 
@@ -923,33 +1012,27 @@ class Character {
 
     get carrying() { return this.#carrying; }
 
+    get speed() {
+        return !isNaN(this.#speed) ? this.#speed :
+               this.#race ? this.#race.speed : 0;
+    }
+
     get movement() { return this.#movement; }
     set movement(value) { this.#movement = value; }
 
     get action() { return this.#action; }
     set action(value) { this.#action = value; }
 
+    get colors() { return this.#colors; }
+
+    get phase() { return this.#phase; }
+
+    get southpaw() { return this.#southpaw; }
+
     drawTopDown(ctx, camera, now) {
-        if (this.#race) {
-            this.#race.drawTopDown(
-                ctx, now, this.#phase, this.#colors);
-            if (this.#carrying.length >= 1) {
-                ctx.save();
-                ctx.translate(0.3, 0.3);
-                ctx.scale(0.4, 0.4);
-                this.#carrying.getItem(0)
-                    .drawTopDown(ctx, now, 0 /* phase */);
-                ctx.restore();
-            }
-            if (this.#carrying.length >= 2) {
-                ctx.save();
-                ctx.translate(-0.3, 0.3);
-                ctx.scale(0.4, 0.4);
-                this.#carrying.getItem(1)
-                    .drawTopDown(ctx, now, 0 /* phase */);
-                ctx.restore();
-            }
-        } else throw new Error("No way to draw " + this.displayname);
+        if (!this.#race)
+            throw new Error("No way to draw " + this.displayname);
+        this.#race.drawTopDown(ctx, this, now);
     }
 }
 
@@ -1044,13 +1127,20 @@ class Scenario extends Pathf.Pathable {
     #playerFaction;
     #structures;
     #characters;
+    #movingCharacters;
     #grid;
     #gridConfig;
-    #path;
     #pathCharacter;
+    #path;
+    #pathReachable;
+    #slide;
 
     constructor(scenario, setting) {
         super();
+        this.#path = this.#pathCharacter = this.#pathReachable;
+        this.#slide = 0;
+        this.#movingCharacters = [];
+
         this.#gridConfig = scenario.grid;
         if (!this.#gridConfig || // Give grid a default size
             (!this.#gridConfig.radius && !this.#gridConfig.edge))
@@ -1091,10 +1181,17 @@ class Scenario extends Pathf.Pathable {
     // === Implementaiton of path finding interface
 
     pathNeighbor(node, fn, context) {
-        this.#grid.eachNeighbor(node, neighbor => {
-            if (this.getCell(neighbor))
-                fn.call(context, neighbor);
-        }, context);
+        const neighbors = this.#grid.eachNeighbor(node);
+        neighbors.forEach((neighbor, index, neighbors) => {
+            if (this.getCell(neighbor) &&
+                !this.getCharacterAt(neighbor) &&
+                (!neighbor.diagonal ||
+                 (this.getCell(neighbors[
+                     (index ? index : neighbors.length) - 1]) &&
+                  this.getCell(neighbors[
+                      (index + 1) % neighbors.length]))))
+                fn.call(context, neighbor, neighbor.cost);
+        });
     }
 
     pathNodeIndex(node) { return Ripple.pair(node.col, node.row); }
@@ -1130,7 +1227,7 @@ class Scenario extends Pathf.Pathable {
             structure.getCell(node) || current, null);
     }
 
-    getCharacter(node) {
+    getCharacterAt(node) {
         let result = null;
         node = this.#checkNode(node);
         this.#characters.forEach(character => {
@@ -1147,10 +1244,84 @@ class Scenario extends Pathf.Pathable {
             character => character.faction === this.#playerFaction);
     }
 
-    setPath(character, node) {
-        this.#pathCharacter = character ? character : null;
-        this.#path = character ? this.createPath(
-            character.position, this.#checkNode(node)) : null;
+    setCharacter(character) {
+        if (character && (character.faction === this.playerFaction)) {
+            this.#pathReachable = [];
+            this.reachable(character.position, character.movement,
+                           (node, cost, previous, index) =>
+                               this.#pathReachable.push(node));
+        } else this.#pathReachable = null;
+        return character;
+    }
+
+    setPath(character, point) {
+        this.#pathCharacter = character;
+        if (this.#pathCharacter &&
+            (this.#pathCharacter.faction === this.#playerFaction)) {
+            this.#path = this.createPath(
+                character.position, this.#checkNode(point));
+        } else this.#path = null;
+    }
+
+    moveCharacter(character, point) {
+        if (character && (character.faction === this.#playerFaction) &&
+            this.#movingCharacters.every(([other, path]) =>
+                other !== character)) {
+            const path = this.createPath(
+                character.position, this.#grid.getCell(point));
+            if (path && (path.reduce(
+                (total, step) =>  total + step.cost, 0) <=
+                    character.movement)) {
+                this.#pathReachable = null;
+                this.#path = null;
+                this.#movingCharacters.push([character, path]);
+            }
+        }
+    }
+
+    endTurn() {
+        this.#characters.forEach(character =>
+            character.movement = character.speed);
+    }
+
+    update(elapsed) {
+        this.#slide = (this.#slide + elapsed) % 2000;
+
+        const movingNext = [];
+        this.#movingCharacters.forEach(([character, path]) => {
+            const animationSpeed = 800;
+            let remaining = elapsed;
+            while (path && path.length && (remaining > 0)) {
+                const next = path[0];
+                if (isNaN(next.x) || isNaN(next.y))
+                    this.#grid.markCenter(next);
+                if (isNaN(next.remain))
+                    next.remain = animationSpeed;
+                if (remaining >= next.remain) {
+                    remaining -= next.remain;
+                    character.position.row = next.row;
+                    character.position.col = next.col;
+                    character.position.x = next.x;
+                    character.position.y = next.y;
+                    character.movement -= next.cost;
+                    path.shift();
+                } else {
+                    const prev = this.#grid.getCenter(
+                        character.position);
+                    const fraction =
+                        (next.remain - remaining) / animationSpeed;
+                    next.remain -= remaining;
+                    remaining = 0;
+
+                    character.position.x = next.x + (
+                        prev.x - next.x) * fraction;
+                    character.position.y = next.y + (
+                        prev.y - next.y) * fraction;
+                    movingNext.push([character, path]);
+                }
+            }
+        });
+        this.#movingCharacters = movingNext;
     }
 
     drawTopDown(ctx, camera, now, character) {
@@ -1186,15 +1357,29 @@ class Scenario extends Pathf.Pathable {
             });
         });
 
-        if (this.#path) {
-            const start = this.#checkNode(this.#pathCharacter.position);
+        if (this.#pathReachable) {
             ctx.beginPath();
-            ctx.moveTo(start.x, start.y);
+            this.#pathReachable.forEach(node =>
+                this.#grid.drawNode(ctx, node));
+            ctx.fillStyle = "#aae4";
+            ctx.fill();
+        }
+
+        if (this.#path) {
+            let prev = this.#checkNode(this.#pathCharacter.position);
+            ctx.beginPath();
+            ctx.moveTo(prev.x, prev.y);
             this.#path.forEach(node => {
                 node = this.#grid.getCenter(node);
                 ctx.lineTo(node.x, node.y);
+
+                drawArrow(ctx, prev, node, {
+                    slide: this.#slide / 2000});
+                ctx.moveTo(node.x, node.y);
+                prev = node;
             });
-            ctx.lineWidth = 0.15;
+            ctx.lineWidth = 0.1;
+            ctx.lineCap = ctx.lineJoin = "round";
             ctx.strokeStyle = "#993";
             ctx.stroke();
         }
@@ -1231,11 +1416,6 @@ class Scenario extends Pathf.Pathable {
                     }
                 }, this);
         });
-
-        if (character && character.movement &&
-            (character.faction === this.#playerFaction)) {
-            // TODO: draw movement options
-        }
 
         this.#characters.forEach(character => {
             if (character.position &&
@@ -1350,6 +1530,45 @@ class App {
         this.#activeCharacters = this.#scenario.getFactionCharacters(
             this.#scenario.playerFaction);
         this.#selectedCharacter = null;
+    }
+
+    setButtons() {
+        const buttons = [
+            this.#activeCharacters.length ?
+            { text: "Next", onClick: () => this.nextCharacter() } :
+            { text: "End", onClick: () => this.endTurn() }];
+
+        this.#buttonBar.setButtons(
+            this.#selectedCharacter ?
+            [{
+                text: this.#selectedCharacter.displayname,
+                onClick: () => {
+                    this.showCharacter(this.#selectedCharacter);
+            }}].concat(buttons) : buttons);
+    }
+
+    endTurn() {
+        this.#scenario.endTurn();
+        this.#activeCharacters = this.#scenario.getFactionCharacters(
+            this.#scenario.playerFaction);
+        this.#selectedCharacter = null;
+        this.setButtons();
+    }
+
+    selectCharacter(character) {
+        this.#selectedCharacter = character;
+        this.#scenario.setCharacter(character);
+        this.setButtons();
+    }
+
+    nextCharacter() {
+        if (this.#selectedCharacter)
+            this.#activeCharacters = this.#activeCharacters.filter(
+                character => character !== this.#selectedCharacter);
+        if (this.#activeCharacters.length)
+            this.selectCharacter(this.#activeCharacters[0]);
+        else this.selectCharacter(null);
+        this.setButtons();
     }
 
     showCharacter(character) {
@@ -1469,38 +1688,6 @@ class App {
                          createFieldSet(otherSelect, otherWidget.view));
     }
 
-    setButtons() {
-        const buttons = [
-            this.#activeCharacters.length ?
-            { text: "Next", onClick: () => this.nextCharacter() } :
-            { text: "End", onClick: () => this.endTurn() }];
-
-        this.#buttonBar.setButtons(
-            this.#selectedCharacter ?
-            [{
-                text: this.#selectedCharacter.displayname,
-                onClick: () => {
-                    this.showCharacter(this.#selectedCharacter);
-            }}].concat(buttons) : buttons);
-    }
-
-    endTurn() {
-        this.#activeCharacters = this.#scenario.getFactionCharacters(
-            this.#scenario.playerFaction);
-        this.#selectedCharacter = null;
-        this.setButtons();
-    }
-
-    nextCharacter() {
-        if (this.#selectedCharacter)
-            this.#activeCharacters = this.#activeCharacters.filter(
-                character => character !== this.#selectedCharacter);
-        if (this.#activeCharacters.length)
-            this.#selectedCharacter = this.#activeCharacters[0];
-        else this.#selectedCharacter = null;
-        this.setButtons();
-    }
-
     get active() { return true };
     get autofill() { return true };
     get autozoom() { return { min: 1, max: 20 } };
@@ -1509,10 +1696,16 @@ class App {
     resize(event, camera) {  }
 
     dblclick(event, camera) {
-        const selected = this.#scenario.getCharacter(
-            camera.toWorld(camera.getPoint(event)));
-        if (selected && (selected === this.#selectedCharacter))
+        const point = camera.toWorld(camera.getPoint(event));
+        const character = this.#scenario.getCharacterAt(point);
+        if (character && (character === this.#selectedCharacter))
             this.showCharacter(this.#selectedCharacter);
+        else if (!character && this.#selectedCharacter) {
+            this.#scenario.moveCharacter(
+                this.#selectedCharacter, point);
+            this.#selectedCharacter = null;
+            this.setButtons();
+        }
     }
 
     mousedown(event, camera) {
@@ -1521,12 +1714,10 @@ class App {
 
     mouseup(event, camera) {
         const point = camera.toWorld(camera.getPoint(event));
-        const selected = this.#scenario.getCharacter(point);
-        if (selected && (selected !== this.#selectedCharacter)) {
-            this.#selectedCharacter = selected;
-            this.#scenario.setPath();
-            this.setButtons();
-        } else if (!selected && this.#selectedCharacter)
+        const character = this.#scenario.getCharacterAt(point);
+        if (character && (character !== this.#selectedCharacter)) {
+            this.selectCharacter(character);
+        } else if (!character && this.#selectedCharacter)
             this.#scenario.setPath(this.#selectedCharacter, point);
     }
 
@@ -1538,10 +1729,16 @@ class App {
 
     #lastUpdate = undefined;
 
-    update(now, camera) { this.#lastUpdate = now; }
+    update(now, camera) {
+        const elapsed = isNaN(this.#lastUpdate) ? 0 :
+                        (now - this.#lastUpdate);
+        this.#lastUpdate = now;
+        this.#scenario.update(elapsed);
+    }
 
     draw(ctx, camera)
-    { this.#scenario.drawTopDown(ctx, camera, this.#lastUpdate); }
+    { this.#scenario.drawTopDown(ctx, camera, this.#lastUpdate,
+                                 this.#selectedCharacter); }
 
 }
 export default App;

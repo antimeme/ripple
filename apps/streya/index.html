@@ -19,16 +19,12 @@
  }
  .panel {
      position: absolute; top: 50%; left: 50%; width: 80%; height: 80%;
+     background: #aaa; border: 2px solid #ccc; border-radius: 10px;
      transform: translate(-50%, -50%); z-index: 8;
-     border: 2px solid #ccc;
-     border-radius: 10px;
-     background: #aaa;
  }
  .panel > legend {
+     background: #aaa; border: 1px solid #ccc; border-radius: 9px;
      padding: .3em;
-     background: #aaa;
-     border: 1px solid #eee;
-     border-radius: 9px;
  }
  .panel > div { display: flex; flex-direction: row; }
  .container {
@@ -51,7 +47,8 @@
  .toast {
      position: fixed; bottom: 20px; right: 20px;
      background-color: #644; color: #fdd;
-     padding: 10px 15px; border-radius: 5px;
+     border-color: #fdd; border-radius: 5px;
+     padding: 10px 15px;
      font-size: 14px; z-index: 1000;
      opacity: 0.9; transition: opacity 2s ease;
  }

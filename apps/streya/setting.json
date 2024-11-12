@@ -40,44 +40,49 @@
     "races": {
         "Humanoid": {
             "ignore": true,
+            "speed": 9,
             "limbs": {
                 "head": { "hitWeight": 2 },
                 "torso": { "hitWeight": 9, "alwaysCover": true },
                 "legs": {
                     "hitWeight": 8, "lowCover": true,
-                    "alwaysCover": true,
-                    "walk": 1.0, "swim": 0.5
-                },
+                    "alwaysCover": true },
                 "feet": { "hitWeight": 0, "lowCover": true },
                 "rhand": {
                     "prehensile": true, "hitWeight": 3,
-                    "crawl": 0.2, "swim": 0.5
-                },
+                    "display": {
+                        "x": 0.3, "y": 0.35,
+                        "priority": 1, "southpaw": 2 } },
                 "lhand": {
                     "prehensile": true, "hitWeight": 3,
-                    "crawl": 0.2, "swim": 0.5
-                }
+                    "display": {
+                        "x": -0.3, "y": 0.35,
+                        "priority": 2, "southpaw": 1 } }
             },
             "draw": {
-                "colors": {
-                    "body": ["blue", "green", "cyan", "yellow"],
-                    "head": ["orange", "red", "purple"],
-                    "eyes": ["blue", "green", "brown"]
-                },
-                "topDown": [{
-                    "op": "ellipse", "x": 0, "y": 0,
-                    "rx": 0.4, "ry": 0.265, "fill": "body"
-                }, {
-                    "op": "circle", "x": 0, "y": 0,
-                    "r": 0.25, "fill": "head"
-                }, {
-                    "op": "circle", "x": 0.1, "y": 0.1,
-                    "r": 0.05, "fill": "eyes",
-                    "period": 4500, "blink": 0.075
-                }, {
-                    "op": "circle", "x": -0.1, "y": 0.1,
-                    "r": 0.05, "fill": "eyes",
-                    "period": 4500, "blink": 0.075 }]
+                "topDown": [
+                    { "op": "polygon", "fill": "body",
+                        "condition": "rhand", "points": [
+                            {"x": 0.22, "y": 0.35},
+                            {"x": 0.38, "y": 0.35},
+                            {"x": 0.38, "y": 0},
+                            {"x": 0.22, "y": 0}]},
+                    { "op": "polygon", "fill": "body",
+                        "condition": "lhand", "points": [
+                            {"x": -0.22, "y": 0.35},
+                            {"x": -0.38, "y": 0.35},
+                            {"x": -0.38, "y": 0},
+                            {"x": -0.22, "y": 0}]},
+                    { "op": "ellipse", "x": 0, "y": 0,
+                        "rx": 0.4, "ry": 0.265, "fill": "body" },
+                    { "op": "circle", "x": 0, "y": 0,
+                        "r": 0.25, "fill": "head" },
+                    { "op": "circle", "x": 0.1, "y": 0.1,
+                        "r": 0.05, "fill": "eyes",
+                        "period": 4500, "blink": 0.075 },
+                    { "op": "circle", "x": -0.1, "y": 0.1,
+                        "r": 0.05, "fill": "eyes",
+                        "period": 4500, "blink": 0.075 }]
             }
         },
         "Human": { "parent": "Humanoid", "default": true }
@@ -236,24 +241,24 @@
             "draw": { "topDown": [
                 {"op": "polygon", "fill": "#225",
                     "points": [
-                        {"x": -0.08, "y":  0.4},
-                        {"x": -0.1, "y":  0.35},
-                        {"x": -0.1, "y": -0.2},
-                        {"x":  0.1, "y": -0.2},
-                        {"x":  0.1, "y":  0.35},
-                        {"x":  0.08, "y":  0.4}]},
+                        {"x": -0.16, "y":  0.8},
+                        {"x": -0.2, "y":  0.7},
+                        {"x": -0.2, "y": -0.4},
+                        {"x":  0.2, "y": -0.4},
+                        {"x":  0.2, "y":  0.7},
+                        {"x":  0.16, "y":  0.8}]},
                 {"op": "circle", "fill": "#225",
-                    "r": 0.1, "x": 0, "y": -0.2},
+                    "r": 0.2, "x": 0, "y": -0.4},
                 {"op": "polygon", "fill": "#118",
                     "points": [
-                        {"x":  0.15, "y":  0.2},
-                        {"x": -0.15, "y":  0.2},
-                        {"x": -0.15, "y": -0.1},
-                        {"x": -0.05, "y": -0.1},
-                        {"x": -0.05, "y": -0.2},
-                        {"x":  0.05, "y": -0.2},
-                        {"x":  0.05, "y": -0.1},
-                        {"x":  0.15, "y": -0.1}]} ]}
+                        {"x":  0.3, "y":  0.4},
+                        {"x": -0.3, "y":  0.4},
+                        {"x": -0.3, "y": -0.2},
+                        {"x": -0.1, "y": -0.2},
+                        {"x": -0.1, "y": -0.4},
+                        {"x":  0.1, "y": -0.4},
+                        {"x":  0.1, "y": -0.2},
+                        {"x":  0.3, "y": -0.2}]} ]}
         },
         "BulletCasing": {
             "comments": ["Spent cartridge from a firearm."],
