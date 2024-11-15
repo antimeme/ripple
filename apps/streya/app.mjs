@@ -119,13 +119,11 @@ function drawArrow(ctx, start, end, config) {
     const perp = { x: (end.y - start.y) * width,
                    y: (start.x - end.x) * width };
     const top = {
-        x: start.x + (end.x - start.x) *
-        (depth + slide * (1 - depth)),
-        y: start.y + (end.y - start.y) *
-        (depth + slide * (1 - depth)) };
+        x: start.x + (end.x - start.x) * (slide + depth),
+        y: start.y + (end.y - start.y) * (slide + depth) };
     const bottom = {
-        x: start.x + (end.x - start.x) * slide * (1 - depth),
-        y: start.y + (end.y - start.y) * slide * (1 - depth) };
+        x: start.x + (end.x - start.x) * slide,
+        y: start.y + (end.y - start.y) * slide };
     ctx.moveTo(top.x, top.y);
     ctx.lineTo(bottom.x + perp.x, bottom.y + perp.y);
     ctx.lineTo(bottom.x - perp.x, bottom.y - perp.y);
@@ -1216,7 +1214,9 @@ class Scenario extends Pathf.Pathable {
         if (isNaN(node.row) || isNaN(node.col)) {
             if (!isNaN(node.x) && !isNaN(node.y))
                 node = this.#grid.getCell(node);
-            else throw new Error("Argument must provide a location");
+            else throw new Error(
+                "Argument must provide a location: " +
+                JSON.stringify(node));
         }
         return node;
     }
@@ -1246,10 +1246,9 @@ class Scenario extends Pathf.Pathable {
 
     setCharacter(character) {
         if (character && (character.faction === this.playerFaction)) {
-            this.#pathReachable = [];
-            this.reachable(character.position, character.movement,
-                           (node, cost, previous, index) =>
-                               this.#pathReachable.push(node));
+            this.#path = null;
+            this.#pathReachable = this.reachable(
+                character.position, character.movement);
         } else this.#pathReachable = null;
         return character;
     }
@@ -1267,13 +1266,13 @@ class Scenario extends Pathf.Pathable {
         if (character && (character.faction === this.#playerFaction) &&
             this.#movingCharacters.every(([other, path]) =>
                 other !== character)) {
+            this.#pathCharacter = character;
+            this.#path = null;
             const path = this.createPath(
                 character.position, this.#grid.getCell(point));
             if (path && (path.reduce(
                 (total, step) =>  total + step.cost, 0) <=
                     character.movement)) {
-                this.#pathReachable = null;
-                this.#path = null;
                 this.#movingCharacters.push([character, path]);
             }
         }
@@ -1304,6 +1303,9 @@ class Scenario extends Pathf.Pathable {
                     character.position.x = next.x;
                     character.position.y = next.y;
                     character.movement -= next.cost;
+                    if (this.#pathCharacter === character)
+                        this.#pathReachable = this.reachable(
+                            character.position, character.movement);
                     path.shift();
                 } else {
                     const prev = this.#grid.getCenter(
@@ -1365,18 +1367,38 @@ class Scenario extends Pathf.Pathable {
             ctx.fill();
         }
 
-        if (this.#path) {
+        if (this.#path && this.#pathCharacter) {
             let prev = this.#checkNode(this.#pathCharacter.position);
+            let cost = 0;
+
             ctx.beginPath();
             ctx.moveTo(prev.x, prev.y);
             this.#path.forEach(node => {
                 node = this.#grid.getCenter(node);
                 ctx.lineTo(node.x, node.y);
-
                 drawArrow(ctx, prev, node, {
                     slide: this.#slide / 2000});
                 ctx.moveTo(node.x, node.y);
                 prev = node;
+            });
+            ctx.lineWidth = 0.1;
+            ctx.lineCap = ctx.lineJoin = "round";
+            ctx.strokeStyle = "#666";
+            ctx.stroke();
+
+            prev = this.#pathCharacter.position;
+            ctx.beginPath();
+            ctx.moveTo(prev.x, prev.y);
+            this.#path.forEach(node => {
+                cost += node.cost;
+                if (cost <= this.#pathCharacter.movement) {
+                    node = this.#grid.getCenter(node);
+                    ctx.lineTo(node.x, node.y);
+                    drawArrow(ctx, prev, node, {
+                        slide: this.#slide / 2000});
+                    ctx.moveTo(node.x, node.y);
+                    prev = node;
+                }
             });
             ctx.lineWidth = 0.1;
             ctx.lineCap = ctx.lineJoin = "round";
@@ -1700,12 +1722,9 @@ class App {
         const character = this.#scenario.getCharacterAt(point);
         if (character && (character === this.#selectedCharacter))
             this.showCharacter(this.#selectedCharacter);
-        else if (!character && this.#selectedCharacter) {
+        else if (!character && this.#selectedCharacter)
             this.#scenario.moveCharacter(
                 this.#selectedCharacter, point);
-            this.#selectedCharacter = null;
-            this.setButtons();
-        }
     }
 
     mousedown(event, camera) {

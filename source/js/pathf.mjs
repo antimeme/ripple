@@ -222,6 +222,12 @@ export class Pathable {
      * implied by the limit parameter (or all reachable nodes if
      * limit is undefined). */
     reachable(start, limit, fn, context) {
+        if (!fn) {
+            const result = [];
+            this.reachable(start, limit, node => result.push(node));
+            return result;
+        }
+
         const frontier = new Heap((a, b) => Heap.cmp(a.cost, b.cost));
         const visited = {};
 
