@@ -1328,7 +1328,7 @@
             axioms of our formal system.  The axioms described
             here were first developed by Ernst Zermelo,
             Abraham Fraenkel and Thorlaf Skolem.  Alternative
-            formulations, such as Von Neumann's Category
+            formulations, such as von Neumann's Category
             Theory, also exist but we won't use them here.
         </aside>
     </section>
@@ -1698,15 +1698,15 @@
     <section>
         <h3>Axiom of Power Set</h3>
         <p>
-            &#x2200;a &#x2203;<span class="intro">&#x2118;</span>a
-            &#x2200;b (b&#x2208;<span class="intro">&#x2118;</span>a
+            &#x2200;a &#x2203;<span class="intro">&#x1d4ab;</span>a
+            &#x2200;b (b&#x2208;<span class="intro">&#x1d4ab;</span>a
             &#x27fa; b&#x2286;a)
         </p>
         <p>
             The subsets of any set make up a set of their own.
         </p>
         <p class="fragment">
-            <span class="intro">&#x2118;</span>{&spades;,
+            <span class="intro">&#x1d4ab;</span>{&spades;,
             <span class="redsuit">&hearts;</span>, &clubs;,
             <span class="redsuit">&diams;</span>}
             <span class="fragment">
@@ -1858,8 +1858,8 @@
             </tr><tr>
                 <td>Power Set</td>
                 <td><small>
-                    &#x2200;a &#x2203;&#x2118;a &#x2200;b
-                    (b&#x2208;&#x2118;a &#x27fa; b&#x2286;a)
+                    &#x2200;a &#x2203;&#x1d4ab;a &#x2200;b
+                    (b&#x2208;&#x1d4ab;a &#x27fa; b&#x2286;a)
                 </small></td>
             </tr><tr>
                 <td>Replacement (S)</td>
@@ -2156,12 +2156,12 @@
                 &#x27f9; ({b} &#x2286; a) &and;
                 ({b, c} &#x2286; a)</span>
             <span class="fragment">&#x27f9;
-                {{b}, {b, c}}&#x2286;&#x2118;a</span>
+                {{b}, {b, c}}&#x2286;&#x1d4ab;a</span>
             <span class="fragment">&#x27f9;
-                &#x27e8;b, c&#x27e9;&#x2286;&#x2118;a</span>
+                &#x27e8;b, c&#x27e9;&#x2286;&#x1d4ab;a</span>
             <span class="fragment">&#x27f9;
                 <span class="intro">&#x27e8;b,
-                    c&#x27e9;&#x2208;&#x2118;&#x2118;a</span>
+                    c&#x27e9;&#x2208;&#x1d4ab;&#x1d4ab;a</span>
             </span>
         </p>
         <p class="fragment">
@@ -2186,7 +2186,7 @@
         <p>
             &#x2200;a,b (a <span class="intro">&#x229b;</span> b)
             &#x225d; { &#x27e8;c, d&#x27e9; &#x2208;
-            &#x2118;&#x2118;&cup;{ a, b } :
+            &#x1d4ab;&#x1d4ab;&cup;{ a, b } :
             c&#x2208;a &and; d&#x2208;b }
         </p>
         <div class="fragment">
@@ -2221,7 +2221,7 @@
             <span class="intro">&#x229b;</span> b
             <span class="intro">&#x229b;</span> c)
             &#x225d;<br /> { &#x27e8;d, e, f&#x27e9; &#x2208;
-            &#x2118;&#x2118;&cup;{a, b, c} :
+            &#x1d4ab;&#x1d4ab;&cup;{a, b, c} :
             d&#x2208;a &and; e&#x2208;b &and; f&#x2208;c }
         </p>
         <div class="fragment">
@@ -2655,7 +2655,7 @@
     </section>
     <section>
         <h3>Natural Numbers &#x2115;: Examples</h3>
-        <p>Peano 1889 CE and Von Neumann 1923 CE</p>
+        <p>Peano 1889 CE and von Neumann 1923 CE</p>
         <ul>
             <li class="fragment">
                 <span class="intro">0<sub>&#x2115;</sub></span>
@@ -2831,8 +2831,7 @@
         </p>
         <aside class="notes">
         </aside>
-    </section>
-    <section>
+    </section><section>
         <h3>Induction</h3>
         <p>
             Induction allows us to prove something for a set like
@@ -2841,8 +2840,7 @@
             when it's true for some value it follows that the
             successor also has the same property.
         </p>
-    </section>
-    <section>
+    </section><section>
         <h3>Order &#x2115;: Connex</h3>
         <p>
             &#x2200;a,b&#x2208;&#x2115;
@@ -2865,8 +2863,7 @@
             other natural number.  This is our base case for an
             inductive proof.
         </aside>
-    </section>
-    <section>
+    </section><section>
         <h3>Order &#x2115;: Connex</h3>
         <p>
             &#x2200;a,b&#x2208;&#x2115;
@@ -3837,12 +3834,12 @@
             &#x2200;a,b&#x2208;&#x2115;
             <span class="intro">
                 &#x27e8;a, b&#x27e9; =<sub>&#x2124;</sub>
-                &#x27e8;a), SCCR(b<sup>+</sup>&#x27e9;
+                &#x27e8;a<sup>+</sup>, b<sup>+</sup>&#x27e9;
             </span>
         </p>
         <ul>
             <li class="fragment">
-                a + b) = SCCR(a<sup>+</sup> + b :: Integer Equality
+                a + b<sup>+</sup> = a<sup>+</sup> + b :: Integer Equality
             </li><li class="fragment">
                 a + (b + 1<sub>&#x2115;</sub>) = (a +
                 1<sub>&#x2115;</sub>) + b :: Successor + 1
@@ -3976,7 +3973,7 @@
                 {{0}, {0, 1}} = {{{}}, {{}, {{}}}}
             </li><li class="fragment">
                 [-2<sub>&#x2124;</sub>] &#x220b;
-                &#x27e8;0, 1&#x27e9; =
+                &#x27e8;0, 2&#x27e9; =
                 {{0}, {0, 2}} = {{{}}, {{}, {{}, {{}}}}}
             </li>
         </ul>
@@ -6084,7 +6081,7 @@
         <h2>Real Numbers &#x211d;</h2>
         <p>
             <span class="intro">
-                &#x211d; &#x225d; { a&#x2208;&#x2118;&#x211a; :
+                &#x211d; &#x225d; { a&#x2208;&#x1d4ab;&#x211a; :
                 (a &ne; {}) &and; (a &ne; &#x211a;) &and;<br />
                 (&#x2200;b,c&#x2208;&#x211a; (b&#x2208;a &and;
                 c&le;b) &#x27f9; c&#x2208;a) &and;<br />
@@ -6108,7 +6105,7 @@
                 &#x2200;a&#x2208;&#x211d; a&#x2286;&#x211a; &and;
                 a&ne;&#x211a; &and; a&ne;{}
                 <span class="fragment">
-                    &#x27f9; &#x211d;&#x2286;&#x2118;&#x211a;
+                    &#x27f9; &#x211d;&#x2286;&#x1d4ab;&#x211a;
                 </span>
             </li><li class="fragment">
                 <span class="intro">Closed Downward</span>:
@@ -6407,7 +6404,7 @@
         <h2>Real Numbers &#x211d;</h2>
         <ul>
             <li>
-                &#x211d; &#x225d; { a&#x2208;&#x2118;&#x211a; :
+                &#x211d; &#x225d; { a&#x2208;&#x1d4ab;&#x211a; :
                 (a &ne; {}) &and; (a &ne; &#x211a;) &and;<br />
                 (&#x2200;b,c&#x2208;&#x211a; (b&#x2208;a &and;
                 c&le;b) &#x27f9; c&#x2208;a) &and;<br />
@@ -7977,7 +7974,7 @@
     <section>
         <h3>Lines</h3>
         <p>
-            &#x2200;&#x1d4c1;&#x2208;&#x2118;&#x2119;
+            &#x2200;&#x1d4c1;&#x2208;&#x1d4ab;&#x2119;
             IS-LINE(&#x1d4c1;) &#x225d;
         </p><ul><li class="fragment">
             &#x2203;A,B&#x2208;&#x1d4c1; d(A, B) &gt; 0
