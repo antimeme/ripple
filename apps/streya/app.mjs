@@ -1559,14 +1559,13 @@ class App {
             this.#activeCharacters.length ?
             { text: "Next", onClick: () => this.nextCharacter() } :
             { text: "End", onClick: () => this.endTurn() }];
-
-        this.#buttonBar.setButtons(
-            this.#selectedCharacter ?
-            [{
+        if (this.#selectedCharacter)
+            buttons.push({
                 text: this.#selectedCharacter.displayname,
                 onClick: () => {
                     this.showCharacter(this.#selectedCharacter);
-            }}].concat(buttons) : buttons);
+            }})
+        this.#buttonBar.setButtons(buttons);
     }
 
     endTurn() {
