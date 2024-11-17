@@ -1733,9 +1733,9 @@ class App {
     mouseup(event, camera) {
         const point = camera.toWorld(camera.getPoint(event));
         const character = this.#scenario.getCharacterAt(point);
-        if (character && (character !== this.#selectedCharacter)) {
+        if (character)
             this.selectCharacter(character);
-        } else if (!character && this.#selectedCharacter)
+        else if (this.#selectedCharacter)
             this.#scenario.setPath(this.#selectedCharacter, point);
     }
 
