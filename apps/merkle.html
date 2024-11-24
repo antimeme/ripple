@@ -23,6 +23,7 @@
  class MerkleTree {
      constructor(config) {
          this.selected = null;
+         this.tinge = null;
          this.center = (config && config.center) ?
                        config : {x: 0, y: 0};
          this.radius = (config && !isNaN(config.radius)) ?
@@ -36,7 +37,8 @@
              lines: "darkslategray",
              selected: "deepskyblue",
              parent: "tomato",
-             child: "orchid" };
+             child: "orchid",
+             tinge: "yellow" };
 
          this.hashes = null;
          this.__createMTree(this.depth);
@@ -92,6 +94,7 @@
          if (!isNaN(fraction) && (fraction >= 0) && (fraction <= 1))
              outer = inner + fraction * (outer - inner);
 
+         ctx.beginPath();
          ctx.moveTo(
              this.center.x + Math.cos(start) * outer,
              this.center.y + Math.sin(start) * outer);
@@ -120,17 +123,24 @@
          ctx.fillStyle = this.colors["base"];
          ctx.fill();
 
+         if (!isNaN(this.tinge) && this.tinge) {
+             this.__drawSection(
+                 ctx, (1 - this.tinge) * increment,
+                 increment,
+                 0, Math.PI, fraction);
+             ctx.fillStyle = this.colors["tinge"];
+             ctx.fill();
+         }
+
          if (this.selected && this.selected.row < 0) {
-             ctx.beginPath();
-             this.__drawSection(ctx,
-                                (1 - this.selected.row) * increment,
-                                (0 - this.selected.row) * increment,
-                                0, Math.PI, fraction);
+             this.__drawSection(
+                 ctx, (1 - this.selected.row) * increment,
+                 (0 - this.selected.row) * increment,
+                 0, Math.PI, fraction);
              ctx.fillStyle = this.colors["child"];
              ctx.fill();
          } else if (this.selected) {
              // Highlight children of selected node
-             ctx.beginPath();
              if (this.selected.root)
                  this.__drawSection(ctx, increment, this.radius,
                                     0, Math.PI, fraction);
@@ -140,7 +150,6 @@
                  (1 << this.selected.row),
                  Math.PI * (this.selected.slice + 1) /
                  (1 << this.selected.row), fraction);
-             ctx.closePath();
              ctx.fillStyle = this.colors["child"];
              ctx.fill();
 
@@ -155,12 +164,10 @@
                  (1 << this.selected.row),
                  Math.PI * (this.selected.slice + 1) /
                  (1 << this.selected.row), fraction);
-             ctx.closePath();
              ctx.fillStyle = this.colors["selected"];
              ctx.fill();
 
              // Highlight nodes needed for proof of membership
-             ctx.beginPath();
              if (this.selected.path)
                  this.selected.path.forEach((component, index) => {
                      let slices = 1 << (index + 1);
@@ -171,9 +178,9 @@
                          (index + 2) * increment,
                          Math.PI * slice / slices,
                          Math.PI * (slice + 1) / slices, fraction);
+                     ctx.fillStyle = this.colors["parent"];
+                     ctx.fill();
                  }, this);
-             ctx.fillStyle = this.colors["parent"];
-             ctx.fill();
          }
 
          // Lines to separate each cell
@@ -199,28 +206,36 @@
          ctx.stroke();
      }
 
-     select(point) {
-         let delta = {
+     pointify(point) {
+         const delta = {
              x: point.x - this.center.x,
              y: point.y - this.center.y };
-         let quadrance = delta.x * delta.x + delta.y * delta.y;
-         let increment = this.radius / (this.depth + 1);
+         return {
+             quadrance: delta.x * delta.x + delta.y * delta.y,
+             increment: this.radius / (this.depth + 1), delta: delta
+         };
+     }
 
-         if (quadrance < this.radius * this.radius) {
+     select(point) {
+         const stats = this.pointify(point);
+
+         if (stats.quadrance < this.radius * this.radius) {
              const now = new Date().getTime();
-             if (quadrance < increment * increment) {
+             if (stats.quadrance < stats.increment * stats.increment) {
                  this.selected = { root: true, when: now };
              } else if (point.y < 0) {
                  for (let ii = 2; ii <= this.depth + 1; ++ii) {
-                     if (quadrance < ii * increment * ii * increment) {
+                     if (stats.quadrance < ii * stats.increment *
+                         ii * stats.increment) {
                          this.selected = { row: 1 - ii, when: now };
                          break;
                      }
                  }
              } else {
                  let length = Math.sqrt(
-                     delta.x * delta.x + delta.y * delta.y);
-                 let radians = Math.acos(delta.x / length);
+                     stats.delta.x * stats.delta.x +
+                     stats.delta.y * stats.delta.y);
+                 let radians = Math.acos(stats.delta.x / length);
                  let path = [];
 
                  for (let ii = 1; ii <= this.depth; ++ii) {
@@ -228,8 +243,8 @@
                      let slice = Math.floor(slices * radians / Math.PI);
 
                      path.push(slice);
-                     if (quadrance < ((ii + 1) * increment *
-                         (ii + 1) * increment)) {
+                     if (stats.quadrance < ((ii + 1) * stats.increment *
+                         (ii + 1) * stats.increment)) {
                          this.selected = {
                              path: path, slice: slice,
                              row: ii, when: now };
@@ -238,6 +253,19 @@
                  }
              }
          } else this.selected = null;
+     }
+
+     setTinge(point) {
+         const stats = this.pointify(point);
+         if (stats.quadrance < this.radius * this.radius) {
+             for (let ii = 2; ii <= this.depth + 1; ++ii) {
+                 if (stats.quadrance < ii * stats.increment *
+                     ii * stats.increment) {
+                     this.tinge = 1 - ii;
+                     break;
+                 }
+             }
+         }
      }
 
      getSelectedHash() {
@@ -271,19 +299,27 @@
  let ctx = undefined;
 
  function update() {
-     let hash = tree.getSelectedHash();
+     const hash = tree.getSelectedHash();
 
-     camera.configureContext(ctx);
-     tree.draw(ctx);
-     camera.restoreContext(ctx);
+     ctx.clearRect(0, 0, camera.width, camera.height);
      if (hash) {
          ctx.font = "24px sans-serif";
          ctx.textAlign = "center";
          ctx.fillText(hash, camera.width / 2, 30);
      }
+     camera.configureContext(ctx);
+     tree.draw(ctx);
+     camera.restoreContext(ctx);
      if (tree.isActive())
          requestAnimationFrame(update);
  }
+
+ screen.addEventListener("dblclick", event => {
+     if (camera)
+         tree.setTinge(camera.toWorld({
+             x: event.clientX, y: event.clientY }));
+     update();
+ });
 
  screen.addEventListener("mousedown", (event) => {
      if (camera)
