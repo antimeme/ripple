@@ -125,9 +125,9 @@
 
          if (!isNaN(this.tinge) && this.tinge) {
              this.__drawSection(
-                 ctx, (1 - this.tinge) * increment,
-                 increment,
+                 ctx, increment, (1 - this.tinge) * increment,
                  0, Math.PI, fraction);
+             this.__arc(ctx, increment, 0, 2 * Math.PI);
              ctx.fillStyle = this.colors["tinge"];
              ctx.fill();
          }
@@ -232,9 +232,7 @@
                      }
                  }
              } else {
-                 let length = Math.sqrt(
-                     stats.delta.x * stats.delta.x +
-                     stats.delta.y * stats.delta.y);
+                 let length = Math.hypot(stats.delta.x, stats.delta.y);
                  let radians = Math.acos(stats.delta.x / length);
                  let path = [];
 
@@ -257,7 +255,9 @@
 
      setTinge(point) {
          const stats = this.pointify(point);
-         if (stats.quadrance < this.radius * this.radius) {
+         if (stats.quadrance < stats.increment * stats.increment) {
+             this.tinge = undefined;
+         } else if (stats.quadrance < this.radius * this.radius) {
              for (let ii = 2; ii <= this.depth + 1; ++ii) {
                  if (stats.quadrance < ii * stats.increment *
                      ii * stats.increment) {
