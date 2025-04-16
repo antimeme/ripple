@@ -24,6 +24,22 @@
                 Welcome.  This presentation is about lambda calculus.
             </aside>
         </section><section>
+            <h2>History</h2>
+            <p>
+                Published by
+                <a href="https://en.wikipedia.org/wiki/Alonzo_Church"
+                >Alonso Church</a> in 1936 CE, it slightly predates
+                <a href="https://en.wikipedia.org/wiki/Turing_machine"
+                >Turing Machines</a>.  Both can compute any
+                <a href="https://en.wikipedia.org/wiki/General_recursive_function"
+                >generally recursive function</a>.
+            </p><aside class="notes">
+                Lambda calculus is older than general purpose
+                computers.  Church beat Turing to publication by
+                a few months, but Turing proved that Turing machines
+                are equivalent to lambda calculus.
+            </aside>
+        </section><section>
             <h2>Lambda Calculus</h2>
             <p>
                 Lambda calculus is a
@@ -46,22 +62,6 @@
                 These systems are completely specified and don't
                 rely on any external knowledge.
             </p>
-        </section><section>
-            <h2>History</h2>
-            <p>
-                Published by
-                <a href="https://en.wikipedia.org/wiki/Alonzo_Church"
-                >Alonso Church</a> in 1936 CE, it slightly predates
-                <a href="https://en.wikipedia.org/wiki/Turing_machine"
-                >Turing Machines</a>.  Both can compute any
-                <a href="https://en.wikipedia.org/wiki/General_recursive_function"
-                >generally recursive function</a>.
-            </p><aside class="notes">
-                Lambda calculus is older than general purpose
-                computers.  Church beat Turing to publication by
-                a few months, but Turing proved that Turing machines
-                are equivalent to lambda calculus.
-            </aside>
         </section><section>
             <h3>Definition</h3>
             <p>
@@ -287,8 +287,8 @@
                     &and; <br />
                     (b &#x2208; FV[<span class="expression">G</span>]
                     &and; c &#x2209;
-                    FV[<span class="expression">E</span> &cup;
-                    <span class="expression">G</span>)]
+                    FV[<span class="expression">E</span>] &cup;
+                    FV[<span class="expression">G</span>])
                     &#x27f9; <br />
                     &#x03bb;b.<span class="expression">E</span>
                     [<span class="variable">a</span> :=
@@ -325,12 +325,23 @@
             </li><li class="fragment">
                 (&#x03bb;a.a b) &#x03bb;b.a b [a := b]
                 <span class="fragment">
-                    &#x21dd; (&#x03bb;a.a b) &#x03bb;c.b c
+                    &#x21dd; (&#x03bb;a.a b)
+                    &#x03bb;<span class="intro">c</span>.b
+                    <span class="intro">c</span>
                 </span>
             </li><li class="fragment">
                 (&#x03bb;a.a b) &#x03bb;b.a b [a := &#x03bb;a.b]
                 <span class="fragment">
-                    &#x21dd; (&#x03bb;a.a b) &#x03bb;c.(&#x03bb;a.b) c
+                    &#x21dd; (&#x03bb;a.a b)
+                    &#x03bb;<span class="intro">c</span>.(&#x03bb;a.b)
+                    <span class="intro">c</span>
+                </span>
+            </li><li class="fragment">
+                &#x03bb;b.a b c [a := &#x03bb;a.b]
+                <span class="fragment">
+                    &#x21dd;
+                    &#x03bb;<span class="intro">d</span>.(&#x03bb;a.b)
+                    <span class="intro">d</span> c
                 </span>
             </li></ul><aside class="notes">
                 Let's see some examples of substitution.
@@ -1572,7 +1583,7 @@
                 Church numerals.  If we interpret them as a subtraction
                 we can represent any integer value.
             </p><p class="fragment">
-                INT-CREATE: PAIR n m
+                INT-CREATE: PAIR church-n church-m
             </p><p class="fragment">
                 This represents the integer <em>n - m</em>
             </p>
@@ -1606,7 +1617,9 @@
         </section><section>
             <h3>Rationals</h3>
             <p>
-                How can we represent rational numbers?  Consider
+                How can we represent rational numbers?  A pair
+                of integers will work, but an integer paired with
+                a Church numeral has only one sign.Consider
                 an pair of integers.  If we interpret this as a
                 division we can represent any rational number.
             </p><p class="fragment">
@@ -1704,9 +1717,9 @@
             </li><li class="fragment">
                 Kite (False/Zero): &#x03bb;a b.b
             </li><li class="fragment">
-                Cardinal (Flip/Not): &#x03bb;a b c.a c b
+                Cardinal (Not/Flip): &#x03bb;a b c.a c b
             </li><li class="fragment">
-                Bluebird (Compose):
+                Bluebird (Multiply):
                 &#x03bb;a b c.a (b c)
             </li><li class="fragment">
                 Thrush (Power): &#x03bb;a b.b a
@@ -2019,33 +2032,34 @@
                 </span><span class="fragment">
                     &#x21fe; (&#x03bb;f.f S K) S K
                 </span><span class="fragment">
-                    &#x21fe; <br />S S K K
+                    &#x21fe; <br /><span class="starling">S S K K</span>
                 </span><span class="fragment">
-                    &#x21fe; S K (K K)
+                    &#x21fe; <span class="identity">S K (K K)</span>
                 </span><span class="fragment">
                     &#x21fe; I
                 </span>
             </li><li class="fragment">
-                i (i (i i))
+                i (i (<span class="identity">i i</span>))
                 <span class="fragment">
                     = (&#x03bb;f.f S K) ((&#x03bb;f.f S K) I)
                 </span><span class="fragment">
                     &#x21fe; (&#x03bb;f.f S K) I S K
                 </span><span class="fragment">
-                    &#x21fe; <br />I S K S K
+                    &#x21fe; <br />
+                    <span class="identity">I S</span> K S K
                 </span><span class="fragment">
-                    &#x21fe; S K S K
+                    &#x21fe; <span class="identity">S K S</span> K
                 </span><span class="fragment">
                     &#x21fe; I K
                 </span><span class="fragment">
                     &#x21fe; K
                 </span>
             </li><li class="fragment">
-                i (i (i (i i)))
+                i (<span class="kestral">i (i (i i))</span>)
                 <span class="fragment">
                     = (&#x03bb;f.f S K) K
                 </span><span class="fragment">
-                    &#x21fe; K S K
+                    &#x21fe; <span class="kestral">K S K</span>
                 </span><span class="fragment">
                     &#x21fe; S
                 </span>
