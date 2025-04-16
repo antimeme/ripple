@@ -172,6 +172,7 @@
  let camera = undefined;
  let ctx = undefined;
  function draw() {
+     ctx.clearRect(0, 0, screen.width, screen.height);
      camera.configureContext(ctx);
 
      circles.forEach(circle => drawCircle(
