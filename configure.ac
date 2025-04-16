@@ -29,9 +29,26 @@ AC_PROG_MKDIR_P
 AC_PROG_LN_S
 AC_PATH_PROG(SUDO, sudo, )
 
-AC_PATH_PROG([MINGW], [x86_64-w64-mingw32-gcc])
-AC_PATH_PROG([WINDRES], [x86_64-w64-mingw32-windres])
+# MinGW can be used to compile Win32 programs on Unix platforms.
+# We will need both the cross compiler and windres to build.
+# In addition, --with-win32-vorbis=PATH can be used to provide a
+# cross compiled library for playing compressed sound.
+AC_PATH_PROG([MINGW], [i686-w64-mingw32-gcc])
+AC_PATH_PROG([WINDRES], [i686-w64-mingw32-windres])
 AM_CONDITIONAL([HAVE_MINGW], [test -n "$MINGW" -a -n "$WINDRES"])
+AC_ARG_WITH([win32-vorbis],
+            [AS_HELP_STRING([--with-win32-vorbis=PATH],
+            [Path to win32 cross-compiled libvorbis install prefix])],
+            [win32_vorbis_path="$withval"], [win32_vorbis_path=""])
+AM_CONDITIONAL([HAVE_WIN32_VORBIS], [test -n "$win32_vorbis_path"])
+AS_IF([test -n "$win32_vorbis_path"], [
+    WIN32_VORBIS_CPPFLAGS="-I$win32_vorbis_path/include"
+    WIN32_VORBIS_LDFLAGS="-L$win32_vorbis_path/lib"
+    AC_CHECK_LIB([vorbis], [vorbis_info_init], [],
+                 [AC_MSG_ERROR([libvorbis not found])])
+])
+AC_SUBST([WIN32_VORBIS_CPPFLAGS])
+AC_SUBST([WIN32_VORBIS_LDFLAGS])
 
 # SDL2 with gfx, ttf, mixer and image allow constructing gizmo
 PKG_CHECK_MODULES([SDL2],
@@ -107,6 +124,7 @@ AC_CONFIG_FILES([
     package.json
     source/__init__.py
     source/Ripple.java
+    source/win32/asteroids.rc
     scripts/ripple.spec
     scripts/ripple.dpkg
 ], [test -e ripple/__init__.py && chmod +x ripple/__init__.py])

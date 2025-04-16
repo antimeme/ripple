@@ -1,0 +1,8 @@
+#include "resource.h"
+IDI_ICON_ASTEROIDS     ICON  "asteroids.ico"
+IDR_BRASS_MONO         TTF   "@srcdir@/apps/fonts/brass-mono.ttf"
+IDR_SOUND_THRUSTER     SOUND "@srcdir@/apps/sounds/thruster.ogg"
+IDR_SOUND_SHOOT_BEAM   SOUND "@srcdir@/apps/sounds/shoot-beam.ogg"
+IDR_SOUND_SAUCER_SIREN SOUND "@srcdir@/apps/sounds/saucer-siren.ogg"
+IDR_SOUND_SMASH_ROCK   SOUND "@srcdir@/apps/sounds/smash-rock.ogg"
+IDR_SOUND_SMASH_SHIP   SOUND "@srcdir@/apps/sounds/smash-ship.ogg"

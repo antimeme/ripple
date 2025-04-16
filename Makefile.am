@@ -16,6 +16,14 @@
 ##
 ## ---------------------------------------------------------------------
 
+CLEANFILES           =
+MOSTLYCLEANFILES     =
+DISTCLEANFILES       =
+MAINTAINERCLEANFILES = *.p12 *.der *.pem *.srl .passwd
+TESTS = $(check_PROGRAMS)
+
+bin_PROGRAMS =
+
 ## C ===================================================================
 lib_LTLIBRARIES = lib@PACKAGE@.la
 lib@PACKAGE@_la_LDFLAGS  = -version-info $(LIBVERSION)
@@ -45,34 +53,72 @@ check_@PACKAGE@_SOURCES  = \
 	source/check/pixie.c \
 	source/check/juju.c
 
-bin_PROGRAMS =
-
 if HAVE_MINGW
-# On Debian install MinGW this way:
-# $ sudo apt install -y mingw-w64 wine
+# MinGW is a compiler target on Debian and similar systems that
+# creates executables intended for Microsoft Windows.  Combined with
+# Wine this makes it possible to build and run programs which can be
+# provided to Windows users.  Instructions in this section use
+# resource files to pack an icon, a font and sound files into a
+# single executable file.
+#
+# Note that the ImageMagick convert utility is used to create a
+# Windows icon file from an SVG source, but that is not checked by
+# the configure.ac for the moment.
+#
+# Playing sounds is optional but requires libvorbis.
+# $ URL=https://ftp.osuosl.org/pub/xiph/releases
+# $ curl -O $URL/ogg/libogg-1.3.5.tar.gz
+# $ curl -O $URL/vorbis/libvorbis-1.3.7.tar.gz
+# $ tar xzf libogg-1.3.5.tar.gz
+# $ tar xzf libvorbis-1.3.7.tar.gz
+# $ mkdir -p ~/.install/mingw
+# $ (cd libogg-1.3.5/ && ./configure --host=i686-w64-mingw32 \
+#    --prefix=$HOME/.install/mingw && make && make install)
+# $ (cd libvorbis-1.3.7 && ./configure --host=i686-w64-mingw32 \
+#    --prefix=$HOME/.install/mingw --with-ogg=$HOME/.install/mingw && \
+#    make CPPFLAGS=-I$HOME/.install/mingw && make install)
+#
+# Debian MinGW:
+# $ sudo apt install -y imagemagick mingw-w64 wine
 # $ winecfg
-# Then build and run:
+# $ ./configure --with-vorbis=$HOME/.install/mingw
 # $ make play-win32-asteroids
 
-WIN32_CPPFLAGS = -mwindows
+WIN32_CPPFLAGS = $(WIN32_VORBIS_CPPFLAGS)
+WIN32_LDFLAGS  = $(WIN32_VORBIS_LDFLAGS) \
+	-ldsound -lole32 -lwinmm -mwindows
+WIN32_SOURCES  = $(srcdir)/source/win32/asteroids.c
+if HAVE_WIN32_VORBIS
+WIN32_CPPFLAGS += -DHAVE_WIN32_VORBIS
+WIN32_LDFLAGS  += -lvorbisfile -lvorbis -logg -static
+endif
 
-asteroids.res: source/win32/asteroids.rc
+asteroids.ico: $(srcdir)/apps/images/asteroids.svg
+	convert $< -define icon:auto-resize=256,128,64,48,32,16 $@
+
+asteroids.res: source/win32/asteroids.rc asteroids.ico
 	$(WINDRES) $< -O coff -o $@
 
-asteroids.exe: source/win32/asteroids.c asteroids.res
-	$(MINGW) -DUNICODE -D_UNICODE $^ -o $@ $(WIN32_CPPFLAGS)
+asteroids.exe: asteroids.res $(WIN32_SOURCES)
+	$(MINGW) $(WIN32_CPPFLAGS) -o $@ $^ $(WIN32_LDFLAGS)
 
 play-win32-asteroids: asteroids.exe
 	wine $<
 
+MOSTLYCLEANFILES += asteroids.res asteroids.ico
+CLEANFILES += asteroids.exe
+bin_PROGRAMS += asteroids.exe
+
 endif
 
 if HAVE_SDL2
-# Before attempting to compile Gizmo, install the necessary
-# libraries so that configure can find them:
+# Debian SDL2:
 # $ sudo apt install -y libsdl2-dev libsdl2-{gfx,ttf,image,mixer}-dev
+# RedHat SDL2
 # $ sudo dnf install -y SDL2{,_{gfx,ttf,image,mixer}}-devel
+# Guix SDL2
 # $ guix install sdl2 sdl2-ttf sdl2-gfx sdl2-image
+# MSYS2 on Windows SDL2
 # $ pacman --noconfirm -S mingw-w64-x86_64-toolchain \
 #   mingw-w64-x86_64-SDL2{,_{gfx,ttf,image,mixer}}
 bin_PROGRAMS += gizmo
@@ -130,12 +176,6 @@ apps/gizmo.wasm apps/gizmo.js apps/gizmo.html apps/gizmo.data: \
 	    source/gizmo/gizmo.c \
 	    source/gizmo/asteroids.c
 endif
-
-TESTS = $(check_PROGRAMS)
-MAINTAINERCLEANFILES = *.p12 *.der *.pem *.srl .passwd
-MOSTLYCLEANFILES     =
-DISTCLEANFILES       =
-CLEANFILES           =
 
 ## Certificates ========================================================
 # Public Key Infrastructure (PKI) using OpenSSL.
