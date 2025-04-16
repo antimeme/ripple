@@ -41,6 +41,8 @@
 /check-ripple.exe
 /gizmo
 /gizmo.exe
+/source/win32/asteroids.rc
+/asteroids.ico
 /asteroids.res
 /asteroids.exe
 
