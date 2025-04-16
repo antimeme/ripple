@@ -1,5 +1,5 @@
 dnl configure.ac
-dnl Copyright (C) 2006-2024 by Jeff Gold.
+dnl Copyright (C) 2006-2025 by Jeff Gold.
 dnl 
 dnl This program is free software: you can redistribute it and/or
 dnl modify it under the terms of the GNU General Public License as
@@ -31,8 +31,7 @@ AC_PATH_PROG(SUDO, sudo, )
 
 AC_PATH_PROG([MINGW], [x86_64-w64-mingw32-gcc])
 AC_PATH_PROG([WINDRES], [x86_64-w64-mingw32-windres])
-AM_CONDITIONAL([HAVE_MINGW], [test -n "$MINGW" -a
-                              test -n "$WINDRES"])
+AM_CONDITIONAL([HAVE_MINGW], [test -n "$MINGW" -a -n "$WINDRES"])
 
 # SDL2 with gfx, ttf, mixer and image allow constructing gizmo
 PKG_CHECK_MODULES([SDL2],

@@ -1,5 +1,5 @@
 ## Makefile.am
-## Copyright (C) 2006-2024 by Jeff Gold.
+## Copyright (C) 2006-2025 by Jeff Gold.
 ##
 ## This program is free software: you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -48,13 +48,22 @@ check_@PACKAGE@_SOURCES  = \
 bin_PROGRAMS =
 
 if HAVE_MINGW
+# On Debian install MinGW this way:
+# $ sudo apt install -y mingw-w64 wine
+# $ winecfg
+# Then build and run:
+# $ make play-win32-asteroids
+
+WIN32_CPPFLAGS = -mwindows
 
 asteroids.res: source/win32/asteroids.rc
 	$(WINDRES) $< -O coff -o $@
 
 asteroids.exe: source/win32/asteroids.c asteroids.res
-	$(MINGW) -DUNICODE -D_UNICODE $^ -o $@\
-	  -Isource/win32 -mwindows
+	$(MINGW) -DUNICODE -D_UNICODE $^ -o $@ $(WIN32_CPPFLAGS)
+
+play-win32-asteroids: asteroids.exe
+	wine $<
 
 endif
 
@@ -598,4 +607,6 @@ EXTRA_DIST = \
 	install-jetty-https \
 	jettypod-interact \
 	jettypod-start jettypod-stop \
-	jettypod-destroy jettypod-purge
+	jettypod-destroy jettypod-purge \
+	play-win32-asteroids \
+	play-sdl-asteroids

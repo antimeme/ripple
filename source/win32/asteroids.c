@@ -42,7 +42,7 @@ Render(HDC hdc) {
 void
 DrawTextInfo(HDC hdc) {
   const wchar_t* text = L"Use LEFT and RIGHT arrows to rotate.";
-  TextOut(hdc, 10, 10, text, wcslen(text));
+  TextOutW(hdc, 10, 10, text, wcslen(text));
 }
 
 void

@@ -1,6 +1,6 @@
 /**
  * gizmo.c
- * Copyright (C) 2024 by Jeff Gold.
+ * Copyright (C) 2025 by Jeff Gold.
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -18,7 +18,10 @@
  *
  * ---------------------------------------------------------------------
  * Gizmo is a simplistic framework intended to take some of the chore
- * work out of writing SDL2 applications. */
+ * work out of writing SDL2 applications. By default gizmo uses
+ * accelerated rendering.  This can be disabled by setting the
+ * environment variable GIZMO_SOFTWARE=1.
+ **/
 #include <stdlib.h>
 #include "gizmo.h"
 #include "asteroids.h"
@@ -42,18 +45,19 @@ static int
 gizmo_failmsg(const char *funcname, int status,
               const char *(errfn)(void))
 {
+  int result = EXIT_SUCCESS;
   if (status < 0) {
     SDL_Log("%s: %s\n", funcname, errfn());
     SDL_ShowSimpleMessageBox
       (SDL_MESSAGEBOX_ERROR, funcname, errfn(), 0);
-    return EXIT_FAILURE;
+    result = EXIT_FAILURE;
   }
-  return EXIT_SUCCESS;
+  return result;
 }
 #define GIZMO_SDL_CHECK(fn, args) \
   gizmo_failmsg(#fn, fn args, SDL_GetError)
 #define GIZMO_TTF_CHECK(fn, args) \
-  gizmo_failmsg(#fn, fn args, SDL_GetError)
+  gizmo_failmsg(#fn, fn args, TTF_GetError)
 #define GIZMO_MIX_CHECK(fn, args) \
   gizmo_failmsg(#fn, fn args, Mix_GetError)
 
@@ -115,7 +119,18 @@ static int
 gizmo_setup_SDL(struct gizmo *gizmo)
 {
   int result = EXIT_SUCCESS;
+  int render = SDL_RENDERER_PRESENTVSYNC;
   SDL_DisplayMode mode;
+  const char *env_software = getenv("GIZMO_SOFTWARE");
+
+  /* Platforms like Windows Services for Linux sometimes have
+   * acceleration that doesn't actually work.  This environment
+   * variable can be used to optionally fall back to software
+   * rendering when necessary. */
+  if (env_software && *env_software &&
+      !(*env_software == '0') && !(*env_software == 'f') &&
+      !(*env_software == 'n'))
+    render = SDL_RENDERER_SOFTWARE;
 
   if ((result == EXIT_SUCCESS) && EXIT_SUCCESS ==
       (result = GIZMO_SDL_CHECK
@@ -146,7 +161,7 @@ gizmo_setup_SDL(struct gizmo *gizmo)
     result = EXIT_FAILURE;
   } else if ((result = GIZMO_SDL_CHKNULL
               (SDL_CreateRenderer, gizmo->renderer,
-               (gizmo->window, -1, SDL_RENDERER_PRESENTVSYNC)))) {
+               (gizmo->window, -1, render)))) {
   } else if ((result = GIZMO_SDL_CHECK
               (SDL_GetRendererOutputSize,
                (gizmo->renderer, &gizmo->app->width,
@@ -462,14 +477,15 @@ main(int argc, char **argv)
     gizmo.app->destroy(gizmo.app);
   free(gizmo.key_actions);
   free(gizmo.mouse_actions);
-  SDL_DestroyRenderer(gizmo.renderer);
-  SDL_DestroyWindow(gizmo.window);
   if (gizmo_mix_init)
     Mix_CloseAudio();
   if (gizmo_ttf_init)
     TTF_Quit();
-  if (gizmo_sdl_init)
+  if (gizmo_sdl_init) {
+    SDL_DestroyRenderer(gizmo.renderer);
+    SDL_DestroyWindow(gizmo.window);
     SDL_Quit();
+  }
 #endif
   return result;
 }
