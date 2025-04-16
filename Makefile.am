@@ -47,37 +47,68 @@ check_@PACKAGE@_SOURCES  = \
 
 bin_PROGRAMS =
 
+if HAVE_MINGW
+
+asteroids.res: source/win32/asteroids.rc
+	$(WINDRES) $< -O coff -o $@
+
+asteroids.exe: source/win32/asteroids.c asteroids.res
+	$(MINGW) -DUNICODE -D_UNICODE $^ -o $@\
+	  -Isource/win32 -mwindows
+
+endif
+
 if HAVE_SDL2
 # Before attempting to compile Gizmo, install the necessary
 # libraries so that configure can find them:
-# $ apt install -y libsdl2-dev libsdl2-{gfx,ttf,image,mixer}-dev
+# $ sudo apt install -y libsdl2-dev libsdl2-{gfx,ttf,image,mixer}-dev
+# $ sudo dnf install -y SDL2{,_{gfx,ttf,image,mixer}}-devel
 # $ guix install sdl2 sdl2-ttf sdl2-gfx sdl2-image
+# $ pacman --noconfirm -S mingw-w64-x86_64-toolchain \
+#   mingw-w64-x86_64-SDL2{,_{gfx,ttf,image,mixer}}
 bin_PROGRAMS += gizmo
-gizmo_CFLAGS = `sdl2-config --cflags`
-gizmo_LDFLAGS = `sdl2-config --libs` \
-	-lSDL2_mixer -lSDL2_ttf -lSDL2_gfx -lSDL2_image -lm
+gizmo_CFLAGS = $(SDL2_CFLAGS)
+gizmo_LDFLAGS = $(SDL2_LIBS) -lm
 gizmo_SOURCES = \
 	source/gizmo/gizmo.c \
 	source/gizmo/asteroids.c
 
 play-sdl-asteroids: gizmo
 	./gizmo
+
+# Building for Windows on MSYS2 can be done this way:
+# $ CC=/mingw64/bin/gcc ./configure && make gizmo.exe && ./gizmo.exe
+#
+# Here's how to do this without autotools:
+# $ /mingw64/bin/gcc.exe -o gizmo.exe source/gizmo/*.c \
+#   `pkgconf --cflags --static --libs sdl2 SDL2_{mixer,ttf,gfx,image}`
+#
+# Unfortunately both methods use about 70 DLL dependencies, all of
+# which must be shipped along with apps/fonts and apps/sounds.
 endif
 
-# Building for Windows on MSYS2.  This works but requires about a
-# hundred DLL files to be bundled unless executing from an MSYS2
-# command prompt.
-#
-# $ pacman --noconfirm -S mingw-w64-x86_64-toolchain \
-#     mingw64/mingw-w64-x86_64-SDL2 \
-#     mingw64/mingw-w64-x86_64-SDL2_{mixer,ttf,gfx,image}
-# $ /mingw64/bin/gcc.exe -o gizmo.exe source/gizmo/*.c \
-#     `sdl2-config --cflags --static-libs` -lSDL2_{mixer,ttf,gfx,image}
+# Some notes on Mono and C#
+# $ sudo apt install -y mono-complete
+# $ git clone https://github.com/flibitijibibo/SDL2-CS
+# $ (cd SDL2-CS && make)
+# $ mcs -r:SDL2-CS/bin/Debug/SDL2-CS.dll Asteroids.cs -out:Asteroids.exe
+# $ MONO_PATH=./SDL2-CS/bin/Debug mono Asteroids.exe
+
+# Some notes on Dotnet and C#
+# Download from https://github.com/libsdl-org/SDL/releases
+# c:\> git clone https://github.com/flibitijibibo/SDL2-CS
+# c:\> cd SDL2-CS
+# c:\SDL2-CS\> csc /target:library /out:SDL2-CS.dll /unsafe SDL2.cs
+# c:\SDL2-CS\> cd ..
+# c:\> csc /r:SDL2-CS\SDL2-CS.dll /out: Asteroids.exe Asteroids.cs
+# c:\> Asteroids.exe
 
 if HAVE_EMCC
 # Emscripten is kinda dumb about its ports.  The following may
 # be necessary to avoid permission errors:
-# $ make gizmo.html EM_CONFIG=$HOME/.emscripten
+# $ export EM_CONFIG=$HOME/.emscripten
+# $ [ ! -e "$EM_CONFIG" ] && emcc --generate-config
+# $ make apps/gizmo.html
 apps/gizmo.wasm apps/gizmo.js apps/gizmo.html apps/gizmo.data: \
 	    source/gizmo/gizmo.c source/gizmo/asteroids.c
 	$(EMCC) -o $@ \
@@ -85,9 +116,7 @@ apps/gizmo.wasm apps/gizmo.js apps/gizmo.html apps/gizmo.data: \
 	    --preload-file apps/fonts/ \
 	    --preload-file apps/sounds/ \
 	    -sUSE_SDL=2 \
-	    -sUSE_SDL_MIXER=2 \
-	    -sUSE_SDL_TTF=2 \
-	    -sUSE_SDL_GFX=2 \
+	    -sUSE_SDL_MIXER=2 -sUSE_SDL_TTF=2 -sUSE_SDL_GFX=2 \
 	    -sUSE_SDL_IMAGE=2 -sSDL2_IMAGE_FORMATS='["svg"]' \
 	    source/gizmo/gizmo.c \
 	    source/gizmo/asteroids.c

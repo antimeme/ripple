@@ -19,19 +19,28 @@ dnl --------------------------------------------------------------------
 AC_INIT([ripple], [0.1.1], [Jeff Gold <ripple@antimeme.net>])
 AC_CANONICAL_HOST
 AC_CONFIG_SRCDIR([configure.ac])
-AC_CONFIG_HEADER([include/ripple/config.h])
+AC_CONFIG_HEADERS([include/ripple/config.h])
 AC_SUBST([LIBVERSION], [0:0])
 AM_INIT_AUTOMAKE([subdir-objects])
 
 AC_PROG_CC
-AC_PROG_LIBTOOL
+LT_INIT
 AC_PROG_MKDIR_P
 AC_PROG_LN_S
 AC_PATH_PROG(SUDO, sudo, )
 
-PKG_CHECK_MODULES([SDL2], [sdl2],
-                  [HAVE_SDL2=true], [HAVE_SDL2=false])
+AC_PATH_PROG([MINGW], [x86_64-w64-mingw32-gcc])
+AC_PATH_PROG([WINDRES], [x86_64-w64-mingw32-windres])
+AM_CONDITIONAL([HAVE_MINGW], [test -n "$MINGW" -a
+                              test -n "$WINDRES"])
+
+# SDL2 with gfx, ttf, mixer and image allow constructing gizmo
+PKG_CHECK_MODULES([SDL2],
+  [sdl2 SDL2_gfx SDL2_ttf SDL2_mixer SDL2_image],
+  [HAVE_SDL2=true], [HAVE_SDL2=false])
 AM_CONDITIONAL([HAVE_SDL2], [test "$HAVE_SDL2" = true])
+AC_SUBST([SDL2_CFLAGS])
+AC_SUBST([SDL2_LIBS])
 
 AC_PATH_PROG([EMCC], [emcc], [false])
 AM_CONDITIONAL([HAVE_EMCC], [test "$EMCC" != false])

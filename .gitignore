@@ -41,6 +41,8 @@
 /check-ripple.exe
 /gizmo
 /gizmo.exe
+/asteroids.res
+/asteroids.exe
 
 # Sqlite
 /expense.db

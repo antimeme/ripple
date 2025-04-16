@@ -54,7 +54,7 @@ isn't as full featured as the RPM spec file.
 ## Debian
 
 Debian is community driven and free.  There are straightforward
-procedures for upgrading.  These things make it an excelleng choice
+procedures for upgrading.  These things make it an excellent choice
 for most purposes.
 
 #### Upgrade to Next Release
@@ -109,7 +109,7 @@ other encumberance.
   - \# dnf install -y emacs curl \
            gcc make gdb valgrind git \
            autoconf automake libtool \
-           SDL2{,_mixer,_ttf,_gfx,_image}-devel \
+           SDL2{,_{mixer,ttf,gfx,image}}-devel \
            nodejs npm emscripten \
            java-latest-openjdk gradle
   - \# dnf install -y httpd jetty tomcat
@@ -122,7 +122,9 @@ from Arch Linux so the instructions below may be applicable there.
 
 #### Package Utilities
 
-  - $ pacman --noconfirm -Su
+  - $ pacman -Suy # update MSYS2
+  - $ paccache -r # clean up cached packages
+  - $ pacman --noconfirm -Su # update installed packages
   - $ pacman -Q # list installed packages
   - $ pacman -Qs $term # list packages that match a search term
   - $ pacman -Ql $package # list files owned by package
@@ -132,15 +134,15 @@ from Arch Linux so the instructions below may be applicable there.
 #### Useful Packages
 
   - $ pacman --noconfirm -S \
-             mingw-w64-x86_64-emacs curl \
-             gcc make git \
-             autoconf automake libtool \
-             mingw-w64-x86_64-toolchain \
-             mingw-w64-x86_64-SDL2{,_mixer,_ttf,_gfx,_image}
+      mingw-w64-x86_64-emacs curl git
+  - $ pacman --noconfirm -S \
+      "$MINGW_PACKAGE_PREFIX-toolchain" \
+      "$MINGW_PACKAGE_PREFIX-autotools" \
+      "mingw-w64-x86_64-SDL2{,_{mixer,ttf,gfx,image}}"
 
 ## License
 
-Copyright (C) 2006-2024 by Jeff Gold.
+Copyright (C) 2006-2025 by Jeff Gold.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

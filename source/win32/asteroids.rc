@@ -1,0 +1,7 @@
+#include "resource.h"
+IDR_BRASS_MONO TTF "apps/fonts/brass-mono.ttf"
+IDR_SOUND_THRUSTER     SOUND "apps/sounds/thruster.ogg"
+IDR_SOUND_SHOOT_BEAM   SOUND "apps/sounds/shoot-beam.ogg"
+IDR_SOUND_SAUCER_SIREN SOUND "apps/sounds/saucer-siren.ogg"
+IDR_SOUND_SMASH_ROCK   SOUND "apps/sounds/smash-rock.ogg"
+IDR_SOUND_SMASH_SHIP   SOUND "apps/sounds/smash-ship.ogg"
