@@ -20,11 +20,9 @@ CLEANFILES           =
 MOSTLYCLEANFILES     =
 DISTCLEANFILES       =
 MAINTAINERCLEANFILES = *.p12 *.der *.pem *.srl .passwd
-TESTS = $(check_PROGRAMS)
-
-bin_PROGRAMS =
 
 ## C ===================================================================
+bin_PROGRAMS =
 lib_LTLIBRARIES = lib@PACKAGE@.la
 lib@PACKAGE@_la_LDFLAGS  = -version-info $(LIBVERSION)
 lib@PACKAGE@_la_CPPFLAGS = -I$(srcdir)/include
@@ -52,6 +50,7 @@ check_@PACKAGE@_SOURCES  = \
 	source/check/pool.c \
 	source/check/pixie.c \
 	source/check/juju.c
+TESTS = $(check_PROGRAMS)
 
 if HAVE_MINGW
 # MinGW is a compiler target on Debian and similar systems that
@@ -608,13 +607,15 @@ dist_doc_DATA = README.md LICENSE
 uninstall-local:
 	rm -rf $(DESTDIR)$(docdir)
 
-# Notes on Apache2 HTTPD installation
-#   apt install -y apache2
-#   a2enmod userdir auth_digest authn_socache authn_dbd
-#   vi /etc/apache2/mods-available/userdir.conf
+# Debian Apache HTTPD installation
+# $ sudo apt install -y apache2
+# $ sudo a2enmod userdir auth_digest authn_socache authn_dbd
+# $ sudo vi /etc/apache2/mods-available/userdir.conf
 #       AllowOverride ... Options=ExecCGI,MultiViews
-#   systemctl enable apache2
-#   systemctl restart apache2
+# $ sudo systemctl enable apache2
+# $ sudo systemctl restart apache2
+# $ chmod +x ~
+# $ mkdir ~/public_html
 
 HOSTNAME  = localhost
 ALIAS     = $(HOSTNAME)
