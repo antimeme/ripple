@@ -1,8 +1,59 @@
 #include <windows.h>
+#include <dsound.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
 #include <math.h>
 #include <tchar.h>
-#include <dsound.h>
 #include "resource.h"
+
+#define WIDTH 800
+#define HEIGHT 600
+#define PI 3.14159265
+
+float angle = 0.0f;
+POINT shipPos = { WIDTH / 2, HEIGHT / 2 };
+DWORD lastTick = 0;
+float deltaTime = 0;
+
+/**
+ * Present a failure message to the user. */
+static HRESULT
+fail(const char *title, const char *message, ...)
+{
+  HRESULT result = E_FAIL;
+  char *buffer = NULL;
+  int size_needed;
+  va_list args;
+  va_start(args, message);
+  size_needed = _vscprintf(message, args) + 1;
+  va_end(args);
+
+  if (size_needed <= 0) {
+    MessageBoxA(NULL, "Failed to format message", "FAIL", MB_ICONERROR);
+    result = E_INVALIDARG;
+  } else if (!(buffer = malloc(size_needed))) {
+    MessageBoxA(NULL, "Failed to allocate bytes", "FAIL", MB_ICONERROR);
+    result = E_OUTOFMEMORY;
+  } else {
+    va_start(args, message);
+    vsnprintf(buffer, size_needed, message, args);
+    va_end(args);
+    MessageBoxA(NULL, buffer, title, MB_ICONERROR);
+  }
+  free(buffer);
+  return result;
+}
+
+HANDLE g_font_resource = NULL;
+HFONT  g_font         = NULL;
+LPDIRECTSOUND8      g_ds                 = NULL;
+LPDIRECTSOUNDBUFFER g_primary_buffer     = NULL;
+LPDIRECTSOUNDBUFFER g_sound_thruster     = NULL;
+LPDIRECTSOUNDBUFFER g_sound_shoot_beam   = NULL;
+LPDIRECTSOUNDBUFFER g_sound_saucer_siren = NULL;
+LPDIRECTSOUNDBUFFER g_sound_smash_rock   = NULL;
+LPDIRECTSOUNDBUFFER g_sound_smash_ship   = NULL;
 
 #ifdef HAVE_WIN32_VORBIS
 #  include <vorbis/vorbisfile.h>
@@ -19,8 +70,7 @@ sound_callback_read(void* ptr, size_t size, size_t nmemb,
 {
   struct memory_file* mem = (struct memory_file*)datasource;
   size_t remain = mem->size - mem->pos;
-  size_t bytes = size * nmemb;
-  if (bytes > remain) bytes = remain;
+  size_t bytes = (size * nmemb > remain) ? remain : (size * nmemb);
   memcpy(ptr, mem->data + mem->pos, bytes);
   mem->pos += bytes;
   return bytes / size;
@@ -28,6 +78,7 @@ sound_callback_read(void* ptr, size_t size, size_t nmemb,
 
 int
 sound_callback_seek(void* datasource, ogg_int64_t offset, int whence) {
+  int result = 0;
   struct memory_file* mem = (struct memory_file*) datasource;
   size_t new_pos = 0;
 
@@ -35,18 +86,17 @@ sound_callback_seek(void* datasource, ogg_int64_t offset, int whence) {
   case SEEK_SET: new_pos = offset; break;
   case SEEK_CUR: new_pos = mem->pos + offset; break;
   case SEEK_END: new_pos = mem->size + offset; break;
-  default: return -1;
+  default: result = -1;
   }
-
-  if (new_pos > mem->size) return -1;
-  mem->pos = new_pos;
-  return 0;
+  if (new_pos > mem->size)
+    result = -1;
+  else mem->pos = new_pos;
+  return result;
 }
 
 long
 sound_callback_tell(void* datasource) {
-  struct memory_file* mem = (struct memory_file*) datasource;
-  return (long)mem->pos;
+  return (long)((struct memory_file*)datasource)->pos;
 }
 
 ov_callbacks sound_callbacks = {
@@ -57,8 +107,8 @@ ov_callbacks sound_callbacks = {
 };
 
 HRESULT
-decode_ogg_vorbis(LPDIRECTSOUND8 ds, int resID,
-                  DWORD* size, BYTE** data)
+sound_resource(LPDIRECTSOUND8 ds, int resID,
+               LPDIRECTSOUNDBUFFER *oBuffer)
 {
   HRESULT result = S_OK;
   HRSRC hRes = NULL;
@@ -66,11 +116,11 @@ decode_ogg_vorbis(LPDIRECTSOUND8 ds, int resID,
   void *resource = NULL;
 
   if (!(hRes = FindResourceA(NULL, MAKEINTRESOURCE(resID), "SOUND"))) {
-    MessageBox(NULL, "Failed to find resource", "Error", MB_OK);
-    // TODO messagebox
+    result = fail("DecodeVorbis", "Failed to find resource (%d): %s",
+                  resID, MAKEINTRESOURCE(resID));
   } else if (!(hGlobal = LoadResource(NULL, hRes))) {
-    MessageBox(NULL, "Failed to load resource", "Error", MB_OK);
-    // TODO messagebox
+    result = fail("DecodeVorbis", "Failed to load resource (%d): %s",
+                  resID, MAKEINTRESOURCE(resID));
   } else {
     struct memory_file mem_file = {
       (const char *)LockResource(hGlobal),
@@ -79,8 +129,9 @@ decode_ogg_vorbis(LPDIRECTSOUND8 ds, int resID,
 
     if (ov_open_callbacks(&mem_file, &vf, NULL, 0,
                           sound_callbacks) < 0) {
-      MessageBox(NULL, "Failed to open OGG stream", "Error", MB_OK);
-      // TODO messagebox
+      result = fail("DecodeVorbis",
+                    "Failed to open OGG stream (%u): %s",
+                    resID, MAKEINTRESOURCE(resID));
     } else {
       vorbis_info* vi = ov_info(&vf, -1);
       WAVEFORMATEX wfx = {0};
@@ -98,12 +149,17 @@ decode_ogg_vorbis(LPDIRECTSOUND8 ds, int resID,
 
       do {
         bytes = ov_read(&vf, buffer, sizeof(buffer), 0, 2, 1, NULL);
-        if (bytes > 0) {
-          pcmData = realloc(pcmData, totalSize + bytes);
+        if (bytes <= 0)
+          break;
+
+        char* pcmDataNext = realloc(pcmData, totalSize + bytes);
+        if (pcmDataNext) {
+          pcmData = pcmDataNext;
           memcpy(pcmData + totalSize, buffer, bytes);
           totalSize += bytes;
-        }
-      } while (bytes > 0);
+        } else result = fail("DecodeVorbis", "Failed to allocate "
+                             "%u bytes", totalSize + bytes);
+      } while (SUCCEEDED(result) && (bytes > 0));
       ov_clear(&vf);
 
       DSBUFFERDESC desc = {0};
@@ -113,21 +169,20 @@ decode_ogg_vorbis(LPDIRECTSOUND8 ds, int resID,
       desc.lpwfxFormat = &wfx;
 
       LPDIRECTSOUNDBUFFER pBuffer;
-      if (FAILED(IDirectSound_CreateSoundBuffer
+      if (FAILED(result = IDirectSound_CreateSoundBuffer
                  (ds, &desc, &pBuffer, NULL))) {
-        MessageBox(NULL, "Failed to create buffer", "Error", MB_OK);
+        fail("DecodeVorbis", "Failed to create sound buffer");
       } else {
-        /* void* p1; DWORD s1; */
-        /* void* p2; DWORD s2; */
-        /* if (SUCCEEDED(pBuffer->Lock */
-        /*               (0, totalSize, &p1, &s1, &p2, &s2, 0))) { */
-        /*   memcpy(p1, pcmData, s1); */
-        /*   if (p2 && s2 > 0) memcpy(p2, pcmData + s1, s2); */
-        /*   pBuffer->Unlock(p1, s1, p2, s2); */
-
-        /*   g_SoundBank[i].resourceID = resourceIDs[i]; */
-        /*   g_SoundBank[i].buffer = pBuffer; */
-        /* } */
+        void* p1; DWORD s1;
+        void* p2; DWORD s2;
+        if (SUCCEEDED(IDirectSoundBuffer_Lock
+                      (pBuffer, 0, totalSize, &p1, &s1, &p2, &s2, 0))) {
+          memcpy(p1, pcmData, s1);
+          if (p2 && s2 > 0)
+            memcpy(p2, pcmData + s1, s2);
+          IDirectSoundBuffer_Unlock(pBuffer, p1, s1, p2, s2);
+          *oBuffer = pBuffer;
+        }
       }
       free(pcmData);
     }
@@ -135,42 +190,71 @@ decode_ogg_vorbis(LPDIRECTSOUND8 ds, int resID,
   return result;
 }
 #else
-// ...
+HRESULT
+sound_resource(int resnum, LPDIRECTSOUNDBUFFER *o_buffer)
+{ return S_OK; }
 #endif
 
-#define WIDTH 800
-#define HEIGHT 600
-#define PI 3.14159265
-
-float angle = 0.0f;
-POINT shipPos = { WIDTH / 2, HEIGHT / 2 };
-DWORD lastTick = 0;
-float deltaTime = 0;
-
-HANDLE gFontResource = NULL;
-HFONT  gFont         = NULL;
-LPDIRECTSOUND8      gDS            = NULL;
-LPDIRECTSOUNDBUFFER gPrimaryBuffer = NULL;
+void
+sound_play(LPDIRECTSOUNDBUFFER sound)
+{
+  if (!sound)
+    return;
+  IDirectSoundBuffer_SetCurrentPosition(sound, 0);
+  IDirectSoundBuffer_Play(sound, 0, 0, 0);
+}
 
 HRESULT
-SetupDirectSound(HWND hwnd)
+CreateFontResource(HINSTANCE hInstance, int resnum, LPSTR name,
+                   HANDLE *oFontResource, HFONT *oFont)
+{
+  HRESULT result = S_OK;
+  HRSRC res = FindResourceA(hInstance, MAKEINTRESOURCE(resnum), "TTF");
+  HGLOBAL hRes = LoadResource(NULL, res);
+  void* pFontData = LockResource(hRes);
+  DWORD fontSize = SizeofResource(NULL, res);
+  DWORD numFonts = 0;
+  HFONT hFont = NULL;
+  HANDLE hFontResource = NULL;
+
+  if (!(hFontResource = AddFontMemResourceEx
+        (pFontData, fontSize, NULL, &numFonts))) {
+    result = fail("CreateFontResource", "Failed to find resource "
+                  "(%d): %s", resnum, MAKEINTRESOURCE(resnum));
+  } else if (!(hFont = CreateFontA
+               (-32, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+                DEFAULT_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS,
+                DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, name))) {
+    result = fail("CreateFontResource", "Failed to create font "
+                  "(%d): %s", resnum, MAKEINTRESOURCE(resnum));
+  } else {
+    if (oFontResource) {
+      *oFontResource = hFontResource;
+      hFontResource = NULL;
+    }
+    if (oFont) { *oFont = hFont; hFont = NULL; }
+  }
+  DeleteObject(hFont);
+  RemoveFontMemResourceEx(hFontResource);
+  return result;
+}
+
+HRESULT
+setup_direct_sound(HWND hwnd)
 {
   HRESULT result = S_OK;
   DSBUFFERDESC bufferDesc = {};
   bufferDesc.dwSize = sizeof(DSBUFFERDESC);
   bufferDesc.dwFlags = DSBCAPS_PRIMARYBUFFER;
 
-  if (FAILED(result = DirectSoundCreate8(NULL, &gDS, NULL))) {
-    MessageBoxA(NULL, "Failed to initalize DirectSound",
-                "Error", MB_ICONERROR);
+  if (FAILED(result = DirectSoundCreate8(NULL, &g_ds, NULL))) {
+    fail("SetupDirectSound", "Failed to initalize DirectSound");
   } else if (FAILED(result = IDirectSound_SetCooperativeLevel
-                    (gDS, hwnd, DSSCL_PRIORITY))) {
-    MessageBoxA(NULL, "Failed to set cooperative level",
-                "Error", MB_ICONERROR);
+                    (g_ds, hwnd, DSSCL_PRIORITY))) {
+    fail("SetupDirectSound", "Failed to set cooperative level");
   } else if (FAILED(result = IDirectSound_CreateSoundBuffer
-                    (gDS, &bufferDesc, &gPrimaryBuffer, NULL))) {
-    MessageBoxA(NULL, "Failed to create primary sound buffer",
-                "Error", MB_ICONERROR);
+                    (g_ds, &bufferDesc, &g_primary_buffer, NULL))) {
+    fail("SetupDirectSound", "Failed to create primary sound buffer");
   }
   return result;
 }
@@ -229,12 +313,16 @@ WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
     SetBkMode(hdc, TRANSPARENT);
     SetTextColor(hdc, RGB(223, 223, 223));
-    SelectObject(hdc, gFont);
+    SelectObject(hdc, g_font);
     SelectObject(hdc, GetStockObject(WHITE_PEN));
 
     Render(hdc);
 
     EndPaint(hwnd, &ps);
+  } break;
+  case WM_KEYDOWN: {
+    if (wParam == VK_SPACE)
+      sound_play(g_sound_shoot_beam);
   } break;
   case WM_DESTROY: {
     PostQuitMessage(0);
@@ -245,46 +333,9 @@ WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
   return result;
 }
 
-DWORD
-CreateFontResource(HINSTANCE hInstance, int resnum, LPSTR name,
-                   HANDLE *oFontResource, HFONT *oFont)
-{
-  DWORD result = EXIT_SUCCESS;
-  HRSRC res = FindResourceA(hInstance, MAKEINTRESOURCE(resnum), "TTF");
-  HGLOBAL hRes = LoadResource(NULL, res);
-  void* pFontData = LockResource(hRes);
-  DWORD fontSize = SizeofResource(NULL, res);
-  DWORD numFonts = 0;
-  HFONT hFont = NULL;
-  HANDLE hFontResource = NULL;
-
-  if (!(hFontResource = AddFontMemResourceEx
-        (pFontData, fontSize, NULL, &numFonts))) {
-    MessageBoxA(NULL, "Failed to find resource", "Error", MB_ICONERROR);
-    result = EXIT_FAILURE;
-  } else if (!(hFont = CreateFontA
-               (-32, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
-                DEFAULT_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS,
-                DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, name))) {
-    MessageBoxA(NULL, "Failed to find resource", "Error", MB_ICONERROR);
-    result = EXIT_FAILURE;
-  } else {
-    if (oFontResource) {
-      *oFontResource = hFontResource;
-      hFontResource = NULL;
-    }
-    if (oFont) {
-      *oFont = hFont;
-      hFont = NULL;
-    }
-  }
-  DeleteObject(hFont);
-  RemoveFontMemResourceEx(hFontResource);
-  return result;
-}
-
 int WINAPI
 WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
+  HRESULT result = S_OK;
   WNDCLASSEX wc = {0};
   wc.cbSize = sizeof(wc);
   wc.lpfnWndProc = WndProc;
@@ -295,15 +346,35 @@ WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
   wc.lpszClassName = _T("Asteroids");
   RegisterClassEx(&wc);
 
-
   HWND hwnd = CreateWindowEx
     (0, _T("Asteroids"), _T("Asteroids"),
      WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
      WIDTH, HEIGHT, NULL, NULL, hInstance, NULL);
 
   CreateFontResource(hInstance, IDR_BRASS_MONO, "Brass Mono",
-                     &gFontResource, &gFont);
-  SetupDirectSound(hwnd);
+                     &g_font_resource, &g_font);
+  if (FAILED(result = setup_direct_sound(hwnd))) {
+    /* Already reported */
+  } else if (FAILED(result = sound_resource
+                    (g_ds, IDR_SOUND_THRUSTER, &g_sound_thruster))) {
+  } else if (FAILED(result = sound_resource
+                    (g_ds, IDR_SOUND_SHOOT_BEAM,
+                     &g_sound_shoot_beam))) {
+  } else if (FAILED(result = sound_resource
+                    (g_ds, IDR_SOUND_SAUCER_SIREN,
+                     &g_sound_saucer_siren))) {
+  } else if (FAILED(result = sound_resource
+                    (g_ds, IDR_SOUND_SMASH_ROCK,
+                     &g_sound_smash_rock))) {
+  } else if (FAILED(result = sound_resource
+                    (g_ds, IDR_SOUND_SMASH_SHIP,
+                     &g_sound_smash_ship))) {
+  }
+  sound_resource(g_ds, IDR_SOUND_THRUSTER,   &g_sound_thruster);
+  sound_resource(g_ds, IDR_SOUND_SHOOT_BEAM, &g_sound_shoot_beam);
+  sound_resource(g_ds, IDR_SOUND_SAUCER_SIREN, &g_sound_saucer_siren);
+  sound_resource(g_ds, IDR_SOUND_SMASH_ROCK, &g_sound_smash_rock);
+  sound_resource(g_ds, IDR_SOUND_SMASH_SHIP, &g_sound_smash_ship);
   ShowWindow(hwnd, nCmdShow);
 
   lastTick = GetTickCount();
@@ -324,7 +395,13 @@ WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
     }
   }
 
-  DeleteObject(gFont);
-  RemoveFontMemResourceEx(gFontResource);
+  IDirectSoundBuffer_Release(g_sound_thruster);
+  IDirectSoundBuffer_Release(g_sound_shoot_beam);
+  IDirectSoundBuffer_Release(g_sound_saucer_siren);
+  IDirectSoundBuffer_Release(g_sound_smash_rock);
+  IDirectSoundBuffer_Release(g_sound_smash_ship);
+  IDirectSound_Release(g_ds);
+  DeleteObject(g_font);
+  RemoveFontMemResourceEx(g_font_resource);
   return 0;
 }
