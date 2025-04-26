@@ -1,6 +1,6 @@
 /**
  * gizmo.c
- * Copyright (C) 2025 by Jeff Gold.
+ * Copyright (C) 2024-2025 by Jeff Gold.
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -23,8 +23,16 @@
  * environment variable GIZMO_SOFTWARE=1.
  **/
 #include <stdlib.h>
+#include <stdarg.h>
+#include <math.h>
 #include "gizmo.h"
 #include "asteroids.h"
+
+#include "SDL.h"
+#include "SDL_mixer.h"
+#include "SDL_ttf.h"
+#include "SDL2_gfxPrimitives.h"
+#include "SDL_image.h"
 
 /* Find an appropriate implementation for a millisecond clock */
 #ifdef __EMSCRIPTEN__
@@ -47,7 +55,7 @@ gizmo_failmsg(const char *funcname, int status,
 {
   int result = EXIT_SUCCESS;
   if (status < 0) {
-    SDL_Log("%s: %s\n", funcname, errfn());
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s\n", funcname, errfn());
     SDL_ShowSimpleMessageBox
       (SDL_MESSAGEBOX_ERROR, funcname, errfn(), 0);
     result = EXIT_FAILURE;
@@ -65,13 +73,14 @@ static int
 gizmo_chknull(const char *funcname, void *ptr,
               const char *(errfn)(void))
 {
+  int result = EXIT_SUCCESS;
   if (!ptr) {
-    SDL_Log("%s: %s\n", funcname, errfn());
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s\n", funcname, errfn());
     SDL_ShowSimpleMessageBox
       (SDL_MESSAGEBOX_ERROR, funcname, errfn(), 0);
-    return EXIT_FAILURE;
+    result = EXIT_FAILURE;
   }
-  return EXIT_SUCCESS;
+  return result;
 }
 #define GIZMO_SDL_CHKNULL(fn, ptr, args) \
   gizmo_chknull(#fn, (ptr = fn args), SDL_GetError)
@@ -81,8 +90,10 @@ gizmo_chknull(const char *funcname, void *ptr,
   gizmo_chknull(#fn, (ptr = fn args), Mix_GetError)
 
 struct gizmo {
-  SDL_Renderer *renderer;
   SDL_Window *window;
+  SDL_Renderer *renderer;
+  SDL_Color foreground;
+
   unsigned long long last;
   struct app *app;
   unsigned done;
@@ -157,14 +168,16 @@ gizmo_setup_SDL(struct gizmo *gizmo)
                 SDL_WINDOW_RESIZABLE)))) {
   } else if (SDL_FALSE == SDL_SetHint
              (SDL_HINT_RENDER_SCALE_QUALITY, "linear")) {
-    SDL_Log("SDL_SetHint: %s\n", SDL_GetError());
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SDL_SetHint: %s\n",
+                 SDL_GetError());
     result = EXIT_FAILURE;
   } else if ((result = GIZMO_SDL_CHKNULL
               (SDL_CreateRenderer, gizmo->renderer,
                (gizmo->window, -1, render)))) {
   } else if ((result = GIZMO_SDL_CHECK
               (SDL_GetRendererOutputSize,
-               (gizmo->renderer, &gizmo->app->width,
+               (gizmo->renderer,
+                &gizmo->app->width,
                 &gizmo->app->height)))) {
   } else if (gizmo->app->icon && gizmo->app->icon_length &&
              (EXIT_SUCCESS != (result = gizmo_setup_icon
@@ -175,35 +188,142 @@ gizmo_setup_SDL(struct gizmo *gizmo)
   return result;
 }
 
+void
+gizmo_log(const char *message, ...)
+{
+  va_list args;
+  va_start(args, message);
+  SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION,
+                  SDL_LOG_PRIORITY_INFO, message, args);
+  va_end(args);
+}
+
+struct gizmo_sound {
+  Mix_Chunk *chunk;
+  int channel;
+};
+
 int
-gizmo_app_sound(Mix_Chunk **chunk, const char *filename)
+gizmo_sound_create(struct gizmo_sound **sound, const char *name)
 {
   int result = EXIT_SUCCESS;
+  struct gizmo_sound *out = NULL;
+  const char *format = "./apps/sounds/%s.ogg";
+  char *filename = NULL;
+  int needed = snprintf(filename, 0, format, name);
 
-  if (chunk)
-    result = GIZMO_MIX_CHKNULL(Mix_LoadWAV, *chunk, (filename));
+  if (!sound) {
+  } else if (needed < 0) {
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to format "
+                 "font filename\n");
+    result = EXIT_FAILURE;
+  } else if (!(filename = malloc(needed + 1))) {
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to allocate %u "
+                 "bytes for filename\n", needed);
+    result = EXIT_FAILURE;
+  } else if (snprintf(filename, needed + 1, format, name) < 0) {
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to format "
+                 "allocated filename\n");
+    result = EXIT_FAILURE;
+  } else if (!(out = malloc(sizeof(struct gizmo_sound)))) {
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to allocate %u "
+                 "bytes for sound\n",
+                 (unsigned)sizeof(struct gizmo_sound));
+    result = EXIT_FAILURE;
+  } else if ((result = GIZMO_MIX_CHKNULL
+              (Mix_LoadWAV, out->chunk, (filename)))) {
+  } else {
+    out->channel = -1;
+    *sound = out;
+    out = NULL;
+  }
+  free(filename);
+  free(out);
   return result;
 }
 
 int
-gizmo_app_font(TTF_Font **font, unsigned size, const char *filename)
+gizmo_sound_play(struct gizmo_sound *sound)
 {
   int result = EXIT_SUCCESS;
-
-  TTF_CloseFont(*font);
-  if (font)
-    result = GIZMO_TTF_CHKNULL(TTF_OpenFont, *font, (filename, size));
+  if (sound)
+    sound->channel = Mix_PlayChannel(-1, sound->chunk, 0);
   return result;
+}
+
+int
+gizmo_sound_loop(struct gizmo_sound *sound)
+{
+  int result = EXIT_SUCCESS;
+  if (sound && (sound->channel < 0))
+    sound->channel = Mix_PlayChannel(-1, sound->chunk, -1);
+  return result;
+}
+
+int
+gizmo_sound_stop(struct gizmo_sound *sound)
+{
+  int result = EXIT_SUCCESS;
+  if (sound && (sound->channel >= 0) && Mix_Playing(sound->channel)) {
+    Mix_HaltChannel(sound->channel);
+    sound->channel = -1;
+  }
+  return result;
+}
+
+void
+gizmo_sound_destroy(struct gizmo_sound *sound)
+{
+  Mix_FreeChunk(sound->chunk);
+  free(sound);
+}
+
+int
+gizmo_font_create(struct gizmo_font **font, unsigned size,
+                  const char *name)
+{
+  int result = EXIT_SUCCESS;
+  const char *format = "./apps/fonts/%s.ttf";
+  char *filename = NULL;
+  int needed = snprintf(filename, 0, format, name);
+
+  if (needed < 0) {
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to format "
+                 "font filename\n");
+    result = EXIT_FAILURE;
+  } else if (!(filename = malloc(needed + 1))) {
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to allocate "
+                 "%u bytes for filename\n", needed);
+    result = EXIT_FAILURE;
+  } else if (snprintf(filename, needed + 1, format, name) < 0) {
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to format "
+                 "allocated filename\n");
+    result = EXIT_FAILURE;
+  } else {
+    TTF_Font **inner_font = (TTF_Font**)font;
+
+    TTF_CloseFont(*inner_font);
+    if (inner_font)
+      result = GIZMO_TTF_CHKNULL(TTF_OpenFont, *inner_font,
+                                 (filename, size));
+  }
+  free(filename);
+  return result;
+}
+
+void
+gizmo_font_destroy(struct gizmo_font *font)
+{
+  TTF_CloseFont((TTF_Font *)font);
 }
 
 int
 gizmo_app_actions
-(void *context,
+(struct gizmo *gizmo,
  struct app_key_action   *key_actions,   unsigned n_key_actions,
  struct app_mouse_action *mouse_actions, unsigned n_mouse_actions)
 {
   int result = EXIT_SUCCESS;
-  struct gizmo *gizmo = (struct gizmo*)context;
   struct app_key_action   *new_key_actions = NULL;
   struct app_mouse_action *new_mouse_actions = NULL;
 
@@ -279,17 +399,17 @@ gizmo_quadratic_real_roots(unsigned *n_roots, float *roots,
  * Return non-zero iff the spherical objects represented by given
  * position, velocity and radius collide within the elapsed time. */
 int
-gizmo_check_collide(float radiusA, SDL_FPoint *positionA,
-                    SDL_FPoint *velocityA,
-                    float radiusB, SDL_FPoint *positionB,
-                    SDL_FPoint *velocityB, unsigned elapsed)
+gizmo_check_collide(float radiusA, struct gizmo_point *positionA,
+                    struct gizmo_point *velocityA,
+                    float radiusB, struct gizmo_point *positionB,
+                    struct gizmo_point *velocityB, unsigned elapsed)
 {
   int result = 0;
   const float gap = radiusA + radiusB;
-  SDL_FPoint dp = {
+  struct gizmo_point dp = {
     positionA->x - positionB->x,
     positionA->y - positionB->y };
-  SDL_FPoint dm = {
+  struct gizmo_point dm = {
     velocityA->x - velocityB->x,
     velocityA->y - velocityB->y};
 
@@ -310,35 +430,65 @@ gizmo_check_collide(float radiusA, SDL_FPoint *positionA,
   return result;
 }
 
-SDL_FPoint
-gizmo_rotate_origin(SDL_FPoint *point, float dircos, float dirsin)
+struct gizmo_point
+gizmo_rotate(struct gizmo_point *point, float dircos, float dirsin)
 {
-  SDL_FPoint result = {
+  struct gizmo_point result = {
     point->x * dircos - point->y * dirsin,
     point->x * dirsin + point->y * dircos };
   return result;
 }
 
+/* ------------------------------------------------------------------ */
+/* Drawing primitives */
+
 int
-gizmo_draw_point_loop(SDL_Renderer *renderer, float size,
-                      SDL_FPoint *position,
-                      float dircos, float dirsin,
-                      unsigned n_points, SDL_FPoint *points)
+gizmo_draw_text(struct gizmo *gizmo, struct gizmo_font *font,
+                struct gizmo_point *position, const char *message, ...)
 {
   int result = EXIT_SUCCESS;
-  SDL_FPoint previous = { 0, 0 };
+  SDL_Surface *surface = TTF_RenderUTF8_Solid
+    ((TTF_Font *)font, message, gizmo->foreground);
+  if (surface) {
+    SDL_Texture *texture = SDL_CreateTextureFromSurface
+      (gizmo->renderer, surface);
+    if (texture) {
+      SDL_Rect dsrect = { 0, 0, surface->w, surface->h };
+      if (position) {
+        dsrect.x = position->x;
+        dsrect.y = position->y;
+      } else {
+        dsrect.x = (gizmo->app->width - surface->w) / 2;
+        dsrect.y = (gizmo->app->height - surface->h) / 2;
+      }
+      SDL_RenderCopy(gizmo->renderer, texture, NULL, &dsrect);
+      SDL_DestroyTexture(texture);
+    }
+    SDL_FreeSurface(surface);
+  }
+  return result;
+}
+
+int
+gizmo_draw_pointloop(struct gizmo *gizmo, struct gizmo_point *position,
+                     float size, float dircos, float dirsin,
+                     unsigned n_points, struct gizmo_point *points)
+{
+  int result = EXIT_SUCCESS;
+  struct gizmo_point previous = { 0, 0 };
   unsigned ii;
 
   for (ii = 0; (result == EXIT_SUCCESS) && (ii < n_points); ++ii) {
-    SDL_FPoint start = ii ? previous :
-      gizmo_rotate_origin(&points[ii], dircos, dirsin);
-    SDL_FPoint end = gizmo_rotate_origin
+    struct gizmo_point start = ii ? previous :
+      gizmo_rotate(&points[ii], dircos, dirsin);
+    struct gizmo_point end = gizmo_rotate
       (&points[(ii + 1) % n_points], dircos, dirsin);
     previous = end;
 
     result = GIZMO_SDL_CHECK
       (SDL_RenderDrawLine,
-       (renderer, (int)(position->x + size * start.x),
+       (gizmo->renderer,
+        (int)(position->x + size * start.x),
         (int)(position->y + size * start.y),
         (int)(position->x + size * end.x),
         (int)(position->y + size * end.y)));
@@ -346,9 +496,73 @@ gizmo_draw_point_loop(SDL_Renderer *renderer, float size,
   return result;
 }
 
+int
+gizmo_draw_arc(struct gizmo *gizmo, struct gizmo_point *position,
+               float radius, float start, float stop)
+{
+  int result = EXIT_SUCCESS;
+  arcRGBA(gizmo->renderer,
+          (short)position->x, (short)position->y, (short)radius,
+          (short)(start * 180 / M_PI), (short)(stop * 180 / M_PI),
+          gizmo->foreground.r, gizmo->foreground.g,
+          gizmo->foreground.b, gizmo->foreground.a);
+  return result;
+}
+
+int
+gizmo_draw_circle(struct gizmo *gizmo, struct gizmo_point *position,
+                  float radius)
+{
+  int result = EXIT_SUCCESS;
+  circleRGBA(gizmo->renderer,
+             (short)position->x, (short)position->y, (short)radius,
+             gizmo->foreground.r, gizmo->foreground.g,
+             gizmo->foreground.b, gizmo->foreground.a);
+  return result;
+}
+
 /* ------------------------------------------------------------------ */
 
 void
+gizmo_color(struct gizmo_color *color, unsigned char r,
+            unsigned char g, unsigned char b, unsigned char a)
+{
+  color->r = r;
+  color->g = g;
+  color->b = b;
+  color->a = a;
+}
+
+void
+gizmo_color_set(struct gizmo *gizmo, struct gizmo_color *color)
+{
+  gizmo->foreground.r = color->r;
+  gizmo->foreground.g = color->g;
+  gizmo->foreground.b = color->b;
+  gizmo->foreground.a = color->a;
+  SDL_SetRenderDrawColor
+    (gizmo->renderer, color->r, color->g, color->b, color->a);
+}
+
+static enum gizmo_scancode
+gizmo_scancode_convert(int scancode)
+{
+  enum gizmo_scancode result = gizmo_scancode_none;
+  switch (scancode) {
+  case SDL_SCANCODE_SPACE: result = gizmo_scancode_space; break;
+  case SDL_SCANCODE_UP: result = gizmo_scancode_up; break;
+  case SDL_SCANCODE_DOWN: result = gizmo_scancode_down; break;
+  case SDL_SCANCODE_LEFT: result = gizmo_scancode_left; break;
+  case SDL_SCANCODE_RIGHT: result = gizmo_scancode_right; break;
+  case SDL_SCANCODE_W: result = gizmo_scancode_w; break;
+  case SDL_SCANCODE_A: result = gizmo_scancode_a; break;
+  case SDL_SCANCODE_S: result = gizmo_scancode_s; break;
+  case SDL_SCANCODE_D: result = gizmo_scancode_d; break;
+  }
+  return result;
+}
+
+static void
 gizmo_frame(void *context)
 {
   struct gizmo *gizmo = (struct gizmo *)context;
@@ -377,41 +591,49 @@ gizmo_frame(void *context)
     case SDL_KEYDOWN:
       for (ii = 0; ii < gizmo->n_key_actions; ++ii) {
         struct app_key_action *action = &gizmo->key_actions[ii];
-        if ((action->scancode == event.key.keysym.scancode) &&
+        if ((action->scancode == gizmo_scancode_convert
+             (event.key.keysym.scancode)) &&
             (!(action->flags & app_key_flag_norepeat) ||
              !event.key.repeat)) {
           if (action->setting)
             *action->setting = action->value_down;
           if (action->action_down)
-            action->action_down(gizmo->app, &event);
+            action->action_down(gizmo->app, action->scancode);
         }
       }
       break;
     case SDL_KEYUP:
       for (ii = 0; ii < gizmo->n_key_actions; ++ii) {
         struct app_key_action *action = &gizmo->key_actions[ii];
-        if ((action->scancode == event.key.keysym.scancode) &&
+        if ((action->scancode == gizmo_scancode_convert
+             (event.key.keysym.scancode)) &&
             (!(action->flags & app_key_flag_norepeat) ||
              !event.key.repeat)) {
           if (action->setting)
             *action->setting = action->value_up;
           if (action->action_up)
-            action->action_up(gizmo->app, &event);
+            action->action_up(gizmo->app, action->scancode);
         }
       }
       break;
     case SDL_MOUSEBUTTONDOWN:
       for (ii = 0; ii < gizmo->n_mouse_actions; ++ii) {
         struct app_mouse_action *action = &gizmo->mouse_actions[ii];
-        if ((action->type == SDL_MOUSEBUTTONDOWN) && (action->action))
-          action->action(gizmo->app, &event);
+        if ((action->type == gizmo_mouse_down) && (action->action)) {
+          struct gizmo_point clicked = {
+            event.button.x, event.button.y };
+          action->action(gizmo->app, &clicked);
+        }
       }
       break;
     case SDL_MOUSEBUTTONUP:
       for (ii = 0; ii < gizmo->n_mouse_actions; ++ii) {
         struct app_mouse_action *action = &gizmo->mouse_actions[ii];
-        if ((action->type == SDL_MOUSEBUTTONUP) && (action->action))
-          action->action(gizmo->app, &event);
+        if ((action->type == gizmo_mouse_up) && (action->action)) {
+          struct gizmo_point clicked = {
+            event.button.x, event.button.y };
+          action->action(gizmo->app, &clicked);
+        }
       }
       break;
     default:
@@ -422,13 +644,17 @@ gizmo_frame(void *context)
   long long current = now();
   unsigned elapsed = current - gizmo->last;
 
+  gizmo_color_set(gizmo, &gizmo->app->background);
+  SDL_RenderClear(gizmo->renderer);
+  gizmo_color_set(gizmo, &gizmo->app->foreground);
+
   if (gizmo->app->update &&
       (result = gizmo->app->update
        (gizmo->app, elapsed))) {
   } else if (gizmo->app->draw &&
-             (result = gizmo->app->draw
-              (gizmo->app, gizmo->renderer))) {
+             (result = gizmo->app->draw(gizmo->app, gizmo))) {
   }
+  SDL_RenderPresent(gizmo->renderer);
   gizmo->last = current;
 }
 
@@ -437,14 +663,12 @@ main(int argc, char **argv)
 {
   int result = EXIT_SUCCESS;
   struct gizmo gizmo;
-
   memset(&gizmo, 0, sizeof(gizmo));
   gizmo.last = now();
-
   gizmo.app = asteroids_get_app();
   if (gizmo.app)
     SDL_Log("Starting app: %s\n", gizmo.app->title);
-  else SDL_Log("Failed to find app\n");
+  else SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to find app\n");
 
   if (EXIT_SUCCESS != (result = gizmo_setup_SDL(&gizmo))) {
   } else if (gizmo.app->init &&
@@ -454,26 +678,24 @@ main(int argc, char **argv)
              (EXIT_SUCCESS !=
               (result = gizmo.app->resize
                (gizmo.app, gizmo.app->width, gizmo.app->height)))) {
-  }
-
-  if (result != EXIT_SUCCESS)
-    return result;
-
+  } else {
 #ifdef __EMSCRIPTEN__
-  emscripten_set_main_loop_arg(gizmo_frame, &gizmo, 0, 1);
+    emscripten_set_main_loop_arg(gizmo_frame, &gizmo, 0, 1);
 #else
+    unsigned long long frame = now();
+    gizmo.done = 0;
+    while ((result == EXIT_SUCCESS) && !gizmo.done) {
+      gizmo_frame(&gizmo);
 
-  unsigned long long frame = now();
-  gizmo.done = 0;
-  while ((result == EXIT_SUCCESS) && !gizmo.done) {
-    gizmo_frame(&gizmo);
-
-    unsigned long long current = now();
-    if (current - frame < 16)
-      SDL_Delay(16 - (current - frame));
-    frame = current;
+      unsigned long long current = now();
+      if (current - frame < 16)
+        SDL_Delay(16 - (current - frame));
+      frame = current;
+    }
+#endif
+    SDL_Log("Finished app: %s\n", gizmo.app->title);
   }
-  if (gizmo.app->destroy)
+  if (gizmo.app && gizmo.app->destroy)
     gizmo.app->destroy(gizmo.app);
   free(gizmo.key_actions);
   free(gizmo.mouse_actions);
@@ -486,6 +708,5 @@ main(int argc, char **argv)
     SDL_DestroyWindow(gizmo.window);
     SDL_Quit();
   }
-#endif
   return result;
 }
