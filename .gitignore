@@ -31,6 +31,7 @@
 /Makefile.in
 /source/.dirstamp
 /source/check/.dirstamp
+/source/gizmo/gizmo.rc
 /include/ripple/config.h
 /include/ripple/config.h.in
 /include/ripple/stamp-h1
@@ -41,10 +42,8 @@
 /check-ripple.exe
 /gizmo
 /gizmo.exe
-/source/win32/asteroids.rc
-/asteroids.ico
-/asteroids.res
-/asteroids.exe
+/gizmo.ico
+/gizmo.res
 
 # Sqlite
 /expense.db

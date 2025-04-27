@@ -1,7 +1,0 @@
-#define IDI_ICON_ASTEROIDS     1
-#define IDR_BRASS_MONO         2
-#define IDR_SOUND_THRUSTER     3
-#define IDR_SOUND_SHOOT_BEAM   4
-#define IDR_SOUND_SAUCER_SIREN 5
-#define IDR_SOUND_SMASH_ROCK   6
-#define IDR_SOUND_SMASH_SHIP   7

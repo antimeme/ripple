@@ -80,33 +80,38 @@ if HAVE_MINGW
 # Debian MinGW:
 # $ sudo apt install -y imagemagick mingw-w64 wine
 # $ winecfg
-# $ ./configure --with-vorbis=$HOME/.install/mingw
+# $ ./configure --with-win32-vorbis=$HOME/.install/mingw
 # $ make play-win32-asteroids
 
-WIN32_CPPFLAGS = $(WIN32_VORBIS_CPPFLAGS)
-WIN32_LDFLAGS  = $(WIN32_VORBIS_LDFLAGS) \
+GIZMO_WIN32_CPPFLAGS = $(WIN32_VORBIS_CPPFLAGS) \
+	-I $(srcdir)/source/gizmo \
+	-DPATH_SOUND="$(srcdir)/apps/sounds/%s.ogg" \
+	-DPATH_FONT="$(srcdir)/apps/fonts/%s.ttf"
+GIZMO_WIN32_LDFLAGS  = $(WIN32_VORBIS_LDFLAGS) \
 	-ldsound -lole32 -lwinmm -mwindows
-WIN32_SOURCES  = $(srcdir)/source/win32/asteroids.c
+GIZMO_WIN32_SOURCES  = \
+	$(srcdir)/source/gizmo/gizmo-win32.c \
+	$(srcdir)/source/gizmo/asteroids.c
 if HAVE_WIN32_VORBIS
-WIN32_CPPFLAGS += -DHAVE_WIN32_VORBIS
-WIN32_LDFLAGS  += -lvorbisfile -lvorbis -logg -static
+GIZMO_WIN32_CPPFLAGS += -DHAVE_WIN32_VORBIS
+GIZMO_WIN32_LDFLAGS  += -lvorbisfile -lvorbis -logg -static
 endif
 
-asteroids.ico: $(srcdir)/apps/images/asteroids.svg
+gizmo.ico: $(srcdir)/apps/images/asteroids.svg
 	convert $< -define icon:auto-resize=256,128,64,48,32,16 $@
 
-asteroids.res: source/win32/asteroids.rc asteroids.ico
+gizmo.res: source/gizmo/gizmo.rc gizmo.ico
 	$(WINDRES) $< -O coff -o $@
 
-asteroids.exe: asteroids.res $(WIN32_SOURCES)
-	$(MINGW) $(WIN32_CPPFLAGS) -o $@ $^ $(WIN32_LDFLAGS)
+gizmo.exe: gizmo.res $(GIZMO_WIN32_SOURCES)
+	$(MINGW) $(GIZMO_WIN32_CPPFLAGS) -o $@ $^ $(GIZMO_WIN32_LDFLAGS)
 
-play-win32-asteroids: asteroids.exe
+play-win32-asteroids: gizmo.exe
 	wine $<
 
-MOSTLYCLEANFILES += asteroids.res asteroids.ico
-CLEANFILES += asteroids.exe
-bin_PROGRAMS += asteroids.exe
+MOSTLYCLEANFILES += gizmo.res gizmo.ico
+CLEANFILES += gizmo.exe
+bin_PROGRAMS += gizmo.exe
 
 endif
 
@@ -121,10 +126,13 @@ if HAVE_SDL2
 # $ pacman --noconfirm -S mingw-w64-x86_64-toolchain \
 #   mingw-w64-x86_64-SDL2{,_{gfx,ttf,image,mixer}}
 bin_PROGRAMS += gizmo
+gizmo_CPPFLAGS =  \
+	-DPATH_SOUND="$(srcdir)/apps/sounds/%s.ogg" \
+	-DPATH_FONT="$(srcdir)/apps/fonts/%s.ttf"
 gizmo_CFLAGS = $(SDL2_CFLAGS)
 gizmo_LDFLAGS = $(SDL2_LIBS) -lm
 gizmo_SOURCES = \
-	source/gizmo/gizmo.c \
+	source/gizmo/gizmo-sdl.c \
 	source/gizmo/asteroids.c
 
 play-sdl-asteroids: gizmo

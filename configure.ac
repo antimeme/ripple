@@ -124,7 +124,7 @@ AC_CONFIG_FILES([
     package.json
     source/__init__.py
     source/Ripple.java
-    source/win32/asteroids.rc
+    source/gizmo/gizmo.rc
     scripts/ripple.spec
     scripts/ripple.dpkg
 ], [test -e ripple/__init__.py && chmod +x ripple/__init__.py])

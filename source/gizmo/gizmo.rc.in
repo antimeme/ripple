@@ -1,0 +1,7 @@
+ICON_ASTEROIDS     ICON  "asteroids.ico"
+FONT_BRASS_MONO    TTF   "@srcdir@/apps/fonts/brass-mono.ttf"
+SOUND_THRUSTER     SOUND "@srcdir@/apps/sounds/thruster.ogg"
+SOUND_SHOOT_BEAM   SOUND "@srcdir@/apps/sounds/shoot-beam.ogg"
+SOUND_SAUCER_SIREN SOUND "@srcdir@/apps/sounds/saucer-siren.ogg"
+SOUND_SMASH_ROCK   SOUND "@srcdir@/apps/sounds/smash-rock.ogg"
+SOUND_SMASH_SHIP   SOUND "@srcdir@/apps/sounds/smash-ship.ogg"

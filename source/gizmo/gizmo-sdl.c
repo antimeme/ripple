@@ -1,5 +1,5 @@
 /**
- * gizmo.c
+ * gizmo-sdl.c
  * Copyright (C) 2024-2025 by Jeff Gold.
  *
  * This program is free software: you can redistribute it and/or
@@ -18,21 +18,21 @@
  *
  * ---------------------------------------------------------------------
  * Gizmo is a simplistic framework intended to take some of the chore
- * work out of writing SDL2 applications. By default gizmo uses
+ * work out of writing simple SDL2 games. By default gizmo uses
  * accelerated rendering.  This can be disabled by setting the
- * environment variable GIZMO_SOFTWARE=1.
- **/
+ * environment variable GIZMO_SOFTWARE=1. */
 #include <stdlib.h>
 #include <stdarg.h>
 #include <math.h>
-#include "gizmo.h"
-#include "asteroids.h"
 
 #include "SDL.h"
 #include "SDL_mixer.h"
 #include "SDL_ttf.h"
 #include "SDL2_gfxPrimitives.h"
 #include "SDL_image.h"
+
+#include "gizmo.h"
+#include "asteroids.h"
 
 /* Find an appropriate implementation for a millisecond clock */
 #ifdef __EMSCRIPTEN__
@@ -204,13 +204,13 @@ struct gizmo_sound {
 };
 
 int
-gizmo_sound_create(struct gizmo_sound **sound, const char *name)
+gizmo_sound_create(struct gizmo *gizmo, const char *name,
+                   struct gizmo_sound **sound)
 {
   int result = EXIT_SUCCESS;
   struct gizmo_sound *out = NULL;
-  const char *format = "./apps/sounds/%s.ogg";
   char *filename = NULL;
-  int needed = snprintf(filename, 0, format, name);
+  int needed = snprintf(filename, 0, FORMAT_SOUND, name);
 
   if (!sound) {
   } else if (needed < 0) {
@@ -221,7 +221,7 @@ gizmo_sound_create(struct gizmo_sound **sound, const char *name)
     SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to allocate %u "
                  "bytes for filename\n", needed);
     result = EXIT_FAILURE;
-  } else if (snprintf(filename, needed + 1, format, name) < 0) {
+  } else if (snprintf(filename, needed + 1, FORMAT_SOUND, name) < 0) {
     SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to format "
                  "allocated filename\n");
     result = EXIT_FAILURE;
@@ -274,18 +274,18 @@ gizmo_sound_stop(struct gizmo_sound *sound)
 void
 gizmo_sound_destroy(struct gizmo_sound *sound)
 {
-  Mix_FreeChunk(sound->chunk);
+  if (sound && sound->chunk)
+    Mix_FreeChunk(sound->chunk);
   free(sound);
 }
 
 int
-gizmo_font_create(struct gizmo_font **font, unsigned size,
-                  const char *name)
+gizmo_font_create(struct gizmo *gizmo, const char *fontname,
+                  unsigned size, struct gizmo_font **font)
 {
   int result = EXIT_SUCCESS;
-  const char *format = "./apps/fonts/%s.ttf";
   char *filename = NULL;
-  int needed = snprintf(filename, 0, format, name);
+  int needed = snprintf(filename, 0, FORMAT_FONT, fontname);
 
   if (needed < 0) {
     SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to format "
@@ -295,7 +295,8 @@ gizmo_font_create(struct gizmo_font **font, unsigned size,
     SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to allocate "
                  "%u bytes for filename\n", needed);
     result = EXIT_FAILURE;
-  } else if (snprintf(filename, needed + 1, format, name) < 0) {
+  } else if (snprintf(filename, needed + 1,
+                      FORMAT_FONT, fontname) < 0) {
     SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to format "
                  "allocated filename\n");
     result = EXIT_FAILURE;
@@ -534,7 +535,7 @@ gizmo_color(struct gizmo_color *color, unsigned char r,
 }
 
 void
-gizmo_color_set(struct gizmo *gizmo, struct gizmo_color *color)
+gizmo_set_color(struct gizmo *gizmo, struct gizmo_color *color)
 {
   gizmo->foreground.r = color->r;
   gizmo->foreground.g = color->g;
@@ -583,8 +584,8 @@ gizmo_frame(void *context)
         gizmo->app->width  = event.window.data1;
         gizmo->app->height = event.window.data2;
         if (gizmo->app->resize)
-          gizmo->app->resize
-            (gizmo->app, gizmo->app->width, gizmo->app->height);
+          gizmo->app->resize(gizmo->app, gizmo->app->width,
+                             gizmo->app->height, gizmo);
         break;
       }
       break;
@@ -644,9 +645,9 @@ gizmo_frame(void *context)
   long long current = now();
   unsigned elapsed = current - gizmo->last;
 
-  gizmo_color_set(gizmo, &gizmo->app->background);
+  gizmo_set_color(gizmo, &gizmo->app->background);
   SDL_RenderClear(gizmo->renderer);
-  gizmo_color_set(gizmo, &gizmo->app->foreground);
+  gizmo_set_color(gizmo, &gizmo->app->foreground);
 
   if (gizmo->app->update &&
       (result = gizmo->app->update
@@ -677,7 +678,8 @@ main(int argc, char **argv)
   } else if (gizmo.app->resize &&
              (EXIT_SUCCESS !=
               (result = gizmo.app->resize
-               (gizmo.app, gizmo.app->width, gizmo.app->height)))) {
+               (gizmo.app, gizmo.app->width, gizmo.app->height,
+                &gizmo)))) {
   } else {
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop_arg(gizmo_frame, &gizmo, 0, 1);

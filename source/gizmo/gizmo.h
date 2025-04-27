@@ -22,6 +22,19 @@
 #ifndef GIZMO_H
 #define GIZMO_H
 
+#define STRINGIFY(value) #value
+#define CREATE_STRING(value) STRINGIFY(value)
+#ifndef PATH_SOUND
+#  define FORMAT_SOUND "./apps/sounds/%s.ogg"
+#else
+#  define FORMAT_SOUND CREATE_STRING(PATH_SOUND)
+#endif
+#ifndef PATH_FONT
+#  define FORMAT_FONT "./apps/fonts/%s.ttf"
+#else
+#  define FORMAT_FONT CREATE_STRING(PATH_FONT)
+#endif
+
 struct gizmo;
 
 struct gizmo_point { float x; float y; };
@@ -55,7 +68,8 @@ struct app {
   int  (*init)(struct app *app, struct gizmo *gizmo);
   int  (*update)(struct app *app, unsigned elapsed);
   int  (*draw)(struct app *app, struct gizmo *gizmo);
-  int  (*resize)(struct app *app, int width, int height);
+  int  (*resize)(struct app *app, int width, int height,
+                 struct gizmo *gizmo);
   void (*destroy)(struct app *app);
 };
 
@@ -126,11 +140,13 @@ struct gizmo_sound;
 
 /**
  * Fetches a sound clip from the file system.
+ * @param gizmo context for sound creation
  * @param sound destination to store sound
  * @param name specifies sound to load
  * @return EXIT_SUCCESS unless something went wrong */
 int
-gizmo_sound_create(struct gizmo_sound **sound, const char *name);
+gizmo_sound_create(struct gizmo *gizmo, const char *name,
+                   struct gizmo_sound **sound);
 
 int
 gizmo_sound_play(struct gizmo_sound *sound);
@@ -150,13 +166,14 @@ struct gizmo_font;
 
 /**
  * Fetches a true-type font from the file system.
- * @param font destination into which font gets loaded
+ * @param gizmo
+ * @param fontname specifies which font to use
  * @param size point size of font
- * @param name specifies which font to use
+ * @param font destination into which font gets loaded
  * @return EXIT_SUCCESS unless something went wrong */
 int
-gizmo_font_create(struct gizmo_font **font, unsigned size,
-                  const char *name);
+gizmo_font_create(struct gizmo *gizmo, const char *fontname,
+                  unsigned size, struct gizmo_font **font);
 
 /**
  * Reclaim resources associated with a font.
@@ -205,7 +222,7 @@ gizmo_color(struct gizmo_color *color, unsigned char r,
             unsigned char g, unsigned char b, unsigned char a);
 
 void
-gizmo_color_set(struct gizmo *gizmo, struct gizmo_color *color);
+gizmo_set_color(struct gizmo *gizmo, struct gizmo_color *color);
 
 /**
  * Draw text at a specified position.

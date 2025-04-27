@@ -17,7 +17,8 @@
  * <http://www.gnu.org/licenses/>.
  *
  * ---------------------------------------------------------------------
- * A simplistic Asteroids clone. */
+ * A simplistic Asteroids clone.  This is a sample to demonstrate
+ * basic features of Gizmo with an easy to understand context. */
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -458,9 +459,10 @@ asteroids__ship_shoot(struct ship *ship, float direction, float size) {
   return result;
 }
 
-static void
+static int
 asteroids_reset(struct app_asteroids *self)
 {
+  int result = EXIT_SUCCESS;
   unsigned ii;
 
   self->gameover = 0;
@@ -498,6 +500,8 @@ asteroids_reset(struct app_asteroids *self)
   for (ii = 0; ii < self->n_debris; ++ii)
     asteroids__debris_destroy(&self->debris[ii]);
   self->n_debris = 0;
+
+  return result;
 }
 
 static void
@@ -631,7 +635,8 @@ asteroids__ship_destroy(struct ship *ship)
 }
 
 static int
-asteroids_resize(struct app *app, int width, int height)
+asteroids_resize(struct app *app, int width, int height,
+                 struct gizmo *gizmo)
 {
   int result = EXIT_SUCCESS;
   struct app_asteroids *self = (struct app_asteroids *)app;
@@ -645,10 +650,11 @@ asteroids_resize(struct app *app, int width, int height)
       (1 << self->asteroids[ii].n_splits) * self->size / 40;
 
   /* https://www.fontspace.com/brass-mono-font-f29885 */
-  gizmo_font_create(&self->font_score, (unsigned)(self->size / 17),
-                    "brass-mono");
-  gizmo_font_create(&self->font_gameover,
-                    (unsigned)(2 * self->size / 17), "brass-mono");
+  gizmo_font_create(gizmo, "brass-mono", (unsigned)(self->size / 17),
+                    &self->font_score);
+  gizmo_font_create(gizmo, "brass-mono",
+                    (unsigned)(2 * self->size / 17),
+                    &self->font_gameover);
   return result;
 }
 
@@ -736,13 +742,19 @@ asteroids_init(struct app *app, struct gizmo *gizmo)
 
     self->font_score = NULL;
     self->font_gameover = NULL;
-    gizmo_sound_create(&self->sound_shoot_beam,   "shoot-beam");
-    gizmo_sound_create(&self->sound_smash_ship,   "smash-ship");
-    gizmo_sound_create(&self->sound_smash_rock,   "smash-rock");
-    gizmo_sound_create(&self->sound_thruster,     "thruster");
-    gizmo_sound_create(&self->sound_saucer_siren, "saucer-siren");
-    asteroids_reset(self);
-    asteroids_resize(&self->app, self->app.width, self->app.height);
+
+    if ((result = gizmo_sound_create
+         (gizmo, "thruster",   &self->sound_thruster))) {
+    } else if ((result = gizmo_sound_create
+                (gizmo, "shoot-beam", &self->sound_shoot_beam))) {
+    } else if ((result = gizmo_sound_create
+                (gizmo, "smash-ship", &self->sound_smash_ship))) {
+    } else if ((result = gizmo_sound_create
+                (gizmo, "smash-rock", &self->sound_smash_rock))) {
+    } else if ((result = gizmo_sound_create
+                (gizmo, "saucer-siren", &self->sound_saucer_siren))) {
+    } else if ((result = asteroids_reset(self))) {
+    }
   }
 
   free(newpoints);
@@ -1082,6 +1094,7 @@ asteroids_get_app(void) {
   struct app_asteroids *result = NULL;
 
   if ((result = malloc(sizeof(*result)))) {
+    memset(result, 0, sizeof(*result));
     result->app.title = "Asteroids";
     result->app.width  = 640;
     result->app.height = 480;

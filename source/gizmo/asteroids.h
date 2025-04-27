@@ -1,6 +1,6 @@
 /**
- * asteroids.c
- * Copyright (C) 2024 by Jeff Gold.
+ * asteroids.h
+ * Copyright (C) 2024-2025 by Jeff Gold.
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -18,7 +18,7 @@
  *
  * ---------------------------------------------------------------------
  * A simplistic Asteroids clone.  This is a sample to demonstrate
- * basic features of SDL2 with an easy to understand context. */
+ * basic features of Gizmo with an easy to understand context. */
 #ifndef GIZMO_ASTEROIDS_H
 #define GIZMO_ASTEROIDS_H
 
