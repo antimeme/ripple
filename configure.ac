@@ -42,18 +42,18 @@ AC_ARG_WITH([win32-vorbis],
             [win32_vorbis_path="$withval"], [win32_vorbis_path=""])
 AM_CONDITIONAL([HAVE_WIN32_VORBIS], [test -n "$win32_vorbis_path"])
 AS_IF([test -n "$win32_vorbis_path"], [
-    WIN32_VORBIS_CPPFLAGS="-I$win32_vorbis_path/include"
-    WIN32_VORBIS_LDFLAGS="-L$win32_vorbis_path/lib"
+    WIN32_CPPFLAGS_VORBIS="-I$win32_vorbis_path/include"
+    WIN32_LDFLAGS_VORBIS="-L$win32_vorbis_path/lib"
     AC_CHECK_LIB([vorbis], [vorbis_info_init], [],
                  [AC_MSG_ERROR([libvorbis not found])])
 ])
-AC_SUBST([WIN32_VORBIS_CPPFLAGS])
-AC_SUBST([WIN32_VORBIS_LDFLAGS])
+AC_SUBST([WIN32_CPPFLAGS_VORBIS])
+AC_SUBST([WIN32_LDFLAGS_VORBIS])
 
 # SDL2 with gfx, ttf, mixer and image allow constructing gizmo
 PKG_CHECK_MODULES([SDL2],
-  [sdl2 SDL2_gfx SDL2_ttf SDL2_mixer SDL2_image],
-  [HAVE_SDL2=true], [HAVE_SDL2=false])
+    [sdl2 SDL2_gfx SDL2_ttf SDL2_mixer SDL2_image],
+    [HAVE_SDL2=true], [HAVE_SDL2=false])
 AM_CONDITIONAL([HAVE_SDL2], [test "$HAVE_SDL2" = true])
 AC_SUBST([SDL2_CFLAGS])
 AC_SUBST([SDL2_LIBS])

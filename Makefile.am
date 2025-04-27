@@ -64,7 +64,11 @@ if HAVE_MINGW
 # Windows icon file from an SVG source, but that is not checked by
 # the configure.ac for the moment.
 #
-# Playing sounds is optional but requires libvorbis.
+# Playing sounds is optional but requires cross compiling libvorbis.
+# For some reason it's also necessary to install the host version of
+# libvorbis otherwise configure fails.
+#
+# $ sudo apt install -y mingw-w64 libvorbis-dev imagemagick
 # $ URL=https://ftp.osuosl.org/pub/xiph/releases
 # $ curl -O $URL/ogg/libogg-1.3.5.tar.gz
 # $ curl -O $URL/vorbis/libvorbis-1.3.7.tar.gz
@@ -76,25 +80,27 @@ if HAVE_MINGW
 # $ (cd libvorbis-1.3.7 && ./configure --host=i686-w64-mingw32 \
 #    --prefix=$HOME/.install/mingw --with-ogg=$HOME/.install/mingw && \
 #    make CPPFLAGS=-I$HOME/.install/mingw && make install)
-#
-# Debian MinGW:
-# $ sudo apt install -y imagemagick mingw-w64 wine
-# $ winecfg
 # $ ./configure --with-win32-vorbis=$HOME/.install/mingw
+# $ make gizmo.exe
+#
+# Run the program using Wine:
+# $ sudo dpkg --add-architecture i386 && sudo apt update
+# $ sudo apt install -y wine win32:i386
+# $ winecfg
 # $ make play-win32-asteroids
 
-GIZMO_WIN32_CPPFLAGS = $(WIN32_VORBIS_CPPFLAGS) \
+GIZMO_CPPFLAGS_WIN32 = $(WIN32_CPPFLAGS_VORBIS) \
 	-I $(srcdir)/source/gizmo \
 	-DPATH_SOUND="$(srcdir)/apps/sounds/%s.ogg" \
 	-DPATH_FONT="$(srcdir)/apps/fonts/%s.ttf"
-GIZMO_WIN32_LDFLAGS  = $(WIN32_VORBIS_LDFLAGS) \
+GIZMO_LDFLAGS_WIN32  = $(WIN32_LDFLAGS_VORBIS) \
 	-ldsound -lole32 -lwinmm -mwindows
-GIZMO_WIN32_SOURCES  = \
+GIZMO_SOURCES_WIN32  = \
 	$(srcdir)/source/gizmo/gizmo-win32.c \
 	$(srcdir)/source/gizmo/asteroids.c
 if HAVE_WIN32_VORBIS
-GIZMO_WIN32_CPPFLAGS += -DHAVE_WIN32_VORBIS
-GIZMO_WIN32_LDFLAGS  += -lvorbisfile -lvorbis -logg -static
+GIZMO_CPPFLAGS_WIN32 += -DHAVE_WIN32_VORBIS
+GIZMO_LDFLAGS_WIN32  += -lvorbisfile -lvorbis -logg -static
 endif
 
 gizmo.ico: $(srcdir)/apps/images/asteroids.svg
@@ -103,8 +109,8 @@ gizmo.ico: $(srcdir)/apps/images/asteroids.svg
 gizmo.res: source/gizmo/gizmo.rc gizmo.ico
 	$(WINDRES) $< -O coff -o $@
 
-gizmo.exe: gizmo.res $(GIZMO_WIN32_SOURCES)
-	$(MINGW) $(GIZMO_WIN32_CPPFLAGS) -o $@ $^ $(GIZMO_WIN32_LDFLAGS)
+gizmo.exe: gizmo.res $(GIZMO_SOURCES_WIN32)
+	$(MINGW) $(GIZMO_CPPFLAGS_WIN32) -o $@ $^ $(GIZMO_LDFLAGS_WIN32)
 
 play-win32-asteroids: gizmo.exe
 	wine $<
@@ -168,6 +174,7 @@ endif
 if HAVE_EMCC
 # Emscripten is kinda dumb about its ports.  The following may
 # be necessary to avoid permission errors:
+# $ sudo apt install -y emscripten
 # $ export EM_CONFIG=$HOME/.emscripten
 # $ [ ! -e "$EM_CONFIG" ] && emcc --generate-config
 # $ make apps/gizmo.html

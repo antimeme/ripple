@@ -905,8 +905,8 @@ _tWinMain(HINSTANCE hInstance, HINSTANCE, TCHAR*, int nCmdShow) {
     wc.lpfnWndProc = WndProc;
     wc.hInstance = hInstance;
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.hIcon = LoadIcon(hInstance, _T("ICON_ASTEROIDS"));
-    wc.hIconSm = LoadIcon(hInstance, _T("ICON_ASTEROIDS"));
+    wc.hIcon = LoadIcon(hInstance, _T("ICON_GIZMO"));
+    wc.hIconSm = LoadIcon(hInstance, _T("ICON_GIZMO"));
     wc.lpszClassName = appname;
     RegisterClassEx(&wc);
 

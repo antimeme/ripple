@@ -1,4 +1,4 @@
-ICON_ASTEROIDS     ICON  "asteroids.ico"
+ICON_GIZMO         ICON  "gizmo.ico"
 FONT_BRASS_MONO    TTF   "@srcdir@/apps/fonts/brass-mono.ttf"
 SOUND_THRUSTER     SOUND "@srcdir@/apps/sounds/thruster.ogg"
 SOUND_SHOOT_BEAM   SOUND "@srcdir@/apps/sounds/shoot-beam.ogg"
