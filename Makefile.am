@@ -172,7 +172,7 @@ if HAVE_EMCC
 # $ [ ! -e "$EM_CONFIG" ] && emcc --generate-config
 # $ make apps/gizmo.html
 apps/gizmo.wasm apps/gizmo.js apps/gizmo.html apps/gizmo.data: \
-	    source/gizmo/gizmo.c source/gizmo/asteroids.c
+	    source/gizmo/gizmo-sdl.c source/gizmo/asteroids.c
 	$(EMCC) -o $@ \
 	    -sALLOW_MEMORY_GROWTH \
 	    --preload-file apps/fonts/ \
@@ -180,7 +180,7 @@ apps/gizmo.wasm apps/gizmo.js apps/gizmo.html apps/gizmo.data: \
 	    -sUSE_SDL=2 \
 	    -sUSE_SDL_MIXER=2 -sUSE_SDL_TTF=2 -sUSE_SDL_GFX=2 \
 	    -sUSE_SDL_IMAGE=2 -sSDL2_IMAGE_FORMATS='["svg"]' \
-	    source/gizmo/gizmo.c \
+	    source/gizmo/gizmo-sdl.c \
 	    source/gizmo/asteroids.c
 endif
 
