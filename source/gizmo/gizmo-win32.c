@@ -388,13 +388,14 @@ int
 gizmo_sound_loop(struct gizmo_sound *sound)
 {
   int result = EXIT_SUCCESS;
-  //DWORD status;
-  //if (sound && SUCCEEDED(IDirectSoundBuffer_GetStatus(sound, &status)))
-  //  result = status & DSBSTATUS_PLAYING;
   if (sound) {
     LPDIRECTSOUNDBUFFER buffer = (LPDIRECTSOUNDBUFFER)sound;
-    IDirectSoundBuffer_SetCurrentPosition(buffer, 0);
-    IDirectSoundBuffer_Play(buffer, 0, 0, DSBPLAY_LOOPING);
+    DWORD status;
+    if (SUCCEEDED(IDirectSoundBuffer_GetStatus(buffer, &status)) &&
+        !(status & DSBSTATUS_PLAYING)) {
+      IDirectSoundBuffer_SetCurrentPosition(buffer, 0);
+      IDirectSoundBuffer_Play(buffer, 0, 0, DSBPLAY_LOOPING);
+    }
   }
   return result;
 }

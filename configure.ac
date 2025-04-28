@@ -16,6 +16,15 @@ dnl along with this program.  If not, see
 dnl <http://www.gnu.org/licenses/>.
 dnl 
 dnl --------------------------------------------------------------------
+dnl
+dnl A collection of experiments in software development.
+dnl
+dnl To create a configure script the followng packages are needed:
+dnl
+dnl $ sudo apt install -y autoconf automake libtool pkgconf make gcc
+dnl
+dnl Some components are optional and can be built only when their
+dnl dependencies are installed.
 AC_INIT([ripple], [0.1.1], [Jeff Gold <ripple@antimeme.net>])
 AC_CANONICAL_HOST
 AC_CONFIG_SRCDIR([configure.ac])

@@ -53,12 +53,11 @@ check_@PACKAGE@_SOURCES  = \
 TESTS = $(check_PROGRAMS)
 
 if HAVE_MINGW
-# MinGW is a compiler target on Debian and similar systems that
-# creates executables intended for Microsoft Windows.  Combined with
-# Wine this makes it possible to build and run programs which can be
-# provided to Windows users.  Instructions in this section use
-# resource files to pack an icon, a font and sound files into a
-# single executable file.
+# MinGW is a GCC variant that creates executables intended for
+# Microsoft Windows.  Combined with Wine this makes it possible to
+# build and run programs which can be provided to Windows users.
+# Instructions in this section use resource files to pack an icon, a
+# font and sound files into a single executable file.
 #
 # Note that the ImageMagick convert utility is used to create a
 # Windows icon file from an SVG source, but that is not checked by
