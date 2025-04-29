@@ -53,8 +53,6 @@ AM_CONDITIONAL([HAVE_WIN32_VORBIS], [test -n "$win32_vorbis_path"])
 AS_IF([test -n "$win32_vorbis_path"], [
     WIN32_CPPFLAGS_VORBIS="-I$win32_vorbis_path/include"
     WIN32_LDFLAGS_VORBIS="-L$win32_vorbis_path/lib"
-    AC_CHECK_LIB([vorbis], [vorbis_info_init], [],
-                 [AC_MSG_ERROR([libvorbis not found])])
 ])
 AC_SUBST([WIN32_CPPFLAGS_VORBIS])
 AC_SUBST([WIN32_LDFLAGS_VORBIS])

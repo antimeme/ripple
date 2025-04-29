@@ -64,10 +64,8 @@ if HAVE_MINGW
 # the configure.ac for the moment.
 #
 # Playing sounds is optional but requires cross compiling libvorbis.
-# For some reason it's also necessary to install the host version of
-# libvorbis otherwise configure fails.
 #
-# $ sudo apt install -y mingw-w64 libvorbis-dev imagemagick
+# $ sudo apt install -y imagemagick mingw-w64
 # $ URL=https://ftp.osuosl.org/pub/xiph/releases
 # $ curl -O $URL/ogg/libogg-1.3.5.tar.gz
 # $ curl -O $URL/vorbis/libvorbis-1.3.7.tar.gz
@@ -83,6 +81,7 @@ if HAVE_MINGW
 # $ make gizmo.exe
 #
 # Run the program using Wine:
+#
 # $ sudo dpkg --add-architecture i386 && sudo apt update
 # $ sudo apt install -y wine win32:i386
 # $ winecfg
