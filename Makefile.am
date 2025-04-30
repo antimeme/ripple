@@ -104,7 +104,7 @@ endif
 gizmo.ico: $(srcdir)/apps/images/asteroids.svg
 	convert $< -define icon:auto-resize=256,128,64,48,32,16 $@
 
-gizmo.res: source/gizmo/gizmo.rc gizmo.ico
+gizmo.res: ./source/gizmo/gizmo.rc gizmo.ico
 	$(WINDRES) $< -O coff -o $@
 
 gizmo.exe: gizmo.res $(GIZMO_SOURCES_WIN32)
@@ -189,122 +189,125 @@ apps/gizmo.wasm apps/gizmo.js apps/gizmo.html apps/gizmo.data: \
 	    source/gizmo/asteroids.c
 endif
 
-## Certificates ========================================================
-# Public Key Infrastructure (PKI) using OpenSSL.
-# To the extend possible, generic rules are used to reduce repetition.
+## Public Key Infrastructure ===========================================
+# To the extent possible, generic rules are used to reduce repetition.
 # Many things can be done this way, but the shape of the PKI has to
 # be defined explicitly.
-OPENSSL = openssl
-DN_BASE = C=US/O=antimeme.net
+DN_BASE  = C=US/O=Example
+#ALG_PKEY = ed25519
+ALG_PKEY = rsa \
+	-pkeyopt rsa_keygen_bits:2048 \
+	-pkeyopt rsa_keygen_pubexp:65537
+OPENSSL  = openssl
 
-.passwd:
-	umask 077; echo "$(STOREPASS)" > $@
-
-%-key.pem:
-	$(OPENSSL) genrsa -out $@ $(KEYSIZE)
-
-%-cert.der: %-cert.pem
-	$(OPENSSL) x509 -in $< -out $@ -outform der
-
-%.p12: %-key.pem %-chain.pem .passwd
-	LABEL=`echo $@ | sed 's,.p12$$,,'`; \
-	$(OPENSSL) pkcs12 -export -out $@ -inkey $< \
-	    -in "$$LABEL-chain.pem" -name "$$LABEL" \
-	    -passout file:.passwd
+%CA/key.pem:
+	$(MKDIR_P) $(@D)
+	$(OPENSSL) genpkey -algorithm $(ALG_PKEY) -out $@
+	touch $(@D)/db.txt
+	echo 01 > $(@D)/serial.txt
 
 # Root certificate authority signs itself.  There's no higher
 # authority to vouch for it but it's useful to have a certificate in
 # X.509 format to use when referencing it.  This authority is
-# intended primarily for signing issuing certificates, which come
-# in two forms:
-#     *-ca-cert.pem: issuing CAs that can have subordinate authorities
-#     *-ca1-cert.pem: issuing CAs that only sign end use certificates
-rootca-cert.pem: rootca-key.pem
-	$(OPENSSL) req -x509 -key $< -out $@ -sha256 -days 3650 \
+# intended primarily for signing issuing certificates.
+rootCA/cert.pem: rootCA/key.pem
+	$(OPENSSL) x509 -new -key $< -out $@ -sha256 -days 3650 \
 	    -subj "/$(DN_BASE)/OU=CA/CN=Root CA"
 
-%-ca-req.pem: %-key.pem
-	LABEL=`echo $@ | sed 's,-ca-req.pem$$,,'`; \
+%CA/req.pem: %CA/key.pem
 	$(OPENSSL) req -new -key $< -out $@ -sha256 \
-	    -subj "/$(DN_BASE)/OU=CA/CN=$$LABEL"
+	    -subj "/$(DN_BASE)/OU=CA/CN=$(@D)"
 
-%-ca-cert.pem: %-ca-req.pem rootca-key.pem rootca-cert.pem
-	$(OPENSSL) x509 -CA rootca-cert.pem -CAkey rootca-key.pem \
-	  -extfile @srcdir@/scripts/ca.conf \
-	  -extensions ca_role_ext -req -sha256 -days 730 \
-	  -CAcreateserial -CAserial ca.srl -in $< -out $@
+# Creates an intermediate certificate authority which can sign end
+# entities but cannot sign subordinate authorities.
+%CA/cert.pem: %CA/req.pem rootCA/key.pem rootCA/cert.pem
+	OPENSSL_CONF=@srcdir@/scripts/ca.conf \
+	$(OPENSSL) ca -in $< -out $@ -batch -rand_serial \
+	    -name CA_root -extensions ca1_role_ext
 
-%-ca1-cert.pem: %-ca-req.pem rootca-key.pem rootca-cert.pem
-	$(OPENSSL) x509 -CA rootca-cert.pem -CAkey rootca-key.pem \
-	  -extfile @srcdir@/scripts/ca.conf \
-	  -extensions ca1_role_ext -req -sha256 -days 730 \
-	  -CAcreateserial -CAserial ca.srl -in $< -out $@
+# When necessary revoke a certifcate using:
+#     openssl ca -revoke compromised-cert.pem
+# Then recreate the CRL using this target
+%CA/crl.pem: %CA/key.pem %CA/cert.pem %CA/db.txt
+	OPENSSL_CONF=@srcdir@/scripts/ca.conf \
+	$(OPENSSL) ca -gencrl -out $@
 
-# ServerCA is responsible for signing individual servers.
-# This CA is signed but the root, but not authorized to delegate
-# to subordinate CAs.
-serviceCA-chain.pem: serviceCA-ca1-cert.pem rootca-cert.pem
-	cat $^ >$@
+# Client Certificates ==================================================
 
-%-service-req.pem: %-key.pem
-	LABEL=`echo $@ | sed 's,-service-req.pem$$,,'`; \
+# Given a label for a client certificate we would like to look up a
+# full name.  The /etc/passwd file usually has this information so
+# we'll use that.  Set the USERFILE make variable to point this at
+# a different source if necessary.
+USERFILE = /etc/passwd
+
+%-key.pem:
+	$(OPENSSL) genpkey -algorithm $(ALG_PKEY) -out $@
+
+%-cli-req.pem: %-key.pem
+	LABEL=`echo $< | sed 's,-key.pem$$,,'`; \
+	NAME=`grep ^$$LABEL: $(USERFILE) | \
+	      cut -d : -f 5 | cut -d , -f 1`; \
+	$(OPENSSL) req -new -key $< -out $@ -sha256 \
+	    -subj "/$(DN_BASE)/OU=Users/CN=$${NAME:-$$LABEL}"
+
+%-cli-cert.pem: %-cli-req.pem clientCA/cert.pem clientCA/key.pem
+	OPENSSL_CONF=@srcdir@/scripts/ca.conf \
+	$(OPENSSL) ca -in $< -out $@ -batch -rand_serial \
+	    -name CA_client -extensions client_role_ext
+
+%-cert.der: %-cert.pem
+	$(OPENSSL) x509 -in $< -out $@ -outform der
+
+# Certificate chain for a single client.
+%-client.pem: %-cli-cert.pem clientCA/cert.pem
+	@cat $^ >$@.in
+	@mv $@.in $@
+
+# PKCS#12 ==============================================================
+# Bundled private key and certificate chain.
+
+# (Consider https://xkcd.com/936/)
+P12PASS = $${P12PASS:-123456}
+
+.passwd:
+	umask 077; echo "$(P12PASS)" > $@
+
+%-client.p12: %-key.pem %-client.pem .passwd
+	LABEL=`echo $< | sed 's,-key.pem$$,,'`; \
+	NAME=`grep $$LABEL $(USERFILE) | \
+	      cut -d : -f 5 | cut -d , -f 1`; \
+	$(OPENSSL) pkcs12 -export -out $@ -inkey $< \
+	    -in "$$LABEL-client.pem" -passout file:.passwd \
+	    -name "$${NAME:-$$LABEL}"
+
+## Service Certificates ================================================
+
+%-svc-req.pem: %-key.pem
+	LABEL=`echo $< | sed 's,-key.pem$$,,'`; \
 	$(OPENSSL) req -new -key $< -out $@ -sha256 \
 	    -subj "/$(DN_BASE)/OU=Services/CN=$$LABEL" \
 	    -addext "subjectAltName = DNS:$$LABEL, DNS:www.$$LABEL"
 
-%-service-cert.pem: %-service-req.pem serviceCA-ca1-cert.pem \
-	            serviceCA-key.pem
-	LABEL=`echo $< | sed 's,-service-req.pem$$,,'`; \
-	$(OPENSSL) x509 -extfile @srcdir@/scripts/ca.conf \
-	    -CA serviceCA-ca1-cert.pem -CAkey serviceCA-key.pem \
-	    -CAcreateserial -CAserial serviceCA.srl \
-	    -copy_extensions copy \
-	    -extensions server_role_ext -req -sha256 -days 730 \
-	    -in $< -out $@
+%-svc-cert.pem: %-svc-req.pem serviceCA/cert.pem serviceCA/key.pem
+	LABEL=`echo $< | sed 's,-svc-req.pem$$,,'` \
+	OPENSSL_CONF=@srcdir@/scripts/ca.conf \
+	$(OPENSSL) ca -in $< -out $@ -batch -rand_serial \
+	    -name CA_service -extensions server_role_ext
 
-# A generic server without a particular purpose.
-# A copy of this rule with "server" replaced could be used to
-# create a particular server.
-server-chain.pem: server-service-cert.pem serviceCA-chain.pem
-	cat $^ >$@
-
-antimeme.net-chain.pem: antimeme.net-service-cert.pem \
-	                serviceCA-chain.pem
-	cat $^ >$@
-
-# ClientCA is responsible for signing certificates for users,
-# such as those that might be installed in a web browser.
-# This CA is signed but the root, but not authorized to delegate
-# to subordinate CAs.
-clientCA-chain.pem: clientCA-ca1-cert.pem rootca-cert.pem
-	cat $^ >$@
-
-%-client-req.pem: %-key.pem
-	LABEL=`echo $@ | sed 's,-client-req.pem$$,,'`; \
-	$(OPENSSL) req -new -key $< -out $@ -sha256 \
-	    -subj "/$(DN_BASE)/OU=Users/CN=$$LABEL"
-
-%-client-cert.pem: %-client-req.pem clientCA-ca1-cert.pem \
-	           clientCA-key.pem
-	$(OPENSSL) x509 -extfile @srcdir@/scripts/ca.conf \
-	    -CA clientCA-ca1-cert.pem -CAkey clientCA-key.pem \
-	    -extensions client_role_ext -req -sha256 -days 730 \
-	    -CAcreateserial -CAserial clientCA.srl -in $< -out $@
-
-# A generic user certificate without a particular purpose.  A copy of
-# this rule with "username" replaced can make distinct artifacts (such
-# as PKCS#12 files with "make username.p12") for each user.
-username-chain.pem: username-client-cert.pem clientCA-chain.pem
-	cat $^ >$@
-
-antimeme-chain.pem: antimeme-client-cert.pem clientCA-chain.pem
-	cat $^ >$@
+%-svc.pem: %-svc-cert.pem serviceCA/cert.pem
+	cat $^ >$@.in
+	mv $@.in $@
 
 ## Node.js =============================================================
 
+server-key.pem: localhost.localdomain-key.pem
+	cp $< $@
+
+server-chain.pem: localhost.localdomain-svc.pem
+	cp $< $@
+
 node-serve: source/js/server.js \
-	    server-key.pem server-chain.pem \
-	    rootca-cert.pem
+	    server-key.pem server-chain.pem rootca-cert.pem
 	node $<
 
 ## Rust ================================================================
@@ -314,7 +317,7 @@ RUST_DISTSRC = \
 	source/server.rs
 
 rs-serve: Cargo.toml $(RUST_DISTSRC) \
-	  server-key.pem server-chain.pem \
+	  server-key.pem server-svc.pem \
 	  rootca-cert.pem
 	cargo run server
 
@@ -453,12 +456,12 @@ deploy: deploy-jetty deploy-tomcat
 	@echo jetty.ssl.port=8443 >>$@
 	@echo jetty.sslContext.keyStorePath=etc/container.p12 >>$@
 	@echo jetty.sslContext.keyStoreType=pkcs12 >>$@
-	@echo jetty.sslContext.keyStorePassword=$(STOREPASS) >>$@
-	@echo jetty.sslContext.keyManagerPassword=$(STOREPASS) >>$@
+	@echo jetty.sslContext.keyStorePassword=$(P12PASS) >>$@
+	@echo jetty.sslContext.keyManagerPassword=$(P12PASS) >>$@
 	@echo jetty.sslContext.wantClientAuth=true >>$@
 	@echo jetty.sslContext.trustStorePath=etc/container.p12 >>$@
 	@echo jetty.sslContext.trustStoreType=pkcs12 >>$@
-	@echo jetty.sslContext.trustStorePassword=$(STOREPASS) >>$@
+	@echo jetty.sslContext.trustStorePassword=$(P12PASS) >>$@
 
 install-jetty-https: container.p12 @PACKAGE@-jetty.ini
 	@if [ -n "$(JETTY_HOME)" ]; then \
@@ -537,8 +540,7 @@ $(JAR_ROOT)/.libs: $(JAR_ROOT)/.classes
 	chmod +x $@
 
 @PACKAGE@.jar: @PACKAGE@-@VERSION@.jar
-	rm -f $@
-	$(LN_S) @PACKAGE@-@VERSION@.jar $@
+	rm -f $@; $(LN_S) @PACKAGE@-@VERSION@.jar $@
 
 endif # HAVE_GRADLE
 
@@ -555,20 +557,17 @@ container-self.p12:
 	    -alias "$(ALIAS)" -validity 3650 \
 	    -dname "$${DNAME},OU=Service,CN=$(ALIAS)" \
 	    -ext "SAN=dns:$(HOSTNAME),dns:www.$(HOSTNAME)" \
-	    -storepass "$(STOREPASS)"
+	    -storepass "$(P12PASS)"
 
-container-service-req.pem: container-self.p12
+container-svc-req.pem: container-self.p12
 	$(KEYTOOL) -certreq -alias $(ALIAS) \
-	    -file $@ -keystore $< -storepass $(STOREPASS)
+	    -file $@ -keystore $< -storepass $(P12PASS)
 
-container-chain.pem: container-service-cert.pem serviceCA-chain.pem
-	cat $^ > $@
-
-container.p12: container-self.p12 container-chain.pem
+container.p12: container-self.p12 container-svc.pem
 	cp $< $@.partial
 	$(KEYTOOL) -importcert -alias $(ALIAS) \
-	    -file container-chain.pem -noprompt \
-	    -keystore $@.partial -storepass $(STOREPASS)
+	    -file container-svc.pem -noprompt \
+	    -keystore $@.partial -storepass $(P12PASS)
 	mv $@.partial $@
 
 install-data-local: .javadoc
@@ -632,7 +631,6 @@ uninstall-local:
 
 HOSTNAME  = localhost
 ALIAS     = $(HOSTNAME)
-STOREPASS = 123456
 
 EXTRA_DIST = \
 	bootstrap \
@@ -653,7 +651,7 @@ EXTRA_DIST = \
 	$(RUST_DISTSRC)
 	$(PYTHON_DISTSRC)
 
-.SECONDARY: serviceCA-key.pem clientCA-key.pem
+.PRECIOUS: %CA/key.pem %CA/cert.pem %-key.pem
 
 .PHONY: clean-local-java mostlyclean-local-java \
 	node-serve rs-serve \

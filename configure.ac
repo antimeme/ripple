@@ -36,14 +36,14 @@ AC_PROG_CC
 LT_INIT
 AC_PROG_MKDIR_P
 AC_PROG_LN_S
-AC_PATH_PROG(SUDO, sudo, )
+AC_PATH_PROG([SUDO], [sudo], )
 
-# MinGW can be used to compile Win32 programs on Unix platforms.
-# We will need both the cross compiler and windres to build.
-# In addition, --with-win32-vorbis=PATH can be used to provide a
-# cross compiled library for playing compressed sound.
-AC_PATH_PROG([MINGW], [i686-w64-mingw32-gcc])
-AC_PATH_PROG([WINDRES], [i686-w64-mingw32-windres])
+dnl MinGW can be used to compile Win32 programs on Unix platforms.
+dnl We will need both the cross compiler and windres to build.
+dnl In addition, --with-win32-vorbis=PATH can be used to provide a
+dnl cross-compiled library for playing compressed sounds.
+AC_PATH_PROG([MINGW],        [i686-w64-mingw32-gcc])
+AC_PATH_PROG([WINDRES],      [i686-w64-mingw32-windres])
 AM_CONDITIONAL([HAVE_MINGW], [test -n "$MINGW" -a -n "$WINDRES"])
 AC_ARG_WITH([win32-vorbis],
             [AS_HELP_STRING([--with-win32-vorbis=PATH],
@@ -52,12 +52,11 @@ AC_ARG_WITH([win32-vorbis],
 AM_CONDITIONAL([HAVE_WIN32_VORBIS], [test -n "$win32_vorbis_path"])
 AS_IF([test -n "$win32_vorbis_path"], [
     WIN32_CPPFLAGS_VORBIS="-I$win32_vorbis_path/include"
-    WIN32_LDFLAGS_VORBIS="-L$win32_vorbis_path/lib"
-])
+    WIN32_LDFLAGS_VORBIS="-L$win32_vorbis_path/lib" ])
 AC_SUBST([WIN32_CPPFLAGS_VORBIS])
 AC_SUBST([WIN32_LDFLAGS_VORBIS])
 
-# SDL2 with gfx, ttf, mixer and image allow constructing gizmo
+dnl SDL2 with gfx, ttf, mixer and image allow constructing gizmo
 PKG_CHECK_MODULES([SDL2],
     [sdl2 SDL2_gfx SDL2_ttf SDL2_mixer SDL2_image],
     [HAVE_SDL2=true], [HAVE_SDL2=false])
@@ -68,7 +67,7 @@ AC_SUBST([SDL2_LIBS])
 AC_PATH_PROG([EMCC], [emcc], [false])
 AM_CONDITIONAL([HAVE_EMCC], [test "$EMCC" != false])
 
-# Conditionally build Python
+dnl Conditionally build Python
 AC_ARG_ENABLE(python,
 [  --enable-python         Create Python library if python found],
 [case "${enableval}" in
@@ -85,7 +84,7 @@ else
    AC_SUBST([HAVE_PYTHON], [0])
 fi
 
-# Conditionally build Java
+dnl Conditionally build Java
 AC_ARG_ENABLE(java,
 [  --enable-java           Create Java library if JAVA_HOME found],
 [case "${enableval}" in
@@ -114,15 +113,15 @@ if test "x$enable_java" = x1; then
     else AC_MSG_RESULT([missing]); fi
     AM_CONDITIONAL([HAVE_JAVA], [test -n "$JAVA_HOME"])
     AM_COND_IF([HAVE_JAVA], AC_SUBST([JAVA_HOME], [$JAVA_HOME]))
-    AC_PATH_PROG([GRADLE], [gradle], [no])
-    AM_CONDITIONAL([HAVE_GRADLE], [test "x$GRADLE" != "xno"])
+    AC_PATH_PROG([GRADLE], [gradle], [false])
+    AM_CONDITIONAL([HAVE_GRADLE], [test "x$GRADLE" != "xfalse"])
 else
     AM_CONDITIONAL([HAVE_JAVA], [false])
     AM_CONDITIONAL([HAVE_GRADLE], [false])
 fi
 
-AC_PATH_PROG([PODMAN], [podman], [no])
-AM_CONDITIONAL([HAVE_PODMAN], [test "x$PODMAN" != "xno"])
+AC_PATH_PROG([PODMAN], [podman], [false])
+AM_CONDITIONAL([HAVE_PODMAN], [test "x$PODMAN" != "xfalse"])
 
 AC_CONFIG_FILES([
     Makefile
