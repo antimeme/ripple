@@ -298,13 +298,13 @@ P12PASS = $${P12PASS:-123456}
 	cat $^ >$@.in
 	mv $@.in $@
 
-## Node.js =============================================================
-
 server-key.pem: localhost.localdomain-key.pem
 	cp $< $@
 
 server-chain.pem: localhost.localdomain-svc.pem
 	cp $< $@
+
+## Node.js =============================================================
 
 node-serve: source/js/server.js \
 	    server-key.pem server-chain.pem rootca-cert.pem
@@ -312,14 +312,16 @@ node-serve: source/js/server.js \
 
 ## Rust ================================================================
 RUST_DISTSRC = \
-	source/ripple.rs \
-	source/expense.rs \
-	source/server.rs
+	$(srcdir)/source/ripple.rs \
+	$(srcdir)/source/expense.rs \
+	$(srcdir)/source/server.rs
 
 rs-serve: Cargo.toml $(RUST_DISTSRC) \
-	  server-key.pem server-svc.pem \
-	  rootca-cert.pem
-	cargo run server
+	  server-key.pem server-chain.pem rootCA/cert.pem
+	cargo run --bin server
+
+rs-asteroids: Cargo.toml $(srcdir)/source/asteroids.rs
+	cargo run --bin asteroids
 
 ## Python ==============================================================
 PYTHON_DISTSRC = source/random.py source/match.py
@@ -654,7 +656,7 @@ EXTRA_DIST = \
 .PRECIOUS: %CA/key.pem %CA/cert.pem %-key.pem
 
 .PHONY: clean-local-java mostlyclean-local-java \
-	node-serve rs-serve \
+	node-serve rs-serve rs-asteroids \
 	deploy deploy-jetty deploy-tomcat \
 	install-jetty-https \
 	jettypod-interact \

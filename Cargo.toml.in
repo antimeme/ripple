@@ -1,5 +1,5 @@
 # Cargo.toml.in for Ripple
-# Copyright (C) 2023 by Jeff Gold.
+# Copyright (C) 2023-2025 by Jeff Gold.
 #
 # This program is free software: you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -22,21 +22,27 @@
 # Details about Rust cargo manifests:
 # https://doc.rust-lang.org/cargo/reference/manifest.html
 [package]
-name    = "@PACKAGE@"
-version = "@VERSION@"
+name    = "@PACKAGE_NAME@"
+version = "@PACKAGE_VERSION@"
 edition = "2021"
 license = "GPL-3.0+"
-authors = ["Jeff Gold <ripple@antimeme.net>"]
+authors = ["@PACKAGE_BUGREPORT@"]
 
 [lib]
 name = "ripple"
-path = "source/ripple.rs"
+path = "@srcdir@/source/ripple.rs"
+
+[[bin]]
+name = "asteroids"
+path = "@srcdir@/source/asteroids.rs"
 
 [[bin]]
 name = "server"
-path = "source/server.rs"
+path = "@srcdir@/source/server.rs"
 
 [dependencies]
+
+### Server
 chrono = "0.4.31"
 tokio = { version = "1.0", features = ["full"] }
 axum = {version = "0.6.20", features = ["headers"]}
@@ -44,3 +50,9 @@ axum-server = { version = "0.3", features = ["tls-rustls"] }
 sqlx = { version = "0.7.2", features = ["runtime-tokio", "sqlite"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.68"
+
+### Asteroids
+piston = "1.0.0"
+piston_window = "0.132.0"
+piston2d-graphics = "0.44.0"
+piston2d-opengl_graphics = "0.85.0"
