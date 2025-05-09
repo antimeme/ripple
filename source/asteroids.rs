@@ -19,11 +19,13 @@
 //! A simplistic Asteroids clone.
 //!
 //! TODO:
+//! - Fix collision bugs
 //! - Warp
 //! - Saucer
 //! - Score (TTF)
 //! - Game Over (TTF)
 //! - SVG icon
+use std::path::Path;
 use std::fs::File;
 use std::io::BufReader;
 use std::sync::{Arc, Mutex};
@@ -561,14 +563,18 @@ impl Moveable for Asteroid {
 pub struct Sound {
     audio_data: Buffered<Decoder<BufReader<File>>>,
     stream_handle: OutputStreamHandle,
-    _stream: OutputStream, // must be kept alive to allow audio playback
+    _stream: OutputStream, // keep this alive to allow audio playback
     sink: Arc<Mutex<Option<Sink>>>,
 }
 
 impl Sound {
     pub fn load(name: &str) -> Result<Self, Box<dyn std::error::Error>> {
-        let file = File::open(format!("apps/sounds/{name}.ogg"))?;
-        let source = Decoder::new(BufReader::new(file))?;
+        let parent: String = match Path::new(file!()).parent() {
+            Some(parent) => format!("{}/..", parent.display()),
+            None => ".".to_string() };
+        let source = Decoder::new(
+            BufReader::new(File::open(format!(
+                "{parent}/apps/sounds/{name}.ogg"))?))?;
         let (_stream, stream_handle) = OutputStream::try_default()?;
 
         Ok(Sound {
