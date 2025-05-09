@@ -19,16 +19,14 @@
 //! A simplistic Asteroids clone.
 //!
 //! TODO:
-//! - Debris
 //! - Warp
 //! - Saucer
 //! - Score (TTF)
 //! - Game Over (TTF)
-//! - Sounds (OGG): thrust/shoot-beam/smash-rock/smash-ship/saucer-siren
 //! - SVG icon
-extern crate piston;
-extern crate graphics;
-extern crate opengl_graphics;
+use std::fs::File;
+use std::io::BufReader;
+use std::sync::{Arc, Mutex};
 use piston_window::PistonWindow;
 use piston::window::WindowSettings;
 use piston::input::{
@@ -38,6 +36,8 @@ use piston::input::{
     ButtonState, Button, Key, };
 use graphics::Transformed;
 use opengl_graphics::{GlGraphics, OpenGL};
+use rodio::{Decoder, OutputStream, OutputStreamHandle, Sink, Source};
+use rodio::source::Buffered;
 
 const PI: f32 = std::f32::consts::PI;
 
@@ -77,8 +77,10 @@ fn uniform() -> f32
 
 /// Returns true iff value is close enough to zero.
 /// Useful because floating point values have rounding errors.
-fn zeroish(value: f32) -> bool
-{ value.abs() <= f32::EPSILON }
+fn zeroish(value: f32) -> bool {
+    const EPSILON: f32 = 0.000001;
+    value < EPSILON && value > -EPSILON
+}
 
 /// Closed form solution for first or second degree polynomials
 fn quadratic_real_roots(c: f32, b: f32, a: f32) ->
@@ -170,6 +172,79 @@ trait Moveable {
             }
         } else { false }
     }
+}
+
+struct Debris {
+    position: Point,
+    velocity: Point,
+    direction: f32,
+    radius: f32,
+    size: f32,
+    duration: f32,
+    points: Vec<Point>
+}
+
+impl Debris {
+    fn new(source: &impl Moveable) -> Self {
+        let size   = source.get_size();
+        let speed  = size * (uniform() + 1.) / 2.5;
+        let direction = PI * (2. * uniform() - 1.);
+        let mut velocity = source.get_velocity();
+        velocity.x += direction.cos() * speed;
+        velocity.y += direction.sin() * speed;
+
+        let mut points = Vec::<Point>::new();
+        let n_points = (3. * uniform() + 3.) as u32;
+        for ii in 0..n_points {
+            let spar = (uniform() + 1.) / 2.;
+            let angle = PI * 2. * (ii as f32) / n_points as f32;
+            points.push(Point{
+                x: spar * angle.cos(), y: spar * angle.sin() });
+        }
+
+        Debris {
+            position: source.get_position(),
+            velocity, direction,
+            size: size, radius: size / 100., duration: 0.9,
+            points,
+        }
+    }
+
+    fn resize(&mut self, width: f32, height: f32) {
+        self.size = width.min(height);
+        self.radius = self.size / 100.;
+    }
+
+    fn update(&mut self, elapsed: f32, _w: f32, _h: f32) -> bool
+    {
+        self.position.x += self.velocity.x * elapsed;
+        self.position.y += self.velocity.y * elapsed;
+        if elapsed < self.duration {
+            self.duration -= elapsed; true
+        } else { false }
+    }
+
+    fn draw(&self, gl: &mut GlGraphics, transform: [[f64; 3]; 2],
+            color: [f32; 4]) {
+        draw_pointloop(gl, transform
+                       .trans(self.position.x.into(),
+                              self.position.y.into())
+                       .rot_rad(self.direction.into())
+                       .scale(self.radius.into(), self.radius.into()),
+                       color, self.size / self.radius / 500.,
+                       &self.points);
+    }    
+}
+
+impl Moveable for Debris {
+    fn get_points(&self)    -> &Vec<Point> { &self.points }
+    fn get_size(&self)      -> f32 { self.size }
+    fn get_radius(&self)    -> f32 { self.radius }
+    fn get_direction(&self) -> f32 { self.direction }
+    fn get_velocity(&self)  -> Point { self.velocity }
+    fn get_position(&self)  -> Point { self.position }
+    fn set_position(&mut self, position: Point)
+    { self.position = position; }
 }
 
 struct Shot {
@@ -279,12 +354,15 @@ impl Player {
         }
     }
 
-    fn impact(&mut self) {
+    fn impact(&mut self, sound: &Sound, debris: &mut Vec<Debris>) {
         self.dead = 3.;
         if self.lives == 0 {
             self.gameover = 2.
         }
-        // TODO: sound smash-ship
+        let n_debris = 4 + (4. * uniform()) as u32;
+        for _ii in 0..n_debris
+        { debris.push(Debris::new(self)); }
+        sound.play(false).expect("Failed to play smash-ship sound");
     }
 
     fn resize(&mut self, width: f32, height: f32) {
@@ -437,9 +515,17 @@ impl Asteroid {
         }
     }
 
-    fn impact(&mut self, asteroids: &mut Vec<Asteroid>) {
-        // TODO: sound smash-rock
+    fn impact(&mut self, sound: &Sound,
+              asteroids: &mut Vec<Asteroid>,
+              debris: &mut Vec<Debris>)
+    {
+        sound.play(false).expect("Failed to play smash rock");
         self.dead = true;
+        let n_debris = 1 + self.n_splits * 2 + (4. * uniform()) as u32;
+        for _ii in 0..n_debris {
+            debris.push(Debris::new(self));
+        }
+
         if self.n_splits > 0 {
             asteroids.push(Asteroid::new(Init::Parent(&self)));
             asteroids.push(Asteroid::new(Init::Parent(&self)));
@@ -472,6 +558,51 @@ impl Moveable for Asteroid {
     { self.position = position; }
 }
 
+pub struct Sound {
+    audio_data: Buffered<Decoder<BufReader<File>>>,
+    stream_handle: OutputStreamHandle,
+    _stream: OutputStream, // must be kept alive to allow audio playback
+    sink: Arc<Mutex<Option<Sink>>>,
+}
+
+impl Sound {
+    pub fn load(name: &str) -> Result<Self, Box<dyn std::error::Error>> {
+        let file = File::open(format!("apps/sounds/{name}.ogg"))?;
+        let source = Decoder::new(BufReader::new(file))?;
+        let (_stream, stream_handle) = OutputStream::try_default()?;
+
+        Ok(Sound {
+            audio_data: source.buffered(),
+            stream_handle, _stream,
+            sink: Arc::new(Mutex::new(None)),
+        })
+    }
+
+    pub fn play(&self, looped: bool) ->
+        Result<(), Box<dyn std::error::Error>>
+    {
+        let new_sink = Sink::try_new(&self.stream_handle)?;
+        let source: Box<dyn Source<Item = i16> + Send> = if looped {
+            Box::new(self.audio_data.clone().repeat_infinite())
+        } else {
+            Box::new(self.audio_data.clone())
+        };
+
+        new_sink.append(source);
+
+        let mut sink_guard = self.sink.lock().unwrap();
+        *sink_guard = Some(new_sink); // Keep control of the sink
+        Ok(())
+    }
+
+    pub fn stop(&self) {
+        let mut sink_guard = self.sink.lock().unwrap();
+        if let Some(sink) = sink_guard.take() {
+            sink.stop();
+        }
+    }
+}
+
 pub struct Asteroids {
     width:  f32,
     height: f32,
@@ -483,21 +614,38 @@ pub struct Asteroids {
     player: Player,
     //saucer: Saucer,
     asteroids: Vec<Asteroid>,
-    //debris: Vec<Debris>,
+    debris:    Vec<Debris>,
 
+    thruster:     Sound,
+    shoot_beam:   Sound,
+    smash_rock:   Sound,
+    smash_ship:   Sound,
+    //saucer_siren: Sound,
 }
 
 impl Asteroids {
+
     pub fn new(width: f32, height: f32) -> Self {
         Asteroids {
-            width: width, height: height,
-            turn_left: false, turn_right: false,
+            width, height,
             thrust: false,
+            turn_left: false, turn_right: false,
 
             player: Player::new(),
             //saucer: Saucer::new(),
             asteroids: Vec::new(),
-            //debris: Vec::new(),
+            debris: Vec::new(),
+
+            thruster: Sound::load("thruster")
+                .expect("Failed to load thruster sound"),
+            shoot_beam: Sound::load("shoot-beam")
+                .expect("Failed to load shoot-beam sound"),
+            smash_ship: Sound::load("smash-ship")
+                .expect("Failed to load smash-ship sound"),
+            smash_rock: Sound::load("smash-rock")
+                .expect("Failed to load smash-rock sound"),
+            //saucer_siren: Sound::load("saucer-siren")
+            //    .expect("Failed to load saucer-siren sound"),
         }
     }
 
@@ -508,7 +656,7 @@ impl Asteroids {
         self.player.direction = -PI / 2.;
         self.player.lives = 3;
         self.asteroids.clear();
-        // self.debris.clear();
+        self.debris.clear();
 
         for _ii in 0..5 {
             self.asteroids.push(Asteroid::new(Init::Create {
@@ -523,17 +671,21 @@ impl Asteroids {
         self.player.resize(width, height);
         for asteroid in &mut self.asteroids
         { asteroid.resize(width, height); }
-        //for debris in &mut self.debris
-        //{ debris.resize(width, height); }
+        for debris in &mut self.debris
+        { debris.resize(width, height); }
     }
 
     fn button(&mut self, args: &ButtonArgs) {
         if args.state == ButtonState::Press {
             if args.button == Button::Keyboard(Key::Space) {
+                self.shoot_beam.play(false)
+                    .expect("Failed to play sound");
                 self.player.shoot();
             } else if args.button == Button::Keyboard(Key::W) ||
                 args.button == Button::Keyboard(Key::Up) {
-                self.thrust = true;
+                    self.thrust = true;
+                    self.thruster.play(true)
+                        .expect("Failed to play thruster sound");
             } else if args.button == Button::Keyboard(Key::A) ||
                 args.button == Button::Keyboard(Key::Left) {
                 self.turn_left = true;
@@ -548,7 +700,8 @@ impl Asteroids {
         } else if args.state == ButtonState::Release {
             if args.button == Button::Keyboard(Key::W) ||
                 args.button == Button::Keyboard(Key::Up) {
-                self.thrust = false;
+                    self.thrust = false;
+                    self.thruster.stop();
             } else if args.button == Button::Keyboard(Key::A) ||
                 args.button == Button::Keyboard(Key::Left) {
                 self.turn_left = false;
@@ -574,11 +727,12 @@ impl Asteroids {
                     shot.check_collide(asteroid, elapsed)
                 {
                     shot.duration = 0.;
-                    asteroid.impact(&mut asteroids);
+                    asteroid.impact(&self.smash_rock,
+                                    &mut asteroids, &mut self.debris);
                 }
             }
             //if shot.check_collide(saucer, elapsed) {
-            //    TODO: sound smash-ship
+            //    self.smash_ship.play(false);
             //    shot.duration = 0.;
             //    saucer.dead = true;
             //}
@@ -595,14 +749,18 @@ impl Asteroids {
             if self.player.dead == 0. && !asteroid.dead &&
                 self.player.check_collide(asteroid, elapsed)
             {
-                asteroid.impact(&mut asteroids);
-                self.player.impact();
+                asteroid.impact(&self.smash_rock,
+                                &mut asteroids, &mut self.debris);
+                self.player.impact(&self.smash_ship, &mut self.debris);
             }
         }
         self.asteroids.retain(|asteroid| { !asteroid.dead });
         self.asteroids.append(&mut asteroids);
         for asteroid in &mut self.asteroids
         { asteroid.update(elapsed, self.width, self.height); }
+
+        self.debris.retain_mut(|debris| {
+            debris.update(elapsed, self.width, self.height) });
 
         if self.player.dead > 0. && elapsed > self.player.dead {
             for asteroid in &self.asteroids {
@@ -629,6 +787,8 @@ impl Asteroids {
 
         for asteroid in &self.asteroids
         { asteroid.draw(gl, transform, FOREGROUND); }
+        for debris in &self.debris
+        { debris.draw(gl, transform, FOREGROUND); }
     }
 }
 
