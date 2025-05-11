@@ -316,11 +316,12 @@ RUST_DISTSRC = \
 	$(srcdir)/source/expense.rs \
 	$(srcdir)/source/server.rs
 
-rs-serve: Cargo.toml $(RUST_DISTSRC) \
+rs-serve: Cargo.toml $(srcdir)/source/build.rs $(RUST_DISTSRC) \
 	  server-key.pem server-chain.pem rootCA/cert.pem
 	cargo run --bin server
 
-rs-asteroids: Cargo.toml $(srcdir)/source/asteroids.rs
+rs-asteroids: Cargo.toml $(srcdir)/source/build.rs \
+	      $(srcdir)/source/asteroids.rs
 	cargo run --bin asteroids
 
 ## Python ==============================================================

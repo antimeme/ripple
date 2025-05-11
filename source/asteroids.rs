@@ -19,15 +19,11 @@
 //! A simplistic Asteroids clone.
 //!
 //! TODO:
-//! - Fix collision bugs
-//! - Reset after Game Over
 //! - Mouse control
 //! - Warp
 //! - Saucer
 //! - SVG icon
-use std::path::Path;
-use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, Read, Seek};
 use std::sync::{Arc, Mutex};
 use num_format::{Locale, ToFormattedString};
 use sys_locale::get_locale;
@@ -44,16 +40,9 @@ use rodio::{Decoder, OutputStream, OutputStreamHandle,
 
 const PI: f32 = std::f32::consts::PI;
 
-fn asset(name: &str, kind: &str, ext: &str) -> String {
-    let parent: String = match Path::new(file!()).parent() {
-        Some(parent) => format!("{}/..", parent.display()),
-        None => ".".to_string() };
-    format!("{parent}/apps/{kind}/{name}.{ext}")
-}
-
 fn number_format(num: u32) -> String {
-    let locale = get_locale().unwrap_or("en-US".to_string());
-    let locale = Locale::from_name(&locale).unwrap_or(Locale::en);
+    let name = get_locale().unwrap_or("en-US".to_string());
+    let locale = Locale::from_name(&name).unwrap_or(Locale::en);
     num.to_formatted_string(&locale)
 }
 
@@ -69,31 +58,55 @@ fn measure_text_width<C: CharacterCache>(
     width
 }
 
-impl Sound {
-    pub fn load(name: &str) ->
-        Result<Self, Box<dyn std::error::Error>>
-    {
-        let (_stream, stream_handle) = OutputStream::try_default()?;
-        let source = Decoder::new(
-            BufReader::new(File::open(asset(name, "sounds", "ogg"))?))?;
+trait AudioRead: Read + Seek + Send + Sync + 'static {}
+impl<T: Read + Seek + Send + Sync + 'static> AudioRead for T {}
 
-        Ok(Sound {
-            audio_data: source.buffered(),
-            stream_handle, _stream,
+struct Sound {
+    audio_data: Buffered<Decoder<BufReader<Box<dyn AudioRead>>>>,
+    sink: Arc<Mutex<Option<Sink>>>,
+    stream_handle: OutputStreamHandle,
+    _stream: OutputStream,
+}
+
+impl Sound {
+    pub fn new<R: AudioRead>(
+        reader: R,
+        stream_handle: OutputStreamHandle,
+    ) -> Result<Self, Box<dyn std::error::Error>> {
+        Ok(Self {
+            audio_data: Decoder::new(BufReader::new(
+                Box::new(reader) as Box<dyn AudioRead>))?.buffered(),
             sink: Arc::new(Mutex::new(None)),
+            stream_handle: stream_handle.clone(),
+            _stream: OutputStream::try_default()?.0,
         })
     }
 
-    pub fn play(&self, looped: bool) ->
-        Result<(), Box<dyn std::error::Error>>
-    {
+    pub fn _from_file(
+        path: &str,
+        stream_handle: OutputStreamHandle,
+    ) -> Result<Self, Box<dyn std::error::Error>> {
+        let file = std::fs::File::open(path)?;
+        Self::new(file, stream_handle)
+    }
+
+    pub fn from_bytes(
+        bytes: &'static [u8],
+        stream_handle: OutputStreamHandle,
+    ) -> Result<Self, Box<dyn std::error::Error>> {
+        let cursor = std::io::Cursor::new(bytes);
+        Self::new(cursor, stream_handle)
+    }
+
+    pub fn play(
+        &self, looped: bool
+    ) -> Result<(), Box<dyn std::error::Error>> {
         let new_sink = Sink::try_new(&self.stream_handle)?;
         let source: Box<dyn Source<Item = i16> + Send> = if looped {
             Box::new(self.audio_data.clone().repeat_infinite())
         } else {
             Box::new(self.audio_data.clone())
         };
-
         new_sink.append(source);
 
         let mut sink_guard = self.sink.lock().unwrap();
@@ -109,14 +122,24 @@ impl Sound {
     }
 }
 
-/// Represents a single point or vector on the screen
-/// Screen coordinates are usually represented with the origin (0., 0.)
-/// in the center.  This makes it easy to resize the screen without
-/// too much disruption.
+/// Represents a single point or vector on the screen.  Screen
+/// coordinates are usually represented with the origin (0., 0.)  in
+/// the center.  This makes it easy to resize the screen without too
+/// much disruption.
 #[derive(Debug, Clone, Copy)]
 struct Point {
     x: f32,
     y: f32,
+}
+
+impl Point {
+    fn minus(&self, other: &Point) -> Self {
+        Point{ x: self.x - other.x, y: self.y - other.y }
+    }
+
+    fn dot(&self, other: &Point) -> f32 {
+        self.x * other.x + self.y * other.y
+    }
 }
 
 /// Create a closed loop of lines based on an array of points.
@@ -141,11 +164,10 @@ fn draw_pointloop(graphics: &mut impl Graphics,
 }
 
 /// Generates a uniform distributed random value between zero and one
-fn uniform() -> f32
-{ rand::random() }
+fn uniform() -> f32 { rand::random() }
 
-/// Returns true iff value is close enough to zero.
-/// Useful because floating point values have rounding errors.
+/// Returns true iff value is close enough to zero.  Useful because
+/// floating point values have rounding errors.
 fn zeroish(value: f32) -> bool {
     const EPSILON: f32 = 0.00000000001;
     value < EPSILON && value > -EPSILON
@@ -154,11 +176,13 @@ fn zeroish(value: f32) -> bool {
 /// Closed form solution for first or second degree polynomials
 fn quadratic_real_roots(c: f32, b: f32, a: f32) ->
     Option<(f32, Option<f32>)>
-{ // FIXME: what if a and b are both zeroish?
-    if zeroish(a) {
+{
+    if zeroish(a) && zeroish(b) {
+        None
+    } else if zeroish(a) {
         Some((-c / b, None))
     } else {
-        let discriminant = b.powi(2) - 4. * a * c;
+        let discriminant = b * b - 4. * a * c;
         match discriminant {
             disc if zeroish(disc) => { Some((-b / (2. * a), None)) }
             disc if disc < 0. => None,
@@ -171,9 +195,8 @@ fn quadratic_real_roots(c: f32, b: f32, a: f32) ->
     }
 }
 
-/// Anything that can move.
-/// Allows free movement, screen wrapped movement and collision
-/// detection against other Moveables.
+/// Anything that can move.  Allows free movement, screen wrapped
+/// movement and collision detection against other Moveables.
 trait Moveable {
     fn get_size(&self)      -> f32;
     fn get_radius(&self)    -> f32;
@@ -213,29 +236,22 @@ trait Moveable {
     fn check_collide(&self, other: &impl Moveable, elapsed: f32) -> bool
     {
         let gap = self.get_radius() + other.get_radius();
-        let pos_a = self.get_position();
-        let pos_b = other.get_position();
-        let vel_a = self.get_velocity();
-        let vel_b = other.get_velocity();
-        let dp = Point{ x: pos_a.x - pos_b.x, y: pos_a.y - pos_b.y };
-        let dm = Point{ x: vel_a.x - vel_b.y, y: vel_a.y - vel_b.y };
+        let dp = self.get_position().minus(&other.get_position());
+        let dv = self.get_velocity().minus(&other.get_velocity());
 
-        if dp.x * dp.x + dp.y * dp.y > gap * gap {
-            match quadratic_real_roots(
-                dp.x * dp.x + dp.y * dp.y - gap * gap,
-                2. * (dp.x * dm.x + dp.y * dm.y),
-                dm.x * dm.x + dm.y * dm.y)
-            {
-                None => false,
-                Some((first, None)) => {
-                    (first >= 0.) && (first < elapsed)
-                },
-                Some((first, Some(second))) => {
-                    ((first >= 0.) && (first < elapsed)) ||
-                        ((second >= 0.) && (second < elapsed))
-                }
+        if dp.dot(&dp) < gap * gap {
+            true
+        } else { match quadratic_real_roots(
+            dp.dot(&dp) - gap * gap, 2. * dp.dot(&dv), dv.dot(&dv)) {
+            None => false,
+            Some((first, None)) => {
+                (first >= 0.) && (first < elapsed)
+            },
+            Some((first, Some(second))) => {
+                ((first >= 0.) && (first < elapsed)) ||
+                    ((second >= 0.) && (second < elapsed))
             }
-        } else { false }
+        } }
     }
 }
 
@@ -440,21 +456,14 @@ impl Player {
     }
 
     fn impact(&mut self, sound: &Sound, debris: &mut Vec<Debris>) {
-        self.dead = 3.;
-        if self.lives == 0 {
-            self.gameover = 2.
-        }
         let n_debris = 4 + (4. * uniform()) as u32;
         for _ii in 0..n_debris
         { debris.push(Debris::new(self)); }
         sound.play(false).expect("Failed to play smash-ship sound");
-    }
 
-    fn resize(&mut self, width: f32, height: f32) {
-        self.size = width.min(height);
-        self.radius = self.size * 3. / 100.;
-        for shot in &mut self.shots
-        { shot.resize(width, height); }
+        self.dead = 3.;
+        if self.lives == 0 { self.gameover = 2. }
+        self.position = Point{ x: 0., y: 0. };
     }
 
     fn update(&mut self, elapsed: f32, width: f32, height: f32) {
@@ -462,15 +471,25 @@ impl Player {
             shot.update(elapsed, width, height) });
 
         if self.gameover > 0. {
+            if elapsed >= self.gameover {
+                self.gameover = 0.001;
+            } else { self.gameover -= elapsed; }
         } else if self.dead > 0. {
             if elapsed > self.dead {
-                self.lives -= 1;
-                self.position = Point{ x: 0., y: 0. };
-                self.velocity = Point{ x: 0., y: 0. };
+                self.dead      = 0.;
+                self.lives    -= 1;
                 self.direction = -PI / 2.;
-                self.dead = 0.
+                self.position  = Point{ x: 0., y: 0. };
+                self.velocity  = Point{ x: 0., y: 0. };
             } else { self.dead -= elapsed; }
         } else { self.move_wrap(elapsed, width, height); }
+    }
+
+    fn resize(&mut self, width: f32, height: f32) {
+        self.size = width.min(height);
+        self.radius = self.size * 3. / 100.;
+        for shot in &mut self.shots
+        { shot.resize(width, height); }
     }
 
     fn draw(&self, graphics: &mut impl Graphics,
@@ -657,13 +676,6 @@ impl PointLoop for Asteroid {
     fn get_points(&self)    -> &Vec<Point> { &self.points }
 }
 
-pub struct Sound {
-    audio_data: Buffered<Decoder<BufReader<File>>>,
-    stream_handle: OutputStreamHandle,
-    _stream: OutputStream, // keep this alive to allow audio playback
-    sink: Arc<Mutex<Option<Sink>>>,
-}
-
 pub struct Asteroids {
     width:  f32,
     height: f32,
@@ -672,6 +684,9 @@ pub struct Asteroids {
     turn_left:  bool,
     turn_right: bool,
     thrust:     bool,
+
+    wavesize: u32,
+    nextwave: f32,
 
     player: Player,
     //saucer: Saucer,
@@ -682,16 +697,31 @@ pub struct Asteroids {
     shoot_beam:   Sound,
     smash_rock:   Sound,
     smash_ship:   Sound,
-    //saucer_siren: Sound,
+    //saucer_siren: Sound<'a>,
 
     glyphs: Arc<Mutex<GlyphCache<'static>>>,
+    _stream_handle: OutputStreamHandle,
+    _stream: OutputStream,
 }
 
 impl Asteroids {
 
-    pub fn new(glyphs: Arc<Mutex<GlyphCache<'static>>>) -> Self {
+    pub fn new(
+        glyphs: Arc<Mutex<GlyphCache<'static>>>
+    ) -> Result<Self, Box<dyn std::error::Error>> {
+        const THRUSTER_OGG: &[u8] = include_bytes!(concat!(
+            env!("ASSET_PATH"), "/sounds/thruster.ogg"));
+        const SHOOT_BEAM_OGG: &[u8] = include_bytes!(concat!(
+            env!("ASSET_PATH"), "/sounds/shoot-beam.ogg"));
+        const SMASH_SHIP_OGG: &[u8] = include_bytes!(concat!(
+            env!("ASSET_PATH"), "/sounds/smash-ship.ogg"));
+        const SMASH_ROCK_OGG: &[u8] = include_bytes!(concat!(
+            env!("ASSET_PATH"), "/sounds/smash-rock.ogg"));
+        //const SAUCER_SIREN_OGG: &[u8] = include_bytes!(concat!(
+        //    env!("ASSET_PATH"), "/sounds/saucer-siren.ogg"));
+        let (_stream, stream_handle) = OutputStream::try_default()?;
 
-        Asteroids {
+        Ok(Asteroids {
             width: 0., height: 0., score: 0,
             thrust: false, turn_left: false, turn_right: false,
 
@@ -700,22 +730,26 @@ impl Asteroids {
             asteroids: Vec::new(),
             debris: Vec::new(),
 
-            thruster: Sound::load("thruster")
-                .expect("Failed to load thruster sound"),
-            shoot_beam: Sound::load("shoot-beam")
-                .expect("Failed to load shoot-beam sound"),
-            smash_ship: Sound::load("smash-ship")
-                .expect("Failed to load smash-ship sound"),
-            smash_rock: Sound::load("smash-rock")
-                .expect("Failed to load smash-rock sound"),
-            //saucer_siren: Sound::load("saucer-siren")
-            //    .expect("Failed to load saucer-siren sound"),
+            wavesize: 4, nextwave: 1.,
+
+            thruster: Sound::from_bytes(
+                THRUSTER_OGG, stream_handle.clone())?,
+            shoot_beam: Sound::from_bytes(
+                SHOOT_BEAM_OGG, stream_handle.clone())?,
+            smash_ship: Sound::from_bytes(
+                SMASH_SHIP_OGG, stream_handle.clone())?,
+            smash_rock: Sound::from_bytes(
+                SMASH_ROCK_OGG, stream_handle.clone())?,
+            //saucer_siren: Sound::from_bytes(
+            //    SAUCER_SIREN_OGG, stream_handle)?,
+            _stream_handle: stream_handle, _stream,
             glyphs,
-        }
+        })
     }
 
     fn reset(&mut self) {
         self.score = 0;
+        self.player.gameover = 0.;
         self.player.dead = 0.;
         self.player.position = Point{ x: 0., y: 0. };
         self.player.velocity = Point{ x: 0., y: 0. };
@@ -723,12 +757,8 @@ impl Asteroids {
         self.player.lives = 3;
         self.asteroids.clear();
         self.debris.clear();
-
-        for _ii in 0..5 {
-            self.asteroids.push(Asteroid::new(Init::Create {
-                width: self.width, height: self.height,
-                n_splits: 2, }));
-        }
+        self.wavesize = 4;
+        self.nextwave = 1.;
     }
 
     fn resize(&mut self, width: f32, height: f32) {
@@ -749,26 +779,38 @@ impl Asteroids {
         self.score += points;
     }
 
+    fn activate(&mut self) -> bool {
+        if self.player.gameover > 0. && self.player.gameover <= 0.001 {
+            self.reset();
+            false
+        } else { true }
+    }
+
     fn button(&mut self, args: &ButtonArgs) {
         if args.state == ButtonState::Press {
             if args.button == Button::Keyboard(Key::Space) {
-                self.player.shoot(&self.shoot_beam);
+                if self.activate() {
+                    self.player.shoot(&self.shoot_beam);
+                }
             } else if args.button == Button::Keyboard(Key::W) ||
                 args.button == Button::Keyboard(Key::Up) {
-                    self.thrust = true;
-                    if self.player.dead == 0. {
-                        self.thruster.play(true)
-                            .expect("Failed to play thruster sound");
+                    if self.activate() {
+                        self.thrust = true;
+                        if self.player.dead == 0. {
+                            self.thruster.play(true)
+                                .expect("Failed to play thruster sound");
+                        }
                     }
             } else if args.button == Button::Keyboard(Key::A) ||
                 args.button == Button::Keyboard(Key::Left) {
-                self.turn_left = true;
+                    if self.activate() { self.turn_left = true; }
             } else if args.button == Button::Keyboard(Key::S) ||
                 args.button == Button::Keyboard(Key::Down) {
                     println!("Warp");
+                    self.activate();
             } else if args.button == Button::Keyboard(Key::D) ||
                 args.button == Button::Keyboard(Key::Right) {
-                self.turn_right = true;
+                    if self.activate() { self.turn_right = true; }
             }
         } else if args.state == ButtonState::Release {
             if args.button == Button::Keyboard(Key::W) ||
@@ -840,7 +882,7 @@ impl Asteroids {
         self.debris.retain_mut(|debris| {
             debris.update(elapsed, self.width, self.height) });
 
-        if self.player.dead > 0. && elapsed > self.player.dead {
+        if self.player.dead > 0.5 {
             for asteroid in &self.asteroids {
                 if self.player.check_collide(asteroid, 1.5)
                 { self.player.dead = 0.5; }
@@ -848,6 +890,19 @@ impl Asteroids {
         }
         self.player.update(elapsed, self.width, self.height);
         self.award(points);
+
+        if self.nextwave > 0. {
+            if elapsed > self.nextwave {
+                self.nextwave = 0.;
+                for _ii in 0..self.wavesize {
+                    self.asteroids.push(Asteroid::new(Init::Create {
+                        width: self.width, height: self.height,
+                        n_splits: 2, }));
+                }
+                self.wavesize += 2;
+                if self.wavesize > 11 { self.wavesize = 11; }
+            } else { self.nextwave -= elapsed; }
+        } else if self.asteroids.len() == 0 { self.nextwave = 5.; }
     }
 
     fn draw(&mut self, graphics: &mut GlGraphics, context: &Context)
@@ -898,15 +953,22 @@ impl Asteroids {
 }
 
 fn main() {
+    const BRASS_MONO_TTF: &[u8] = include_bytes!(concat!(
+        env!("ASSET_PATH"), "/fonts/brass-mono.ttf"));
+
     let mut window: PistonWindow =
         WindowSettings::new("Asteroids", [640, 480])
         .exit_on_esc(true).build().unwrap();
     let mut gl = GlGraphics::new(OpenGL::V3_2);
-    let mut app = Asteroids::new(Arc::new(Mutex::new(GlyphCache::new(
-        asset("brass-mono", "fonts", "ttf"), (),
-        TextureSettings::new()).expect("Failed to decode font"))));
+    let mut app = Asteroids::new(Arc::new(Mutex::new(
+        GlyphCache::from_bytes(
+            BRASS_MONO_TTF, (),
+            TextureSettings::new())
+            .expect("Failed to decode font"))))
+        .expect("Failed to create Asteroids app");
     app.resize(640., 480.);
     app.reset();
+
 
     while let Some(event) = window.next() {
         if let Some(args) = event.resize_args() {

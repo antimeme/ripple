@@ -24,9 +24,10 @@
 [package]
 name    = "@PACKAGE_NAME@"
 version = "@PACKAGE_VERSION@"
-edition = "2021"
-license = "GPL-3.0+"
 authors = ["@PACKAGE_BUGREPORT@"]
+license = "GPL-3.0+"
+edition = "2021"
+build   = "@srcdir@/source/build.rs"
 
 [lib]
 name = "ripple"
