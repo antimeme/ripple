@@ -45,16 +45,18 @@ path = "@srcdir@/source/server.rs"
 ### Server
 chrono = "0.4.31"
 tokio = { version = "1.0", features = ["full"] }
-axum = {version = "0.6.20", features = ["headers"]}
+axum = { version = "0.6.20", features = ["headers"] }
 axum-server = { version = "0.3", features = ["tls-rustls"] }
 sqlx = { version = "0.7.2", features = ["runtime-tokio", "sqlite"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.68"
 
 ### Asteroids
+sys-locale = "0.2"
+num-format = "0.4"
+rand = "0.8"
+rodio = "0.17"
 piston = "1.0.0"
 piston_window = "0.132.0"
 piston2d-graphics = "0.44.0"
 piston2d-opengl_graphics = "0.85.0"
-rand = "0.8"
-rodio = "0.17"
