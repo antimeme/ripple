@@ -550,6 +550,7 @@ gizmo_scancode_convert(int scancode)
 {
   enum gizmo_scancode result = gizmo_scancode_none;
   switch (scancode) {
+  case SDL_SCANCODE_ESCAPE: result = gizmo_scancode_escape; break;
   case SDL_SCANCODE_SPACE: result = gizmo_scancode_space; break;
   case SDL_SCANCODE_UP: result = gizmo_scancode_up; break;
   case SDL_SCANCODE_DOWN: result = gizmo_scancode_down; break;

@@ -126,20 +126,20 @@ struct app_asteroids {
 };
 
 static void
-move_wrap(float size, unsigned elapsed, int width, int height,
+move_wrap(float radius, unsigned elapsed, int width, int height,
           struct gizmo_point *position, struct gizmo_point *velocity)
 {
   position->x += velocity->x * elapsed;
-  if (position->x > size + width / 2)
-    position->x = -(size + width / 2);
-  if (position->x < -(size + width / 2))
-    position->x = size + width / 2;
+  if (position->x >= radius + width / 2.)
+    position->x = -(radius + width / 2.);
+  if (position->x <= -(radius + width / 2.))
+    position->x = radius + width / 2.;
 
   position->y += velocity->y * elapsed;
-  if (position->y > size + height / 2)
-    position->y = -(size + height / 2);
-  if (position->y < -(size + height / 2))
-    position->y = size + height / 2;
+  if (position->y >= radius + height / 2.)
+    position->y = -(radius + height / 2.);
+  if (position->y <= -(radius + height / 2.))
+    position->y = radius + height / 2.;
 }
 
 static int
@@ -567,6 +567,16 @@ asteroids__shoot(struct app *app, int scancode)
 }
 
 static void
+asteroids__escape(struct app *app, int scancode)
+{
+  struct app_asteroids *self = (struct app_asteroids *)app;
+  printf("DEBUG r=%.3lf p={%.3lf, %.3lf} v={%.3lf, %.3lf}\n",
+         self->player.radius,
+         self->player.position.x, self->player.position.y,
+         self->player.velocity.x, self->player.velocity.y);
+}
+
+static void
 asteroids__award(struct app_asteroids *self, unsigned npoints)
 {
   const unsigned newlife = 10000;
@@ -688,6 +698,7 @@ asteroids_init(struct app *app, struct gizmo *gizmo)
       1, 0, asteroids__keyreset },
     { gizmo_scancode_space, app_key_flag_norepeat, NULL,
       0, 0, asteroids__shoot },
+    { gizmo_scancode_escape, 0, NULL, 0, 0, asteroids__escape },
   };
   struct gizmo_point *newpoints = NULL;
   struct gizmo_point points[] = {
@@ -723,7 +734,7 @@ asteroids_init(struct app *app, struct gizmo *gizmo)
       self->points[ii] = points[ii];
     newpoints = NULL;
 
-    memset(&self->player, 0, sizeof(self->saucer));
+    memset(&self->player, 0, sizeof(self->player));
     self->player.impact   = asteroids__player_impact;
     self->player.points   = self->points + n_points_used;
     self->player.n_points = n_points_player;
@@ -799,7 +810,9 @@ asteroids_update(struct app *app, unsigned elapsed)
   int ii;
   int current;
 
-  self->tapshot -= (elapsed > self->tapshot) ? self->tapshot : elapsed;
+  if (elapsed > self->tapshot)
+    self->tapshot = 0;
+  else self->tapshot -= elapsed;
 
   if (self->gameover > 0) {
     if (elapsed >= self->gameover)
@@ -866,10 +879,38 @@ asteroids_update(struct app *app, unsigned elapsed)
     } else gizmo_sound_stop(self->sound_thruster);
   }
 
-  if (self->saucer.dead) {
-    if (self->gameover && (elapsed >= self->saucer.dead)) {
-      asteroids__saucer_reset(self, &self->saucer);
-    } else if (elapsed >= self->saucer.dead) { /* Respawn */
+  if (self->gameover) {
+  } else if (!self->saucer.dead) {
+    move_wrap(self->saucer.radius, elapsed,
+              self->app.width, self->app.height,
+              &self->saucer.position, &self->saucer.velocity);
+    if (self->saucer_turn <= elapsed) {
+      int which = (((self->saucer.position.y < 0) ? -1 : 1) *
+                   ((gizmo_uniform() > 0.125) ? -1 : 1));
+      self->saucer.velocity.y =
+        ((self->saucer.velocity.x > 0) ? 1 : -1) *
+        self->saucer.velocity.x * (gizmo_uniform() + 1) * which;
+      self->saucer_turn = 500 + 2500 * gizmo_uniform();
+    } else self->saucer_turn -= elapsed;
+
+    if (self->saucer_shoot <= elapsed) {
+      if (!self->player.dead) {
+        float direction = 0;
+
+        if (self->saucer_small) {
+          struct gizmo_point vector = self->player.position;
+          vector.x -= self->saucer.position.x;
+          vector.y -= self->saucer.position.y;
+          direction = atan2f(vector.y, vector.x);
+        } else direction = M_PI * 2 * gizmo_uniform();
+
+        asteroids__ship_shoot(&self->saucer, direction, self->size);
+        gizmo_sound_play(self->sound_shoot_beam);
+      }
+      self->saucer_shoot =
+        ((self->saucer_small ? 800 : 1600) * (1 + gizmo_uniform()));
+    } else self->saucer_shoot -= elapsed;
+  } else if (elapsed >= self->saucer.dead) { /* Respawn */
       self->saucer.dead = 0;
 
       self->saucer_small = (10000 > self->score) ? 0 :
@@ -886,8 +927,7 @@ asteroids_update(struct app *app, unsigned elapsed)
       self->saucer_turn = 1000;
       self->saucer_shoot = 2000;
       gizmo_sound_loop(self->sound_saucer_siren);
-    } else self->saucer.dead -= elapsed;
-  }
+  } else self->saucer.dead -= elapsed;
 
   for (ii = 0; ii < self->n_asteroids; ++ii)
     if (!self->player.dead && !self->asteroids[ii].dead)
@@ -919,38 +959,6 @@ asteroids_update(struct app *app, unsigned elapsed)
        self->saucer.radius, &self->saucer.position,
        &self->saucer.velocity, asteroids__saucer_impact);
 
-  if (!self->saucer.dead) {
-    move_wrap(self->saucer.radius, elapsed,
-              self->app.width, self->app.height,
-              &self->saucer.position, &self->saucer.velocity);
-    if (self->saucer_turn <= elapsed) {
-      int which = (((self->saucer.position.y < 0) ? -1 : 1) *
-                   ((gizmo_uniform() > 0.125) ? -1 : 1));
-      self->saucer.velocity.y =
-        ((self->saucer.velocity.x > 0) ? 1 : -1) *
-        self->saucer.velocity.x * (gizmo_uniform() + 1) * which;
-      self->saucer_turn = 500 + 2500 * gizmo_uniform();
-    } else self->saucer_turn -= elapsed;
-
-    if (self->saucer_shoot <= elapsed) {
-      if (!self->player.dead) {
-        float direction = 0;
-
-        if (self->saucer_small) {
-          struct gizmo_point vector = self->player.position;
-          vector.x -= self->saucer.position.x;
-          vector.y -= self->saucer.position.y;
-          direction = atan2f(vector.y, vector.x);
-        } else direction = M_PI * 2 * gizmo_uniform();
-
-        asteroids__ship_shoot(&self->saucer, direction, self->size);
-        gizmo_sound_play(self->sound_shoot_beam);
-      }
-      self->saucer_shoot =
-        ((self->saucer_small ? 800 : 1600) * (1 + gizmo_uniform()));
-    } else self->saucer_shoot -= elapsed;
-  }
-
   if (!self->player.dead)
     move_wrap(self->player.radius, elapsed,
               self->app.width, self->app.height,
@@ -960,14 +968,13 @@ asteroids_update(struct app *app, unsigned elapsed)
                           self->app.width, self->app.height);
   asteroids__shots_update(&self->saucer, elapsed,
                           self->app.width, self->app.height);
-
   asteroids__debris_update
     (self, self->app.width, self->app.height, elapsed);
   asteroids__asteroids_update
     (self, self->app.width, self->app.height, elapsed);
 
   if (self->nextwave > 0) {
-    if (elapsed > self->nextwave) {
+    if (elapsed >= self->nextwave) {
       self->nextwave = 0;
       asteroids__asteroids_create(self, NULL, self->wavesize);
       self->wavesize += 2;

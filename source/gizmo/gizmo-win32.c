@@ -443,12 +443,16 @@ font_resource(HINSTANCE hInstance, TCHAR *resname, TCHAR *fontname,
   DWORD resSize = SizeofResource(NULL, res);
   DWORD numFonts = 0;
 
+  HDC hdc = GetDC(NULL);
+  long fsize = -MulDiv(size, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+  ReleaseDC(NULL, hdc);
+
   if (!(hFontResource = AddFontMemResourceEx
         (pFontData, resSize, NULL, &numFonts))) {
     result = fail(_T("ERROR"), _T("Failed to find font resource: %s"),
                   resname);
   } else if (!(hFont = CreateFont
-               (-32, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+               (-fsize, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
                 DEFAULT_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS,
                 DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
                 fontname))) {
@@ -750,6 +754,7 @@ gizmo_scancode_convert(WPARAM scancode)
 {
   enum gizmo_scancode result = gizmo_scancode_none;
   switch (scancode) {
+  case VK_ESCAPE: result = gizmo_scancode_escape; break;
   case VK_SPACE: result = gizmo_scancode_space; break;
   case VK_UP: result = gizmo_scancode_up; break;
   case VK_DOWN: result = gizmo_scancode_down; break;
@@ -767,9 +772,10 @@ static struct gizmo gizmo;
 
 LRESULT CALLBACK
 WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+  const int ID_TIMER = 1;
+  static HBITMAP s_hbm = NULL;
   LRESULT result = 0;
   unsigned ii;
-  static HBITMAP s_hbm = NULL;
 
   switch (msg) {
   case WM_CREATE: {
@@ -783,8 +789,11 @@ WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     gizmo_set_color(&gizmo, &gizmo.app->foreground);
     SetBkMode(gizmo.hdc, TRANSPARENT);
     SelectObject(gizmo.hdc, gizmo.hPen);
+    if (!SetTimer(hwnd, ID_TIMER, 12, NULL))
+      fail(_T("ERROR"), _T("Failed to create timer\n"));
   } break;
   case WM_DESTROY: {
+    KillTimer(hwnd, ID_TIMER);
     DeleteDC(gizmo.hdc);
     DeleteObject(gizmo.hBrush); gizmo.hBrush = NULL;
     DeleteObject(gizmo.hPen);   gizmo.hPen   = NULL;
@@ -815,6 +824,9 @@ WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     default: /* nothing */
     }
   } break;
+  case WM_TIMER: {
+    InvalidateRect(hwnd, NULL, TRUE);
+  } break;
   case WM_ERASEBKGND: {
     result = 1; /* Tell windows we handled it */
   } break;
@@ -822,8 +834,8 @@ WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     RECT rect = { 0, 0, gizmo.app->width, gizmo.app->height };
     SelectObject(gizmo.hdc, gizmo.hBrush);
     FillRect(gizmo.hdc, &rect, gizmo.hBrush);
-    SelectObject(gizmo.hdc, gizmo.hPen);
 
+    SelectObject(gizmo.hdc, gizmo.hPen);
     if (gizmo.app->draw)
       gizmo.app->draw(gizmo.app, &gizmo);
 
@@ -864,7 +876,9 @@ WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
       if (action->scancode == gizmo_scancode_convert(wParam)) {
         if (action->setting)
           *action->setting = action->value_down;
-        if (action->action_down)
+        if (action->action_down &&
+            !(action->flags & app_key_flag_norepeat) ||
+            ((lParam & (1 << 30)) == 0))
           action->action_down(gizmo.app, action->scancode);
       }
     }
@@ -889,64 +903,65 @@ WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 int WINAPI
 _tWinMain(HINSTANCE hInstance, HINSTANCE, TCHAR*, int nCmdShow) {
   HRESULT result = S_OK;
+  WNDCLASSEX wc = {0};
+  HWND hwnd = NULL;
   TCHAR *appname = NULL;
+
   if (!setlocale(LC_NUMERIC, ""))
     setlocale(LC_NUMERIC, "C");
 
+  wc.cbSize = sizeof(wc);
+  wc.lpfnWndProc = WndProc;
+  wc.hInstance = hInstance;
+  wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+  wc.hIcon   = LoadIcon(hInstance, _T("ICON_GIZMO"));
+  wc.hIconSm = LoadIcon(hInstance, _T("ICON_GIZMO"));
+  wc.lpszClassName = NULL;
+
   memset(&gizmo, 0, sizeof(gizmo));
   gizmo.hinst = hInstance;
-  gizmo.app = asteroids_get_app();
-  if (!gizmo.app) {
+
+  if (!(gizmo.app = asteroids_get_app())) {
     result = fail(_T("ERROR"), _T("Failed to find app\n"));
-  } else if (!(appname = create_tchar(gizmo.app->title))) {
+  } else if (!(wc.lpszClassName = appname = create_tchar
+               (gizmo.app->title))) {
     result = fail(_T("ERROR"), _T("Failed to create title TCHAR\n"));
+  } else if (FAILED(RegisterClassEx(&wc))) {
+    result = fail(_T("ERROR"), _T("Failed to register window class\n"));
+  } else if (NULL == (hwnd = CreateWindowEx
+                      (WS_EX_CLIENTEDGE, appname, appname,
+                       WS_OVERLAPPEDWINDOW,
+                       CW_USEDEFAULT, CW_USEDEFAULT,
+                       gizmo.app->width, gizmo.app->height,
+                       NULL, NULL, hInstance, NULL))) {
+    result = fail(_T("ERROR"), _T("Failed to create window\n"));
+  } else if (FAILED(result = setup_directsound(hwnd, &gizmo.ds))) {
+    /* Already reported */
+  } else if (gizmo.app->init && EXIT_SUCCESS !=
+             gizmo.app->init(gizmo.app, &gizmo)) {
+    result = fail(_T("ERROR"), _T("Failed to initialize app\n"));
   } else {
-    WNDCLASSEX wc = {0};
-    wc.cbSize = sizeof(wc);
-    wc.lpfnWndProc = WndProc;
-    wc.hInstance = hInstance;
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.hIcon = LoadIcon(hInstance, _T("ICON_GIZMO"));
-    wc.hIconSm = LoadIcon(hInstance, _T("ICON_GIZMO"));
-    wc.lpszClassName = appname;
-    RegisterClassEx(&wc);
+    DWORD lastTick = GetTickCount();
+    MSG msg = {};
 
-    HWND hwnd = CreateWindowEx
-      (0, appname, appname, WS_OVERLAPPEDWINDOW,
-       CW_USEDEFAULT, CW_USEDEFAULT,
-       gizmo.app->width, gizmo.app->height,
-       NULL, NULL, hInstance, NULL);
-    
-    if (FAILED(result = setup_directsound(hwnd, &gizmo.ds))) {
-    } else if (gizmo.app->init &&
-               ((result = gizmo.app->init(gizmo.app, &gizmo)))) {
-    } else {
-      DWORD lastTick = GetTickCount();
-      MSG msg = {};
+    gizmo.hBrush = CreateSolidBrush
+      (RGB(gizmo.app->background.r,
+           gizmo.app->background.g,
+           gizmo.app->background.b));
+    gizmo_set_color(&gizmo, &gizmo.app->foreground);
+    ShowWindow(hwnd, nCmdShow);
+    UpdateWindow(hwnd);
 
-      gizmo.hBrush = CreateSolidBrush
-        (RGB(gizmo.app->background.r,
-             gizmo.app->background.g,
-             gizmo.app->background.b));
-      gizmo_set_color(&gizmo, &gizmo.app->foreground);
-      ShowWindow(hwnd, nCmdShow);
+    while (GetMessage(&msg, NULL, 0, 0) > 0) {
+      DWORD currentTick = GetTickCount();
+      if (gizmo.app->update)
+        gizmo.app->update(gizmo.app, currentTick - lastTick);
+      lastTick = currentTick;
 
-      while (msg.message != WM_QUIT) {
-        DWORD currentTick = GetTickCount();
-
-        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-          TranslateMessage(&msg);
-          DispatchMessage(&msg);
-        }
-
-        if (gizmo.app->update)
-          gizmo.app->update(gizmo.app, currentTick - lastTick);
-        InvalidateRect(hwnd, NULL, TRUE);
-        lastTick = currentTick;
-      }
+      TranslateMessage(&msg);
+      DispatchMessage(&msg);
     }
   }
-
   IDirectSound_Release(gizmo.ds);
   free(appname);
   return SUCCEEDED(result) ? 0 : 1;

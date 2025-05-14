@@ -63,9 +63,16 @@ if HAVE_MINGW
 # Windows icon file from an SVG source, but that is not checked by
 # the configure.ac for the moment.
 #
+# On Debian compatible systems:
+# $ sudo apt install -y imagemagick mingw-w64
+# $ ./configure && make gizmo.exe
+#
+# On RedHat Enterprise compatible systems:
+# $ sudo dnf install -y ImageMagick mingw64-gcc mingw64-binutils
+# $ ./configure && make gizmo.exe
+#
 # Playing sounds is optional but requires cross compiling libvorbis.
 #
-# $ sudo apt install -y imagemagick mingw-w64
 # $ URL=https://ftp.osuosl.org/pub/xiph/releases
 # $ curl -O $URL/ogg/libogg-1.3.5.tar.gz
 # $ curl -O $URL/vorbis/libvorbis-1.3.7.tar.gz
@@ -122,11 +129,11 @@ endif
 if HAVE_SDL2
 # Debian SDL2:
 # $ sudo apt install -y libsdl2-dev libsdl2-{gfx,ttf,image,mixer}-dev
-# RedHat SDL2
+# RedHat SDL2:
 # $ sudo dnf install -y SDL2{,_{gfx,ttf,image,mixer}}-devel
-# Guix SDL2
+# Guix SDL2:
 # $ guix install sdl2 sdl2-ttf sdl2-gfx sdl2-image
-# MSYS2 on Windows SDL2
+# MSYS2 on Windows SDL2:
 # $ pacman --noconfirm -S mingw-w64-x86_64-toolchain \
 #   mingw-w64-x86_64-SDL2{,_{gfx,ttf,image,mixer}}
 bin_PROGRAMS += gizmo
@@ -172,21 +179,23 @@ endif
 if HAVE_EMCC
 # Emscripten is kinda dumb about its ports.  The following may
 # be necessary to avoid permission errors:
+#
 # $ sudo apt install -y emscripten
 # $ export EM_CONFIG=$HOME/.emscripten
 # $ [ ! -e "$EM_CONFIG" ] && emcc --generate-config
 # $ make apps/gizmo.html
 apps/gizmo.wasm apps/gizmo.js apps/gizmo.html apps/gizmo.data: \
-	    source/gizmo/gizmo-sdl.c source/gizmo/asteroids.c
-	$(EMCC) -o $@ \
-	    -sALLOW_MEMORY_GROWTH \
-	    --preload-file apps/fonts/ \
-	    --preload-file apps/sounds/ \
-	    -sUSE_SDL=2 \
+	    $(srcdir)/source/gizmo/gizmo-sdl.c \
+	    $(srcdir)/source/gizmo/asteroids.c
+	$(MKDIR_P) apps # Needed to build outside source tree
+	[ -d apps/fonts  ] || cp -r $(srcdir)/apps/fonts apps/
+	[ -d apps/sounds ] || cp -r $(srcdir)/apps/sounds apps/
+	$(EMCC) -o $@ $^ \
+	    -sALLOW_MEMORY_GROWTH -sUSE_SDL=2 \
 	    -sUSE_SDL_MIXER=2 -sUSE_SDL_TTF=2 -sUSE_SDL_GFX=2 \
 	    -sUSE_SDL_IMAGE=2 -sSDL2_IMAGE_FORMATS='["svg"]' \
-	    source/gizmo/gizmo-sdl.c \
-	    source/gizmo/asteroids.c
+	    --preload-file apps/fonts/ \
+	    --preload-file apps/sounds/
 endif
 
 ## Public Key Infrastructure ===========================================

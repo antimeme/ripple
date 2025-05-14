@@ -85,6 +85,7 @@ enum app_key_flags {
 
 enum gizmo_scancode {
   gizmo_scancode_none = 0,
+  gizmo_scancode_escape,
   gizmo_scancode_space,
   gizmo_scancode_up,
   gizmo_scancode_down,
