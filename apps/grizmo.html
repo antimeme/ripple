@@ -1,0 +1,30 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Asteroids (WebAssembly)</title>
+<style>
+ html body { padding: 0; margin: 0; }
+ canvas {
+     display: block; width: 100vw; height: 100vh;
+     border: 0px none; background-color: black;
+ }
+</style>
+<canvas id="canvas" tabindex=-1></canvas>
+<script type='text/javascript'>
+ var Module = {
+     canvas: (function() {
+         const canvas = document.getElementById('canvas');
+
+         canvas.addEventListener("webglcontextlost", event => {
+             alert("WebGL context lost. You will need to reload " +
+                   "the page.");
+             event.preventDefault(); });
+         canvas.addEventListener("contextmenu", event => {
+             event.preventDefault(); return false; });
+         return canvas;
+     })(),
+ };
+</script>
+<script async type="text/javascript" src="gizmo.js"></script>
+
+
