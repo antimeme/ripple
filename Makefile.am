@@ -71,7 +71,8 @@ if HAVE_MINGW
 # $ sudo dnf install -y ImageMagick mingw64-gcc mingw64-binutils
 # $ ./configure && make gizmo.exe
 #
-# Playing sounds is optional but requires cross compiling libvorbis.
+# Playing sounds is optional but requires cross compiling libvorbis
+# and then declaring the location on the configure command line.
 #
 # $ URL=https://ftp.osuosl.org/pub/xiph/releases
 # $ curl -O $URL/ogg/libogg-1.3.5.tar.gz
@@ -123,7 +124,6 @@ play-win32-asteroids: gizmo.exe
 MOSTLYCLEANFILES += gizmo.res gizmo.ico
 CLEANFILES += gizmo.exe
 bin_PROGRAMS += gizmo.exe
-
 endif
 
 if HAVE_SDL2
@@ -183,8 +183,8 @@ if HAVE_EMCC
 # $ sudo apt install -y emscripten
 # $ export EM_CONFIG=$HOME/.emscripten
 # $ [ ! -e "$EM_CONFIG" ] && emcc --generate-config
-# $ make apps/gizmo.html
-apps/gizmo.wasm apps/gizmo.js apps/gizmo.html apps/gizmo.data: \
+# $ make apps/gizmo.wasm
+apps/gizmo.js apps/gizmo.wasm: \
 	    $(srcdir)/source/gizmo/gizmo-sdl.c \
 	    $(srcdir)/source/gizmo/asteroids.c
 	$(MKDIR_P) apps # Needed to build outside source tree
@@ -194,8 +194,10 @@ apps/gizmo.wasm apps/gizmo.js apps/gizmo.html apps/gizmo.data: \
 	    -sALLOW_MEMORY_GROWTH -sUSE_SDL=2 \
 	    -sUSE_SDL_MIXER=2 -sUSE_SDL_TTF=2 -sUSE_SDL_GFX=2 \
 	    -sUSE_SDL_IMAGE=2 -sSDL2_IMAGE_FORMATS='["svg"]' \
-	    --preload-file apps/fonts/ \
-	    --preload-file apps/sounds/
+	    --preload-file apps/fonts/ --preload-file apps/sounds/
+
+apps/gizmo.html: $(srcdir)/apps/gizmo-shell.html apps/gizmo.js
+	@cp $< $@
 endif
 
 ## Public Key Infrastructure ===========================================
@@ -203,10 +205,10 @@ endif
 # Many things can be done this way, but the shape of the PKI has to
 # be defined explicitly.
 DN_BASE  = C=US/O=Example
-#ALG_PKEY = ed25519
 ALG_PKEY = rsa \
 	-pkeyopt rsa_keygen_bits:2048 \
 	-pkeyopt rsa_keygen_pubexp:65537
+#ALG_PKEY = ed25519
 OPENSSL  = openssl
 
 %CA/key.pem:
@@ -234,12 +236,16 @@ rootCA/cert.pem: rootCA/key.pem
 	$(OPENSSL) ca -in $< -out $@ -batch -rand_serial \
 	    -name CA_root -extensions ca1_role_ext
 
-# When necessary revoke a certifcate using:
-#     openssl ca -revoke compromised-cert.pem
-# Then recreate the CRL using this target
-%CA/crl.pem: %CA/key.pem %CA/cert.pem %CA/db.txt
+# When it is necessary to revoke a certificate make a copy named
+# revoke.pem and type "make rootCA-revoke" (or replace root with
+# client, service or so on).
+%CA-revoke: revoke.pem
 	OPENSSL_CONF=@srcdir@/scripts/ca.conf \
-	$(OPENSSL) ca -gencrl -out $@
+	$(OPENSSL) ca -name CA_$* -revoke $<
+
+%CA/crl.pem: %CA/key.pem %CA/cert.pem
+	OPENSSL_CONF=@srcdir@/scripts/ca.conf \
+	$(OPENSSL) ca -name CA_$* -gencrl -out $@
 
 # Client Certificates ==================================================
 
@@ -253,22 +259,29 @@ USERFILE = /etc/passwd
 	$(OPENSSL) genpkey -algorithm $(ALG_PKEY) -out $@
 
 %-cli-req.pem: %-key.pem
-	LABEL=`echo $< | sed 's,-key.pem$$,,'`; \
-	NAME=`grep ^$$LABEL: $(USERFILE) | \
-	      cut -d : -f 5 | cut -d , -f 1`; \
-	$(OPENSSL) req -new -key $< -out $@ -sha256 \
-	    -subj "/$(DN_BASE)/OU=Users/CN=$${NAME:-$$LABEL}"
+	NAME=`grep ^$*: $(USERFILE) | cut -d : -f 5 | cut -d , -f 1`; \
+	CN="/$(DN_BASE)/OU=Users/CN=$${NAME:-$*}"; \
+	$(OPENSSL) req -new -key $< -out $@ -sha256 -subj "$$CN"
 
+# Creating a certificate is a bit messy because if a certificate
+# already exists for the common name it is best to reuse it rather
+# than to reissue it.
 %-cli-cert.pem: %-cli-req.pem clientCA/cert.pem clientCA/key.pem
-	OPENSSL_CONF=@srcdir@/scripts/ca.conf \
-	$(OPENSSL) ca -in $< -out $@ -batch -rand_serial \
-	    -name CA_client -extensions client_role_ext
+	NAME=`grep ^$*: $(USERFILE) | cut -d : -f 5 | cut -d , -f 1`; \
+	CN="/$(DN_BASE)/OU=Users/CN=$${NAME:-$*}"; \
+	SERIAL=`grep "$$CN" clientCA/db.txt | cut -f 4`; \
+	if [ -e "clientCA/$$SERIAL.pem" ]; then \
+	    cp clientCA/$$SERIAL.pem $@; \
+	else \
+	    OPENSSL_CONF=@srcdir@/scripts/ca.conf \
+	    $(OPENSSL) ca -in $< -out $@ -batch -rand_serial \
+	        -name CA_client -extensions client_role_ext; fi
 
 %-cert.der: %-cert.pem
 	$(OPENSSL) x509 -in $< -out $@ -outform der
 
 # Certificate chain for a single client.
-%-client.pem: %-cli-cert.pem clientCA/cert.pem
+%-cli-chain.pem: %-cli-cert.pem clientCA/cert.pem
 	@cat $^ >$@.in
 	@mv $@.in $@
 
@@ -281,36 +294,36 @@ P12PASS = $${P12PASS:-123456}
 .passwd:
 	umask 077; echo "$(P12PASS)" > $@
 
-%-client.p12: %-key.pem %-client.pem .passwd
-	LABEL=`echo $< | sed 's,-key.pem$$,,'`; \
-	NAME=`grep $$LABEL $(USERFILE) | \
-	      cut -d : -f 5 | cut -d , -f 1`; \
-	$(OPENSSL) pkcs12 -export -out $@ -inkey $< \
-	    -in "$$LABEL-client.pem" -passout file:.passwd \
-	    -name "$${NAME:-$$LABEL}"
+%-client.p12: %-key.pem %-cli-chain.pem .passwd
+	NAME=`grep $* $(USERFILE) | cut -d : -f 5 | cut -d , -f 1`; \
+	$(OPENSSL) pkcs12 -out $@ -inkey $< -name "$${NAME:-$*}" \
+	    -in "$*-cli-chain.pem" -passout file:.passwd -export
 
 ## Service Certificates ================================================
 
 %-svc-req.pem: %-key.pem
-	LABEL=`echo $< | sed 's,-key.pem$$,,'`; \
 	$(OPENSSL) req -new -key $< -out $@ -sha256 \
-	    -subj "/$(DN_BASE)/OU=Services/CN=$$LABEL" \
-	    -addext "subjectAltName = DNS:$$LABEL, DNS:www.$$LABEL"
+	    -subj "/$(DN_BASE)/OU=Services/CN=$*" \
+	    -addext "subjectAltName = DNS:$*, DNS:www.$*"
 
 %-svc-cert.pem: %-svc-req.pem serviceCA/cert.pem serviceCA/key.pem
-	LABEL=`echo $< | sed 's,-svc-req.pem$$,,'` \
-	OPENSSL_CONF=@srcdir@/scripts/ca.conf \
-	$(OPENSSL) ca -in $< -out $@ -batch -rand_serial \
-	    -name CA_service -extensions server_role_ext
+	CN="/$(DN_BASE)/OU=Services/CN=$*"; \
+	SERIAL=`grep "$$CN" clientCA/db.txt | cut -f 4`; \
+	if [ -e "clientCA/$$SERIAL.pem" ]; then \
+	    cp clientCA/$$SERIAL.pem $@; \
+	else \
+	    OPENSSL_CONF=@srcdir@/scripts/ca.conf \
+	    $(OPENSSL) ca -in $< -out $@ -batch -rand_serial \
+	        -name CA_service -extensions server_role_ext; fi
 
-%-svc.pem: %-svc-cert.pem serviceCA/cert.pem
+%-svc-chain.pem: %-svc-cert.pem serviceCA/cert.pem
 	cat $^ >$@.in
 	mv $@.in $@
 
 server-key.pem: localhost.localdomain-key.pem
 	cp $< $@
 
-server-chain.pem: localhost.localdomain-svc.pem
+server-chain.pem: localhost.localdomain-svc-chain.pem
 	cp $< $@
 
 ## Node.js =============================================================
@@ -462,6 +475,26 @@ deploy-tomcat: @PACKAGE@.war
 
 deploy: deploy-jetty deploy-tomcat
 
+container-self.p12:
+	DNAME="`echo $(DN_BASE) | sed 's|/|,|g'`"; \
+	$(KEYTOOL) -keystore $@ -storetype pkcs12 \
+	    -genkey -keyalg RSA -keysize 2048 -sigalg SHA256withRSA \
+	    -alias "$(ALIAS)" -validity 3650 \
+	    -dname "$${DNAME},OU=Service,CN=$(ALIAS)" \
+	    -ext "SAN=dns:$(HOSTNAME),dns:www.$(HOSTNAME)" \
+	    -storepass "$(P12PASS)"
+
+container-svc-req.pem: container-self.p12
+	$(KEYTOOL) -certreq -alias $(ALIAS) \
+	    -file $@ -keystore $< -storepass $(P12PASS)
+
+container.p12: container-self.p12 container-svc.pem
+	cp $< $@.partial
+	$(KEYTOOL) -importcert -alias $(ALIAS) \
+	    -file container-svc-chain.pem -noprompt \
+	    -keystore $@.partial -storepass $(P12PASS)
+	mv $@.partial $@
+
 @PACKAGE@-jetty.ini:
 	@echo \#\# @PACKAGE@ configuration >$@
 	@echo --module=https >>$@
@@ -561,26 +594,6 @@ play-java-asteroids: @PACKAGE@.jar
 
 play-java-jarbles: @PACKAGE@.jar
 	$(JAVA_HOME)/bin/java -jar $< jarbles
-
-container-self.p12:
-	DNAME="`echo $(DN_BASE) | sed 's|/|,|g'`"; \
-	$(KEYTOOL) -keystore $@ -storetype pkcs12 \
-	    -genkey -keyalg RSA -keysize 2048 -sigalg SHA256withRSA \
-	    -alias "$(ALIAS)" -validity 3650 \
-	    -dname "$${DNAME},OU=Service,CN=$(ALIAS)" \
-	    -ext "SAN=dns:$(HOSTNAME),dns:www.$(HOSTNAME)" \
-	    -storepass "$(P12PASS)"
-
-container-svc-req.pem: container-self.p12
-	$(KEYTOOL) -certreq -alias $(ALIAS) \
-	    -file $@ -keystore $< -storepass $(P12PASS)
-
-container.p12: container-self.p12 container-svc.pem
-	cp $< $@.partial
-	$(KEYTOOL) -importcert -alias $(ALIAS) \
-	    -file container-svc.pem -noprompt \
-	    -keystore $@.partial -storepass $(P12PASS)
-	mv $@.partial $@
 
 install-data-local: .javadoc
 	$(MKDIR_P) $(DESTDIR)$(docdir)
