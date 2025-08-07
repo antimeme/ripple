@@ -1,5 +1,5 @@
 // structure.mjs
-// Copyright (C) 2021-2024 by Jeff Gold.
+// Copyright (C) 2021-2025 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -23,171 +23,102 @@
 import Ripple from "../ripple/ripple.mjs";
 import Grid   from "../ripple/grid.mjs";
 import Pathf  from "../ripple/pathf.mjs";
-
-class Cell {
-    constructor() {}
-
-    get isObstructed() { return false; }
-}
+import { Inventory } from "./setting.mjs";
 
 /**
- * Hull represents a boundary between a structure and the outside.
- * In most cases a single sentinel object should be used.  The
- * exception to this would be a hull that is damaged or otherwise
- * needs to store specific information. */
-class Hull extends Cell {
-    constructor() { }
+ * Convert a node with numeric row and col fields into a single
+ * integer suitable for use as an object key. */
+function getNodeIndex(node)
+{ return Ripple.pair(node.col, node.row); }
 
-    get isObstructed() { return false; }
-    get isSentinel() { return true; }
-
-    #sentinel = new Hull();
-    static getSentinel() { return Hull.#sentinel; }
+function getIndexNode(index) {
+    const pair = Ripple.unpair(index);
+    return { col: node.x, row: node.y };
 }
 
-/**
- * A structure represents something characters might inhabit.
- * This is usually a building or a ship.  Rather than using a fixed
- * grid size this code reversibly pairs row and column numbers to
- * produce a positive integer cell identifier that is used as an
- * index into an object.
- *
- * <p>The following terms are important to understand when looking
- * at this code:</p><ul><li>
- *     node: object with integer row and col fields </li><li>
- *     node index: integer that uniquely identifies a cell </li><li>
- *     cell: object representing the contents of a single location
- * </li></ul> */
-export class Structure {
-    constructor(config) {
-        this.#grid = Grid.create({
-            type: "square", radius: 1,
-            isometric: false, diagonal: true });
-        this.#defaultLevel = 0;
-        this.#cellData = {};
-        this.#hullData = {};
+export default class Structure {
+    #name;
+    #offset;
+    #defaultLevel = 0;
+    #cellData;
+    #floorColor;
+
+    constructor(structure, setting) {
+        this.#name       = structure.name;
+        this.#offset     = structure.offset;
+        this.#floorColor = structure.floorColor;
+        this.#cellData   = {};
+        if (Array.isArray(structure.cellData))
+            structure.cellData.forEach(node =>
+                this.setCell(node, {
+                    floorColor: node.floorColor,
+                    inventory: new Inventory(
+                        node.inventory, setting) }));
     }
 
-    #defaultLevel;
-    #grid;
+    connect(setting) {
+        Object.keys(this.#cellData).forEach(level =>
+            Object.keys(this.#cellData[level]).forEach(index =>
+                this.#cellData[level][index]
+                    .inventory.connect(setting)));
+    }
 
-    // cellData contains the internal contents of the structure.
-    // This is an object indexed first by level and then by a node
-    // index.  So a cell on level 2 with row -3 and col 1 can
-    // be retrieved as #cellData[2][Ripple.pair(1, -3)]
-    #cellData;
-
-    // hullData contains the boundary cells between the structure
-    // and the outside.  This is organized just like cellData.
-    #hullData;
-
-    computeHull() {
-        const newHullData = {};
-        Object.keys(this.#cellData).forEach(level => {
-            Object.keys(this.#cellData[level]).forEach(index => {
-                const pair = Ripple.unpair(index);
-                let node = { row: pair.y, col: pair.x, level: level };
-
-                this.#grid.eachNeighbor(node, neighbor => {
-                    neighbor.level = level;
-                    if (!this.getCell(neighbor))
-                        newHullData.#hullData[level][index] =
-                            Hull.getSentinel();
+    toJSON() {
+        const result = {};
+        if (this.#offset)
+            result.offset = this.#offset;
+        if (this.#floorColor)
+            result.floorColor = this.#floorColor;
+        if (this.#cellData) {
+            result.cellData = [];
+            Object.keys(this.#cellData).forEach(level => {
+                Object.keys(this.#cellData[level]).forEach(index => {
+                    const cell = this.#cellData[level][index];
+                    const node = getIndexNode(index);
+                    if (cell.inventory && cell.inventory.length)
+                        node.inventory = cell.inventory.toJSON();
+                    if (cell.floorColor)
+                        node.floorColor = cell.floorColor;
+                    result.cellData.push(node);
                 });
             });
-        });
-        this.#hullData = newHullData;
-        return this;
+        }
+        return result;
     }
 
+    toString() { return JSON.stringify(this.toJSON()); }    
+
+    get floorColor() { return this.#floorColor; }
+
+    get offset() { return this.#offset; }
+
+    /**
+     * Retrieves the contents of a specified node. */
     getCell(node) {
-        if (node && !isNaN(node.x) && !isNaN(node.y))
-            node = this.#grid.getCell(node);
         if (!node || isNaN(node.row) || isNaN(node.col))
             throw new Error("first argument must have numeric " +
                             "row and col fields");
-        const index = Ripple.pair(node.col, node.row);
         const level = isNaN(node.level) ?
                       this.#defaultLevel : node.level;
-        const contents = (level in this.#cellData) ?
-                         this.#cellData[level][index] : undefined;
-        return contents ? contents : (level in this.#hullData) ?
-               this.#hullData[level][index] : undefined;
+        return (level in this.#cellData) ?
+               this.#cellData[level][getNodeIndex(node)] : undefined;
     }
 
+    /**
+     * Replaces the contents at specified node with the value given. */
     setCell(node, value) {
-        if (node && !isNaN(node.x) && !isNaN(node.y))
-            node = this.#grid.getCell(node);
         if (!node || isNaN(node.row) || isNaN(node.col))
-            throw new Error("first argument must have numeric " +
-                            "row and col fields");
-        const index = Ripple.pair(node.col, node.row);
+            throw new Error("row and col must be numeric");
+        const index = getNodeIndex(node);
         const level = isNaN(node.level) ?
-                      this.#defaultLevel : node.level;
+            this.#defaultLevel : level;
+
         if (!(level in this.#cellData))
             this.#cellData[level] = {};
+
         if (typeof(value) === "undefined")
             delete this.#cellData[level][index];
         else this.#cellData[level][index] = value;
         return this;
     }
-
-    toJSON() {
-        let cells = [];
-        Object.keys(this.#cellData).forEach(level => {
-            Object.keys(this.#cellData[level]).forEach(index => {
-                const pair = Ripple.unpair(index);
-                let cell = { row: pair.y, col: pair.x };
-                if (level)
-                    cell.level = level;
-                cell.content = this.getCell(cell).toJSON();
-                cells.push(cell);
-            });
-        });
-        return {cells: cells};
-    }
-
-    draw(ctx, camera, now) {
-        this.#grid.mapRectangle(
-            camera.toWorld({x: 0, y: 0}),
-            camera.toWorld({x: camera.width, y: camera.height}),
-            (node, index, grid) => {
-                var cell = this.getCell(node);
-                if (cell)
-                    cell.draw(ctx, node, grid, this);
-        });
-        // :TODO: draw walls between cells
-        // :TODO: draw in order of decreasing row number
-        // :TODO: 
-    }
 }
-
-/**
- * A station is a rotating habitat which contains many structures.
- * Stations have cylindrical topology and represent a surface that
- * spins to create artificial gravity using centrifugal force.
- * Objects within the station are pressed against the surface due
- * to its rotation.  Stations usually have a reactor and docking
- * rings that are separate from the cylinder because these don't
- * need to rotate.  Special elevators accelerate passengers and
- * cargo that need to enter the habitat.
- *
- * <p>Here are some facts about artificial gravity created this way:
- * (https://en.wikipedia.org/wiki/Artificial_gravity).
- * Rotation at or less than two revolutions per minute should limit
- * inner ear problems for humans.  This means a rotation period of
- * at least thirty seconds.  According to the same source, the
- * rotation period T = 2π(r/a)^1/2 where r is the radius of the
- * station and a is the acceleration.  Plugging in 9.8 for
- * acceleration comparable to Earth gravity and assuming the
- * circumference of the cylinder contains six square districts
- * each with a side length of each with side length of 256 meters we
- * get a period of 31.38 seconds.  This means a station must have
- * at least six (possibly empty) districts along the axis that wraps
- * around in order to be comfortable.</p> */
-export class Station {
-    constructor(config) {
-    }
-}
-
-export default Structure;

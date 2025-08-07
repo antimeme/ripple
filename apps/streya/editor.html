@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<link rel="icon" href="streya.svg?serial=ENUjMO" />
+<style>
+ html, body { padding: 0; margin: 0; overflow: hidden; }
+ canvas {
+     display: block; width: 100vw; height: 100vh;
+     border: 0px none; background-color: #111;
+ }
+</style>
+<title>Streya</title>
+<script type="module">//<![CDATA[
+ import Camera from "../ripple/camera.mjs";
+ import Editor from "./editor.mjs";
+
+ Camera.preload(["./setting.json", "./scenario.json"], (loaded) =>
+     new Camera().setScale(4).manage(
+         new Editor(loaded["./setting.json"],
+                    loaded["./scenario.json"])));
+//]]></script>

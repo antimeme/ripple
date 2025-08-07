@@ -1,8 +1,8 @@
 {
     "version": "0.0.1",
     "comments": [
-        "This file contains the data necessary to define a role ",
-        "playing game with a character and inventory system.",
+        "Streya setting data.  This file contains definitions of ",
+        "items, character races and facilities.  ",
         "Comments are provided for each section explaining what ",
         "fields to expect and what they are intended to mean.",
         "Empty strings in a comments array are intended to indicate ",
@@ -16,10 +16,10 @@
     "raceComments": [
         "Each character has a race, which is usually human but can ",
         "vary based on the setting.  A fantasy setting might have ",
-        "elves and dwarves.  Science fiction settings might have ",
-        "aliens and androids.  And so on.  A race has a set of limbs ",
-        "with certain attributes. Some limbs are prehensile, which ",
-        "means they can hold any solid object, subject to bulk ",
+        "elves, dwarves and orcs.  Science fiction settings might ",
+        "have aliens and androids.  And so on.  A race has a set of ",
+        "limbs ith certain attributes. Some limbs are prehensile,",
+        "which means they can hold any solid object, subject to bulk ",
         "restrictions.  Limbs that are not prehensile can wear a ",
         "single item that specifically fits on that kind of limb.  ",
         "For example, a character with a head limb can wear one item ",
@@ -239,26 +239,24 @@
         "_Pistol": {
             "ignore": true, "bulk": 2, "wear": "holster",
             "draw": { "topDown": [
-                {"op": "polygon", "fill": "#225",
-                    "points": [
-                        {"x": -0.16, "y":  0.8},
-                        {"x": -0.2, "y":  0.7},
-                        {"x": -0.2, "y": -0.4},
-                        {"x":  0.2, "y": -0.4},
-                        {"x":  0.2, "y":  0.7},
-                        {"x":  0.16, "y":  0.8}]},
+                {"op": "polygon", "fill": "#225", "points": [
+                    {"x": -0.16, "y":  0.8},
+                    {"x": -0.2, "y":  0.7},
+                    {"x": -0.2, "y": -0.4},
+                    {"x":  0.2, "y": -0.4},
+                    {"x":  0.2, "y":  0.7},
+                    {"x":  0.16, "y":  0.8}]},
                 {"op": "circle", "fill": "#225",
                     "r": 0.2, "x": 0, "y": -0.4},
-                {"op": "polygon", "fill": "#118",
-                    "points": [
-                        {"x":  0.3, "y":  0.4},
-                        {"x": -0.3, "y":  0.4},
-                        {"x": -0.3, "y": -0.2},
-                        {"x": -0.1, "y": -0.2},
-                        {"x": -0.1, "y": -0.4},
-                        {"x":  0.1, "y": -0.4},
-                        {"x":  0.1, "y": -0.2},
-                        {"x":  0.3, "y": -0.2}]} ]}
+                {"op": "polygon", "fill": "#118", "points": [
+                    {"x":  0.3, "y":  0.4},
+                    {"x": -0.3, "y":  0.4},
+                    {"x": -0.3, "y": -0.2},
+                    {"x": -0.1, "y": -0.2},
+                    {"x": -0.1, "y": -0.4},
+                    {"x":  0.1, "y": -0.4},
+                    {"x":  0.1, "y": -0.2},
+                    {"x":  0.3, "y": -0.2}]} ]}
         },
         "BulletCasing": {
             "comments": ["Spent cartridge from a firearm."],

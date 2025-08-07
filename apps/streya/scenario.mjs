@@ -1,4 +1,4 @@
-// inventory.mjs
+// setting.mjs
 // Copyright (C) 2023-2025 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
@@ -16,5 +16,14 @@
 // <http://www.gnu.org/licenses/>.
 //
 // ---------------------------------------------------------------------
+// A setting is an abstract colleciton of definitions that create the
+// world where a game takes place.  This begins with items and item
+// definitions but also includes characters and character races.  A
+// fantasy setting might have orcs and elves while a science fiction
+// setting might have androids and aliens.  The classes in this module
+// are agnostic about the details but provide a framework for describing
+// them.  JSON formatted data is provided to the Setting constructor
+// in order to set everything up.
 import Ripple from "../ripple/ripple.mjs";
 import Camera from "../ripple/camera.mjs";
+
