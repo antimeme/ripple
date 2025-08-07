@@ -570,10 +570,9 @@ static void
 asteroids__escape(struct app *app, int scancode)
 {
   struct app_asteroids *self = (struct app_asteroids *)app;
-  printf("DEBUG r=%.3lf p={%.3lf, %.3lf} v={%.3lf, %.3lf}\n",
-         self->player.radius,
-         self->player.position.x, self->player.position.y,
-         self->player.velocity.x, self->player.velocity.y);
+  self->lives = 0;
+  self->player.dead = 1;
+  self->gameover = 1;
 }
 
 static void

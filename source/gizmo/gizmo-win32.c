@@ -961,8 +961,9 @@ _tWinMain(HINSTANCE hInstance, HINSTANCE, TCHAR*, int nCmdShow) {
       TranslateMessage(&msg);
       DispatchMessage(&msg);
     }
+    result = msg.wParam ? S_OK : E_FAIL;
   }
   IDirectSound_Release(gizmo.ds);
   free(appname);
-  return SUCCEEDED(result) ? 0 : 1;
+  return SUCCEEDED(result) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
