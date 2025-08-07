@@ -1,5 +1,5 @@
 // camera.mjs
-// Copyright (C) 2023-2024 by Jeff Gold.
+// Copyright (C) 2023-2025 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -22,12 +22,15 @@
  * Camera provides a world space where the origin (0, 0) starts at
  * the center of the screen and uses chalkboard coordinates (so
  * positive x goes to the right and positive y goes up). */
-class Camera {
+export default class Camera {
     constructor(screen) {
-        if (!(screen instanceof HTMLElement))
+        if (!screen)
+            screen = document.body.appendChild(
+                document.createElement("canvas"));
+        else if (!(screen instanceof HTMLElement))
             throw new TypeError("Camera screen must be a DOM canvas");
-        this.#screen   = screen;
         this.#position = { x: 0, y: 0 };
+        this.#screen = screen;
         this.resize();
     }
 
@@ -54,6 +57,7 @@ class Camera {
         this.#bounds = this.#screen.getBoundingClientRect();
         this.#radius = Math.min(this.#screen.width,
                                 this.#screen.height) / 2;
+        return this;
     }
 
     /**
@@ -174,13 +178,18 @@ class Camera {
         return this.setScale(this.#scale * factor, min, max);
     }
 
+    #update() {
+        if (this.#app && typeof(this.#app.update) === "function")
+            this.#app.update.call(
+                this.#app, Date.now(), this);
+        return this;
+    }
+
     #delegate(event) {
-        if (this.#app && (typeof(this.#app[event.type]) === "function")) {
-            if (this.#app && typeof(this.#app.update) === "function")
-                this.#app.update.call(
-                    this.#app, Date.now(), this);
-            this.#app[event.type].call(this.#app, event, this);
-        }
+        if (this.#app && (typeof(this.#app[event.type]) === "function"))
+            this.#update().#app[event.type].call(
+                this.#app, event, this);
+        return this;
     }
 
     /**
@@ -212,32 +221,24 @@ class Camera {
 
             if (this.#app && this.#app.usekeys) {
                 this.#screen.tabIndex = 1;
-                document.addEventListener("keydown", event => {
-                    return this.#delegate(event);
-                });
-                document.addEventListener("keyup", event => {
-                    return this.#delegate(event);
-                });
+                document.addEventListener("keydown", event =>
+                    this.#delegate(event));
+                document.addEventListener("keyup", event =>
+                    this.#delegate(event));
             }
 
-            this.#screen.addEventListener("click", event => {
-                return this.#delegate(event);
-            });
-            this.#screen.addEventListener("dblclick", event => {
-                return this.#delegate(event);
-            });
-            this.#screen.addEventListener("mouseenter", event => {
-                return this.#delegate(event);
-            });
-            this.#screen.addEventListener("mouseover", event => {
-                return this.#delegate(event);
-            });
-            this.#screen.addEventListener("mouseout", event => {
-                return this.#delegate(event);
-            });
-            this.#screen.addEventListener("mouseleave", event => {
-                return this.#delegate(event);
-            });
+            this.#screen.addEventListener("click", event =>
+                this.#delegate(event));
+            this.#screen.addEventListener("dblclick", event =>
+                this.#delegate(event));
+            this.#screen.addEventListener("mouseenter", event =>
+                this.#delegate(event));
+            this.#screen.addEventListener("mouseover", event =>
+                this.#delegate(event));
+            this.#screen.addEventListener("mouseout", event =>
+                this.#delegate(event));
+            this.#screen.addEventListener("mouseleave", event =>
+                this.#delegate(event));
             this.#screen.addEventListener("mousedown", event => {
                 if (this.#app && this.#app.autodrag)
                     dragStart = this.toWorld(this.getPoint(event));
@@ -322,11 +323,7 @@ class Camera {
     }
 
     #draw() {
-        if (this.#app && typeof(this.#app.update) === "function")
-            this.#app.update.call(
-                this.#app, Date.now(), this);
-
-        if (!this.#screen.getContext)
+        if (!this.#update().#screen.getContext)
             throw Error("screen has no getContext");
         const ctx = this.#screen.getContext("2d");
         const style = getComputedStyle(this.#screen);
@@ -358,8 +355,7 @@ class Camera {
      * redrawn automatically without the need to call this. */
     redraw() {
         if (!this.#draw_id)
-            this.#draw_id = requestAnimationFrame(
-                () => { this.#draw(); });
+            this.#draw_id = requestAnimationFrame(() => this.#draw());
         return this;
     }
 
@@ -376,6 +372,83 @@ class Camera {
         ctx.lineTo(x, y + radius);
         ctx.quadraticCurveTo(x, y, x + radius, y);
         ctx.closePath();
+    }
+
+    /**
+     * Carry out instructions encoded as JSON objects.
+     *
+     * @param ctx a drawing context of the sort provided by canvas
+     * @param steps an array of drawing operation objects.
+     *        Each step should have an "op" field that specifies the
+     *        operation ("circle", "ellipse", "polygon") as well as
+     *        parameters appropriate to that operation.  Assume that
+     *        the center of the figure is the origin (0.0, 0.0) and
+     *        that the boundaries are at one and minus in each dimension.
+     *        An optional "period" field should be a number of
+     *        milliseconds and an optional "blink" field should be a
+     *        number between zero and one specifying how much of the
+     *        period for which the drawing operation should be skipped.
+     * @param now current time in milliseconds
+     * @param phase number between zero and one
+     * @param colors map from string to color values */
+    static drawSteps(ctx, steps, config) {
+        const now   = (config && !isNaN(config.now)) ? config.now : 0;
+        const phase = (config && !isNaN(config.phase)) ?
+                      config.phase : 0;
+        const colors = (config && config.colors &&
+                        (typeof(config) === "object")) ?
+                       config.colors : {};
+        const conditions = (config && config.conditions) ?
+                           config.conditions : {};
+
+        function getColor(tag) {
+            return (tag in colors) ? colors[tag] : tag;
+        }
+
+        function finishStep(ctx, step, colors) {
+            if (step.fill) {
+                ctx.fillStyle = getColor(step.fill);
+                ctx.fill();
+            }
+            if (step.stroke) {
+                ctx.strokeStyle = getColor(step.stroke);
+                ctx.stroke();
+            }
+        }
+
+        steps.forEach(step => {
+            if (step.condition && !conditions[step.condition]) {
+                // Skip step due to condition not being met
+            } else if (!isNaN(step.period) && !isNaN(step.blink) &&
+                       (step.blink > Math.floor((
+                           now + step.period * phase) %
+                           step.period) / step.period)) {
+                // Skip step because blink is active
+            } else if ((step.op === "ellipse") &&
+                       !isNaN(step.x)  && !isNaN(step.y) &&
+                       !isNaN(step.rx) && !isNaN(step.ry)) {
+                ctx.beginPath();
+                ctx.moveTo(step.x + step.rx, step.y);
+                ctx.ellipse(step.x, step.y, step.rx, step.ry,
+                            0, 0, 2 * Math.PI);
+                finishStep(ctx, step, colors);
+            } else if ((step.op === "circle") && !isNaN(step.r) &&
+                       !isNaN(step.x) && !isNaN(step.y)) {
+                ctx.beginPath();
+                ctx.moveTo(step.x + step.r, step.y);
+                ctx.arc(step.x, step.y, step.r, 0, 2 * Math.PI);
+                finishStep(ctx, step, colors);
+            } else if ((step.op === "polygon") &&
+                       Array.isArray(step.points) &&
+                       step.points.length) {
+                const end = step.points[step.points.length - 1];
+                ctx.beginPath();
+                ctx.moveTo(end.x, end.y);
+                step.points.forEach(
+                    point => ctx.lineTo(point.x, point.y));
+                finishStep(ctx, step, colors);
+            }
+        });
     }
 
     /**
@@ -421,5 +494,3 @@ class Camera {
         document.addEventListener("DOMContentLoaded", () => { next() });
     }
 }
-
-export default Camera;
