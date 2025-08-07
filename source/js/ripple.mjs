@@ -83,6 +83,52 @@ export function shuffle(elements, rand) {
     return elements;
 }
 
+function metricPrefix(amount) {
+    return (amount >= 1e30)  ? {name: "quetta", symbol: "Q",  e:  30} :
+           (amount >= 1e27)  ? {name:  "ronna", symbol: "R",  e:  27} :
+           (amount >= 1e24)  ? {name:  "yotta", symbol: "Y",  e:  24} :
+           (amount >= 1e21)  ? {name:  "zetta", symbol: "Z",  e:  21} :
+           (amount >= 1e18)  ? {name:    "exa", symbol: "E",  e:  18} :
+           (amount >= 1e15)  ? {name:   "peta", symbol: "P",  e:  15} :
+           (amount >= 1e12)  ? {name:   "tera", symbol: "T",  e:  12} :
+           (amount >= 1e9)   ? {name:   "giga", symbol: "G",  e:   9} :
+           (amount >= 1e6)   ? {name:   "mega", symbol: "M",  e:   6} :
+           (amount >= 1e3)   ? {name:   "kilo", symbol: "k",  e:   3} :
+           (amount >= 1e2)   ? {name:  "hecto", symbol: "h",  e:   2} :
+           (amount >= 1e1)   ? {name:   "deka", symbol: "da", e:   1} :
+           (amount >= 1e0)   ? {name:       "", symbol:  "",  e:   0} :
+           (amount >= 1e-1)  ? {name:   "deci", symbol: "d",  e:  -1} :
+           (amount >= 1e-2)  ? {name:  "centi", symbol: "c",  e:  -2} :
+           (amount >= 1e-3)  ? {name:  "milli", symbol: "m",  e:  -3} :
+           (amount >= 1e-6)  ? {
+               name: "micro", symbol: "\u00b5", e: -6} :
+           (amount >= 1e-9)  ? {name:   "nano", symbol: "n",  e:  -9} :
+           (amount >= 1e-12) ? {name:   "pico", symbol: "p",  e: -12} :
+           (amount >= 1e-15) ? {name:  "femto", symbol: "f",  e: -15} :
+           (amount >= 1e-18) ? {name:   "atto", symbol: "a",  e: -18} :
+           (amount >= 1e-21) ? {name:  "zepto", symbol: "z",  e: -21} :
+           (amount >= 1e-24) ? {name:  "yocto", symbol: "y",  e: -24} :
+           (amount >= 1e-27) ? {name:  "ronto", symbol: "r",  e: -27} :
+           {name: "quecto", symbol: "q", e: -30};
+}
+
+/**
+ * Create a string represention of a number using a unit with a
+ * metric prefix. */
+export function displayMetric(value, unit, digits) {
+    const details = metricPrefix(value);
+    const exp = (details.e % 3) ? 0 : details.e;
+    const suffix = (details.e % 3) ? unit : (details.symbol + unit);
+    let number = (value / (10 ** exp)).toString();
+
+    if (!isNaN(digits)) {
+        const parts = number.split(".");
+        if ((parts.length === 2) && (parts[1].length > digits))
+            number = (value / (10 ** exp)).toFixed(digits);
+    }
+    return number + " " + suffix;
+}
+
 /**
  * Calls fn for each permutation of the elements array, providing a
  * single permutation and a count of how many previous calls have been
