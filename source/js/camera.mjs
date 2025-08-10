@@ -452,6 +452,32 @@ export default class Camera {
     }
 
     /**
+     * Draws an arrow from the start point to the end point.  An arrow
+     * has a width and a depth, both relative to the length of the
+     * line.  To make these absolute, multiply by the desired length
+     * and divide by the line length. */
+    static drawArrow(ctx, start, end, config) {
+        const length = Math.hypot(end.x - start.x, end.y - start.y);
+        const denom = (config && config.absolute) ? length : 1;
+        const depth = config && config.depth || 0.1;
+        const width = config && config.width || 0.15;
+        const slide = config && config.slide || 1.0;
+
+        const perp = { x: (end.y - start.y) * width / denom,
+                       y: (start.x - end.x) * width / denom };
+        const top = {
+            x: start.x + (end.x - start.x) * (slide + depth / denom),
+            y: start.y + (end.y - start.y) * (slide + depth / denom) };
+        const bottom = {
+            x: start.x + (end.x - start.x) * slide,
+            y: start.y + (end.y - start.y) * slide };
+        ctx.moveTo(top.x, top.y);
+        ctx.lineTo(bottom.x + perp.x, bottom.y + perp.y);
+        ctx.lineTo(bottom.x - perp.x, bottom.y - perp.y);
+        ctx.lineTo(top.x, top.y);
+    }
+
+    /**
      * Calls a specified function after the page has completely loaded
      * and an array of URLs are fetched using XMLHttpRequest (AJAX). */
     static preload(urls, fn, errfn) {
