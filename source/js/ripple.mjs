@@ -1,5 +1,5 @@
 // ripple.mjs
-// Copyright (C) 2014-2023 by Jeff Gold.
+// Copyright (C) 2014-2025 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -17,6 +17,24 @@
 //
 // ---------------------------------------------------------------------
 // A collection of useful routines that don't fit anywhere else.
+
+/**
+ * Given an object, choose one of its keys,  Without a second argument
+ * all keys are equally likely to be chosen.  If provided the second
+ * argument must be a function that accepts an object and a key and
+ * returns a non-negative number to use as the weight for that key.
+ * Keys are chosen with probability equal to their share of the total
+ * weight.  So given keys "a" (weight 3) and "b" (weight 1) this
+ * routine will choose "a" three quarters of the time. */
+export function chooseKey(object, getWeight = (obj, key) => 1) {
+    let choice = Object.keys(object).reduce((acc, key) =>
+        acc + getWeight(object, key), 0) * Math.random();
+    return Object.keys(object).reduce((acc, key) => {
+        choice -= getWeight(object, key);
+        return (typeof acc !== "undefined") ? acc :
+               (choice <= 0) ? key : acc;
+    }, undefined);
+}
 
 const epsilon = 1 / (1 << 20); // approximately one in a million
 export function zeroish(value) { return Math.abs(value) < epsilon; }
@@ -212,5 +230,44 @@ export function preloadURLs(urls, fn, errfn) {
     document.addEventListener("DOMContentLoaded", () => { next() });
 }
 
+if ((typeof process !== "undefined") &&
+    process.release?.name === "node") {
+  const { describe, it } = await import('node:test');
+  const assert = await import('node:assert');
+
+  describe("Ripple", () => {
+      it("zeroish zero", () => { assert.ok(zeroish(0)); });
+      it("zeroish not", () => {
+          assert.ok(!zeroish(1.0));
+          assert.ok(!zeroish(0.1));
+          assert.ok(!zeroish(0.01));
+          assert.ok(!zeroish(-0.01));
+          assert.ok(!zeroish(-1));
+      });
+
+      it("pair/unpair", () => {
+          const u = unpair(pair(2, -3));
+          assert.ok(u.x === 2);
+          assert.ok(u.y === -3);
+      });
+
+      it("choseKey", () => {
+          const data = {"a": 1, "b": 2, "c": 3};
+          assert.ok(Object.keys(data).includes(chooseKey(data)));
+          assert.ok(Object.keys(data).includes(chooseKey(data)));
+          assert.ok(Object.keys(data).includes(chooseKey(data)));
+          assert.ok(Object.keys(data).includes(chooseKey(data)));
+          assert.ok(Object.keys(data).includes(chooseKey(data)));
+      });
+
+      it("displayMetric", () => {
+          assert.strictEqual(displayMetric(1024, "m", 2), "1.02 km");
+      });
+  });
+}
+
 export default {
-    zeroish, pair, unpair, shuffle, eachPermutation, preloadURLs };
+    zeroish, pair, unpair, displayMetric,
+    chooseKey, shuffle, eachPermutation,
+    preloadURLs
+};
