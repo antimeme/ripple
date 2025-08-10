@@ -1,5 +1,5 @@
 // lambda.js
-// Copyright (C) 2017-2024 by Jeff Gold.
+// Copyright (C) 2017-2025 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -23,9 +23,7 @@
 //
 // :TODO: implement lazy evaluation
 // :TODO: better handling of library case insensitivity
-// :TODO: optional controls in interface
 // :TODO: create a number subclass for more flexible arithmetic
-// :TODO: finish S K combinator conversion
 
 /**
  * Generating variable names uses this */
@@ -39,7 +37,7 @@ const pickCandidates = Array(26).fill().map(
  * some other expression.  There can also be one or more values.
  * Passing a string to the constructor will attempt to create an
  * expression by parsing. */
-class Lambda {
+export class Lambda {
     #variables = undefined;
     #values = undefined;
 
@@ -309,6 +307,8 @@ class Lambda {
      * purpose the names of bound variables don't matter so "\a.a b"
      * and "\c.c b" are equal but "\a.a d" is not. */
     equals(other) {
+        if (typeof other === "string")
+            other = new Lambda(other);
         return this.#canonicalize().#internalEqual(
             other.#canonicalize());
     }
@@ -344,6 +344,10 @@ class Lambda {
                    (func, arg) + 1) : NaN;
     }
 
+    /**
+     * Return a natural number corresponding to the Church numeral
+     * represented by this expression or NaN if this expression is
+     * not a Church numeral. */
     getChurchNumeral() {
         return (this.#variables.length === 2) ?
                this.#innerChurchNumeral(
@@ -455,7 +459,7 @@ class Lambda {
                 }
             }
         });
-        return result;
+        return result.simplify();
     }
 
     static eachLibrary(fn, library, self) {
@@ -680,131 +684,137 @@ class Lambda {
     }
 
     static defaultLibrary = Lambda.__augmentLibrary({
-        TRUE: { description: "Logical TRUE", priority: 2,
-                value: "\\a b.a" },
-        FALSE: { description: "Logical FALSE", priority: 2,
-                 value: "\\a b.b" },
-        NOT: { description: "Logical NOT",
-               value: "\\a b c.a c b" },
-        AND: { description: "Logical AND",
-               value: "\\p q.p q p" },
-        OR: { description: "Logical OR",
-              value: "\\p q.p p q" },
-        "BOOLEQ?": { description: "Boolean equality",
-                     value: "\\p q.p q (NOT q)" },
+        // Boolean logic
+        TRUE: { value: "\\a b.a", priority: 2,
+                description: "Logical TRUE" },
+        FALSE: { value: "\\a b.b", priority: 2,
+                 description: "Logical FALSE" },
+        NOT: { value: "\\a b c.a c b", description: "Logical NOT" },
+        AND: { value: "\\p q.p q p", description: "Logical AND" },
+        OR: { value: "\\p q.p p q", description: "Logical OR" },
+        "BOOLEQ?": { value: "\\p q.p q (NOT q)",
+                     description: "Boolean equality" },
 
+        // Pairs and nil allows us to create lists, which can be
+        // a basis for data structures.
         PAIR: { value: "\\h t f.f h t" },
         HEAD: { value: "\\p.p TRUE" },
         TAIL: { value: "\\p.p FALSE" },
-        "IS-NIL?": { value: "\\p.p (\\h t.FALSE)" },
         NIL: { value: "\\f.TRUE" },
+        "IS-NIL?": { value: "\\p.p (\\h t.FALSE)" },
 
-        SUCCESSOR: { description: "Adds one to a Church numerals",
-                     value: "\\n f a.f (n f a)" },
-        ZERO: { description: "Zero expressed as a Church numeral",
-                value: "\\f a.a" },
-        ADD: { description: "Addition of Church numerals",
-               value: "\\m n f a.m f (n f a)" },
-        MULTIPLY: { description: "Multiplication of Church numerals",
-                    value: "\\m n f.m (n f)" },
-        POWER: { description: "Exponentiation of Church numerals",
-                 value: "\\m n f a.(n m) f a" },
-        "IS-ZERO?": { description: "Reduces to true if an only if " +
-                                   "argument is zero",
-                      value: "\\n.n (\\a.FALSE) TRUE" },
-        "IS-EVEN?": { description: "Reduces to true if and only if " +
-                                   "argument is even",
-                      value: "\\n.n (\\a.NOT a) TRUE" },
-        "IS-ODD?": { description: "Reduces to true if and only if " +
-                                  "argument is odd",
-                     value: "\\n.n (\\a.NOT a) FALSE" },
-        PREDECESSOR: { description: "Decrements a Church numeral",
-                       value: "\\n f a.n (\\g h.h (g f)) " +
-                              "(\\c.a) \\b.b" },
-        SUBTRACT: { description: "Subtraction of Church numerals",
-                    value: "\\m n.n PREDECESSOR m" },
-        DIVIDE: { description: "Division of Church numerals",
-                  value: "\\n.FIX (\\c n m f a.(\\d.IS-ZERO? d a " +
-                         "(f (c d m f a))) (SUBTRACT n m)) " +
-                         "(SUCCESSOR n)"},
+        // Arithmetic
+        SUCCESSOR: { value: "\\n f a.f (n f a)",
+                     description: "Adds one to a Church numerals" },
+        ZERO: { value: "\\f a.a",
+                description: "Zero expressed as a Church numeral" },
+        ADD: { value: "\\m n f a.m f (n f a)",
+               description: "Addition of Church numerals" },
+        MULTIPLY: { value: "\\m n f.m (n f)",
+                    description: "Multiplication of Church numerals" },
+        POWER: { value: "\\m n f a.(n m) f a",
+                 description: "Exponentiation of Church numerals" },
+        PREDECESSOR: {
+            value: "\\n f a.n (\\g h.h (g f)) (\\c.a) \\b.b",
+            description: "Decrements a Church numeral" },
+        SUBTRACT: { value: "\\m n.n PREDECESSOR m",
+                    description: "Subtraction of Church numerals" },
+        DIVIDE: {
+            value: "\\n.FIX (\\c n m f a.(\\d.IS-ZERO? d a " +
+                   "(f (c d m f a))) (SUBTRACT n m)) (SUCCESSOR n)",
+            description: "Division of Church numerals" },
+        "IS-ZERO?": {
+            value: "\\n.n (\\a.FALSE) TRUE",
+            description: "Reduces to true if an only if " +
+                         "argument is zero" },
+        "IS-EVEN?": {
+            value: "\\n.n (\\a.NOT a) TRUE",
+            description: "Reduces to true if and only if " +
+                         "argument is even" },
+        "IS-ODD?": {
+            value: "\\n.n (\\a.NOT a) FALSE",
+            description: "Reduces to true if and only if " +
+                         "argument is odd" },
 
+        // Numeric comparisons
         "LESSEQ?": {
+            value: "\\m n.IS-ZERO? (SUBTRACT m n)",
             description: "Reduces to true if the first Church " +
                          "numeral is less than or equal to " +
-                         "the second",
-            value: "\\m n.IS-ZERO? (SUBTRACT m n)" },
+                         "the second" },
         "GREATEREQ?": {
+            value: "\\m n.IS-ZERO? (SUBTRACT n m)",
             description: "Reduces to true if the first Church " +
                          "numeral is greater than or equal to " +
-                         "the second",
-            value: "\\m n.IS-ZERO? (SUBTRACT n m)" },
+                         "the second" },
         "LESS?": {
+            value: "\\m n.NOT (GREATEREQ? m n)",
             description: "Reduces to true if the first Church " +
-                         "numeral is less than the second",
-            value: "\\m n.NOT (GREATEREQ? m n)" },
+                         "numeral is less than the second" },
         "GREATER?": {
+            value: "\\m n.NOT (LESSEQ? m n)",
             description: "Reduces to true if the first Church " +
-                         "numeral is greater than the second",
-            value: "\\m n.NOT (LESSEQ? m n)" },
+                         "numeral is greater than the second" },
         "EQUAL?": {
+            value: "\\m n.AND (LESSEQ? m n) (LESSEQ? n m)",
             description: "Reduces to true if and only if the two " +
-                         "Church numeral arguments are the same",
-            value: "\\m n.AND (LESSEQ? m n) (LESSEQ? n m)" },
+                         "Church numeral arguments are the same" },
 
         NTH: {
-            description: "Reduces to the nth member of a list",
-            value: "\\n l.n (\\l.(IS-NIL? l) NIL " +
-                   "(TAIL l)) l"},
+            value: "\\n l.n (\\l.(IS-NIL? l) l (TAIL l)) l",
+            description: "Reduces to the nth member of a list" },
         FACTITER: {
-            description: "Factorial computed iteratively",
-            value: "λn.TAIL (n (λp.PAIR (+ ONE (HEAD p)) " +
-                   "(* (HEAD p) (TAIL p))) (PAIR ONE ONE))"},
+            value: "λn.TAIL (n (λp.PAIR (ADD ONE (HEAD p)) " +
+                   "(MULTIPLY (HEAD p) (TAIL p))) (PAIR ONE ONE))",
+            description: "Factorial computed iteratively" },
 
         FIX: {
+            value: "\\f.(\\a.f (a a)) \\a.f (a a)",
             description: "Fixed-point combinator for applying a " +
-                         "function to itself repeatedly",
-            value: "\\f.(\\a.f (a a)) \\a.f (a a)" },
+                         "function to itself repeatedly" },
         FACTORIAL: {
-            description: "Factorial computed recursively",
             value: "FIX \\f n.IS-ZERO? n ONE " +
-                   "(MULTIPLY n (f (PREDECESSOR n)))" },
+                   "(MULTIPLY n (f (PREDECESSOR n)))",
+            description: "Factorial computed recursively" },
+        COUNT: {
+            value: "FIX \\c l.IS-NIL? l ZERO (ADD ONE (c (TAIL l)))",
+            description: "Return the number of elements in a list" },
+        SUM: {
+            value: "FIX \\f l.IS-NIL? l ZERO " +
+                   "(ADD (HEAD l) (f (TAIL l)))",
+            description: "Reduce to the sum of all numbers in a list" },
+        MAP: {
+            value: "FIX \\f g l.IS-NIL? l l " +
+                   "(PAIR (g (HEAD l)) (f g (TAIL l)))",
+            description: "Apply a function to each list member" },
         ADDUP: {
+            value: "FIX \\f n.IS-ZERO? n n " +
+                   "(ADD n (f (PREDECESSOR n)))",
             description: "Return the sum of a Church numeral and " +
                          "all of its predecessors",
-            value: "FIX \\f n.IS-ZERO? n ZERO " +
-                   "(ADD n (f (PREDECESSOR n)))" },
-        COUNT: {
-            description: "Return the number of elements in a list",
-            value: "FIX \\c l.IS-NIL? l ZERO " +
-                   "(ADD ONE (c (TAIL l)))" },
-        SUM: {
-            description: "Reduce to the sum of all numbers in a list",
-            value: "FIX \\f l.IS-NIL? l ZERO " +
-                   "(ADD (HEAD l) (f (TAIL l)))" },
-        MAP: { description: "Apply a function to each list member",
-               value: "FIX \\f g l.IS-NIL? l NIL " +
-                      "(PAIR (g (HEAD l)) (f g (TAIL l)))" },
+        },
 
-        IDENTITY: { description: "Identity combinator",
-                    value: "\\i.i" },
-        KESTRAL: { description: "Kestral combinator",
-                   value: "\\a b.a" },
-        KITE: { description: "Kite combinator",
-                value: "\\a b.b" },
-        MOCKINGBIRD: { description: "Mockingbird combinator",
-                       value: "\\a.a a" },
-        CARDINAL: { description: "Cardinal combinator",
-                    value: "\\a b c.a c b" },
-        BLUEBIRD: { description: "Bluebird combinator",
-                    value: "\\a b c.a (b c)" },
-        THRUSH: { description: "Thrush combinator",
-                  value: "\\a b.b a" },
-        VIRIO: { description: "Virio combinator",
-                 value: "\\a b c.c a b" },
-        STARLING: { description: "Starling combinator",
-                    value: "\\a b c.a c (b c)" },
-        IOTA: { description: "Iota combinator",
-                value: "\\f.f STARLING KESTRAL" },
+        // Combinator birds as named by Raymond Smullyan
+        IBIS: { value: "\\i.i", description: "Ibis combinator" },
+        KESTRAL: { value: "\\a b.a",
+                   description: "Kestral combinator" },
+        KITE: { value: "\\a b.b", description: "Kite combinator" },
+        MOCKINGBIRD: { value: "\\a.a a",
+                       description: "Mockingbird combinator" },
+        CARDINAL: { value: "\\a b c.a c b",
+                    description: "Cardinal combinator" },
+        BLUEBIRD: { value: "\\a b c.a (b c)",
+                    description: "Bluebird combinator" },
+        THRUSH: { value: "\\a b.b a",
+                  description: "Thrush combinator" },
+        VIRIO: { value: "\\a b c.c a b",
+                 description: "Virio combinator" },
+        STARLING: { value: "\\a b c.a c (b c)",
+                    description: "Starling combinator" },
+
+        // One combinator to rule them all...
+        IOTA: { value: "\\f.f STARLING KESTRAL",
+                description: "Iota combinator" },
     });
 
     static createInterface(element) {
@@ -917,119 +927,141 @@ class Lambda {
         element.appendChild(expression);
         return element;
     }
+}
 
-    static check(tests) {
-        let failures = 0;
-        Lambda.tests.forEach(test => {
-            let expression;
-            let expected;
-            let expectSK;
-            let description = [];
-            let forever = false;
+if ((typeof process !== "undefined") &&
+    process.release?.name === "node") {
+    const { describe, it } = await import('node:test');
+    const assert = await import('node:assert');
 
-            if (typeof(test) === "string")
-                expression = new Lambda(test);
-            else if (test && (typeof(test) === "object")) {
-                if (test.skip)
-                    return;
-                expression = new Lambda(test.test);
-                if (test.sk) {
-                    expected = new Lambda(test.sk);
-                    expectSK = true;
-                } else if (test.expected)
-                    expected = new Lambda(test.expected);
-                forever = test.forever;
-                description = Array.isArray(test.description) ?
-                              test.description : [test.description];
-            } else throw new Error("Unknown test type: " +
-                                   typeof(test));
-
-            if (description.length)
-                description.forEach(line => { console.log(line); });
-            console.log(expression.toString());
-            let count = 100;
-            if (expectSK) {
-                expression = expression.toStarlingKestral(
-                    {count: 1000});
-                console.log(">", expression.toString());
-            } else {
-                for (; !expression.isNormal() && (count > 0); --count) {
-                    expression = expression.reduce().simplify();
-                    if (!forever)
-                        console.log(">", expression.toString());
-                }
-            }
-
-            if (!forever && (count <= 0)) {
-                console.error("ERROR: depth exceeded");
-                ++failures;
-            } else if (forever && (count > 0)) {
-                console.error("ERROR: unexpected termination");
-                ++failures;
-            } else if (expected && !expected.equals(expression)) {
-                console.error("ERROR: expected", expected.toString());
-                ++failures;
-            } else console.log("Success:",
-                               expression.getFreeVariables());
-            console.log();
+    describe("Reduction", () => {
+        it("reduce to variable: (\\a.a) a -> a", () => {
+            assert.ok(new Lambda("(\\a.a) a").reduce().equals("a"));
         });
-        if (failures > 0) {
-            console.log("Result: " + failures + " failed");
-            return failures;
-        }
-    }
+        it("reduce to abstraction: (\\a.a) \\b.b -> \\b.b", () => {
+            assert.ok(new Lambda("(\\a.a) \\b.b")
+                .reduce().equals("\\b.b"));
+        });
+        it("reduce twice: (\\a.a) (\\b.b) c", () => {
+            assert.ok(new Lambda("(\\a.a) (\\b.b) c")
+                .reduce().reduce().equals("c"));
+        });
+        it("endless reduction: (\\a.a a) (\\a.a a)", () => {
+            const start = new Lambda("(\\a.a a) (\\a.a a)");
+            let expression = start;
+            for (let ii = 0; ii < 100; ++ii)
+                expression.reduce();
+            assert.strictEqual(expression, start);
+        });
+        it("normal order: (\\a.b) ((\\a.a a) (\\a.a a)) -> b", () => {
+            assert.ok(new Lambda("(\\a.b) ((\\a.a a) (\\a.a a))")
+                .reduce().equals("b"));
+        });
+        it("shadow variables", () => {
+            assert.ok(new Lambda("(\\a.(\\a.a) a a) b")
+                .reduce().reduce().equals("b b"));
+        });
+        it("variable names: (\\a.a) (\\b.b) <-> \\c.c", () => {
+            assert.ok(new Lambda("(\\a.a) (\\b.b)")
+                .reduce().equals("\\c.c"));
+        });
+        it("variable names: \\a.a b (\\c.c d) <-> " +
+           "\\c.c b (\\a.a d)", () => {
+               assert.ok(new Lambda("\\a.a b (\\c.c d)")
+                   .equals("\\c.c b (\\a.a d)"));
+        });
+    });
 
-    static tests = [
-        {test: "(\\a.a) a", expected: "a",
-         description: ["Check a simple reduction."]},
-        {test: "(\\a.a) \\b.b", expected: "\\b.b",
-         description: ["Check a simple reduction."]},
-        {test: "(\\a.a a) (\\b.b) c", expected: "c",
-         description: ["Check a multi-step reduction."]},
-        {test: "(\\a.a a) (\\a.a a)", forever: true,
-         description: ["Check that infinite loops keep looping."]},
-        {test: "(\\a.b) ((\\a.a a) (\\a.a a))",
-         expected: "b", description: [
-             "Check that normal order evaluation works."]},
-        {test: "(\\a.(\\a.a) a a) b", expected: "b b",
-         description: "Check that variables get shadowed."},
-        {test: "(\\a.a) (\\b.b)", expected: "\\c.c",
-         description: ["Check that variable names don't matter."]},
-        {test: "\\a.a b (\\c.c d)",
-         expected: "\\c.c b (\\a.a d)",
-         description: ["Check that variable names don't matter."]},
+    describe("Free Variable Capture", () => {
+        it("(\\a.\\b.a) b -> \\a.b", () => {
+            // This is the most important test.  Getting this
+            // right in the implementation is tricky and requires
+            // understanding that the free variables in the argument
+            // must not match the bound variables in the abstraction.
+            assert.ok(new Lambda("(\\a.\\b.a) b")
+                .reduce().equals("\\a.b"));
+        });
+        it("(\\a b.a) b -> \\c.b", () => {
+            assert.ok(new Lambda("(\\a b.a) b")
+                .reduce().equals("\\c.b"));
+        });
+        it("(\\a.\\b.b) b -> \\b.b", () => {
+            assert.ok(new Lambda("(\\a.\\b.b) b")
+                .reduce().equals("\\b.b"));
+        });
+        it("(\\a b.b) b -> \\b.b", () => {
+            assert.ok(new Lambda("(\\a b.b) b")
+                .reduce().equals("\\b.b"));
+        });
+        it("(\\g.(\\a.(\\b.a))) a -> \\a b.a", () => {
+            assert.ok(new Lambda("(\\g.(\\a.(\\b.a))) a")
+                .reduce().equals("\\a b.a"));
+        });
+        it("(\\g a b.a) a -> \\a b.a", () => {
+            assert.ok(new Lambda("(\\g a b.a) a")
+                .reduce().equals("\\a b.a"));
+        });
+    });
 
-        {test: "(\\a.\\b.a) b", expected: "\\a.b",
-         description: ["Avoid free variable capture."]},
-        {test: "(\\a b.a) b", expected: "\\a.b",
-         description: ["Avoid free variable capture."]},
-        {test: "(\\a.\\b.b) b", expected: "\\b.b",
-         description: ["Don't avoid capture too hard."]},
-        {test: "(\\a b.b) b", expected: "\\b.b",
-         description: ["Don't avoid capture too hard."]},
-        {test: "(\\g.(\\a.(\\b.a))) a", expected: "\\a b.a",
-         description: ["Subtle capture problem."]},
-        {test: "(\\g a b.a) a", expected: "\\a b.a",
-         description: ["Subtle capture problem."]},
+    describe("Church Numerals", () => {
+        it("\\f a.f -> NaN", () => {
+            // Not everything is a Church numeral
+            assert.ok(isNaN(new Lambda("\\f a.f").getChurchNumeral()));
+        });
+        it("\\f a.a -> 0", () => {
+            assert.strictEqual(new Lambda("\\f a.a")
+                .getChurchNumeral(), 0);
+        });
+        it("\\f a.f a -> 1", () => {
+            assert.strictEqual(new Lambda("\\f a.f a")
+                .getChurchNumeral(), 1);
+        });
+        it("\\f a.f (f a) -> 2", () => {
+            assert.strictEqual(new Lambda("\\f a.f (f a)")
+                .getChurchNumeral(), 2);
+        });
+    });
 
-        {test: "\\a b.a", sk: "K",
-         description: ["Convert Kestral to SK"]},
-        {test: "\\a b.b", sk: "K I",
-         description: ["Convert Kite to SK"]},
-        {test: "\\a b c.a (b c)",
-         sk: "S (S (K S) (S (K K) (S (K S) K))) (K (S (S (K S) K) (K I)))",
-         description: ["Convert Bluebird to SK"]},
-        {test: "\\a b c.a c b",
-         sk: "S (S (K S) (S (K K) (S (K S) (S (S (K S) K) (K I))))) (K K)",
-         description: ["Convert Cardinal to SK"]},
-        {test: "\\a b.b a", sk: "S (K (S I)) K",
-         description: ["Convert Thrush to SK"]},
-        {test: "\\a.a a", sk: "S I I",
-         description: ["Convert Mockingbird to SK"]},
-        {test: "\\f.(\\a.f (a a)) \\a.f (a a)",
-         sk: "S (S (S (K S) K) (K (S I I))) (S (S (K S) K) (K (S I I)))",
-         description: ["Convert Fixed Point to SK"]}
-    ];
+    describe("Starling Kestral", () => {
+        it("Ibis: \\a.a = I", () => {
+            assert.ok(new Lambda("\\a.a")
+                .toStarlingKestral().equals("I"));
+        });
+        it("Kestral: \\a b.a = K", () => {
+            assert.ok(new Lambda("\\a b.a")
+                .toStarlingKestral().equals("K"));
+        });
+        it("Kite: \\a b.b = K I", () => {
+            assert.ok(new Lambda("\\a b.b")
+                .toStarlingKestral().equals("K I"));
+        });
+        it("Bluebird: \\a b c.a (b c)", () => {
+            assert.ok(new Lambda("\\a b c.a (b c)")
+                .toStarlingKestral()
+                .equals("S (S (K S) (S (K K) (S (K S) K))) " +
+                        "(K (S (S (K S) K) (K I)))"));
+        });
+        it("Cardinal: \\a b c.a c b", () => {
+            assert.ok(new Lambda("\\a b c.a c b")
+                .toStarlingKestral()
+                .equals("S (S (K S) (S (K K) (S (K S) " +
+                        "(S (S (K S) K) (K I))))) (K K)"));
+        });
+        it("Thrush: \\a b.b a", () => {
+            assert.ok(new Lambda("\\a b.b a")
+                .toStarlingKestral().equals("S (K (S I)) K"));
+        });
+        it("Mockingbird: \\a.a a", () => {
+            assert.ok(new Lambda("\\a.a a")
+                .toStarlingKestral().equals("S I I"));
+        });
+        it("Fixed-point: \\f.(\\a.f (a a)) \\a.f (a a)", () => {
+            assert.ok(new Lambda("\\f.(\\a.f (a a)) \\a.f (a a)")
+                .toStarlingKestral()
+                .equals("S (S (S (K S) K) (K (S I I))) " +
+                        "(S (S (K S) K) (K (S I I)))"));
+        });
+    });
 }
 
 export default Lambda;
