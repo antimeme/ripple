@@ -238,10 +238,11 @@ if ((typeof process !== "undefined") &&
   describe("Ripple", () => {
       it("zeroish zero", () => { assert.ok(zeroish(0)); });
       it("zeroish not", () => {
-          assert.ok(!zeroish(1.0));
-          assert.ok(!zeroish(0.1));
-          assert.ok(!zeroish(0.01));
+          assert.ok(!zeroish( 1.0));
+          assert.ok(!zeroish( 0.1));
+          assert.ok(!zeroish( 0.01));
           assert.ok(!zeroish(-0.01));
+          assert.ok(!zeroish(-0.1));
           assert.ok(!zeroish(-1));
       });
 
