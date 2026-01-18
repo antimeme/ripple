@@ -148,10 +148,14 @@ export class Pathable {
     pathNodeIndex(node)
     { throw new Error("Must override Pathable.pathNodeIndex"); }
 
-    // Consider overriding these:
-
+    /**
+     * Override this to recognize equivalent nodes */
     pathSameNode(a, b) { return a === b; }
-    pathHeuristic(node, goal) { return 0; } // Dijkstra's Algorithm
+
+    /**
+     * This reduces A* to Dijkstra's Algorithm, but there's no
+     * universal way to define a heuristic.  Override this! */
+    pathHeuristic(node, goal) { return 0; }
 
     // Returns the heuristic of the cheapest goal
     #getBest(node, goals) {
