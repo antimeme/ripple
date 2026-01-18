@@ -478,6 +478,23 @@ export default class Camera {
     }
 
     /**
+     * Creates a temporary message to explain a result to the user.
+     * The message will be added as a div with the "toast" class.
+     * Consider adding CSS rules to use absolute positioning for
+     * such elements.  An additional "fade-out" class will be added
+     * after two seconds, which can be used to change the visual
+     * style to warn that it will disappear soon. */
+    static setToast(message) {
+        const toast = document.createElement("div");
+        toast.classList.add("toast");
+        toast.innerText = message;
+        document.body.append(toast);
+        setTimeout(() => toast.classList.add("fade-out"), 2000);
+        toast.addEventListener("transitionend", () => toast.remove());
+        console.log(message);
+    }
+
+    /**
      * Calls a specified function after the page has completely loaded
      * and an array of URLs are fetched using XMLHttpRequest (AJAX). */
     static preload(urls, fn, errfn) {
