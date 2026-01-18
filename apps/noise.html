@@ -65,12 +65,11 @@
      const canvas = document.querySelector("#noise");
      const config = { canvas: canvas, stats: s => console.log(
          "Stats:", s.min, s.max, s.max - s.min) };
-     window.location.search.substr(1).split("&")
-           .forEach(function(item) {
-               let pair = item.split("=");
-               config[pair[0]] =
-                   (pair.length === 2) ? decodeURIComponent(
-                       pair[1].replace(/\+/g, " ")) : true; });
+     window.location.search.substr(1).split("&").forEach(item => {
+         const pair = item.split("=");
+         if (!Object.hasOwn(config, pair[0]))
+             config[pair[0]] = (pair.length >= 2) ? decodeURIComponent(
+                 pair[1].replace(/\+/g, " ")) : true; });
      const fn = noise(config);
 
      window.addEventListener("resize", function() {
