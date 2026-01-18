@@ -1,5 +1,5 @@
 ## Makefile.am
-## Copyright (C) 2006-2025 by Jeff Gold.
+## Copyright (C) 2006-2026 by Jeff Gold.
 ##
 ## This program is free software: you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -326,12 +326,6 @@ server-key.pem: localhost.localdomain-key.pem
 server-chain.pem: localhost.localdomain-svc-chain.pem
 	cp $< $@
 
-## Node.js =============================================================
-
-node-serve: source/js/server.js \
-	    server-key.pem server-chain.pem rootca-cert.pem
-	node $<
-
 ## Rust ================================================================
 RUST_DISTSRC = \
 	$(srcdir)/source/ripple.rs \
@@ -628,6 +622,20 @@ mostlyclean-local-java:
 
 endif # HAVE_JAVA
 
+## JavaScript ==========================================================
+# Uses Node.js to run an HTTPS server as well as automated tests
+
+testjs:   package.json \
+	  $(srcdir)/source/js/ripple.mjs \
+	  $(srcdir)/source/js/mocha
+	npm test
+
+servejs:  package.json \
+	  $(srcdir)/source/js/server.js \
+	  server-key.pem server-chain.pem \
+	  rootCA/cert.pem
+	npm run serve
+
 ## System ==============================================================
 
 clean-local: clean-local-java
@@ -678,12 +686,13 @@ EXTRA_DIST = \
 
 .PRECIOUS: %CA/key.pem %CA/cert.pem %-key.pem
 
-.PHONY: clean-local-java mostlyclean-local-java \
-	node-serve rs-serve rs-asteroids \
+.PHONY: testjs servejs \
+	rs-serve rs-asteroids \
 	deploy deploy-jetty deploy-tomcat \
 	install-jetty-https \
 	jettypod-interact \
 	jettypod-start jettypod-stop \
 	jettypod-destroy jettypod-purge \
+	clean-local-java mostlyclean-local-java \
 	play-win32-asteroids \
 	play-sdl-asteroids

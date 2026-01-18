@@ -252,7 +252,7 @@ if ((typeof process !== "undefined") &&
           assert.ok(u.y === -3);
       });
 
-      it("choseKey", () => {
+      it("chooseKey", () => {
           const data = {"a": 1, "b": 2, "c": 3};
           assert.ok(Object.keys(data).includes(chooseKey(data)));
           assert.ok(Object.keys(data).includes(chooseKey(data)));

@@ -4,10 +4,6 @@
 *.o
 *.pyc
 *.log
-*.trs
-*.pem
-*.srl
-*.p12
 .deps/
 .dirstamp
 /.passwd
@@ -44,6 +40,12 @@
 /gizmo.exe
 /gizmo.ico
 /gizmo.res
+
+# Public Key Infrastructure
+/rootCA/
+/serviceCA/
+*.pem
+*.p12
 
 # Sqlite
 /expense.db

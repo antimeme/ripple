@@ -17,8 +17,8 @@
     },
     "main": "source/server.js",
     "scripts": {
-        "serve": "node source/server.js",
-        "mocha": "mocha source/mocha",
+        "test": "mocha source/js/mocha source/js/ripple.mjs",
+        "serve": "node source/js/server.js",
         "asteroids": "electron apps/asteroids.html",
         "streya": "electron apps/streya/index.html"
     }
