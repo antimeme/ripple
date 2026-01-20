@@ -1,5 +1,5 @@
 // multivec.mjs
-// Copyright (C) 2017-2023 by Jeff Gold.
+// Copyright (C) 2017-2026 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -68,11 +68,12 @@ function zeroish(value) {
 };
 
 // Support for canonicalBasis routine
-let basisExp = new RegExp(/(([oOiIuUnN])(0|[1-9][0-9]*))|[xyzwtXYZWT]/);
-let termExp = new RegExp(
+const basisExp = new RegExp(
+    /(([oOiIuUnN])(0|[1-9][0-9]*))|[xyzwtXYZWT]/);
+const termExp = new RegExp(
     "^\\s*([-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?)?" +
     "(([oOiIuU](0|[1-9][0-9]*)|[xyzwtXYZWT])*)(\\s+([+-])\\s+)?");
-let basisCache = {};
+const basisCache = {};
 
 /**
  * Converts basis strings to a canonical form to make them
