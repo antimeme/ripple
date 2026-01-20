@@ -156,8 +156,10 @@ class BaseGrid {
         } else if (config && !isNaN(config.edge)) {
             this._radius = this._findRadius(config.edge);
             this._edge   = config.edge;
-        } else throw new Error(
-            "Must specify grid size using either radius or edge");
+        } else {
+            this._radius = 0.5;
+            this._edge   = this._findEdge(this._radius);
+        }
         this._init(config);
     }
 
@@ -566,7 +568,7 @@ class SquareGrid extends BaseGrid {
                          y: nodeA.y - halfedge});
             result.push({x: nodeA.x + (nodeB.x - nodeA.x) / 2,
                          y: nodeA.y + halfedge});
-        } else throw Error("getPairPoints called on same node");
+        } else throw new Error("getPairPoints called on same node");
         return result;
     }
 }
