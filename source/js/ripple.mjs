@@ -232,39 +232,8 @@ export function preloadURLs(urls, fn, errfn) {
 
 if ((typeof process !== "undefined") &&
     process.release?.name === "node") {
-  const { describe, it } = await import('node:test');
-  const assert = await import('node:assert');
-
-  describe("Ripple", () => {
-      it("zeroish zero", () => { assert.ok(zeroish(0)); });
-      it("zeroish not", () => {
-          assert.ok(!zeroish( 1.0));
-          assert.ok(!zeroish( 0.1));
-          assert.ok(!zeroish( 0.01));
-          assert.ok(!zeroish(-0.01));
-          assert.ok(!zeroish(-0.1));
-          assert.ok(!zeroish(-1));
-      });
-
-      it("pair/unpair", () => {
-          const u = unpair(pair(2, -3));
-          assert.ok(u.x === 2);
-          assert.ok(u.y === -3);
-      });
-
-      it("chooseKey", () => {
-          const data = {"a": 1, "b": 2, "c": 3};
-          assert.ok(Object.keys(data).includes(chooseKey(data)));
-          assert.ok(Object.keys(data).includes(chooseKey(data)));
-          assert.ok(Object.keys(data).includes(chooseKey(data)));
-          assert.ok(Object.keys(data).includes(chooseKey(data)));
-          assert.ok(Object.keys(data).includes(chooseKey(data)));
-      });
-
-      it("displayMetric", () => {
-          assert.strictEqual(displayMetric(1024, "m", 2), "1.02 km");
-      });
-  });
+  //const { describe, it } = await import('node:test');
+  //const assert = await import('node:assert');
 }
 
 export default {

@@ -625,9 +625,7 @@ endif # HAVE_JAVA
 ## JavaScript ==========================================================
 # Uses Node.js to run an HTTPS server as well as automated tests
 
-testjs:   package.json \
-	  $(srcdir)/source/js/ripple.mjs \
-	  $(srcdir)/source/js/mocha
+testjs: package.json $(srcdir)/source/js/mocha/*.mjs
 	npm test
 
 servejs:  package.json \
