@@ -443,6 +443,13 @@ class Multivec {
     isBivector() { return this.isKVector(2); }
 
     /**
+     * Returns the coefficient of the basis term with the given label */
+    coeff(value) {
+        const basis = canonicalBasis(value);
+        return Object.hasOwn(this, basis.label) ? this[basis.label] : 0;
+    }
+
+    /**
      * Return the sum of this multivector and each argument. */
     add(other) {
         let result = {};
