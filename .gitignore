@@ -93,3 +93,5 @@
 
 # Streya
 apps/streya/data.html
+
+/matryoshka/*.qcow2
