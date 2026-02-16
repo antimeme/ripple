@@ -1,6 +1,5 @@
 /**
- * gizmo-sdl.c
- * Copyright (C) 2024-2025 by Jeff Gold.
+ * gizmo-sdl.c: Copyright (C) 2024-2026 by Jeff Gold.
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -56,8 +55,9 @@ gizmo_failmsg(const char *funcname, int status,
   int result = EXIT_SUCCESS;
   if (status < 0) {
     SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s\n", funcname, errfn());
-    SDL_ShowSimpleMessageBox
-      (SDL_MESSAGEBOX_ERROR, funcname, errfn(), 0);
+    if (errfn != Mix_GetError)
+      SDL_ShowSimpleMessageBox
+        (SDL_MESSAGEBOX_ERROR, funcname, errfn(), 0);
     result = EXIT_FAILURE;
   }
   return result;
@@ -76,8 +76,9 @@ gizmo_chknull(const char *funcname, void *ptr,
   int result = EXIT_SUCCESS;
   if (!ptr) {
     SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: %s\n", funcname, errfn());
-    SDL_ShowSimpleMessageBox
-      (SDL_MESSAGEBOX_ERROR, funcname, errfn(), 0);
+    if (errfn != Mix_GetError)
+      SDL_ShowSimpleMessageBox
+        (SDL_MESSAGEBOX_ERROR, funcname, errfn(), 0);
     result = EXIT_FAILURE;
   }
   return result;
