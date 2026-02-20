@@ -57,7 +57,7 @@ Debian is community driven and free.  There are straightforward
 procedures for upgrading.  These things make it an excellent choice
 for most purposes.
 
-#### Upgrade to Next Release
+### Upgrade to Next Release
 
   - \# for file in /etc/apt/sources.list /etc/apt/sources.list.d/*; do
         sed s,\b$old\b,$new,g $file > $file.edited
@@ -66,7 +66,7 @@ for most purposes.
   - \# for target in clean update upgrade full-upgrade autoremove; do \
         apt-get $target; done
 
-#### Package Utilities
+### Package Utilities
 
   - \# apt update && apt upgrade -y
   - $ apt list # list installed packages
@@ -75,14 +75,13 @@ for most purposes.
   - $ dpkg -S /path/to/file # find package that owns a file
   - \# apt remove $package # remove an installed package
 
-#### Useful Packages
+### Useful Packages
 
-  - \# apt install -y emacs curl \
+  - \# apt install -y emacs vim curl \
            build-essential gdb valgrind git \
-           autoconf automake libtool \
+           autoconf automake libtool pkgconf \
            libsdl2{,-mixer,-ttf,-gfx,-image}-dev \
-           nodejs npm emscripten \
-           default-jdk gradle
+           nodejs npm emscripten default-jdk gradle
   - \# apt install -y apache2 jetty9 tomcat10
 
 ## RedHat Enterprise Linux
@@ -92,7 +91,7 @@ corporations, making it important to keep up with.  RockyLinux is a
 good choice for a compatible distribution without licensing fees and
 other encumberance.
 
-#### Package Utilities
+### Package Utilities
 
   - \# dnf update -y
   - $ rpm -qa # list installed packages
@@ -101,12 +100,12 @@ other encumberance.
   - $ rpm -qf /path/to/file # find package that owns a file
   - \# rpm -e $package # remove an installed package
 
-#### Useful Packages
+### Useful Packages
 
   - \# dnf config-manager --set-enabled crb
   - \# dnf install epel-release
   - \# dnf groupinstall 'Development Tools'
-  - \# dnf install -y emacs curl \
+  - \# dnf install -y emacs vim curl \
            gcc make gdb valgrind git \
            autoconf automake libtool \
            SDL2{,_{mixer,ttf,gfx,image}}-devel \
@@ -117,8 +116,15 @@ other encumberance.
 ## MSYS2
 
 MSYS2 is easy to install on Microsoft Windows, giving that platform
-essential tools that make it nearly tolerable.  The package manager is
-from Arch Linux so the instructions below may be applicable there.
+essential tools that make it nearly tolerable.  However, Microsoft
+offers Web Services for Linux version 2 (WSL2) which allows the use of
+a Linux kernel built against Windows.  This makes it possible to have
+a proper Debian system that can share files (for example through
+/mnt/c/Users/username for c:\Users\username).  This is a bit more
+complex to install though, so notes about MSYS2 are included here.
+
+The package manager is from Arch Linux so the instructions below
+may be applicable there.
 
 #### Package Utilities
 
@@ -140,9 +146,55 @@ from Arch Linux so the instructions below may be applicable there.
       "$MINGW_PACKAGE_PREFIX-autotools" \
       "mingw-w64-x86_64-SDL2{,_{mixer,ttf,gfx,image}}"
 
+## FreeBSD
+
+FreeBSD is a stable and well supported operating system derived from
+the Berkley Software Distribution.
+
+### Package Utilities
+
+  - \# pkg update
+  - $ pkg info # list installed packages
+  - $ pkg search $term # list packages that match a search term
+  - $ pkg info -l $package # list files owned by package
+  - $ pkg which /path/to/file # find package that owns a file
+  - \# pkg delete $package # remove an installed package
+
+### Useful Packages
+
+  - \# pkg install -y emacs vim curl \
+           gcc gmake gdb valgrind git \
+           autoconf automake libtool pkgconf \
+           sdl2 sdl2_{mixer,ttf,gfx,image}} \
+           nodejs npm emscripten \
+           java-latest-openjdk gradle
+  - \# pkg install -y sdl2 sdl_{mixer,ttf,gfx,image}
+
+## OpenBSD
+
+OpenBSD is a security focused operating system derived from Berkley
+System Distribution.  This is quirky and less feature rich compared to
+Debian but is useful when security is a critical priority.
+
+#### Package Utilities
+
+  - $ doas pkg_add -Uu # update packages
+  - $ doas pkg_add -u # update installed packages
+  - $ pkg_info # list installed packages
+  - $ pkg_info -Q $term # list packages that match a search term
+  - $ pkg_add -L $package # list files owned by package
+  - $ pkg_info -E /path/to/file # find package that owns a file
+  - $ pkg_delete $package # remove an installed package
+
+#### Useful Packages
+
+  - $ doas pkg_add -v emacs curl git
+  - $ doas pkg_add -v autoconf automake libtool \
+                      sdl2 sdl2-gfx sdl2-ttf sdl2-mixer sdl2-image
+
 ## License
 
-Copyright (C) 2006-2025 by Jeff Gold.
+Copyright (C) 2006-2026 by Jeff Gold.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
