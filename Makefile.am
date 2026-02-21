@@ -233,7 +233,7 @@ rootCA/cert.pem: rootCA/key.pem
 # entities but cannot sign subordinate authorities.
 %CA/cert.pem: %CA/req.pem rootCA/key.pem rootCA/cert.pem
 	OPENSSL_CONF=@srcdir@/scripts/ca.conf \
-	$(OPENSSL) ca -in $< -out $@ -batch -rand_serial \
+	$(OPENSSL) ca -in $< -out $@ -batch -create_serial \
 	    -name CA_root -extensions ca1_role_ext
 
 # When it is necessary to revoke a certificate make a copy named
@@ -274,7 +274,7 @@ USERFILE = /etc/passwd
 	    cp clientCA/$$SERIAL.pem $@; \
 	else \
 	    OPENSSL_CONF=@srcdir@/scripts/ca.conf \
-	    $(OPENSSL) ca -in $< -out $@ -batch -rand_serial \
+	    $(OPENSSL) ca -in $< -out $@ -batch -create_serial \
 	        -name CA_client -extensions client_role_ext; fi
 
 %-cert.der: %-cert.pem
@@ -313,7 +313,7 @@ P12PASS = $${P12PASS:-123456}
 	    cp clientCA/$$SERIAL.pem $@; \
 	else \
 	    OPENSSL_CONF=@srcdir@/scripts/ca.conf \
-	    $(OPENSSL) ca -in $< -out $@ -batch -rand_serial \
+	    $(OPENSSL) ca -in $< -out $@ -batch -create_serial \
 	        -name CA_service -extensions server_role_ext; fi
 
 %-svc-chain.pem: %-svc-cert.pem serviceCA/cert.pem
