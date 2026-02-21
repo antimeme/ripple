@@ -1,3 +1,7 @@
+---
+title: Ripple Overview
+---
+
 Ripple is a collection of applications and libraries compiled over a
 career in software development.  It's eclectic.  Start by having a
 look at some of the web [apps](apps/).
@@ -145,52 +149,6 @@ may be applicable there.
       "$MINGW_PACKAGE_PREFIX-toolchain" \
       "$MINGW_PACKAGE_PREFIX-autotools" \
       "mingw-w64-x86_64-SDL2{,_{mixer,ttf,gfx,image}}"
-
-## FreeBSD
-
-FreeBSD is a stable and well supported operating system derived from
-the Berkley Software Distribution.
-
-### Package Utilities
-
-  - \# pkg update
-  - $ pkg info # list installed packages
-  - $ pkg search $term # list packages that match a search term
-  - $ pkg info -l $package # list files owned by package
-  - $ pkg which /path/to/file # find package that owns a file
-  - \# pkg delete $package # remove an installed package
-
-### Useful Packages
-
-  - \# pkg install -y emacs vim curl \
-           gcc gmake gdb valgrind git \
-           autoconf automake libtool pkgconf \
-           sdl2 sdl2_{mixer,ttf,gfx,image}} \
-           nodejs npm emscripten \
-           java-latest-openjdk gradle
-  - \# pkg install -y sdl2 sdl_{mixer,ttf,gfx,image}
-
-## OpenBSD
-
-OpenBSD is a security focused operating system derived from Berkley
-System Distribution.  This is quirky and less feature rich compared to
-Debian but is useful when security is a critical priority.
-
-#### Package Utilities
-
-  - $ doas pkg_add -Uu # update packages
-  - $ doas pkg_add -u # update installed packages
-  - $ pkg_info # list installed packages
-  - $ pkg_info -Q $term # list packages that match a search term
-  - $ pkg_add -L $package # list files owned by package
-  - $ pkg_info -E /path/to/file # find package that owns a file
-  - $ pkg_delete $package # remove an installed package
-
-#### Useful Packages
-
-  - $ doas pkg_add -v emacs curl git
-  - $ doas pkg_add -v autoconf automake libtool \
-                      sdl2 sdl2-gfx sdl2-ttf sdl2-mixer sdl2-image
 
 ## License
 
