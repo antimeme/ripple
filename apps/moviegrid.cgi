@@ -5,6 +5,7 @@ import csv
 from datetime import datetime, time, timedelta
 from io import StringIO
 from flask import Flask, make_response, request, render_template_string
+from markupsafe import escape
 
 app = Flask(__name__)
 
@@ -308,7 +309,7 @@ def generate_svg(movies, when, wrap, merge):
                 f'        x="{text_x}" y="{text_y}"',
                 f'        fill="{TEXT_COLOR}" font-family="Montserrat"',
                 f'        text-anchor="middle">',
-                f'        {part}</text>'])
+                f'        {escape(part)}</text>'])
             text_y += 10
         svg.extend([
             f'  <line x1="{x + theater_width + 2}"',
@@ -355,7 +356,7 @@ def generate_svg(movies, when, wrap, merge):
                     f'        text-anchor="left" font-size="9"',
                     f'        font-family="Barlow Condensed"',
                     f'        font-weight="600">',
-                    f'    {part}', '  </text>'])
+                    f'    {escape(part)}', '  </text>'])
                 text_y += 10
 
             svg.append('</g>')
