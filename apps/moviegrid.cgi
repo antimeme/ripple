@@ -77,7 +77,7 @@ HTML_TEMPLATE = '''
   <form method="post" action="{{ base_path }}/generate">
     <h3>Paste CSV Data</h3>
     <textarea name="csv_data" rows="5">
-Event,Film Start Date,Film Start Time,Runtime,Category,Venue,Screen
+Event,Film Start Date,Event Start Time,Runtime,Category,Venue,Screen
 Movie1,18-Apr-2026,14:30,120,Action,Brattle Theater,
 Movie2,18-Apr-2026,16:00,90,Comedy,Coolidge Corner,1
 Movie3,18-Apr-2026,15:05,105,Drama,Somerville Theater,1</textarea>
@@ -388,15 +388,15 @@ def generate():
     try:
         csv_reader = csv.DictReader(StringIO(csv_content))
         required_columns = {
-            'Event', 'Film Start Date', 'Film Start Time',
+            'Event', 'Film Start Date', 'Event Start Time',
             'Runtime', 'Category', 'Venue', 'Screen' }
         found_columns = set(csv_reader.fieldnames) or []
         if not required_columns.issubset(found_columns):
-            foundcols = ', '.join(found_columns)
-            reqcols = ', '.join(required_columns)
+            missing = ', '.join(required_columns - found_columns)
+            extra = ', '.join(found_columns - required_columns)
             return render_template_string(
-                HTML_TEMPLATE, error=f"CSV has ({foundcols}) but " +
-                f"needs ({reqcols})", svgs={})
+                HTML_TEMPLATE, error=f"CSV is missing {missing} " +
+                f"but has extra {extra}", svgs={})
 
         dates = set()
 
@@ -417,7 +417,7 @@ def generate():
 
                 movies.append({
                     'title': row['Event'].strip(), 'date': date,
-                    'start_time': parse_time(row['Film Start Time']),
+                    'start_time': parse_time(row['Event Start Time']),
                     'runtime': parse_runtime(row['Runtime']),
                     'category': row['Category'].strip(),
                     'theater': theater })
