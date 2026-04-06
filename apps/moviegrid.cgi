@@ -8,7 +8,7 @@ from flask import Flask, make_response, request, render_template_string
 
 app = Flask(__name__)
 
-TEXT_COLOR = '1f3242'
+TEXT_COLOR = '#1f3242'
 
 FIXED_COLORS = {
     'Documentary': '#F1BA40',
@@ -350,7 +350,7 @@ def generate_svg(movies, when, wrap, merge):
             text_y = y + 10
             for part in parts:
                 svg.extend([
-                    f'  <text x="{x + 3}" y="{text_y}"' +
+                    f'  <text x="{x + 3}" y="{text_y}" ' +
                     f'fill="{TEXT_COLOR}"',
                     f'        text-anchor="left" font-size="9"',
                     f'        font-family="Barlow Condensed"',
