@@ -17,10 +17,10 @@ FIXED_COLORS = {
     'Shorts Package': '#CCB8C6',
     'Free Thing': '#EA8186' }
 
+# Default colors for unrecognized categories
 COLORS = [
-    '#003366', '#006400', '#800000', '#4B0082',
-    '#008080', '#000080', '#556B2F', '#2F4F4F',
-    '#8B4513', '#B22222' ]
+    '#FFD700', '#FFB347', '#FF6B6B', '#4ECDC4', '#1E90FF',
+    '#32CD32', '#BA55D3', '#FF69B4', '#F0E68C', '#87CEEB' ]
 
 # Valid theaters
 VALID_THEATERS = (
@@ -49,8 +49,8 @@ HTML_TEMPLATE = '''
                 transition: 0.3s; color: black; }
   .tab button:hover { background-color: #ddd; }
   .tab button.active { background-color: #ccc; }
-  .tabcontent { display: none; padding: 20px; border: 1px solid #ccc;
-                border-top: none; }
+  .tabcontent { display: none; }
+  form { border: 1px solid #ccc; border-top: none; padding: 20px; }
 </style>
 <div class="container">
 <h1>&#x1F3AC; Movie Grid Generator</h1>
@@ -59,7 +59,7 @@ HTML_TEMPLATE = '''
 <div class="error">{{ error }}</div>
 {% endif %}
 
-{% for key in svgs.keys() %}
+{% for key in svgs|default({}) %}
   <div style="margin-top: 30px;">
     {{ svgs[key]|safe }}
   </div>
@@ -74,42 +74,31 @@ HTML_TEMPLATE = '''
   </button>
 </div>
 
-<div id="Paste" class="tabcontent">
-  <form method="post" action="{{ base_path }}/generate">
-    <h3>Paste CSV Data</h3>
+<form method="post" action="{{ base_path }}/generate"
+      enctype="multipart/form-data">
+  <input id="tabInput" name="tab" type="hidden" value="" />
+
+  <div id="Upload" class="tabcontent">
+    <input type="file" name="csv_file" accept=".csv" />
+  </div>
+
+  <div id="Paste" class="tabcontent">
     <textarea name="csv_data" rows="5">
 Event,Film Start Date,Event Start Time,Runtime,Category,Venue,Screen
-Movie1,18-Apr-2026,14:30,120,Action,Brattle Theater,
-Movie2,18-Apr-2026,16:00,90,Comedy,Coolidge Corner,1
-Movie3,18-Apr-2026,15:05,105,Drama,Somerville Theater,1</textarea>
-    <br /><br />
-    <label>
-      Wrap Length <input type="text" size="4" name="wrap" value="18" />
-    </label><br />
-    <label>
-      Merge Height <input type="text" size="4"
-                          name="merge" value="27" />
-    </label><br />
-    <button type="submit">Generate SVG</button>
-  </form>
-</div>
+Narrative,18-Apr-2026,14:30,120,Narrative,Brattle Theater,
+Documentary,18-Apr-2026,16:00,90,Documentary,Coolidge Corner,1
+Short,18-Apr-2026,15:05,105,Shorts Package,Somerville Theater,1</textarea>
+  </div>
 
-<div id="Upload" class="tabcontent">
-  <form method="post" action="{{ base_path }}/generate"
-        enctype="multipart/form-data">
-    <h3>Upload CSV File</h3>
-    <input type="file" name="csv_file" accept=".csv">
-    <br /><br />
-    <label>
-      Wrap Length <input type="text" size="4" name="wrap" value="18" />
-    </label><br />
-    <label>
-      Merge Height <input type="text" size="4"
-                          name="merge" value="27" />
-    </label><br />
-    <button type="submit">Generate SVG</button>
-  </form>
-</div>
+  <label>
+    Wrap Length <input type="text" size="4" name="wrap" value="19" />
+  </label><br />
+  <label>
+    Merge Height <input type="text" size="4"
+                        name="merge" value="25" />
+  </label><br />
+  <button type="submit">Generate SVG</button>
+</form>
 
 <script>
   function download(name, blob) {
@@ -123,7 +112,7 @@ Movie3,18-Apr-2026,15:05,105,Drama,Somerville Theater,1</textarea>
     URL.revokeObjectURL(url);
   }
 
-{% for key in svgs.keys() %}
+{% for key in svgs|default({}) %}
   const svg_{{ key }} = {{ svgs[key]|tojson }};
   document.getElementById('download_svg_{{ key }}')
           .addEventListener("click", event => {
@@ -133,14 +122,18 @@ Movie3,18-Apr-2026,15:05,105,Drama,Somerville Theater,1</textarea>
 {% endfor %}
 
   function openTab(event, tabName) {
-    var ii, tabcontent, tablinks;
-    tabcontent = document.getElementsByClassName("tabcontent");
+    let ii;
+
+    const tabcontent = document.getElementsByClassName("tabcontent");
     for (ii = 0; ii < tabcontent.length; ++ii)
       tabcontent[ii].style.display = "none";
-    tablinks = document.getElementsByClassName("tablinks");
+
+    const tablinks = document.getElementsByClassName("tablinks");
     for (ii = 0; ii < tablinks.length; ++ii)
       tablinks[ii].className =
         tablinks[ii].className.replace(" active", "");
+
+    document.getElementById("tabInput").value = tabName;
     document.getElementById(tabName).style.display = "block";
     event.currentTarget.className += " active";
   }
@@ -367,23 +360,23 @@ def generate_svg(movies, when, wrap, merge):
 @app.route('/')
 def index():
     return render_template_string(
-        HTML_TEMPLATE, error=None, svgs={})
+        HTML_TEMPLATE, error=None)
 
 @app.route('/generate', methods=['POST'])
 def generate():
     csv_content = None
 
-    if ('csv_file' in request.files and
-        request.files['csv_file'].filename):
-        csv_file = request.files['csv_file']
-        csv_content = csv_file.read().decode('utf-8-sig')
-    elif 'csv_data' in request.form and request.form['csv_data']:
+    if not 'tab' in request.form:
+        pass
+    elif request.form["tab"] == "Upload":
+        csv_file = request.files["csv_file"]
+        csv_content = csv_file.read().decode("utf-8-sig")
+    elif request.form["tab"] == "Paste":
         csv_content = request.form['csv_data'].strip()
 
-        if not csv_content:
-            return render_template_string(
-                HTML_TEMPLATE, error="Please provide CSV data",
-                svgs={})
+    if not csv_content:
+        return render_template_string(
+            HTML_TEMPLATE, error="Please provide CSV data")
 
     movies = []
     try:
@@ -397,7 +390,7 @@ def generate():
             extra = ', '.join(found_columns - required_columns)
             return render_template_string(
                 HTML_TEMPLATE, error=f"CSV is missing {missing} " +
-                f"but has extra {extra}", svgs={})
+                f"but has extra {extra}")
 
         dates = set()
 
@@ -410,8 +403,7 @@ def generate():
                     return render_template_string(
                         HTML_TEMPLATE, 
                         error=f"Row {row_num}: Unknown theater " +
-                        f"'{theater}'. Valid theaters: {valid}",
-                        svgs={})
+                        f"'{theater}'. Valid theaters: {valid}")
 
                 date = parse_date(row['Film Start Date'])
                 dates.add(date)
@@ -425,18 +417,16 @@ def generate():
             except Exception as e:
                 return render_template_string(
                     HTML_TEMPLATE, 
-                    error=f"Row {row_num}: Error parsing data - {str(e)}",
-                    svgs={})
+                    error=f"Row {row_num}: Error parsing data - {str(e)}")
 
         if not movies:
             return render_template_string(
-                HTML_TEMPLATE, error="No valid movies found in CSV",
-                svgs={})
+                HTML_TEMPLATE, error="No valid movies found in CSV")
 
-        wrap = 18
+        wrap = 19
         if 'wrap' in request.form and request.form['wrap']:
             wrap = int(request.form['wrap'])
-        merge = 27
+        merge = 25
         if 'merge' in request.form and request.form['merge']:
             merge = int(request.form['merge'])
 
@@ -453,7 +443,7 @@ def generate():
     except Exception as e:
         return render_template_string(
             HTML_TEMPLATE,
-            error=f"Error processing CSV: {str(e)}", svgs={})
+            error=f"Error processing CSV: {str(e)}")
 
 def is_cgi():
     return os.environ.get('GATEWAY_INTERFACE', '').startswith('CGI/')
