@@ -270,7 +270,7 @@ def generate_svg(movies, when, wrap, merge):
             f'        stroke="#aaa" stroke-width="1"/>'])
         current_minute += 60
 
-    banner = when.strftime("%d %B %Y") if when is not None \
+    banner = when.strftime("%A (%d %B %Y)") if when is not None \
         else "Movies"
     banner_x = time_label_width + (svg_width - time_label_width) / 2
     svg.extend([
