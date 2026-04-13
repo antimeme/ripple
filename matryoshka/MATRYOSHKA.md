@@ -2,37 +2,26 @@
 title: Matryoshka QEMU Scripts
 ---
 
-This document contains the steps necessary to create virtual machines
-for a variety of free software operating systems as well as
-instructions for setting up a common set of features.
+There are quite a few free software operating systems with a variety
+of advantages and disadvantages.  This document is a collection of
+notes intended to make it easy to set things up quickly, either on
+a physical machine or in some kind of virtualized environment.
+
+Specific instructions are provided here for using QEMU because that
+system is simple, flexible and has minimal overhead.  Settings used
+here are known to work but are not necessarily the only possible
+configuration.  For example, more or fewer cores could be provided
+in most cases.
 
 ### Debian Host
+
+Install QEMU.
 
 ```sh
 $ sudo apt update && sudo apt install -y qemu-system-x86 qemu-utils
 ```
 
-## ReactOS
-
-### Create Virtual Machine (Debian host)
-
-```sh
-$ qemu-img create -f qcow2 reactos.qcow2 32G
-$ qemu-system-x86_64 -m 4G -smp 4 -boot d \
-    -netdev user,id=net0 -device e1000,netdev=net0 \
-    -drive file=reactos.qcow2,format=qcow2 \
-    -cdrom ~/Downloads/ReactOS-0.4.15-release-1-gdbb43bbaeb2-x86.iso
-```
-
-### Run ReactOS
-
-```sh
-$ qemu-system-x86_64 -m 4G -smp 4 -vga virtio -display gtk -enable-kvm \
-    -drive file=reactos.qcow2,format=qcow2 \
-    -netdev user,id=net0 -device e1000,netdev=net0
-```
-
-## FreeBSD
+## FreeBSD Guest
 
 FreeBSD is a stable and well supported operating system derived from
 the Berkley Software Distribution.
@@ -62,42 +51,46 @@ $ qemu-system-x86_64 -m 4G -smp 4 -vga virtio -display gtk -enable-kvm \
 
 ### FreeBSD Notes
 
-Install some basic packages and make the user an administrator.
+Configure administrative access.
 
 ```sh
 $ su
-# pkg install -y sudo bash
+# pkg install -y sudo
 # pw groupmod wheel -m $USER
 # visudo
-# chsh $USER
+```
+
+Install the Bash shell.  Consider testing this in a separate shell
+before before closing the current shell, in case of an error that
+prevents login.
+
+```sh
+$ su
+$ sudo pkg install -y bash
+$ chsh -s /usr/local/bin/bash
 ```
 
 Common package management commands:
 
 ```sh
 $ sudo pkg update
+$ sudo pkg delete $package # remove an installed package
 $ pkg info # list installed packages
 $ pkg search $term # list packages that match a search term
 $ pkg info -l $package # list files owned by package
 $ pkg which /path/to/file # find package that owns a file
-$ sudo pkg delete $package # remove an installed package
 ```
 
 Install packages useful for development:
 
 ```sh
-$ sudo pkg install -y curl vim emacs git gmake gcc \
-                      gmake gcc autoconf automake libtool pkgconf \
-                      python3 openjdk8
+$ sudo pkg install -y \
+       curl vim emacs git gdb valgrind \
+       gmake gcc autoconf automake libtool pkgconf \
+       sdl2 sdl_{mixer,ttf,gfx,image} \
+       openjdk8 gradle java-latest-openjdk \
+       python3 nodejs npm emscripten
 ```
-
-  - \# pkg install -y gdb valgrind \
-           \
-           sdl2 sdl2_{mixer,ttf,gfx,image}} \
-           nodejs npm emscripten \
-           java-latest-openjdk gradle
-  - \# pkg install -y sdl2 sdl_{mixer,ttf,gfx,image}
-
 
 Install a web server:
 
@@ -150,7 +143,7 @@ the system boots into a user account.
 # NetBSD
 
 NetBSD is a free software operating system derived from Berkley
-System Distribution.  It is focused on portability.
+System Distribution and focused on portability.
 
 ### Create Virtual Machine (Debian host)
 
@@ -233,30 +226,51 @@ $ pkg_info -Fe /path/to/file # find package that owns a file
 $ sudo pkgin remove $package # remove an installed package
 ```
 
+Note that gcc is apparently part of the base system on NetBSD, so
+it's not necessary to install it using the package manager.
+
 Install some useful packages:
 
 ```sh
-$ sudo pkgin -y install curl vim emacs git \
-  gcc gmake autoconf automake libtool pkgconf \
+$ sudo pkgin -y install curl vim emacs firefox git \
+  gmake autoconf automake libtool pkgconf \
   SDL2 SDL2_{gfx,image,mixer,ttf}
+```
+
+Install and start a web server:
+
+```sh
+$ sudo pkgin -y apache
+$ sudo cp /usr/pkg/share/examples/rc.d/apache /etc/rc.d/
+$ echo 'apache=YES' | sudo tee -a /etc/rc.conf
+$ sudo vi /usr/pkg/etc/httpd/httpd.conf
+$ sudo service apache start
+```
+
+Edit `ServerName` in `httpd2.conf` to reduce warning message clutter.
+Ensure that the following lines are not commented out:
+
+```
+LoadModule userdir_module lib/httpd/mod_userdir.so
+Include etc/httpd/httpd-userdir.conf
 ```
 
 Install XFCE:
 
 ```sh
 $ sudo pkgin -y install xfce4 dbus
+$ sudo cp /usr/pkg/share/examples/rc.d/dbus /etc/rc.d/
 $ echo dbus=YES | sudo tee -a /etc/rc.conf
-$ echo hal=YES | sudo tee -a /etc/rc.conf
-$ sudo service start dbus
-$ sudo service start hal
-$ echo "exec startxfce4" > ~/.xsession
+$ sudo service dbus start
+$ cat <<EOF > ~/.xsession
+exec /usr/pkg/bin/xfce4-session
+EOF
 ```
 
 # OpenBSD
 
-OpenBSD is a security focused operating system derived from Berkley
-System Distribution.  This is quirky and less feature rich compared to
-Debian but is useful when security is a critical priority.
+OpenBSD is a free software operating system derived from Berkley
+System Distribution and focused on security.
 
 ### Create Virtual Machine (Debian host)
 
@@ -364,4 +378,24 @@ Create a line that looks like this:
 
 ```
 DisplayManager*autoLogin: username
+```
+
+## ReactOS
+
+### Create Virtual Machine (Debian host)
+
+```sh
+$ qemu-img create -f qcow2 reactos.qcow2 32G
+$ qemu-system-x86_64 -m 4G -smp 4 -boot d \
+    -netdev user,id=net0 -device e1000,netdev=net0 \
+    -drive file=reactos.qcow2,format=qcow2 \
+    -cdrom ~/Downloads/ReactOS-0.4.15-release-1-gdbb43bbaeb2-x86.iso
+```
+
+### Run ReactOS
+
+```sh
+$ qemu-system-x86_64 -m 4G -smp 4 -vga virtio -display gtk -enable-kvm \
+    -drive file=reactos.qcow2,format=qcow2 \
+    -netdev user,id=net0 -device e1000,netdev=net0
 ```
