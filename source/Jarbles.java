@@ -68,14 +68,14 @@ public class Jarbles extends net.antimeme.ripple.Applet
     public void init() {
         setLayout(new GridLayout());
 
-        net.antimeme.ripple.Applet.AudioClip soundMove = null;
+        net.antimeme.ripple.Applet.SoundClip soundMove = null;
         try {
-            soundMove = getAudioClip
+            soundMove = getSoundClip
                 (getClass().getClassLoader().getResource
                  ("sounds/clickclack.wav"));
         } catch (IllegalArgumentException ex) {
             // Continue with game even if we can't get the sound
-            System.out.println("ERROR cannot create AudioClip: " +
+            System.out.println("ERROR cannot create SoundClip: " +
                                ex.getMessage());
         }
         gpb = gpw = new GraphicPlayer();
@@ -284,6 +284,12 @@ public class Jarbles extends net.antimeme.ripple.Applet
 
     @Override
     public MenuBar getMenuBar() { return mb; }
+
+    /**
+     * Provides command line help for this class.
+     * @return a string describing this library. */
+    public static String usageLine()
+    { return "A Java implementation of the Abalone board game."; }
 
     /**
      * Jarbles application entry point

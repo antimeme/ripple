@@ -303,13 +303,13 @@ public class GraphicPlayer extends Component
         protected Font font = null;
 
         // Sounds
-        protected net.antimeme.ripple.Applet.AudioClip soundMove = null;
+        protected net.antimeme.ripple.Applet.SoundClip soundMove = null;
 
         /**
          * Provide sound to play when a player moves
          * @param soundMove sound to play when a piece moves */
         public void setSoundMove
-            (net.antimeme.ripple.Applet.AudioClip soundMove)
+            (net.antimeme.ripple.Applet.SoundClip soundMove)
         { this.soundMove = soundMove; }
 
         /**
@@ -736,7 +736,7 @@ public class GraphicPlayer extends Component
     private Theme     retheme;
 
     /** sound to play when player moves */
-    protected net.antimeme.ripple.Applet.AudioClip soundMove = null;
+    protected net.antimeme.ripple.Applet.SoundClip soundMove = null;
 
     /**
      * Creates a graphic player.
@@ -789,7 +789,7 @@ public class GraphicPlayer extends Component
      * Set the sound to play when a move is made
      * @param soundMove sound to play when a move is made */
     public void setSoundMove
-        (net.antimeme.ripple.Applet.AudioClip soundMove) {
+        (net.antimeme.ripple.Applet.SoundClip soundMove) {
         this.soundMove = soundMove;
         theme.setSoundMove(soundMove);
     }
@@ -989,13 +989,13 @@ public class GraphicPlayer extends Component
         return lastMove;
     }
 
+    public void componentShown(ComponentEvent e) {}
     public void componentHidden(ComponentEvent e) {}
     public void componentMoved(ComponentEvent e) {}
     public synchronized void componentResized(ComponentEvent e) {
         buffer = null;
         repaint();
     }
-    public void componentShown(ComponentEvent e) {}
     public void mouseClicked(MouseEvent e) {} 
     public void mouseEntered(MouseEvent e) {}
     public void mouseExited(MouseEvent e) {}

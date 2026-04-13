@@ -1,5 +1,5 @@
 // Asteroids.java
-// Copyright (C) 2024 by Jeff Gold.
+// Copyright (C) 2026 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -17,6 +17,7 @@
 // ---------------------------------------------------------------------
 package net.antimeme.asteroids;
 import net.antimeme.ripple.Applet;
+import net.antimeme.ripple.Ripple;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -28,6 +29,8 @@ import java.awt.event.KeyListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.ComponentEvent;
 import java.text.NumberFormat;
 import java.util.Random;
 import java.util.List;
@@ -38,8 +41,9 @@ import java.util.LinkedList;
  * arcade game originally designed by Lyle Rains, Ed Logg and Dominic
  * Walsh and released by Atari in 1979.  Source:
  * https://en.wikipedia.org/wiki/Asteroids_(video_game) */
-public class Asteroids extends net.antimeme.ripple.Applet
-    implements Runnable, KeyListener, MouseListener
+public class Asteroids extends Applet
+    implements Runnable, KeyListener, MouseListener,
+               ComponentListener
 {
     protected static boolean zeroish(float value) {
         final float epsilon = 0.00000000001f;
@@ -318,29 +322,29 @@ public class Asteroids extends net.antimeme.ripple.Applet
     protected Font fontScore = null;
 
     /** See ../apps/credits.html for details on sounds */
-    protected Applet.AudioClip soundShootBeam;
+    protected Applet.SoundClip soundShootBeam;
     /** See ../apps/credits.html for details on sounds */
-    protected Applet.AudioClip soundSmashShip;
+    protected Applet.SoundClip soundSmashShip;
     /** See ../apps/credits.html for details on sounds */
-    protected Applet.AudioClip soundSmashRock;
+    protected Applet.SoundClip soundSmashRock;
     /** See ../apps/credits.html for details on sounds */
-    protected Applet.AudioClip soundThruster;
+    protected Applet.SoundClip soundThruster;
     /** See ../apps/credits.html for details on sounds */
-    protected Applet.AudioClip soundSaucerSiren;
+    protected Applet.SoundClip soundSaucerSiren;
 
-    protected Applet.AudioClip fetchSound(String resource) {
-        Applet.AudioClip result = null;
+    protected Applet.SoundClip fetchSound(String resource) {
+        Applet.SoundClip result = null;
         try {
             java.net.URL url =
                 getClass().getClassLoader().getResource(resource);
-            result = getAudioClip(url);
+            result = getSoundClip(url);
         } catch (IllegalArgumentException ex) {
             // ...            
             throw ex;
         } catch (RuntimeException ex) {
             if (ex.getCause() instanceof
                 javax.sound.sampled.UnsupportedAudioFileException) {
-                System.out.println("ERROR unsupported AudioClip(" +
+                System.out.println("ERROR unsupported SoundClip(" +
                                    resource + "): " +
                                    ex.getCause().getMessage());
             } else throw ex;
@@ -432,8 +436,11 @@ public class Asteroids extends net.antimeme.ripple.Applet
         saucerShots.clear();
     }
 
-    @Override
-    public void resize(Dimension size) {
+    public void componentShown(ComponentEvent e) {}
+    public void componentHidden(ComponentEvent e) {}
+    public void componentMoved(ComponentEvent e) {}
+    public void componentResized(ComponentEvent e) {
+        Dimension size = getSize();
         buffer = new BufferedImage(size.width, size.height,
                                    BufferedImage.TYPE_INT_RGB);
         baseSize = (size.width < size.height) ?
@@ -481,6 +488,7 @@ public class Asteroids extends net.antimeme.ripple.Applet
 
         addKeyListener(this);
         addMouseListener(this);
+        addComponentListener(this);
     }
 
     @Override
@@ -926,6 +934,10 @@ public class Asteroids extends net.antimeme.ripple.Applet
     public void paint(Graphics gfx) {
         NumberFormat nfmt = NumberFormat.getNumberInstance();
         Dimension bounds = getSize();
+        if (buffer == null)
+            buffer = new BufferedImage
+                (bounds.width, bounds.height,
+                 BufferedImage.TYPE_INT_RGB);
         Graphics ctx = buffer.getGraphics();
         ctx.setColor(background);
         ctx.fillRect(0, 0, bounds.width, bounds.height);
@@ -1005,8 +1017,15 @@ public class Asteroids extends net.antimeme.ripple.Applet
     }
 
     /**
+     * Provides command line help for this class.
+     * @return a string describing this library. */
+    public static String usageLine()
+    { return "A clone of the 1979 arcade game of the same name."; }
+
+    /**
      * Entry point to start Asteroids application.
-     * @param args command line arguments */
-    public static void main(String[] args)
+     * @param args command line arguments
+     * @throws Exception anything can happen */
+    public static void main(String[] args) throws Exception
     { new Asteroids().standalone(args); }
 }
