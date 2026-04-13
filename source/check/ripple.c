@@ -55,16 +55,18 @@ struct test {
   DECLARE_TEST(0, check_juju),
 };
 
+struct failure {
+  int result;
+  const char *name;
+};
+
 struct results {
   unsigned total;
   unsigned skipped;
   unsigned errors;
   unsigned m_failures;
   unsigned n_failures;
-  struct failure {
-    int result;
-    const char *name;
-  } *failures;
+  struct failure *failures;
 };
 
 void
@@ -81,7 +83,7 @@ perform(struct test *test, struct results *results)
     if (results->n_failures >= results->m_failures) {
       unsigned new_m_failures = results->m_failures ?
         2 * results->m_failures : 16;
-      void *new_failures = realloc
+      struct failure *new_failures = realloc
         (results->failures, sizeof(*results->failures) *
          new_m_failures);
       if (new_failures) {
@@ -127,5 +129,6 @@ main(int argc, char **argv)
       printf("  FAILED %s: %d\n",
              results.failures[index].name,
              results.failures[index].result);
+  free(results.failures);
   return results.errors ? EXIT_FAILURE : EXIT_SUCCESS;
 }
