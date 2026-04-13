@@ -1,5 +1,5 @@
 // setting.mjs
-// Copyright (C) 2023-2025 by Jeff Gold.
+// Copyright (C) 2023-2026 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -26,6 +26,7 @@
 // in order to set everything up.
 import Ripple from "../ripple/ripple.mjs";
 import Camera from "../ripple/camera.mjs";
+import Grid   from "../ripple/grid.mjs";
 
 /**
  * Item definitions are used to determine properties of items that
@@ -337,11 +338,11 @@ export class Inventory {
 
 /**
  * A race is a kind of creature that a character can be.
- * Race defines what limbs a character has and how to determine
- * which has been hit on a successful attack.  It also defines
- * what items a character can wear.  Each limb is also a slot
- * to which a single item can be attached.  Items can introduce
- * additional slots. */
+ *
+ * Race defines what limbs a character has and how to determine which
+ * has been hit on a successful attack.  It also defines what items a
+ * character can wear.  Each limb is also a slot to which a single
+ * item can be attached.  Some items introduce additional slots. */
 export class Race {
     #inherit; #parent; #ignore; #default;
     #limbs; #draw;
@@ -355,7 +356,7 @@ export class Race {
         this.#speed   = race.speed;
         this.#limbs   = race.limbs;
         this.#draw    = race.draw;
-        this.#default = race.default;
+        this.#default = !!race.default;
         if (this.#default)
             Race.defaultRace = this;
         this.#actionPoints = race.actionPoints;
@@ -619,11 +620,196 @@ class Facility {
 }
 
 /**
- * Represents a person of some sort in the game world. */
+ * Represents a fixed space in which game events can take place.
+ * This is usually a building or a ship.  A structure itself doesn't
+ * know anything about characters but it does keep track of items. */
+export class Structure {
+    #name;
+    #grid;
+    #gridConfig;
+    #floorColor;
+    #cellData;
+    #defaultLevel;
+
+    constructor(structure, setting) {
+        this.#name       = structure?.name;
+        this.#grid       = Grid.create(
+            this.#gridConfig = structure?.grid);
+        this.#floorColor   = structure?.floorColor;
+        this.#defaultLevel = 0;
+        this.#cellData     = {};
+        if (Array.isArray(structure?.cellData))
+            structure.cellData.forEach(node =>
+                this.setCell(node, {
+                    floorColor: node.floorColor,
+                    inventory: new Inventory(
+                        node.inventory, setting) }));
+    }
+
+    connect(setting) {
+        Object.keys(this.#cellData).forEach(level =>
+            Object.keys(this.#cellData[level]).forEach(index =>
+                this.#cellData[level][index]
+                    .inventory.connect(setting)));
+    }
+
+    toJSON() {
+        const result = {};
+        if (this.#gridConfig)
+            result.grid = this.#gridConfig;
+        if (this.#floorColor)
+            result.floorColor = this.#floorColor;
+        if (this.#cellData) {
+            result.cellData = [];
+            Object.keys(this.#cellData).forEach(level => {
+                Object.keys(this.#cellData[level]).forEach(index => {
+                    const cell = this.#cellData[level][index];
+                    const node = Structure.getIndexNode(index);
+                    if (cell.inventory && cell.inventory.length)
+                        node.inventory = cell.inventory.toJSON();
+                    if (cell.floorColor)
+                        node.floorColor = cell.floorColor;
+                    result.cellData.push(node);
+                });
+            });
+        }
+        return result;
+    }
+
+    get grid() { return this.#grid; }
+
+    toString() { return JSON.stringify(this.toJSON()); }
+
+    get floorColor() { return this.#floorColor; }
+
+    /**
+     * Retrieves the contents of a specified node. */
+    getCell(node) {
+        if (!node || isNaN(node.row) || isNaN(node.col))
+            throw new Error("first argument must have numeric " +
+                            "row and col fields");
+        const level = isNaN(node.level) ?
+                      this.#defaultLevel : node.level;
+        return (level in this.#cellData) ?
+               this.#cellData[level][
+                   Structure.getNodeIndex(node)] : undefined;
+    }
+
+    /**
+     * Replaces the contents at specified node with the value given. */
+    setCell(node, value) {
+        if (!node || isNaN(node.row) || isNaN(node.col))
+            throw new Error("row and col must be numeric");
+        const index = Structure.getNodeIndex(node);
+        const level = isNaN(node.level) ?
+                      this.#defaultLevel : level;
+
+        if (!(level in this.#cellData))
+            this.#cellData[level] = {};
+
+        if (typeof(value) === "undefined")
+            delete this.#cellData[level][index];
+        else this.#cellData[level][index] = value;
+        return this;
+    }
+
+    /**
+     * Convert a node with numeric row and col fields into a single
+     * integer suitable for use as an object key. */
+    static getNodeIndex(node) {
+        if (!node)
+            throw new Error("Node object required");
+        else if (isNaN(node.row) || isNaN(node.col))
+            throw new Error("Numeric row and col attributes required");
+        return Ripple.pair(node.col, node.row);
+    }
+
+    /**
+     * Convert a numeric index to a node object with row and col
+     * attributes that represent a grid location. */
+    static getIndexNode(index) {
+        if (isNaN(index))
+            throw new Error("Numeric index required");
+        const pair = Ripple.unpair(index);
+        return { col: node.x, row: node.y };
+    }
+
+    drawTopDown(ctx, camera, now, fn, context) {
+        const floorColors = {};
+        const floorColor = this.#floorColor || "gray";
+        ctx.beginPath();
+        this.#grid.mapRectangle(
+            camera.toWorld({x: 0, y: 0}),
+            camera.toWorld({x: camera.width, y: camera.height}),
+            (node, index, grid) => {
+                const cell = this.getCell(node);
+                if (!cell) {
+                } else if (cell.floorColor) {
+                    if (cell.floorColor in floorColors)
+                        floorColors[cell.floorColor].push(node);
+                    else floorColors[cell.floorColor] = [node];
+                } else grid.drawNode(ctx, node);
+            }, this);
+        ctx.fillStyle = floorColor;
+        ctx.fill();
+
+        Object.keys(floorColors).forEach(color => {
+            ctx.beginPath();
+            floorColors[color].forEach(node =>
+                this.#grid.drawNode(ctx, node));
+            ctx.fillStyle = color;
+            ctx.fill();
+        });
+
+        // TOOD: draw walls
+        // TODO: draw hull
+
+        this.#grid.mapRectangle(
+            camera.toWorld({x: 0, y: 0}),
+            camera.toWorld({x: camera.width, y: camera.height}),
+            (node, index, grid) => {
+                const cell = this.getCell(node);
+                if (cell) {
+                    cell.inventory.forEach((item, index) => {
+                        const angle = (
+                            index / cell.inventory.length *
+                            2 * Math.PI) + Math.PI * 3 / 4;
+                        const scale = 0.25;
+                        const position = {
+                            x: node.x + Math.sin(angle) * scale,
+                            y: node.y + Math.cos(angle) * scale };
+                        ctx.save();
+                        ctx.translate(position.x, position.y);
+                        ctx.scale(scale, scale);
+                        item.drawTopDown(ctx, now, 0 /* phase */);
+                        ctx.restore();
+                    });
+
+                    // :TODO: draw facilities
+                }
+
+                if (fn) // Caller supplied function to draw characters
+                    fn.call(context, ctx, camera, node, now);
+            }, this);
+    }
+}
+
+/**
+ * Represents an active agent of some sort in the game world.
+ * This might be a person, a monster, a robot or something else. */
 export class Character {
-    #name; #surname; #codename; #raceName; #race;
-    #wearing; #carrying; #faction; #colors; #phase;
-    #position; #speed; #movement; #action; #southpaw;
+    #name; #surname; #codename;
+    #raceName; #race;
+    #wearing; #carrying;
+
+    #faction;
+    #colors;
+    #phase;
+    #position;
+    #speed;
+    #movement;
+    #action;
+    #southpaw;
 
     constructor(character, setting) {
         this.#name     = character.name;
@@ -697,10 +883,9 @@ export class Character {
     toString() { return JSON.stringify(this.toJSON()); }
 
     get displayname() {
-        if (this.#codename)
-            return '"' + this.#codename + '"';
-        else return [this.#name, this.#surname].filter(
-            word => word).join(" ");
+        return this.#codename ? '"' + this.#codename + '"' :
+               [this.#name, this.#surname].filter(
+                   word => word).join(" ");
     }
 
     get fullname() {
@@ -741,8 +926,30 @@ export class Character {
     }
 }
 
+class Icon {
+    #draw;
+
+    constructor(icon) {
+        this.#draw = icon.draw;
+    }
+
+    connect(setting) {}
+
+    toJSON() {
+        const result = {};
+        if (this.#draw)
+            result.draw = this.#draw;
+        return result;
+    }
+
+    toString() { return JSON.stringify(this.toJSON()); }
+}
+
 export default class Setting {
-    #icons; #races; #itemdefs; #facilities;
+    #icons;
+    #races;
+    #itemdefs;
+    #facilities;
     #actionPoints;
 
     constructor(setting) {
@@ -751,13 +958,16 @@ export default class Setting {
         this.#icons = setting.icons ? Object.fromEntries(
             Object.keys(setting.icons).map(iconName =>
                 [iconName, new Icon(setting.icons[iconName])])) : {};
+
         this.#races = setting.races ? Object.fromEntries(
             Object.keys(setting.races).map(raceName =>
                 [raceName, new Race(setting.races[raceName])])) : {};
+
         this.#itemdefs = setting.itemdefs ? Object.fromEntries(
             Object.keys(setting.itemdefs).map(itemName =>
                 [itemName, new ItemDefinition(
                     setting.itemdefs[itemName])])) : {};
+
         this.#facilities = Object.fromEntries(
             Object.keys(setting.facilities).map(
                 facility => [facility, new Facility(
@@ -809,6 +1019,7 @@ export default class Setting {
             if (!race.ignore)
                 fn.call(context, name, race);
         });
+        return this;
     }
 
     findItemDefinition(name) { return this.#itemdefs[name]; }
@@ -818,8 +1029,17 @@ export default class Setting {
             if (!itemdef.ignore)
                 fn.call(context, name, itemdef);
         });
+        return this;
     }
 
     findFacility(name) { return this.#facilities[name]; }
+
+    eachFacility(fn, context) {
+        Object.entries(this.#facilities).forEach(([name, facility]) => {
+            if (!facility.ignore)
+                fn.call(context, name, facility);
+        });
+        return this;
+    }
 
 }

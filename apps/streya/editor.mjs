@@ -20,6 +20,7 @@
 import Ripple   from "../ripple/ripple.mjs";
 import Grid     from "../ripple/grid.mjs";
 import Pathf    from "../ripple/pathf.mjs";
+import Setting, { Structure } from "./setting.mjs";
 
 /**
  * Convert a node with numeric row and col fields into a single

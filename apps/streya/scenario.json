@@ -42,6 +42,7 @@
         "actionPoints": 5, "movement": 9
     }],
 
+    "structure": "platform",
     "structures": [{
         "name": "platform",
         "offset": {"row": 0, "col": 0},

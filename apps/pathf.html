@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<link rel="icon" href="streya.svg?serial=ENUjMO" />
+<link rel="stylesheet" href="app.css" />
+<title>Pathfinding Example</title>
+<script type="module">//<![CDATA[
+ import Camera from "../ripple/camera.mjs";
+
+ /* TODO: create random ship */
+ /* TODO: create player object */
+ /* TODO: visualize A* process */
+
+ class Example {
+     constructor() {
+         this.#ship = createSampleShip();
+         this.#player.setPosition(
+             this.#ship.grid.markCell({x: 0, y: 0}));
+         this.#player.setShip(this.#ship);
+     }
+
+     #setting;
+     #player;
+     #ship;
+     #panel;
+
+     #float = false;
+
+     get active() { return true };
+     get autofill() { return true };
+     get autozoom() { return { min: 1, max: 20 } };
+     autodrag(event) { this.#float = true; };
+
+     resize(event, camera)
+     { this.#panel.resize(camera.width, camera.height); }
+
+     dblclick(event, camera) {
+     }
+
+     #beginClick = undefined;
+
+     mousedown(event, camera) {
+         this.#beginClick = camera.getPoint(event);
+         this.#player.pointAt(camera.toWorld(camera.getPoint(event)));
+     }
+
+     mouseup(event, camera) {
+         const point = camera.getPoint(event);
+         if (this.#beginClick &&
+             (point.x - this.#beginClick.x) *
+             (point.x - this.#beginClick.x) +
+             (point.y - this.#beginClick.y) *
+             (point.y - this.#beginClick.y) < 5 * 5) {
+             const node = this.#ship.grid.markCell(
+                 camera.toWorld(this.#beginClick));
+             const cell = this.#ship.getCell(node);
+             if (cell && !cell.isObstructed) {
+                 this.#float = false;
+                 this.#ship.pathDebug = [];
+                 this.#player.setPath(this.#ship.createPath(
+                    this.#player.position, node));
+                 this.debugListTime = new Date().getTime();
+            }
+         }
+     }
+
+     lastUpdate = undefined;
+
+     update(now, camera) {
+         this.#player.update(this.lastUpdate, now);
+         if (!this.#float)
+             camera.setPosition(this.#player.position);
+         this.lastUpdate = now;
+     }
+
+     debugListTime;
+
+     draw(ctx, camera) {
+         this.#ship.draw(ctx, this.lastUpdate, camera);
+
+         if (this.debugListTime && this.#ship.pathDebug) {
+             this.#ship.pathDebug.forEach((node, index) => {
+                 const value = Math.floor(
+                     127 + 128 * index / this.#ship.pathDebug.length);
+                 ctx.beginPath();
+                 if (this.lastUpdate > this.debugListTime + 100 * index)
+                     this.#ship.grid.drawNode(
+                         ctx, this.#ship.grid.markCenter(node));
+                ctx.fillStyle = "rgba(" + value + "," + value + "," +
+                                value + ", 0.5)";
+                 ctx.fill();
+             });
+
+             [this.#ship.pathDebug[0],
+              this.#ship.pathDebug[this.#ship.pathDebug.length - 1]]
+                 .forEach((node, index) => {
+                     this.#ship.grid.markCenter(node);
+                     ctx.beginPath();
+                     ctx.moveTo(node.x + 0.5, node.y);
+                     ctx.arc(node.x, node.y, 0.5, 0, Math.PI * 2);
+                     ctx.lineWidth = 0.1;
+                     ctx.strokeStyle = index ? "#4d4" : "#44d";
+                     ctx.stroke();
+                 });
+
+             // Draw the planned path of the player
+             ctx.beginPath();
+             ctx.moveTo(this.#player._position.x,
+                        this.#player._position.y);
+             this.#player._path.forEach(step => {
+                 this.#ship.grid.markCenter(step);
+                 ctx.lineTo(step.x, step.y); });
+             ctx.strokeStyle = "red";
+             ctx.stroke();
+         }
+
+         this.#player.drawTopDown(ctx, this.lastUpdate);
+     }
+ }
+
+ Camera.preload("./vanguard.json", (loaded) => {
+     const camera = new Camera(document.body.appendChild(
+         document.createElement("canvas"))).setScale(4).manage(
+             new Example());
+ }); //]]></script>

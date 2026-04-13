@@ -1,5 +1,5 @@
 // streya/app.mjs
-// Copyright (C) 2024 by Jeff Gold.
+// Copyright (C) 2024-2026 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -17,145 +17,71 @@
 //
 // ---------------------------------------------------------------------
 // Streya is a character based role playing game engine.
-// :TODO: give floor cells an optional inventory
 // :TODO: create interactable locker with stuff in it
-// :TODO: draw items in character hands
-// :TODO: path finding when click
 // :TODO: create structure editor
-import Ripple    from "../ripple/ripple.mjs";
-import Grid      from "../ripple/grid.mjs";
-import Pathf     from "../ripple/pathf.mjs";
-import Omnivore  from "../ripple/omnivore.mjs";
-import Structure from "./structure.mjs";
-import Setting, { Character } from "./setting.mjs";
+import Ripple from "../ripple/ripple.mjs";
+import Pathf  from "../ripple/pathf.mjs";
+import Camera from "../ripple/camera.mjs";
+import Setting, { Character, Structure } from "./setting.mjs";
 
-/**
- * Given an object, choose one of its keys,  Without a second argument
- * all keys are equally likely to be chosen.  If provided the second
- * argument must be a function that accepts an object and a key and
- * returns a non-negative number to use as the weight for that key.
- * Keys are chosen with probability equal to their share of the total
- * weight.  So given keys "a" (weight 3) and "b" (weight 1) this
- * routine will choose "a" three quarters of the time. */
-function chooseKey(object, getWeight = (o, k) => 1) {
-    const choice = Math.random();
-    let result = undefined;
-    let total = 0;
-    let used = 0;
-    Object.keys(object).forEach(key =>
-        { total += getWeight(object, key); });
-    Object.keys(object).forEach(key => {
-         const weight = getWeight(object, key);
-        if (!result && (choice * total < used + weight)) {
-            result = key;
-        } else used += weight;
-    });
-    return result;
-}
-
-/**
- * Draws an arrow from the start point to the end point.  An arrow
- * has a width and a depth, both relative to the length of the
- * line.  To make these absolute, multiply by the desired length
- * and divide by the line length. */
-function drawArrow(ctx, start, end, config) {
-    const length = Math.hypot(end.x - start.x, end.y - start.y);
-    const depth = config && config.depth || 0.1;
-    const width = config && config.width || 0.15;
-    const slide = config && config.slide || 1.0;
-
-    const perp = { x: (end.y - start.y) * width,
-                   y: (start.x - end.x) * width };
-    const top = {
-        x: start.x + (end.x - start.x) * (slide + depth),
-        y: start.y + (end.y - start.y) * (slide + depth) };
-    const bottom = {
-        x: start.x + (end.x - start.x) * slide,
-        y: start.y + (end.y - start.y) * slide };
-    ctx.moveTo(top.x, top.y);
-    ctx.lineTo(bottom.x + perp.x, bottom.y + perp.y);
-    ctx.lineTo(bottom.x - perp.x, bottom.y - perp.y);
-    ctx.lineTo(top.x, top.y);
-}
-
-/**
- * Creates a temporary message to explain a result to the player. */
-function setToast(message) {
-    const toast = document.createElement("div");
-    toast.classList.add("toast");
-    toast.innerText = message;
-    document.body.append(toast);
-    setTimeout(() => toast.classList.add("fade-out"), 2000);
-    toast.addEventListener("transitionend", () => toast.remove());
-    console.log(message);
-}
-
-class Icon {
-    #draw;
-
-    constructor(icon) {
-        this.#draw = icon.draw;
-    }
-
-    connect(setting) {}
-
-    toJSON() {
-        const result = {};
-        if (this.#draw)
-            result.draw = this.#draw;
-        return result;
-    }
-
-    toString() { return JSON.stringify(this.toJSON()); }
-}
-
-class Scenario extends Pathf.Pathable {
+class Scenario {
     #playerFaction;
+    #structure;
     #structures;
     #characters;
     #movingCharacters;
-    #grid;
-    #gridConfig;
-    #pathCharacter;
-    #path;
-    #pathReachable;
+    #selectedCharacter;
+    #reachableSpaces;
+    #destination;
     #slide;
+    #displayPath;
 
     constructor(scenario, setting) {
-        super();
-        this.#path = this.#pathCharacter = this.#pathReachable;
+        if (!scenario)
+            throw new Error("scenario is required");
+        else if (!setting)
+            throw new Error("setting is requried");
+        else if (!(setting instanceof Setting))
+            throw new Error("setting must be correct type");
+
+        this.#selectedCharacter = null; // who is receiving orders
+        this.#reachableSpaces   = null; // where can they go
+        this.#destination       = null; // proposed place to go
         this.#slide = 0;
         this.#movingCharacters = [];
 
-        this.#gridConfig = scenario.grid;
-        if (!this.#gridConfig || // Give grid a default size
-            (!this.#gridConfig.radius && !this.#gridConfig.edge))
-            this.#gridConfig = Object.assign(
-                {}, this.#gridConfig, {edge: 1.0, diagonal: true});
-        this.#grid = Grid.create(this.#gridConfig);
+        this.#structures = scenario.structures.reduce(
+            (structures, structure) => Object.assign(structures, {
+                [structure.name]: new Structure(
+                    structure, setting) }), {});
+        if (!scenario.stucture)
+            this.#structure = this.#structures[
+                Ripple.chooseKey(this.#structures)];
+        else if (Object.keys(this.#structures)
+                       .includes(scenario.structure))
+            this.#structure = this.#structures[scenario.structure];
+        else throw new Error(
+            "No match for structure: " + scenario.structure);
+
+        if (this.#structure)
+            this.clearDisplayPath();
 
         this.#playerFaction = scenario.playerFaction;
-        this.#structures = scenario.structures.map(
-            structure => new Structure(structure, setting));
-        this.#characters = scenario.characters.map(
-            character => new Character(character, setting));
-    }
-
-    connect(setting) {
-        this.#characters.forEach(character =>
-            character.connect(setting));
-        this.#structures.forEach(character =>
-            structure.connect(setting));
+        this.#characters = scenario.characters ?
+                           scenario.characters.map(
+                               character => new Character(
+                                   character, setting)) : [];
     }
 
     toJSON() {
         const result = {};
-        if (this.#gridConfig)
-            result.grid = this.#gridConfig;
         if (this.#playerFaction)
             result.playerFaction = this.#playerFaction;
         if (this.#structures)
-            result.structures = this.#structures;
+            result.structures = Object.keys(this.#structures).map(
+                name => this.#structures[name].toJSON());
+        if (this.#structure)
+            result.structure = this.#structure.name;
         if (this.#characters)
             result.characters = this.#characters.map(
                 character => character.toJSON());
@@ -164,102 +90,104 @@ class Scenario extends Pathf.Pathable {
 
     toString() { return JSON.stringify(this.toJSON()); }
 
-    // === Implementaiton of path finding interface
-
-    pathNeighbor(node, fn, context) {
-        const neighbors = this.#grid.eachNeighbor(node);
-        neighbors.forEach((neighbor, index, neighbors) => {
-            if (this.getCell(neighbor) &&
-                !this.getCharacterAt(neighbor) &&
-                (!neighbor.diagonal ||
-                 (this.getCell(neighbors[
-                     (index ? index : neighbors.length) - 1]) &&
-                  this.getCell(neighbors[
-                      (index + 1) % neighbors.length]))))
-                fn.call(context, neighbor, neighbor.cost);
-        });
+    eachCharacter(fn, context) {
+        return this.#characters.map(character =>
+            fn.call(context, character));
     }
-
-    pathNodeIndex(node) { return Ripple.pair(node.col, node.row); }
-
-    pathHeuristic(node, goal)
-    { return Math.hypot(node.row - goal.row, node.col - goal.col); }
-
-    pathCost(node, previous) { return node.cost; }
-
-    pathSameNode(nodeA, nodeB) // TODO: deal with levels
-    { return (nodeA.row === nodeB.row) && (nodeA.col === nodeB.col); }
-
-    // === Public attributes
-
-    get grid() { return this.#grid; }
-
-    get characters() { return this.#characters; }
 
     get playerFaction() { return this.#playerFaction; }
 
-    #checkNode(node) {
-        if (isNaN(node.row) || isNaN(node.col)) {
-            if (!isNaN(node.x) && !isNaN(node.y))
-                node = this.#grid.getCell(node);
+    getReachable(character) {
+        return this.#structure.reachable(
+            character.position, character.movement,
+            node => this[Structure.getNodeIndex(node)] = true, {});
+    }
+
+    getNode(point) {
+        if (isNaN(point?.row) || isNaN(point?.col)) {
+            if (!isNaN(point?.x) && !isNaN(point?.y))
+                point = this.#structure.getCell(point);
             else throw new Error(
                 "Argument must provide a location: " +
-                JSON.stringify(node));
+                JSON.stringify(point));
         }
-        return node;
-    }
-
-    getCell(node) {
-        node = this.#checkNode(node);
-        return this.#structures.reduce((current, structure) =>
-            structure.getCell(node) || current, null);
-    }
-
-    getCharacterAt(node) {
-        let result = null;
-        node = this.#checkNode(node);
-        this.#characters.forEach(character => {
-            if (character.position &&
-                (character.position.row === node.row) &&
-                (character.position.col === node.col))
-                result = character;
-        });
-        return result;
+        return point;
     }
 
     getFactionCharacters(faction) {
+        if (!faction)
+            faction = this.#playerFaction;
         return this.#characters.filter(
-            character => character.faction === this.#playerFaction);
+            character => character.faction === faction);
     }
 
-    setCharacter(character) {
+    selectCharacter(character) {
         if (character && (character.faction === this.playerFaction)) {
-            this.#path = null;
-            this.#pathReachable = this.reachable(
-                character.position, character.movement);
-        } else this.#pathReachable = null;
-        return character;
+            this.#selectedCharacter = character;
+            this.#reachableSpaces = getReachable(character);
+            this.clearDisplayPath();
+        } else {
+            this.#selectedCharacter = null;
+            this.#reachableSpaces   = null;
+        }
+        return this.#selectedCharacter;
     }
 
-    setPath(character, point) {
-        this.#pathCharacter = character;
-        if (this.#pathCharacter &&
-            (this.#pathCharacter.faction === this.#playerFaction)) {
-            this.#path = this.createPath(
-                character.position, this.#checkNode(point));
-        } else this.#path = null;
+    get selectedCharacter() { return this.#selectedCharacter; }
+
+    get destination() { return this.#destination; }
+
+    // Set a highlighted path from the specified character to the
+    // specified point
+    setPath(point) {
+        if (this.#selectedCharacter &&
+            (this.#selectedCharacter.faction === this.#playerFaction)) {
+            const path = Pathf.createPath({
+                start: this.#selectedCharacter.position,
+                goal: this.getNode(point),
+                getNodeIndex: (node) => Ripple.pair(node.col, node.row),
+                heuristic: (node, goal) =>
+                    Math.hypot(node.row - goal.row,
+                               node.col - goal.col),
+                eachNeighbor: (node, fn, context) => {
+                    // Must collect all neighbors up front to make
+                    // it possible to look forward and back when
+                    // considering whether diagonal nodes are blocked
+                    const neighbors = this.#structure.grid
+                                          .eachNeighbor(node);
+                    neighbors.forEach((neigh, index, neighbors) => {
+                        if (this.#structure.getCell(neigh) &&
+                            !this.getCharacterAt(neigh) &&
+                            (!neigh.diagonal ||
+                             (this.#structure.getCell(neighbors[
+                                 (index ? index :
+                                  neighbors.length) - 1]) &&
+                              this.#structure.getCell(neighbors[
+                                  (index + 1) % neighbors.length]))))
+                            fn.call(context, neigh, neigh.cost);
+                    });
+                },
+            });
+
+            this.#destination = path ? path[path.length - 1] : null;
+            this.#structure.setDisplayPath(path);
+        } else {
+            this.#destination = null;
+            this.clearDisplayPath();
+        }
     }
 
-    moveCharacter(character, point) {
-        if (character && (character.faction === this.#playerFaction) &&
+    moveSelected(point) {
+        if (this.#selectedCharacter &&
+            (this.#selectedCharacter.faction === this.#playerFaction) &&
             this.#movingCharacters.every(([other, path]) =>
-                other !== character)) {
-            this.#pathCharacter = character;
-            this.#path = null;
-            const path = this.createPath(
-                character.position, this.#grid.getCell(point));
+                other !== this.#selectedCharacter)) {
+            this.clearDisplayPath();
+            const path = this.#structure.createPath(
+                this.#selectedCharacter.position,
+                this.#structure.getCell(point));
             if (path && (path.reduce(
-                (total, step) =>  total + step.cost, 0) <=
+                (total, step) => total + step.cost, 0) <=
                     character.movement)) {
                 this.#movingCharacters.push([character, path]);
             }
@@ -272,31 +200,30 @@ class Scenario extends Pathf.Pathable {
     }
 
     update(elapsed) {
-        this.#slide = (this.#slide + elapsed) % 2000;
+        this.#slide = ((this.#slide * 2000 + elapsed) % 2000) / 2000;
 
         const movingNext = [];
         this.#movingCharacters.forEach(([character, path]) => {
             const animationSpeed = 800;
             let remaining = elapsed;
-            while (path && path.length && (remaining > 0)) {
+            while (path?.length && (remaining > 0)) {
                 const next = path[0];
                 if (isNaN(next.x) || isNaN(next.y))
-                    this.#grid.markCenter(next);
+                    this.#structure.grid.markCenter(next);
                 if (isNaN(next.remain))
                     next.remain = animationSpeed;
-                if (remaining >= next.remain) {
+                if (remaining > next.remain) {
                     remaining -= next.remain;
                     character.position.row = next.row;
                     character.position.col = next.col;
                     character.position.x = next.x;
                     character.position.y = next.y;
                     character.movement -= next.cost;
-                    if (this.#pathCharacter === character)
-                        this.#pathReachable = this.reachable(
-                            character.position, character.movement);
+                    if (this.#selectedCharacter === character)
+                        this.#reachableSpaces = getReachable(character);
                     path.shift();
                 } else {
-                    const prev = this.#grid.getCenter(
+                    const prev = this.#structure.grid.getCenter(
                         character.position);
                     const fraction =
                         (next.remain - remaining) / animationSpeed;
@@ -314,135 +241,78 @@ class Scenario extends Pathf.Pathable {
         this.#movingCharacters = movingNext;
     }
 
-    drawTopDown(ctx, camera, now, character) {
-        this.#structures.forEach(structure => {
-            const floorColors = {};
-            const floorColor = structure.floorColor || "gray";
-            ctx.beginPath();
-            this.#grid.mapRectangle(
-                camera.toWorld({x: 0, y: 0}),
-                camera.toWorld({x: camera.width, y: camera.height}),
-                (node, index, grid) => {
-                    const offsetNode = {
-                        row: node.row + structure.offset.row,
-                        col: node.col + structure.offset.col };
-                    const cell = structure.getCell(offsetNode);
-                    if (cell && !cell.hull) {
-                        if (cell.floorColor) {
-                            if (cell.floorColor in floorColors)
-                                floorColors[cell.floorColor].push(node);
-                            else floorColors[cell.floorColor] = [node];
-                        } else grid.drawNode(ctx, node);
-                    }
-            });
-            ctx.fillStyle = floorColor;
-            ctx.fill();
+    drawTopDown(ctx, camera, now) {
+        this.#structure.drawTopDown(
+            ctx, camera, now, this.drawCellTopDown, this);
+        if (this.#displayPath) {
+            /* let prev = this.getNode(this.#pathCharacter.position);
+             * let cost = 0;
 
-            Object.keys(floorColors).forEach(color => {
-                ctx.beginPath();
-                floorColors[color].forEach(node =>
-                    this.#grid.drawNode(ctx, node));
-                ctx.fillStyle = color;
-                ctx.fill();
-            });
-        });
+             * ctx.beginPath();
+             * ctx.moveTo(prev.x, prev.y);
+             * this.#path.forEach(node => {
+             *     node = this.#grid.getCenter(node);
+             *     ctx.lineTo(node.x, node.y);
+             *     Camera.drawArrow(ctx, prev, node, {
+             *         absolute: this.#grid.edge,
+             *         slide: this.#slide });
+             *     ctx.moveTo(node.x, node.y);
+             *     prev = node;
+             * });
+             * ctx.lineWidth = 0.1;
+             * ctx.lineCap = ctx.lineJoin = "round";
+             * ctx.strokeStyle = "#666";
+             * ctx.stroke();
 
-        if (this.#pathReachable) {
+             * prev = this.#pathCharacter.position;
+             * ctx.beginPath();
+             * ctx.moveTo(prev.x, prev.y);
+             * this.#path.forEach(node => {
+             *     cost += node.cost;
+             *     if (cost <= this.#pathCharacter.movement) {
+             *         node = this.#grid.getCenter(node);
+             *         ctx.lineTo(node.x, node.y);
+             *         Camera.drawArrow(ctx, prev, node, {
+             *             absolute: this.#grid.edge,
+             *             slide: this.#slide });
+             *         ctx.moveTo(node.x, node.y);
+             *         prev = node;
+             *     }
+             * });
+             * ctx.lineWidth = 0.1;
+             * ctx.lineCap = ctx.lineJoin = "round";
+             * ctx.strokeStyle = "#993";
+             * ctx.stroke(); */
+        }
+    }
+
+    drawCellTopDown(ctx, camera, node, now) {
+        if (this.#reachableSpaces &&
+            Object.keys(this.#reachableSpaces).includes(
+                Structure.getNodeIndex(node))) {
             ctx.beginPath();
-            this.#pathReachable.forEach(node =>
-                this.#grid.drawNode(ctx, node));
+            this.#structure.grid.drawNode(ctx, node);
             ctx.fillStyle = "#aae4";
             ctx.fill();
         }
 
-        if (this.#path && this.#pathCharacter) {
-            let prev = this.#checkNode(this.#pathCharacter.position);
-            let cost = 0;
-
-            ctx.beginPath();
-            ctx.moveTo(prev.x, prev.y);
-            this.#path.forEach(node => {
-                node = this.#grid.getCenter(node);
-                ctx.lineTo(node.x, node.y);
-                drawArrow(ctx, prev, node, {
-                    slide: this.#slide / 2000});
-                ctx.moveTo(node.x, node.y);
-                prev = node;
-            });
-            ctx.lineWidth = 0.1;
-            ctx.lineCap = ctx.lineJoin = "round";
-            ctx.strokeStyle = "#666";
-            ctx.stroke();
-
-            prev = this.#pathCharacter.position;
-            ctx.beginPath();
-            ctx.moveTo(prev.x, prev.y);
-            this.#path.forEach(node => {
-                cost += node.cost;
-                if (cost <= this.#pathCharacter.movement) {
-                    node = this.#grid.getCenter(node);
-                    ctx.lineTo(node.x, node.y);
-                    drawArrow(ctx, prev, node, {
-                        slide: this.#slide / 2000});
-                    ctx.moveTo(node.x, node.y);
-                    prev = node;
-                }
-            });
-            ctx.lineWidth = 0.1;
-            ctx.lineCap = ctx.lineJoin = "round";
-            ctx.strokeStyle = "#993";
-            ctx.stroke();
-        }
-
-        // :TODO: draw walls
-        // :TODO: draw hull
-
-        this.#structures.forEach(structure => {
-            this.#grid.mapRectangle(
-                camera.toWorld({x: 0, y: 0}),
-                camera.toWorld({x: camera.width, y: camera.height}),
-                (node, index, grid) => {
-                    const offsetNode = {
-                        row: node.row + structure.offset.row,
-                        col: node.col + structure.offset.col };
-                    const cell = structure.getCell(offsetNode);
-                    if (cell) {
-                        cell.inventory.forEach((item, index) => {
-                            const angle = (
-                                index / cell.inventory.length *
-                                2 * Math.PI) + Math.PI * 3 / 4;
-                            const ray = {
-                                x: Math.sin(angle),
-                                y: Math.cos(angle) };
-                            ctx.save();
-                            ctx.translate(node.x + ray.x * 0.25,
-                                          node.y + ray.y * 0.25);
-                            ctx.scale(0.25, 0.25);
-                            item.drawTopDown(ctx, now, 0 /* phase */);
-                            ctx.restore();
-
-                            // :TODO: draw facilities if present
-                        });
-                    }
-                }, this);
-        });
-
         this.#characters.forEach(character => {
-            if (character.position &&
-                !isNaN(character.position.row) &&
-                !isNaN(character.position.col)) {
-                if (isNaN(character.position.x) ||
-                    isNaN(character.position.y))
-                    this.#grid.markCenter(character.position);
+            if (Structure.getNodeIndex(character.position) ==
+                Structure.getNodeIndex(node)) {
                 ctx.save();
                 ctx.translate(character.position.x,
                               character.position.y);
-                ctx.scale(this.#grid.radius, this.#grid.radius);
+                ctx.scale(this.#structure.grid.radius,
+                          this.#structure.grid.radius);
                 character.drawTopDown(ctx, camera, now);
                 ctx.restore();
             }
         });
     }
+
+    setDisplayPath(path) { this.#displayPath = path; }
+
+    clearDisplayPath() { this.setDisplayPath(undefined); }
 }
 
 class ButtonBar {
@@ -625,7 +495,7 @@ export default class App {
                         populate(widget);
                         populate(sourceWidget);
                         sourceWidget = null;
-                    } catch (err) { setToast(err); }
+                    } catch (err) { Camera.setToast(err); }
                 }
             });
         });
@@ -652,7 +522,7 @@ export default class App {
                             event.dataTransfer.setData(
                                 "text/plain", index.toString());
                         } catch (err) {
-                            setToast(err);
+                            Camera.setToast(err);
                             event.preventDefault();
                         }
                     });
@@ -692,9 +562,10 @@ export default class App {
         });
         otherSelect.dispatchEvent(new Event("change"));
 
-        this.#panel.show(this.#selectedCharacter.fullname, stats,
-                         createFieldSet("Carrying", carryWidget.view),
-                         createFieldSet(otherSelect, otherWidget.view));
+        this.#panel.show(
+            this.#selectedCharacter.fullname, stats,
+            createFieldSet("Carrying", carryWidget.view),
+            createFieldSet(otherSelect, otherWidget.view));
     }
 
     get active() { return true };
@@ -719,12 +590,25 @@ export default class App {
     }
 
     mouseup(event, camera) {
+        // All of the most important user interface actions can
+        // happen here.  These are:
+        // - Click to select a character to give orders to
+        // - Click selected character to open the inventory dialog
+        // - Click an empty space to plot a path from selected character
+        // - Click a path destination to move selected character there
         const point = camera.toWorld(camera.getPoint(event));
         const character = this.#scenario.getCharacterAt(point);
-        if (character)
-            this.selectCharacter(character);
-        else if (this.#selectedCharacter)
-            this.#scenario.setPath(this.#selectedCharacter, point);
+        if (character) {
+            if (character === this.#scenario.selectedCharacter)
+                this.showCharacter(this.#scenario.selectedCharacter);
+            else this.selectCharacter(character);
+        } else if (this.#scenario.selectedCharacter) {
+            if (Structure.getNodeIndex(
+                this.#scenario.getNode(point)) ===
+                    Structure.getNodeIndex(this.#scenario.destination))
+                this.#scenario.moveSelected(point);
+            else this.#scenario.setPath(point);
+        }
     }
 
     usekeys = true;
@@ -742,8 +626,8 @@ export default class App {
         this.#scenario.update(elapsed);
     }
 
-    draw(ctx, camera)
-    { this.#scenario.drawTopDown(ctx, camera, this.#lastUpdate,
-                                 this.#selectedCharacter); }
+    draw(ctx, camera) {
+        this.#scenario.drawTopDown(ctx, camera, this.#lastUpdate);
+    }
 
 }

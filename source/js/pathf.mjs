@@ -1,5 +1,5 @@
 // pathf.js
-// Copyright (C) 2014-2023 by Jeff Gold.
+// Copyright (C) 2014-2026 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -19,13 +19,13 @@
 // Path finding routines
 
 /**
- * Priority queue implementation based on an internal array.
- * An optional compare function determines the smallest
- * element, which can be fetched in O(log(n)) time.
- * An element can also be added in O(log(n)) time.
- * Note that by default this is a min heap.  To create a
- * max heap, invert the comparison function (make it return
- * positive when the second argument is larger). */
+ * Priority queue implementation based on an internal array.  An
+ * optional compare function determines the smallest element (min
+ * heap), which can be fetched in O(log(n)) time.  An element can also
+ * be added in O(log(n)) time.  Note that if the comparision function
+ * returns positive when the first argument is larger this will be a
+ * min heap.  On the other hand if it returns positive when the second
+ * argument is larger it will be a max heap. */
 export class Heap {
     constructor(compare, elements) {
         [compare, elements].forEach((thing) => {
@@ -115,151 +115,169 @@ export class Heap {
         this.#fixup(this.#contents.length - 1); 
         return item;
     }
-
-    static test() {
-        const heap = new Heap([7, 5, 4, 6]);
-        const result = [];
-        [2, 3, 9, 8, 1].forEach(value => { heap.push(value); });
-        while (heap.size() > 0)
-            console.log(result.push(heap.pop()));
-        return result;
-    }
 }
 
 /**
- * Abstract representation of a graph for the purpose of path finding.
- * A pathatble must override eachNeighbor and getNodeIndex.  It should
- * also override getHeuristic and possibly also getCost and isSameNode
- * to account for characteristics of the graph.  Note that leaving
- * pathHeuristic unmodified results in using Dijkstra's algorithm
- * instead of A* for path finding. */
-export class Pathable {
-    /**
-     * Subclasses MUST override this.  Should call the given
-     * function with the specified context with at least two
-     * parameters: first a connected node and second a numeric
-     * cost to travel to that neighbor. */
-    pathNeighbor(node, fn, context)
-    { throw new Error("Must override Pathable.pathNeighbor"); }
+ * Create a path using the A* (A-star) algorithm.  This is a best-first
+ * search guided by a heuristic that must never overestimate the cost
+ * of reaching a goal from a given node.  This routine doesn't care what
+ * a node actually is, so long as the required function do what they're
+ * expected to do.
+ *
+ * Seven fields are looked for in the configuration object, of which
+ * four are required (start, goal/goals, getNodeIndex, eachNeighbor).
+ * the rest are optional but can improve results.
+ *
+ * start: node from which to begin search
+ * goal: node the path should arrive at
+ * goals: array of acceptable goal nodes (provide instead of goal)
+ * limit: if provided, nodes that are more expensive to reach than this
+ *     number are disregarded, which makes a path finding failure
+ *     more likely but also less computationally expensive
+ * getNodeIndex(node): provides a unique identifier for each node which
+ *     can be used as an object index in JavaScript.
+ * eachNeighbor(node, fn, context): calls a supplied function for each
+ *     neighbor of a given node with the following arguments:
+ *       neighbor: neighboring node
+ *       cost: cost to reach this neighbor or undefined for 1
+ *     Caller is responsible for excluding any nodes that should not be
+ *     considered, for example because they are obstructed.
+ * heuristic(node, goal): returns an estimated cost to travel from a
+ *     given node to a destination.  This must never overestimate the
+ *     cost.  In spacial graphs it is usually best to use the distance
+ *     between the nodes.  If the heuristic underestimates costs the A*
+ *     algorithm may examine more nodes than necessary but should still
+ *     arrive at an optimal path.  If missing the heuristic is
+ *     assumed to be zero in all caces, which causes A* to devolve into
+ *     Dijkstra's algorithm. */
+export function createPath(config) {
+    if (!config)
+        throw new Error("missing required configuration");
+    else if (!config.start)
+        throw new Error("missing configuration start node");
+    else if (typeof config.getNodeIndex !== 'function')
+        throw new Error("missing configuration getNodeIndex function");
+    else if (typeof config.eachNeighbor !== 'function')
+        throw new Error("missing configuration eachNeighbor function");
+    else if (!Array.isArray(config.goals) && !config.goal)
+        throw new Error("missing configuration goal node");
 
-    /**
-     * Subclasses MUST override this.  Should return an integer
-     * index that can be used to uniquely identify the given node. */
-    pathNodeIndex(node)
-    { throw new Error("Must override Pathable.pathNodeIndex"); }
+    const goals = Array.isArray(config?.goals) ?
+                  config.goals : [config?.goal];
 
-    /**
-     * Override this to recognize equivalent nodes */
-    pathSameNode(a, b) { return a === b; }
-
-    /**
-     * This reduces A* to Dijkstra's Algorithm, but there's no
-     * universal way to define a heuristic.  Override this! */
-    pathHeuristic(node, goal) { return 0; }
-
-    // Returns the heuristic of the cheapest goal
-    #getBest(node, goals) {
+    function getBest(node, goals) {
         let result = undefined;
         goals.forEach((goal) => {
-            const current = this.pathHeuristic(node, goal);
+            const current = (typeof config.heuristic === "function") ?
+                            config.heuristic(node, goal) : 0;
             if (isNaN(result) || (current < result))
                 result = current;
-        }, this);
+        });
         return result;
     }
 
-    // Builds a path back to (but not including) the start node
-    static #unwind(found) {
+    let found = undefined;
+    const frontier = new Heap((a, b) => Heap.cmp(a.est, b.est));
+    const visited = {};
+
+    /* Add a meta-node representing the start node to the frontier */
+    frontier.push({ node: config.start, previous: null, cost: 0,
+                    est: getBest(config.start, goals) });
+    visited[config.getNodeIndex(config.start)] = frontier.peek();
+
+    while (!found && (frontier.size() > 0)) {
+        const current = frontier.pop();
+
+        if (goals.some((goal) => config.getNodeIndex(current.node) ==
+            config.getNodeIndex(goal))) {
+            found = current;
+        } else config.eachNeighbor(current.node, (neighbor, cost) => {
+            const totalCost = current.cost + (isNaN(cost) ? 1 : cost);
+            if (!isNaN(config.limit) && (totalCost > config.limit))
+                return;
+
+            const index = config.getNodeIndex(neighbor);
+            if (!(index in visited) ||
+                (visited[index].cost > totalCost)) {
+                visited[index] = {
+                    node: neighbor, previous: current, cost: totalCost,
+                    est: totalCost + getBest(neighbor, goals) };
+                frontier.push(visited[index]);
+            }
+        });
+    }
+
+    if (found) { /* convert meta-node to an array of nodes */
         const result = [];
         while (found.previous) {
             result.unshift(found.node);
             found = found.previous;
         }
-        return result;
+        found = result;
     }
-
-    /**
-     * Builds a path from a start node to the closest of one or more
-     * goal nodes using the A* path finding algorithm. See:
-     *     http://en.wikipedia.org/wiki/A*_search_algorithm
-     *
-     * @param start node from which to begin search
-     * @param goal node or array of nodes to reach */
-    createPath(start, goal, limit) {
-        let found = undefined;
-        const goals = Array.isArray(goal) ? goal : [goal];
-        const frontier = new Heap((a, b) =>
-            Heap.cmp(a.estimate, b.estimate));
-        const visited = {};
-
-        frontier.push({ node: start, previous: null, cost: 0,
-                        estimate: this.#getBest(start, goals) });
-        visited[this.pathNodeIndex(start)] = frontier.peek();
-
-        while (!found && (frontier.size() > 0)) {
-            const current = frontier.pop();
-
-            if (goals.some((goal) =>
-                this.pathSameNode(current.node, goal))) {
-                found = current;
-            } else this.pathNeighbor(current.node, (neighbor, cost) => {
-                const totalCost = current.cost + cost;
-                if (isNaN(limit) || (totalCost <= limit)) {
-                    const index = this.pathNodeIndex(neighbor);
-                    if (!(index in visited) ||
-                        (visited[index].cost > totalCost)) {
-                        visited[index] = {
-                            node: neighbor, previous: current,
-                            cost: totalCost,
-                            estimate: totalCost + this.#getBest(
-                                neighbor, goals) };
-                        frontier.push(visited[index]);
-                    }
-                }
-            });
-        }
-        return found ? Pathable.#unwind(found) : found;
-    }
-
-    /**
-     * Return a set of nodes which can be reached with the budget
-     * implied by the limit parameter (or all reachable nodes if
-     * limit is undefined). */
-    reachable(start, limit, fn, context) {
-        if (!fn) {
-            const result = [];
-            this.reachable(start, limit, node => result.push(node));
-            return result;
-        }
-
-        const frontier = new Heap((a, b) => Heap.cmp(a.cost, b.cost));
-        const visited = {};
-
-        frontier.push({ node: start, previous: null, cost: 0 });
-        visited[this.pathNodeIndex(start)] = frontier.peek();
-
-        while (frontier.size() > 0) {
-            const current = frontier.pop();
-            this.pathNeighbor(current.node, (neighbor, cost) => {
-                const totalCost = current.cost + cost;
-                if (isNaN(limit) || (totalCost <= limit)) {
-                    const index = this.pathNodeIndex(neighbor);
-                    if (!(index in visited) ||
-                        (visited[index].cost > totalCost)) {
-                        visited[index] = {
-                            node: neighbor, previous: current,
-                            cost: totalCost };
-                        frontier.push(visited[index]);
-                    }
-                }
-            });
-        }
-
-        Object.entries(visited).forEach(([index, visit]) =>
-            fn.call(context, visit.node, visit.cost,
-                    visit.previous, index));
-        return context;
-    }
+    return found;
 }
 
-export default { Heap, Pathable };
+/**
+ * Considers all nodes reachable from a provided start node.  When
+ * called with a function and an optional calling context, that
+ * function is invoked for each reachable node.  Otherwise all
+ * reachable nodes are collected into an array, which may be expensive.
+ *
+ * Five fields are looked for in the configuration object, of which
+ * three are required (start, getNodeIndex, eachNeighbor).  The rest
+ * are optional but can improve results.
+ *
+ * start: node from which to begin
+ * limit: if provided, nodes that are more expensive to reach than this
+ *     number are disregarded, which makes this operation less
+ *     computationally expensive
+ * getNodeIndex(node): provides a unique identifier for each node which
+ *     can be used as an object index in JavaScript.
+ * eachNeighbor(node, fn, context): calls a supplied function for each
+ *     neighbor of a given node.  Caller is responsible for excluding
+ *     any nodes that should not be considered, for example because they
+ *     are obstructed. */
+export function reachable(config, fn, context) {
+    if (!config)
+        throw new Error("missing required configuration");
+    else if (!config.start)
+        throw new Error("missing configuration start node");
+    else if (typeof config.getNodeIndex !== 'function')
+        throw new Error("missing configuration getNodeIndex function");
+    else if (typeof config.eachNeighbor !== 'function')
+        throw new Error("missing configuration eachNeighbor function");
+
+    if (!fn)
+        return reachable(config, node => this.push(node), []);
+
+    const frontier = new Heap((a, b) => Heap.cmp(a.cost, b.cost));
+    const visited = {};
+
+    frontier.push({ node: start, previous: null, cost: 0 });
+    visited[config.getNodeIndex(start)] = frontier.peek();
+
+    while (frontier.size() > 0) {
+        const current = frontier.pop();
+        eachNeighbor(current.node, (neighbor, cost) => {
+            const totalCost = current.cost + cost;
+            if (isNaN(limit) || (totalCost <= limit)) {
+                const index = config.getNodeIndex(neighbor);
+                if (!(index in visited) ||
+                    (visited[index].cost > totalCost)) {
+                    visited[index] = {
+                        node: neighbor, previous: current,
+                        cost: totalCost };
+                    frontier.push(visited[index]);
+                }
+            }
+        });
+    }
+
+    Object.entries(visited).forEach(([index, visit]) =>
+        fn.call(context, visit.node, visit.cost,
+                visit.previous, index));
+    return context;
+}
+
+export default { Heap, createPath, reachable };

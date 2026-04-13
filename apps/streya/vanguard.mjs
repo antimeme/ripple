@@ -22,30 +22,6 @@ import Grid     from "../ripple/grid.mjs";
 import Pathf    from "../ripple/pathf.mjs";
 import Omnivore from "../ripple/omnivore.mjs";
 
-/**
- * Given an object, choose one of its keys,  Without a second argument
- * all keys are equally likely to be chosen.  If provided the second
- * argument must be a function that accepts an object and a key and
- * returns a non-negative number to use as the weight for that key.
- * Keys are chosen with probability equal to their share of the total
- * weight.  So given keys "a" (weight 3) and "b" (weight 1) this
- * routine will choose "a" three quarters of the time. */
-function chooseKey(object, getWeight = (o, k) => 1) {
-    const choice = Math.random();
-    let result = undefined;
-    let total = 0;
-    let used = 0;
-    Object.keys(object).forEach(key =>
-        { total += getWeight(object, key); });
-    Object.keys(object).forEach(key => {
-         const weight = getWeight(object, key);
-        if (!result && (choice * total < used + weight)) {
-            result = key;
-        } else used += weight;
-    });
-    return result;
-}
-
 function createListItem(text) {
     const result = document.createElement("li");
     result.appendChild(document.createTextNode(text));
@@ -180,8 +156,9 @@ class Character {
                    (this._racename in Character._races)) {
             Character._races[this._racename].apply(this);
         } else if (!this._racename) {
-            this._racename = chooseKey(Character._races, (o, k) =>
-                isNaN(o[k].weight) ? 1 : o[k].weight);
+            this._racename = Ripple.chooseKey(
+                Character._races, (o, k) =>
+                    isNaN(o[k].weight) ? 1 : o[k].weight);
             Character._races[this._racename].apply(this);
         } else this._race = undefined;
     }
@@ -208,7 +185,9 @@ class Character {
         return this;
     }
 
-    setPath(path) { this._path = path; return this; }
+    setPath(path) {
+        this._path = path; return this;
+    }
 
     pointAt(point) {
         this._spinGoal = Radians.difference({x: 0, y: 1}, {
@@ -314,10 +293,10 @@ class Character {
     static createRecruit(setting) {
         const recruit = new Character();
 
-        recruit.birthplace = chooseKey(setting.places);
-        recruit.gender = chooseKey(
+        recruit.birthplace = Ripple.chooseKey(setting.places);
+        recruit.gender = Ripple.chooseKey(
             {"Male": 1, "Female": 1}, (o, k) => o[k]);
-        recruit.culture = chooseKey(
+        recruit.culture = Ripple.chooseKey(
             setting.places[recruit.birthplace].population,
             (o, k) => o[k]);
         if (recruit.culture) {
@@ -330,14 +309,14 @@ class Character {
         }
 
         recruit.background = [];
-        let current = chooseKey(setting.backgrounds, (o, k) =>
+        let current = Ripple.chooseKey(setting.backgrounds, (o, k) =>
             o[k].recruit ? 1 : 0);
         while (current) {
             const previous = setting.backgrounds[current]?.previous;
             recruit.background.push(current);
 
             if (previous)
-                current = chooseKey(previous);
+                current = Ripple.chooseKey(previous);
             else current = undefined;
         }
 
@@ -493,8 +472,8 @@ class Room {
  * Accessing data in a structure requires nodes.  A node must have
  * integer row and col fields and may optionally have a level field as
  * well. */
-class Structure extends Pathf.Pathable {
-    constructor(config) { super(); this.init(config); }
+class Structure {
+    constructor(config) { this.init(config); }
 
     init(config) {
         this.#grid = Grid.create({
@@ -512,28 +491,32 @@ class Structure extends Pathf.Pathable {
     #grid = undefined;
     get grid() { return this.#grid; }
 
-    // Path finding
-    pathNeighbor(node, fn, context) {
-        const neighbors = this.grid.eachNeighbor(node);
-        neighbors.forEach((neighbor, index) => {
-            // Don't leave the ship or walk through walls
-            const cell = this.getCell(neighbor);
-            if (!cell || cell.isObstructed)
-                return;
-            const wall = this.getWall(node, neighbor);
-            if (wall && !wall.door)
-                return;
-            fn.call(context, neighbor, neighbor.cost);
+    createPath(start, goal) {
+        this.pathStart = start;
+        this.pathGoal = goal;
+        return Pathf.createPath({
+            start: start, goal: goal,
+            heuristic: (node, goal) => {
+                if (this.pathDebug)
+                    this.pathDebug.push(this.grid.getCenter(node));
+                return Math.hypot(goal.row - node.row,
+                                  goal.col - node.col);
+            },
+            getNodeIndex: getNodeIndex,
+            eachNeighbor: (node, fn, context) => {
+                const neighbors = this.grid.eachNeighbor(node);
+                neighbors.forEach((neighbor, index) => {
+                    const cell = this.getCell(neighbor);
+                    const wall = this.getWall(node, neighbor);
+                    if (!cell || cell.isObstructed) {
+                        // Don't leave the ship
+                    } else if (wall && !wall.door) {
+                        // Don't walk through walls
+                    } else fn.call(context, neighbor, neighbor.cost);
+                });
+            }
         });
     }
-    pathNodeIndex(node) { return getNodeIndex(node); }
-    pathSameNode(a, b) {
-        if (this.pathDebug)
-            this.pathDebug.push(a);
-        return (a.row === b.row) && (a.col === b.col); }
-    pathHeuristic(node, goal)
-    { return Math.hypot(goal.row - node.row, goal.col - node.col); }
-    pathDebug = undefined;
 
     // Returns the contents at specified node, if any.
     getCell(node) {
@@ -1544,8 +1527,8 @@ class Vanguard {
                 ctx.fill();
             });
 
-            [this.#ship.pathDebug[0],
-             this.#ship.pathDebug[this.#ship.pathDebug.length - 1]]
+            // Get first and last entries of path
+            [this.#ship.pathStart, this.#ship.pathGoal]
                 .forEach((node, index) => {
                     this.#ship.grid.markCenter(node);
                     ctx.beginPath();
