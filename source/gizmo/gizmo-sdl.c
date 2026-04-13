@@ -149,10 +149,20 @@ gizmo_setup_SDL(struct gizmo *gizmo)
        (SDL_Init, (SDL_INIT_VIDEO | SDL_INIT_AUDIO))))
     gizmo_sdl_init = 1;
 
-  if ((result == EXIT_SUCCESS) && EXIT_SUCCESS ==
-      (result = GIZMO_MIX_CHECK
-       (Mix_OpenAudio, (96000, MIX_DEFAULT_FORMAT, 4, 2048))))
+  /* Attempt to initialize sound.  Unless something already went
+   * fatally wrong we first try with optimistic settings and then
+   * fall back to something less demanding. */
+  if (result != EXIT_SUCCESS) {
+    /* Already failed */
+  } else if (EXIT_SUCCESS ==
+             (result = GIZMO_MIX_CHECK
+              (Mix_OpenAudio, (96000, MIX_DEFAULT_FORMAT, 4, 2048)))) {
     gizmo_mix_init = 1;
+  } else if (EXIT_SUCCESS ==
+             (result = GIZMO_MIX_CHECK
+              (Mix_OpenAudio, (48000, MIX_DEFAULT_FORMAT, 2, 2048)))) {
+    gizmo_mix_init = 1;
+  } else result = EXIT_SUCCESS; /* Continue without sound */
 
   if ((result == EXIT_SUCCESS) && EXIT_SUCCESS ==
       (result = GIZMO_TTF_CHECK(TTF_Init, ())))
@@ -213,7 +223,7 @@ gizmo_sound_create(struct gizmo *gizmo, const char *name,
   char *filename = NULL;
   int needed = snprintf(filename, 0, FORMAT_SOUND, name);
 
-  if (!sound) {
+  if (!sound || !gizmo_mix_init) {
   } else if (needed < 0) {
     SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to format "
                  "font filename\n");
