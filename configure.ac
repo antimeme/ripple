@@ -1,5 +1,5 @@
 dnl configure.ac
-dnl Copyright (C) 2006-2025 by Jeff Gold.
+dnl Copyright (C) 2006-2026 by Jeff Gold.
 dnl 
 dnl This program is free software: you can redistribute it and/or
 dnl modify it under the terms of the GNU General Public License as
@@ -25,10 +25,11 @@ dnl $ sudo apt install -y autoconf automake libtool pkgconf make gcc
 dnl
 dnl Some components are optional and can be built only when their
 dnl dependencies are installed.
-AC_INIT([ripple], [0.1.1], [Jeff Gold <ripple@antimeme.net>])
+AC_INIT([ripple], [0.2.0], [Jeff Gold <ripple@antimeme.net>])
 AC_CANONICAL_HOST
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_HEADERS([include/ripple/config.h])
+AC_CONFIG_MACRO_DIRS([m4])
 AC_SUBST([LIBVERSION], [0:0])
 AM_INIT_AUTOMAKE([subdir-objects])
 
@@ -37,6 +38,32 @@ LT_INIT
 AC_PROG_MKDIR_P
 AC_PROG_LN_S
 AC_PATH_PROG([SUDO], [sudo], )
+
+AX_PTHREAD([
+    HAVE_PTHREADS=1
+    AC_DEFINE([HAVE_PTHREADS], [1], [Define if pthreads is available])
+    PTHREAD_CFLAGS="$PTHREAD_CFLAGS"
+    PTHREAD_LIBS="$PTHREAD_LIBS"
+], [
+    HAVE_PTHREADS=0
+    AC_MSG_WARN([pthreads not found - pthread support disabled])
+])
+AC_SUBST([HAVE_PTHREADS])
+AC_SUBST([PTHREAD_CFLAGS])
+AC_SUBST([PTHREAD_LIBS])
+
+PKG_CHECK_MODULES([LIBFFI], [libffi], [
+    HAVE_LIBFFI=1
+    AC_DEFINE([HAVE_LIBFFI], [1], [Define if libffi is available])
+    LIBFFI_CFLAGS="$LIBFFI_CFLAGS"
+    LIBFFI_LIBS="$LIBFFI_LIBS"
+], [
+    HAVE_LIBFFI=0
+    AC_MSG_WARN([ffi.h header not found - libffi support disabled])
+])
+AC_SUBST([HAVE_LIBFFI])
+AC_SUBST([LIBFFI_CFLAGS])
+AC_SUBST([LIBFFI_LIBS])
 
 dnl MinGW can be used to compile Win32 programs on Unix platforms.
 dnl We will need both the cross compiler and windres to build.

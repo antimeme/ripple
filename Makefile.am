@@ -18,7 +18,7 @@
 
 CLEANFILES           =
 MOSTLYCLEANFILES     =
-DISTCLEANFILES       =
+DISTCLEANFILES       = lib/*
 MAINTAINERCLEANFILES = *.p12 *.der *.pem *.srl .passwd
 
 ## C ===================================================================
@@ -34,10 +34,11 @@ lib@PACKAGE@_la_SOURCES  = \
 	source/random.c \
 	source/pool.c \
 	source/pixie.c \
-	source/juju.c
+	source/juju.c \
+	source/winj.c
 pkginclude_HEADERS = include/@PACKAGE@/*.h
 
-check_PROGRAMS = check-@PACKAGE@
+check_PROGRAMS = check-@PACKAGE@ check-winj
 check_@PACKAGE@_CPPFLAGS = -I$(srcdir)/include
 check_@PACKAGE@_LDADD    = lib@PACKAGE@.la
 check_@PACKAGE@_SOURCES  = \
@@ -50,6 +51,11 @@ check_@PACKAGE@_SOURCES  = \
 	source/check/pool.c \
 	source/check/pixie.c \
 	source/check/juju.c
+
+check_winj_CPPFLAGS = -I$(srcdir)/include
+check_winj_LDADD    = lib@PACKAGE@.la
+check_winj_SOURCES  = source/check/winj.c
+
 TESTS = $(check_PROGRAMS)
 
 if HAVE_MINGW
@@ -95,18 +101,18 @@ if HAVE_MINGW
 # $ winecfg
 # $ make play-win32-asteroids
 
-GIZMO_CPPFLAGS_WIN32 = $(WIN32_CPPFLAGS_VORBIS) \
+gizmo_exe_CPPFLAGS = $(WIN32_CPPFLAGS_VORBIS) \
 	-I $(srcdir)/source/gizmo \
 	-DPATH_SOUND="$(srcdir)/apps/sounds/%s.ogg" \
 	-DPATH_FONT="$(srcdir)/apps/fonts/%s.ttf"
-GIZMO_LDFLAGS_WIN32  = $(WIN32_LDFLAGS_VORBIS) \
+gizmo_exe_LDFLAGS = $(WIN32_LDFLAGS_VORBIS) \
 	-ldsound -lole32 -lwinmm -mwindows
-GIZMO_SOURCES_WIN32  = \
+gizmo_exe_SOURCES  = \
 	$(srcdir)/source/gizmo/gizmo-win32.c \
 	$(srcdir)/source/gizmo/asteroids.c
 if HAVE_WIN32_VORBIS
-GIZMO_CPPFLAGS_WIN32 += -DHAVE_WIN32_VORBIS
-GIZMO_LDFLAGS_WIN32  += -lvorbisfile -lvorbis -logg -static
+gizmo_exe_CPPFLAGS += -DHAVE_WIN32_VORBIS
+gizmo_exe_LDFLAGS  += -lvorbisfile -lvorbis -logg -static
 endif
 
 gizmo.ico: $(srcdir)/apps/images/asteroids.svg
@@ -115,8 +121,8 @@ gizmo.ico: $(srcdir)/apps/images/asteroids.svg
 gizmo.res: ./source/gizmo/gizmo.rc gizmo.ico
 	$(WINDRES) $< -O coff -o $@
 
-gizmo.exe: gizmo.res $(GIZMO_SOURCES_WIN32)
-	$(MINGW) $(GIZMO_CPPFLAGS_WIN32) -o $@ $^ $(GIZMO_LDFLAGS_WIN32)
+gizmo.exe: gizmo.res $(gizmo_exe_SOURCES)
+	$(MINGW) $(gizmo_exe_CPPFLAGS) -o $@ $^ $(gizmo_exe_LDFLAGS)
 
 play-win32-asteroids: gizmo.exe
 	wine $<
@@ -140,7 +146,7 @@ bin_PROGRAMS += gizmo
 gizmo_CPPFLAGS =  \
 	-DPATH_SOUND="$(srcdir)/apps/sounds/%s.ogg" \
 	-DPATH_FONT="$(srcdir)/apps/fonts/%s.ttf"
-gizmo_CFLAGS = $(SDL2_CFLAGS)
+gizmo_CFLAGS  = $(SDL2_CFLAGS)
 gizmo_LDFLAGS = $(SDL2_LIBS) -lm
 gizmo_SOURCES = \
 	source/gizmo/gizmo-sdl.c \
@@ -327,12 +333,12 @@ server-chain.pem: localhost.localdomain-svc-chain.pem
 	cp $< $@
 
 ## Rust ================================================================
-RUST_DISTSRC = \
+RUST_DISTRIBUTE = \
 	$(srcdir)/source/ripple.rs \
 	$(srcdir)/source/expense.rs \
 	$(srcdir)/source/server.rs
 
-rs-serve: Cargo.toml $(srcdir)/source/build.rs $(RUST_DISTSRC) \
+rs-serve: Cargo.toml $(srcdir)/source/build.rs $(RUST_DISTRIBUTE) \
 	  server-key.pem server-chain.pem rootCA/cert.pem
 	cargo run --bin server
 
@@ -341,7 +347,7 @@ rs-asteroids: Cargo.toml $(srcdir)/source/build.rs \
 	cargo run --bin asteroids
 
 ## Python ==============================================================
-PYTHON_DISTSRC = source/random.py source/match.py
+PYTHON_DISTRIBUTE = source/random.py source/match.py
 
 if HAVE_PYTHON
 # Python support is well out of date.  Until everything can be brought
@@ -361,7 +367,7 @@ endif
 ## Java ================================================================
 # Names of macros such as JCC, JAR_ROOT and JAVA_SRCFILES have been
 # chosen to avoid the broken and unmaintained autoconf Java support.
-JAVA_DISTSRC = \
+JAVA_DISTRIBUTE = \
 	$(srcdir)/source/Applet.java \
 	$(srcdir)/source/Camera.java \
 	$(srcdir)/source/Options.java \
@@ -380,7 +386,7 @@ JAVA_DISTSRC = \
 	$(srcdir)/source/Asteroids.java \
 	$(srcdir)/source/Dungeon.java
 
-SERVLET_DISTSRC = \
+SERVLET_DISTRIBUTE = \
 	$(srcdir)/source/servlet/RippleFilter.java \
 	$(srcdir)/source/servlet/Tinker.java \
 	$(srcdir)/source/servlet/ExpenseServlet.java
@@ -394,7 +400,7 @@ JAVADOC = "$(JAVA_HOME)/bin/javadoc"
 JAR     = "$(JAVA_HOME)/bin/jar"
 KEYTOOL = "$(JAVA_HOME)/bin/keytool"
 
-JAVA_SRCFILES = $(JAVA_DISTSRC) $(builddir)/source/Ripple.java
+JAVA_SRCFILES = $(JAVA_DISTRIBUTE) source/Ripple.java
 
 .javadoc: $(JAVA_SRCFILES)
 	$(JAVADOC) -docencoding utf-8 -public \
@@ -422,7 +428,7 @@ build/libs/@PACKAGE@-@VERSION@.war: \
 	    $(JAVA_SRCFILES) \
 	    WEB-INF/web.xml \
 	    WEB-INF/jetty-env.xml \
-	    $(SERVLET_DISTSRC)
+	    $(SERVLET_DISTRIBUTE)
 	$(GRADLE) war
 
 @PACKAGE@-@VERSION@.war: build/libs/@PACKAGE@-@VERSION@.war
@@ -553,24 +559,28 @@ endif # HAVE_PODMAN
 
 else # !HAVE_GRADLE
 
-JAR_ROOT = $(builddir)/classes
+JAVAC_FLAGS = -Xlint:-options -Xlint:-removal
+JAR_ROOT = classes
+JAR_LIBS = lib/java-vorbis-support-1.2.1.jar
 
-$(JAR_ROOT)/.classes: $(JAVA_SRCFILES)
+MAVEN_CENTRAL = https://search.maven.org/artifact
+JAVA_LIB_VORBIS = com.github.trilarion/java-vorbis-support/1.2.1/jar
+
+lib/java-vorbis-support-1.2.1.jar:
+	$(MKDIR_P) lib
+	curl -o $@ $(MAVEN_CENTRAL)/$(JAVA_LIB_VORBIS)
+
+$(JAR_ROOT)/.classes: $(JAVA_SRCFILES) $(JAR_LIBS)
 	$(MKDIR_P) $(JAR_ROOT)
-	$(JCC) -d $(JAR_ROOT) -source 8 -target 8 \
-	    -Xlint:-options -Xlint:-removal \
+	$(JCC) $(JAVAC_FLAGS) -d $(JAR_ROOT) -source 8 -target 8 \
 	    $(JAVA_SRCFILES)
-	find $(JAR_ROOT) -name \*.class | \
-	   sed 's,^\./[^/]*/,,;s,/,.,g;s,\(\$$[^.]*\)*\.class,,' | \
+	(cd $(JAR_ROOT) && find net/antimeme -name \*.class) | \
+	   sed -e 's,/,.,g' -e 's,^\.\+,,' \
+	       -e 's,\(\$$[^.]*\)*\.class,,' | \
 	   sort -u > $@
 
-$(JAR_ROOT)/.libs: $(JAR_ROOT)/.classes
-	$(MKDIR_P) $(JAR_ROOT)/lib
-	cp lib/*.jar $(JAR_ROOT)/lib
-	find lib -type f -name \*.jar >$@
-
 @PACKAGE@-@VERSION@.jar: $(srcdir)/META-INF/MANIFEST.MF \
-			 $(JAR_ROOT)/.libs $(JAR_ROOT)/.classes
+			 $(JAR_ROOT)/.classes
 	$(JAR) cvfm $@ $(srcdir)/META-INF/MANIFEST.MF \
 	    -C $(srcdir)/apps fonts \
 	    -C $(srcdir)/apps images \
@@ -581,13 +591,13 @@ $(JAR_ROOT)/.libs: $(JAR_ROOT)/.classes
 @PACKAGE@.jar: @PACKAGE@-@VERSION@.jar
 	rm -f $@; $(LN_S) @PACKAGE@-@VERSION@.jar $@
 
-endif # HAVE_GRADLE
+endif # !HAVE_GRADLE
 
 play-java-asteroids: @PACKAGE@.jar
-	$(JAVA_HOME)/bin/java -jar $< asteroids
+	$(JAVA_HOME)/bin/java -jar @PACKAGE@.jar asteroids
 
 play-java-jarbles: @PACKAGE@.jar
-	$(JAVA_HOME)/bin/java -jar $< jarbles
+	$(JAVA_HOME)/bin/java -jar @PACKAGE@.jar jarbles
 
 install-data-local: .javadoc
 	$(MKDIR_P) $(DESTDIR)$(docdir)
@@ -624,6 +634,12 @@ endif # HAVE_JAVA
 
 ## JavaScript ==========================================================
 # Uses Node.js to run an HTTPS server as well as automated tests
+
+scripts/check-mocha.sh:
+	$(MKDIR_P) scripts
+	echo '#!/bin/sh' > $@
+	echo npm test >> $@
+	chmod +x $@
 
 testjs: package.json $(srcdir)/source/js/mocha/*.mjs
 	npm test
@@ -673,14 +689,17 @@ EXTRA_DIST = \
 	scripts/ca.conf \
 	scripts/container-jettypod \
 	source/gizmo/gizmo.h \
+	source/gizmo/gizmo-sdl.c \
+	source/gizmo/gizmo-win32.c \
 	source/gizmo/asteroids.h \
+	source/gizmo/asteroids.c \
 	META-INF/MANIFEST.MF \
 	WEB-INF/web.xml \
 	WEB-INF/jetty-env.xml \
-	$(JAVA_DISTSRC) \
-	$(SERVLET_DISTSRC) \
-	$(RUST_DISTSRC)
-	$(PYTHON_DISTSRC)
+	$(JAVA_DISTRIBUTE) \
+	$(SERVLET_DISTRIBUTE) \
+	$(RUST_DISTRIBUTE) \
+	$(PYTHON_DISTRIBUTE)
 
 .PRECIOUS: %CA/key.pem %CA/cert.pem %-key.pem
 

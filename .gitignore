@@ -9,6 +9,8 @@
 /.passwd
 /.libs/
 /aclocal.m4
+/m4/libtool.m4
+/m4/lt*.m4
 /autom4te.cache/
 /compile
 /config.guess
@@ -33,6 +35,8 @@
 /include/ripple/stamp-h1
 /scripts/ripple.dpkg
 /scripts/ripple.spec
+/scripts/check-java.sh
+/scripts/check-mocha.sh
 /ripple-*.tar.gz
 /check-ripple
 /check-ripple.exe
