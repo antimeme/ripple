@@ -7,7 +7,8 @@ PORT=7222
 
 if [ -e $DRIVE ]; then
     qemu-system-x86_64 \
-        -m 4G -smp 4 -vga $VGA -display gtk -enable-kvm \
+        -m 4G -smp 4 -enable-kvm \
+        -vga $VGA -display gtk,zoom-to-fit=on \
         -audiodev sdl,id=snd0 -machine pcspk-audiodev=snd0 \
         -device ac97,audiodev=snd0 \
         -netdev user,id=net0,hostfwd=tcp::$PORT-:22 \
