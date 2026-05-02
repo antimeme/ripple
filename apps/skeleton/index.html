@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<link rel="icon" href="app.svg?serial=4OVUic" />
+<style>
+ html, body {
+     padding: 0; margin: 0; overflow: hidden;
+     width: 100%; height: 100%;
+ }
+ canvas {
+     display: block; width: 100vw; height: 100vh;
+     border: 0px none; background-color: #111;
+ }
+</style>
+<title>Skeleton</title>
+<script type="module">//<![CDATA[
+ import Camera from "../ripple/camera.mjs";
+
+ class Skeleton {
+     constructor(setting, scenario) { }
+
+     get active() { return true };
+     get autofill() { return true };
+     get autozoom() { return { min: 1, max: 20 } };
+     autodrag(event) { };
+     resize(event, camera) {  }
+     dblclick(event, camera) { }
+
+     mousedown(event, camera) {
+         const point = camera.toWorld(camera.getPoint(event));
+         console.log("Spooky!", point);
+     }
+
+     mouseup(event, camera) { }
+
+     usekeys = true;
+     keydown(event, camera) { }
+
+     #lastUpdate = undefined;
+
+     update(now, camera) {
+         this.#lastUpdate = now;
+     }
+
+     draw(ctx, camera) {
+     }
+ }
+
+ Camera.preload([], (loaded) =>
+     new Camera().setScale(4).manage(new Skeleton()));
+ //]]></script>

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <style>
+      .bg { fill: #333; }
+      .bone { fill: #ddd; }
+    </style>
+  </defs>
+  <rect class="bg" width="512" height="512" rx="64" />
+
+  <ellipse class="bone" cx="256" cy="192" rx="192" ry="136" />
+  <polygon class="bone" points="128,192 128,384
+                                191,384 191,320 193,320, 193,384
+                                255,384 255,320 257,320, 257,384
+                                319,384 319,320 321,320, 321,384
+                                384,384 384,192" />
+  <circle  class="bg" cx="182" cy="192" r="48" />
+  <circle  class="bg" cx="330" cy="192" r="48" />
+  <polygon class="bg" points="256,256 272,288 240,288" />
+
+  <polygon class="bone" points="96,336 128,400 384,400 416,336
+                                368,448 144,448" />
+</svg>
