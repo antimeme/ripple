@@ -7,22 +7,22 @@
     </g>
   </defs>
   <circle cx="100" cy="100" r="95" fill="#444"
-          stroke="#333" stroke-width="3"/>
+          stroke="#222" stroke-width="3"/>
   <use href="#sparkle" x="55" y="45"
        transform="scale(0.8)" transform-origin="55 45" />
   <use href="#sparkle" x="165" y="85"
        transform="scale(0.45)" transform-origin="165 85" />
-  <use href="#sparkle" x="155" y="155"
-       transform="scale(0.45)" transform-origin="155 155" />
+  <use href="#sparkle" x="125" y="155"
+       transform="scale(0.8)" transform-origin="125 155" />
 
   <g transform="rotate(45, 100, 100)"><!-- rocket -->
-    <ellipse cx="100" cy="110" rx="27" ry="60" fill="#e74c3c"/>
-
-    <circle cx="100" cy="100" r="6" fill="#3498db"
-            stroke="#2c3e50" stroke-width="1.5"/><!-- window -->
+    <ellipse cx="100" cy="110" rx="27" ry="60"
+             fill="#aae" stroke="#777" stroke-width="1" />
     <polygon points="72,135 60,150 65,170 84,170 74,145"
-             fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+             fill="#aae" stroke="#777" stroke-width="1"/>
     <polygon points="128,135 140,150 135,170 116,170 126,145"
-             fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+             fill="#aae" stroke="#777" stroke-width="1"/>
+    <circle cx="100" cy="100" r="6" fill="#ddd"
+            stroke="#444" stroke-width="1.5"/><!-- window -->
   </g>
 </svg>

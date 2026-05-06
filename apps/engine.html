@@ -49,13 +49,9 @@
     </td><td>
         <input id="fuel" type="text" size="5" value="20" /> tonnes
     </td></tr><tr><td>
-        Engine Efficiency
+        Technology
     </td><td>
-        <input id="eeff" type="text" size="5" value="22" /> %
-    </td></tr><tr><td>
-        Exhaust-Velocity
-    </td><td>
-        <input id="exhaust" type="text" size="5" value="12,157" /> km/s
+        <input id="tech" type="range" min="0" max="100" value="50" />
     </td></tr><tr><td>
         Acceleration
     </td><td>
@@ -78,35 +74,42 @@
     Delta-V
 </td><td>
     <input id="deltav" type="text" size="8" disabled="true" />
-    <span id="deltavtag">km/s</span>
+    <span id="deltav_tag">km/s</span>
 </td><td>
     ln(Start-Mass/Dry-Mass) &times; Exhaust-Velocity
+</td></tr><tr><td>
+    Exhaust-Velocity
+</td><td>
+    <input id="ve" type="text" size="8" disabled="true" />
+    <span id="ve_tag">km/s</span>
+</td><td>
+    &radic; (2 &eta; Energy-Density / Fuel-Mass)
 </td></tr><tr><td>
     Burn Time
 </td><td>
     <input id="burn" type="text" size="8" disabled="true" />
-    <span id="burntag">seconds</span>
+    <span id="burn_tag">seconds</span>
 </td><td>
     Delta-V / Acceleration
 </td></tr><tr><td>
     Kinetic Energy
 </td><td>
     <input id="kinetic" type="text" size="8" disabled="true" />
-    <span id="kinetictag">Joules</span>
+    <span id="kinetic_tag">Joules</span>
 </td><td>
     Fuel-Mass &times; Exhaust-Velocity<sup>2</sup>
 </td></tr><tr><td>
     Reaction Energy
 </td><td>
     <input id="reaction" type="text" size="8" disabled="true" />
-    <span id="reactiontag">Joules</span>
+    <span id="reaction_tag">Joules</span>
 </td><td>
-    Fuel-Mass &times; Energy-Density &times; Efficiency
+    Fuel-Mass &times; Energy-Density
 </td></tr><tr><td>
     Range
 </td><td>
     <input id="range" type="text" size="8" disabled="true" />
-    <span id="rangetag">km</span>
+    <span id="range_tag">km</span>
 </td><td>
     Acceleration &times; (Crisis-Time / 2)<sup>2</sup>
 </td></tr></table>
@@ -121,7 +124,7 @@
     Plug in these numbers and tinker with the efficiency to find how
     how much of the fuel burn is converted to kinetic energy.
 </p><p>
-    Deuterium and D-He3 are theoretical fuels that would require the
+    Deuterium and D-3He are theoretical fuels that would require the
     invention of practical fusion pulse engines.  It's not clear how
     efficient or what exhaust velocity such engines would have.
 </p>
@@ -129,48 +132,66 @@
 <script src="ripple/polyfill.js"></script>
 <script src="ripple/ripple.js"></script>
 <script>//<![CDATA[
- var payload;
- var engine;
- var ftype;
- var fuel;
- var reff;
- var eeff;
- var exhaust;
- var acceleration;
- var crisis;
+ let payload;
+ let engine;
+ let ftype;
+ let fuel;
+ let reff;
+ let tech;
+ let acceleration;
+ let crisis;
 
- var deltav;
- var burn;
- var burntag;
- var kinetic;
- var kinteictag;
- var reaction;
- var reactiontag;
- var range;
- var ftypeout;
+ let deltav_ele;
+ let deltav_tag;
+ let ve_ele;
+ let ve_tag;
+ let burn;
+ let burn_tag;
+ let kinetic;
+ let kinteic_tag;
+ let reaction;
+ let reaction_tag;
+ let range;
+ let range_tag;
 
- var ftypes = {
-     afusion: {
-         label: "D-He3",
-         Mjkg: 361000000
+ const ftypes = {
+     h2o2: {
+         label: "H2-O2",
+         joules_gram: 13.4e9,
+         ve_min: 3.0e3,
+         ve_max: 4.1e3
      },
      deuterium: {
          label: "Deuterium",
-         Mjkg: 73900000
+         joules_gram: 8.83e16,
+         ve_min: 3.0e6,
+         ve_max: 6.0e6
      },
-     h2o2: {
-         label: "H2-O2",
-         Mjkg: 13.4
+     d_t: {
+         label: "D-T",
+         joules_gram: 3.38e17,
+         ve_min: 2.5e6,
+         ve_max: 3.2e6
+     },
+     d_3he: {
+         label: "D-3He",
+         note: "aneutronic",
+         joules_gram: 3.46e17,
+         ve_min: 8e6,
+         ve_max: 10.5e6
      },
      antimatter: {
          label: "Antimatter",
-         Mjkg: 89875517874
+         note: "pion reflection",
+         joules_gram: 8.99e19,
+         ve_min: 40e6,
+         ve_max: 60e6
      },
  };
 
  // Data comes from https://en.wikipedia.org/wiki/Solar_System
  // All masses are in kilograms.  All radii are in kilometers.
- var bodies = {
+ const bodies = {
      sol: { label: "Sol", mass: 1.9885e30, radius: 695700 },
      mercury: { label: "Mercury", orbits: "sol",
                 mass: 3.3011e23, radius: 2439.7 },
@@ -316,26 +337,29 @@
      element.value = value.toLocaleString('en-US');
  };
 
- var computeEngine = function() {
-     var drymass = getValue(payload) + getValue(engine);
-     var ve = getValue(exhaust);
-     var fu = getValue(fuel);
+ function computeEngine() {
+     const drymass = getValue(payload) + getValue(engine);
+     const fu = getValue(fuel);
+     const details = ftypes[ftype.value];
+     const ve = details.ve_min + (
+         details.ve_max - details.ve_min) * getValue(tech) / 100;
+     const dv = ve * Math.log((drymass + fu) / drymass);
+
      var acc = Math.abs(getValue(acceleration));
-     var dv = ve * Math.log((drymass + fu) / drymass);
-     var en = (fu * 1000) * (ve * 1000) * (ve * 1000) / 2
-     var pr = (fu * 1000 * ftypes[ftype.value].Mjkg * 1000000 *
-         (getValue(eeff) / 100));
+     var en = (fu * 1000) * ve * ve / 2
+     var pr = fu * details.joules_gram;
      var ct = getValue(crisis) * 60 * 60;
      var bt = 1000 * dv / acc;
      var rg = (ct < bt) ?
               (acc * (ct / 2) * (ct / 2)) :
               (acc * (bt / 2) * (bt / 2) + (ct - bt) * (acc * bt));
 
-     setMetric(deltav, deltavtag, 'm/s', 1000 * dv);
-     setSeconds(burn, burntag, bt);
-     setMetric(kinetic, kinetictag, 'Joules', en);
-     setMetric(reaction, reactiontag, 'Joules', pr);
-     setMetric(range, rangetag, 'm', rg);
+     setMetric(deltav_ele, deltav_tag, 'm/s', dv);
+     setMetric(ve_ele, ve_tag, 'm/s', ve);
+     setSeconds(burn, burn_tag, bt);
+     setMetric(kinetic, kinetic_tag, 'Joules', en);
+     setMetric(reaction, reaction_tag, 'Joules', pr);
+     setMetric(range, range_tag, 'm', rg);
 
      kinetic.className = (pr >= en) ? 'success' : 'fail';
      reaction.className = (pr >= en) ? 'success' : 'fail';
@@ -353,24 +377,23 @@
      payload = document.getElementById("payload");
      engine = document.getElementById("engine");
      fuel = document.getElementById("fuel");
-     //reff = document.getElementById("reff");
-     eeff = document.getElementById("eeff");
-     exhaust = document.getElementById("exhaust");
+     tech = document.getElementById("tech");
      acceleration = document.getElementById("acceleration");
      crisis = document.getElementById("crisis");
-     deltav = document.getElementById("deltav");
-     deltavtag = document.getElementById("deltavtag");
+     deltav_ele = document.getElementById("deltav");
+     deltav_tag = document.getElementById("deltav_tag");
+     ve_ele = document.getElementById("ve");
+     ve_tag = document.getElementById("ve_tag");
      kinetic = document.getElementById("kinetic");
-     kinetictag = document.getElementById("kinetictag");
+     kinetic_tag = document.getElementById("kinetic_tag");
      reaction = document.getElementById("reaction");
-     reactiontag = document.getElementById("reactiontag");
+     reaction_tag = document.getElementById("reaction_tag");
      burn = document.getElementById("burn");
-     burntag = document.getElementById("burntag");
+     burn_tag = document.getElementById("burn_tag");
      range = document.getElementById("range");
-     rangetag = document.getElementById("rangetag");
-     ftypeout = document.getElementById("ftypeout");
+     range_tag = document.getElementById("range_tag");
 
-     [payload, ftype, fuel, eeff, exhaust, acceleration, crisis]
+     [payload, ftype, fuel, tech, acceleration, crisis]
          .forEach(function(thing) {
              thing.addEventListener("change", computeEngine); });
      computeEngine();
@@ -385,7 +408,8 @@
              result.setAttribute("selected", "selected");
          body.appendChild(result);
      });
-     var computeVelocities = function(event) {
+
+     function computeVelocities(event) {
          var gravitation = 6.674e-11;
          var entry = bodies[body.value];
          var altitude = document.getElementById("altitude");
