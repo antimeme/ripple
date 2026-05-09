@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<meta charset="utf-8" />
 <title>Engine Calculator</title>
 <link rel="shortcut icon" href="engine.svg" />
 <style>
@@ -35,7 +36,7 @@
 </fieldset>
 
 <fieldset class="calculator">
-    <legend>Calculator</legend>
+    <legend>Engine Calculator</legend>
     <form><table><tr><td>
         Payload
     </td><td>
@@ -43,158 +44,151 @@
     </td></tr><tr><td>
         Engine
     </td><td>
-        <input id="engine" type="text" size="5" value="10" /> tonnes
+        <input id="engine_mass" type="text" size="5" value="75" />
+        tonnes
     </td></tr><tr><td>
         Fuel <select id="ftype"></select>
     </td><td>
         <input id="fuel" type="text" size="5" value="20" /> tonnes
     </td></tr><tr><td>
-        Technology
+        Exhaust-Velocity
     </td><td>
-        <input id="tech" type="range" min="0" max="100" value="50" />
+        <input id="ve" type="text" size="5" value="4.2" /> km/s
     </td></tr><tr><td>
-        Acceleration
+        Efficiency
     </td><td>
-        <input id="acceleration" type="text" size="5" value="9.8" />
-        m/s<sup>2</sup>
-    </td></tr><tr><td>
-        Life Support
-    </td><td>
-        <input id="crisis" type="text" size="5" value="240" />
-        hours
-    </td></tr><!-- tr><td>
-                   Reactor Efficiency
-                   </td><td>
-                   <input id="reff" type="text" size="5" value="10" /> %
-                   </td></tr--></table></form>
+        <input id="efficiency" type="text" size="5" value="75" /> %
+        <input id="effrange" type="range"
+               min="0" max="100" value="75" />
+    </td></tr></table></form>
 </fieldset>
 <hr />
 
 <table><tr><td>
     Delta-V
 </td><td>
-    <input id="deltav" type="text" size="8" disabled="true" />
-    <span id="deltav_tag">km/s</span>
+    <input id="dv" type="text" size="8" disabled="true" />
+    <span id="dv_tag">km/s</span>
 </td><td>
     ln(Start-Mass/Dry-Mass) &times; Exhaust-Velocity
-</td></tr><tr><td>
-    Exhaust-Velocity
+</td></tr><tr><td id="activator">
+    Activator
 </td><td>
-    <input id="ve" type="text" size="8" disabled="true" />
-    <span id="ve_tag">km/s</span>
+    <input id="actmass" type="text" size="8" disabled="true" />
+    <span id="actmass_tag">g</span>
 </td><td>
-    &radic; (2 &eta; Energy-Density / Fuel-Mass)
-</td></tr><tr><td>
-    Burn Time
+    Fuel-Mass &times;
+    <span id="actlabel">(16 / 18)</span>
+</td></tr><tr><td id="activator">
+    Hydrogen
 </td><td>
-    <input id="burn" type="text" size="8" disabled="true" />
-    <span id="burn_tag">seconds</span>
+    <input id="propmass" type="text" size="8" disabled="true" />
+    <span id="propmass_tag">g</span>
 </td><td>
-    Delta-V / Acceleration
+    Fuel-Mass - Reaction-Mass
 </td></tr><tr><td>
     Kinetic Energy
 </td><td>
     <input id="kinetic" type="text" size="8" disabled="true" />
     <span id="kinetic_tag">Joules</span>
 </td><td>
-    Fuel-Mass &times; Exhaust-Velocity<sup>2</sup>
+    Propellant-Mass &times; Exhaust-Velocity<sup>2</sup>
 </td></tr><tr><td>
     Reaction Energy
 </td><td>
     <input id="reaction" type="text" size="8" disabled="true" />
     <span id="reaction_tag">Joules</span>
 </td><td>
-    Fuel-Mass &times; Energy-Density
-</td></tr><tr><td>
-    Range
-</td><td>
-    <input id="range" type="text" size="8" disabled="true" />
-    <span id="range_tag">km</span>
-</td><td>
-    Acceleration &times; (Crisis-Time / 2)<sup>2</sup>
+    Reaction-Mass &times; Energy-Density &times; Efficiency
 </td></tr></table>
 
 <hr />
 <p>
+    Based on the Tsiolkovsky (Циолковский / Tsee-ohl-KOV-skee) rocket
+    equation, basic physics formula plus some wacky assumptions to
+    produce plausible exhaust velocity values for speculative engine
+    types.
+</p><p>
     Note that the NASA space shuttle weighed about 75 tonnes dry with
     up to 30 tonnes of cargo (<a href="https://coolcosmos.ipac.caltech.edu/ask/268-How-much-did-the-Space-Shuttle-weigh-">source</a>)
     and used H2-O2 engines with an exhaust velocity between 2.5 km/s
     for the booster rockets and 4.4 km/s for the main engine
     (<a href="https://www.centennialofflight.net/essay/SPACEFLIGHT/rockets/SP6.htm">source</a>).
-    Plug in these numbers and tinker with the efficiency to find how
-    how much of the fuel burn is converted to kinetic energy.
-</p><p>
-    Deuterium and D-3He are theoretical fuels that would require the
-    invention of practical fusion pulse engines.  It's not clear how
-    efficient or what exhaust velocity such engines would have.
 </p>
 
 <script src="ripple/polyfill.js"></script>
 <script src="ripple/ripple.js"></script>
 <script>//<![CDATA[
- let payload;
- let engine;
- let ftype;
- let fuel;
- let reff;
- let tech;
- let acceleration;
- let crisis;
+ const payload = document.getElementById("payload");
+ const engine_mass = document.getElementById("engine_mass");
+ const ftype = document.getElementById("ftype");
+ const fuel = document.getElementById("fuel");
+ const efficiency = document.getElementById("efficiency");
+ const effrange = document.getElementById("effrange");
+ const ve_ele = document.getElementById("ve");
 
- let deltav_ele;
- let deltav_tag;
- let ve_ele;
- let ve_tag;
- let burn;
- let burn_tag;
- let kinetic;
- let kinteic_tag;
- let reaction;
- let reaction_tag;
- let range;
- let range_tag;
+ const dv_ele = document.getElementById("dv");
+ const dv_tag = document.getElementById("dv_tag");
+ const kinetic = document.getElementById("kinetic");
+ const kinteic_tag = document.getElementById("kinetic_tag");
+ const reaction = document.getElementById("reaction");
+ const reaction_tag = document.getElementById("reaction_tag");
+ const propmass = document.getElementById("propmass");
+ const propmass_tag = document.getElementById("propmass_tag");
+ const actmass = document.getElementById("actmass");
+ const actmass_tag = document.getElementById("actmass_tag");
+ const activator = document.getElementById("activator");
+ const actlabel = document.getElementById("actlabel");
 
  const ftypes = {
      h2o2: {
-         label: "H2-O2",
-         joules_gram: 13.4e9,
-         ve_min: 3.0e3,
-         ve_max: 4.1e3
+         label: "H2 + O2",
+         efficiency:   0.75,
+         joules_gram: 13.4e6,
+         ve:           4.2e3,
+         fixed: 16/18,
+         activator:  "Oxygen",
      },
      deuterium: {
-         label: "Deuterium",
-         joules_gram: 8.83e16,
-         ve_min: 3.0e6,
-         ve_max: 6.0e6
+         label: "D-D + H2",
+         radiation: "neutrons",
+         efficiency:  0.34,
+         joules_gram: 8.75e13,
+         ve:          1.5e6,
+         activator:  "Deuterium",
      },
-     d_t: {
-         label: "D-T",
-         joules_gram: 3.38e17,
-         ve_min: 2.5e6,
-         ve_max: 3.2e6
+     deut_tritium: {
+         label: "D-T + H2",
+         radiation: "neutrons",
+         efficiency:  0.17,
+         joules_gram: 3.38e14,
+         ve:          2.0e6,
+         activator:  "Tritium",
      },
-     d_3he: {
-         label: "D-3He",
-         note: "aneutronic",
-         joules_gram: 3.46e17,
-         ve_min: 8e6,
-         ve_max: 10.5e6
+     deut_3he: {
+         label: "D-3He + H2",
+         efficiency:  0.765,
+         joules_gram: 3.51e14,
+         ve:          5.0e6,
+         activator: "3Helium",
      },
      antimatter: {
-         label: "Antimatter",
+         label: "Antimatter + H2",
+         radiation: "gamma",
          note: "pion reflection",
-         joules_gram: 8.99e19,
-         ve_min: 40e6,
-         ve_max: 60e6
+         efficiency: 0.4845,
+         joules_gram: 8.98e16,
+         ve: 1.0e7,
+         activator: "Antimatter",
      },
  };
 
  // Data comes from https://en.wikipedia.org/wiki/Solar_System
  // All masses are in kilograms.  All radii are in kilometers.
  const bodies = {
-     sol: { label: "Sol", mass: 1.9885e30, radius: 695700 },
+     sol: { label: "Sol", mass: 1.9885e30, radius: 6.957e5 },
      mercury: { label: "Mercury", orbits: "sol",
-                mass: 3.3011e23, radius: 2439.7 },
+                mass: 3.3011e23, radius: 2.4397e3 },
      venus: { label: "Venus", orbits: "sol",
               mass: 4.8675e24, radius: 6051.8 },
      terra: { label: "Terra", orbits: "sol", selected: true,
@@ -266,64 +260,52 @@
      charon: { label: "Charon", orbits: "sol",
                mass: 1.586e21, radius: 606 },
  };
- var body;
+ const body = document.getElementById("body");
 
- var getValue = function(element) {
+ function getValue(element) {
      return parseFloat(element.value.replace(',', ''));
- };
+ }
 
- var setValue = function(element, value) {
+ function setValue(element, value) {
      element.value = value.toLocaleString('en-US');
- };
+ }
 
- var setMetric = function(element, tag, unit, value) {
+ function setMetric(element, tag, unit, value) {
+     let prefixes = [
+         {label: 'E*', magnitude: 1e18},
+         {label: 'P*', magnitude: 1e15},
+         {label: 'T*', magnitude: 1e12},
+         {label: 'G*', magnitude: 1e9},
+         {label: 'M*', magnitude: 1e6},
+         {label: 'k*', magnitude: 1e3}];
+     let label = unit;
+
      if (unit === 'm/s') {
-         if (value > 1000) {
-             value /= 1000;
-             tag.innerHTML = 'km/s';
-         } else tag.innerHTML = unit;
+         prefixes = [{label: 'km/s', magnitude: 1e3}];
      } else if (unit === "m/s2") {
-         if (value > 1000) {
-             value /= 1000;
-             tag.innerHTML = "km/s<sup>2</sup>";
-         } else tag.innerHTML = "m/s<sup>2</sup>";
+         label = "m/s<sup>2</sup>";
+         prefixes = [{label: "km/s<sup>2</sup>", magnitude: 1e3}];
      } else if (unit === 'g') {
-         if (value > 1000000000000) {
-             value /= 1000000000000;
-             tag.innerHTML = 'megatonnes';
-         } else if (value > 1000000000) {
-             value /= 1000000000;
-             tag.innerHTML = 'kilotonnes';
-         } else if (value > 1000000) {
-             value /= 1000000;
-             tag.innerHTML = 'tonnes';
-         } else if (value > 1000) {
-             value /= 1000;
-             tag.innerHTML = 'kg';
-         } else tag.innerHTML = unit;
-     } else if (value > 1000000000000000000) {
-         value /= 1000000000000000000;
-         tag.innerHTML = 'E' + unit[0];
-     } else if (value > 1000000000000000) {
-         value /= 1000000000000000;
-         tag.innerHTML = 'P' + unit[0];
-     } else if (value > 1000000000000) {
-         value /= 1000000000000;
-         tag.innerHTML = 'T' + unit[0];
-     } else if (value > 1000000000) {
-         value /= 1000000000;
-         tag.innerHTML = 'G' + unit[0];
-     } else if (value > 1000000) {
-         value /= 1000000;
-         tag.innerHTML = 'M' + unit[0];
-     } else if (value > 1000) {
-         value /= 1000;
-         tag.innerHTML = 'k' + unit[0];
-     } else tag.innerHTML = unit;
-     element.value = value.toLocaleString('en-US');
- };
+         prefixes = [
+             {label: "megatonnes", magnitude: 1e12},
+             {label: "kilotonnes", magnitude: 1e9},
+             {label: "tonnes", magnitude: 1e6},
+             {label: "kg", magnitude: 1e3}];
+     }
 
- var setSeconds = function(element, tag, value) {
+     for (let index in prefixes) {
+         const prefix = prefixes[index];
+         if (value >= prefix.magnitude) {
+             value /= prefix.magnitude;
+             label = prefix.label;
+             break;
+         }
+     }
+     tag.innerHTML = label.replace('*', unit[0]);
+     element.value = value.toLocaleString('en-US');
+ }
+
+ function setSeconds(element, tag, value) {
      if (value > 24 * 60 * 60) {
          value /= 24 * 60 * 60;
          tag.innerHTML = 'days';
@@ -335,38 +317,41 @@
          tag.innerHTML = 'minutes';
      } else tag.innerHTML = 'seconds';
      element.value = value.toLocaleString('en-US');
- };
+ }
 
  function computeEngine() {
-     const drymass = getValue(payload) + getValue(engine);
-     const fu = getValue(fuel);
+     const drymass = (getValue(payload) + getValue(engine_mass)) * 1e6;
+     const fuelmass = getValue(fuel) * 1e6;
      const details = ftypes[ftype.value];
-     const ve = details.ve_min + (
-         details.ve_max - details.ve_min) * getValue(tech) / 100;
-     const dv = ve * Math.log((drymass + fu) / drymass);
+     const ve = getValue(ve_ele) * 1e3;
+     const eff = getValue(efficiency) / 100;
 
-     var acc = Math.abs(getValue(acceleration));
-     var en = (fu * 1000) * ve * ve / 2
-     var pr = fu * details.joules_gram;
-     var ct = getValue(crisis) * 60 * 60;
-     var bt = 1000 * dv / acc;
-     var rg = (ct < bt) ?
-              (acc * (ct / 2) * (ct / 2)) :
-              (acc * (bt / 2) * (bt / 2) + (ct - bt) * (acc * bt));
+     const fraction = (!isNaN(details.fixed) ? details.fixed :
+                       ve * ve / (2 * details.joules_gram * eff));
+     const am = fraction * fuelmass;
+     const pm = !isNaN(details.fixed) ?
+                fuelmass : (fuelmass - am);
 
-     setMetric(deltav_ele, deltav_tag, 'm/s', dv);
-     setMetric(ve_ele, ve_tag, 'm/s', ve);
-     setSeconds(burn, burn_tag, bt);
-     setMetric(kinetic, kinetic_tag, 'Joules', en);
-     setMetric(reaction, reaction_tag, 'Joules', pr);
-     setMetric(range, range_tag, 'm', rg);
+     // Use the Tsiolkovsky rocket equation!
+     const dv = ve * Math.log((drymass + pm) / drymass);
 
-     kinetic.className = (pr >= en) ? 'success' : 'fail';
-     reaction.className = (pr >= en) ? 'success' : 'fail';
+     // Kinetic energy from Physics 101
+     const kenergy = pm * ve * ve / 2
+     const renergy = am * details.joules_gram * eff;
+
+     setMetric(propmass, propmass_tag, 'g', fuelmass - am);
+     setMetric(dv_ele, dv_tag, 'm/s', dv);
+     //setSeconds(burn, burn_tag, bt);
+     setMetric(kinetic, kinetic_tag, 'Joules', kenergy);
+     setMetric(reaction, reaction_tag, 'Joules', renergy);
+     setMetric(actmass, actmass_tag, 'g', am);
+     activator.innerHTML = details.activator;
+     actmass.className = (am <= fuelmass) ? 'success' : 'fail';
+     kinetic.className = (renergy >= kenergy) ? 'success' : 'fail';
+     reaction.className = (renergy >= kenergy) ? 'success' : 'fail';
  };
 
  ripple.ready(function() {
-     ftype = document.getElementById("ftype");
      Object.keys(ftypes).forEach(function(key) {
          var result = document.createElement("option");
          result.setAttribute("value", key);
@@ -374,31 +359,30 @@
          ftype.appendChild(result);
      });
 
-     payload = document.getElementById("payload");
-     engine = document.getElementById("engine");
-     fuel = document.getElementById("fuel");
-     tech = document.getElementById("tech");
-     acceleration = document.getElementById("acceleration");
-     crisis = document.getElementById("crisis");
-     deltav_ele = document.getElementById("deltav");
-     deltav_tag = document.getElementById("deltav_tag");
-     ve_ele = document.getElementById("ve");
-     ve_tag = document.getElementById("ve_tag");
-     kinetic = document.getElementById("kinetic");
-     kinetic_tag = document.getElementById("kinetic_tag");
-     reaction = document.getElementById("reaction");
-     reaction_tag = document.getElementById("reaction_tag");
-     burn = document.getElementById("burn");
-     burn_tag = document.getElementById("burn_tag");
-     range = document.getElementById("range");
-     range_tag = document.getElementById("range_tag");
+     effrange.addEventListener("change", (event) => {
+         efficiency.value = effrange.value;
+         computeEngine(); });
+     efficiency.addEventListener("change", (event) => {
+         effrange.value = efficiency.value;
+         computeEngine(); });
+     ftype.addEventListener("change", () => {
+         const details = ftypes[ftype.value];
+         efficiency.value = effrange.value = details.efficiency * 100;
+         setValue(ve_ele, details.ve / 1e3);
 
-     [payload, ftype, fuel, tech, acceleration, crisis]
-         .forEach(function(thing) {
-             thing.addEventListener("change", computeEngine); });
+         if (isNaN(details.fixed)) {
+             actlabel.innerHTML =
+                 "Exhaust-Velocity<sup>2</sup> / " +
+                 "(2 &times; Efficiency &times; " +
+                 "Energy-Density)";
+         } else actlabel.innerHTML = details.fixed.toFixed(3);
+
+         computeEngine(); });
+     [payload, ftype, fuel, ve_ele]
+         .forEach(thing => thing.addEventListener(
+             "change", computeEngine));
      computeEngine();
 
-     body = document.getElementById("body");
      Object.keys(bodies).forEach(function(key) {
          var entry = bodies[key];
          var result = document.createElement("option");
