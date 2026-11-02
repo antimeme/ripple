@@ -235,6 +235,11 @@ class BaseGrid {
      * Returns the length of a cell edge */
     get edge() { return this._edge; }
 
+    fromID(id) {
+        const coords = unpair(id);
+        return { col: coords.x, row: coords.y };
+    }
+
     /**
      * Return an identifier for a node with row and col properties */
     getID(node) { checkCell(node); return pair(node.col, node.row); }

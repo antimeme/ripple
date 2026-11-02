@@ -1,3 +1,4 @@
+# a2enmod userdir auth_digest authn_socache authn_dbd
 Options +ExecCGI
 AddHandler cgi-script .cgi
 

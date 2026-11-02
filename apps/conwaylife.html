@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="X-UA-Compatible" content="chrome=1">
+<title>Conway's Game of Life</title>
+<style>
+ html, body {
+     padding: 0; margin: 0; overflow: hidden;
+     position: relative; background: #888;
+ }
+ canvas { background: #eee; }
+ .menu {
+     position: absolute; padding: 0.5em;
+     top: 10px; left: 25px;
+     background: #333; color: #eee;
+     border: 2px solid #eee; border-radius: 10px;
+     list-style-type: none; list-style-position: outside;
+ }
+ .menu a { text-decoration: none; color: #eee; }
+ .menu li { padding: 0.5em; border-radius: 10px; }
+ .menu li:hover { background: #55e; }
+</style>
+<script type="module">//<![CDATA[
+ import Grid from "./ripple/grid.mjs";
+ import Camera from "./ripple/camera.mjs";
+
+ Camera.preload(undefined, () => {
+     const camera = new Camera(document.body.appendChild(
+         document.createElement("canvas"))).setScale(4);
+     let grid = Grid.create({
+         type: "square", radius: 1, diagonal: true});
+     let last = Date.now();
+     let current = {5: true, 4: true, 8: true, 6: true, 1: true};
+     let previous = current;
+     let paused = true;
+     let interval = 500;
+
+     function timeStep() {
+         if (!paused) {
+             const next = {};
+             const dead = {};
+
+             // Live cells with two or three live neighbors survive
+             for (const [id, value] of Object.entries(current)) {
+                 let liveNeighbors = 0;
+
+                 grid.eachNeighbor(grid.fromID(id), neighbor => {
+                     const other = grid.getID(neighbor);
+                     if (current[other])
+                         liveNeighbors += 1;
+                     else if (dead[other])
+                         dead[other] += 1;
+                     else dead[other] = 1;
+                 });
+
+                 if ((liveNeighbors == 2) || (liveNeighbors == 3))
+                     next[id] = true;
+             }
+
+             // Dead cells with three live neighbors come to life
+             for (const [id, liveNeighbors] of Object.entries(dead))
+                 if (liveNeighbors == 3)
+                     next[id] = true;
+
+             previous = current;
+             current = next;
+             if (!Object.keys(current).length)
+                 paused = true;
+         }
+         last = Date.now();
+         setTimeout(timeStep, interval);
+     }
+     timeStep();
+
+     function attenuate(ctx, node, size) {
+         const points = [];
+         grid.markCenter(node);
+         grid.getPoints(node).forEach(point => {
+             points.push({
+                 x: node.x + size * (point.x - node.x),
+                 y: node.y + size * (point.y - node.y) });
+         });
+
+         points.forEach((point, index) => {
+             if (!index)
+                 ctx.moveTo(point.x, point.y);
+             else ctx.lineTo(point.x, point.y);
+         });
+         ctx.closePath();
+     }
+
+     camera.manage({
+         autofill: true, autodrag: true, active: true,
+         autozoom: { min: 1, max: 50 },
+         draw: (ctx, camera) => {
+             const now = Date.now();
+             const clamped = Math.max(0, Math.min
+                 (1, 2 * (now - last) / interval));
+
+             ctx.beginPath();
+             grid.mapRectangle(
+                 camera.toWorld({x: 0, y: 0}),
+                 camera.toWorld({x: camera.width, y: camera.height}),
+                 node => {
+                     const id = grid.getID(node);
+                     if (current[id] && previous[id])
+                         grid.drawNode(ctx, node);
+                     else if (paused && current[id])
+                         grid.drawNode(ctx, node);
+                     else if (!paused && current[id])
+                         attenuate(ctx, node, clamped);
+                     else if (!paused && previous[id])
+                         attenuate(ctx, node, 1 - clamped);
+             });
+             ctx.lineCap = "round";
+             ctx.fillStyle = "#e77";
+             ctx.fill();
+         },
+
+         dblclick: (event, camera) => { paused = !paused; },
+         click: (event, camera) => {
+             if (!paused)
+                 return;
+             const cell = grid.getCell(camera.toWorld
+                 (camera.getPoint(event)));
+             const id = grid.getID(cell);
+             if (Object.hasOwn(current, id))
+                 delete current[id];
+             else current[id] = true;
+             camera.redraw();
+         },
+     });
+ }); //]]></script>
