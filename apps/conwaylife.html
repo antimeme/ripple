@@ -4,6 +4,8 @@
 <meta name="viewport" content="initial-scale=1, maximum-scale=1" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta http-equiv="X-UA-Compatible" content="chrome=1">
+<link rel="icon" href="conwaylife.svg?serial=4OVUic" />
+<link rel="stylesheet" href="ripple/camera.css" />
 <title>Conway's Game of Life</title>
 <style>
  html, body {
@@ -11,16 +13,7 @@
      position: relative; background: #888;
  }
  canvas { background: #eee; }
- .menu {
-     position: absolute; padding: 0.5em;
-     top: 10px; left: 25px;
-     background: #333; color: #eee;
-     border: 2px solid #eee; border-radius: 10px;
-     list-style-type: none; list-style-position: outside;
- }
- .menu a { text-decoration: none; color: #eee; }
- .menu li { padding: 0.5em; border-radius: 10px; }
- .menu li:hover { background: #55e; }
+ .toast { background: rgba(240, 112, 112, 0.85); color: #333; }
 </style>
 <script type="module">//<![CDATA[
  import Grid from "./ripple/grid.mjs";
@@ -94,7 +87,7 @@
      camera.manage({
          autofill: true, autodrag: true, active: true,
          autozoom: { min: 1, max: 50 },
-         draw: (ctx, camera) => {
+         draw: (camera, ctx) => {
              const now = Date.now();
              const clamped = Math.max(0, Math.min
                  (1, 2 * (now - last) / interval));
@@ -132,4 +125,6 @@
              camera.redraw();
          },
      });
+
+     Camera.setToast("Double click to start...");
  }); //]]></script>

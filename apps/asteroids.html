@@ -3,55 +3,55 @@
 <!-- :TODO: swipe for hyperspace -- SWIPERSPACE! -->
 <!-- :TODO: make screen buttons reset game over condition -->
 <!-- asteroids.html
-     Copyright (C) 2020-2024 by Jeff Gold.
+  Copyright (C) 2020-2026 by Jeff Gold.
 
-     This program is free software: you can redistribute it and/or
-     modify it under the terms of the GNU General Public License as
-     published by the Free Software Foundation, either version 3 of the
-     License, or (at your option) any later version.
+  This program is free software: you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation, either version 3 of the
+  License, or (at your option) any later version.
 
-     This program is distributed in the hope that it will be useful, but
-     WITHOUT ANY WARRANTY; without even the implied warranty of
-     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+  This program is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
 
-     You should have received a copy of the GNU General Public License
-     along with this program.  If not, see
-     <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see
+  <http://www.gnu.org/licenses/>.
 
-   ---------------------------------------------------------------------
+  ----------------------------------------------------------------------
 
-     This file is an independent clone of Asteroids, a space-themed
-     arcade game originally designed by Lyle Rains, Ed Logg and
-     Dominic Walsh and released by Atari in 1979.
-     Source: https://en.wikipedia.org/wiki/Asteroids_(video_game)
+  This file is an independent clone of Asteroids, a space-themed
+  arcade game originally designed by Lyle Rains, Ed Logg and
+  Dominic Walsh and released by Atari in 1979.
+  Source: https://en.wikipedia.org/wiki/Asteroids_(video_game)
 
-     The player controls a space ship in an asteroid field which is
-     periodically traversed by flying saucers.
+  The player controls a space ship in an asteroid field which is
+  periodically traversed by flying saucers.
 
-     The original game awarded 20 points for destroying each large
-     asteroid, 50 for each medium sized and 100 for each small one.
-     Destroying large flying saucers was worth 200 points and small
-     ones were worth 1,000.  Each time the player gained another
-     10,000 points an extra life was awarded.
+  The original game awarded 20 points for destroying each large
+  asteroid, 50 for each medium sized and 100 for each small one.
+  Destroying large flying saucers was worth 200 points and small
+  ones were worth 1,000.  Each time the player gained another
+  10,000 points an extra life was awarded.
 
-     This game extends Asteroids with some optional features.
+  This game extends Asteroids with some optional features.
 
-     * Shields: when active the player ship and enemy saucers have
-     a shield that can absorb one hit.  These shields recharge after
-     some time.
+  * Shields: when active the player ship and enemy saucers have
+  a shield that can absorb one hit.  These shields recharge after
+  some time.
 
-     * Messy: when active, debris doesn't disappear until it reaches
-     the edge of the screen.  This can make things more challenging
-     due to extra visual noise.  It also looks interesting.
+  * Messy: when active, debris doesn't disappear until it reaches
+  the edge of the screen.  This can make things more challenging
+  due to extra visual noise.  It also looks interesting.
 
-     * Buttons: the lower left of the screen has an expandable
-     button tray which can be used to control the ship without use
-     of a keyboard.  This is intended to make mobile use possible.
+  * Buttons: the lower left of the screen has an expandable
+  button tray which can be used to control the ship without use
+  of a keyboard.  This is intended to make mobile use possible.
 
-     * Repeat: enables keyboard repeat, which makes it possible to
-     hold down the fire key to create a continuous vortex.  This
-     may make the game trivially easy to play but might be enteraining.
+  * Repeat: enables keyboard repeat, which makes it possible to
+  hold down the fire key to create a continuous vortex.  This
+  may make the game trivially easy is enteraining.
 -->
 <meta name="viewport" content="width=device-width, user-scalable=no" />
 <meta name="viewport" content="initial-scale=1, maximum-scale=1" />
@@ -98,10 +98,10 @@
 
 <script type="module">//<![CDATA[
  import Camera from "./ripple/camera.mjs";
- const soundThruster = document.getElementById("thruster");
- const soundShootBeam = document.getElementById("shoot-beam");
- const soundSmashShip = document.getElementById("smash-ship");
- const soundSmashRock = document.getElementById("smash-rock");
+ const soundThruster    = document.getElementById("thruster");
+ const soundShootBeam   = document.getElementById("shoot-beam");
+ const soundSmashShip   = document.getElementById("smash-ship");
+ const soundSmashRock   = document.getElementById("smash-rock");
  const soundSaucerSiren = document.getElementById("saucer-siren");
 
  function startSound(sound) {
@@ -115,9 +115,10 @@
  const params = window.location.search.substr(1).split('&').reduce(
      (acc, current) => {
          const parts = current.split('=');
-         return ((parts.length === 1) ? { ...acc, [current]: true } :
-             (parts.length === 2) ? { ...acc, [parts[0]]: parts[1]} :
-             acc); }, {});
+         return ((parts.length === 1) ?
+                 { ...acc, [current]: true } : (parts.length === 2) ?
+             { ...acc, [parts[0]]: parts[1]} : acc);
+     }, {});
 
  /**
   * Convert a query parameter to an integer. */
@@ -156,20 +157,13 @@
      min: 0, default: 10000}); // Always large saucers until this score
  const o_small_score = paramInteger(params, "small-score", {
      min: 0, default: 40000}); // Always small saucers after this score
- const o_messy   = paramBoolean(params, "messy");
- const o_rings   = paramBoolean(params, "rings");
- const o_shields = paramBoolean(params, "shields");
- const o_repeat  = paramBoolean(params, "repeat");
+ const o_messy     = paramBoolean(params, "messy");
+ const o_rings     = paramBoolean(params, "rings");
+ const o_shields   = paramBoolean(params, "shields");
+ const o_repeat    = paramBoolean(params, "repeat");
  const o_nobuttons = paramBoolean(params, "nobuttons");
- const o_vbuttons = paramBoolean(params, "vbuttons");
- const o_cheats = paramBoolean(params, "cheats");
-
- /**
-  * Return true iff the given value is close enough to zero */
- function zeroish(value) {
-     const epsilon = 0.00000000001;
-     return !isNaN(value) && (value <= epsilon) && (value >= -epsilon);
- }
+ const o_vbuttons  = paramBoolean(params, "vbuttons");
+ const o_cheats    = paramBoolean(params, "cheats");
 
  /**
   * Returns the real roots of ax^2 + bx + c = 0.  Note that the
@@ -178,12 +172,13 @@
   * may have zero, one or two values. */
  function computeRealRoots(c, b, a) {
      const result = [];
-     if (isNaN(a) || zeroish(a)) {
-         result.push(-c / b);
+     if (isNaN(a) || Math.abs(a) < Number.EPSILON) {
+         if (Math.abs(b) >= Number.EPSILON)
+             result.push(-c / b);
      } else {
          const discriminant = b * b - 4 * a * c;
 
-         if (zeroish(discriminant)) {
+         if (Math.abs(discriminant) < Number.EPSILON) {
              result.push(-b / (2 * a));
          } else if (discriminant > 0) {
              // Avoid catestrophic cancellation by calculating the
@@ -1015,9 +1010,7 @@
  }
 
  class Asteroids {
-     constructor() {
-         this.newgame();
-     }
+     constructor() { this.newgame(); }
 
      // Settings for managed Camera apps
      active = true;
@@ -1028,7 +1021,6 @@
      gameover = 0;
      nextwave = 0;
      wavesize = undefined;
-     lastUpdate = undefined;
      previousClick = undefined;
      asteroids = undefined;
 
@@ -1064,7 +1056,7 @@
          screenButtons.resize(camera);
      }
 
-     drawBefore(ctx, camera) {
+     drawAfter(camera, ctx) {
          ctx.lineCap = "round";
          ctx.lineWidth = camera.radius / 300;
          ctx.font = Math.floor(camera.radius / 10) +
@@ -1098,7 +1090,7 @@
          screenButtons.draw(ctx, camera);
      }
 
-     draw(ctx, camera) {
+     draw(camera, ctx) {
          ctx.lineCap = "round";
          ctx.lineWidth = camera.radius / 300;
 
@@ -1123,11 +1115,7 @@
          }
      }
 
-     update(now, camera) {
-         const elapsed = Math.min(
-             100, isNaN(this.lastUpdate) ? 0 : (now - this.lastUpdate));
-         this.lastUpdate = now;
-
+     update(camera, now, elapsed) {
          Debris.update(camera, elapsed);
 
          const fragments = [];

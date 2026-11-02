@@ -1,5 +1,5 @@
 // camera.mjs
-// Copyright (C) 2023-2025 by Jeff Gold.
+// Copyright (C) 2023-2026 by Jeff Gold.
 //
 // This program is free software: you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -18,16 +18,188 @@
 // ---------------------------------------------------------------------
 
 /**
+ * FloatPanel: a draggable, collapsible menu panel. */
+export class FloatPanel {
+
+    constructor({ container, title = 'Menu', x = 20, y = 20 } = {}) {
+        this._container = container;
+        this._collapsed = false;
+        this._dragging = false;
+        this._ox = 0;
+        this._oy = 0;
+
+        this._panel = document.createElement('div');
+        this._panel.className = 'float-panel';
+        this._panel.style.left = x + 'px';
+        this._panel.style.top  = y + 'px';
+
+        this._header = document.createElement('div');
+        this._header.className = 'fp-header';
+
+        const grip = document.createElement('div');
+        grip.className = 'fp-grip';
+        for (let i = 0; i < 3; i++) {
+            const line = document.createElement('span');
+            line.className = 'fp-grip-line';
+            grip.appendChild(line);
+        }
+        this._header.appendChild(grip);
+
+        const legend = document.createElement('legend');
+        legend.className = 'fp-legend';
+
+        this._toggle = document.createElement('label');
+        this._toggle.className = 'fp-toggle';
+
+        this._chevron = document.createElement('span');
+        this._chevron.className = 'fp-chevron';
+        this._chevron.innerHTML = '&#9660;';
+        this._toggle.appendChild(this._chevron);
+
+        legend.appendChild(this._toggle);
+        this._header.appendChild(legend);
+
+        this._body = document.createElement('div');
+        this._body.className = 'fp-body';
+
+        const fieldset = document.createElement('fieldset');
+        fieldset.appendChild(this._header);
+        fieldset.appendChild(this._body);
+        this._panel.appendChild(fieldset);
+        this._container.appendChild(this._panel);
+
+        this._toggle.addEventListener('click', (event) => {
+            this._collapsed = !this._collapsed;
+            this._body.classList.toggle(
+                'fp-collapsed', this._collapsed);
+            this._chevron.style.transform =
+                this._collapsed ? 'rotate(-90deg)' : '';
+        });
+
+        this._header.addEventListener('mousedown', (event) => {
+            if (event.target === this._toggle ||
+                event.target === this._chevron)
+                return;
+            this._dragging = true;
+            const pr = this._panel.getBoundingClientRect();
+            const cr = this._container.getBoundingClientRect();
+            this._ox = event.clientX - (pr.left - cr.left);
+            this._oy = event.clientY - (pr.top  - cr.top);
+            event.preventDefault();
+        });
+
+        document.addEventListener('mousemove', () => {
+            if (!this._dragging) return;
+            const cr = this._container.getBoundingClientRect();
+            let x = event.clientX - cr.left - this._ox;
+            let y = event.clientY - cr.top  - this._oy;
+            x = Math.max(0, Math.min(
+                x, cr.width  - this._panel.offsetWidth));
+            y = Math.max(0, Math.min(
+                y, cr.height - this._panel.offsetHeight));
+            this._panel.style.left = x + 'px';
+            this._panel.style.top  = y + 'px';
+        });
+
+        document.addEventListener('mouseup', () =>
+            { this._dragging = false; });
+
+        this.setTitle(title);
+    }
+
+    setTitle(title) {
+        this._toggle.textContent = title;
+    }
+
+    addButton({
+        label, icon = '', iconBG = 'transparent', onClick = null
+    } = {}) {
+        const button = document.createElement('button');
+        button.className = 'fp-item';
+
+        if (icon) {
+            const iconCell = document.createElement('div');
+            iconCell.className = 'fp-item-icon';
+            iconCell.style.background = iconBG;
+            iconCell.innerHTML = icon;
+            button.appendChild(iconCell);
+        }
+
+        const labelElement = document.createElement('span');
+        labelElement.className = 'fp-item-label';
+        labelElement.textContent = label;
+        button.appendChild(labelElement);
+
+        if (typeof(onClick) === "function")
+            button.addEventListener('click', onClick);
+        this._body.appendChild(button);
+        return button;
+    }
+
+    addSelect({
+        icon = "", iconBG = "transparent",
+        options = [], onChange = null
+    } = {}) {
+        const entry = document.createElement("div");
+        entry.className = "fp-select";
+
+        const iconMap = {};
+        const iconCell = document.createElement("div");
+        iconCell.className = "fp-item-icon";
+        if (icon) {
+            iconCell.style.background = iconBG;
+            iconCell.innerHTML = icon;
+        }
+        entry.appendChild(iconCell);
+
+        const select = document.createElement("select");
+        select.className = "fp-item";
+        entry.appendChild(select);
+
+        for (let index in options) {
+            const option = options[index];
+            const optionElement = document.createElement("option");
+            if (option.icon)
+                iconMap[option.value] = {
+                    bg: option.iconBG, html: option.icon };
+
+            const labelElement = document.createElement('span');
+            labelElement.className = 'fp-item-label';
+            labelElement.textContent = option.label;
+            optionElement.appendChild(labelElement);
+
+            optionElement.value = option.value;
+            select.appendChild(optionElement);
+        }
+
+        select.addEventListener("change", (event) => {
+            if (event.target.value in iconMap) {
+                const iconDetails = iconMap[event.target.value];
+                iconCell.style.background = iconDetails.bg;
+                iconCell.innerHTML = iconDetails.html;
+            }
+            if (typeof(onChange) === "function")
+                onChange.call(this, event);
+        });
+        this._body.appendChild(entry);
+        return select;
+    }
+
+    clear() { this._body.innerHTML = ''; }
+}
+
+/**
  * A simple two-dimensional camera abstraction for HTML canvas.
  * Camera provides a world space where the origin (0, 0) starts at
  * the center of the screen and uses chalkboard coordinates (so
  * positive x goes to the right and positive y goes up). */
 export default class Camera {
     constructor(screen) {
-        if (!screen)
+        if (!screen) {
             screen = document.body.appendChild(
                 document.createElement("canvas"));
-        else if (!(screen instanceof HTMLElement))
+            screen.classList.add("camera-screen");
+        } else if (!(screen instanceof HTMLElement))
             throw new TypeError("Camera screen must be a DOM canvas");
         this.#position = { x: 0, y: 0 };
         this.#screen = screen;
@@ -77,7 +249,7 @@ export default class Camera {
      * This method is called automatically for managed apps (use
      * drawBefore or drawAfter to draw in screen space rather than
      * world space). */
-    configureContext(ctx) {
+    contextEnterWorld(ctx) {
         ctx.save();
         ctx.translate(this.#screen.width / 2, this.#screen.height / 2);
         ctx.scale(this.#radius / this.#scale,
@@ -90,7 +262,7 @@ export default class Camera {
     /**
      * Undo context settings.  After this coordinates refer to
      * screen space again. */
-    restoreContext(ctx) { ctx.restore(); return ctx; }
+    contextLeaveWorld(ctx) { ctx.restore(); return ctx; }
 
     /**
      * Convert a point from world space to screen space.
@@ -98,23 +270,26 @@ export default class Camera {
      * represented by the program, such as the position or
      * a character or resource. */
     toScreen(point) {
-        point.x += this.#position.x;
-        point.y += this.#position.y;
+        const result = { x: point.x, y: point.y };
+        result.x += this.#position.x;
+        result.y += this.#position.y;
 
         if (this.#spin) {
-            let cos = Math.cos(this.#spin);
-            let sin = Math.sin(this.#spin);
-            point = {
-                x: point.x * cos - point.y * sin,
-                y: point.x * sin + point.y * cos };
+            const cos = Math.cos(this.#spin);
+            const sin = Math.sin(this.#spin);
+            const spun = {
+                x: result.x * cos - result.y * sin,
+                y: result.x * sin + result.y * cos };
+            result.x = spun.x;
+            result.y = spun.y;
         }
 
-        point.x *= this.#radius / this.#scale;
-        point.y *= -this.#radius / this.#scale;
+        result.x *= this.#radius / this.#scale;
+        result.y *= -this.#radius / this.#scale;
 
-        point.x += this.#screen.width / 2;
-        point.y += this.#screen.height / 2;
-        return point;
+        result.x += this.#screen.width / 2;
+        result.y += this.#screen.height / 2;
+        return result;
     }
 
     /**
@@ -122,23 +297,26 @@ export default class Camera {
      * An input here might be a mouse click or some other
      * display oriented coordinate. */
     toWorld(point) {
-        point.x -= this.#screen.width / 2;
-        point.y -= this.#screen.height / 2;
+        const result = { x: point.x, y: point.y };
+        result.x -= this.#screen.width / 2;
+        result.y -= this.#screen.height / 2;
 
-        point.x *= this.#scale / this.#radius;
-        point.y *= -this.#scale / this.#radius;
+        result.x *= this.#scale / this.#radius;
+        result.y *= -this.#scale / this.#radius;
 
         if (this.#spin) {
-            let cos = Math.cos(this.#spin);
-            let sin = Math.sin(this.#spin);
-            point = {
-                x: point.y * sin + point.x * cos,
-                y: point.y * cos - point.x * sin };
+            const cos = Math.cos(this.#spin);
+            const sin = Math.sin(this.#spin);
+            const spun = {
+                x: result.y * sin + result.x * cos,
+                y: result.y * cos - result.x * sin };
+            result.x = spun.x;
+            result.y = spun.y;
         }
 
-        point.x -= this.#position.x;
-        point.y -= this.#position.y;
-        return point;
+        result.x -= this.#position.x;
+        result.y -= this.#position.y;
+        return result;
     }
 
     /**
@@ -178,17 +356,25 @@ export default class Camera {
         return this.setScale(this.#scale * factor, min, max);
     }
 
+    #lastUpdate = undefined;
+
     #update() {
-        if (this.#app && typeof(this.#app.update) === "function")
-            this.#app.update.call(
-                this.#app, Date.now(), this);
-        return this;
+        const now = Date.now();
+
+        if (this.#app && typeof(this.#app.update) === "function") {
+            const elapsed = isNaN(this.#lastUpdate) ?
+                            0 : now - this.#lastUpdate;
+            this.#app.update.call(this.#app, this, now, elapsed);
+        }
+        return this.#lastUpdate = now;
     }
 
     #delegate(event) {
-        if (this.#app && (typeof(this.#app[event.type]) === "function"))
-            this.#update().#app[event.type].call(
-                this.#app, event, this);
+        if (this.#app &&
+            (typeof(this.#app[event.type]) === "function")) {
+            this.#update();
+            this.#app[event.type].call(this.#app, event, this);
+        }
         return this;
     }
 
@@ -196,7 +382,14 @@ export default class Camera {
      * Registers handlers for events and drawing.
      *
      * This is safe to call more than once to change the mode of
-     * an application because handlers are applied only once. */
+     * an application because handlers are applied only once.
+     *
+     * An app can define the following:
+     *
+     * - setup: function(camera)
+     * - active: boolean
+     * - mousedown: function(event, camera)
+     * */
     manage(app) {
         this.#app = app;
 
@@ -318,27 +511,31 @@ export default class Camera {
             window.dispatchEvent(new Event("resize"));
             this.#listeners = true;
         }
+        if (this.#app && (typeof(this.#app.setup) === "function"))
+            this.#app.setup(this);
         this.#screen.focus();
         return this.redraw();
     }
 
     #draw() {
-        if (!this.#update().#screen.getContext)
+        if (!this.#screen.getContext)
             throw Error("screen has no getContext");
         const ctx = this.#screen.getContext("2d");
+        const now = this.#update();
+
         const style = getComputedStyle(this.#screen);
         ctx.strokeStyle = style.color;
-        ctx.fillStyle = style.color;
+        ctx.fillStyle   = style.color;
         ctx.clearRect(0, 0, this.#screen.width, this.#screen.height);
 
         if (this.#app && typeof(this.#app.drawBefore) === "function")
-            this.#app.drawBefore.call(this.#app, ctx, this);
-        this.configureContext(ctx);
+            this.#app.drawBefore.call(this.#app, this, ctx, now);
+        this.contextEnterWorld(ctx);
         if (this.#app && typeof(this.#app.draw) === "function")
-            this.#app.draw.call(this.#app, ctx, this);
-        this.restoreContext(ctx);
+            this.#app.draw.call(this.#app, this, ctx, now);
+        this.contextLeaveWorld(ctx);
         if (this.#app && typeof(this.#app.drawAfter) === "function")
-            this.#app.drawAfter.call(this.#app, ctx, this);
+            this.#app.drawAfter.call(this.#app, this, ctx, now);
 
         this.#draw_id = 0;
         if (this.#app &&
@@ -357,6 +554,12 @@ export default class Camera {
         if (!this.#draw_id)
             this.#draw_id = requestAnimationFrame(() => this.#draw());
         return this;
+    }
+
+    createFloatPanel({ title = "Menu", x = 20, y = 20 } = {}) {
+        return new FloatPanel({
+            container: document.body,
+            title, x, y});
     }
 
     static drawRoundRect(ctx, x, y, width, height, radius) {
@@ -488,10 +691,14 @@ export default class Camera {
         const toast = document.createElement("div");
         toast.classList.add("toast");
         toast.innerText = message;
+        toast.style.opacity = 1;
+        toast.style.transition = "opacity 0.9s ease";
         document.body.append(toast);
-        setTimeout(() => toast.classList.add("fade-out"), 2000);
+        setTimeout(() => {
+            toast.style.opacity = 0;
+            toast.classList.add("fade-out");
+        }, 1200);
         toast.addEventListener("transitionend", () => toast.remove());
-        console.log(message);
     }
 
     /**
