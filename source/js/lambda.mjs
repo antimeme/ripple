@@ -355,6 +355,24 @@ export class Lambda {
     }
 
     /**
+     * Return true if and only if this expression is a tuple. */
+    isTuple() {
+        return ((this.#variables.length === 1) &&
+                (this.#values.length >= 3) &&
+                (typeof(this.#values[0]) === "string") &&
+                (this.#values[0] === this.#variables[0]) &&
+                this.#values.slice(1).every(value =>
+                    (value instanceof Lambda) ?
+                    !value.getFreeVariables()[this.#variables[0]] :
+                    (typeof(value) === "string") ?
+                    (value === this.#variables[0]) : false));
+    }
+
+    isPair() {
+        return this.isTuple() && (this.#values.length === 3);
+    }
+
+    /**
      * Replace instances of a free variable with some other value.
      * This operates recursively but does not mutate. */
     #replace(variable, replacement) {
@@ -538,9 +556,13 @@ export class Lambda {
         let result = this;
         const numeral = result.getChurchNumeral();
         if (!isNaN(numeral))
-            return numeral;
-        library = library ? library : Lambda.defaultLibrary;
+            return numeral ? numeral : "FALSE/0";
+        if (result.isPair())
+            return new Lambda([
+                "PAIR", this.#values[1], this.#values[2]]
+            ).reverseLibrary();
 
+        library = library ? library : Lambda.defaultLibrary;
         this.#values.forEach((value, index) => {
             if (value instanceof Lambda) {
                 const current = value.reverseLibrary(library);
@@ -669,10 +691,9 @@ export class Lambda {
             let expression = (ii > 0) ? "f a" : "a";
             for (let jj = 2; jj <= ii; ++jj)
                 expression = "f (" + expression + ")";
-            expression = "lambda f a." + expression;
             library[numbers[ii]] = {
                 description: "Church Numeral " + numbers[ii],
-                value: expression };
+                value: "lambda f a." + expression };
         }
 
         library["="] = library["EQUAL?"];
@@ -680,6 +701,7 @@ export class Lambda {
         library["*"] = library["TIMES"] = library["MULTIPLY"];
         library["-"] = library["MINUS"] = library["SUBTRACT"];
         library["/"] = library["DIVIDE"];
+        library["FALSE/0"] = library["ZERO"];
         return library;
     }
 
@@ -700,7 +722,7 @@ export class Lambda {
         PAIR: { value: "\\h t f.f h t" },
         HEAD: { value: "\\p.p TRUE" },
         TAIL: { value: "\\p.p FALSE" },
-        NIL: { value: "\\f.TRUE" },
+        NIL: { value: "\\f a b.a" },
         "IS-NIL?": { value: "\\p.p (\\h t.FALSE)" },
 
         // Arithmetic
@@ -712,7 +734,7 @@ export class Lambda {
                description: "Addition of Church numerals" },
         MULTIPLY: { value: "\\m n f.m (n f)",
                     description: "Multiplication of Church numerals" },
-        POWER: { value: "\\m n f a.(n m) f a",
+        POWER: { value: "\\m n.n m",
                  description: "Exponentiation of Church numerals" },
         PREDECESSOR: {
             value: "\\n f a.n (\\g h.h (g f)) (\\c.a) \\b.b",
@@ -817,10 +839,10 @@ export class Lambda {
                 description: "Iota combinator" },
     });
 
-    static createInterface(element) {
-        const expression = document.createElement("textarea");
+    static createInterface(element, cols, rows) {
         const steps = document.createElement("input");
         const delay = document.createElement("input");
+        const expression = document.createElement("textarea");
         let repeatID = 0;
         let repeating = false;
 
