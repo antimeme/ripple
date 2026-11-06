@@ -22,10 +22,14 @@
  Camera.preload(undefined, () => {
      const camera = new Camera(document.body.appendChild(
          document.createElement("canvas"))).setScale(4);
+     const params = new URLSearchParams(window.location.search);
+     const state = params.get("state");
      let grid = Grid.create({
          type: "square", radius: 1, diagonal: true});
      let last = Date.now();
-     let current = {5: true, 4: true, 8: true, 6: true, 1: true};
+     let current = state ? Object.fromEntries(
+         state.split(',').map(s => [s.trim(), true])) :
+                   {5: true, 4: true, 8: true, 6: true, 1: true};
      let previous = current;
      let paused = true;
      let interval = 500;
@@ -112,7 +116,12 @@
              ctx.fill();
          },
 
-         dblclick: (event, camera) => { paused = !paused; },
+         dblclick: (event, camera) => {
+             history.replaceState(
+                 null, "", "?state=" + Object.keys(
+                     current).sort().join(","));
+             paused = !paused;
+         },
          click: (event, camera) => {
              if (!paused)
                  return;
